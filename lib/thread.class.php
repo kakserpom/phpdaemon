@@ -1,0 +1,156 @@
+<?php
+abstract class Thread
+{
+ public $spawnid;
+ public $pid;
+ public $shutdown = FALSE;
+ public $terminated = FALSE;
+ public $collections = array();
+ public static $signalsno = array(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31);
+ public static $signals = array(
+  SIGHUP => 'SIGHUP',
+  SIGINT => 'SIGINT',
+  SIGQUIT => 'SIGQUIT',
+  SIGILL => 'SIGILL',
+  SIGTRAP => 'SIGTRAP',
+  SIGABRT => 'SIGABRT',
+  7 => 'SIGEMT',
+  SIGFPE => 'SIGFPE',
+  SIGKILL => 'SIGKILL',
+  SIGBUS => 'SIGBUS',
+  SIGSEGV => 'SIGSEGV',
+  SIGSYS => 'SIGSYS',
+  SIGPIPE => 'SIGPIPE',
+  SIGALRM => 'SIGALRM',
+  SIGTERM => 'SIGTERM',
+  SIGURG => 'SIGURG',
+  SIGSTOP => 'SIGSTOP',
+  SIGTSTP => 'SIGTSTP',
+  SIGCONT => 'SIGCONT',
+  SIGCHLD => 'SIGCHLD',
+  SIGTTIN => 'SIGTTIN',
+  SIGTTOU => 'SIGTTOU',
+  SIGIO => 'SIGIO',
+  SIGXCPU => 'SIGXCPU',
+  SIGXFSZ => 'SIGXFSZ',
+  SIGVTALRM => 'SIGVTALRM',
+  SIGPROF => 'SIGPROF',
+  SIGWINCH => 'SIGWINCH',
+  28 => 'SIGINFO',
+  SIGUSR1 => 'SIGUSR1',
+  SIGUSR2 => 'SIGUSR2',
+ );
+ public function start()
+ {
+  $pid = pcntl_fork();
+  if ($pid === -1) {throw new Exception('Could not fork');}
+  if ($pid == 0)
+  {
+   $this->pid = posix_getpid();
+   foreach (Thread::$signals as $no => $name)
+   {
+    if (($name === 'SIGKILL') || ($name == 'SIGSTOP')) {continue;}
+    if (!pcntl_signal($no,array($this,'sighandler'),TRUE))
+    {
+     throw new Exception('Cannot assign '.$name.' signal');
+    }
+   }
+   $this->run();
+   $this->shutdown();
+  }
+  $this->pid = $pid;
+  return $pid;
+ }
+ public function sighandler($signo)
+ {
+  if (is_callable($c = array($this,strtolower(Thread::$signals[$signo])))) {call_user_func($c);}
+  elseif (is_callable($c = array($this,'sigunknown'))) {call_user_func($c,$signo);}
+ }
+ public function shutdown()
+ {
+  posix_kill(posix_getppid(),SIGCHLD);
+  exit(0);
+ }
+ public function backsig($sig)
+ {
+  return posix_kill(posix_getppid(),$sig);
+ }
+ public function sleep($s)
+ {
+  static $interval = 0.2;
+  $n = $s/$interval;
+  for ($i = 0; $i < $n; ++$i)
+  {
+   if ($this->shutdown) {return FALSE;}
+   usleep($interval*1000000);
+  }
+  return TRUE;
+ }
+ public function sigterm() {exit(0);}
+ public function sigint() {exit(0);}
+ public function sigquit() {$this->shutdown = TRUE;}
+ public function stop($kill = FALSE)
+ {
+  $this->shutdown = TRUE;
+  return posix_kill($this->pid,$kill?SIGKILL:SIGTERM);
+ }
+ public function sigkill() {exit(0);}
+ public function waitPid()
+ {
+  $pid = pcntl_waitpid(-1,$status,WNOHANG);
+  if ($pid > 0)
+  {
+   foreach ($this->collections as &$col)
+   {
+    foreach ($col->threads as $k => &$t)
+    {
+     if ($t->pid === $pid)
+     {
+      $t->terminated = TRUE;
+      return TRUE;
+     }
+    }
+   }
+  }
+  return FALSE;
+ }
+ public function sigchld() {$this->waitPid();}
+ public function signal($sig) {return posix_kill($this->pid,$sig);}
+ public function waitAll()
+ {
+  do
+  {
+   $n = 0;
+   foreach ($this->collections as &$col) {$n += $col->removeTerminated();}
+   if (!$this->waitPid()) {$this->sigwait(0,20000);}
+  }
+  while ($n > 0);
+ }
+ public static function setproctitle($title)
+ {
+  if (function_exists('setproctitle')) {return setproctitle($title);}
+  return FALSE;
+ }
+ public function sigwait($sec = 0,$nano = 1)
+ {
+  $siginfo = NULL;
+  $signo = pcntl_sigtimedwait(Thread::$signalsno,$siginfo,$sec,$nano);
+  if (is_bool($signo)) {return $signo;}
+  if ($signo > 0)
+  {
+   $this->sighandler($signo);
+   return TRUE;
+  }
+  return FALSE;
+ }
+}
+if (!function_exists('pcntl_sigtimedwait'))
+{
+ function pcntl_sigtimedwait($signals,$siginfo,$sec,$nano)
+ {
+  pcntl_signal_dispatch();
+  if (time_nanosleep($sec,$nano) === TRUE) {return FALSE;}
+  pcntl_signal_dispatch();
+  return TRUE;
+ }
+}
