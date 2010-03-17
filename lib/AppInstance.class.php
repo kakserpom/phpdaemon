@@ -3,7 +3,7 @@
 /* phpDaemon
 /* ver. 0.2
 /* License: LGPL
-/* Web: http://phpdaemon.googlecode.com
+/* Web: http://github.com/kakserpom/phpdaemon
 /* ===========================
 /* @class AppInstance
 /* @author kak.serpom.po.yaitsam@gmail.com

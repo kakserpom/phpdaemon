@@ -1,6 +1,6 @@
 
 						phpDaemon
-http://phpdaemon.googlecode.com/
+http://github.com/kakserpom/phpdaemon
 
 True async. server with API for PHP. It has many features.
 Main features and possibilites:
@@ -18,7 +18,7 @@ Benchmark (example script):
 	Requests per second:    4784.80 [#/sec] (mean)
 
 
-Installation guide: http://code.google.com/p/phpdaemon/wiki/Install
+Installation guide: http://wiki.github.com/kakserpom/phpdaemon/install
 
 Master process understands signals:
 	
