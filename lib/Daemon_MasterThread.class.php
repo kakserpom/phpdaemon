@@ -11,6 +11,10 @@
 /**************************************************************************/
 class Daemon_MasterThread extends Thread
 {
+ /* @method run
+    @description runtime of Master process
+    @return void
+ */
  public function run()
  {
   proc_nice(Daemon::$settings['masterpriority']);

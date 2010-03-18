@@ -11,7 +11,7 @@
 /**************************************************************************/
 class AsyncServer extends AppInstance
 {
- public $buf = array();
+ public $buf = array(); // 
  public $listen;
  public $initialLowMark = 1;
  public $initialHighMark = 0xFFFFFF;
@@ -42,15 +42,17 @@ class AsyncServer extends AppInstance
   }
  }
  public function disableSocketEvents()
- {
-  foreach ($this->socketEvents as $ev)
+ {  
+  foreach ($this->socketEvents as $k => $ev)
   {
    event_del($ev);
+   event_free($ev);
+   unset($this->socketEvents[$k]);
   }
  }
  public function onShutdown()
  {
-  $this->disableSocketEvents();
+  //$this->disableSocketEvents(); // very important, it causes infinite loop in baseloop.
   if (isset($this->sessions))
   {
    $result = TRUE;
@@ -225,6 +227,7 @@ class AsyncServer extends AppInstance
  }
  public function checkAccept()
  {
+  if (Daemon::$worker->reload) {return FALSE;}
   return Daemon::$parsedSettings['maxconcurrentrequestsperworker'] >= sizeof($this->queue);
  }
  public function closeConnection($connId)

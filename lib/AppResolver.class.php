@@ -5,7 +5,7 @@ class AppResolver
  public $appPreload = array();
  public $defaultApp = 'Default';
  /* @method preload
-    @description Preloads applications before setuid.
+    @description Preloads applications after setuid.
     @return void
  */
  public function preload()
@@ -16,7 +16,7 @@ class AppResolver
    for ($i = 0; $i < $num; ++$i) {$this->appInstantiate($app);}
   }
  }
-  /* @method preload
+  /* @method preloadPrivileged
      @description Preloads applications before setuid.
      @return void
  */
@@ -30,15 +30,30 @@ class AppResolver
    for ($i = 0; $i < $num; ++$i) {$this->appInstantiate($app);}
   }
  }
+ /* @method getInstanceByAppName
+    @param string Application name.
+    @description Gets instance of application by it's name.
+    @return object AppInstance.
+ */
  public function getInstanceByAppName($appName)
  {
   if (!isset(Daemon::$appInstances[$appName])) {return $this->appInstantiate($appName);}
   return Daemon::$appInstances[$appName][array_rand(Daemon::$appInstances[$appName])];
  }
+ /* @method getAppPath
+    @param string Application name
+    @description Gets path to application's PHP-file.
+    @return string Path.
+ */
  public function getAppPath($app)
  {
   return $this->appDir.$app.'.php';
  }
+ /* @method appInstantiate
+    @param string Application name
+    @description Run new application instance.
+    @return object AppInstance.
+ */
  public function appInstantiate($app)
  {
   $p = $this->getAppPath($app);
@@ -57,6 +72,13 @@ class AppResolver
   Daemon::$appInstances[$app][] = $appInstance;
   return $appInstance;
  }
+ /* @method getRequest
+    @param object Request.
+    @param object AppInstance of Upstream.
+    @param string Default application name.
+    @description Routes incoming request to related application.
+    @return object Request.
+ */
  public function getRequest($req,$upstream,$defaultApp = NULL)
  {
   if (isset($req->attrs->server['APPNAME'])) {$appName = $req->attrs->server['APPNAME'];}

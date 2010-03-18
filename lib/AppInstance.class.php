@@ -133,16 +133,19 @@ class AppInstance
  {
   if ($ret === 2) // script update
   {
-   return $this->update();
+   $r = $this->update();
   }
   elseif ($ret === 3) // graceful worker shutdown for restart
   {
-   return $this->shutdown(TRUE);
+   $r = $this->shutdown(TRUE);
   }
   elseif ($ret === 5) // shutdown worker
   {
-   return $this->shutdown();
+   $r = $this->shutdown();
   }
+  else {$r = TRUE;}
+  if ($r === NULL) {$r = TRUE;}
+  return $r;
  }
 }
 class FastCGI_AppInstance extends AppInstance {}

@@ -13,6 +13,10 @@ class Daemon_Bootstrap
 {
  public static $pidfile;
  public static $pid;
+ /* @method init
+    @description Actions on early startup.
+    @return void
+ */
  public static function init()
  {
   Daemon::initSettings();
@@ -282,6 +286,10 @@ usage: ".Daemon::$runName." (start|(hard)stop|update|reload|(hard)restart|fullst
    exit;
   }
  }
+ /* @method start
+    @description Start script.
+    @return void
+ */
  public static function start()
  {
   if (Daemon_Bootstrap::$pid && posix_kill(Daemon_Bootstrap::$pid,SIGTTIN))
@@ -293,6 +301,10 @@ usage: ".Daemon::$runName." (start|(hard)stop|update|reload|(hard)restart|fullst
   $pid = Daemon::spawnMaster();
   file_put_contents(Daemon_Bootstrap::$pidfile,$pid);
  }
+ /* @method stop
+    @description Stop script.
+    @return void
+ */
  public static function stop($mode = 1)
  {
   $ok = Daemon_Bootstrap::$pid && posix_kill(Daemon_Bootstrap::$pid,$mode === 3?SIGINT:SIGTERM);
@@ -307,6 +319,11 @@ usage: ".Daemon::$runName." (start|(hard)stop|update|reload|(hard)restart|fullst
    }
   }
  }
+ /* @method getArgs
+    @param array $_SERVER['argv']
+    @description Parses command-line arguments.
+    @return void
+ */
  public static function getArgs($args)
  {
   $out = array();

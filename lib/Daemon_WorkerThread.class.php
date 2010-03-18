@@ -280,7 +280,7 @@ class Daemon_WorkerThread extends Thread
  public function appInstancesReloadReady()
  {
   $ready = TRUE;
-  foreach (Daemon::$appInstances as $app)
+  foreach (Daemon::$appInstances as $k => $app)
   {
    foreach ($app as $appInstance)
    {
@@ -303,16 +303,23 @@ class Daemon_WorkerThread extends Thread
   $this->closeSockets();
   $this->setStatus(3);
   if ($hard) {exit(0);}
+  $reloadReady = $this->appInstancesReloadReady();
   foreach ($this->queue as $r)
   {
    if ($r instanceof stdClass) {continue;}
    if ($r->running) {$r->finish(-2);}
   }
-  while ((sizeof($this->queue) > 0) || (!$this->appInstancesReloadReady()))
+  $n = 0;
+  while ((sizeof($this->queue) > 0) || !$reloadReady)
   {
+   if ($n++ === 10000)
+   {
+    $reloadReady = $this->appInstancesReloadReady();
+    $n = 0;
+   }
    pcntl_signal_dispatch();
    event_add($this->timeoutEvent, $this->microsleep);
-   event_base_loop($this->eventBase,EVLOOP_NONBLOCK);
+   event_base_loop($this->eventBase,EVLOOP_ONCE);
    $this->readPool();
    $this->runQueue();
   }
