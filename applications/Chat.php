@@ -204,6 +204,10 @@ class ChatSession
     'ltime' => microtime(TRUE),
   ));
  }
+ public function gracefulShutdown()
+ {
+  return FALSE;
+ }
  public function putMsgId($s)
  {
   for ($i = 0, $c = count($this->lastMsgIDs); $i < $c; ++$i)

@@ -277,6 +277,18 @@ class Daemon_WorkerThread extends Thread
    if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.$this->pid.'] event readConn('.$connId.') finished.');}
   }
  }
+ public function appInstancesReloadReady()
+ {
+  $ready = TRUE;
+  foreach (Daemon::$appInstances as $app)
+  {
+   foreach ($app as $appInstance)
+   {
+    if (!$appInstance->handleStatus($this->currentStatus)) {$ready = FALSE;}
+   }
+  }
+  return $ready;
+ }
  public function shutdown($hard = FALSE)
  {
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.$this->pid.'] event shutdown('.($hard?'HARD':'').') invoked.');}
@@ -291,16 +303,12 @@ class Daemon_WorkerThread extends Thread
   $this->closeSockets();
   $this->setStatus(3);
   if ($hard) {exit(0);}
-  foreach (Daemon::$appInstances as $app)
-  {
-   foreach ($app as $appInstance) {$appInstance->handleStatus(5);}
-  }
   foreach ($this->queue as $r)
   {
    if ($r instanceof stdClass) {continue;}
    if ($r->running) {$r->finish(-2);}
   }
-  while (sizeof($this->queue) > 0)
+  while ((sizeof($this->queue) > 0) || (!$this->appInstancesReloadReady()))
   {
    pcntl_signal_dispatch();
    event_add($this->timeoutEvent, $this->microsleep);
@@ -347,7 +355,7 @@ class Daemon_WorkerThread extends Thread
  }
  public function sigusr2()
  {
-  if (Daemon::$settings['logsignals']) {Daemon::log('Worker '.getmypid().' caught SIGUSR1 (graceful shutdown for update).');}
+  if (Daemon::$settings['logsignals']) {Daemon::log('Worker '.getmypid().' caught SIGUSR2 (graceful shutdown for update).');}
   $this->reload = TRUE;
   $this->reloadTime = microtime(TRUE)+$this->reloadDelay;
   $this->setStatus($this->currentStatus);

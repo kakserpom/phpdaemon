@@ -55,7 +55,7 @@ class AppInstance
     @description Called when application instance is going to shutdown.
     @return void
  */
- public function onShutdown() {}
+ public function onShutdown() {return TRUE;}
  
  /* @method beginRequest
     @description Creates Request.
@@ -80,10 +80,11 @@ class AppInstance
  public function endRequest($req,$appStatus,$protoStatus) {}
  
  /* @method shutdown
+ /* @param boolean Graceful.
     @description Shutdowns the application instance.
     @return void
  */
- public function shutdown()
+ public function shutdown($graceful = FALSE)
  {
   if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::shutdown() invoked. Size of the queue: '.sizeof($this->queue).'.');}
   foreach ($this->queue as &$r)
@@ -91,7 +92,7 @@ class AppInstance
    if (Daemon::$settings['logevents']) {Daemon::log(get_class($r).'::finish() invoked by '.get_class($this).'::shutdown()');}
    $r->finish();
   }
-  $this->onShutdown();
+  return $this->onShutdown();
  }
  
  /* @method handleRequest
@@ -124,25 +125,24 @@ class AppInstance
  }
  
  /* @method handleStatus
-    @param object Request.
-    @description Pushes request to the queue.
-    @return object Request.
+    @param int Status code.
+    @description Handles the worker's status.
+    @return boolean Result.
  */
  public function handleStatus($ret)
  {
   if ($ret === 2) // script update
   {
-   $this->update();
+   return $this->update();
   }
   elseif ($ret === 3) // graceful worker shutdown for restart
   {
-   $this->shutdown();
+   return $this->shutdown(TRUE);
   }
   elseif ($ret === 5) // shutdown worker
   {
-   $this->shutdown();
+   return $this->shutdown();
   }
-  return FALSE;
  }
 }
 class FastCGI_AppInstance extends AppInstance {}

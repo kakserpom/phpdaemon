@@ -99,6 +99,15 @@ class WebSocketSession extends SocketSession
   if (!$this->upstream = call_user_func($this->appInstance->routes[$appName],$this)) {return FALSE;}
   return TRUE;
  }
+ public function gracefulShutdown()
+ {
+  if ((!$this->upstream) || $this->upstream->gracefulShutdown())
+  {
+   $this->finish();
+   return TRUE;
+  }
+  return FALSE;
+ }
  public function stdin($buf)
  {
   $this->buf .= $buf;

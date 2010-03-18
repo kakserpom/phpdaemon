@@ -35,6 +35,11 @@ class SocketSession
   $this->buf = binarySubstr($this->buf,$p+1);
   return $r;
  }
+ public function gracefulShutdown()
+ {
+  $this->finish();
+  return TRUE;
+ }
  public function write($s)
  {
   return $this->appInstance->write($this->connId,$s);

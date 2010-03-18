@@ -41,12 +41,23 @@ class AsyncServer extends AppInstance
    event_add($ev);
   }
  }
+ public function disableSocketEvents()
+ {
+  foreach ($this->socketEvents as $ev)
+  {
+   event_del($ev);
+  }
+ }
  public function onShutdown()
  {
+  $this->disableSocketEvents();
   if (isset($this->sessions))
   {
-   foreach ($this->sessions as &$session) {$session->finish();} 
+   $result = TRUE;
+   foreach ($this->sessions as &$session) {if (!$session->gracefulShutdown()) {$result = FALSE;}}
+   return $result;
   }
+  return TRUE;
  }
  public function onReady()
  {
