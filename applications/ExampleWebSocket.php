@@ -8,7 +8,7 @@ class ExampleWebSocket extends AppInstance
   $this->WS = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
   if ($this->WS)
   {
-   $this->WS->routes['exampleApp'] = array($this,'onHandshake');
+   $this->WS->addRoute('exampleApp',array($this,'onHandshake'));
   }
  }
 }

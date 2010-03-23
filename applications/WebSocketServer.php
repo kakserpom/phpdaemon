@@ -19,6 +19,25 @@ class WebSocketServer extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ public function addRoute($route,$cb)
+ {
+  if (isset($this->routes[$route]))
+  {
+   Daemon::log(__METHOD__.' Route \''.$route.'\' is already taken.');
+   return FALSE;
+  }
+  $this->routes[$route] = $cb;
+  return TRUE;
+ }
+ public function setRoute($route,$cb)
+ {
+  $this->routes[$route] = $cb;
+  return TRUE;
+ }
+ public function removeRoute($route)
+ {
+  unset($this->routes[$route]);
+ }
  public function onReady()
  {
   if (Daemon::$settings['mod'.$this->modname.'enable'])
