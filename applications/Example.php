@@ -25,6 +25,7 @@ class Example extends AppInstance
  public function onShutdown()
  {
   // Finalization.
+  return TRUE;
  }
  public function beginRequest($req,$upstream) {return new ExampleRequest($this,$upstream,$req);}
 }
