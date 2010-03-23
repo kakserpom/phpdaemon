@@ -312,7 +312,7 @@ class Daemon_WorkerThread extends Thread
   $n = 0;
   while ((sizeof($this->queue) > 0) || !$reloadReady)
   {
-   if ($n++ === 10000)
+   if ($n++ === 100)
    {
     $reloadReady = $this->appInstancesReloadReady();
     $n = 0;
