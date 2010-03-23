@@ -47,7 +47,11 @@ class AppResolver
  */
  public function getAppPath($app)
  {
-  return $this->appDir.$app.'.php';
+  foreach ($this->appDir as $dir)
+  {
+   if (is_file($p = $dir.$app.'.php')) {return $p;}
+  }
+  return FALSE;
  }
  /* @method appInstantiate
     @param string Application name

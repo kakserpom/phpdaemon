@@ -12,12 +12,21 @@ class MyAppResolver extends AppResolver
             'WebSocketServer');
  public function __construct()
  {
-  $this->appDir = Daemon::$dir.'/applications/';
-  $files = glob($this->appDir.'*.php');
-  foreach ($files as &$fn)
+  $this->appDir = array(
+   Daemon::$dir.'/applications/',
+   Daemon::$dir.'/app-servers/',
+   Daemon::$dir.'/app-clients/',
+   Daemon::$dir.'/app-web/',
+   Daemon::$dir.'/app-examples/', // you can comment this.
+  );
+  foreach ($this->appDir as $dir)
   {
-   $p = pathinfo($fn,PATHINFO_FILENAME);
-   if (!isset($this->appPreload[$p])) {$this->appPreload[$p] = 1;}
+   $files = glob($dir.'*.php');
+   foreach ($files as &$fn)
+   {
+    $p = pathinfo($fn,PATHINFO_FILENAME);
+    if (!isset($this->appPreload[$p])) {$this->appPreload[$p] = 1;}
+   }
   }
  }
 }
