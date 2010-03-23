@@ -6,12 +6,12 @@ class FlashPolicy extends AsyncServer
  public $policyData;
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'listen' => 'tcp://0.0.0.0',
    'mod'.$this->modname.'listenport' => 843,
    'mod'.$this->modname.'file' => Daemon::$dir.'/conf/crossdomain.xml',
    'mod'.$this->modname.'enable' => 0
-  );
+  ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');

@@ -7,12 +7,12 @@ class LockServer extends AsyncServer
  public $lockConnState = array();
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'listen' => 'tcp://0.0.0.0',
    'mod'.$this->modname.'listenport' => 833,
    'mod'.$this->modname.'allowedclients' => '127.0.0.1',
    'mod'.$this->modname.'enable' => 0,
-  );
+  ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');

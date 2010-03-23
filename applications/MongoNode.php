@@ -9,9 +9,9 @@ class MongoNode extends AppInstance
  public $cursor;
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'enable' => 0,
-  );
+  ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    $this->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');

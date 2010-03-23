@@ -85,8 +85,22 @@ class Daemon
   Daemon::loadSettings(Daemon::$settings);
   Daemon::$useSockets = version_compare(PHP_VERSION,'5.3.1','>=');
  }
+ /* @method addDefaultSettings
+    @param array {"setting": "value"}
+    @description Adds default settings to repositoty.
+    @return boolean - Succes.
+ */
+ public static function addDefaultSettings($settings = array())
+ {
+  foreach ($settings as $k => $v)
+  {
+   $k = strtolower(str_replace('-','',$k));
+   if (!isset(Daemon::$settings[$k])) {Daemon::$settings[$k] = $v;}
+  }
+  return TRUE;
+ }
  /* @method outputFilter
-    @param string
+    @param string - String.
     @description Callback-function, output filter.
     @return string - buffer
  */

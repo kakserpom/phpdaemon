@@ -7,11 +7,11 @@ class RTEP extends AsyncServer
  public $eventGroups = array();
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'listen' => 'tcp://0.0.0.0',
    'mod'.$this->modname.'listenport' => 844,
    'mod'.$this->modname.'enable' => 0,
-  );
+  ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');

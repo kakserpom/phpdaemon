@@ -10,12 +10,12 @@ class MemcacheClient extends AsyncServer
  public $prefix = '';
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'servers' => '127.0.0.1',
    'mod'.$this->modname.'port' => 11211,
    'mod'.$this->modname.'prefix' => '',
    'mod'.$this->modname.'enable' => 0,
-  );
+  ));
   $this->prefix = &Daemon::$settings['mod'.$this->modname.'prefix'];
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {

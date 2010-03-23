@@ -7,20 +7,22 @@ class FastCGI extends AsyncServer
  public $queuedReads = TRUE;
  public function init()
  {
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'listen'])) {Daemon::$settings[$k] = 'tcp://127.0.0.1,unix:/tmp/phpdaemon.fcgi.sock';}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'listenport'])) {Daemon::$settings[$k] = 9000;}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'allowedclients'])) {Daemon::$settings[$k] = '127.0.0.1';}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'logrecords'])) {Daemon::$settings[$k] = 0;}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'logrecordsmiss'])) {Daemon::$settings[$k] = 0;}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'logevents'])) {Daemon::$settings[$k] = 0;}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'logqueue'])) {Daemon::$settings[$k] = 0;}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'sendfile'])) {Daemon::$settings[$k] = 0;}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'sendfiledir'])) {Daemon::$settings[$k] = '/dev/shm/';}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'sendfileprefix'])) {Daemon::$settings[$k] = 'fcgi-';}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'sendfileonlybycommand'])) {Daemon::$settings[$k] = 0;}
-  if (isset(Daemon::$settings[$k = 'mod'.$this->modname.'keepalive'])) {Daemon::$parsedSettings[$k] = Daemon::parseTime(Daemon::$settings[$k]);}
-  else {Daemon::$parsedSettings[$k] = 0;}
-  if (!isset(Daemon::$settings[$k = 'mod'.$this->modname.'enable'])) {Daemon::$settings[$k] = 0;}
+  Daemon::addDefaultSettings(array(
+   'mod'.$this->modname.'listen' =>  'tcp://127.0.0.1,unix:/tmp/phpdaemon.fcgi.sock',
+   'mod'.$this->modname.'listen-port' => 9000,
+   'mod'.$this->modname.'allowed-clients' => '127.0.0.1',
+   'mod'.$this->modname.'log-records' => 0,
+   'mod'.$this->modname.'log-records-miss' => 0,
+   'mod'.$this->modname.'log-events' => 0,
+   'mod'.$this->modname.'log-queue' => 0,
+   'mod'.$this->modname.'send-file' => 0,
+   'mod'.$this->modname.'send-file-dir' => '/dev/shm',
+   'mod'.$this->modname.'send-file-prefix' => 'fcgi-',
+   'mod'.$this->modname.'send-file-onlybycommand' => 0,
+   'mod'.$this->modname.'keepalive' => '0s',
+   'mod'.$this->modname.'enable' => 0,
+  ));
+  Daemon::$parsedSettings['mod'.$this->modname.'keepalive'] = Daemon::parseTime(Daemon::$settings['mod'.$this->modname.'keepalive']);
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');

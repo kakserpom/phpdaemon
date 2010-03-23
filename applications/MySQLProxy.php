@@ -5,13 +5,13 @@ class MySQLProxy extends AsyncServer
  public $sessions = array();
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'upserver' => '127.0.0.1:3306',
    'mod'.$this->modname.'listen' => 'tcp://0.0.0.0',
    'mod'.$this->modname.'listenport' => 3307,
    'mod'.$this->modname.'protologging' => 0,
    'mod'.$this->modname.'enable' => 0,
-  );
+  ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');

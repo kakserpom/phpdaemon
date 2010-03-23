@@ -14,11 +14,11 @@ class Chat extends AppInstance
  public $minMsgInterval;
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'dbname' => 'chat',
    'mod'.$this->modname.'adminpassword' => '',
    'mod'.$this->modname.'enable' => 0
-  );
+  ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');

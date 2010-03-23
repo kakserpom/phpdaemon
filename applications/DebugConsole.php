@@ -5,12 +5,12 @@ class DebugConsole extends AsyncServer
  public $sessions = array();
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'listen' => 'tcp://0.0.0.0',
    'mod'.$this->modname.'listenport' => 8818,
    'mod'.$this->modname.'passphrase' => 'secret',
    'mod'.$this->modname.'enable' => 0,
-  );
+  ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');

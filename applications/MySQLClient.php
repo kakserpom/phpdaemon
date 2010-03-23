@@ -104,12 +104,12 @@ class MySQLClient extends AsyncServer
  public $ready = FALSE;
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'server' => 'mysql://root@127.0.0.1',
    'mod'.$this->modname.'port' => 3306,
    'mod'.$this->modname.'protologging' => 0,
    'mod'.$this->modname.'enable' => 0,
-  );
+  ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');

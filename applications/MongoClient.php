@@ -23,12 +23,12 @@ class MongoClient extends AsyncServer
  public $cache;
  public function init()
  {
-  Daemon::$settings += array(
+  Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'servers' => '127.0.0.1',
    'mod'.$this->modname.'port' => 27017,
    'mod'.$this->modname.'prefix' => '',
    'mod'.$this->modname.'enable' => 0,
-  );
+  ));
   $this->prefix = &Daemon::$settings['mod'.$this->modname.'prefix'];
   $this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
   if (Daemon::$settings['mod'.$this->modname.'enable'])
