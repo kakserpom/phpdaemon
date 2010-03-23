@@ -31,20 +31,6 @@ class Daemon
  public static $shm_wstate;
  public static $shm_wstate_size = 5120;
  public static $useSockets;
- public static $reqtypes = array(
-   1 => 'FCGI_BEGIN_REQUEST',
-   2 => 'FCGI_ABORT_REQUEST',
-   3 => 'FCGI_END_REQUEST',
-   4 => 'FCGI_PARAMS',
-   5 => 'FCGI_STDIN',
-   6 => 'FCGI_STDOUT',
-   7 => 'FCGI_STDERR',
-   8 => 'FCGI_DATA',
-   9 => 'FCGI_GET_VALUES',
-   10 => 'FCGI_GET_VALUES_RESULT',
-   11 => 'FCGI_UNKNOWN_TYPE',
-   11 => 'FCGI_MAXTYPE',
- );
  public static $dir;
  public static $compatMode = FALSE;
  public static $runName = 'phpdaemon';
