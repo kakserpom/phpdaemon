@@ -27,4 +27,5 @@ class ExampleWebSocketSession
   }
  }
  public function onFinish() {}
+ public function gracefulShutdown() {return TRUE;}
 }
