@@ -128,6 +128,10 @@ class Daemon_MasterThread extends Thread
   }
   return TRUE;
  }
+ /* @method onShutdown
+    @description Called when master is going to shutdown.
+    @return void
+ */
  public function onShutdown()
  {
   if ($this->pid != posix_getpid()) {return;}
@@ -135,6 +139,11 @@ class Daemon_MasterThread extends Thread
   Daemon::log('Unexcepted master shutdown.'); 
   $this->shutdown(SIGTERM);
  }
+ /* @method shutdown
+    @param integer System singal's number.
+    @description Called when master is going to shutdown.
+    @return void
+ */
  public function shutdown($signo = FALSE)
  {
   $this->shutdown = TRUE;
@@ -143,53 +152,93 @@ class Daemon_MasterThread extends Thread
   file_put_contents(Daemon_Bootstrap::$pidfile,'');
   exit(0);
  }
+ /* @method sigchld
+    @description Handler of the SIGCHLD signal in master process.
+    @return void
+ */
  public function sigchld()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Master caught SIGCHLD.');}
   $this->waitPid();
  }
+ /* @method sigint
+    @description Handler of the SIGINT signal in master process.
+    @return void
+ */
  public function sigint()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Master caught SIGINT.');}
   $this->collections['workers']->signal(SIGINT);
   $this->shutdown(SIGINT);
  }
+ /* @method sigterm
+    @description Handler of the SIGTERM signal in master process.
+    @return void
+ */
  public function sigterm()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Master caught SIGTERM.');}
   $this->collections['workers']->signal(SIGTERM);
   $this->shutdown(SIGTERM);
  }
+ /* @method sigquit
+    @description Handler of the SIGQUIT signal in master process.
+    @return void
+ */
  public function sigquit()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Master caught SIGQUIT.');}
   $this->collections['workers']->signal(SIGQUIT);
   $this->shutdown(SIGQUIT);
  }
+ /* @method sighup
+    @description Handler of the SIGHUP signal in master process.
+    @return void
+ */
  public function sighup()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Master caught SIGHUP (reload config).');}
   if (isset(Daemon::$settings['configfile'])) {Daemon::loadConfig(Daemon::$settings['configfile']);}
   $this->collections['workers']->signal(SIGHUP);
  }
+ /* @method sigusr1
+    @description Handler of the SIGUSR1 signal in master process.
+    @return void
+ */
  public function sigusr1()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Master caught SIGUSR1 (re-open log-file).');}
   Daemon::openLogs();
   $this->collections['workers']->signal(SIGUSR1);
  }
+ /* @method sigusr2
+    @description Handler of the SIGUSR2 signal in master process.
+    @return void
+ */
  public function sigusr2()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Master caught SIGUSR2 (graceful restart all workers).');}
   $this->collections['workers']->signal(SIGUSR2);
  }
+ /* @method sigttin
+    @description Handler of the SIGTTIN signal in master process.
+    @return void
+ */
  public function sigttin()
  {
  }
+ /* @method sigxfsz
+    @description Handler of the SIGXSFZ ignal in master process.
+    @return void
+ */
  public function sigxfsz()
  {
-  Daemon::log('Master caught SIGXFSZ (graceful restart all workers).');
+  Daemon::log('Master caught SIGXFSZ.');
  }
+ /* @method sigunknown
+    @description Handler of non-known signals.
+    @return void
+ */
  public function sigunknown($signo)
  {
   if (isset(Thread::$signals[$signo])) {$sig = Thread::$signals[$signo];}
