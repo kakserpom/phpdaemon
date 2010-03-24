@@ -11,10 +11,10 @@
 /**************************************************************************/
 class AsyncServer extends AppInstance
 {
- public $buf = array(); // 
+ public $buf = array();
  public $listen;
  public $initialLowMark = 1;
- public $initialHighMark = 0xFFFFFF;
+ public $initialHighMark = 0xFFFF;
  public $poolState = array();
  public $poolQueue = array();
  public $allowedClients = NULL;

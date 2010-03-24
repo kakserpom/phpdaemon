@@ -1,6 +1,7 @@
 
 						phpDaemon
 http://github.com/kakserpom/phpdaemon
+LGPL.
 
 True async. server with API for PHP. It has many features.
 Main features and possibilites:
