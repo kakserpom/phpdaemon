@@ -32,6 +32,13 @@ class Request
  public $upstream;
  public $answerlen = 0;
  public $contentLength;
+ /* @method __constructor
+    @description 
+    @param object Parent AppInstance.
+    @param object Upstream.
+    @param object Source request.
+    @return void
+ */
  public function __construct($appInstance,$upstream,$req)
  {
   $this->appInstance = $appInstance;
@@ -42,31 +49,59 @@ class Request
   $this->init();
   $this->onSleep();
  }
+ /* @method __toString()
+    @description This magic method called when the object casts to string.
+    @return string Description.
+ */
  public function __toString()
  {
   return 'Request of type '.get_class($this);
  }
+ /* @method chunked
+    @description Use chunked encoding.
+    @return void
+ */
  public function chunked()
  {
   $this->header('Transfer-Encoding: chunked');
   $this->attrs->chunked = TRUE;
  }
- public function init()
- {
- }
+ /* @method init
+    @description Called when request constructs.
+    @return void
+ */
+ public function init() {}
+ /* @method getString
+    @param Reference of variable.
+    @description Gets string value from the given variable.
+    @return string Value.
+ */
  public function getString(&$var)
  {
   if (!is_string($var)) {return '';}
   return $var;
  }
+ /* @method registerShutdownFunction
+    @description Adds new callback called before the request finished.
+    @return void
+ */
  public function registerShutdownFunction($callback)
  {
   $this->shutdownFuncs[] = $callback;
  }
+ /* @method unregisterShutdownFunction
+    @description Remove the given callback.
+    @return void
+ */
  public function unregisterShutdownFunction($callback)
  {
   if (($k = array_search($callback,$this->shutdownFuncs)) !== FALSE) {$this->shutdownFuncs[] = $callback;}
  }
+ /* @method codepoint
+    @param string Name.
+    @description Helper for easy switching between several interruptable stages of request's execution.
+    @return boolean Execute.
+ */
  public function codepoint($p)
  {
   if ($this->codepoint !== $p)
@@ -76,20 +111,39 @@ class Request
   }
   return FALSE;
  }
+ /* @method sleep
+    @throws RequestSleepException
+    @param float Time to sleep in seconds.
+    @param boolean Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now.
+    @description Delays the request execution for the given number of seconds.
+    @return void
+ */
  public function sleep($time = 0,$set = FALSE)
  {
   $this->sleepuntil = microtime(TRUE)+$time;
   if (!$set) {throw new RequestSleepException;}
  }
+ /* @method terminate
+    @description Helper for easy switching between several interruptable stages of request's execution.
+    @return void
+ */
  public function terminate($s = NULL)
  {
   if (is_string($s)) {$this->out($s);}
   throw new RequestTerminatedException;
  }
+ /* @method wakeup
+    @description Cancel current sleep.
+    @return void
+ */
  public function wakeup()
  {
   $this->state = 1;
  }
+ /* @method call
+    @description Called by queue dispatcher to touch the request.
+    @return int Status.
+ */
  public function call()
  {
   if ($this->state === 0) {return 1;}
@@ -127,12 +181,20 @@ class Request
   }
   return 0;
  }
- public function onAbort()
- {
- }
- public function onFinish()
- {
- }
+ /* @method onAbort
+    @description Called when the request aborts. 
+    @return void
+ */
+ public function onAbort() {}
+ /* @method onFinish
+    @description Called when the request finishes.
+    @return void
+ */
+ public function onFinish() {}
+ /* @method onWakeUp
+    @description Called when the request wakes up.
+    @return void
+ */
  public function onWakeup()
  {
   if (!Daemon::$compatMode) {Daemon::$worker->setStatus(2);}
@@ -147,6 +209,10 @@ class Request
   $_FILES = &$this->attrs->files;
   $_SERVER = &$this->attrs->server;
  }
+ /* @method onSleep
+    @description Called when the request starts sleep.
+    @return void
+ */
  public function onSleep()
  {
   ob_flush();
@@ -154,11 +220,16 @@ class Request
   Daemon::$req = NULL;
   $this->running = FALSE;
  }
+ /* @method header
+    @param string Header. Example: 'Location: http://php.net/'
+    @description Sets the header.
+    @return void
+ */
  public function header($s)
  {
   if ($this->headers_sent)
   {
-   throw new Exception('headers already sent',1);
+   throw new RequestHeadersAlreadySent();
    return FALSE;
   }
   $e = explode(':',$s,2);
@@ -173,6 +244,10 @@ class Request
   if (Daemon::$compatMode) {header($s);}
   return TRUE;
  }
+ /* @method parseParams
+    @description Parses GET-query string and other request's headers.  
+    @return void
+ */
  public function parseParams()
  {
   if (isset($this->attrs->server['CONTENT_TYPE']) && !isset($this->attrs->server['HTTP_CONTENT_TYPE']))
@@ -198,7 +273,16 @@ class Request
   }
   $this->onParsedParams();
  }
+ /* @method onParsedParams
+    @description Called when request's headers parsed.
+    @return void
+ */
  public function onParsedParams() {}
+ /* @method combinedOut
+    @param string String to out.
+    @description Outputs data with headers (split by \r\n\r\n)
+    @return boolean Success.
+ */
  public function combinedOut($s)
  {
   if (!$this->headers_sent)
@@ -211,11 +295,16 @@ class Request
   }
   else {return $this->out($s);}
  }
+ /* @method out
+    @param string String to out.
+    @description Outputs data.
+    @return boolean Success.
+ */
  public function out($s,$flush = TRUE)
  {
   //Daemon::log('Output (len. '.strlen($s).', '.($this->headers_sent?'headers sent':'headers not sent').'): \''.$s.'\'');
   if ($flush) {ob_flush();}
-  if ($this->aborted) {return;}
+  if ($this->aborted) {return FALSE;}
   $l = strlen($s);
   $this->answerlen += $l;
   if (!$this->headers_sent)
@@ -501,9 +590,6 @@ class Request
   parse_str($s,$array);
  }
 }
-class RequestSleepException extends Exception
-{
-}
-class RequestTerminatedException extends Exception
-{
-}
+class RequestSleepException extends Exception {}
+class RequestTerminatedException extends Exception {}
+class RequestHeadersAlreadySent extends Exception {}

@@ -166,12 +166,12 @@ class Daemon_WorkerThread extends Thread
   }
  }
  /* @method update
-    @description Reloads config-files on-the-fly (SIGHUP).
+    @description Reloads additional config-files on-the-fly.
     @return void
  */
  public function update()
  {
-  /* TODO: reload config. */
+  /* TODO: reload configs of applications. */
  }
  /* @method addEvent
     @description Adds event to the queue. Event will be added before next baseloop().
