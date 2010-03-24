@@ -12,7 +12,7 @@
 class Daemon_MasterThread extends Thread
 {
  /* @method run
-    @description runtime of Master process
+    @description Runtime of Master process.
     @return void
  */
  public function run()
@@ -153,7 +153,7 @@ class Daemon_MasterThread extends Thread
   exit(0);
  }
  /* @method sigchld
-    @description Handler of the SIGCHLD signal in master process.
+    @description Handler of the SIGCHLD (child is dead) signal in master process.
     @return void
  */
  public function sigchld()
@@ -162,7 +162,7 @@ class Daemon_MasterThread extends Thread
   $this->waitPid();
  }
  /* @method sigint
-    @description Handler of the SIGINT signal in master process.
+    @description Handler of the SIGINT (shutdown) signal in master process. Shutdown.
     @return void
  */
  public function sigint()
@@ -172,7 +172,7 @@ class Daemon_MasterThread extends Thread
   $this->shutdown(SIGINT);
  }
  /* @method sigterm
-    @description Handler of the SIGTERM signal in master process.
+    @description Handler of the SIGTERM (shutdown) signal in master process.
     @return void
  */
  public function sigterm()
@@ -192,7 +192,7 @@ class Daemon_MasterThread extends Thread
   $this->shutdown(SIGQUIT);
  }
  /* @method sighup
-    @description Handler of the SIGHUP signal in master process.
+    @description Handler of the SIGHUP (reload config) signal in master process.
     @return void
  */
  public function sighup()
@@ -202,7 +202,7 @@ class Daemon_MasterThread extends Thread
   $this->collections['workers']->signal(SIGHUP);
  }
  /* @method sigusr1
-    @description Handler of the SIGUSR1 signal in master process.
+    @description Handler of the SIGUSR1 (re-open log-file) signal in master process.
     @return void
  */
  public function sigusr1()
@@ -212,7 +212,7 @@ class Daemon_MasterThread extends Thread
   $this->collections['workers']->signal(SIGUSR1);
  }
  /* @method sigusr2
-    @description Handler of the SIGUSR2 signal in master process.
+    @description Handler of the SIGUSR2 (graceful restart all workers) signal in master process.
     @return void
  */
  public function sigusr2()
@@ -228,7 +228,7 @@ class Daemon_MasterThread extends Thread
  {
  }
  /* @method sigxfsz
-    @description Handler of the SIGXSFZ ignal in master process.
+    @description Handler of the SIGXSFZ signal in master process.
     @return void
  */
  public function sigxfsz()

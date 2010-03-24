@@ -32,6 +32,10 @@ class Daemon_WorkerThread extends Thread
  public $timeoutEvent;
  public $useSockets;
  public $status = 0;
+ /* @method run
+    @description Runtime of Master process.
+    @return void
+ */
  public function run()
  {
   proc_nice(Daemon::$settings['workerpriority']);
@@ -142,9 +146,10 @@ class Daemon_WorkerThread extends Thread
    while ($processed || $this->readPoolState || $this->eventsToAdd);
   }
  }
- public static function init()
- {
- }
+ /* @method closeSockets
+    @description Close each of binded sockets.
+    @return void
+ */
  public function closeSockets()
  {
   foreach (Daemon::$socketEvents as $k => $ev)
@@ -160,14 +165,27 @@ class Daemon_WorkerThread extends Thread
    unset(Daemon::$sockets[$k]);
   }
  }
+ /* @method update
+    @description Reloads config-files on-the-fly (SIGHUP).
+    @return void
+ */
  public function update()
  {
+  /* TODO: reload config. */
  }
+ /* @method addEvent
+    @description Adds event to the queue. Event will be added before next baseloop().
+    @return boolean - Success.
+ */
  public function addEvent($e)
  {
   $this->eventsToAdd[sizeof($this->eventsToAdd)] = $e;
   return TRUE;
  }
+ /* @method reloadCheck
+    @description Looks up at changes of the last modification date of all included files.
+    @return boolean - The whether we should go to reload.
+ */
  public function reloadCheck()
  {
   static $hash = array();
@@ -184,6 +202,10 @@ class Daemon_WorkerThread extends Thread
   }
   return FALSE;
  }
+ /* @method reloadCheck
+    @description Looks up at changes of the last modification date of all included files.
+    @return boolean - The whether we should go to reload.
+ */
  public function checkState()
  {
   pcntl_signal_dispatch();
@@ -235,6 +257,10 @@ class Daemon_WorkerThread extends Thread
   }
   return TRUE;
  }
+ /* @method runQueue
+    @description Handles the queue of pending requests.
+    @return void
+ */
  public function runQueue()
  {
   $processed = 0;
@@ -268,6 +294,10 @@ class Daemon_WorkerThread extends Thread
   }
   return $processed;
  }
+ /* @method readPool
+    @description Invokes the AppInstance->readPool() method for every updated connection in pool. readConn() reads new data from the buffer.
+    @return void
+ */
  public function readPool()
  {
   foreach ($this->readPoolState as $connId => $state)
@@ -277,6 +307,10 @@ class Daemon_WorkerThread extends Thread
    if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.$this->pid.'] event readConn('.$connId.') finished.');}
   }
  }
+ /* @method appInstancesReloadReady
+    @description Asks the running applications the whether we can go to shutdown current (old) worker.
+    @return boolean - Ready?
+ */
  public function appInstancesReloadReady()
  {
   $ready = TRUE;
@@ -289,6 +323,11 @@ class Daemon_WorkerThread extends Thread
   }
   return $ready;
  }
+ /* @method shutdown
+    @param boolean - Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
+    @description 
+    @return boolean - Ready?
+ */
  public function shutdown($hard = FALSE)
  {
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.$this->pid.'] event shutdown('.($hard?'HARD':'').') invoked.');}
@@ -326,6 +365,11 @@ class Daemon_WorkerThread extends Thread
   posix_kill(posix_getppid(),SIGCHLD);
   exit(0);
  }
+ /* @method setStatus
+    @param int - Integer status.
+    @description Changes the worker's status.
+    @return boolean - Success.
+ */
  public function setStatus($int)
  {
   if (!$this->spawnid) {return FALSE;}
@@ -334,32 +378,56 @@ class Daemon_WorkerThread extends Thread
   if (Daemon::$settings['logworkersetstatus']) {Daemon::log('[WORKER '.$this->pid.'] status is '.$int);}
   return shmop_write(Daemon::$shm_wstate,chr($int),$this->spawnid-1);
  }
+ /* @method sigint
+    @description Handler of the SIGINT (hard shutdown) signal in worker process.
+    @return void
+ */
  public function sigint()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Worker '.getmypid().' caught SIGINT.');}
   $this->shutdown(TRUE);
  }
+ /* @method sigterm
+    @description Handler of the SIGTERM (graceful shutdown) signal in worker process.
+    @return void
+ */
  public function sigterm()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Worker '.getmypid().' caught SIGTERM.');}
   $this->shutdown();
  }
+ /* @method sigquit
+    @description Handler of the SIGQUIT (graceful shutdown) signal in worker process.
+    @return void
+ */
  public function sigquit()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Worker '.getmypid().' caught SIGQUIT.');}
   $this->shutdown = TRUE;
  }
+ /* @method sighup
+    @description Handler of the SIGHUP (reload config) signal in worker process.
+    @return void
+ */
  public function sighup()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Worker '.getmypid().' caught SIGHUP (reload config).');}
   if (isset(Daemon::$settings['configfile'])) {Daemon::loadConfig(Daemon::$settings['configfile']);}
   $this->update = TRUE;
  }
+ /* @method sigusr1
+    @description Handler of the SIGUSR1 (re-open log-file) signal in worker process.
+    @return void
+ */
  public function sigusr1()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Worker '.getmypid().' caught SIGUSR1 (re-open log-file).');}
   Daemon::openLogs();
  }
+ /* @method sigusr2
+    @description Handler of the SIGUSR2 (graceful shutdown for update) signal in worker process.
+    @return void
+ */
  public function sigusr2()
  {
   if (Daemon::$settings['logsignals']) {Daemon::log('Worker '.getmypid().' caught SIGUSR2 (graceful shutdown for update).');}
@@ -367,7 +435,29 @@ class Daemon_WorkerThread extends Thread
   $this->reloadTime = microtime(TRUE)+$this->reloadDelay;
   $this->setStatus($this->currentStatus);
  }
+ /* @method sigttin
+    @description Handler of the SIGTTIN signal in worker process.
+    @return void
+ */
  public function sigttin()
  {
+ }
+ /* @method sigxfsz
+    @description Handler of the SIGXSFZ ignal in worker process.
+    @return void
+ */
+ public function sigxfsz()
+ {
+  Daemon::log('Worker '.getmypid().' SIGXFSZ.');
+ }
+ /* @method sigunknown
+    @description Handler of non-known signals.
+    @return void
+ */
+ public function sigunknown($signo)
+ {
+  if (isset(Thread::$signals[$signo])) {$sig = Thread::$signals[$signo];}
+  else {$sig = 'UNKNOWN';}
+  Daemon::log('Worker '.getmypid().' caught signal #'.$signo.' ('.$sig.').');
  }
 }
