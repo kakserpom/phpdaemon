@@ -351,11 +351,24 @@ class Request
    return $this->upstream->requestOut($this,$s);
   }
  }
+ /* @method combinedOut
+    @param string String to out.
+    @description Outputs data with headers (split by \r\n\r\n)
+    @return boolean Success.
+ */
  public function headers_sent() {return $this->headers_sent;}
+ /* @method headers_list
+    @description Returns current list of headers.
+    @return array Headers.
+ */
  public function headers_list()
  {
   return array_values($this->headers);
  }
+ /* @method parseStdin
+    @description Parses request's body.
+    @return void
+ */
  public function parseStdin()
  {
   do
@@ -487,6 +500,10 @@ class Request
   }
   while ($continue);
  }
+ /* @method abort
+    @description Aborts the request.
+    @return void
+ */
  public function abort()
  {
   if ($this->aborted) {return;}
@@ -503,6 +520,10 @@ class Request
   }
   $this->onSleep();
  }
+ /* @method postPrepare
+    @description Prepares the request's body.
+    @return void
+ */
  public function postPrepare()
  {
   if (isset($this->attrs->server['REQUEST_METHOD']) && ($this->attrs->server['REQUEST_METHOD'] == 'POST'))
@@ -514,6 +535,11 @@ class Request
    }
   }
  }
+ /* @method stdin
+    @param string Piece of request's body.
+    @description Called when new piece of request's body is recieved.
+    @return void
+ */
  public function stdin($c)
  {
   if ($c !== '')
@@ -528,6 +554,11 @@ class Request
   }
   $this->parseStdin();
  }
+ /* @method stdin
+    @param string Piece of request's body.
+    @description Called when new piece of request's body is recieved.
+    @return void
+ */
  public function finish($status = 0)
  { // 0 - normal, -1 - abort, -2 - termination
   if ($this->state === 0) {return;}
@@ -561,6 +592,10 @@ class Request
    if (isset($this->attrs->session)) {session_commit();}
   }
  }
+ /* @method readBodyFile
+    @description Reads request's body from file.
+    @return void
+ */
  public function readBodyFile()
  {
   if (!isset($this->attrs->server['REQUEST_BODY_FILE'])) {return FALSE;}
@@ -577,10 +612,12 @@ class Request
   fclose($fp);
   $this->attrs->stdin_done = TRUE;
  }
- public function parse_str_callback($m)
- {
-  return urlencode(html_entity_decode('&#'.hexdec($m[1]).';',ENT_NOQUOTES,'utf-8'));
- }
+ /* @method parse_str
+    @param string String to parse.
+    @param array Reference to the resulting array.
+    @description Replacement for default parse_str(), it supoorts UCS-2 like this: %uXXXX.
+    @return void
+ */
  public function parse_str($s,&$array)
  {
   if ((stripos($s,'%u') !== FALSE) && preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is',$s,$m))
@@ -588,6 +625,15 @@ class Request
    $s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i',array($this,'parse_str_callback'),$s);
   }
   parse_str($s,$array);
+ }
+ /* @method parse_str_callback
+    @param array Match.
+    @description Called in preg_replace_callback in parse_str.
+    @return string Replacement.
+ */
+ public function parse_str_callback($m)
+ {
+  return urlencode(html_entity_decode('&#'.hexdec($m[1]).';',ENT_NOQUOTES,'utf-8'));
  }
 }
 class RequestSleepException extends Exception {}
