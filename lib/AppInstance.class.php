@@ -19,7 +19,7 @@ class AppInstance
  public $modname;
  
  /* @method __contruct
-    @description Default application constructor. 
+    @description Application constructor.
     @return void
  */
  public function __construct()
@@ -53,7 +53,7 @@ class AppInstance
  
  /* @method onShutdown
     @description Called when application instance is going to shutdown.
-    @return void
+    @return boolean Ready to shutdown?
  */
  public function onShutdown() {return TRUE;}
  

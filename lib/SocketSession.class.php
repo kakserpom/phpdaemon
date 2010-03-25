@@ -18,15 +18,27 @@ class SocketSession
  public $auth = FALSE;
  public $finished = FALSE;
  public $addr;
+ /* @method __construct
+    @description SocketSession constructor.
+    @param integer Connection's ID.
+    @param object AppInstance.
+    @return void
+ */
  public function __construct($connId,$appInstance)
  {
   $this->connId = $connId;
   $this->appInstance = $appInstance;
   $this->init();
  }
- public function init()
- {
- }
+ /* @method init
+    @description Called when the session constructed.
+    @return void
+ */
+ public function init() {}
+ /* @method gets
+    @description Reads a first line ended with \n from buffer, removes it from buffer and returns the line.
+    @return string Line. Returns false when failed to get a line.
+ */
  public function gets()
  {
   $p = strpos($this->buf,"\n");
@@ -35,19 +47,37 @@ class SocketSession
   $this->buf = binarySubstr($this->buf,$p+1);
   return $r;
  }
+ /* @method gracefulShutdown
+    @description Called when the worker is going to shutdown. 
+    @return boolean Ready to shutdown?
+ */
  public function gracefulShutdown()
  {
   $this->finish();
   return TRUE;
  }
+ /* @method write
+    @param string Data to send.
+    @description Sends data to connection. Note that it just writes to buffer that flushes at every baseloop.
+    @return boolean Success.
+ */
  public function write($s)
  {
   return $this->appInstance->write($this->connId,$s);
  }
+ /* @method writeln
+    @param string Data to send.
+    @description Sends data and appending \n to connection. Note that it just writes to buffer that flushes at every baseloop.
+    @return boolean Success.
+ */
  public function writeln($s)
  {
   return $this->appInstance->write($this->connId,$s."\n");
  }
+ /* @method finish
+    @description Finishes the session. You shouldn't care about pending buffers, it will be flushed properly.
+    @return void
+ */
  public function finish()
  {
   if ($this->finished) {return;}
@@ -55,11 +85,20 @@ class SocketSession
   $this->onFinish();
   $this->appInstance->finishConnection($this->connId);
  }
+ /* @method onFinish
+    @description Called when the session finished.
+    @return void
+ */
  public function onFinish()
  {
   $this->finished = TRUE;
   unset($this->appInstance->sessions[$this->connId]);
  }
+ /* @method stdin
+    @param string New recieved data.
+    @description Called when new data recieved.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;

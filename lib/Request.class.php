@@ -32,7 +32,7 @@ class Request
  public $upstream;
  public $answerlen = 0;
  public $contentLength;
- /* @method __constructor
+ /* @method __construct
     @description 
     @param object Parent AppInstance.
     @param object Upstream.
