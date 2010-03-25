@@ -21,12 +21,12 @@ class AsyncServer extends AppInstance
  public $queuedReads = FALSE;
  public $readPacketSize = 4096;
  public $socketEvents = array();
- /* @method getRequest
-    @param object Request.
-    @param object AppInstance of Upstream.
-    @param string Default application name.
+ /* @method addSocket
     @description Routes incoming request to related application.
-    @return object Request.
+    @param resource Socket,
+    @param int Type (1 - TCP, 2 - Unix-socket).
+    @param string Address.
+    @return void.
  */
  public function addSocket($sock,$type,$addr)
  {
@@ -40,6 +40,10 @@ class AsyncServer extends AppInstance
   Daemon::$sockets[$k] = array($sock,$type,$addr);
   $this->socketEvents[$k] = $ev;
  }
+ /* @method enableSocketEvents
+    @description Enables all events of sockets.
+    @return void.
+ */
  public function enableSocketEvents()
  {
   foreach ($this->socketEvents as $ev)
@@ -48,6 +52,10 @@ class AsyncServer extends AppInstance
    event_add($ev);
   }
  }
+ /* @method disableSocketEvents
+    @description Disables all events of sockets.
+    @return void.
+ */
  public function disableSocketEvents()
  {  
   foreach ($this->socketEvents as $k => $ev)
@@ -57,6 +65,10 @@ class AsyncServer extends AppInstance
    unset($this->socketEvents[$k]);
   }
  }
+ /* @method onShutdown
+    @description Called when application instance is going to shutdown.
+    @return boolean Ready to shutdown?
+ */
  public function onShutdown()
  {
   //$this->disableSocketEvents(); // very important, it causes infinite loop in baseloop.
@@ -68,10 +80,19 @@ class AsyncServer extends AppInstance
   }
   return TRUE;
  }
+ /* @method onReady
+    @description Called when the worker is ready to go.
+    @return void
+ */
  public function onReady()
  {
   $this->enableSocketEvents();
  }
+ /* @method bindSockets
+    @param mixed Addresses to bind.
+    @description Binds given sockets.
+    @return void
+ */
  public function bindSockets($addrs = array(),$listenport,$reuse = TRUE)
  {
   if (is_string($addrs)) {$addrs = explode(',',$addrs);}
@@ -221,22 +242,42 @@ class AsyncServer extends AppInstance
    else {$this->addSocket($sock,$type,$addr);}
   }
  }
+ /* @method setReadPacketSize
+    @param integer Size.
+    @description Sets size of data to read at each reading.
+    @return object This.
+ */
  public function setReadPacketSize($n)
  {
   $this->readPacketSize = $n;
   return $this;
  }
+ /* @method onAccept
+    @param integer Connection's ID.
+    @param string Address.
+    @description Called when remote host is trying to establish the connection.
+    @return boolean Accept/Drop the connection.
+ */
  public function onAccept($connId,$addr)
  {
   if ($this->allowedClients === NULL) {return TRUE;}
   if (($p = strrpos($addr,':')) === FALSE) {return TRUE;}
   return $this->netMatch($this->allowedClients,substr($addr,0,$p));
  }
+ /* @method checkAccept
+    @description Called when remote host is trying to establish the connection.
+    @return boolean If true then we can accept new connections, else we can't.
+ */
  public function checkAccept()
  {
   if (Daemon::$worker->reload) {return FALSE;}
   return Daemon::$parsedSettings['maxconcurrentrequestsperworker'] >= sizeof($this->queue);
  }
+ /* @method closeConnection
+    @param integer Connection's ID.
+    @description Closes the connection.
+    @return void
+ */
  public function closeConnection($connId)
  {
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] closeConnection('.$connId.').');};
