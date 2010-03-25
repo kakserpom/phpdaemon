@@ -21,6 +21,13 @@ class AsyncServer extends AppInstance
  public $queuedReads = FALSE;
  public $readPacketSize = 4096;
  public $socketEvents = array();
+ /* @method getRequest
+    @param object Request.
+    @param object AppInstance of Upstream.
+    @param string Default application name.
+    @description Routes incoming request to related application.
+    @return object Request.
+ */
  public function addSocket($sock,$type,$addr)
  {
   $ev = event_new();

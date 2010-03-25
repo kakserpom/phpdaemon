@@ -18,7 +18,6 @@ Also, you can build binary application server using compiler like PHC (http://ph
 Benchmark (example script):
 	Requests per second:    4784.80 [#/sec] (mean)
 
-
 Installation guide: http://wiki.github.com/kakserpom/phpdaemon/install
 
 Master process understands signals:
@@ -27,3 +26,6 @@ Master process understands signals:
 	SIGHUP - update config from file.
 	SIGUSR1 - reopen log-file.
 	SIGUSR2 - graceful restart all workers.
+
+If you have a need of develope non-trivial modules, we can discuss that.
+Maintainer: kak.serpom.po.yaitsam@gmail.com
