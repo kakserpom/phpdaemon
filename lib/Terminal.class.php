@@ -2,19 +2,41 @@
 class Terminal
 {
  public $enable_color = FALSE;
+ /* @method readln
+    @description Reads a line from STDIN.
+    @return string Line.
+ */
  public function readln()
  {
   return fgets(STDIN);
  }
+ /* @method clearScreen
+    @description Sends CLR.
+    @return void
+ */
  public function clearScreen() {echo "\x0c";}
+ /* @method setStyle
+    @param string Style.
+    @description Sets text-style.
+    @return void
+ */
  public function setStyle($c)
  {
   if ($this->enable_color) {echo "\033[".$c.'m';}
  }
+ /* @method resetStyle
+    @description Sets default style.
+    @return void
+ */
  public function resetStyle()
  {
   if ($this->enable_color) {echo "\033[0m";}
  }
+ /* @method drawTable
+    @param array Array of table's rows.
+    @description Draw textual table.
+    @return void
+ */
  public function drawTable($rows)
  {
   $pad = array();

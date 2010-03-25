@@ -40,6 +40,10 @@ abstract class Thread
   SIGUSR1 => 'SIGUSR1',
   SIGUSR2 => 'SIGUSR2',
  );
+ /* @method start
+    @description Starts the process.
+    @return void
+ */
  public function start()
  {
   $pid = pcntl_fork();
@@ -61,20 +65,39 @@ abstract class Thread
   $this->pid = $pid;
   return $pid;
  }
+ /* @method sighandler
+    @param integer Signal's number.
+    @description Called when a signal caught.
+    @return void
+ */
  public function sighandler($signo)
  {
   if (is_callable($c = array($this,strtolower(Thread::$signals[$signo])))) {call_user_func($c);}
   elseif (is_callable($c = array($this,'sigunknown'))) {call_user_func($c,$signo);}
  }
+ /* @method shutdown
+    @description Shutdowns the current process properly.
+    @return void
+ */
  public function shutdown()
  {
   posix_kill(posix_getppid(),SIGCHLD);
   exit(0);
  }
+ /* @method backsig
+    @param integer Signal's number.
+    @description Semds the signal to parent process.
+    @return void
+ */
  public function backsig($sig)
  {
   return posix_kill(posix_getppid(),$sig);
  }
+ /* @method sleep
+    @param integer Halt time in seconds.
+    @description Delays the process execution for the given number of seconds.
+    @return void
+ */
  public function sleep($s)
  {
   static $interval = 0.2;
@@ -86,15 +109,45 @@ abstract class Thread
   }
   return TRUE;
  }
+ /* @method sigchld
+    @description Called when the signal SIGCHLD caught.
+    @return void
+ */
+  public function sigchld() {$this->waitPid();}
+ /* @method sigterm
+    @description Called when the signal SIGTERM caught.
+    @return void
+ */
  public function sigterm() {exit(0);}
+ /* @method sigint
+    @description Called when the signal SIGINT caught.
+    @return void
+ */
  public function sigint() {exit(0);}
+ /* @method sigquit
+    @description Called when the signal SIGTERM caught.
+    @return void
+ */
  public function sigquit() {$this->shutdown = TRUE;}
+ /* @method sigkill
+    @description Called when the signal SIGKILL caught.
+    @return void
+ */
+ public function sigkill() {exit(0);}
+ /* @method stop
+    @param boolean Kill?
+    @description Terminates the process.
+    @return void
+ */
  public function stop($kill = FALSE)
  {
   $this->shutdown = TRUE;
   return posix_kill($this->pid,$kill?SIGKILL:SIGTERM);
  }
- public function sigkill() {exit(0);}
+ /* @method waitPid
+    @description Checks for SIGCHLD.
+    @return boolean Success.
+ */
  public function waitPid()
  {
   $pid = pcntl_waitpid(-1,$status,WNOHANG);
@@ -114,8 +167,16 @@ abstract class Thread
   }
   return FALSE;
  }
- public function sigchld() {$this->waitPid();}
+ /* @method signal
+    @param integer Signal's number.
+    @description Sends arbitrary signal to the process.
+    @return boolean Success.
+ */
  public function signal($sig) {return posix_kill($this->pid,$sig);}
+ /* @method waitAll
+    @description Waits untill a children is alive.
+    @return void
+ */
  public function waitAll()
  {
   do
@@ -126,11 +187,22 @@ abstract class Thread
   }
   while ($n > 0);
  }
+ /* @method setproctitle
+    @param string Title.
+    @description Sets a title of the current process.
+    @return void
+ */
  public static function setproctitle($title)
  {
   if (function_exists('setproctitle')) {return setproctitle($title);}
   return FALSE;
  }
+ /* @method sigwait
+    @param int Seconds.
+    @param int Nanoseconds.
+    @description Waits for signals, with a timeout.
+    @return void
+ */
  public function sigwait($sec = 0,$nano = 1)
  {
   $siginfo = NULL;
