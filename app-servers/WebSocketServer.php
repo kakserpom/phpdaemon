@@ -6,6 +6,10 @@ class WebSocketServer extends AsyncServer
  public $routes = array();
  const BINARY = 0x80;
  const STRING = 0x00;
+ /* @method init
+    @description Event of appInstance. Adds default settings and binds sockets.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -19,6 +23,12 @@ class WebSocketServer extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ /* @method addRoute
+    @description Adds a route if it doesn't exist already.
+    @param string Route name.
+    @param mixed Route's callback.
+    @return boolean Success.
+ */
  public function addRoute($route,$cb)
  {
   if (isset($this->routes[$route]))
@@ -29,15 +39,32 @@ class WebSocketServer extends AsyncServer
   $this->routes[$route] = $cb;
   return TRUE;
  }
+ /* @method setRoute
+    @description Force add/replace a route.
+    @param string Route name.
+    @param mixed Route's callback.
+    @return boolean Success.
+ */
  public function setRoute($route,$cb)
  {
   $this->routes[$route] = $cb;
   return TRUE;
  }
+ /* @method removeRoute
+    @description Removes a route.
+    @param string Route name.
+    @return boolean Success.
+ */
  public function removeRoute($route)
  {
+  if (!isset($this->routes[$route])) {return FALSE;}
   unset($this->routes[$route]);
+  return TRUE;
  }
+ /* @method onReady
+    @description Event of appInstance.
+    @return void
+ */
  public function onReady()
  {
   if (Daemon::$settings['mod'.$this->modname.'enable'])
@@ -45,26 +72,17 @@ class WebSocketServer extends AsyncServer
    $this->enableSocketEvents();
   }
  }
+ /* @method onAccepted
+    @description Event of asyncServer.
+    @param integer Connection's ID.
+    @param string Peer's address.
+    @return void
+ */
  public function onAccepted($connId,$addr)
  {
   $this->sessions[$connId] = new WebSocketSession($connId,$this);
   $this->sessions[$connId]->clientAddr = $addr;
  }
- public function onEvent($packet)
- {
-  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.': '.Daemon::var_dump($packet));}
-  $evName = isset($packet['event']['name'])?(string) $packet['event']['name']:'';
-  $packet['event']['_ts'] = microtime(TRUE);
-  $packet['event']['currentTime'] = microtime(TRUE); // hack
-  if (isset($this->events[$evName]))
-  {
-   foreach ($this->events[$evName] as $connId => &$v)
-   {
-    if (isset($this->sessions[$connId])) {$this->sessions[$connId]->send($packet);}
-   }
-  }
- }
- public function beginRequest($packet) {return FALSE;}
 }
 class WebSocketSession extends SocketSession
 {
@@ -72,8 +90,15 @@ class WebSocketSession extends SocketSession
  public $upstream = FALSE;
  public $server = array();
  public $firstline = FALSE;
+ /* @method sendFrame
+    @description Sends a frame.
+    @param string Frame's data.
+    @param integer Frame's type. See the constants.
+    @return boolean Success.
+ */
  public function sendFrame($data,$type = 0x00)
  {
+  if (!$this->handshaked) {return FALSE;}
   if (($type & 0x80) === 0x80)
   {
    $n = strlen($data);
@@ -92,7 +117,12 @@ class WebSocketSession extends SocketSession
    $this->write("\x80".$len.$data);
   }
   else {$this->write("\x00".$data."\xFF");}
+  return TRUE;
  }
+ /* @method onFinish
+    @description Event of SocketSession (asyncServer).
+    @return void
+ */
  public function onFinish()
  {
   if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked');}
@@ -100,12 +130,22 @@ class WebSocketSession extends SocketSession
   unset($this->upstream);
   unset($this->appInstance->sessions[$this->connId]);
  }
+ /* @method onFrame
+    @description Called when new frame recieved.
+    @param string Frame's data.
+    @param integer Frame's type.
+    @return boolean Success.
+ */
  public function onFrame($data,$type)
  {
   if (!$this->upstream) {return FALSE;}
   $this->upstream->onFrame($data,$type);
   return TRUE;
  }
+ /* @method onHandshake
+    @description Called when the connection is handshaked.
+    @return void
+ */
  public function onHandshake()
  {
   $e = explode('/',$this->server['DOCUMENT_URI']);
@@ -118,6 +158,10 @@ class WebSocketSession extends SocketSession
   if (!$this->upstream = call_user_func($this->appInstance->routes[$appName],$this)) {return FALSE;}
   return TRUE;
  }
+ /* @method gracefulShutdown
+    @description Event of SocketSession (AsyncServer). Called when the worker is going to shutdown.
+    @return boolean Ready to shutdown?
+ */
  public function gracefulShutdown()
  {
   if ((!$this->upstream) || $this->upstream->gracefulShutdown())
@@ -127,6 +171,11 @@ class WebSocketSession extends SocketSession
   }
   return FALSE;
  }
+ /* @method stdin
+    @description Event of SocketSession (AsyncServer). Called when new data recieved.
+    @param string New recieved data.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;

@@ -66,8 +66,8 @@ abstract class Thread
   return $pid;
  }
  /* @method sighandler
-    @param integer Signal's number.
     @description Called when a signal caught.
+    @param integer Signal's number.
     @return void
  */
  public function sighandler($signo)
@@ -85,8 +85,8 @@ abstract class Thread
   exit(0);
  }
  /* @method backsig
-    @param integer Signal's number.
     @description Semds the signal to parent process.
+    @param integer Signal's number.
     @return void
  */
  public function backsig($sig)
@@ -94,8 +94,8 @@ abstract class Thread
   return posix_kill(posix_getppid(),$sig);
  }
  /* @method sleep
-    @param integer Halt time in seconds.
     @description Delays the process execution for the given number of seconds.
+    @param integer Halt time in seconds.
     @return void
  */
  public function sleep($s)
@@ -135,8 +135,8 @@ abstract class Thread
  */
  public function sigkill() {exit(0);}
  /* @method stop
-    @param boolean Kill?
     @description Terminates the process.
+    @param boolean Kill?
     @return void
  */
  public function stop($kill = FALSE)
@@ -168,8 +168,8 @@ abstract class Thread
   return FALSE;
  }
  /* @method signal
-    @param integer Signal's number.
     @description Sends arbitrary signal to the process.
+    @param integer Signal's number.
     @return boolean Success.
  */
  public function signal($sig) {return posix_kill($this->pid,$sig);}
@@ -188,8 +188,8 @@ abstract class Thread
   while ($n > 0);
  }
  /* @method setproctitle
-    @param string Title.
     @description Sets a title of the current process.
+    @param string Title.
     @return void
  */
  public static function setproctitle($title)
@@ -198,9 +198,9 @@ abstract class Thread
   return FALSE;
  }
  /* @method sigwait
+    @description Waits for signals, with a timeout.
     @param int Seconds.
     @param int Nanoseconds.
-    @description Waits for signals, with a timeout.
     @return void
  */
  public function sigwait($sec = 0,$nano = 1)
