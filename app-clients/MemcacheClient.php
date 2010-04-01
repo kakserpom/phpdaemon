@@ -28,16 +28,37 @@ class MemcacheClient extends AsyncServer
    }
   }
  }
+ /* @method addServer
+    @description Adds memcached server.
+    @param string Server's host.
+    @param string Server's port.
+    @param integer Weight.
+    @return void
+ */
  public function addServer($host,$port = NULL,$weight = NULL)
  {
   if ($port === NULL) {$port = Daemon::$settings['mod'.$this->modname.'port'];}
   $this->servers[$host.':'.$port] = $weight;
  }
+ /* @method get
+    @description Gets the key.
+    @param string Key.
+    @param mixed Callback called when response recieved.
+    @return void
+ */
  public function get($key,$onResponse)
  {
   if (!is_string($key) || !strlen($key)) {return;}
   $this->requestByKey($key,'get '.$this->prefix.$key,$onResponse);
  }
+ /* @method set
+    @description Sets the key.
+    @param string Key.
+    @param string Value.
+    @param integer Lifetime in seconds. 0 - immortal.
+    @param mixed Callback called when the request complete.
+    @return void
+ */
  public function set($key,$value,$exp = 0,$onResponse = NULL)
  {
   if (!is_string($key) || !strlen($key)) {return;}
@@ -49,6 +70,14 @@ class MemcacheClient extends AsyncServer
   $sess->write($value);
   $sess->write("\r\n");
  }
+ /* @method Adds
+    @description Adds the key.
+    @param string Key.
+    @param string Value.
+    @param integer Lifetime in seconds. 0 - immortal.
+    @param mixed Callback called when the request complete.
+    @return void
+ */
  public function add($key,$value,$exp = 0,$onResponse = NULL)
  {
   if (!is_string($key) || !strlen($key)) {return;}
@@ -60,6 +89,13 @@ class MemcacheClient extends AsyncServer
   $sess->write($value);
   $sess->write("\r\n");
  }
+ /* @method delete
+    @description Deletes the key.
+    @param string Key.
+    @param mixed Callback called when the request complete.
+    @param integer Time to block this key.
+    @return void
+ */
  public function delete($key,$onResponse = NULL,$time = 0)
  {
   if (!is_string($key) || !strlen($key)) {return;}
@@ -68,6 +104,14 @@ class MemcacheClient extends AsyncServer
   $sess->onResponse[] = $onResponse;
   $sess->write($cmd = 'delete '.$this->prefix.$key.' '.$time."\r\n");
  }
+ /* @method Replace
+    @description Replaces the key.
+    @param string Key.
+    @param string Value.
+    @param integer Lifetime in seconds. 0 - immortal.
+    @param mixed Callback called when the request complete.
+    @return void
+ */
  public function replace($key,$value,$exp = 0,$onResponse = NULL)
  {
   $connId = $this->getConnectionByKey($key);
@@ -78,6 +122,14 @@ class MemcacheClient extends AsyncServer
   $sess->write($value);
   $sess->write("\r\n");
  }
+ /* @method append
+    @description Appends a string to the key's value.
+    @param string Key.
+    @param string Value to append.
+    @param integer Lifetime in seconds. 0 - immortal.
+    @param mixed Callback called when the request complete.
+    @return void
+ */
  public function append($key,$value,$exp = 0,$onResponse = NULL)
  {
   $connId = $this->getConnectionByKey($key);
@@ -88,6 +140,14 @@ class MemcacheClient extends AsyncServer
   $sess->write($value);
   $sess->write("\r\n");
  }
+ /* @method prepend
+    @description Prepends a string to the key's value.
+    @param string Key.
+    @param string Value to prepend.
+    @param integer Lifetime in seconds. 0 - immortal.
+    @param mixed Callback called when the request complete.
+    @return void
+ */
  public function prepend($key,$value,$exp = 0,$onResponse = NULL)
  {
   $connId = $this->getConnectionByKey($key);
@@ -98,6 +158,12 @@ class MemcacheClient extends AsyncServer
   $sess->write($value);
   $sess->write("\r\n");
  }
+ /* @method stats
+    @description Gets a statistics.
+    @param mixed Callback called when the request complete.
+    @param string Server.
+    @return void
+ */
  public function stats($onResponse,$server = NULL)
  {
   $this->requestByServer($server,'stats',$onResponse);
@@ -108,6 +174,11 @@ class MemcacheClient extends AsyncServer
   {
   }
  }
+ /* @method getConnection
+    @description Returns available connection from the pool.
+    @param string Address.
+    @return @return object MemcacheSession
+ */
  public function getConnection($addr)
  {
   if (isset($this->servConn[$addr]))
@@ -129,7 +200,12 @@ class MemcacheClient extends AsyncServer
   $this->servConn[$addr][] = $connId;
   return $connId;
  }
- private function getConnectionByKey($key)
+ /* @method getConnectionByKey
+    @description Returns available connection from the pool by key.
+    @param string Key.
+    @return object MemcacheSession
+ */
+ public function getConnectionByKey($key)
  {
   if (($this->dtags_enabled) && (($sp = strpos($key,'[')) !== FALSE) && (($ep = strpos($key,']')) !== FALSE) && ($ep > $sp))
   {
@@ -140,6 +216,13 @@ class MemcacheClient extends AsyncServer
   srand();  
   return $this->getConnection($addr);
  }
+ /* @method requestByServer
+    @description Sends a request to arbitrary server.
+    @param string Server.
+    @param string Request.
+    @param mixed Callback called when the request complete.
+    @return object MemcacheSession
+ */
  public function requestByServer($k,$s,$onResponse)
  {
   if ($k == '*')
@@ -166,6 +249,13 @@ class MemcacheClient extends AsyncServer
   $sess->write($s);
   $sess->write("\r\n");
  }
+ /* @method requestByKey
+    @description Sends a request to server according to the key.
+    @param string Key.
+    @param string Request.
+    @param mixed Callback called when the request complete.
+    @return object MemcacheSession
+ */
  public function requestByKey($k,$s,$onResponse)
  {
   $connId = $this->getConnectionByKey($k);
