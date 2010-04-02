@@ -1,9 +1,9 @@
 <?php
 class AppResolver
 {
- public $appPreloadPrivileged = array();
- public $appPreload = array();
- public $defaultApp = 'Default';
+ public $appPreloadPrivileged = array(); // list of preloaded applications that must be started before setuid.
+ public $appPreload = array(); // list of preloaded application.
+ public $defaultApp = 'Default'; // name of the application that handles web-requests without APPNAME.
  /* @method preload
     @description Preloads applications after setuid.
     @return void

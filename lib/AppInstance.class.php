@@ -11,12 +11,12 @@
 /**************************************************************************/
 class AppInstance
 {
- public $status = 0;
- public $passphrase;
- public $reqCounter = 0;
- public $queue = array();
- public $ready = FALSE;
- public $modname;
+ public $status = 0; // runtime status
+ public $passphrase; // optional passphrase
+ public $reqCounter = 0; // counter of requests
+ public $queue = array(); // queue of requests
+ public $ready = FALSE; // ready to start?
+ public $modname; // application's name in lower case.
  
  /* @method __contruct
     @description Application constructor.
