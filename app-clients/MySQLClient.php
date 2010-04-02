@@ -141,6 +141,7 @@ class MySQLClient extends AsyncServer
   $this->sessions[$connId]->url = $addr;
   if (isset($u['user'])) {$this->sessions[$connId]->user = $u['user'];}
   if (isset($u['pass'])) {$this->sessions[$connId]->password = $u['pass'];}
+  if (isset($u['path'])) {$this->sessions[$connId]->dbname = $u['path'];}
   $this->servConn[$addr][] = $connId;
   return $this->sessions[$connId];
  }
