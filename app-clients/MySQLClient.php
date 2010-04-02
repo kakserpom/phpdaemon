@@ -4,13 +4,7 @@ class MySQLClient extends AsyncServer
 {
  public $sessions = array();
  public $servConn = array();
- public $prefix = '';
- public $requests = array();
- public $cursors = array();
- public $lastReqId = 0;
- public $dbname = '';
- public $insertId;
- public $affectedRows;
+
  const CLIENT_LONG_PASSWORD	= 1;	/* new more secure passwords */
  const CLIENT_FOUND_ROWS	= 2;	/* Found instead of affected rows */
  const CLIENT_LONG_FLAG = 4;	/* Get all column flags */
@@ -116,11 +110,6 @@ class MySQLClient extends AsyncServer
    $this->ready = TRUE;
   }
  }
- public function selectDB($name)
- {
-  $this->dbname = $name;
-  return TRUE;
- }
  public function getConnection($addr = NULL)
  {
   if (!$this->ready) {return FALSE;}
@@ -164,6 +153,8 @@ class MySQLClientSession extends SocketSession
  public $onConnected = NULL;
  public $authrozied = FALSE;
  public $context;
+ public $insertId;
+ public $affectedRows;
  public function init()
  {
  }
@@ -285,6 +276,11 @@ class MySQLClientSession extends SocketSession
   $this->callbacks[] = $callback;
   $this->seq = 0;
   $this->sendPacket(chr($cmd).$q);
+ }
+ public function selectDB($name)
+ {
+  $this->dbname = $name;
+  return TRUE;
  }
  public function stdin($buf)
  {
