@@ -11,41 +11,69 @@
 /**************************************************************************/
 class AsyncProcess extends AsyncStream
 {
- public $cmd;
- public $binPath;
- public $pipes;
- public $pd;
- public $run = FALSE;
- public $outputErrors = FALSE;
- public $setUser;
- public $setGroup;
- public $chroot = '/';
- public $env = array();
- public $cwd;
- public $errlogfile = '/tmp/cgi-errorlog.log';
- public $args;
- public $nice;
+ public $cmd; // command's string
+ public $binPath; // path to executable
+ public $pipes; // opened pipes
+ public $pd; // process's descriptor
+ public $run = FALSE; // run?
+ public $outputErrors = FALSE; // output errors?
+ public $setUser; // optinal SUID.
+ public $setGroup; // optional SGID.
+ public $chroot = '/'; // optional chroot.
+ public $env = array(); // hash of environment's variables
+ public $cwd; // optional chdir
+ public $errlogfile = '/tmp/cgi-errorlog.log'; //path to error logfile
+ public $args; //array of arguments
+ public $nice; // optional priority
+ 
+ /* @method __contruct
+    @description AsyncProcess constructor.
+    @param string Command's string.
+    @return void
+ */
  public function __construct($cmd = NULL)
  {
   $this->base = Daemon::$worker->eventBase;
   $this->env = $_ENV;
   $this->cmd = $cmd;
  }
+ /* @method setArgs
+    @description Sets an array of arguments.
+    @param array Arguments.
+    @return object AsyncProccess
+ */
  public function setArgs($args = NULL)
  {
   $this->args = $args;
   return $this;
  }
+ /* @method setEnv
+    @description Sets a hash of environment's variables.
+    @param array Hash of environment's variables.
+    @return object AsyncProccess
+ */
  public function setEnv($env = NULL)
  {
   $this->env = $env;
   return $this;
  }
+ /* @method nice
+    @description Sets a priority.
+    @param integer Priority.
+    @return object AsyncProccess
+ */
  public function nice($nice = NULL)
  {
   $this->nice = $nice;
   return $this;
  }
+ /* @method execute
+    @description Executes.
+    @param string Optional. Binpath.
+    @param array Optional. Arguments.
+    @param array Optional. Hash of environment's variables.
+    @return object AsyncProccess
+ */
  public function execute($binPath = NULL,$args = NULL,$env = NULL)
  {
   if ($binPath !== NULL) {$this->binPath = $binPath;}
@@ -89,12 +117,20 @@ class AsyncProcess extends AsyncStream
   }
   return $this;
  }
+ /* @method close
+    @description Closes the process.
+    @return object AsyncProccess
+ */
  public function close()
  {
   $this->closeRead();
   $this->closeWrite();
   if ($this->pd) {proc_close($this->pd);}
  }
+ /* @method eof
+    @description Tests for end-of-file on a process pointer.
+    @return boolean EOF?
+ */
  public function eof()
  {
   if (!$this->EOF)
