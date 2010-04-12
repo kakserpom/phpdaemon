@@ -2,11 +2,15 @@
 return new MongoNode;
 class MongoNode extends AppInstance
 {
- public $db;
- public $cache;
- public $RTEPClient;
- public $LockClient;
- public $cursor;
+ public $db; // MongoClient
+ public $cache; // MemcacheClient
+ public $RTEPClient; // RTEPClient
+ public $LockClient; // LockClient
+ public $cursor; // Tailable cursor
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -21,6 +25,10 @@ class MongoNode extends AppInstance
    $this->RTEPClient = Daemon::$appResolver->getInstanceByAppName('RTEPClient');
   }
  }
+ /* @method onReady
+    @description Called when the worker is ready to go.
+    @return void
+ */
  public function onReady()
  {
   if (Daemon::$settings['mod'.$this->modname.'enable'])
@@ -32,6 +40,11 @@ class MongoNode extends AppInstance
    });
   }
  }
+ /* @method cacheObject
+    @description Method called when object recieved.
+    @param object Object.
+    @return void
+ */
  public function cacheObject($o)
  {
   if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'('.json_encode($o).')');}
@@ -50,6 +63,11 @@ class MongoNode extends AppInstance
    ));
   }
  }
+ /* @method cacheObject
+    @description Method called when object deleted.
+    @param object Object.
+    @return void
+ */
  public function deleteObject($o)
  {
   if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'('.json_encode($o).')');}
@@ -62,6 +80,11 @@ class MongoNode extends AppInstance
    }
   });
  }
+ /* @method initSlave
+    @description Initializes slave session.
+    @param object Object.
+    @return void
+ */
  public function initSlave($point)
  {
   $node = $this;
@@ -105,7 +128,11 @@ class MongoNode extends AppInstance
 }
 class MongoNode_ReplicationRequest extends Request
 {
- public $inited = FALSE;
+ public $inited = FALSE; // Initialized?
+ /* @method run
+    @description Called when request iterated.
+    @return void
+ */
  public function run()
  {
   if (!$this->appInstance->cursor)

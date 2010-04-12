@@ -183,12 +183,12 @@ class Request
   return 0;
  }
  /* @method onAbort
-    @description Called when the request aborts. 
+    @description Called when the request aborted.
     @return void
  */
  public function onAbort() {}
  /* @method onFinish
-    @description Called when the request finishes.
+    @description Called when the request finished.
     @return void
  */
  public function onFinish() {}

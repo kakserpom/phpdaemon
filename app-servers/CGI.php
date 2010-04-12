@@ -2,11 +2,8 @@
 return new CGI;
 class CGI extends AppInstance
 {
- public $errlogfile;
- public $errlogfp;
- public $binPath = 'php-cgi';
- public $cwd = NULL;
- public $readPacketSize = 4096;
+ public $binPath = 'php-cgi'; // Default bin-path
+ public $cwd; // Default CWD
  public $binAliases = array(
   'php5' => '/usr/local/php/bin/php-cgi',
   'php6' => '/usr/local/php6/bin/php-cgi',
@@ -14,25 +11,49 @@ class CGI extends AppInstance
   'python' => '/usr/local/bin/python',
   'ruby' => '/usr/local/bin/ruby',
  );
- public $chroot = '/';
+ public $chroot = '/'; // default chroot
+ /* @method onReady
+    @description Called when the worker is ready to go.
+    @return void
+ */
  public function onReady()
  {
-  $this->errlogfile = dirname(__FILE__).'/cgi-error.log';
   Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'allow-override-binpath' => TRUE,
    'mod'.$this->modname.'allow-override-cwd' => TRUE,
    'mod'.$this->modname.'allow-override-chroot' => TRUE,
    'mod'.$this->modname.'allow-override-user' => TRUE,
    'mod'.$this->modname.'allow-override-group' => TRUE,
-   'mod'.$this->modname.'output-errors' => TRUE
+   'mod'.$this->modname.'cwd' => NULL,
+   'mod'.$this->modname.'output-errors' => TRUE,
+   'mod'.$this->modname.'errlog-file' => dirname(__FILE__).'/cgi-error.log',
   ));
+  $this->cwd = Daemon::$settings['mod'.$this->modname.'cwd'];
  }
+ /* @method update
+    @description Called when worker is going to update configuration.
+    @return void
+ */
+ public function update()
+ {
+  $this->cwd = Daemon::$settings['mod'.$this->modname.'cwd'];
+ }
+ /* @method beginRequest
+    @description Creates Request.
+    @param object Request.
+    @param object Upstream application instance.
+    @return object Request.
+ */
  public function beginRequest($req,$upstream) {return new CGIRequest($this,$upstream,$req);}
 }
 class CGIRequest extends Request
 {
  public $terminateOnAbort = FALSE;
  public $proc;
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   $this->header('Content-Type: text/html'); // default header.
@@ -58,6 +79,10 @@ class CGIRequest extends Request
   $this->proc->setEnv($this->attrs->server);
   $this->proc->execute();
  }
+ /* @method run
+    @description Called when request iterated.
+    @return void
+ */
  public function run()
  {
   if (!$this->proc)
@@ -68,21 +93,37 @@ class CGIRequest extends Request
   if (!$this->proc->eof()) {$this->sleep();}
   return 1;
  }
+ /* @method onAbort
+    @description Called when the request aborted.
+    @return void
+ */
  public function onAbort()
  {
   if ($this->terminateOnAbort && $this->stream) {$this->stream->close();}
  }
- public function onFinish()
- {
- }
+ /* @method onAbort
+    @description Called when the request aborted.
+    @return void
+ */
  public function onWrite($process)
  {
   if ($this->attrs->stdin_done && ($this->proc->writeState === FALSE)) {$this->proc->closeWrite();}
  }
+ /* @method onReadData
+    @param object Process pointer.
+    @param string Data.
+    @description Called when new data recieved from process.
+    @return void
+ */
  public function onReadData($process,$data)
  {
   $this->combinedOut($data);
  }
+ /* @method stdin
+    @param string Piece of request's body.
+    @description Called when new piece of request's body is recieved.
+    @return void
+ */
  public function stdin($c)
  {
   if ($c === '') {return $this->onWrite($this->proc);}

@@ -171,7 +171,10 @@ class Daemon_WorkerThread extends Thread
  */
  public function update()
  {
-  /* TODO: reload configs of applications. */
+  foreach (Daemon::$appInstances as $k => $app)
+  {
+   foreach ($app as $appInstance) {$appInstance->update();}
+  }
  }
  /* @method addEvent
     @description Adds event to the queue. Event will be added before next baseloop().
