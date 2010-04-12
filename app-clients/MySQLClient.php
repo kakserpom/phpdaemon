@@ -2,8 +2,8 @@
 return new MySQLClient;
 class MySQLClient extends AsyncServer
 {
- public $sessions = array();
- public $servConn = array();
+ public $sessions = array(); // Active sessions
+ public $servConn = array(); // Active connections
 
  const CLIENT_LONG_PASSWORD	= 1;	/* new more secure passwords */
  const CLIENT_FOUND_ROWS	= 2;	/* Found instead of affected rows */
@@ -95,7 +95,11 @@ class MySQLClient extends AsyncServer
  const TIMESTAMP_FLAG = 0x400;
  const SET_FLAG = 0x800;
 
- public $ready = FALSE;
+ public $ready = FALSE; // Ready?
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -110,6 +114,11 @@ class MySQLClient extends AsyncServer
    $this->ready = TRUE;
   }
  }
+ /* @method getConnection
+    @description Establishes connection.
+    @param string Address.
+    @return integer Connection's ID.
+ */
  public function getConnection($addr = NULL)
  {
   if (!$this->ready) {return FALSE;}
@@ -137,33 +146,40 @@ class MySQLClient extends AsyncServer
 }
 class MySQLClientSession extends SocketSession
 {
- public $url;
- public $seq = 0;
- public $clientFlags = 239237;
- public $maxPacketSize = 0x1000000;
- public $charsetNumber = 0x08;
- public $dbname = '';
- public $user = 'root';
- public $password = '';
- public $cstate = 0; // 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
- public $instate = 0;
- public $resultRows = array();
- public $resultFields = array();
- public $callbacks = array();
- public $onConnected = NULL;
- public $authrozied = FALSE;
- public $context;
- public $insertId;
- public $affectedRows;
- public function init()
- {
- }
+ public $url; // Connection's URL.
+ public $seq = 0; // Pointer of packet sequence.
+ public $clientFlags = 239237; // Flags of this MySQL client.
+ public $maxPacketSize = 0x1000000; // Maximum packet size.
+ public $charsetNumber = 0x08; // Charset number.
+ public $dbname = ''; // Default database name.
+ public $user = 'root'; // Username
+ public $password = ''; // Password
+ public $cstate = 0; // Connection's state. 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
+ public $instate = 0; // State of pointer of incoming data. 0 - Result Set Header Packet, 1 - Field Packet, 2 - Row Packet
+ public $resultRows = array(); // Resulting rows.
+ public $resultFields = array(); // Resulting fields
+ public $callbacks = array(); // Stack of callbacks.
+ public $onConnected = NULL; // Callback. Called when connection's handshaked.
+ public $context; // Property holds a reference to user's object.
+ public $insertId; // Equals with INSERT_ID().
+ public $affectedRows; // Number of affected rows.
+ /* @method onConnected
+    @description Executes the given callback when/if the connection is handshaked.
+    @description Callback.
+    @return void
+ */
  public function onConnected($callback)
  {
   $this->onConnected = $callback;
   if ($this->cstate == 3) {call_user_func($callback,$this,FALSE);}
   elseif ($this->cstate === 4) {call_user_func($callback,$this,TRUE);}
  }
+ /* @method bytes2int
+    @description Converts binary string to integer.
+    @param string Binary string.
+    @param boolean Optional. Little endian. Default value - true.
+    @return integer Resulting integer.
+ */
  public function bytes2int($str,$l = TRUE)
  {
   if ($l) {$str = strrev($str);}
@@ -172,6 +188,13 @@ class MySQLClientSession extends SocketSession
   for($i = 0; $i < $len; ++$i) {$dec += ord(binarySubstr($str,$i,1))*pow(0x100,$len-$i-1);}
   return $dec;
  }
+ /* @method int2bytes
+    @description Converts integer to binary string.
+    @param integer Length.
+    @param integer Integer.
+    @param boolean Optional. Little endian. Default value - true.
+    @return string Resulting binary string.
+ */
  function int2bytes($len,$int = 0,$l = TRUE)
  {
   $hexstr = dechex($int);
@@ -182,11 +205,20 @@ class MySQLClientSession extends SocketSession
   for($i = 0; $i < $bytes; ++$i) {$bin .= chr(hexdec(substr($hexstr,$i*2,2)));}
   return $l?strrev($bin):$bin;
  }
- public function getPacketHeader()
+ /* @method getPacketHeader
+    @description Returns packet's header.
+    @return array [length, seq]
+ */
+ private function getPacketHeader()
  {
   if ($this->buflen < 4) {return FALSE;}
-  return array($this->bytes2int(binarySubstr($this->buf,0,3)),ord(binarySubstr($this->buf,3,1))); // [length, seq]
+  return array($this->bytes2int(binarySubstr($this->buf,0,3)),ord(binarySubstr($this->buf,3,1)));
  }
+ /* @method sendPacket
+    @description Sends a packet.
+    @param string Data.
+    @return boolean Success.
+ */
  public function sendPacket($packet)
  {
   $header = $this->int2bytes(3,strlen($packet)).chr($this->seq++); 
@@ -195,6 +227,11 @@ class MySQLClientSession extends SocketSession
   if (Daemon::$settings['mod'.$this->appInstance->modname.'protologging']) {Daemon::log('Client --> Server: '.Daemon::exportBytes($header.$packet)."\n\n");}
   return TRUE;
  }
+ /* @method buildLenEncodedBinary
+    @description Builds length-encoded binary string.
+    @param string String.
+    @return string Resulting binary string.
+ */
  public function buildLenEncodedBinary($s)
  {
   if ($s === NULL) {return "\251";}
@@ -204,6 +241,11 @@ class MySQLClientSession extends SocketSession
   if ($l <= 0xFFFFFF) {return "\254".$this->int2bytes(3,$l).$s;}
   return $this->int2bytes(8,$l).$s;
  }
+ /* @method parseEncodedBinary
+    @description Parses length-encoded binary.
+    @param string Reference to source string.
+    @return integer Result.
+ */
  public function parseEncodedBinary(&$s,&$p)
  {
   $f = ord(binarySubstr($s,$p,1));
@@ -227,6 +269,12 @@ class MySQLClientSession extends SocketSession
   $p =+ 8;
   return $this->bytes2int(binarySubstr($s,$o,8));
  }
+ /* @method parseEncodedBinary
+    @description Parses length-encoded string.
+    @param string Reference to source string.
+    @param integer Reference to pointer.
+    @return integer Result.
+ */
  public function parseEncodedString(&$s,&$p)
  {
   $l = $this->parseEncodedBinary($s,$p);
@@ -235,10 +283,22 @@ class MySQLClientSession extends SocketSession
   $p += $l;
   return binarySubstr($s,$o,$l);
  }
+ /* @method getAuthToken
+    @description Generates auth. token.
+    @param string Scramble string.
+    @param string Password.
+    @return string Result.
+ */
  public function getAuthToken($scramble,$password)
  {
   return sha1($scramble.sha1($hash1 = sha1($password,TRUE),TRUE),TRUE) ^ $hash1;
  }
+ /* @method auth
+    @description Sends auth. packet.
+    @param string Scramble string.
+    @param string Password.
+    @return string Result.
+ */
  public function auth()
  {
   if ($this->cstate !== 1) {return;}
@@ -262,21 +322,45 @@ class MySQLClientSession extends SocketSession
    .($this->dbname !== ''?$this->dbname."\x00":'')
   );
  }
+ /* @method query
+    @description Sends SQL-query.
+    @param string Query.
+    @param callback Optional. Callback called when response recieved.
+    @return boolean Success.
+ */
  public function query($q,$callback = NULL)
  {
   return $this->command(MySQLClient::COM_QUERY,$q,$callback);
  }
+ /* @method ping
+    @description Sends echo-request.
+    @param callback Optional. Callback called when response recieved.
+    @return boolean Success.
+ */
  public function ping($callback = NULL)
  {
   return $this->command(MySQLClient::COM_PING,'',$callback);
  }
+ /* @method command
+    @description Sends arbitrary command.
+    @param integer Command's code. See constants above.
+    @param string Data.
+    @param callback Optional. Callback called when response recieved.
+    @return boolean Success.
+ */
  public function command($cmd,$q = '',$callback = NULL)
  {
   if ($this->cstate !== 4) {return FALSE;}
   $this->callbacks[] = $callback;
   $this->seq = 0;
   $this->sendPacket(chr($cmd).$q);
+  return TRUE;
  }
+ /* @method selectDB
+    @description Sets default database name.
+    @param string Database name.
+    @return boolean Success.
+ */
  public function selectDB($name)
  {
   $this->dbname = $name;
@@ -286,6 +370,11 @@ class MySQLClientSession extends SocketSession
   }
   return TRUE;
  }
+ /* @method stdin
+    @description Called when new data recieved.
+    @param string New data.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;
@@ -415,6 +504,10 @@ class MySQLClientSession extends SocketSession
   $this->buf = binarySubstr($this->buf,4+$packet[0]);
   goto start;
  }
+ /* @method onResultDone
+    @description Called when the whole result recieved.
+    @return void
+ */
  public function onResultDone()
  {
   $this->instate = 0;
@@ -424,6 +517,10 @@ class MySQLClientSession extends SocketSession
   $this->resultFields = array();
   if (Daemon::$settings['mod'.$this->appInstance->modname.'protologging']) {Daemon::log(__METHOD__);}
  }
+ /* @method onError
+    @description Called when error occured.
+    @return void
+ */
  public function onError()
  {
   $this->instate = 0;
@@ -439,6 +536,10 @@ class MySQLClientSession extends SocketSession
   }
   Daemon::log(__METHOD__.' #'.$this->errno.': '.$this->errmsg);
  }
+ /* @method onFinish
+    @description Called when session finishes.
+    @return void
+ */
  public function onFinish()
  {
   $this->finished = TRUE;

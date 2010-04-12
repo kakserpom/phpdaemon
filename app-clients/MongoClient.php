@@ -2,14 +2,14 @@
 return new MongoClient;
 class MongoClient extends AsyncServer
 {
- public $sessions = array(); // active sessions
- public $servers = array(); // array of server
- public $servConn = array(); // active connections
- public $requests = array(); // pending requests
- public $cursors = array(); // active cursors
+ public $sessions = array(); // Active sessions
+ public $servers = array(); // Array of servers
+ public $servConn = array(); // Active connections
+ public $requests = array(); // Pending requests
+ public $cursors = array(); // Active cursors
  public $lastReqId = 0; // ID of the last request
- public $collections = array(); // objects of MongoClientCollection
- public $dbname = ''; // current database
+ public $collections = array(); // Objects of MongoClientCollection
+ public $dbname = ''; // Current database
  /* Codes of operations */
  const OP_REPLY = 1;
  const OP_MSG = 1000;
