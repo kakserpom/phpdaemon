@@ -2,7 +2,11 @@
 return new DebugConsole;
 class DebugConsole extends AsyncServer
 {
- public $sessions = array();
+ public $sessions = array(); // Active sessions
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -17,6 +21,12 @@ class DebugConsole extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ /* @method onAccepted
+    @param integer Connection's ID.
+    @param string Address of the connected peer.
+    @description Called when new connection is accepted.
+    @return void
+ */
  public function onAccepted($connId,$addr)
  {
   $this->sessions[$connId] = new DebugConsoleSession($connId,$this);
@@ -24,12 +34,20 @@ class DebugConsole extends AsyncServer
 }
 class DebugConsoleSession extends SocketSession
 {
- public $state = 0;
- public $auth = FALSE;
+ public $auth = FALSE; // Is this client authorized?
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   $this->write("Welcome! DebugConsole for phpDaemon.\n\n");
  }
+ /* @method stdin
+    @description Called when new data recieved.
+    @param string New data.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;

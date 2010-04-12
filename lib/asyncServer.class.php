@@ -377,7 +377,7 @@ class AsyncServer extends AppInstance
   $this->buf[$connId] = $buf;
   $this->onAccepted($connId,$addr);
  }
- /* @method onAccept
+ /* @method onAccepted
     @param integer Connection's ID.
     @param string Address of the connected peer.
     @description Called when new connection is accepted.

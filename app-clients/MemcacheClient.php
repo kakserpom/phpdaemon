@@ -171,12 +171,6 @@ class MemcacheClient extends AsyncServer
  {
   $this->requestByServer($server,'stats',$onResponse);
  }
- public function onReady()
- {
-  if (Daemon::$settings['mod'.$this->modname.'enable'])
-  {
-  }
- }
  /* @method getConnection
     @description Returns available connection from the pool.
     @param string Address.

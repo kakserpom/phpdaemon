@@ -2,8 +2,12 @@
 return new FlashPolicy;
 class FlashPolicy extends AsyncServer
 {
- public $sessions = array();
- public $policyData;
+ public $sessions = array(); // Active sessions
+ public $policyData; // Cached policy-file.
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -18,6 +22,10 @@ class FlashPolicy extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ /* @method onReady
+    @description Called when the worker is ready to go.
+    @return void
+ */
  public function onReady()
  {
   if (Daemon::$settings['mod'.$this->modname.'enable'])
@@ -26,6 +34,12 @@ class FlashPolicy extends AsyncServer
    $this->enableSocketEvents();
   }
  }
+ /* @method onAccepted
+    @param integer Connection's ID.
+    @param string Address of the connected peer.
+    @description Called when new connection is accepted.
+    @return void
+ */
  public function onAccepted($connId,$addr)
  {
   $this->sessions[$connId] = new FlashPolicySession($connId,$this);
@@ -33,6 +47,11 @@ class FlashPolicy extends AsyncServer
 }
 class FlashPolicySession extends SocketSession
 {
+ /* @method stdin
+    @description Called when new data recieved.
+    @param string New data.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;
