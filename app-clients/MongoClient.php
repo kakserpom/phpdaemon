@@ -2,15 +2,15 @@
 return new MongoClient;
 class MongoClient extends AsyncServer
 {
- public $sessions = array();
- public $servers = array();
- public $servConn = array();
- public $prefix = '';
- public $requests = array();
- public $cursors = array();
- public $lastReqId = 0;
- public $collections = array();
- public $dbname = '';
+ public $sessions = array(); // active sessions
+ public $servers = array(); // array of server
+ public $servConn = array(); // active connections
+ public $requests = array(); // pending requests
+ public $cursors = array(); // active cursors
+ public $lastReqId = 0; // ID of the last request
+ public $collections = array(); // objects of MongoClientCollection
+ public $dbname = ''; // current database
+ /* Codes of operations */
  const OP_REPLY = 1;
  const OP_MSG = 1000;
  const OP_UPDATE = 2001;
@@ -19,17 +19,16 @@ class MongoClient extends AsyncServer
  const OP_GETMORE = 2005;
  const OP_DELETE = 2006;
  const OP_KILL_CURSORS = 2007;
- public $dtags_enabled = FALSE;
- public $cache;
+ /**/
+ public $dtags_enabled = FALSE; // enables tags for distibution
+ public $cache; // object of MemcacheClient
  public function init()
  {
   Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'servers' => '127.0.0.1',
    'mod'.$this->modname.'port' => 27017,
-   'mod'.$this->modname.'prefix' => '',
    'mod'.$this->modname.'enable' => 0,
   ));
-  $this->prefix = &Daemon::$settings['mod'.$this->modname.'prefix'];
   $this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {

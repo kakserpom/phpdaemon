@@ -85,13 +85,7 @@ class Chat extends AppInstance
    {
     $this->WS->routes['Chat'] = array($this,'onHandshake');
    }
-   $appInstance = $this;
-   $r = new stdClass;
-   $r->attrs = new stdClass;
-   $r->attrs->stdin_done = TRUE;
-   $r->attrs->params_done = TRUE;
-   $r->attrs->chunked = FALSE;
-   $appInstance->pushRequest(new Chat_MsgQueueRequest($appInstance,$appInstance,$r));
+   $this->pushRequest(new Chat_MsgQueueRequest($this,$this));
   }
  }
 }

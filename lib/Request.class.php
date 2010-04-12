@@ -39,8 +39,9 @@ class Request
     @param object Source request.
     @return void
  */
- public function __construct($appInstance,$upstream,$req)
+ public function __construct($appInstance,$upstream,$req = NULL)
  {
+  if ($req === NULL) {$req = clone Daemon::$dummyRequest;}
   $this->appInstance = $appInstance;
   $this->upstream = $upstream;
   $this->attrs = $req->attrs;

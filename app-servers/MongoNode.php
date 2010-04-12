@@ -28,12 +28,7 @@ class MongoNode extends AppInstance
    $appInstance = $this;
    $this->LockClient->job(__CLASS__,TRUE,function($jobname) use ($appInstance)
    {
-    $r = new stdClass;
-    $r->attrs = new stdClass;
-    $r->attrs->stdin_done = TRUE;
-    $r->attrs->params_done = TRUE;
-    $r->attrs->chunked = FALSE;
-    $appInstance->pushRequest(new MongoNode_ReplicationRequest($appInstance,$appInstance,$r));
+    $this->pushRequest(new MongoNode_ReplicationRequest($this,$this));
    });
   }
  }

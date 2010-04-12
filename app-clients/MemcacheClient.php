@@ -2,12 +2,15 @@
 return new MemcacheClient;
 class MemcacheClient extends AsyncServer
 {
- public $sessions = array();
- public $policyData;
- public $servers = array();
- public $dtags_enabled = FALSE;
- public $servConn = array();
- public $prefix = '';
+ public $sessions = array(); // active sessions
+ public $servers = array(); // array of servers 
+ public $dtags_enabled = FALSE; // enables tags for distribution
+ public $servConn = array(); // active connections
+ public $prefix = ''; // prefix for all keys
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(

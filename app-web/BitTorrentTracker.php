@@ -173,19 +173,8 @@ class BitTorrentTracker extends AppInstance
  {
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
-   $r = new stdClass;
-   $r->attrs = new stdClass;
-   $r->attrs->stdin_done = TRUE;
-   $r->attrs->params_done = TRUE;
-   $r->attrs->chunked = FALSE;
-   $this->pushRequest(new BitTorrentTracker_RatingUpdate($this,$this,$r));
-   
-   $r = new stdClass;
-   $r->attrs = new stdClass;
-   $r->attrs->stdin_done = TRUE;
-   $r->attrs->params_done = TRUE;
-   $r->attrs->chunked = FALSE;
-   $this->pushRequest(new BitTorrentTracker_TorrentImporter($this,$this,$r));
+   $this->pushRequest(new BitTorrentTracker_RatingUpdate($this,$this));
+   $this->pushRequest(new BitTorrentTracker_TorrentImporter($this,$this));
   }
  }
  public function beginRequest($req,$upstream) {return new BitTorrentTracker_Request($this,$upstream,$req);}

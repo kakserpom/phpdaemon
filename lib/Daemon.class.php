@@ -34,6 +34,7 @@ class Daemon
  public static $dir;
  public static $compatMode = FALSE;
  public static $runName = 'phpdaemon';
+ public static $dummyRequest;
  /* @method initSettings
     @description Loads default setting.
     @return void
@@ -84,6 +85,11 @@ class Daemon
   );
   Daemon::loadSettings(Daemon::$settings);
   Daemon::$useSockets = version_compare(PHP_VERSION,'5.3.1','>=');
+  Daemon::$dummyRequest = new stdClass;
+  Daemon::$dummyRequest->attrs = new stdClass;
+  Daemon::$dummyRequest->attrs->stdin_done = TRUE;
+  Daemon::$dummyRequest->attrs->params_done = TRUE;
+  Daemon::$dummyRequest->attrs->chunked = FALSE;
  }
  /* @method addDefaultSettings
     @param array {"setting": "value"}
