@@ -22,6 +22,10 @@ class MongoClient extends AsyncServer
  /**/
  public $dtags_enabled = FALSE; // enables tags for distibution
  public $cache; // object of MemcacheClient
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -41,16 +45,37 @@ class MongoClient extends AsyncServer
    }
   }
  }
+ /* @method selectDB
+    @description Sets default database name.
+    @param string Database name.
+    @return boolean Success.
+ */
  public function selectDB($name)
  {
   $this->dbname = $name;
   return TRUE;
  }
+ /* @method addServer
+    @description Adds memcached server.
+    @param string Server's host.
+    @param string Server's port.
+    @param integer Weight.
+    @return void
+ */
  public function addServer($host,$port = NULL,$weight = NULL)
  {
   if ($port === NULL) {$port = Daemon::$settings['mod'.$this->modname.'port'];}
   $this->servers[$host.':'.$port] = $weight;
  }
+ /* @method request
+    @description Gets the key.
+    @param string Key.
+    @param integer Opcode (see constants above).
+    @param string Data.
+    @param boolean Is an answer expected?
+    @return integer Request ID.
+    @throws MongoClientSessionFinished
+ */
  public function request($key,$opcode,$data,$reply = FALSE)
  {
   if ((is_object($key) && ($key instanceof MongoClientSession)))
@@ -68,10 +93,16 @@ class MongoClient extends AsyncServer
   }
   $sess->write($p = pack('VVVV',strlen($data)+16,++$this->lastReqId,0,$opcode)
   .$data);
-  //Daemon::log('p = '.Daemon::exportBytes($p));
   if ($reply) {$sess->busy = TRUE;}
   return $this->lastReqId;
  }
+ /* @method find
+    @description Finds objects in collection.
+    @param array Hash of properties (offset, limit, opts, tailable, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog).
+    @param mixed Callback called when response recieved.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function find($p,$callback,$key = '')
  {
   if (!isset($p['offset'])) {$p['offset'] = 0;}
@@ -118,6 +149,13 @@ class MongoClient extends AsyncServer
   ,TRUE);
   $this->requests[$reqId] = array($p['col'],$callback,FALSE,isset($p['parse_oplog']));
  }
+ /* @method findOne
+    @description Finds one object in collection.
+    @param array Hash of properties (offset,  opts, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog).
+    @param mixed Callback called when response recieved.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function findOne($p,$callback,$key = '')
  {
   if (isset($p['cachekey']))
@@ -174,6 +212,13 @@ class MongoClient extends AsyncServer
   ,TRUE);
   $this->requests[$reqId] = array($p['col'],$callback,TRUE);
  }
+ /* @method count
+    @description Counts objects in collection.
+    @param array Hash of properties (offset, limit, opts, where, col).
+    @param mixed Callback called when response recieved.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function count($p,$callback,$key = '')
  {
   if (!isset($p['offset'])) {$p['offset'] = 0;}
@@ -198,19 +243,28 @@ class MongoClient extends AsyncServer
   $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
   $this->requests[$reqId] = array($p['col'],$callback,TRUE);
  }
- public function min($p,$callback,$key = '')
+ /* @method range
+    @description Finds objects in collection using min/max specifiers.
+    @param array Hash of properties (offset, limit, opts, where, col, min, max).
+    @param mixed Callback called when response recieved.
+    @param string Optional. Distribution key.
+    @return void
+ */
+ public function range($p,$callback,$key = '')
  {
   if (!isset($p['offset'])) {$p['offset'] = 0;}
   if (!isset($p['limit'])) {$p['limit'] = -1;}
   if (!isset($p['opts'])) {$p['opts'] = 0;}
   if (!isset($p['where'])) {$p['where'] = array();}
+  if (!isset($p['min'])) {$p['min'] = array();}
   if (!isset($p['max'])) {$p['max'] = array();}
   if (strpos($p['col'],'.') === FALSE) {$p['col'] = $this->dbname.'.'.$p['col'];}
   $e = explode('.',$p['col']);
   $query = array(
-   '$min' => $p['min'],
-   'query' => $p['where'],
+   '$query' => $p['where'],
   );
+  if (sizeof($p['min'])) {$query['$min'] = $p['min'];}
+  if (sizeof($p['max'])) {$query['$max'] = $p['max'];}
   if (is_string($p['where'])) {$query['where'] = new MongoCode($p['where']);}
   elseif (is_object($p['where']) || sizeof($p['where'])) {$query['query'] = $p['where'];}
   $packet = pack('V',$p['opts'])
@@ -222,6 +276,13 @@ class MongoClient extends AsyncServer
   $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
   $this->requests[$reqId] = array($p['col'],$callback,TRUE);
  }
+ /* @method evaluate
+    @description Evaluates a code on the server side.
+    @param string Code.
+    @param mixed Callback called when response recieved.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function evaluate($code,$callback,$key = '')
  {
   $p = array();
@@ -239,30 +300,13 @@ class MongoClient extends AsyncServer
   $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
   $this->requests[$reqId] = array($p['db'],$callback,TRUE);
  }
- public function max($p,$callback,$key = '')
- {
-  if (!isset($p['offset'])) {$p['offset'] = 0;}
-  if (!isset($p['limit'])) {$p['limit'] = -1;}
-  if (!isset($p['opts'])) {$p['opts'] = 0;}
-  if (!isset($p['where'])) {$p['where'] = array();}
-  if (!isset($p['max'])) {$p['max'] = array();}
-  if (strpos($p['col'],'.') === FALSE) {$p['col'] = $this->dbname.'.'.$p['col'];}
-  $e = explode('.',$p['col']);
-  $query = array(
-   '$max' => $p['max'],
-   'query' => $p['where'],
-  );
-  if (is_string($p['where'])) {$query['where'] = new MongoCode($p['where']);}
-  elseif (is_object($p['where']) || sizeof($p['where'])) {$query['query'] = $p['where'];}
-  $packet = pack('V',$p['opts'])
-   .$e[0].'.$cmd'."\x00"
-   .pack('VV',$p['offset'],$p['limit'])
-   .bson_encode($query)
-   .(isset($p['fields'])?bson_encode($p['fields']):'')
-  ;
-  $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
-  $this->requests[$reqId] = array($p['col'],$callback,TRUE);
- }
+ /* @method distinct
+    @description Returns distinct values of the property.
+    @param array Hash of properties (offset, limit, opts, key, col).
+    @param mixed Callback called when response recieved.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function distinct($p,$callback,$key = '')
  {
   if (!isset($p['offset'])) {$p['offset'] = 0;}
@@ -284,6 +328,13 @@ class MongoClient extends AsyncServer
   $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
   $this->requests[$reqId] = array($p['col'],$callback,TRUE);
  }
+ /* @method group
+    @description Groupping function.
+    @param array Hash of properties (offset, limit, opts, key, col, reduce, initial).
+    @param mixed Callback called when response recieved.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function group($p,$callback,$key = '')
  {
   if (!isset($p['offset'])) {$p['offset'] = 0;}
@@ -317,6 +368,15 @@ class MongoClient extends AsyncServer
   $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
   $this->requests[$reqId] = array($p['col'],$callback,FALSE);
  }
+ /* @method update
+    @description Updates one object in collection.
+    @param string Collection's name.
+    @param array Conditions.
+    @param array Data.
+    @param integer Optional. Flags.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function update($col,$cond,$data,$flags = 0,$key = '')
  {
   if (strpos($col,'.') === FALSE) {$col = $this->dbname.'.'.$col;}
@@ -333,14 +393,38 @@ class MongoClient extends AsyncServer
    .bson_encode($data)
   );
  }
+ /* @method updateMulti
+    @description Updates several objects in collection.
+    @param string Collection's name.
+    @param array Conditions.
+    @param array Data.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function updateMulti($col,$cond,$data,$key = '')
  {
   return $this->update($col,$cond,$data,2,$key);
  }
+ /* @method upsert
+    @description Upserts an object (updates if exists, insert if not exists).
+    @param string Collection's name.
+    @param array Conditions.
+    @param array Data.
+    @param boolean Optional. Multi-flag.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function upsert($col,$cond,$data,$multi = FALSE,$key = '')
  {
   return $this->update($col,$cond,$data,$multi?3:1,$key);
  }
+ /* @method insert
+    @description Inserts an object.
+    @param string Collection's name.
+    @param array Data.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function insert($col,$doc = array(),$key = '')
  {
   if (strpos($col,'.') === FALSE) {$col = $this->dbname.'.'.$col;}
@@ -352,6 +436,12 @@ class MongoClient extends AsyncServer
   );
   return $doc['_id'];
  }
+ /* @method killCursors
+    @description Sends a request to kill certain cursors on the server side.
+    @param array Array of cursors.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function killCursors($cursors = array(),$key = '')
  {
   $reqId = $this->request($key,self::OP_INSERT,
@@ -360,6 +450,13 @@ class MongoClient extends AsyncServer
    .implode('',$cursors)
   );
  }
+ /* @method insertMulti
+    @description Inserts several documents.
+    @param string Collection's name.
+    @param array Array of docs.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function insertMulti($col,$docs = array(),$key = '')
  {
   if (strpos($col,'.') === FALSE) {$col = $this->dbname.'.'.$col;}
@@ -378,6 +475,13 @@ class MongoClient extends AsyncServer
   );
   return $ids;
  }
+ /* @method remove
+    @description Removes objects from collection.
+    @param string Collection's name.
+    @param array Conditions.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function remove($col,$cond = array(),$key = '')
  {
   if (strpos($col,'.') === FALSE) {$col = $this->dbname.'.'.$col;}
@@ -389,6 +493,14 @@ class MongoClient extends AsyncServer
    .bson_encode($cond)
   );
  }
+ /* @method getMore
+    @description Asks for more objects.
+    @param string Collection's name.
+    @param string Cursor's ID.
+    @param integer Number of objects.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function getMore($col,$id,$number,$key = '')
  {
   if (strpos($col,'.') === FALSE) {$col = $this->dbname.'.'.$col;}
@@ -399,22 +511,31 @@ class MongoClient extends AsyncServer
    .$id
   );
  }
+ /* @method getCollection
+    @description Returns an object of collection.
+    @param string Collection's name.
+    @return object MongoClientCollection
+ */
  public function getCollection($col)
  {
   if (strpos($col,'.') === FALSE) {$col = $this->dbname.'.'.$col;}
   if (isset($this->collections[$col])) {return $this->collections[$col];}
   return $this->collections[$col] = new MongoClientCollection($col,$this);
  }
+ /* @method __get
+    @description Magic getter-method. Proxy for getCollection. 
+    @param string Collection's name.
+    @return void
+ */
  public function __get($name)
  {
   return $this->getCollection($name);
  }
- public function onReady()
- {
-  if (Daemon::$settings['mod'.$this->modname.'enable'])
-  {
-  }
- }
+ /* @method getConnection
+    @description Establishes connection.
+    @param string Address.
+    @return integer Connection's ID.
+ */
  public function getConnection($addr)
  {
   if (isset($this->servConn[$addr]))
@@ -432,7 +553,12 @@ class MongoClient extends AsyncServer
   $this->servConn[$addr][] = $connId;
   return $connId;
  }
- private function getConnectionByKey($key)
+ /* @method getConnectionByKey
+    @description Establishes connection.
+    @param string Distrubution key.
+    @return integer Connection's ID.
+ */
+ public function getConnectionByKey($key)
  {
   if (($this->dtags_enabled) && (($sp = strpos($name,'[')) !== FALSE) && (($ep = strpos($name,']')) !== FALSE) && ($ep > $sp))
   {
@@ -446,7 +572,12 @@ class MongoClient extends AsyncServer
 }
 class MongoClientSession extends SocketSession
 {
- public $busy = FALSE;
+ public $busy = FALSE; // Is this session busy?
+ /* @method stdin
+    @description Called when new data recieved.
+    @param string New data.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;
@@ -500,6 +631,10 @@ class MongoClientSession extends SocketSession
   $this->buf = binarySubstr($this->buf,$plen);
   goto start;
  }
+ /* @method onFinish
+    @description Called when session finished.
+    @return void
+ */
  public function onFinish()
  {
   $this->finished = TRUE;
@@ -510,51 +645,125 @@ class MongoClientSession extends SocketSession
 class MongoClientCollection
 {
  public $appInstance;
- public $name;
+ public $name; // Name of collection.
+ /* @method __contruct
+    @description Contructor of MongoClientCOllection
+    @param string Name of collection.
+    @param string Application's instance.
+    @return void
+ */
  public function __construct($name,$appInstance)
  {
   $this->name = $name;
   $this->appInstance = $appInstance;
  }
- public function find($callback,$p = array())
+ /* @method find
+    @description Finds objects in collection.
+    @param mixed Callback called when response recieved.
+    @param array Hash of properties (offset, limit, opts, tailable, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog).
+    @param string Optional. Distribution key.
+    @return void
+ */
+ public function find($callback,$p = array(),$key = '')
  {
   $p['col'] = $this->name;
-  return $this->appInstance->find($p,$callback);
+  return $this->appInstance->find($p,$callback,$key);
  }
- public function findOne($callback,$p = array())
+ /* @method findOne
+    @description Finds one object in collection.
+    @param mixed Callback called when response recieved.
+    @param array Hash of properties (offset,  opts, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog).
+    @param string Optional. Distribution key.
+    @return void
+ */
+ public function findOne($callback,$p = array(),$key = '')
  {
   $p['col'] = $this->name;
-  return $this->appInstance->findOne($p,$callback);
+  return $this->appInstance->findOne($p,$callback,$key);
  }
- public function count($callback,$where = array())
+ /* @method count
+    @description Counts objects in collection.
+    @param mixed Callback called when response recieved.
+    @param array Hash of properties (offset, limit, opts, where, col).
+    @param string Optional. Distribution key.
+    @return void
+ */
+ public function count($callback,$where = array(),$key = '')
  {
-  return $this->appInstance->count(array('col' => $this->name, 'where' => $where),$callback);
+  return $this->appInstance->count(array('col' => $this->name, 'where' => $where),$callback,$key);
  }
- public function group($callback,$p = array())
+ /* @method group
+    @description Groupping function.
+    @param mixed Callback called when response recieved.
+    @param array Hash of properties (offset, limit, opts, key, col, reduce, initial).
+    @return void
+ */
+ public function group($callback,$p = array(),$key = '')
  {
   $p['col'] = $this->name;
-  return $this->appInstance->group($p,$callback);
+  return $this->appInstance->group($p,$callback,$key);
  }
+ /* @method insert
+    @description Inserts an object.
+    @param array Data.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function insert($doc,$key = '')
  {
   return $this->appInstance->insert($this->name,$doc,$key);
  }
+ /* @method insertMulti
+    @description Inserts several documents.
+    @param array Array of docs.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function insertMulti($docs,$key = '')
  {
   return $this->appInstance->insertMulti($this->name,$docs,$key);
  }
+ /* @method update
+    @description Updates one object in collection.
+    @param array Conditions.
+    @param array Data.
+    @param integer Optional. Flags.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function update($cond,$data,$flags = 0,$key = '')
  {
   return $this->appInstance->update($this->name,$cond,$data,$flags,$key);
  }
+ /* @method updateMulti
+    @description Updates several objects in collection.
+    @param array Conditions.
+    @param array Data.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function updateMulti($cond,$data,$key = '')
  {
   return $this->appInstance->updateMulti($this->name,$cond,$data,$key);
  }
- public function upsert($cond,$data,$key = '')
+ /* @method upsert
+    @description Upserts an object (updates if exists, insert if not exists).
+    @param array Conditions.
+    @param array Data.
+    @param boolean Optional. Multi-flag.
+    @param string Optional. Distribution key.
+    @return void
+ */
+ public function upsert($cond,$data,$multi = FALSE,$key = '')
  {
-  return $this->appInstance->upsert($this->name,$cond,$data,$key);
+  return $this->appInstance->upsert($this->name,$cond,$data,$multi,$key);
  }
+ /* @method remove
+    @description Removes objects from collection.
+    @param array Conditions.
+    @param string Optional. Distribution key.
+    @return void
+ */
  public function remove($cond = array(),$key = '')
  {
   return $this->appInstance->remove($this->name,$cond,$key);
@@ -562,13 +771,20 @@ class MongoClientCollection
 }
 class MongoClientCursor
 {
- public $id;
- public $appInstance;
- public $col;
- public $items = array();
- public $item;
- public $session;
- public $finished = FALSE;
+ public $id; // Cursor's ID.
+ public $appInstance; // Application's instance
+ public $col; // Collection's name.
+ public $items = array(); // Array of objects
+ public $item; // Current object
+ public $session; // Network session
+ public $finished = FALSE; // Is this cursor finished?
+ /* @method __construct
+    @description Constructor.
+    @param string Cursor's ID.
+    @param string Collection's name.
+    @param object Network session (MongoClientSession),
+    @return void
+ */
  public function __construct($id,$col,$session)
  {
   $this->id = $id;
@@ -576,16 +792,29 @@ class MongoClientCursor
   $this->session = $session;
   $this->appInstance = $session->appInstance;
  }
+ /* @method getMore
+    @description Asks for more objects.
+    @param integer Number of objects.
+    @return void
+ */
  public function getMore($number = 0)
  {
   if (binarySubstr($this->id,0,1) === 'c') {$this->appInstance->getMore($this->col,binarySubstr($this->id,1),$number,$this->session);}
   return TRUE;
  }
+ /* @method destroy
+    @description Destroys the cursors.
+    @return boolean Success.
+ */
  public function destroy()
  {
   unset($this->appInstance->cursors[$this->id]);
   return TRUE;
  }
+ /* @method __destruct
+    @description Cursor's destructor. Sends a signal to the server.
+    @return void
+ */
  public function __destruct()
  {
   if (binarySubstr($this->id,0,1) === 'c') {$this->appInstance->killCursors(array(binarySubstr($this->id,1)));}
