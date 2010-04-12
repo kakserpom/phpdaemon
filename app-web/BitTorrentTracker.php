@@ -917,7 +917,6 @@ class BitTorrentTracker_Request extends Request
 }
 class BitTorrentTracker_TorrentImporter extends Request
 {
- public $inited = FALSE;
  public $concurrencyLimit = 5;
  public $dir;
  public $handle;
@@ -958,7 +957,6 @@ class BitTorrentTracker_TorrentImporter extends Request
 
 class BitTorrentTracker_RatingUpdate extends Request
 {
- public $inited = FALSE;
  public $processing = 0;
  public $concurrencyLimit = 1;
  public function run()

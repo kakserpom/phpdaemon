@@ -625,7 +625,6 @@ class ChatSession
 }
 class Chat_MsgQueueRequest extends Request
 {
- public $inited = FALSE;
  public function run()
  {
   foreach ($this->appInstance->tags as $tag) {$tag->touch();}
