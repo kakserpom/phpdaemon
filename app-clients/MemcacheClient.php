@@ -270,14 +270,19 @@ class MemcacheClient extends AsyncServer
 }
 class MemcacheSession extends SocketSession
 {
- public $onResponse = array();
- public $state = 0;
- public $result;
- public $valueFlags;
- public $valueLength;
- public $valueSize = 0;
- public $error;
- public $key;
+ public $onResponse = array(); // stack of onResponse callbacks
+ public $state = 0; // current state of the connection
+ public $result; // current result
+ public $valueFlags; // flags of incoming value
+ public $valueLength; // length of incoming value
+ public $valueSize = 0; // size of recieved part of the value
+ public $error; // error message
+ public $key; // current incoming key
+ /* @method stdin
+    @description Called when new data recieved.
+    @param string New data.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;
