@@ -90,6 +90,20 @@ class FastCGI extends AsyncServer
    2 => 'FCGI_AUTHORIZER',
    3 => 'FCGI_FILTER',
   );
+  static $reqtypes = array(
+   1 => 'FCGI_BEGIN_REQUEST',
+   2 => 'FCGI_ABORT_REQUEST',
+   3 => 'FCGI_END_REQUEST',
+   4 => 'FCGI_PARAMS',
+   5 => 'FCGI_STDIN',
+   6 => 'FCGI_STDOUT',
+   7 => 'FCGI_STDERR',
+   8 => 'FCGI_DATA',
+   9 => 'FCGI_GET_VALUES',
+   10 => 'FCGI_GET_VALUES_RESULT',
+   11 => 'FCGI_UNKNOWN_TYPE',
+   11 => 'FCGI_MAXTYPE',
+  );
   $state = sizeof($this->poolState[$connId]);
   if ($state === 0)
   {
@@ -119,7 +133,7 @@ class FastCGI extends AsyncServer
   else {$pad = $this->poolState[$connId][2];}
   $this->poolState[$connId] = array();
   $type = &$r['type'];
-  $r['ttype'] = isset(Daemon::$reqtypes[$type])?Daemon::$reqtypes[$type]:$type;
+  $r['ttype'] = isset($reqtypes[$type])?$reqtypes[$type]:$type;
   $rid = $connId.'-'.$r['reqid'];
   if (Daemon::$settings['mod'.$this->modname.'logrecords']) {Daemon::log('[DEBUG] FastCGI-record #'.$r['type'].' ('.$r['ttype'].'). Request ID: '.$rid.'. Content length: '.$r['conlen'].' ('.strlen($c).') Padding length: '.$r['padlen'].' ('.strlen($pad).')');}
   if ($type == 1) // FCGI_BEGIN_REQUEST
