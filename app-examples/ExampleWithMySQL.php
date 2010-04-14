@@ -2,6 +2,12 @@
 return new ExampleWithMySQL;
 class ExampleWithMySQL extends AppInstance
 {
+ /* @method beginRequest
+    @description Creates Request.
+    @param object Request.
+    @param object Upstream application instance.
+    @return object Request.
+ */
  public function beginRequest($req,$upstream) {return new ExampleWithMySQLRequest($this,$upstream,$req);}
 }
 class ExampleWithMySQLRequest extends Request
@@ -10,6 +16,10 @@ class ExampleWithMySQLRequest extends Request
  public $queryResult;
  public $sql;
  public $runstate = 0;
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   $this->stime = microtime(TRUE);
@@ -28,6 +38,10 @@ class ExampleWithMySQLRequest extends Request
    });
   }
  }
+ /* @method run
+    @description Called when request iterated.
+    @return void
+ */
  public function run()
  {
   if (!$this->queryResult && ($this->runstate++ === 0)) {$this->sleep(5);} // sleep for 5 seconds or untill wake up

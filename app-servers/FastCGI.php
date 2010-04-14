@@ -2,9 +2,13 @@
 return new FastCGI;
 class FastCGI extends AsyncServer
 {
- public $initialLowMark = 8;
- public $initialHighMark = 0xFFFFFF;
+ public $initialLowMark = 8; // initial value of the minimal amout of bytes in buffer
+ public $initialHighMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
  public $queuedReads = TRUE;
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -30,6 +34,12 @@ class FastCGI extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ /* @method requestOut
+    @description Handles the output from downstream requests.
+    @param object Request.
+    @param string The output.
+    @return void
+ */
  public function requestOut($r,$s)
  {
   $l = strlen($s);
@@ -59,6 +69,10 @@ class FastCGI extends AsyncServer
    $o += $c;
   }
  }
+ /* @method endRequest
+    @description Handles the output from downstream requests.
+    @return void
+ */
  public function endRequest($req,$appStatus,$protoStatus)
  {
   $connId = $req->attrs->connId;
@@ -83,6 +97,11 @@ class FastCGI extends AsyncServer
    $this->finishConnection($connId);
   }
  }
+ /* @method readConn
+    @description Reads data from the connection's buffer.
+    @param integer Connection's ID.
+    @return void
+ */
  public function readConn($connId)
  {
   static $roles = array(

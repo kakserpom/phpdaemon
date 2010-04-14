@@ -5,6 +5,10 @@ class Example extends AppInstance
  public $counter = 0;
  public $sharedcounter = 1;
  public $RTEPClient;
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   $o = $this;
@@ -18,23 +22,37 @@ class Example extends AppInstance
    });
   }
  }
+ /* @method onReady
+    @description Called when the worker is ready to go.
+    @return void
+ */
  public function onReady()
  {
   // Initialization.
  }
+ /* @method onShutdown
+    @description Called when application instance is going to shutdown.
+    @return boolean Ready to shutdown?
+ */
  public function onShutdown()
  {
   // Finalization.
   return TRUE;
  }
+ /* @method beginRequest
+    @description Creates Request.
+    @param object Request.
+    @param object Upstream application instance.
+    @return object Request.
+ */
  public function beginRequest($req,$upstream) {return new ExampleRequest($this,$upstream,$req);}
 }
 class ExampleRequest extends Request
 {
- public function __destruct()
- {
-  //Daemon::log(get_class($this).' destructed');
- }
+ /* @method run
+    @description Called when request iterated.
+    @return void
+ */
  public function run()
  {
   $stime = microtime(TRUE);

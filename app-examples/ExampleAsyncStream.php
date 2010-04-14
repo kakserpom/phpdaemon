@@ -2,11 +2,21 @@
 return new ExampleAsyncStream;
 class ExampleAsyncStream extends AppInstance
 {
+ /* @method beginRequest
+    @description Creates Request.
+    @param object Request.
+    @param object Upstream application instance.
+    @return object Request.
+ */
  public function beginRequest($req,$upstream) {return new ExampleAsyncStreamRequest($this,$upstream,$req);}
 }
 class ExampleAsyncStreamRequest extends Request
 {
  public $stream;
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   try
@@ -25,10 +35,18 @@ class ExampleAsyncStreamRequest extends Request
    $this->finish();
   }
  }
+ /* @method onAbort
+    @description Called when the request aborted.
+    @return void
+ */
  public function onAbort()
  {
   if ($this->stream) {$this->stream->close();}
  }
+ /* @method run
+    @description Called when request iterated.
+    @return void
+ */
  public function run()
  {
   if (!$this->stream->eof()) {$this->sleep();}
