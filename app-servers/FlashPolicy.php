@@ -20,6 +20,7 @@ class FlashPolicy extends AsyncServer
   {
    Daemon::log(__CLASS__.' up.');
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
+   $this->update();
   }
  }
  /* @method update
@@ -29,18 +30,6 @@ class FlashPolicy extends AsyncServer
  public function update()
  {
   $this->policyData = file_get_contents(Daemon::$settings['mod'.$this->modname.'file']);
- }
- /* @method onReady
-    @description Called when the worker is ready to go.
-    @return void
- */
- public function onReady()
- {
-  if (Daemon::$settings['mod'.$this->modname.'enable'])
-  {
-   $this->update();
-   $this->enableSocketEvents();
-  }
  }
  /* @method onAccepted
     @description Called when new connection is accepted.
