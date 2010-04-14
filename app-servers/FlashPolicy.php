@@ -22,6 +22,14 @@ class FlashPolicy extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ /* @method update
+    @description Called when worker is going to update configuration.
+    @return void
+ */
+ public function update()
+ {
+  $this->policyData = file_get_contents(Daemon::$settings['mod'.$this->modname.'file']);
+ }
  /* @method onReady
     @description Called when the worker is ready to go.
     @return void
@@ -30,7 +38,7 @@ class FlashPolicy extends AsyncServer
  {
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
-   $this->policyData = file_get_contents(Daemon::$settings['mod'.$this->modname.'file']);
+   $this->update();
    $this->enableSocketEvents();
   }
  }
