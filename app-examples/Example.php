@@ -17,7 +17,7 @@ class Example extends AppInstance
   if ($RTEP)
   {
    $RTEP->eventGroups['visitorHit'] = array(
-    function($session,$packet,$args = array())  { $session->addEvent('visitorHit');}.
+    function($session,$packet,$args = array())  { $session->addEvent('visitorHit');},
     function($session,$packet,$args = array()) {$session->removeEvent('visitorHit');}
    );
   }  
