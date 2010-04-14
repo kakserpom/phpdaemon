@@ -2,10 +2,20 @@
 return new ServerStatus_AppInstance;
 class ServerStatus_AppInstance extends AppInstance
 {
+ /* @method beginRequest
+    @description Creates Request.
+    @param object Request.
+    @param object Upstream application instance.
+    @return object Request.
+ */
  public function beginRequest($req,$upstream) {return new ServerStatus_Request($this,$upstream,$req);}
 }
 class ServerStatus_Request extends Request
 {
+ /* @method run
+    @description Called when request iterated.
+    @return integer Status.
+ */
  public function run()
  {
   $stime = microtime(TRUE);

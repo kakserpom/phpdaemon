@@ -43,9 +43,9 @@ class FlashPolicy extends AsyncServer
   }
  }
  /* @method onAccepted
+    @description Called when new connection is accepted.
     @param integer Connection's ID.
     @param string Address of the connected peer.
-    @description Called when new connection is accepted.
     @return void
  */
  public function onAccepted($connId,$addr)

@@ -3,6 +3,10 @@ return new RTEPClient;
 class RTEPClient extends AppInstance
 {
  public $client;
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(

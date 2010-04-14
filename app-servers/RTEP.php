@@ -2,9 +2,13 @@
 return new RTEP;
 class RTEP extends AsyncServer
 {
- public $sessions = array();
- public $events = array();
- public $eventGroups = array();
+ public $sessions = array(); // Active sessions
+ public $events = array(); // Current events
+ public $eventGroups = array(); // Callbacks for groups of events.
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -15,36 +19,25 @@ class RTEP extends AsyncServer
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');
-   $this->initEventGroups();
-   $this->initOperations();
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
- public function initOperations() // you can redefine this method
- {
- }
- public function initEventGroups() // you can redefine this method
- {
-  $this->eventGroups['visitorHit'] =  array(function($session,$packet,$args = array())
-  {
-   $session->addEvent('visitorHit');
-  },function($session,$packet,$args = array())
-  {
-   $session->removeEvent('visitorHit');
-  });
- }
- public function onReady()
- {
-  if (Daemon::$settings['mod'.$this->modname.'enable'])
-  {
-   $this->enableSocketEvents();
-  }
- }
+ /* @method onAccepted
+    @description Called when new connection is accepted.
+    @param integer Connection's ID.
+    @param string Address of the connected peer.
+    @return void
+ */
  public function onAccepted($connId,$addr)
  {
   $this->sessions[$connId] = new RTEPSession($connId,$this);
   $this->sessions[$connId]->clientAddr = $addr;
  }
+ /* @method onEvent
+    @description Called when new packet recieved.
+    @param array Packet.
+    @return void
+ */
  public function onEvent($packet)
  {
   if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.': '.Daemon::var_dump($packet));}
@@ -65,12 +58,17 @@ class RTEP extends AsyncServer
 }
 class RTEPSession extends SocketSession
 {
- public $server = FALSE;
- public $events = array();
- public $onEventRemove = array();
- public $http = FALSE;
+ public $server = FALSE; // Is this S2S-session?
+ public $events = array(); // Events
+ public $onEventRemove = array(); // HHash of callbacks called when events removed (evName -> callback).
+ public $http = FALSE; // Is this HTTP-connection?
  public $firstline = TRUE;
  public $pstate = 0;
+ /* @method send
+    @description Sends a packet.
+    @param array Packet.
+    @return void
+ */
  public function send($packet)
  {
   if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked ('.$this->clientAddr.'): '.Daemon::var_dump($packet));}
@@ -93,6 +91,11 @@ class RTEPSession extends SocketSession
    $this->writeln(json_encode($packet));
   }
  }
+ /* @method addEvent
+    @description Adds event.
+    @param string Event name.
+    @return void
+ */
  public function addEvent($evName)
  {
   if (!isset($this->appInstance->events[$evName])) {$this->appInstance->events[$evName] = array();}
@@ -100,6 +103,11 @@ class RTEPSession extends SocketSession
   if (!in_array($evName,$this->events)) {$this->events[] = $evName;}
   if (Daemon::$settings['logevents']) {Daemon::log('Event \''.$evName.'\' added to client '.$this->clientAddr.'.');}
  }
+ /* @method removeEvent
+    @description Removes event.
+    @param string Event name.
+    @return void
+ */
  public function removeEvent($evName)
  {
   if (($s = sizeof($this->appInstance->events[$evName])) === 1) {unset($this->appInstance->events[$evName]);}
@@ -109,12 +117,20 @@ class RTEPSession extends SocketSession
   if (Daemon::$settings['logevents']) {Daemon::log('Event \''.$evName.'\' removed from client '.$this->clientAddr.'.');}
   return $s;
  }
+ /* @method onFinish
+    @description Called when the session finished.
+    @return void
+ */
  public function onFinish()
  {
   if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked');}
   foreach ($this->events as $evName) {$this->removeEvent($evName);}
   unset($this->appInstance->sessions[$this->connId]);
  }
+ /* @method onRequest
+    @description Called when new request recieved.
+    @return void
+ */
  public function onRequest($packet)
  {
   if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.': '.Daemon::var_dump($packet));}

@@ -2,9 +2,13 @@
 return new HTTP;
 class HTTP extends AsyncServer
 {
- public $initialLowMark = 1;
- public $initialHighMark = 0xFFFFFF;
+ public $initialLowMark = 1;  // initial value of the minimal amout of bytes in buffer
+ public $initialHighMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
  public $queuedReads = TRUE;
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -26,6 +30,12 @@ class HTTP extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ /* @method onAccepted
+    @description Called when new connection is accepted.
+    @param integer Connection's ID.
+    @param string Address of the connected peer.
+    @return void
+ */
  public function onAccepted($connId,$addr)
  {
   $this->poolState[$connId] = array(
@@ -34,6 +44,12 @@ class HTTP extends AsyncServer
    'addr' => $addr,
   );
  }
+ /* @method requestOut
+    @description Handles the output from downstream requests.
+    @param object Request.
+    @param string The output.
+    @return void
+ */
  public function requestOut($r,$s)
  {
   //Daemon::log('Request output (len. '.strlen($s).': \''.$s.'\'');
@@ -50,6 +66,10 @@ class HTTP extends AsyncServer
    return FALSE;
   }
  }
+ /* @method endRequest
+    @description Handles the output from downstream requests.
+    @return void
+ */
  public function endRequest($req,$appStatus,$protoStatus)
  {
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] endRequest('.implode(',',func_get_args()).').');};
@@ -70,6 +90,11 @@ class HTTP extends AsyncServer
    }
   }
  }
+ /* @method readConn
+    @description Reads data from the connection's buffer.
+    @param integer Connection's ID.
+    @return void
+ */
  public function readConn($connId)
  {
   static $roles = array(

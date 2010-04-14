@@ -40,7 +40,7 @@ class ExampleWithMySQLRequest extends Request
  }
  /* @method run
     @description Called when request iterated.
-    @return void
+    @return integer Status.
  */
  public function run()
  {

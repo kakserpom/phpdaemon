@@ -4,15 +4,30 @@ class InteractivePHP extends AppInstance
 {
  public $db;
  public $proc = array();
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   $this->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
  }
+ /* @method getSession
+    @description Returns pointer of process.
+    @param string Id.
+    @return resource Pointer.
+ */
  public function getSession($id)
  {
   if (!isset($this->proc[$id])) {return FALSE;}
   return $this->proc[$id];
  }
+ /* @method sendCommand
+    @description Sends command to the process.
+    @param string Id.
+    @param string Commmand.
+    @return resource Pointer.
+ */
  public function sendCommand($id,$cmd)
  {
   if (!isset($this->proc[$id]))
@@ -29,11 +44,21 @@ class InteractivePHP extends AppInstance
   $this->proc[$id]->eof();
   if ($cmd !== '') {$this->proc[$id]->write($cmd."\n");}
  }
+ /* @method beginRequest
+    @description Creates Request.
+    @param object Request.
+    @param object Upstream application instance.
+    @return object Request.
+ */
  public function beginRequest($req,$upstream) {return new InteractivePHPRequest($this,$upstream,$req);}
 }
 class InteractivePHPRequest extends Request
 {
  public $eState = 0;
+ /* @method run
+    @description Called when request iterated.
+    @return integer Status.
+ */
  public function run()
  {
   if ($this->eState === 1) {goto sleep;}

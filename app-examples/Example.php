@@ -13,6 +13,14 @@ class Example extends AppInstance
  {
   $o = $this;
   $this->RTEPClient = Daemon::$appResolver->getInstanceByAppName('RTEPClient');
+  $RTEP = Daemon::$appResolver->getInstanceByAppName('RTEP');
+  if ($RTEP)
+  {
+   $RTEP->eventGroups['visitorHit'] = array(
+    function($session,$packet,$args = array())  { $session->addEvent('visitorHit');}.
+    function($session,$packet,$args = array()) {$session->removeEvent('visitorHit');}
+   );
+  }  
   if ($this->RTEPClient && $this->RTEPClient->client)
   {
    $this->RTEPClient->client->addEventCallback('visitorHit',function($event) use ($o)
@@ -51,7 +59,7 @@ class ExampleRequest extends Request
 {
  /* @method run
     @description Called when request iterated.
-    @return void
+    @return integer Status.
  */
  public function run()
  {
