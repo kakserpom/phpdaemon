@@ -2,11 +2,11 @@
 return new MemcacheClient;
 class MemcacheClient extends AsyncServer
 {
- public $sessions = array(); // active sessions
- public $servers = array(); // array of servers 
- public $dtags_enabled = FALSE; // enables tags for distribution
- public $servConn = array(); // active connections
- public $prefix = ''; // prefix for all keys
+ public $sessions = array(); // Active sessions
+ public $servers = array(); // Array of servers 
+ public $dtags_enabled = FALSE; // Enables tags for distribution
+ public $servConn = array(); // Active connections
+ public $prefix = ''; // Prefix for all keys
  /* @method init
     @description Constructor.
     @return void

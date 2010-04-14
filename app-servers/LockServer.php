@@ -2,9 +2,13 @@
 return new LockServer;
 class LockServer extends AsyncServer
 {
- public $sessions = array();
- public $lockState = array();
- public $lockConnState = array();
+ public $sessions = array(); // Active sessions
+ public $lockState = array(); // States of jobs
+ public $lockConnState = array(); // Array of session's state
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -20,13 +24,12 @@ class LockServer extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
- public function onReady()
- {
-  if (Daemon::$settings['mod'.$this->modname.'enable'])
-  {
-   $this->enableSocketEvents();
-  }
- }
+ /* @method onAccepted
+    @param integer Connection's ID.
+    @param string Address of the connected peer.
+    @description Called when new connection is accepted.
+    @return void
+ */
  public function onAccepted($connId,$addr)
  {
   if ((($p = strrpos($addr,':')) !== FALSE) && !$this->netMatch($this->allowedClients,substr($addr,0,$p))) {return FALSE;}
@@ -36,8 +39,14 @@ class LockServer extends AsyncServer
 }
 class LockServerSession extends SocketSession
 {
- public $server = FALSE;
- public $locks = array();
+ public $server = FALSE; // Is this S2S-session?
+ public $locks = array(); // State of locks.
+ /* @method acquireLock
+    @param string Name of job.
+    @param boolean Wait if already acquired?
+    @description Called when client is trying to acquire lock.
+    @return string Result.
+ */
  public function acquireLock($name,$wait = FALSE)
  {
   if (!isset($this->appInstance->lockState[$name]))
@@ -58,6 +67,12 @@ class LockServerSession extends SocketSession
    return 'FAILED';
   }
  }
+ /* @method done
+    @param string Name of job.
+    @param string Result.
+    @description Called when client sends done- or failed-event.
+    @return string Result.
+ */
  public function done($name,$result)
  {
   if (isset($this->appInstance->lockState[$name]) && ($this->appInstance->lockState[$name] === 1)
@@ -75,28 +90,10 @@ class LockServerSession extends SocketSession
    unset($this->appInstance->lockConnState[$name]);
   }
  }
- public function onRequest($l)
- {
-  $e = explode(' ',$l);
-  if ($e[0] === 'acquire')
-  {
-   $this->writeln($this->acquireLock($e[1]).' '.$e[1]);
-  }
-  elseif ($e[0] === 'acquireWait')
-  {
-   $this->writeln($this->acquireLock($e[1],TRUE).' '.$e[1]);
-  }
-  elseif ($e[0] === 'done')
-  {
-   $this->done($e[1],'DONE');
-  }
-  elseif ($e[0] === 'failed')
-  {
-   $this->done($e[1],'FAILED');
-  }
-  elseif ($e[0] === 'quit') {$this->finish();}
-  elseif ($e[0] !== '') {$this->writeln('PROTOCOL_ERROR');}
- }
+ /* @method onFinish
+    @description Event of SocketSession (asyncServer).
+    @return void
+ */
  public function onFinish()
  {
   if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked');}
@@ -107,12 +104,36 @@ class LockServerSession extends SocketSession
   }
   unset($this->appInstance->sessions[$this->connId]);
  }
+ /* @method stdin
+    @description Called when new data recieved.
+    @param string New data.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;
   while (($l = $this->gets()) !== FALSE)
   {
-   $this->onRequest(rtrim($l,"\r\n"));
+   $l = rtrim($l,"\r\n");
+   $e = explode(' ',$l);
+   if ($e[0] === 'acquire')
+   {
+    $this->writeln($this->acquireLock($e[1]).' '.$e[1]);
+   }
+   elseif ($e[0] === 'acquireWait')
+   {
+    $this->writeln($this->acquireLock($e[1],TRUE).' '.$e[1]);
+   }
+   elseif ($e[0] === 'done')
+   {
+    $this->done($e[1],'DONE');
+   }
+   elseif ($e[0] === 'failed')
+   {
+    $this->done($e[1],'FAILED');
+   }
+   elseif ($e[0] === 'quit') {$this->finish();}
+   elseif ($e[0] !== '') {$this->writeln('PROTOCOL_ERROR');}
   }
   if ((strpos($this->buf,"\xff\xf4\xff\xfd\x06") !== FALSE) || (strpos($this->buf,"\xff\xec") !== FALSE))
   {

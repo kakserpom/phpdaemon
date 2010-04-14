@@ -2,12 +2,16 @@
 return new LockClient;
 class LockClient extends AsyncServer
 {
- public $sessions = array();
- public $servers = array();
- public $servConn = array();
- public $prefix = '';
- public $jobs = array();
- public $dtags_enabled = FALSE;
+ public $sessions = array(); // Active sessions
+ public $servers = array(); // Array of servers
+ public $servConn = array(); // Active connections
+ public $prefix = ''; // Prefix
+ public $jobs = array(); // Active jobs
+ public $dtags_enabled = FALSE; // enables tags for distibution
+ /* @method init
+    @description Constructor.
+    @return void
+ */
  public function init()
  {
   Daemon::addDefaultSettings(array(
@@ -28,11 +32,27 @@ class LockClient extends AsyncServer
    }
   }
  }
+ /* @method addServer
+    @description Adds memcached server.
+    @param string Server's host.
+    @param string Server's port.
+    @param integer Weight.
+    @return void
+ */
  public function addServer($host,$port = NULL,$weight = NULL)
  {
   if ($port === NULL) {$port = Daemon::$settings['mod'.$this->modname.'port'];}
   $this->servers[$host.':'.$port] = $weight;
  }
+ /* @method job
+    @description Runs a job.
+    @param string Name of job.
+    @param callback onRun. Job's runtime.
+    @param callback onSuccess. Called when job successfully done.
+    @param callback onFailure. Called when job failed.
+    @param integer Weight.
+    @return void
+ */
  public function job($name,$wait,$onRun,$onSuccess = NULL,$onFailure = NULL)
  {
   $name = $this->prefix.$name;
@@ -42,24 +62,33 @@ class LockClient extends AsyncServer
   $this->jobs[$name] = array($onRun,$onSuccess,$onFailure);
   $sess->writeln('acquire'.($wait?'Wait':'').' '.$name);
  }
+ /* @method done
+    @description Sends done-event.
+    @param string Name of job.
+    @return void
+ */
  public function done($name)
  {
   $connId = $this->getConnectionByName($name);
   $sess = $this->sessions[$connId];
   $sess->writeln('done '.$name);
  }
+ /* @method failed
+    @description Sends failed-event.
+    @param string Name of job.
+    @return void
+ */
  public function failed($name)
  {
   $connId = $this->getConnectionByName($name);
   $sess = $this->sessions[$connId];
   $sess->writeln('failed '.$name);
  }
- public function onReady()
- {
-  if (Daemon::$settings['mod'.$this->modname.'enable'])
-  {
-  }
- }
+ /* @method getConnection
+    @description Establishes connection.
+    @param string Address.
+    @return integer Connection's ID.
+ */
  public function getConnection($addr)
  {
   if (isset($this->servConn[$addr]))
@@ -76,7 +105,12 @@ class LockClient extends AsyncServer
   $this->servConn[$addr][] = $connId;
   return $connId;
  }
- private function getConnectionByName($name)
+ /* @method getConnectionByName
+    @description Returns available connection from the pool by name.
+    @param string Key.
+    @return object MemcacheSession
+ */
+ public function getConnectionByName($name)
  {
   if (($this->dtags_enabled) && (($sp = strpos($name,'[')) !== FALSE) && (($ep = strpos($name,']')) !== FALSE) && ($ep > $sp))
   {
@@ -90,6 +124,11 @@ class LockClient extends AsyncServer
 }
 class LockClientSession extends SocketSession
 {
+ /* @method stdin
+    @description Called when new data recieved.
+    @param string New data.
+    @return void
+ */
  public function stdin($buf)
  {
   $this->buf .= $buf;
