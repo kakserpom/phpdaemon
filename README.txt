@@ -2,9 +2,11 @@
 						phpDaemon
 http://github.com/kakserpom/phpdaemon
 
-True async. server with API for PHP. It has many features.
+True async. framework with API for PHP. It has many features.
 Main features and possibilites:
  - True FastCGI for PHP.
+ - Powerful WebSocket server.
+ - Many bundled clients like MySQL, Memcache, MongoDB, etc.
  - Interactive debug console.
  - Dynamic spawning workers.
  - Chroot & Chdir for workers.
