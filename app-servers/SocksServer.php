@@ -11,7 +11,7 @@ class SocksServer extends AsyncServer
  {
   Daemon::$settings += array(
    'mod'.$this->modname.'listen' => 'tcp://0.0.0.0',
-   'mod'.$this->modname.'listenport' => 1080,
+   'mod'.$this->modname.'listenport' => 1081,
    'mod'.$this->modname.'auth' => 0,
    'mod'.$this->modname.'username' => 'User',
    'mod'.$this->modname.'password' => 'Password',
@@ -39,6 +39,7 @@ class SocksSession extends SocketSession
 {
  public $ver; // protocol version (X'04' / X'05')
  public $state = 0; // (0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange)
+ public $slave;
  /* @method stdin
     @description Called when new data recieved.
     @param string New data.
@@ -143,11 +144,45 @@ class SocksSession extends SocketSession
    $this->buf = binarySubstr($this->buf,$pl);
 
    $connId = $this->appInstance->connectTo($this->destAddr = $address,$this->destPort = $port);
-   $this->slave = $this->appInstance->sessions[$connId] = new SocksServerSlaveSession($connId,$this->appInstance);
-   $this->slave->client = $this;
-   $this->slave->write($this->buf);
-   $this->buf = '';
+   if (!$connId) // Early connection error
+   {
+    $this->write($this->ver."\x05");
+    $this->finish();
+   } 
+   else
+   {
+    $this->slave = $this->appInstance->sessions[$connId] = new SocksServerSlaveSession($connId,$this->appInstance);
+    $this->slave->client = $this;
+    $this->slave->write($this->buf);
+    $this->buf = '';
+    $this->state = 4;
+   }
   }
+ }
+ public function onSlaveReady($code)
+ {
+  $reply =
+   $this->ver // Version
+   .chr($code) // Status
+   ."\x00" // Reserved
+  ;
+  if (Daemon::$useSockets && socket_getsockname(Daemon::$worker->pool[$this->connId],$address,$port))
+  {
+   $reply .=
+    (strpos($address,':') === FALSE?"\x01":"\x04") // IPv4/IPv6
+    .inet_pton($address) // Address
+    ."\x00\x00"//pack('n',$port) // Port
+   ;
+  }
+  else
+  {
+   $reply .=
+    "\x01"
+    ."\x00\x00\x00\x00"
+    ."\x00\x00"
+   ;
+  }
+  $this->write($reply);
  }
  /* @method onFinish
     @description Event of SocketSession (asyncServer).
@@ -155,13 +190,26 @@ class SocksSession extends SocketSession
  */
  public function onFinish()
  {
-  $this->slave->finish();
+  if ($this->slave) {$this->slave->finish();}
   unset($this->slave);
  }
 }
 class SocksServerSlaveSession extends SocketSession
 {
  public $client;
+ public $ready = FALSE;
+ /* @method onwrite
+    @description Called when the connection is ready to accept new data.
+    @return void
+ */
+ public function onWrite()
+ {
+  if (!$this->ready)
+  {
+   $this->ready = TRUE;
+   $this->client->onSlaveReady(0x00);
+  }
+ }
  /* @method stdin
     @description Called when new data recieved.
     @param string New data.
@@ -177,7 +225,7 @@ class SocksServerSlaveSession extends SocketSession
  */
  public function onFinish()
  {
-  unset($this->client);
   $this->client->finish();
+  unset($this->client);
  }
 }
