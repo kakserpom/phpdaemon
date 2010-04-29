@@ -11,7 +11,7 @@ class SocksServer extends AsyncServer
  {
   Daemon::$settings += array(
    'mod'.$this->modname.'listen' => 'tcp://0.0.0.0',
-   'mod'.$this->modname.'listenport' => 1081,
+   'mod'.$this->modname.'listenport' => 1080,
    'mod'.$this->modname.'auth' => 0,
    'mod'.$this->modname.'username' => 'User',
    'mod'.$this->modname.'password' => 'Password',
