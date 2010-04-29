@@ -56,6 +56,11 @@ class SocketSession
   $this->finish();
   return TRUE;
  }
+ /* @method onwrite
+    @description Called when the connection is ready to accept new data.
+    @return void
+ */
+ public function onWrite() {}
  /* @method write
     @param string Data to send.
     @description Sends data to connection. Note that it just writes to buffer that flushes at every baseloop.

@@ -450,6 +450,10 @@ class AsyncServer extends AppInstance
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.get_class($this).'::'.__METHOD__.'('.$connId.') invoked.');}
   if ($this->poolState[$connId] === FALSE) {$this->closeConnection($connId);}
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.get_class($this).'::'.__METHOD__.'('.$connId.') finished.');}
+  if (isset($this->sessions[$connId]))
+  {
+   $this->sessions[$connId]->onWrite();
+  }
  }
  /* @method onFailureEvent
     @param resource Descriptor.
