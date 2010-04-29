@@ -490,10 +490,13 @@ class Daemon
  */
  public static function exportBytes($str,$all = FALSE)
  {
-  return preg_replace_callback('~'.($all?'.':'[^A-Za-z\d\.$:;\-_/\\\\]').'~s',function($m)
+  return preg_replace_callback('~'.($all?'.':'[^A-Za-z\d\.$:;\-_/\\\\]').'~s',function($m) use ($all)
   {
-   if ($m[0] == "\r") {return "\n".'\r';}
-   if ($m[0] == "\n") {return '\n';}
+   if (!$all)
+   {
+    if ($m[0] == "\r") {return "\n".'\r';}
+    if ($m[0] == "\n") {return '\n';}
+   }
    return sprintf('\x%02x',ord($m[0]));
   },$str);
  }
