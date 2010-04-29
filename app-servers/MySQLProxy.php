@@ -22,17 +22,6 @@ class MySQLProxy extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
- /* @method onReady
-    @description Called when the worker is ready to go.
-    @return void
- */
- public function onReady()
- {
-  if (Daemon::$settings['mod'.$this->modname.'enable'])
-  {
-   $this->enableSocketEvents();
-  }
- }
  /* @method onAccepted
     @description Called when new connection is accepted.
     @param integer Connection's ID.
@@ -70,6 +59,10 @@ class MySQLProxySession extends SocketSession
   if (Daemon::$settings[$k = 'mod'.$this->appInstance->modname.'protologging']) {Daemon::log('MySQLProxy: Client --> Server: '.Daemon::exportBytes($buf)."\n\n");}
   $this->upstream->write($buf);
  }
+ /* @method onFinish
+    @description Event of SocketSession (asyncServer).
+    @return void
+ */
  public function onFinish()
  {
   $this->upstream->finish();
@@ -87,9 +80,12 @@ class MySQLProxyUpserverSession extends SocketSession
  {
   // from mysqld to client.
   if (Daemon::$settings[$k = 'mod'.$this->modname.'protologging']) {Daemon::log('MysqlProxy: Server --> Client: '.Daemon::exportBytes($buf)."\n\n");}
-  $this->buf .= $buf;
   $this->downstream->write($buf);
  }
+ /* @method onFinish
+    @description Event of SocketSession (asyncServer).
+    @return void
+ */
  public function onFinish()
  {
   $this->downstream->finish();
