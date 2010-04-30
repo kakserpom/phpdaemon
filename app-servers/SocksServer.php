@@ -190,7 +190,7 @@ class SocksSession extends SocketSession
  */
  public function onFinish()
  {
-  if ($this->slave) {$this->slave->finish();}
+  if (isset($this->slave)) {$this->slave->finish();}
   unset($this->slave);
  }
 }
@@ -207,7 +207,7 @@ class SocksServerSlaveSession extends SocketSession
   if (!$this->ready)
   {
    $this->ready = TRUE;
-   $this->client->onSlaveReady(0x00);
+   if (isset($this->client)) {$this->client->onSlaveReady(0x00);}
   }
  }
  /* @method stdin
@@ -225,7 +225,7 @@ class SocksServerSlaveSession extends SocketSession
  */
  public function onFinish()
  {
-  $this->client->finish();
+  if (isset($this->client)) {$this->client->finish();}
   unset($this->client);
  }
 }
