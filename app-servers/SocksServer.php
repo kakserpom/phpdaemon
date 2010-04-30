@@ -225,7 +225,7 @@ class SocksServerSlaveSession extends SocketSession
  */
  public function onFinish()
  {
-  $this->client->finish();
+  if ($this->client) {$this->client->finish();}
   unset($this->client);
  }
 }
