@@ -434,11 +434,7 @@ class PostgreSQLClientSession extends SocketSession
   }
   elseif ($type === 'S') // Portal Suspended
   {
-   // The backend is ready to copy data from the frontend to a table; see Section 45.2.5.
-   $this->errno = -1;
-   $this->errmsg = 'Portal suspended';
-   $this->onError();
-   if (Daemon::$settings['mod'.$this->appInstance->modname.'protologging']) {Daemon::log(__CLASS__.': Caught CopyInResponse');}
+   if (Daemon::$settings['mod'.$this->appInstance->modname.'protologging']) {Daemon::log(__CLASS__.': Caught PortalSuspended');}
   }
   elseif ($type === 'S') // Parameter Status
   {
