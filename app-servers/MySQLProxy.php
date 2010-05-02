@@ -43,7 +43,7 @@ class MySQLProxySession extends SocketSession
  */
  public function init()
  {
-  $e = explode(':',Daemon::$settings[$k = 'mod'.$this->appInstance->modname.'upserver']);
+  $e = explode(':',Daemon::$settings['mod'.$this->appInstance->modname.'upserver']);
   $connId = $this->appInstance->connectTo($e[0],$e[1]);
   $this->upstream = $this->appInstance->sessions[$connId] = new MySQLProxyUpserverSession($connId,$this->appInstance);
   $this->upstream->downstream = $this;
@@ -56,7 +56,7 @@ class MySQLProxySession extends SocketSession
  public function stdin($buf)
  {
   // from client to mysqld.
-  if (Daemon::$settings[$k = 'mod'.$this->appInstance->modname.'protologging']) {Daemon::log('MySQLProxy: Client --> Server: '.Daemon::exportBytes($buf)."\n\n");}
+  if (Daemon::$settings['mod'.$this->appInstance->modname.'protologging']) {Daemon::log('MySQLProxy: Client --> Server: '.Daemon::exportBytes($buf)."\n\n");}
   $this->upstream->write($buf);
  }
  /* @method onFinish
@@ -79,7 +79,7 @@ class MySQLProxyUpserverSession extends SocketSession
  public function stdin($buf)
  {
   // from mysqld to client.
-  if (Daemon::$settings[$k = 'mod'.$this->modname.'protologging']) {Daemon::log('MysqlProxy: Server --> Client: '.Daemon::exportBytes($buf)."\n\n");}
+  if (Daemon::$settings['mod'.$this->appInstance->modname.'protologging']) {Daemon::log('MysqlProxy: Server --> Client: '.Daemon::exportBytes($buf)."\n\n");}
   $this->downstream->write($buf);
  }
  /* @method onFinish
