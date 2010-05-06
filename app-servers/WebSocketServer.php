@@ -15,13 +15,23 @@ class WebSocketServer extends AsyncServer
   Daemon::addDefaultSettings(array(
    'mod'.$this->modname.'listen' => 'tcp://0.0.0.0',
    'mod'.$this->modname.'listenport' => 8047,
+   'mod'.$this->modname.'maxallowedpacket' => '16k',
    'mod'.$this->modname.'enable' => 0
   ));
+  $this->update();
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    Daemon::log(__CLASS__.' up.');
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
+ }
+ /* @method update
+    @description Called when worker is going to update configuration.
+    @return void
+ */
+ public function update()
+ {
+  Daemon::$parsedSettings['mod'.$this->modname.'maxallowedpacket'] = Daemon::parseSize(Daemon::$settings['mod'.$this->modname.'maxallowedpacket']);
  }
  /* @method addRoute
     @description Adds a route if it doesn't exist already.
@@ -232,7 +242,7 @@ class WebSocketSession extends SocketSession
   }
   if ($this->handshaked)
   {
-   while (strlen($this->buf) >= 2)
+   while (($buflen = strlen($this->buf)) >= 2)
    {
     $frametype = ord(binarySubstr($this->buf,0,1));
     if (($frametype & 0x80) === 0x80)
@@ -247,6 +257,12 @@ class WebSocketSession extends SocketSession
       $len += $n;
      }
      while ($b > 0x80);
+     if (Daemon::$parsedSettings['mod'.$this->appInstance->modname.'maxallowedpacket'] <= $len) // Too big packet
+     {
+      $this->finish();
+      return;
+     }
+     if ($buflen < $len+2) {return;} // not enough data yet
      $data = binarySubstr($this->buf,2,$len);
      $this->buf = binarySubstr($this->buf,2+$len);
      $this->onFrame($data,$frametype);
@@ -255,11 +271,23 @@ class WebSocketSession extends SocketSession
     {
      if (($p = strpos($this->buf,"\xFF")) !== FALSE)
      {
+      if (Daemon::$parsedSettings['mod'.$this->appInstance->modname.'maxallowedpacket'] <= $p-1) // Too big packet
+      {
+       $this->finish();
+       return;
+      }
       $data = binarySubstr($this->buf,1,$p-1);
       $this->buf = binarySubstr($this->buf,$p+1);
       $this->onFrame($data,$frametype);
      }
-     else {break;}
+     else // not enough data yet
+     {
+      if (Daemon::$parsedSettings['mod'.$this->appInstance->modname.'maxallowedpacket'] <= strlen($this->buf)) // Too big packet
+      {
+       $this->finish();
+      }
+      return;
+     }
     }
    }
   }
