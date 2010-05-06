@@ -528,7 +528,7 @@ class AsyncServer extends AppInstance
   $this->abortRequestsByConnection($connId);
   $this->closeConnection($connId);
   $sess = &$this->sessions[$connId];
-  if ($sess))
+  if ($sess)
   {
    if ($sess->finished) {return;}
    $sess->finished = TRUE;
