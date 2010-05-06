@@ -97,7 +97,7 @@ class WebSocketServer extends AsyncServer
 class WebSocketSession extends SocketSession
 {
  public $handshaked = FALSE;
- public $upstream = FALSE;
+ public $upstream;
  public $server = array();
  public $firstline = FALSE;
  /* @method sendFrame
@@ -136,7 +136,7 @@ class WebSocketSession extends SocketSession
  public function onFinish()
  {
   if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked');}
-  if ($this->upstream) {$this->upstream->onFinish();}
+  if (isset($this->upstream)) {$this->upstream->onFinish();}
   unset($this->upstream);
   unset($this->appInstance->sessions[$this->connId]);
  }
@@ -148,7 +148,7 @@ class WebSocketSession extends SocketSession
  */
  public function onFrame($data,$type)
  {
-  if (!$this->upstream) {return FALSE;}
+  if (!isset($this->upstream)) {return FALSE;}
   $this->upstream->onFrame($data,$type);
   return TRUE;
  }

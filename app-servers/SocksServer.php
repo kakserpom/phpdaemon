@@ -3,6 +3,7 @@ return new SocksServer;
 class SocksServer extends AsyncServer
 {
  public $sessions = array(); // Active sessions
+// public $directReads = TRUE;
  /* @method init
     @description Constructor.
     @return void
