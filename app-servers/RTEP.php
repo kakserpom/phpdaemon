@@ -71,7 +71,7 @@ class RTEPSession extends SocketSession
  */
  public function send($packet)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked ('.$this->clientAddr.'): '.Daemon::var_dump($packet));}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.' invoked ('.$this->clientAddr.'): '.Daemon::var_dump($packet));}
   if ($this->http)
   {
    $s = json_encode($packet);
@@ -123,7 +123,7 @@ class RTEPSession extends SocketSession
  */
  public function onFinish()
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.' invoked');}
   foreach ($this->events as $evName) {$this->removeEvent($evName);}
   unset($this->appInstance->sessions[$this->connId]);
  }

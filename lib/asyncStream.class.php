@@ -289,7 +289,7 @@ class AsyncStream
  }
  public function onReadEvent($buf,$arg = NULL)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'()');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'()');}
   if ($this->onReadData !== NULL)
   {
    while (($data = $this->read()) !== '')
@@ -306,7 +306,7 @@ class AsyncStream
  }
  public function onWriteEvent($buf,$arg = NULL)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'()');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'()');}
   $this->writeState = FALSE;
   if ($this->onWrite !== NULL)
   {
@@ -316,7 +316,7 @@ class AsyncStream
  }
  public function onReadFailureEvent($buf,$arg = NULL)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'()');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'()');}
   if ($this->onReadFailure !== NULL)
   {
    call_user_func($this->onReadFailure,$this);
@@ -326,7 +326,7 @@ class AsyncStream
  }
  public function onWriteFailureEvent($buf,$arg = NULL)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'()');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'()');}
   if ($this->onWriteFailure !== NULL)
   {
    call_user_func($this->onWriteFailure,$this);

@@ -47,7 +47,7 @@ class MongoNode extends AppInstance
  */
  public function cacheObject($o)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'('.json_encode($o).')');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'('.json_encode($o).')');}
   if (isset($o['_key']))
   {
    $this->cache->set($o['_key'],bson_encode($o));
@@ -70,7 +70,7 @@ class MongoNode extends AppInstance
  */
  public function deleteObject($o)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'('.json_encode($o).')');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'('.json_encode($o).')');}
   $this->cache->get('_id.'.((string)$o['_id']),function($m) use ($o)
   {
    if (is_string($m->result))

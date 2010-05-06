@@ -135,7 +135,7 @@ class WebSocketSession extends SocketSession
  */
  public function onFinish()
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.' invoked');}
   if (isset($this->upstream)) {$this->upstream->onFinish();}
   unset($this->upstream);
   unset($this->appInstance->sessions[$this->connId]);

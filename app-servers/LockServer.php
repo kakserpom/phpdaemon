@@ -96,7 +96,7 @@ class LockServerSession extends SocketSession
  */
  public function onFinish()
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.' invoked');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.' invoked');}
   foreach ($this->locks as $name => $status)
   {
    if ($status === 1) {$this->done($name,'FAILED');}

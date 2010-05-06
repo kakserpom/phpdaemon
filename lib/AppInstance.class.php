@@ -86,10 +86,10 @@ class AppInstance
  */
  public function shutdown($graceful = FALSE)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::shutdown() invoked. Size of the queue: '.sizeof($this->queue).'.');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.' invoked. Size of the queue: '.sizeof($this->queue).'.');}
   foreach ($this->queue as &$r)
   {
-   if (Daemon::$settings['logevents']) {Daemon::log(get_class($r).'::finish() invoked by '.get_class($this).'::shutdown()');}
+   if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.' invoked by '.__METHOD__.'.');}
    $r->finish();
   }
   return $this->onShutdown();

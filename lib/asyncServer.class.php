@@ -307,7 +307,7 @@ class AsyncServer extends AppInstance
  */
  public function connectTo($host,$port)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.get_class($this).'::'.__METHOD__.'('.$host.':'.$port.') invoked.');}
+  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.__METHOD__.'('.$host.':'.$port.') invoked.');}
   if (stripos($host,'unix:') === 0) // Unix-socket
   {
    $e = explode(':',$host,2);
@@ -378,7 +378,7 @@ class AsyncServer extends AppInstance
  public function onAcceptEvent($stream,$events,$arg)
  {
   $sockId = $arg[0];
-  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.get_class($this).'::'.__METHOD__.'('.$sockId.') invoked.');}
+  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.__METHOD__.'('.$sockId.') invoked.');}
   if ($this->checkAccept()) {Daemon::$worker->addEvent($this->socketEvents[$sockId]);}
   if (Daemon::$useSockets)
   {
@@ -464,7 +464,7 @@ class AsyncServer extends AppInstance
  */
  public function finishConnection($connId)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.get_class($this).'::'.__METHOD__.'('.$connId.') invoked.');}
+  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.__METHOD__.'('.$connId.') invoked.');}
   if (!isset($this->poolState[$connId])) {return FALSE;}
   if (!isset(Daemon::$worker->writePoolState[$connId])) {$this->closeConnection($connId);}
   else
@@ -482,7 +482,7 @@ class AsyncServer extends AppInstance
  public function onReadEvent($stream,$arg)
  {
   $connId = is_int($arg)?array_search($stream,Daemon::$worker->pool,TRUE):$arg[0];
-  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.get_class($this).'::'.__METHOD__.'('.$connId.') invoked. '.Daemon::var_dump(Daemon::$worker->pool[$connId]));}
+  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.__METHOD__.'('.$connId.') invoked. '.Daemon::var_dump(Daemon::$worker->pool[$connId]));}
   if ($this->queuedReads) {Daemon::$worker->readPoolState[$connId] = TRUE;}
   $success = FALSE;
   if (isset($this->sessions[$connId]))
@@ -493,15 +493,6 @@ class AsyncServer extends AppInstance
     $success = TRUE;
     $this->sessions[$connId]->stdin($buf);
    }
-  }
-  else
-  {
-   Daemon::log('unregistered connection #'.$connId);
-  }
-  if (!$success && isset($this->readEvents[$connId]))
-  {
-   Daemon::log(__METHOD__.': unsuccess #'.$connId);
-   //$this->onFailureEvent($connId,array());
   }
  }
  /* @method onWriteEvent
@@ -514,9 +505,9 @@ class AsyncServer extends AppInstance
  {
   $connId = $arg[0];
   unset(Daemon::$worker->writePoolState[$connId]);
-  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.get_class($this).'::'.__METHOD__.'('.$connId.') invoked.');}
+  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.__METHOD__.'('.$connId.') invoked.');}
   if ($this->poolState[$connId] === FALSE) {$this->closeConnection($connId);}
-  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.get_class($this).'::'.__METHOD__.'('.$connId.') finished.');}
+  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.__METHOD__.'('.$connId.') finished.');}
   if (isset($this->sessions[$connId]))
   {
    $this->sessions[$connId]->onWrite();
@@ -533,7 +524,7 @@ class AsyncServer extends AppInstance
   if (is_int($stream)) {$connId = $stream;}
   elseif ($this->directReads) {$connId = array_search($stream,Daemon::$worker->pool,TRUE);}
   else {$connId = array_search($stream,$this->buf,TRUE);}
-  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.get_class($this).'::'.__METHOD__.'('.$connId.') invoked.');}
+  if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.__METHOD__.'('.$connId.') invoked.');}
   $this->abortRequestsByConnection($connId);
   $this->closeConnection($connId);
   if (isset($this->sessions[$connId])) {$this->sessions[$connId]->onFinish();}

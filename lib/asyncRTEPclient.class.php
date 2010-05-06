@@ -60,7 +60,7 @@ class AsyncRTEPclient extends AsyncStream
  }
  public function onReadEvent($buf,$arg = NULL)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(get_class($this).'::'.__METHOD__.'()');}
+  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'()');}
   while (($data = $this->read()) !== '')
   {
    if ($data === FALSE) {throw new Exception('read() returned false');}
