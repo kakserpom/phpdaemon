@@ -527,7 +527,13 @@ class AsyncServer extends AppInstance
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] event '.__METHOD__.'('.$connId.') invoked.');}
   $this->abortRequestsByConnection($connId);
   $this->closeConnection($connId);
-  if (isset($this->sessions[$connId])) {$this->sessions[$connId]->onFinish();}
+  $sess = &$this->sessions[$connId];
+  if ($sess))
+  {
+   if ($sess->finished) {return;}
+   $sess->finished = TRUE;
+   $sess->onFinish();
+  }
   event_base_loopexit(Daemon::$worker->eventBase);
  }
  /* @method abortRequestsByConnection

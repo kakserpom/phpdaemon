@@ -115,7 +115,6 @@ class SocketSession
  */
  public function onFinish()
  {
-  $this->finished = TRUE;
   unset($this->appInstance->sessions[$this->connId]);
  }
  /* @method stdin
