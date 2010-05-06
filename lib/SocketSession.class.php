@@ -17,6 +17,7 @@ class SocketSession
  public $state = 0;
  public $auth = FALSE;
  public $finished = FALSE;
+ public $readLocked = FALSE;
  public $addr;
  /* @method __construct
     @description SocketSession constructor.
@@ -55,6 +56,24 @@ class SocketSession
  {
   $this->finish();
   return TRUE;
+ }
+ /* @method lockRead
+    @description Locks read.
+    @return void
+ */
+ public function lockRead()
+ {
+  $this->readLocked = TRUE;
+ }
+ /* @method unlockRead
+    @description Locks read.
+    @return void
+ */
+ public function unlockRead()
+ {
+  if (!$this->readLocked) {return;}
+  $this->readLocked = FALSE;
+  $this->appInstance->onReadEvent(NULL,array($this->connId));
  }
  /* @method onwrite
     @description Called when the connection is ready to accept new data.

@@ -9,7 +9,8 @@ class MyAppResolver extends AppResolver
             'FastCGI','HTTP','DebugConsole',
             'TelnetHoneypot','FlashPolicy',
             'RTEP','LockServer','MySQLProxy',
-            'WebSocketServer','SocksServer');
+            'WebSocketServer','SocksServer',
+            'PostgreSQLProxy');
  public function __construct()
  {
   $this->appDir = array(
