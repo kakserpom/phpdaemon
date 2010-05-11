@@ -385,8 +385,8 @@ class PostgreSQLClientSession extends SocketSession
    }
    else
    {
-    list($tag) = $this->decodeNULstrings($packet);
-    $e = explode(' ',$tag);
+    $tag = $this->decodeNULstrings($packet);
+    $tag = explode(' ',$tag[0]);
     if ($tag[0] === 'INSERT')
     {
      $this->insertId = $tag[1];
