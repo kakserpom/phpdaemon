@@ -76,7 +76,7 @@ class AsyncServer extends AppInstance
   if (isset($this->sessions))
   {
    $result = TRUE;
-   foreach ($this->sessions as &$session) {if (!$session->gracefulShutdown()) {$result = FALSE;}}
+   foreach ($this->sessions as $session) {if (!$session->gracefulShutdown()) {$result = FALSE;}}
    return $result;
   }
   return TRUE;
@@ -91,10 +91,12 @@ class AsyncServer extends AppInstance
  }
  /* @method bindSockets
     @param mixed Addresses to bind.
+    @param integer Optional. Default port to listen.
+    @param boolean SO_REUSE. Default is true.
     @description Binds given sockets.
     @return void
  */
- public function bindSockets($addrs = array(),$listenport,$reuse = TRUE)
+ public function bindSockets($addrs = array(),$listenport = 0,$reuse = TRUE)
  {
   if (is_string($addrs)) {$addrs = explode(',',$addrs);}
   for ($i = 0, $s = sizeof($addrs); $i < $s; ++$i)
@@ -300,12 +302,12 @@ class AsyncServer extends AppInstance
   unset(Daemon::$worker->poolState[$connId]);
  }
  /* @method connectTo
-    @param string Destination Host/IP.
-    @param integer Destination port.
+    @param string Destination Host/IP/UNIX-socket.
+    @param integer Optional. Destination port.
     @description Establishes a connection with remote peer.
     @return integer Connection's ID. Boolean false when failed.
  */
- public function connectTo($host,$port)
+ public function connectTo($host,$port = 0)
  {
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] '.__METHOD__.'('.$host.':'.$port.') invoked.');}
   if (stripos($host,'unix:') === 0) // Unix-socket
