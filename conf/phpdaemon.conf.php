@@ -7,6 +7,7 @@ return array(
  //'mod-debugconsole-enable' => 1,
  //'mod-telnethoneypot-enable' => 1,
  //'mod-flashpolicy-enable' => 1,
+ //'mod-websocket-enable' => 1,
  'max-requests' => 1000,
  'max-idle' => 0,
  'min-spare-workers' => 5,

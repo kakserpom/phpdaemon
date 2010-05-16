@@ -11,6 +11,15 @@ class MyAppResolver extends AppResolver
             'RTEP','LockServer','MySQLProxy',
             'WebSocketServer','SocksServer',
             'PostgreSQLProxy');
+ /* @method getRequestRoute
+    @param object Request.
+    @param object AppInstance of Upstream.
+    @description Routes incoming request to related application. Method is for overloading.
+    @return string Application's name.
+ */
+ public function getRequestRoute($req,$upstream)
+ {
+ }
  public function __construct()
  {
   $this->appDir = array(

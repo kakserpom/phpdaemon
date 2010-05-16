@@ -86,9 +86,17 @@ class AppResolver
  public function getRequest($req,$upstream,$defaultApp = NULL)
  {
   if (isset($req->attrs->server['APPNAME'])) {$appName = $req->attrs->server['APPNAME'];}
+  elseif (($appName = $this->getRequestRoute($req,$upstream)) !== NULL) {}
   else {$appName = $defaultApp !== NULL?$defaultApp:$this->defaultApp;}
   $appInstance = $this->getInstanceByAppName($appName);
   if (!$appInstance) {return $req;}
   return $appInstance->handleRequest($req,$upstream);
  }
+ /* @method getRequestRoute
+    @param object Request.
+    @param object AppInstance of Upstream.
+    @description Routes incoming request to related application. Method is for overloading.
+    @return string Application's name.
+ */
+ public function getRequestRoute($req,$upstream) {}
 }
