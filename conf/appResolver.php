@@ -19,6 +19,8 @@ class MyAppResolver extends AppResolver
  */
  public function getRequestRoute($req,$upstream)
  {
+  // Example
+  if (preg_match('~^/(WebSocketOverCOMET)/~',$req->attrs->server['REQUEST_URI'],$m)) {return $m[1];}
  }
  public function __construct()
  {
