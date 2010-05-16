@@ -221,10 +221,31 @@ class Request
   Daemon::$req = NULL;
   $this->running = FALSE;
  }
- /* @method header
-    @param string Header. Example: 'Location: http://php.net/'
-    @description Sets the header.
+ /* @method setcookie
+    @description Sets the cookie.
+    @param string Name of cookie.
+    @param string Value.
+    @param integer. Optional. Max-Age. Default is 0.
+    @param string. Optional. Path. Default is empty string.
+    @param boolean. Optional. Secure. Default is false.
+    @param boolean. Optional. HTTPOnly. Default is false.
     @return void
+    @throws RequestHeadersAlreadySent
+ */
+ public function setcookie($name,$value = '',$maxage = 0,$path = '',$domain = '',$secure = FALSE, $HTTPOnly = FALSE)
+ {
+  $this->header('Set-Cookie: '.$name.'='.rawurlencode($value) 
+                                    .(empty($domain) ? '' : '; Domain='.$domain) 
+                                    .(empty($maxage) ? '' : '; Max-Age='.$maxage) 
+                                    .(empty($path) ? '' : '; Path='.$path) 
+                                    .(!$secure ? '' : '; Secure') 
+                                    .(!$HTTPOnly ? '' : '; HttpOnly'), false); 
+ }
+ /* @method header
+    @description Sets the header.
+    @param string Header. Example: 'Location: http://php.net/'
+    @return void
+    @throws RequestHeadersAlreadySent
  */
  public function header($s)
  {
