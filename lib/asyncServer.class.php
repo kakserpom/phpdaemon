@@ -76,7 +76,11 @@ class AsyncServer extends AppInstance
   if (isset($this->sessions))
   {
    $result = TRUE;
-   foreach ($this->sessions as $session) {if (!$session->gracefulShutdown()) {$result = FALSE;}}
+   foreach ($this->sessions as $k => $sess)
+   {
+    if (!is_object($sess)) {unset($this->sessions[$k]); continue;}
+    if (!$sess->gracefulShutdown()) {$result = FALSE;}
+   }
    return $result;
   }
   return TRUE;
