@@ -32,7 +32,7 @@ class ExampleWebSocketSession
  {
   $this->client = $client;
  }
- /* @method onFinish
+ /* @method onFrame
     @description Called when new frame recieved.
     @param string Frame's contents.
     @param integer Frame's type.
