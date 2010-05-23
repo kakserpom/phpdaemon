@@ -32,6 +32,13 @@ class ExampleWebSocketSession
  {
   $this->client = $client;
  }
+ /* @method onHandshake
+    @description Called when the connection is handshaked.
+    @return void
+ */
+ public function onHandshake()
+ {
+ }
  /* @method onFrame
     @description Called when new frame recieved.
     @param string Frame's contents.
