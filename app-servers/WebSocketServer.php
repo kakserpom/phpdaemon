@@ -212,7 +212,7 @@ class WebSocketSession extends SocketSession
       }
       $reply .= "\r\n";
       $this->write($reply);
-      if (is_callable($this->upstream,'onHandshake')) {$this->upstream->onHandshake();}
+      if (is_callable(array($this->upstream,'onHandshake'))) {$this->upstream->onHandshake();}
      }
      else
      {
