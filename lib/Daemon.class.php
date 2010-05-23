@@ -68,7 +68,6 @@ class Daemon
    'autogc' => '1',
    'mpmdelay'=> '1s',
    'logsignals' => 0,
-   'logfastcgirecords' => 0,
    'chunksize' => '8k',
    'maxconcurrentrequestsperworker' => 1000,
    'logreads' => 0,
@@ -82,6 +81,7 @@ class Daemon
    'masterpriority' => 100,
    'throwexceptiononshutdown' => 0,
    'locale' => '',
+   'logerrors' => 1,
   );
   Daemon::loadSettings(Daemon::$settings);
   Daemon::$useSockets = version_compare(PHP_VERSION,'5.3.1','>=');
