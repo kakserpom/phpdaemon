@@ -349,10 +349,7 @@ class Daemon
     if ($code >= 100) // reloaded (shutdown)
 		{
 		 $code -= 100;
-		 if ($master !== NULL)
-		 {
-		  $master->reloadWorker($offset+$i+1);
-		 }
+     if ($master !== NULL) {$master->reloadWorker($offset+$i+1);}
     }
     if ($code === 0) {break 2;}
     elseif ($code === 1) // idle
