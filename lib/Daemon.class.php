@@ -288,11 +288,11 @@ class Daemon
  */
  public static function parseSize($str)
  {
-  $l = substr($str,-1);
-  if (($l === 'b') || ($l === 'b')) {return ((int) substr($str,0,-1));}
-  if (($l === 'k') || ($l === 'K')) {return ((int) substr($str,0,-1)*1024);}
-  if (($l === 'm') || ($l === 'M')) {return ((int) substr($str,0,-1)*1024*1024);}
-  if (($l === 'G') || ($l === 'G')) {return ((int) substr($str,0,-1)*1024*1024*1024);}
+  $l = strtolower(substr($str,-1));
+  if ($l === 'b') {return ((int) substr($str,0,-1));}
+  if ($l === 'k') {return ((int) substr($str,0,-1)*1024);}
+  if ($l === 'm') {return ((int) substr($str,0,-1)*1024*1024);}
+  if ($l === 'g') {return ((int) substr($str,0,-1)*1024*1024*1024);}
   return $str;
  }
  /* @method parseNum
