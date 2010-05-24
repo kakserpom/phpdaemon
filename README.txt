@@ -2,7 +2,7 @@
 						phpDaemon
 http://github.com/kakserpom/phpdaemon
 
-True async. framework with API for PHP. It has many features.
+True async. framework with API for PHP. It has many features. Designed for highload.
 Main features and possibilites:
  - True FastCGI for PHP.
  - Powerful WebSocket server.
@@ -14,10 +14,6 @@ Main features and possibilites:
  - Graceful worker shutdown (and re-spawn if necessary) by the following limits: memory, query counter, idle time.
 
 Also, you can build binary application server using compiler like PHC (http://phpcompiler.org/).
- 
-
-Benchmark (example script):
-	Requests per second:    4784.80 [#/sec] (mean)
 
 Installation guide: http://wiki.github.com/kakserpom/phpdaemon/install
 
