@@ -100,6 +100,7 @@ class WebSocketSession extends SocketSession
  public $upstream;
  public $server = array();
  public $firstline = FALSE;
+ public $writeReady = TRUE;
  /* @method sendFrame
     @description Sends a frame.
     @param string Frame's data.
@@ -127,6 +128,7 @@ class WebSocketSession extends SocketSession
    $this->write("\x80".$len.$data);
   }
   else {$this->write("\x00".$data."\xFF");}
+  $this->writeReady = FALSE;
   return TRUE;
  }
  /* @method onFinish
@@ -151,6 +153,15 @@ class WebSocketSession extends SocketSession
   if (!isset($this->upstream)) {return FALSE;}
   $this->upstream->onFrame($data,$type);
   return TRUE;
+ }
+ /* @method onWrite
+    @description Called when the connection is ready to accept new data.
+    @return void
+ */
+ public function onWrite()
+ {
+  $this->writeReady = TRUE;
+  if (is_callable(array($this->upstream,'onWrite'))) {$this->upstream->onWrite();}
  }
  /* @method onHandshake
     @description Called when the connection is handshaked.

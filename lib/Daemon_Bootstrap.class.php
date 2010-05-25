@@ -114,7 +114,7 @@ class Daemon_Bootstrap
    Daemon::log('Your application resolver \''.Daemon::$settings['path'].'\' is not available.');
    $error = TRUE;
   }
-  if (isset(Daemon::$settings['group']))
+  if (isset(Daemon::$settings['group']) && is_callable('posix_getgid'))
   {
    if (($sg = posix_getgrnam(Daemon::$settings['group'])) === FALSE)
    {
@@ -127,7 +127,7 @@ class Daemon_Bootstrap
     $error = TRUE;
    }
   }
-  if (isset(Daemon::$settings['user']))
+  if (isset(Daemon::$settings['user']) && is_callable('posix_getuid'))
   {
    if (($su = posix_getpwnam(Daemon::$settings['user'])) === FALSE)
    {

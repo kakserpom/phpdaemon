@@ -75,7 +75,7 @@ class SocketSession
   $this->readLocked = FALSE;
   $this->appInstance->onReadEvent(NULL,array($this->connId));
  }
- /* @method onwrite
+ /* @method onWrite
     @description Called when the connection is ready to accept new data.
     @return void
  */
