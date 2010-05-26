@@ -13,6 +13,7 @@ class Daemon_WorkerThread extends Thread
 {
  public $update = FALSE;
  public $reload = FALSE;
+ public $queueWait = FALSE;
  public $reloadTime = 0;
  public $reloadDelay = 2;
  public $reloaded = FALSE;
@@ -218,6 +219,7 @@ class Daemon_WorkerThread extends Thread
    if ($this->reloadCheck())
    {
     $this->reload = TRUE;
+    $this->queueWait = TRUE;
     $this->setStatus($this->currentStatus);
    }
   }
@@ -225,16 +227,19 @@ class Daemon_WorkerThread extends Thread
   if (Daemon::$settings['maxrequests'] && ($this->queryCounter >= Daemon::$settings['maxrequests']))
   {
    Daemon::log('[WORKER '.$this->pid.'] \'maxrequests\' exceed. Graceful shutdown.');
+   $this->queueWait = TRUE;
    $this->status = 3;
   }
   if ((Daemon::$parsedSettings['maxmemoryusage'] > 0) && (memory_get_usage(TRUE) > Daemon::$parsedSettings['maxmemoryusage']))
   {
    Daemon::log('[WORKER '.$this->pid.'] \'maxmemoryusage\' exceed. Graceful shutdown.');
+   $this->queueWait = TRUE;
    $this->status = 3;
   }
   if (Daemon::$parsedSettings['maxidle'] && $this->timeLastReq && (time()-$this->timeLastReq > Daemon::$parsedSettings['maxidle']))
   {
    Daemon::log('[WORKER '.$this->pid.'] \'maxworkeridle\' exceed. Graceful shutdown.');
+   $this->queueWait = TRUE;
    $this->status = 3;
   }
   if ($this->update === TRUE)
@@ -321,7 +326,11 @@ class Daemon_WorkerThread extends Thread
   {
    foreach ($app as $appInstance)
    {
-    if (!$appInstance->handleStatus($this->currentStatus)) {$ready = FALSE;}
+    if (!$appInstance->handleStatus($this->currentStatus))
+    {
+     Daemon::log('[WORKER '.$this->pid.'] '.__METHOD__.': waiting for '.$k);
+     $ready = FALSE;
+    }
    }
   }
   return $ready;
@@ -352,7 +361,7 @@ class Daemon_WorkerThread extends Thread
    if ($r->running) {$r->finish(-2);}
   }
   $n = 0;
-  while ((sizeof($this->queue) > 0) || !$reloadReady)
+  while (($this->queueWait && (sizeof($this->queue) > 0)) || !$reloadReady)
   {
    if ($n++ === 100)
    {
