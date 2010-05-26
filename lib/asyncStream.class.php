@@ -115,7 +115,7 @@ class AsyncStream
   }
   if ($this->readBuf === NULL)
   {
-   stream_set_blocking($this->readFD,0);
+   if (!stream_set_blocking($this->readFD,0)) {throw new Exception('setting blocking for read stream failed');}
    $this->readBuf = event_buffer_new($this->readFD,array($this,'onReadEvent'),array($this,'onWriteEvent'),array($this,'onReadFailureEvent'),array());
    if (!$this->readBuf) {throw new Exception('creating read buffer failed');}
    if (!event_buffer_base_set($this->readBuf,Daemon::$worker->eventBase)) {throw new Exception('wrong base');}
