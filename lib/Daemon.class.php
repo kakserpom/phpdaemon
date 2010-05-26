@@ -141,6 +141,30 @@ class Daemon
   Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$settings['ipcwstate'],Daemon::$shm_wstate_size,'wstate');
   Daemon::openLogs();
  }
+ /* @method printBacktrace
+    @description Prints backtrace to log.
+    @return void
+ */
+ public static function printBacktrace()
+ {
+  ob_start();
+  debug_print_backtrace();
+  $dump = ob_get_contents();
+  ob_end_clean();
+  Daemon::log($dump);
+ }
+ /* @method humanSize
+    @description Returns human-readable size.
+    @return void
+ */
+ public static function humanSize($size)
+ {
+  if ($size >= 1073741824) {$size = round($size/1073741824,2).'G';}
+  elseif ($size >= 1048576) {$size = round($size/1048576,2) .'M';}
+  elseif ($size >= 1024) {$size = round($size/1024*100,2) .'K';}
+  else {$size = $size.'B';}
+  return $size;
+ }
  /* @method compatRunEmul
     @description It allows to run your simple web-apps in spawn-fcgi/php-fpm environment.
     @return boolean - Success.
