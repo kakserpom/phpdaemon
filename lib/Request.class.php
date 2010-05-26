@@ -114,6 +114,35 @@ class Request
   }
   return FALSE;
  }
+ /* @method status
+    @throws RequestHeadersAlreadySent
+    @param int Code
+    @description Sends HTTP-status (200, 403, 404, 500, etc)
+    @return void
+ */
+ public function status($code = 200)
+ {
+  if ($code === 200)
+  {
+   $this->header('200 OK');
+  }
+  elseif ($code === 404)
+  {
+   $this->header('404 Not Found');
+  }
+  elseif ($code === 403)
+  {
+   $this->header('404 Forbidden');
+  }
+  elseif ($code === 301)
+  {
+   $this->header('301 Moved Permonently');
+  }
+  elseif ($code === 302)
+  {
+   $this->header('302 Found');
+  }
+ }
  /* @method sleep
     @throws RequestSleepException
     @param float Time to sleep in seconds.
