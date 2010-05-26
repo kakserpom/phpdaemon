@@ -47,7 +47,7 @@ class Request
   $this->appInstance = $appInstance;
   $this->upstream = $upstream;
   $this->attrs = $req->attrs;
-  if (Daemon::$settings['expose']) {$this->header('X-Powered-By: phpDaemon '.Daemon::$version);}
+  if (Daemon::$settings['expose']) {$this->header('X-Powered-By: phpDaemon/'.Daemon::$version);}
   $this->onWakeup();
   $this->init();
   $this->onSleep();
@@ -294,6 +294,7 @@ class Request
   $k = strtr(strtoupper($e[0]),Request::$htr);
   $this->headers[$k] = $s;
   if ($k === 'CONTENT_LENGTH') {$this->contentLength = (int) $e[1];}
+  if ($k === 'LOCATION') {$this->status(301);}
   if (Daemon::$compatMode) {header($s);}
   return TRUE;
  }
