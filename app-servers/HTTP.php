@@ -102,12 +102,10 @@ class HTTP extends AsyncServer
    2 => 'FCGI_AUTHORIZER',
    3 => 'FCGI_FILTER',
   );
-  $state = sizeof($this->poolState[$connId]);
   $buf = $this->read($connId,$this->readPacketSize);
-  if ($buf === FALSE) {return;}
+  if (sizeof($this->poolState[$connId]) < 3) {return;}
   if ($this->poolState[$connId]['state'] === 0) // begin
   {
-   //Daemon::log('------------------------------begin request------------------------------------------------------------');
    ++Daemon::$worker->queryCounter;
    ++$this->poolState[$connId]['n'];
    $rid = $connId.'-'.$this->poolState[$connId]['n'];
@@ -153,7 +151,6 @@ class HTTP extends AsyncServer
    if (($p = strpos($req->attrs->inbuf,"\r\n\r\n")) !== FALSE)
    {
     $headers = binarySubstr($req->attrs->inbuf,0,$p);
-    //Daemon::log('input headers = '.Daemon::var_dump($headers));
     $h = explode("\r\n",$headers);
     $req->attrs->inbuf = binarySubstr($req->attrs->inbuf,$p+4);
     $e = explode(' ',$h[0]);
