@@ -30,6 +30,9 @@ class AsyncStream
  public $writeState = FALSE;
  public $finishWrite = FALSE;
  public $buf = '';
+ public $noEvents = FALSE;
+ public $fileMode = FALSE;
+ public $filePath;
  public function __construct($readFD = NULL,$writeFD = NULL)
  {
   $this->initStream($readFD,$writeFD);
@@ -88,7 +91,8 @@ class AsyncStream
    }
    elseif ($u['scheme'] === 'file')
    {
-    $readFD = fopen(substr($url,7),'r');
+    $readFD = fopen($this->filePath = substr($url,7),'r');
+    $this->fileMode = TRUE;
    }
   }
   if ($readFD !== NULL) {$this->setFD($readFD,$writeFD);}
@@ -218,7 +222,11 @@ class AsyncStream
  {
   $mode = EV_READ | EV_PERSIST;
   if ($this->writeBuf === NULL) {$mode |= EV_WRITE;}
-  if (!event_buffer_enable($this->readBuf,$mode)) {throw new Exception('enabling read buffer failed');}
+  if (!event_buffer_enable($this->readBuf,$mode))
+  {
+   if ($this->fileMode) {$this->noEvents = TRUE;}
+   else {throw new Exception('enabling read buffer failed');}
+  }
   if ($this->writeBuf !== NULL)
   {
    if (!event_buffer_enable($this->writeBuf,EV_WRITE | EV_PERSIST)) {throw new Exception('enabling write buffer failed');}
@@ -261,6 +269,13 @@ class AsyncStream
  public function read($n = NULL)
  {
   if ($n === NULL) {$n = $this->readPacketSize;}
+  if ($this->noEvents)
+  {
+   if (!$this->readFD) {return '';}
+    $data = fread($this->readFD,$n);
+    if ($data === FALSE) {return '';}
+    return $data;
+  }
   if ($this->readBuf === FALSE) {return '';}
   $r = event_buffer_read($this->readBuf,$n);
   if ($r === NULL) {$r = '';}
@@ -287,9 +302,10 @@ class AsyncStream
   {
    $this->onEofEvent();
   }
+  elseif (!$this->EOF && $this->noEvents) {$this->onReadEvent();}
   return $this->EOF;
  }
- public function onReadEvent($buf,$arg = NULL)
+ public function onReadEvent($buf = NULL,$arg = NULL)
  {
   if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'()');}
   if ($this->onReadData !== NULL)
@@ -318,7 +334,7 @@ class AsyncStream
  }
  public function onReadFailureEvent($buf,$arg = NULL)
  {
-  if (Daemon::$settings['logevents']) {Daemon::log(__METHOD__.'()');}
+  if (Daemon::$settings['logevents']||1) {Daemon::log(__METHOD__.'()');}
   if ($this->onReadFailure !== NULL)
   {
    call_user_func($this->onReadFailure,$this);
