@@ -279,9 +279,9 @@ class Daemon_WorkerThread extends Thread
     if (Daemon::$settings['logqueue']) {Daemon::log('[WORKER '.$this->pid.'] event runQueue(): ('.$k.') -> '.get_class($r).'::call() invoked.');}
     $ret = $r->call();
     if (Daemon::$settings['logqueue']) {Daemon::log('[WORKER '.$this->pid.'] event runQueue(): ('.$k.') -> '.get_class($r).'::call() returned '.$ret.'.');}
-    if ($ret === 1)
+    if ($ret === Request::DONE)
     {
-     $processed++;
+     ++$processed;
      unset($this->queue[$k]);
      if (isset($r->idAppQueue))
      {

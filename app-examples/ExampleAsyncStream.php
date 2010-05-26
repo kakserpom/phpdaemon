@@ -50,6 +50,6 @@ class ExampleAsyncStreamRequest extends Request
  public function run()
  {
   if (!$this->stream->eof()) {$this->sleep();}
-  return 1;
+  return Request::DONE;
  }
 }

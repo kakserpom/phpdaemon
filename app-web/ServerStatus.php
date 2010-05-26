@@ -41,6 +41,6 @@ class ServerStatus_Request extends Request
 <br />Request took: <?php printf('%f',round(microtime(TRUE)-$stime,6)); ?>
 </body>
 </html><?php
-  return 1;
+  return Request::DONE;
  }
 }

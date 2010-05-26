@@ -522,7 +522,7 @@ class BitTorrentTracker_Request extends Request
    {
     echo ':-( Perhaps that we\'re out of capacity.. we\'re sorry, try again shortly later.';
    }
-   return 1;
+   return Request::DONE;
   }
   if ($req->action === 'signin')
   {
@@ -575,7 +575,7 @@ class BitTorrentTracker_Request extends Request
      ));
     }
     echo json_encode($r);
-    return 1;
+    return Request::DONE;
    }
   }
   elseif ($req->action === 'signout')
@@ -599,7 +599,7 @@ class BitTorrentTracker_Request extends Request
    {
     if ($req->user) {unset($req->user['password']);}
     echo json_encode(array('user' => $req->user));
-    return 1;
+    return Request::DONE;
    }
   }
   elseif ($req->action === 'getStatus')
@@ -619,7 +619,7 @@ class BitTorrentTracker_Request extends Request
    {
     if (isset($req->user)) {unset($req->user['password']);}
     echo json_encode(array('user' => isset($req->user)?$req->user:NULL));
-    return 1;
+    return Request::DONE;
    }
   }
   elseif ($req->action === 'search')
@@ -643,7 +643,7 @@ class BitTorrentTracker_Request extends Request
    {
     $req->search['history'] = $req->searchhistory;
     echo json_encode($req->search);
-    return 1;
+    return Request::DONE;
    }
   }
   elseif ($req->action === 'getTorrentFile')
@@ -673,13 +673,13 @@ class BitTorrentTracker_Request extends Request
     {
      $this->header('404 Not Found');
      echo 'You should log in.';
-     return 1;
+     return Request::DONE;
     }
     if (($hash === '') || (!isset($req->fileInfo[$hash])))
     {
      $this->header('404 Not Found');
      echo 'Sorry, I\'ve not recognized a torrent with the requested info-hash.';
-     return 1;
+     return Request::DONE;
     }
     $t = $req->fileInfo[$hash];
     $req->appInstance->db->btuserhistory->upsert(array(
@@ -716,7 +716,7 @@ class BitTorrentTracker_Request extends Request
     $t['announce-list'] = $announce;
     if (isset($_GET['json'])) {echo json_encode($t);}
     else {echo BitTorrentTracker::bencode($t);}
-    return 1;
+    return Request::DONE;
    }
   }
   elseif ($req->action === 'announce')
@@ -857,7 +857,7 @@ class BitTorrentTracker_Request extends Request
     $a->peers = new BitTorrentTracker_bencode_mutable($req->peers);
     if (isset($_GET['json'])) {echo json_encode($a);}
     else {echo BitTorrentTracker::bencode($a);}
-    return 1;
+    return Request::DONE;
    }
   }
   elseif ($req->action === 'scrape')
@@ -901,7 +901,7 @@ class BitTorrentTracker_Request extends Request
     $a->flags->{'tracker id'} = $req->trackerId;
     if (isset($_GET['json'])) {echo json_encode($a);}
     else {echo BitTorrentTracker::bencode($a);}
-    return 1;
+    return Request::DONE;
    }
   }
   else
@@ -911,7 +911,7 @@ class BitTorrentTracker_Request extends Request
     'error' => 404,
     'errmsg' => 'Undefined action \''.$req->action.'\'.',
    ));
-   return 1;
+   return Request::DONE;
   }
  }
 }
@@ -930,7 +930,7 @@ class BitTorrentTracker_TorrentImporter extends Request
  }
  public function run()
  {
-  return 1;
+  return Request::DONE;
   $req = $this;
   $appInstance = $this->appInstance;
   $reqID = $this->idAppQueue;
@@ -944,14 +944,14 @@ class BitTorrentTracker_TorrentImporter extends Request
    if (($f = readdir($this->handle)) === FALSE)
    {
     Daemon::log(__METHOD__.': Finish.');
-    return 1;
+    return Request::DONE;
    }
    if (preg_match('~^(\d+)\.torrent$~',$f,$m))
    {
     $this->appInstance->addTorrentFromFile($this->dir.$f,array('publisher-url' => 'http://kinozal.tv/details.php?id='.$m[1]));
    }
   }
-  return 1;
+  return Request::DONE;
  }
 }
 

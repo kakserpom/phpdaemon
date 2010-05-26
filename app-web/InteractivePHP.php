@@ -67,8 +67,8 @@ class InteractivePHPRequest extends Request
   $this->session = self::getString($_REQUEST['session']);
   if (self::getString($_REQUEST['pwd']) != 'abcd')
   {
-   echo 'Permission deniem.';
-   return 1;
+   echo 'Permission denied.';
+   return Request::DONE;
   }
   if (!strlen($this->session))
   {
@@ -77,7 +77,7 @@ class InteractivePHPRequest extends Request
    Daemon::log('redirect to '.$_SERVER['DOCUMENT_URI'].'?session='.urlencode($this->session));
    echo 'Redirect';
    ob_flush();
-   return 1;
+   return Request::DONE;
   }
   Daemon::log('start sendcommand');
   $this->appInstance->sendCommand($this->session,self::getString($_REQUEST['command']));
@@ -115,6 +115,6 @@ else
 </form>
 </body>
 </html><?php
-  return 1;
+  return Request::DONE;
  }
 }

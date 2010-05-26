@@ -67,6 +67,6 @@ echo '<br />Request (http) took: '.round(microtime(TRUE)-$this->stime,6);
 </body>
 </html>
 <?php
-  return 1;
+  return Request::DONE;
  }
 }

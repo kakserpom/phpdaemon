@@ -2,6 +2,9 @@
 return new WebSocketOverCOMET;
 class WebSocketOverCOMET extends AsyncServer
 {
+ const IPCPacketType_C2S = 0x01;
+ const IPCPacketType_S2C = 0x02;
+ const IPCPacketType_POLL = 0x03;
  public $IpcTransSessions = array();
  public $wss;
  /* @method init
@@ -87,12 +90,12 @@ class WebSocketOverCOMET_IPCRecvSession extends SocketSession
  {
   $this->buf .= $buf;
   $l = strlen($this->buf);
-  if ($l < 5) {return;} // not enough data yet.
-  extract(unpack('Chlen/Nblen',binarySubstr($this->buf,0,5)));
-  if ($l < 5+$hlen+$blen)  {return;} // not enough data yet.
-  $header = binarySubstr($this->buf,5,$hlen);
-  $body = binarySubstr($this->buf,5+$hlen,$blen);
-  $this->buf = binarySubstr($this->buf,5+$hlen+$blen);
+  if ($l < 6) {return;} // not enough data yet.
+  extract(unpack('Ctype/Chlen/Nblen',binarySubstr($this->buf,0,6)));
+  if ($l < 6+$hlen+$blen)  {return;} // not enough data yet.
+  $header = binarySubstr($this->buf,6,$hlen);
+  $body = binarySubstr($this->buf,6+$hlen,$blen);
+  $this->buf = binarySubstr($this->buf,6+$hlen+$blen);
   list($reqId,$authKey) = explode('.',$header);
   if (isset($this->appInstance->queue[$reqId]->downstream) && $this->appInstance->queue[$reqId]->authKey == $authKey)
   {
@@ -123,11 +126,6 @@ class WebSocketOverCOMET_Request extends Request
  */
  public function run()
  {
-  if (isset($_REQUEST['page']))
-  {
-   readfile(dirname(__FILE__).'/../1.html');
-   return 1;
-  }
   if (!isset($_REQUEST['_pull'])) // Push
   {
    $ret = array();
@@ -137,12 +135,12 @@ class WebSocketOverCOMET_Request extends Request
    elseif (!is_string($_REQUEST['data'])) {$ret['error'] = 'No data.';}
    elseif ($connId = $this->appInstance->connectIPC(basename($e[0])))
    {
-    $this->appInstance->sessions[$connId]->write(pack('CN',strlen($e[1]),strlen($_REQUEST['data'])).$e[1]);
+    $this->appInstance->sessions[$connId]->write(pack('CCN',WebSocketOverCOMET::IPCPacketType_C2S,strlen($e[1]),strlen($_REQUEST['data'])).$e[1]);
     $this->appInstance->sessions[$connId]->write($_REQUEST['data']);
    }
    else {$ret['error'] = 'IPC error.';}
    echo json_encode($ret);
-   return 1;
+   return Request::DONE;
   }
   else // Pull
   {
@@ -159,9 +157,9 @@ class WebSocketOverCOMET_Request extends Request
     if (!isset($this->appInstance->wss->routes[$appName]))
     {
      if (isset(Daemon::$settings['logerrors']) && Daemon::$settings['logerrors']) {Daemon::log(__METHOD__.': undefined route \''.$appName.'\'.');}
-     return 1;
+     return Request::DONE;
     }
-    if (!$this->downstream = call_user_func($this->appInstance->wss->routes[$appName],$this)) {return 1;}
+    if (!$this->downstream = call_user_func($this->appInstance->wss->routes[$appName],$this)) {return Request::DONE;}
    }
    $this->sleep(1);
   }

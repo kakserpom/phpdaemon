@@ -11,6 +11,8 @@
 /**************************************************************************/
 class Request
 {
+ const INTERRUPT = 0;
+ const DONE = 1;
  public $idAppQueue;
  public $mpartstate = 0;
  public $mpartoffset = 0;

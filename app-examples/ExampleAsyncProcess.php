@@ -46,6 +46,6 @@ class ExampleAsyncProcessRequest extends Request
  public function run()
  {
   if (!$this->proc->eof()) {$this->sleep(1);}
-  return 1;
+  return Request::DONE;
  }
 }

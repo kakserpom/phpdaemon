@@ -134,6 +134,6 @@ if ($displaystate)
 ?></pre>
 <br />Request took: <?php printf('%f',round(microtime(TRUE)-$stime,6)); ?>
 </body><?php
-  return 1;
+  return Request::DONE;
  }
 }
