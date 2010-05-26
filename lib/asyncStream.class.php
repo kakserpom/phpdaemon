@@ -27,7 +27,6 @@ class AsyncStream
  public $request;
  public $readPacketSize = 4096;
  public $done = FALSE;
- public $base;
  public $writeState = FALSE;
  public $finishWrite = FALSE;
  public $buf = '';
@@ -87,8 +86,11 @@ class AsyncStream
      }
     }
    }
+   elseif ($u['scheme'] === 'file')
+   {
+    $readFD = fopen(substr($url,7),'r');
+   }
   }
-  $this->base = Daemon::$worker->eventBase;
   if ($readFD !== NULL) {$this->setFD($readFD,$writeFD);}
   return $readFD !== FALSE;
  }
@@ -116,7 +118,7 @@ class AsyncStream
    stream_set_blocking($this->readFD,0);
    $this->readBuf = event_buffer_new($this->readFD,array($this,'onReadEvent'),array($this,'onWriteEvent'),array($this,'onReadFailureEvent'),array());
    if (!$this->readBuf) {throw new Exception('creating read buffer failed');}
-   if (!event_buffer_base_set($this->readBuf,$this->base)) {throw new Exception('wrong base');}
+   if (!event_buffer_base_set($this->readBuf,Daemon::$worker->eventBase)) {throw new Exception('wrong base');}
    if ((event_buffer_priority_set($this->readBuf,$this->readPriority) === FALSE) && FALSE) {throw new Exception('setting priority for read buffer failed');}
   }
   else
@@ -134,7 +136,7 @@ class AsyncStream
    if (!stream_set_blocking($this->writeFD,0)) {throw new Exception('setting blocking for write stream failed');}
    $this->writeBuf = event_buffer_new($this->writeFD,NULL,array($this,'onWriteEvent'),array($this,'onWriteFailureEvent'),array());
    if (!$this->writeBuf) {throw new Exception('creating write buffer failed');}
-   if (!event_buffer_base_set($this->writeBuf,$this->base)) {throw new Exception('wrong base');}
+   if (!event_buffer_base_set($this->writeBuf,Daemon::$worker->eventBase)) {throw new Exception('wrong base');}
    if ((event_buffer_priority_set($this->writeBuf,$this->writePriority) === FALSE) && FALSE) {throw new Exception('setting priority for write buffer failed');}
   }
   else
@@ -321,7 +323,7 @@ class AsyncStream
   {
    call_user_func($this->onReadFailure,$this);
   }
-  event_base_loopexit($this->base);
+  event_base_loopexit(Daemon::$worker->eventBase);
   $this->closeRead();
  }
  public function onWriteFailureEvent($buf,$arg = NULL)
@@ -331,7 +333,7 @@ class AsyncStream
   {
    call_user_func($this->onWriteFailure,$this);
   }
-  event_base_loopexit($this->base);
+  event_base_loopexit(Daemon::$worker->eventBase);
   $this->closeWrite();
  }
 }
