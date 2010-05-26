@@ -82,7 +82,7 @@ class HTTP extends AsyncServer
    if ($req->attrs->chunked)
    {
     Daemon::$worker->writePoolState[$req->attrs->connId] = TRUE;
-    event_buffer_write($this->buf[$req->attrs->connId],"0\r\n\r\n");
+    if (isset($this->buf[$req->attrs->connId])) {event_buffer_write($this->buf[$req->attrs->connId],"0\r\n\r\n");}
    }
    if ((!Daemon::$parsedSettings['mod'.$this->modname.'keepalive']) || (!isset($req->attrs->server['HTTP_CONNECTION'])) || ($req->attrs->server['HTTP_CONNECTION'] !== 'keep-alive'))
    {
