@@ -96,9 +96,9 @@ while (($fn = readdir($h)) !== FALSE)
 {
  if (($fn === '.') || ($fn === '..')) {continue;}
  $path = $this->stream->filePath.$fn;
- $type = is_dir($path)?'Directory':finfo_file($finfo,$path);
+ $type = is_dir($path)?'Directory':(is_readable($path)?finfo_file($finfo,$path):'File');
 
- ?><tr><td class="n"><a href="altlinux/"><?php echo htmlspecialchars($fn); ?></a>/</td><td class="m"><?php echo date('Y-M-D H:i:s',filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory'?'-':Daemon::humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
+ ?><tr><td class="n"><a href="<?php echo htmlspecialchars($fn).($type == 'Directory'?'/':''); ?>"><?php echo htmlspecialchars($fn); ?></a>/</td><td class="m"><?php echo date('Y-M-D H:i:s',filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory'?'-':Daemon::humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
  <?php
 }
 ?>
