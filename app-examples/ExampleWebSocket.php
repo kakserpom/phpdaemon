@@ -49,7 +49,7 @@ class ExampleWebSocketSession
  {
   if ($data === 'ping')
   {
-   $this->client->sendFrame('pong');
+   $this->client->sendFrame('pong',WebSocketSERVER::STRING,function($client) {Daemon::log('ExampleWebSocket: \'pong\' recieved by client.');});
   }
  }
  /* @method onFinish
