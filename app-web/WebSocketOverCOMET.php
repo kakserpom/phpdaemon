@@ -7,6 +7,7 @@ class WebSocketOverCOMET extends AsyncServer
  const IPCPacketType_POLL = 0x03;
  public $IpcTransSessions = array();
  public $wss;
+ public $ipcId;
  /* @method init
     @description Constructor.
     @return void
@@ -20,7 +21,6 @@ class WebSocketOverCOMET extends AsyncServer
   if (Daemon::$settings['mod'.$this->modname.'enable'])
   {
    $this->wss = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
-   Daemon::log(__CLASS__.' up.');
   }
  }
  /* @method onReady
@@ -69,6 +69,7 @@ class WebSocketOverCOMET extends AsyncServer
  */
  public function beginRequest($req,$upstream)
  {
+  if (!Daemon::$settings['mod'.$this->modname.'enable']) {return $req;}
   return new WebSocketOverCOMET_Request($this,$upstream,$req);
  }
 }
