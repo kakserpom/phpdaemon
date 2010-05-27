@@ -1,6 +1,10 @@
+*phpDaemon*
 
+<<<<<<< HEAD
 h3. phpDaemon
 
+=======
+>>>>>>> 1cab01b10ccbe770d17cd5cb38dc7f50c9576eb4
 http://github.com/kakserpom/phpdaemon
 
 True async. framework with API for PHP. It has many features. Designed for highload.
