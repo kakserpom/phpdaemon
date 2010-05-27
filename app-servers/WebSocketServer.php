@@ -32,14 +32,18 @@ class WebSocketServer extends AsyncServer
  public function inheritFromRequest($req,$appInstance)
  {
   $connId = $req->attrs->connId;
-  unset(Daemon::$worker->queue[$rid]);
+  unset(Daemon::$worker->queue[$connId.'-'.$req->attrs->id]);
   $this->buf[$connId] = $appInstance->buf[$connId];
   unset($appInstance->buf[$connId]);
-  event_buffer_set_callback($this->buf[$connId],$this->directReads?NULL:array($this,'onReadEvent'),array($this,'onWriteEvent'),array($this,'onFailureEvent'),array($connId));
+  unset($appInstance->poolState[$connId]);
+  $set = event_buffer_set_callback($this->buf[$connId],$this->directReads?NULL:array($this,'onReadEvent'),array($this,'onWriteEvent'),array($this,'onFailureEvent'),array($connId));
+  unset(Daemon::$worker->readPoolState[$connId]);
+  $this->poolState[$connId] = array();
   $this->sessions[$connId] = new WebSocketSession($connId,$this);
   $this->sessions[$connId]->clientAddr = $req->attrs->server['REMOTE_ADDR'];
   $this->sessions[$connId]->server = $req->attrs->server;
-  $this->sessions[$connId]->stdin("\r\n\r\n");
+  $this->sessions[$connId]->firstline = TRUE;
+  $this->sessions[$connId]->stdin("\r\n");
  }
  /* @method update
     @description Called when worker is going to update configuration.
