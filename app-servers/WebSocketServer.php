@@ -25,6 +25,22 @@ class WebSocketServer extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ /* @method inheritFromRequest
+    @description Called when a request to HTTP-server looks like WebSocket handshake query.
+    @return void
+ */
+ public function inheritFromRequest($req,$appInstance)
+ {
+  $connId = $req->attrs->connId;
+  unset(Daemon::$worker->queue[$rid]);
+  $this->buf[$connId] = $appInstance->buf[$connId];
+  unset($appInstance->buf[$connId]);
+  event_buffer_set_callback($this->buf[$connId],$this->directReads?NULL:array($this,'onReadEvent'),array($this,'onWriteEvent'),array($this,'onFailureEvent'),array($connId));
+  $this->sessions[$connId] = new WebSocketSession($connId,$this);
+  $this->sessions[$connId]->clientAddr = $req->attrs->server['REMOTE_ADDR'];
+  $this->sessions[$connId]->server = $req->attrs->server;
+  $this->sessions[$connId]->stdin("\r\n\r\n");
+ }
  /* @method update
     @description Called when worker is going to update configuration.
     @return void
@@ -208,6 +224,12 @@ class WebSocketSession extends SocketSession
     if ($i++ > 100) {break;}
     if ($l === "\r\n")
     {
+     if (!isset($this->server['HTTP_CONNECTION']) || ($this->server['HTTP_CONNECTION'] !== 'Upgrade') || 
+     !isset($this->server['HTTP_UPGRADE']) || ($this->server['HTTP_UPGRADE'] !== 'WebSocket'))
+     {
+      $this->finish();
+      return;
+     }
      $this->handshaked = TRUE;
      if ($this->onHandshake())
      {

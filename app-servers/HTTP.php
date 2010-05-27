@@ -5,6 +5,7 @@ class HTTP extends AsyncServer
  public $initialLowMark = 1;  // initial value of the minimal amout of bytes in buffer
  public $initialHighMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
  public $queuedReads = TRUE;
+ public $WS;
  /* @method init
     @description Constructor.
     @return void
@@ -30,6 +31,18 @@ class HTTP extends AsyncServer
    $this->bindSockets(Daemon::$settings['mod'.$this->modname.'listen'],Daemon::$settings['mod'.$this->modname.'listenport']);
   }
  }
+ /* @method onReady
+    @description Called when the worker is ready to go.
+    @return void
+ */
+ public function onReady()
+ {
+  if (Daemon::$settings['mod'.$this->modname.'enable'])
+  {
+   $this->WS = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
+   $this->enableSocketEvents();
+  }
+ }
  /* @method onAccepted
     @description Called when new connection is accepted.
     @param integer Connection's ID.
@@ -52,7 +65,6 @@ class HTTP extends AsyncServer
  */
  public function requestOut($r,$s)
  {
-  //Daemon::log('Request output (len. '.strlen($s).': \''.$s.'\'');
   $l = strlen($s);
   if (!isset(Daemon::$worker->pool[$r->attrs->connId]))
   {
@@ -169,7 +181,17 @@ class HTTP extends AsyncServer
      if (isset($e[1])) {$req->attrs->server['HTTP_'.strtoupper(strtr($e[0],Request::$htr))] = $e[1];}
     }
     $req->attrs->params_done = TRUE;
-    $req = Daemon::$appResolver->getRequest($req,$this,isset(Daemon::$settings[$k = 'mod'.$this->modname.'responder'])?Daemon::$settings[$k]:NULL);
+
+    if (isset($req->attrs->server['HTTP_CONNECTION']) && ($req->attrs->server['HTTP_CONNECTION'] === 'Upgrade')
+     && isset($req->attrs->server['HTTP_UPGRADE']) && ($req->attrs->server['HTTP_UPGRADE'] === 'WebSocket'))
+    {
+     if ($this->WS)
+     {
+      $this->WS->inheritFromRequest($req,$this);
+      return;
+     }
+    }
+    else {$req = Daemon::$appResolver->getRequest($req,$this,isset(Daemon::$settings[$k = 'mod'.$this->modname.'responder'])?Daemon::$settings[$k]:NULL);}
     if ($req instanceof stdClass)
     {
      $this->endRequest($req,0,0);
