@@ -412,12 +412,19 @@ class Daemon
  */
  public static function parseTime($str)
  {
-  $l = substr($str,-1);
-  if (($l === 's') || ($l === 'S')) {return ((int) substr($str,0,-1));}
-  if (($l === 'm') || ($l === 'M')) {return ((int) substr($str,0,-1)*60);}
-  if (($l === 'h') || ($l === 'H')) {return ((int) substr($str,0,-1)*60*60);}
-  if (($l === 'd') || ($l === 'D')) {return ((int) substr($str,0,-1)*60*60*24);}
-  return $str;
+  $time = 0;
+  preg_replace_callback('~(\d+)\s*([smhd])\s*|(.+)~i',function($m) use (&$time)
+  {
+   if (isset($m[3]) && ($m[3] !== '')) {$time = FALSE;}
+   if ($time === FALSE) {return;}
+   $n = (int) $m[1];
+   $l = strtolower($m[2]);
+   if ($l === 's') {$time += $n;}
+   elseif ($l === 'm') {$time += $n * 60;}
+   elseif ($l === 'h') {$time += $n * 60 * 60;}
+   elseif ($l === 'd') {$time += $n * 60 * 60 * 24;}
+  },$str);
+  return $time;
  }
  /* @method getStateOfWorkers
     @description Get state of workers.
