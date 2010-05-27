@@ -1,24 +1,19 @@
-*phpDaemon*
+# phpDaemon #
 
-<<<<<<< HEAD
-h3. phpDaemon
-
-=======
->>>>>>> 1cab01b10ccbe770d17cd5cb38dc7f50c9576eb4
 http://github.com/kakserpom/phpdaemon
 
 True async. framework with API for PHP. It has many features. Designed for highload.
 Main features and possibilites:
 
- * True FastCGI for PHP.
- * Powerful WebSocket and HTTP servers.
- * Many bundled clients like MySQL, Memcache, MongoDB, etc.
- * Many useful built-in applications like FlashPolicy server, SocksServer, CGI-server, etc...
- * Interactive debug console.
- * Dynamic spawning workers.
- * Chroot & Chdir for workers.
- * Automatic graceful reloading user's scripts when it's updated.
- * Graceful worker shutdown (and re-spawn if necessary) by the following limits: memory, query counter, idle time.
+* True FastCGI for PHP.
+* Powerful WebSocket and HTTP servers.
+* Many bundled clients like MySQL, Memcache, MongoDB, etc.
+* Many useful built-in applications like FlashPolicy server, SocksServer, CGI-server, etc...
+* Interactive debug console.
+* Dynamic spawning workers.
+* Chroot & Chdir for workers.
+* Automatic graceful reloading user's scripts when it's updated.
+* Graceful worker shutdown (and re-spawn if necessary) by the following limits: memory, query counter, idle time.
 
 Also, you can build binary application server using compiler like PHC (http://phpcompiler.org/).
 
