@@ -117,13 +117,15 @@ class WebSocketSession extends SocketSession
  public $server = array();
  public $firstline = FALSE;
  public $writeReady = TRUE;
+ public $callbacks = array();
  /* @method sendFrame
     @description Sends a frame.
     @param string Frame's data.
     @param integer Frame's type. See the constants.
+    @param callback Optional. Callback called when the frame is recieved by client.
     @return boolean Success.
  */
- public function sendFrame($data,$type = 0x00)
+ public function sendFrame($data,$type = 0x00,$callback = NULL)
  {
   if (!$this->handshaked) {return FALSE;}
   if (($type & 0x80) === 0x80)
@@ -145,6 +147,7 @@ class WebSocketSession extends SocketSession
   }
   else {$this->write("\x00".$data."\xFF");}
   $this->writeReady = FALSE;
+  if ($callback) {$this->callbacks[] = $callback;}
   return TRUE;
  }
  /* @method onFinish
@@ -177,6 +180,10 @@ class WebSocketSession extends SocketSession
  public function onWrite()
  {
   $this->writeReady = TRUE;
+  for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i)
+  {
+   call_user_func(array_shift($this->callbacks),$this);
+  }
   if (is_callable(array($this->upstream,'onWrite'))) {$this->upstream->onWrite();}
  }
  /* @method onHandshake
