@@ -29,8 +29,8 @@ class MyAppResolver extends AppResolver
    $req->attrs->server['FR_URL'] = 'file:///var/www/manual/'.$m[2];
    $req->attrs->server['FR_AUTOINDEX'] = TRUE;
    return 'FileReader';
-   */
   }
+  */
  }
  public function __construct()
  {
