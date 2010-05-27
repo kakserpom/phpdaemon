@@ -214,17 +214,17 @@ class Daemon
   Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$settings['ipcwstate'],Daemon::$shm_wstate_size,'wstate');
   Daemon::openLogs();
  }
- /* @method printBacktrace
-    @description Prints backtrace to log.
+ /* @method getBacktrace
+    @description Returns textual backtrace.
     @return void
  */
- public static function printBacktrace()
+ public static function getBacktrace()
  {
   ob_start();
   debug_print_backtrace();
   $dump = ob_get_contents();
   ob_end_clean();
-  Daemon::log($dump);
+  return $dump;
  }
  /* @method humanSize
     @description Returns human-readable size.
