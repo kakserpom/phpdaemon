@@ -62,6 +62,6 @@ class TelnetSession extends SocketSession
     $this->writeln('Unknown command "'.$cmd.'"');
    }
   }
-  if ($finish) {$this->finish();}
+  if ((strlen($this->buf) > 1024) || $finish) {$this->finish();}
  }
 }
