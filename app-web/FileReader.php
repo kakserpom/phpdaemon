@@ -91,12 +91,11 @@ div.foot { font: 90% monospace; color: #787878; padding-top: 4px;}
 <tbody> 
 <tr><td class="n"><a href="../">Parent Directory</a>/</td><td class="m">&nbsp;</td><td class="s">- &nbsp;</td><td class="t">Directory</td></tr> 
 <?php
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
 while (($fn = readdir($h)) !== FALSE)
 {
  if (($fn === '.') || ($fn === '..')) {continue;}
  $path = $this->stream->filePath.$fn;
- $type = is_dir($path)?'Directory':(is_readable($path)?finfo_file($finfo,$path):'File');
+ $type = is_dir($path)?'Directory':Daemon::getMIME($path);
 
  ?><tr><td class="n"><a href="<?php echo htmlspecialchars($fn).($type == 'Directory'?'/':''); ?>"><?php echo htmlspecialchars($fn); ?></a>/</td><td class="m"><?php echo date('Y-M-D H:i:s',filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory'?'-':Daemon::humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
  <?php
@@ -125,8 +124,7 @@ while (($fn = readdir($h)) !== FALSE)
      $this->finish();
      return;
     }
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $this->header('Content-Type: '.finfo_file($finfo,$this->stream->filePath));
+    $this->header('Content-Type: '.Daemon::getMIME($this->stream->filePath));
    }
    $this->stream
    ->onReadData(
