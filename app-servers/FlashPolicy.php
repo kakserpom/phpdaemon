@@ -52,7 +52,7 @@ class FlashPolicySession extends SocketSession
  public function stdin($buf)
  {
   $this->buf .= $buf;
-  $finish = (strpos($this->buf,"\xff\xf4\xff\xfd\x06") !== FALSE) || (strpos($this->buf,"\xff\xec") !== FALSE);
+  $finish = (strlen($this->buf) > 64) || (strpos($this->buf,"\xff\xf4\xff\xfd\x06") !== FALSE) || (strpos($this->buf,"\xff\xec") !== FALSE);
   if (strpos($this->buf,'<policy-file-request/>') !== FALSE)
   {
    if ($this->appInstance->policyData) {$this->write($this->appInstance->policyData."\x00");}
