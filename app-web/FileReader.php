@@ -97,7 +97,7 @@ while (($fn = readdir($h)) !== FALSE)
  $path = $this->stream->filePath.$fn;
  $type = is_dir($path)?'Directory':Daemon::getMIME($path);
 
- ?><tr><td class="n"><a href="<?php echo htmlspecialchars($fn).($type == 'Directory'?'/':''); ?>"><?php echo htmlspecialchars($fn); ?></a>/</td><td class="m"><?php echo date('Y-M-D H:i:s',filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory'?'-':Daemon::humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
+ ?><tr><td class="n"><a href="<?php echo htmlspecialchars($fn).($type == 'Directory'?'/':''); ?>"><?php echo htmlspecialchars($fn); ?></a></td><td class="m"><?php echo date('Y-M-D H:i:s',filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory'?'-':Daemon::humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
  <?php
 }
 ?>
