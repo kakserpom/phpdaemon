@@ -91,7 +91,8 @@ class AsyncStream
    }
    elseif ($u['scheme'] === 'file')
    {
-    $readFD = fopen($this->filePath = substr($url,7),'r');
+    $this->filePath = substr($url,7);
+    $readFD = @fopen($this->filePath,'r');
     $this->fileMode = TRUE;
    }
   }
