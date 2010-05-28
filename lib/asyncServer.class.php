@@ -518,6 +518,14 @@ class AsyncServer extends AppInstance
   {
    $this->sessions[$connId]->onWrite();
   }
+  if (isset($this->poolQueue[$connId]))
+  {
+   foreach ($this->poolQueue[$connId] as $r)
+   {
+    if ($r instanceof stdClass) {continue;}
+    $r->onWrite();
+   }
+  }
  }
  /* @method onFailureEvent
     @param resource Descriptor.
@@ -549,7 +557,7 @@ class AsyncServer extends AppInstance
  */
  public function abortRequestsByConnection($connId)
  {
-  if (!$this->poolQueue[$connId]) {return;}
+  if (!isset($this->poolQueue[$connId])) {return;}
   foreach ($this->poolQueue[$connId] as &$r)
   {
    if (!$r instanceof stdClass)

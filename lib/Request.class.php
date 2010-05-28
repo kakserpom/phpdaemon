@@ -84,6 +84,11 @@ class Request
   if (!is_string($var)) {return '';}
   return $var;
  }
+ /* @method onWrite
+    @description Called when the connection is ready to accept new data.
+    @return void
+ */
+ public function onWrite() {}
  /* @method registerShutdownFunction
     @description Adds new callback called before the request finished.
     @return void

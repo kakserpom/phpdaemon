@@ -121,6 +121,7 @@ class WebSocketOverCOMET_Request extends Request
  public $inited = FALSE;
  public $authKey;
  public $downstream;
+ public $callbacks = array();
  /* @method run
     @description Called when request iterated.
     @return integer Status.
@@ -163,15 +164,29 @@ class WebSocketOverCOMET_Request extends Request
    $this->sleep(1);
   }
  }
+ /* @method onWrite
+    @description Called when the connection is ready to accept new data.
+    @return void
+ */
+ public function onWrite()
+ {
+  for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i)
+  {
+   call_user_func(array_shift($this->callbacks),$this);
+  }
+  if (is_callable(array($this->downstream,'onWrite'))) {$this->downstream->onWrite();}
+ }
  /* @method sendFrame
     @description Sends a frame.
     @param string Frame's data.
     @param integer Frame's type. See the constants.
+    @param callback Optional. Callback called when the frame is recieved by client.
     @return boolean Success.
  */
- public function sendFrame($data,$type = 0x00)
+ public function sendFrame($data,$type = 0x00,$callback = NULL)
  {
   $this->out('<script type="text/javascript">WebSocket.onmessage('.json_encode($data).");</script>\n");
+  if ($callback) {$this->callbacks[] = $callback;}
   return TRUE;
  }
  /* @method onFinish
