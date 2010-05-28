@@ -172,7 +172,7 @@ class WebSocketOverCOMET_Request extends Request
  {
   for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i)
   {
-   call_user_func(array_shift($this->callbacks),$this);
+   call_user_func(array_pop($this->callbacks),$this);
   }
   if (is_callable(array($this->downstream,'onWrite'))) {$this->downstream->onWrite();}
  }
