@@ -151,9 +151,7 @@ class WebSocketOverCOMET_Request extends Request
     $this->header('Content-Type: text/html; charset=utf-8');
     $this->inited = TRUE;
     $this->out('<!--'.str_repeat('-',1024).'->'); // Padding
-    $this->out('<script type="text/javascript">var WebSocket = window.parent.WebSocket; WebSocket._id = "'.$this->appInstance->ipcId.'.'.$this->idAppQueue.'.'.$this->authKey.'"; WebSocket.onopen();</script>'."\n");
-    
-
+    $this->out('<script type="text/javascript"> WebSocket.onopen("'.$this->appInstance->ipcId.'.'.$this->idAppQueue.'.'.$this->authKey.'"); </script>'."\n");
     $appName = self::getString($_REQUEST['_route']);
     if (!isset($this->appInstance->wss->routes[$appName]))
     {
