@@ -3,6 +3,7 @@
 DRAFT:
 
  db.chatsessions.ensureIndex({id:1},{unique: true});
+ db.createCollection("chatevents", {capped:true, size:100000})
 */
 return new Chat;
 class Chat extends AppInstance
@@ -163,7 +164,7 @@ class ChatTag
     //if ($cursor->finished) {$cursor->destroy();}
    },array(
     'tailable' => TRUE,
-    'sort' => array('ts' => 1),
+    'sort' => array('$natural' => 1),
     'where' => array('ts' => array('$gt' => microtime(TRUE)),'tags' => array('$in' => array($this->tag,'%all')))
    ));
   }
