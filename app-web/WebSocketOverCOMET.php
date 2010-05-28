@@ -206,7 +206,6 @@ class WebSocketOverCOMET_Request extends Request
   }
   elseif ($this->type === 'pollInit')
   {
-   Daemon::log('knock');
    if (!$this->inited)
    {
     $this->authKey = sprintf('%x',crc32(microtime()."\x00".$this->attrs->server['REMOTE_ADDR']));
