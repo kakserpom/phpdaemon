@@ -90,6 +90,7 @@ class WebSocketOverCOMET_IPCRecvSession extends SocketSession
  public function stdin($buf)
  {
   $this->buf .= $buf;
+  start:
   $l = strlen($this->buf);
   if ($l < 6) {return;} // not enough data yet.
   extract(unpack('Ctype/Chlen/Nblen',binarySubstr($this->buf,0,6)));
@@ -100,8 +101,33 @@ class WebSocketOverCOMET_IPCRecvSession extends SocketSession
   list($reqId,$authKey) = explode('.',$header);
   if (isset($this->appInstance->queue[$reqId]->downstream) && $this->appInstance->queue[$reqId]->authKey == $authKey)
   {
-   $this->appInstance->queue[$reqId]->downstream->onFrame($body,WebSocketServer::STRING);
+   if ($type === WebSocketOverCOMET::IPCPacketType_C2S)
+   {
+    $this->appInstance->queue[$reqId]->downstream->onFrame($body,WebSocketServer::STRING);
+    $this->appInstance->queue[$reqId]->atime = time();
+   }
+   elseif ($type === WebSocketOverCOMET::IPCPacketType_S2C)
+   {
+    if (isset($this->appInstance->polling[$reqId.'.'.$authKey]))
+    {
+     foreach ($this->appInstance->polling[$reqId.'.'.$authKey] as $pollReqId)
+     {
+      if (isset($this->appInstance->queue[$pollReqId]))
+      {
+       $this->appInstance->polling[$pollReqId]->out($body);
+       $this->appInstance->polling[$pollReqId]->finish();
+      }
+     }
+    }
+   }
+   elseif ($type === WebSocketOverCOMET::IPCPacketType_POLL)
+   {
+    $this->appInstance->queue[$reqId]->polling[] = $this->connId;
+    $this->appInstance->queue[$reqId]->flushBufferedPackets();
+    $this->appInstance->queue[$reqId]->atime = time();
+   }
   }
+  goto start;
  }
 }
 class WebSocketOverCOMET_IPCTransSession extends SocketSession
@@ -122,7 +148,10 @@ class WebSocketOverCOMET_Request extends Request
  public $authKey;
  public $downstream;
  public $callbacks = array();
+ public $polling = array();
+ public $bufferedPackets = array();
  public $type;
+ public $atime;
  /* @method init
     @description Constructor.
     @return void
@@ -177,29 +206,63 @@ class WebSocketOverCOMET_Request extends Request
   }
   elseif ($this->type === 'pollInit')
   {
+   Daemon::log('knock');
    if (!$this->inited)
    {
     $this->authKey = sprintf('%x',crc32(microtime()."\x00".$this->attrs->server['REMOTE_ADDR']));
-    $this->header('Content-Type: text/x-json; charset=utf-8');
+    $this->header('Content-Type: text/plain; charset=utf-8');
     $this->inited = TRUE;
-    echo json_encode(array('id' => $this->appInstance->ipcId.'.'.$this->idAppQueue.'.'.$this->authKey));
     $appName = self::getString($_REQUEST['_route']);
     if (!isset($this->appInstance->wss->routes[$appName]))
     {
      if (isset(Daemon::$settings['logerrors']) && Daemon::$settings['logerrors']) {Daemon::log(__METHOD__.': undefined route \''.$appName.'\'.');}
-     $this->status(404);
+     echo json_encode(array('error' => 404));
      return Request::DONE;
     }
     if (!$this->downstream = call_user_func($this->appInstance->wss->routes[$appName],$this))
     {
-     $this->status(403);
+     echo json_encode(array('error' => 403));
      return Request::DONE;
     }
+    echo json_encode(array('id' => $this->appInstance->ipcId.'.'.$this->idAppQueue.'.'.$this->authKey));
+    $this->atime = time();
+    $this->finish();
    }
-   $this->sleep(1);
+   if ($this->atime < time()-10)
+   {
+    if (isset($this->downstream))
+    {
+     $this->downstream->onFinish();
+     unset($this->downstream);
+    }
+    return 1;
+   }
+   $this->sleep(2);
   }
   elseif ($this->type === 'poll')
   {
+   if (!$this->inited)
+   {
+    $this->header('Content-Type: text/plain; charset=utf-8');
+    $this->inited = TRUE;
+    $ret = array();
+    $e = explode('.',self::getString($_REQUEST['_id']),2);
+    if (sizeof($e) != 2) {$ret['error'] = 'Bad cookie.';}
+    elseif ($connId = $this->appInstance->connectIPC(basename($e[0])))
+    {
+     $this->appInstance->sessions[$connId]->write(pack('CCN',WebSocketOverCOMET::IPCPacketType_POLL,strlen($e[1]),0));
+    }
+    else {$ret['error'] = 'IPC error.';}
+    if (sizeof($ret))
+    {
+     echo json_encode($ret);
+     return Request::DONE;
+    }
+    $this->reqIdAuthKey = $e[1];
+    $this->appInstance->polling[$this->reqIdAuthKey] = $this->idAppQueue;
+    $this->sleep(1);
+   }
+   $this->sleep(10);
   }
  }
  /* @method onAbort
@@ -208,6 +271,15 @@ class WebSocketOverCOMET_Request extends Request
  */
  public function onAbort()
  {
+  if ($this->type !== 'pollInit')
+  {
+   if (isset($this->downstream))
+   {
+    $this->downstream->onFinish();
+    unset($this->downstream);
+   }
+   $this->finish();
+  }
  }
  /* @method onWrite
     @description Called when the connection is ready to accept new data.
@@ -215,10 +287,28 @@ class WebSocketOverCOMET_Request extends Request
  */
  public function onWrite()
  {
-  for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i)
+  if ($this->type !== 'pollInit')
   {
-   call_user_func(array_shift($this->callbacks),$this);
+   for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i) {call_user_func(array_shift($this->callbacks),$this);}
+   if (is_callable(array($this->downstream,'onWrite'))) {$this->downstream->onWrite();}
   }
+ }
+ /* @method flushBufferedPackets()
+    @description Flushes buffered packets (only for the long-polling method)
+    @return void
+ */
+ public function flushBufferedPackets()
+ {
+  if (!sizeof($this->polling)) {return;}
+  $h = $this->idAppQueue.'.'.$this->authKey;
+  $packet = pack('CCN',WebSocketOverCOMET::IPCPacketType_S2C,strlen($h),strlen($packet))
+  .$h.json_encode(array('ts' => microtime(TRUE),'packets' => $this->bufferedPackets));
+  foreach ($this->polling as $p)
+  {
+   if (!isset($this->appInstance->sessions[$p])) {continue;}
+   $this->appInstance->sessions[$connId]->write($packet);
+  }
+  for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i) {call_user_func(array_shift($this->callbacks),$this);}
   if (is_callable(array($this->downstream,'onWrite'))) {$this->downstream->onWrite();}
  }
  /* @method sendFrame
@@ -230,6 +320,11 @@ class WebSocketOverCOMET_Request extends Request
  */
  public function sendFrame($data,$type = 0x00,$callback = NULL)
  {
+  if ($this->type === 'pollInit')
+  {
+   $this->bufferedPackets[] = array($type,$data);
+   $this->flushBufferedPackets();
+  }
   $this->out('<script type="text/javascript">WebSocket.onmessage('.json_encode($data).");</script>\n");
   if ($callback) {$this->callbacks[] = $callback;}
   return TRUE;
