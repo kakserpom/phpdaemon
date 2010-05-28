@@ -44,7 +44,7 @@ class WebSocketOverCOMET extends AsyncServer
  public function connectIPC($id)
  {
   if (isset($this->IpcTransSessions[$id])) {return $this->IpcTransSessions[$id];}
-  $connId = $this->connectTo('unix:'.sprintf(Daemon::$settings['mod'.$this->modname.'ipcpath'],$id));
+  $connId = $this->connectTo('unix:'.sprintf(Daemon::$settings['mod'.$this->modname.'ipcpath'],basename($id)));
   if (!$connId) {return FALSE;}
   $this->sessions[$connId] = new WebSocketOverCOMET_IPCTransSession($connId,$this);
   $this->sessions[$connId]->ipcId = $id;
@@ -122,13 +122,25 @@ class WebSocketOverCOMET_Request extends Request
  public $authKey;
  public $downstream;
  public $callbacks = array();
+ public $type;
+ /* @method init
+    @description Constructor.
+    @return void
+ */
+ public function init()
+ {
+  if (isset($this->attrs->get['_pull'])) {$this->type = 'pull';}
+  elseif (isset($this->attrs->get['_poll']) && isset($this->attrs->get['_init'])) {$this->type = 'pollInit';}
+  elseif (isset($this->attrs->get['_poll'])) {$this->type = 'poll';}
+  else {$this->type = 'push';}
+ }
  /* @method run
     @description Called when request iterated.
     @return integer Status.
  */
  public function run()
  {
-  if (!isset($_REQUEST['_pull'])) // Push
+  if ($this->type === 'push')
   {
    $ret = array();
    $e = explode('.',self::getString($_REQUEST['_id']),2);
@@ -144,7 +156,7 @@ class WebSocketOverCOMET_Request extends Request
    echo json_encode($ret);
    return Request::DONE;
   }
-  else // Pull
+  elseif ($this->type === 'pull')
   {
    if (!$this->inited)
    {
@@ -163,6 +175,39 @@ class WebSocketOverCOMET_Request extends Request
    }
    $this->sleep(1);
   }
+  elseif ($this->type === 'pollInit')
+  {
+   if (!$this->inited)
+   {
+    $this->authKey = sprintf('%x',crc32(microtime()."\x00".$this->attrs->server['REMOTE_ADDR']));
+    $this->header('Content-Type: text/x-json; charset=utf-8');
+    $this->inited = TRUE;
+    echo json_encode(array('id' => $this->appInstance->ipcId.'.'.$this->idAppQueue.'.'.$this->authKey));
+    $appName = self::getString($_REQUEST['_route']);
+    if (!isset($this->appInstance->wss->routes[$appName]))
+    {
+     if (isset(Daemon::$settings['logerrors']) && Daemon::$settings['logerrors']) {Daemon::log(__METHOD__.': undefined route \''.$appName.'\'.');}
+     $this->status(404);
+     return Request::DONE;
+    }
+    if (!$this->downstream = call_user_func($this->appInstance->wss->routes[$appName],$this))
+    {
+     $this->status(403);
+     return Request::DONE;
+    }
+   }
+   $this->sleep(1);
+  }
+  elseif ($this->type === 'poll')
+  {
+  }
+ }
+ /* @method onAbort
+    @description Called when the request aborted.
+    @return void
+ */
+ public function onAbort()
+ {
  }
  /* @method onWrite
     @description Called when the connection is ready to accept new data.
@@ -172,7 +217,7 @@ class WebSocketOverCOMET_Request extends Request
  {
   for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i)
   {
-   call_user_func(array_pop($this->callbacks),$this);
+   call_user_func(array_shift($this->callbacks),$this);
   }
   if (is_callable(array($this->downstream,'onWrite'))) {$this->downstream->onWrite();}
  }

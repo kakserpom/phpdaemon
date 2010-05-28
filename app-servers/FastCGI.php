@@ -213,7 +213,6 @@ class FastCGI extends AsyncServer
       $req->sendfp = fopen($fn,'wb');
       $req->header('X-Sendfile: '.$fn);
      }
-     $req->parseParams();
      Daemon::$worker->queue[$rid] = $req;
     }
    }

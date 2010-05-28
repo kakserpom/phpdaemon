@@ -186,7 +186,7 @@ class WebSocketSession extends SocketSession
   $this->writeReady = TRUE;
   for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i)
   {
-   call_user_func(array_pop($this->callbacks),$this);
+   call_user_func(array_shift($this->callbacks),$this);
   }
   if (is_callable(array($this->upstream,'onWrite'))) {$this->upstream->onWrite();}
  }

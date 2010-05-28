@@ -205,10 +205,10 @@ class HTTP extends AsyncServer
       $req->sendfp = fopen($fn,'wb');
       $req->header('X-Sendfile: '.$fn);
      }
-     $req->parseParams();
      $req->stdin($req->attrs->inbuf);
      $req->attrs->inbuf = '';
      Daemon::$worker->queue[$rid] = $req;
+     $this->poolQueue[$connId][$req->attrs->id] = $req;
      $this->poolState[$connId]['state'] = 2;
     }
    }
