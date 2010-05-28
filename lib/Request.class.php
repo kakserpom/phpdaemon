@@ -48,6 +48,7 @@ class Request
   $this->upstream = $upstream;
   $this->attrs = $req->attrs;
   if (Daemon::$settings['expose']) {$this->header('X-Powered-By: phpDaemon/'.Daemon::$version);}
+  $this->parseParams();
   $this->onWakeup();
   $this->init();
   $this->onSleep();
@@ -613,13 +614,13 @@ class Request
   }
   $this->parseStdin();
  }
- /* @method stdin
-    @param string Piece of request's body.
-    @description Called when new piece of request's body is recieved.
+ /* @method finish
+    @param integer - Optional. Status. 0 - normal, -1 - abort, -2 - termination
+    @description Finishes the request.
     @return void
  */
  public function finish($status = 0)
- { // 0 - normal, -1 - abort, -2 - termination
+ {
   if ($this->state === 0) {return;}
   $this->state = 0;
   foreach ($this->shutdownFuncs as &$c) {call_user_func($c,$this);}
