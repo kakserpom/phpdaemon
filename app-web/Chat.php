@@ -201,7 +201,7 @@ class ChatSession
  }
  public function gracefulShutdown()
  {
-  return FALSE;
+  return TRUE;
  }
  public function putMsgId($s)
  {
