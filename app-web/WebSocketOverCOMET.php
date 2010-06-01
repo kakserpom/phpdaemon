@@ -314,6 +314,14 @@ class WebSocketOverCOMET_Request extends Request
    if (is_callable(array($this->downstream,'onWrite'))) {$this->downstream->onWrite();}
   }
  }
+ public function compareFloats($a,$b,$precision = 3)
+ {
+  $k = pow(10,$precision);
+  $a = round($a*$k)/$k;
+  $b = round($b*$k)/$k;
+  $cmp = strnatcmp((string) $a,(string) $b);
+  return $cmp;
+ }
  /* @method flushBufferedPackets()
     @param string Optional. Last timestamp.
     @description Flushes buffered packets (only for the long-polling method)
@@ -329,9 +337,9 @@ class WebSocketOverCOMET_Request extends Request
    $ts = (float) $ts;
    for ($i = sizeof($this->bufferedPackets)-1; $i >= 0; --$i)
    {
-    if ($this->bufferedPackets[$i][3] <= $ts)
+    if ($this->compareFloats($this->bufferedPackets[$i][2],$ts) <= 0)
     {
-     $this->bufferedPackets = array_slice($this->bufferedPackets,$i);
+     $this->bufferedPackets = array_slice($this->bufferedPackets,$i+1);
      break;
     }
    }
