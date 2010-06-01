@@ -223,7 +223,13 @@ class WebSocketOverCOMET_Request extends Request
      echo json_encode(array('error' => 403));
      return Request::DONE;
     }
-    echo json_encode(array('id' => $this->appInstance->ipcId.'.'.$this->idAppQueue.'.'.$this->authKey));
+    $id = $this->appInstance->ipcId.'.'.$this->idAppQueue.'.'.$this->authKey;
+    if (isset($_REQUEST['_script']))
+    {
+     $q = self::getString($_GET['q']);
+     if (ctype_digit($q)) {$this->out('var Response'.$q.' = '.json_encode(array('id' => $id)).";\n");}
+    }
+    else {echo json_encode(array('id' => $id));}
     $this->atime = time();
     $this->finish();
    }
@@ -300,8 +306,17 @@ class WebSocketOverCOMET_Request extends Request
  {
   if (!sizeof($this->polling)) {return;}
   $h = $this->idAppQueue.'.'.$this->authKey;
-  $packet = pack('CCN',WebSocketOverCOMET::IPCPacketType_S2C,strlen($h),strlen($packet))
-  .$h.json_encode(array('ts' => microtime(TRUE),'packets' => $this->bufferedPackets));
+  
+  if (isset($this->attrs->get['_script']))
+  {
+   $q = self::getString($_GET['q']);
+   if (ctype_digit($q)) {$this->out('var Response'.$q.' = {'.json_encode(array('ts' => microtime(TRUE),'packets' => $this->bufferedPackets)).";\n");}
+  }
+  else
+  {
+   $packet = json_encode(array('ts' => microtime(TRUE),'packets' => $this->bufferedPackets));
+  }
+  $packet = pack('CCN',WebSocketOverCOMET::IPCPacketType_S2C,strlen($h),strlen($packet)).$h.$packet;
   foreach ($this->polling as $p)
   {
    if (!isset($this->appInstance->sessions[$p])) {continue;}
@@ -324,7 +339,7 @@ class WebSocketOverCOMET_Request extends Request
    $this->bufferedPackets[] = array($type,$data);
    $this->flushBufferedPackets();
   }
-  $this->out('<script type="text/javascript">WebSocket.onmessage('.json_encode($data).");</script>\n");
+  else {$this->out('<script type="text/javascript">WebSocket.onmessage('.json_encode($data).");</script>\n");}
   if ($callback) {$this->callbacks[] = $callback;}
   return TRUE;
  }
