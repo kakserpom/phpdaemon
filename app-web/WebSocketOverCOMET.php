@@ -119,7 +119,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession
        $req = $this->appInstance->queue[$pollReqId];
        if (isset($req->attrs->get['_script']))
        {
-        $q = self::getString($this->attrs->get['q']);
+        $q = Request::getString($req->attrs->get['q']);
         $body = 'var Response'.$q.' = '.$body.";\n";
        }
        else {$body .= "\n";}
@@ -132,7 +132,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession
    elseif ($type === WebSocketOverCOMET::IPCPacketType_POLL)
    {
     $this->appInstance->queue[$reqId]->polling[] = $this->connId;
-    $this->appInstance->queue[$reqId]->flushBufferedPackets();
+    $this->appInstance->queue[$reqId]->flushBufferedPackets($body);
     $this->appInstance->queue[$reqId]->atime = time();
    }
   }
@@ -261,7 +261,8 @@ class WebSocketOverCOMET_Request extends Request
     if (sizeof($e) != 2) {$ret['error'] = 'Bad cookie.';}
     elseif ($connId = $this->appInstance->connectIPC(basename($e[0])))
     {
-     $this->appInstance->sessions[$connId]->write(pack('CCN',WebSocketOverCOMET::IPCPacketType_POLL,strlen($e[1]),0).$e[1]);
+     $body = self::getString($_REQUEST['ts']);
+     $this->appInstance->sessions[$connId]->write(pack('CCN',WebSocketOverCOMET::IPCPacketType_POLL,strlen($e[1]),strlen($body)).$e[1].$body);
     }
     else {$ret['error'] = 'IPC error.';}
     if (isset($req->attrs->get['_script']))
@@ -314,15 +315,27 @@ class WebSocketOverCOMET_Request extends Request
   }
  }
  /* @method flushBufferedPackets()
+    @param string Optional. Last timestamp.
     @description Flushes buffered packets (only for the long-polling method)
     @return void
  */
- public function flushBufferedPackets()
+ public function flushBufferedPackets($ts = NULL)
  {
   if (!sizeof($this->polling)) {return;}
   if (!sizeof($this->bufferedPackets)) {return;}
   $h = $this->idAppQueue.'.'.$this->authKey;
-  
+  if ($ts !== NULL)
+  {
+   $ts = (float) $ts;
+   for ($i = sizeof($this->bufferedPackets)-1; $i >= 0; --$i)
+   {
+    if ($this->bufferedPackets[$i][3] <= $ts)
+    {
+     $this->bufferedPackets = array_slice($this->bufferedPackets,$i);
+     break;
+    }
+   }
+  }
   $packet = json_encode(array('ts' => microtime(TRUE),'packets' => $this->bufferedPackets));
   $packet = pack('CCN',WebSocketOverCOMET::IPCPacketType_S2C,strlen($h),strlen($packet)).$h.$packet;
   foreach ($this->polling as $connId)
@@ -344,7 +357,7 @@ class WebSocketOverCOMET_Request extends Request
  {
   if ($this->type === 'pollInit')
   {
-   $this->bufferedPackets[] = array($type,$data);
+   $this->bufferedPackets[] = array($type,$data,microtime(TRUE));
    $this->flushBufferedPackets();
   }
   else {$this->out('<script type="text/javascript">WebSocket.onmessage('.json_encode($data).");</script>\n");}
