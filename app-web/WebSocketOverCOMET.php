@@ -119,7 +119,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession
        $req = $this->appInstance->queue[$pollReqId];
        if (isset($req->attrs->get['_script']))
        {
-        $q = self::getString($this->attrs->get['q']);
+        $q = Request::getString($req->attrs->get['q']);
         $body = 'var Response'.$q.' = '.$body.";\n";
        }
        else {$body .= "\n";}
@@ -330,6 +330,7 @@ class WebSocketOverCOMET_Request extends Request
    if (!isset($this->appInstance->sessions[$connId])) {continue;}
    $this->appInstance->sessions[$connId]->write($packet);
   }
+  $this->bufferedPackets = array();
   for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i) {call_user_func(array_shift($this->callbacks),$this);}
   if (is_callable(array($this->downstream,'onWrite'))) {$this->downstream->onWrite();}
  }
