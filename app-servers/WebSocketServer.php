@@ -229,6 +229,15 @@ class WebSocketSession extends SocketSession
   $this->buf .= $buf;
   if (!$this->handshaked)
   {
+   if (strpos($this->buf,'<policy-file-request/>') !== FALSE)
+   {
+    if (($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) && $FP->policyData)
+    {
+     $this->write($FP->policyData."\x00");
+    }
+    $this->finish();
+    return;
+   }
    $i = 0;
    while (($l = $this->gets()) !== FALSE)
    {

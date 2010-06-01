@@ -118,6 +118,16 @@ class HTTP extends AsyncServer
   if (sizeof($this->poolState[$connId]) < 3) {return;}
   if ($this->poolState[$connId]['state'] === 0) // begin
   {
+   if (strpos($buf,'<policy-file-request/>') !== FALSE)
+   {
+    if (($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) && $FP->policyData)
+    {
+     Daemon::$worker->writePoolState[$connId] = TRUE;
+     event_buffer_write($this->buf[$connId],$FP->policyData."\x00");
+    }
+    $this->finishConnection($connId);
+    return;
+   }
    ++Daemon::$worker->queryCounter;
    ++$this->poolState[$connId]['n'];
    $rid = $connId.'-'.$this->poolState[$connId]['n'];
@@ -159,6 +169,16 @@ class HTTP extends AsyncServer
   if ($this->poolState[$connId]['state'] === 1)
   {
    $req->attrs->inbuf .= $buf;
+   if (strpos($req->attrs->inbuf,'<policy-file-request/>') !== FALSE)
+   {
+    if (($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) && $FP->policyData)
+    {
+     Daemon::$worker->writePoolState[$req->attrs->connId] = TRUE;
+     event_buffer_write($this->buf[$req->attrs->connId],$FP->policyData."\x00");
+    }
+    $this->finishConnection($req->attrs->connId);
+    return;
+   }
    $buf = '';
    if (($p = strpos($req->attrs->inbuf,"\r\n\r\n")) !== FALSE)
    {
