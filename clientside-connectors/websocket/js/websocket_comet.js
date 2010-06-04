@@ -17,8 +17,9 @@
       if(!request)return false;
       request.onreadystatechange  = function() {};
       request.open('POST', url, true);
-      if(request.setRequestHeader){
-        request.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+      if (typeof(request.setRequestHeader) =='function')
+      {
+       request.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
       }
       request.send(urlEncodeData({_id: _ID, 'data': data}));
       return true;
