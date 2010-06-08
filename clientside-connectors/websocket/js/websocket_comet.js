@@ -11,28 +11,41 @@
     this.onopen = function(){};
     this.onclose = function(){};
 
+
+
+
+    /**
+     * Send request to  server
+     */
     this.send = function(data) {
 
       var request = createRequestObject();
+
       if(!request)return false;
+
       request.onreadystatechange  = function() {};
       request.open('POST', url, true);
-      if (typeof(request.setRequestHeader) =='function')
-      {
-       request.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+      if(typeof(request.setRequestHeader) =='function'){
+        request.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
       }
       request.send(urlEncodeData({_id: _ID, 'data': data}));
       return true;
 
     };
 
+
+
+
+    /**
+     * Close connection
+     */
     this.close = function(){
     	if(connection){
-    	this.readyState = 2;
-        document.body.removeChild(connection);
-        connection = false;
-        this.readyState = 3;
-        this.onclose();	    		
+          this.readyState = 2;
+          document.body.removeChild(connection);
+          connection = false;
+          this.readyState = 3;
+          this.onclose();
     	}
         
     };
@@ -56,10 +69,10 @@
 
 
 
-      /*
-      Создание XMLHttpRequest-объекта
-      Возвращает созданный объект или null, если XMLHttpRequest не поддерживается
-      */
+      /**
+       * Создание XMLHttpRequest-объекта
+       * Возвращает созданный объект или null, если XMLHttpRequest не поддерживается
+       */
       var createRequestObject = function() {
           var request = null;
           try {
@@ -71,9 +84,10 @@
               request=new ActiveXObject('Microsoft.XMLHTTP');
             } catch (e){}
           }
+
           if(!request){
             try {
-              request=new XMLHttpRequest();
+              request= new XMLHttpRequest();
             } catch (e){}
           }
           return request;
@@ -85,10 +99,12 @@
      
 
 
+     /**
+      * Соединени с сервером
+      */
+     var  init = function() {
 
-     var  initialize = function() {
-
-       this.readyState = 0;
+        this.readyState = 0;
         connection = document.createElement('iframe');
         connection.setAttribute('id',     'WebSocket_iframe');
         with (connection.style) {
@@ -99,14 +115,18 @@
           display    = 'none';
         }
         document.body.appendChild(connection);
-         if(connection.window){
+         
+        if(connection.window){
             connection.window.document.write("<html><body></body></html>");
+            var win = connection.window;
         }else if(connection.contentWindow){
             connection.contentWindow.window.document.write("<html><body></body></html>");
+            var win = connection.contentWindow.window;
         }
         
 
-        iframediv = document.createElement('iframe');
+       iframediv = document.createElement('iframe');   
+          
         iframediv.setAttribute('src', url+'&_pull=1');
         iframediv.onload = function(){self.close();};
         var ws = {
@@ -120,21 +140,21 @@
              self.onmessage(msg);
            }
         };
-        connection.contentWindow.window.document.body.appendChild(iframediv);
+        win.document.body.appendChild(iframediv);
         if(iframediv.window){
 
             iframediv.window.WebSocket = ws;
 
         }else if(iframediv.contentWindow){
-
+     
             iframediv.contentWindow.window.WebSocket = ws;
 
         }
-
+   
 
 
     };
 
-    initialize();
+    init();
 };
 WebSocketServicePrivider = 'comet';

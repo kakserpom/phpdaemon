@@ -11,6 +11,14 @@
     this.onopen = function(){};
     this.onclose = function(){};
 
+
+
+
+
+
+    /**
+     * Send packet to server
+     */
     this.send = function(data) {
       if(!_ID)return;
       
@@ -54,26 +62,26 @@
       iframe.onload = function(){    	  
     	  document.body.removeChild(iframe);  
       };
-      /*
-      var request = createRequestObject();
-      if(!request)return false;
-      request.onreadystatechange  = function() {};
-      request.open('POST', url, true);
-      if(request.setRequestHeader){
-        request.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-      }
-      request.send(urlEncodeData({_id: _ID, 'data': data}));
-      return true;
-      */
+
     };
 
+
+
+
+
+
+
+
+    /**
+     * Close connection
+     */
     this.close = function(){
     	if(connection){
-    	this.readyState = 2;
-        document.body.removeChild(connection);
-        connection = false;
-        this.readyState = 3;
-        this.onclose();	    		
+          this.readyState = 2;
+          document.body.removeChild(connection);
+          connection = false;
+          this.readyState = 3;
+          this.onclose();
     	}
         
     };
@@ -150,11 +158,13 @@
        
            
    
-      
+     /**
+      * Server Response
+      */
      var resp = function(response){
      	
      	if(!response)alert('Error packet');
-         console.log(response);
+      
      	 if(!_ID){
      		_ID = response.id; 
      		 self.readyState = 1;
@@ -173,13 +183,13 @@
 
 
 
-     var  initialize = function() {
+     var  init = function() {
 
        this.readyState = 0;        
         $q(resp);
 
     };
 
-    initialize();
+    init();
 };
 WebSocketServicePrivider = 'poling';

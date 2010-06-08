@@ -11,23 +11,54 @@
 
 WebSocketConnection = function(params){
 
+    var self = this;
+
+    /**
+     * Путь к js и swf файлам
+     */
     this.root = '/websocket/js/';
     
-    
+
+
+    /**
+     * WebSocket соединение
+     */
     var WS = null;
 
-    var self = this;
+
+
+    /**
+     * Статус WebSocket соединения
+     */
     this.readyState     = 3;
     this.bufferedAmount = 0;
 
-    
+
+
+    /**
+     * Закрытие соединения с сервером
+     */
     this.close = function(){if(WS)WS.close();};
+
+
+
+    /**
+     * Отправка данных на сервер
+     */
     this.send = function(data){if(WS)WS.send(data);};
     
-    
-    this.onmessageEvent = function(e){if(self.onmessage)self.onmessage(e);};
-    this.onopenEvent = function(){if(self.onopen)self.onopen();};
-    this.oncloseEvent = function(){if(self.onclose)self.onclose();};
+
+
+    /**** События  ****/
+
+    // получен новый пакет данных
+    var onmessageEvent = function(e){if(self.onmessage)self.onmessage(e);};
+
+    // соединение с сервером установлено
+    var onopenEvent = function(){if(self.onopen)self.onopen();};
+
+    // соединение с сервером закрыто
+    var oncloseEvent = function(){if(self.onclose)self.onclose();};
 
 
 
@@ -55,10 +86,14 @@ WebSocketConnection = function(params){
      */
     var loadEmulator = function(type, onLoaded){
 
-          if(type == 'flash'){
-             WebSocket__swfLocation = self.root + 'flash.swf';
-             if(!("FABridge" in window))loadFile('fabridge.js');
-             if(!("swfobject" in window))loadFile('swfobject.js');
+          if(type == 'flash'){   // загружаем флешовый эмулятор
+
+             WebSocket__swfLocation = self.root + 'flash.swf';  // путь к swf файлу
+
+             if(!("FABridge" in window))loadFile('fabridge.js');   // если не загружен FABridge, загружаем
+
+             if(!("swfobject" in window))loadFile('swfobject.js'); // если не загружен swfobject, загружаем
+
              var interval1 = setInterval(function(){
                  if(("FABridge" in window) && ("swfobject" in window)){
                     clearInterval(interval1);
@@ -66,11 +101,16 @@ WebSocketConnection = function(params){
                  }
              },10);
 
-          }else if(type == 'comet'){
+          }else if(type == 'comet'){    // загружаем comet эмулятор
+
               loadFile('websocket_comet.js');
-          }else if(type == 'poling'){
+
+          }else if(type == 'poling'){   // загружаем long-poling эмулятор
+
               loadFile('websocket_poling.js');
+
           }else{
+            alert('Error loadEmulator');
             return;
           }
 
@@ -242,9 +282,9 @@ WebSocketConnection = function(params){
      */
     var createSocket = function(url){
               WS           = new WebSocket(url);
-              WS.onopen    = self.onopenEvent;
-              WS.onmessage = self.onmessageEvent;
-              WS.onclose   = self.oncloseEvent;
+              WS.onopen    = onopenEvent;
+              WS.onmessage = onmessageEvent;
+              WS.onclose   = oncloseEvent;
     }
 
 
@@ -261,11 +301,17 @@ WebSocketConnection = function(params){
          };
 
     if(typeof(priority[0]) != undefined){
+
        loadDriver(priority[0],function(){
+
          if(typeof(priority[1]) != undefined){
+
           loadDriver(priority[1],function(){
+
             if(typeof(priority[2]) != undefined){
+
               loadDriver(priority[2],function(){
+
                });
              }
            });
