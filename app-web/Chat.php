@@ -152,11 +152,11 @@ class ChatTag
      {
       $item['_id'] = (string) $item['_id'];
       if (isset($item['sid'])) {$item['sid'] = (string) $item['sid'];}
-      $packet = "\x00".ChatSession::serialize($item)."\xFF";
+      $packet = ChatSession::serialize($item);
       foreach ($tag->sessions as $id => $v)
       {
        $s = $tag->appInstance->sessions[$id];
-       if ($s->putMsgId($item['_id'])) {$s->client->write($packet);}
+       if ($s->putMsgId($item['_id'])) {$s->client->sendFrame($packet);}
       }
      }
      unset($cursor->items[$k]);
