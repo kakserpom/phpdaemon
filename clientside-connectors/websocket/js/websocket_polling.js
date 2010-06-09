@@ -144,14 +144,21 @@
            	var c = document.head || document.body;
                 c.appendChild(reader);
                if (callback) {
+               var __TIMER = 0;
+               var __INTERVAL = 50;
                var interval = setInterval(function() {
            				if (eval("typeof " + respname) != 'undefined') {
            				var response = eval(respname);
                            clearInterval(interval);
            				callback(response);
            				c.removeChild(reader);
-           			}
-           		}, 50);
+           				
+           			    }else if(__TIMER >= 15000){
+           			     clearInterval(interval);
+           			      $q(resp);
+           			    }
+           				__TIMER += __INTERVAL;
+           		}, __INTERVAL);
            	}
 
        };
