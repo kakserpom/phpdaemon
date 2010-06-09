@@ -5,8 +5,8 @@ http://github.com/kakserpom/phpdaemon
 True async. framework with API for PHP. It has many features. Designed for highload.
 Main features and possibilites:
 
- * True FastCGI for PHP.
  * Powerful WebSocket and HTTP servers.
+ * True FastCGI for PHP.
  * Many bundled clients like MySQL, Memcache, MongoDB, etc.
  * Many useful built-in applications like FlashPolicy server, SocksServer, CGI-server, etc...
  * Interactive debug console.
