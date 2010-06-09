@@ -158,6 +158,7 @@ class WebSocketOverCOMET_Request extends Request
  public $bufferedPackets = array();
  public $type;
  public $atime;
+ public $connId;
  /* @method init
     @description Constructor.
     @return void
@@ -168,6 +169,7 @@ class WebSocketOverCOMET_Request extends Request
   elseif (isset($this->attrs->get['_poll']) && isset($this->attrs->get['_init'])) {$this->type = 'pollInit';}
   elseif (isset($this->attrs->get['_poll'])) {$this->type = 'poll';}
   else {$this->type = 'push';}
+  $this->connId = $this->attrs->connId;
  }
  /* @method run
     @description Called when request iterated.
