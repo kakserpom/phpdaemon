@@ -148,7 +148,7 @@ class HTTP extends AsyncServer
    $req->attrs->stdinbuf = '';
    $req->attrs->stdinlen = 0;
    $req->attrs->inbuf = '';
-   $req->attrs->chunked = TRUE;
+   $req->attrs->chunked = FALSE;
    if (Daemon::$settings['mod'.$this->modname.'logqueue']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] new request queued.');}
    Daemon::$worker->queue[$rid] = $req;
    $this->poolQueue[$connId][$req->attrs->id] = $req;
