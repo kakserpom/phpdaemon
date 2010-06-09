@@ -158,11 +158,12 @@ class Request
  */
  public function sleep($time = 0,$set = FALSE)
  {
+  if ($this->state === 0) {return;}
   $this->sleepuntil = microtime(TRUE)+$time;
   if (!$set) {throw new RequestSleepException;}
  }
  /* @method terminate
-    @description Helper for easy switching between several interruptable stages of request's execution.
+    @description Throws terminating exception.
     @return void
  */
  public function terminate($s = NULL)
@@ -202,7 +203,9 @@ class Request
    $this->onWakeup();
    try
    {
-    $this->state = $this->run();
+    $ret = $this->run();
+    if ($this->state === 0) {return 1;} // Finished while running
+    $this->state = $ret;
     if ($this->state === NULL) {Daemon::log('Method '.get_class($this).'::run() returned null.');}
    }
    catch (RequestSleepException $e)
