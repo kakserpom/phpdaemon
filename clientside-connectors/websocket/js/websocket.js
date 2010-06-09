@@ -3,7 +3,7 @@
               url   : {
                         ws      : '',
                         comet   : '',
-                        poling  : ''
+                        polling  : ''
                       }
             }
 **/
@@ -105,9 +105,9 @@ WebSocketConnection = function(params){
 
               loadFile('websocket_comet.js');
 
-          }else if(type == 'poling'){   // загружаем long-poling эмулятор
+          }else if(type == 'polling'){   // загружаем long-poling эмулятор
 
-              loadFile('websocket_poling.js');
+              loadFile('websocket_polling.js');
 
           }else{
             alert('Error loadEmulator');
@@ -141,7 +141,7 @@ WebSocketConnection = function(params){
              case 'comet'  : loaded = CometDriver();
              break;
 
-             case 'poling' : loaded = PolingDriver();
+             case 'polling' : loaded = PollingDriver();
              break;
            }
 
@@ -259,15 +259,15 @@ WebSocketConnection = function(params){
 
 
     /**
-     * Проверка на доступность драйвера long-poling
+     * Проверка на доступность драйвера long-polling
      */
-     var PolingDriver = function(){
+     var PollingDriver = function(){
 
-         if("WebSocket" in window && ("WebSocketServicePrivider" in window) && WebSocketServicePrivider == 'poling'){
-        	  createSocket(params.url.poling);
+         if("WebSocket" in window && ("WebSocketServicePrivider" in window) && WebSocketServicePrivider == 'polling'){
+        	  createSocket(params.url.polling);
          }else{
-           loadEmulator('poling', function(){
-              createSocket(params.url.poling);
+           loadEmulator('polling', function(){
+              createSocket(params.url.polling);
            });
          }
          return true;

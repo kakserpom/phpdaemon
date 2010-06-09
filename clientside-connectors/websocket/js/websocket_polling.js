@@ -192,4 +192,4 @@
 
     init();
 };
-WebSocketServicePrivider = 'poling';
+WebSocketServicePrivider = 'polling';
