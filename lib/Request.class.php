@@ -619,14 +619,15 @@ class Request
   $this->parseStdin();
  }
  /* @method finish
-    @param integer - Optional. Status. 0 - normal, -1 - abort, -2 - termination
+    @param integer Optional. Status. 0 - normal, -1 - abort, -2 - termination
+    @param boolean Optional. Zombie. Default is false.
     @description Finishes the request.
     @return void
  */
- public function finish($status = 0)
+ public function finish($status = 0,$zombie = FALSE)
  {
   if ($this->state === 0) {return;}
-  $this->state = 0;
+  if (!$zombie) {$this->state = 0;}
   foreach ($this->shutdownFuncs as &$c) {call_user_func($c,$this);}
   $this->onFinish();
   if (Daemon::$compatMode) {return;}

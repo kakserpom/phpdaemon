@@ -136,6 +136,10 @@ class WebSocketOverCOMET_IPCSession extends SocketSession
     $this->appInstance->queue[$reqId]->atime = time();
    }
   }
+  else
+  {
+   if (Daemon::$settings['logerrors']) {Daemon::log('Undispatched packet (type = '.$type.', reqId = '.$reqId.', authKey = '.$authKey.', exists = '.(isset($this->appInstance->queue[$reqId])?'1':'0').').');}
+  }
   goto start;
  }
  /* @method onFinish
@@ -170,6 +174,8 @@ class WebSocketOverCOMET_Request extends Request
   elseif (isset($this->attrs->get['_poll'])) {$this->type = 'poll';}
   else {$this->type = 'push';}
   $this->connId = $this->attrs->connId;
+  $this->header('Cache-Control: no-cache, must-revalidate');
+  $this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
  }
  /* @method run
     @description Called when request iterated.
@@ -182,8 +188,7 @@ class WebSocketOverCOMET_Request extends Request
    $ret = array();
    $e = explode('.',self::getString($_REQUEST['_id']),2);
    if (sizeof($e) != 2) {$ret['error'] = 'Bad cookie.';}
-   elseif (!isset($_REQUEST['data'])) {$ret['error'] = 'No data.';}
-   elseif (!is_string($_REQUEST['data'])) {$ret['error'] = 'No data.';}
+   elseif (!isset($_REQUEST['data']) || !is_string($_REQUEST['data'])) {$ret['error'] = 'No data.';}
    elseif ($connId = $this->appInstance->connectIPC(basename($e[0])))
    {
     $this->appInstance->sessions[$connId]->write(pack('CCN',WebSocketOverCOMET::IPCPacketType_C2S,strlen($e[1]),strlen($_REQUEST['data'])).$e[1]);
@@ -239,7 +244,7 @@ class WebSocketOverCOMET_Request extends Request
     }
     else {echo json_encode(array('id' => $id));}
     $this->atime = time();
-    $this->finish();
+    $this->finish(0,TRUE);
    }
    if ($this->atime < time()-10)
    {
