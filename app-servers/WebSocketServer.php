@@ -43,7 +43,7 @@ class WebSocketServer extends AsyncServer
   $this->sessions[$connId]->clientAddr = $req->attrs->server['REMOTE_ADDR'];
   $this->sessions[$connId]->server = $req->attrs->server;
   $this->sessions[$connId]->firstline = TRUE;
-  $this->sessions[$connId]->stdin("\r\n");
+  $this->sessions[$connId]->stdin("\r\n".$req->attrs->inbuf);
  }
  /* @method update
     @description Called when worker is going to update configuration.
@@ -116,6 +116,8 @@ class WebSocketServer extends AsyncServer
 }
 class WebSocketSession extends SocketSession
 {
+ public $secprotocol;
+ public $resultKey;
  public $handshaked = FALSE;
  public $upstream;
  public $server = array();
@@ -219,6 +221,53 @@ class WebSocketSession extends SocketSession
   }
   return FALSE;
  }
+ /* @method handshake
+    @description Called when we're going to handshake.
+    @return void
+ */
+ public function handshake()
+ {
+  $this->handshaked = TRUE;
+  if ($this->onHandshake())
+  {
+   if (!isset($this->server['HTTP_ORIGIN'])) {$this->server['HTTP_ORIGIN'] = '';}
+   $reply = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+     ."Upgrade: WebSocket\r\n"
+     ."Connection: Upgrade\r\n"
+     .($this->secprotocol?'Sec-':'').'WebSocket-Origin: '.$this->server['HTTP_ORIGIN']."\r\n"
+     .($this->secprotocol?'Sec-':'').'WebSocket-Location: ws://'.$this->server['HTTP_HOST'].$this->server['REQUEST_URI']."\r\n";
+   if (isset($this->server['HTTP_'.($this->secprotocol?'SEC_':'').'WEBSOCKET_PROTOCOL']))
+   {
+    $reply .= ($this->secprotocol?'Sec-':'').'WebSocket-Protocol: '.$this->server['HTTP_'.($this->secprotocol?'SEC_':'').'WEBSOCKET_PROTOCOL']."\r\n";
+   }
+   $reply .= "\r\n";
+   $reply .= $this->resultKey;
+   $this->write($reply);
+   if (is_callable(array($this->upstream,'onHandshake'))) {$this->upstream->onHandshake();}
+  }
+  else
+  {
+   $this->finish();
+  }
+ }
+ /* @method computeKey
+    @description Computes key for Sec-WebSocket.
+    @param string Key
+    @return string Result
+ */
+ public function computeKey($key)
+ {
+  $spaces = 0;
+  $digits = '';
+  for ($i = 0, $s = strlen($key); $i < $s; ++$i)
+  {
+   $c = binarySubstr($key,$i,1);
+   if ($c === "\x20") {++$spaces;}
+   elseif (ctype_digit($c)) {$digits .= $c;}
+  }
+  $result = (int) floor(((int) $digits) / $spaces);
+  return pack('N',$result);
+ }
  /* @method stdin
     @description Event of SocketSession (AsyncServer). Called when new data recieved.
     @param string New recieved data.
@@ -250,26 +299,9 @@ class WebSocketSession extends SocketSession
       $this->finish();
       return;
      }
-     $this->handshaked = TRUE;
-     if ($this->onHandshake())
+     if (!$this->secprotocol = (isset($this->server['HTTP_SEC_WEBSOCKET_KEY1']) && isset($this->server['HTTP_SEC_WEBSOCKET_KEY2'])))
      {
-      if (!isset($this->server['HTTP_ORIGIN'])) {$this->server['HTTP_ORIGIN'] = '';}
-      $reply = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
-        ."Upgrade: WebSocket\r\n"
-        ."Connection: Upgrade\r\n"
-        .'WebSocket-Origin: '.$this->server['HTTP_ORIGIN']."\r\n"
-        .'WebSocket-Location: ws://'.$this->server['HTTP_HOST'].$this->server['REQUEST_URI']."\r\n";
-      if (isset($this->server['HTTP_WEBSOCKET_PROTOCOL']))
-      {
-       $reply .= 'WebSocket-Protocol: '.$this->server['HTTP_WEBSOCKET_PROTOCOL']."\r\n";
-      }
-      $reply .= "\r\n";
-      $this->write($reply);
-      if (is_callable(array($this->upstream,'onHandshake'))) {$this->upstream->onHandshake();}
-     }
-     else
-     {
-      $this->finish();
+      $this->handshake();
      }
      break;
     }
@@ -343,6 +375,20 @@ class WebSocketSession extends SocketSession
       return;
      }
     }
+   }
+  }
+  elseif ($this->secprotocol)
+  {
+   if (strlen($this->buf) >= 8)
+   {
+    $bodyData = binarySubstr($this->buf,0,8);
+    $this->resultKey = md5(
+                        $this->computeKey($this->server['HTTP_SEC_WEBSOCKET_KEY1'])
+                        .$this->computeKey($this->server['HTTP_SEC_WEBSOCKET_KEY2'])
+                        .$bodyData,TRUE
+                       );
+    $this->buf = binarySubstr($this->buf,8);
+    $this->handshake();
    }
   }
  }
