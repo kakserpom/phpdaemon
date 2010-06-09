@@ -1,8 +1,6 @@
 <?php
 /**************************************************************************/
 /* phpDaemon
-/* ver. 0.2
-/* License: LGPL
 /* Web: http://github.com/kakserpom/phpdaemon
 /* ===========================
 /* @class AsyncServer

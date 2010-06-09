@@ -19,18 +19,16 @@ class MyAppResolver extends AppResolver
  */
  public function getRequestRoute($req,$upstream)
  {
-  /* Example: */
-  if (preg_match('~^/(WebSocketOverCOMET)/~',$req->attrs->server['DOCUMENT_URI'],$m)) {return $m[1];}
-  
-  /* Example of dispatching request to file: */
-  /*
-  if (preg_match('~^/(MyVirtualDirectory)/(.*)$~',$req->attrs->server['DOCUMENT_URI'],$m))
+  if (preg_match('~^/(WebSocketOverCOMET|ExampleAsyncStream|Example)/~',$req->attrs->server['DOCUMENT_URI'],$m)) {return $m[1];}
+
+  $host = basename($req->attrs->server['HTTP_HOST']);
+  if (is_dir('/home/web/domains/'.basename($host)))
   {
-   $req->attrs->server['FR_URL'] = 'file:///var/www/manual/'.$m[2];
+   preg_match('~^/(.*)$~',$req->attrs->server['DOCUMENT_URI'],$m);
+   $req->attrs->server['FR_URL'] = 'file:///home/web/domains/'.$host.'/'.$m[1];
    $req->attrs->server['FR_AUTOINDEX'] = TRUE;
    return 'FileReader';
   }
-  */
  }
  public function __construct()
  {

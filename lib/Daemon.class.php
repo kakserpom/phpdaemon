@@ -1,8 +1,6 @@
 <?php
 /**************************************************************************/
 /* phpDaemon
-/* ver. 0.2
-/* License: LGPL
 /* Web: http://github.com/kakserpom/phpdaemon
 /* ===========================
 /* @class Daemon
@@ -26,7 +24,7 @@ class Daemon
  public static $parsedSettings = array();
  public static $workers;
  public static $masters;
- public static $version = '0.2';
+ public static $version;
  public static $initservervar;
  public static $shm_wstate;
  public static $shm_wstate_size = 5120;
@@ -41,6 +39,7 @@ class Daemon
  */
  public static function initSettings()
  {
+  Daemon::$version = file_get_contents(Daemon::$dir.'/VERSION');
   Daemon::$settings = array(
    'maxrequests' => '1k',
    'maxmemoryusage' => '0b',
