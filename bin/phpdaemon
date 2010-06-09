@@ -25,5 +25,6 @@ require $dir.'/lib/asyncStream.class.php';
 require $dir.'/lib/asyncProcess.class.php';
 require $dir.'/lib/asyncServer.class.php';
 require $dir.'/lib/SocketSession.class.php';
+require $dir.'/lib/WebSocketRoute.class.php';
 Daemon::$dir = $dir;
 Daemon_Bootstrap::init();
