@@ -26,7 +26,7 @@ class CGI extends AppInstance
    'mod'.$this->modname.'allow-override-group' => TRUE,
    'mod'.$this->modname.'cwd' => NULL,
    'mod'.$this->modname.'output-errors' => TRUE,
-   'mod'.$this->modname.'errlog-file' => dirname(__FILE__).'/cgi-error.log',
+   'mod'.$this->modname.'errlog-file' => __DIR__.'/cgi-error.log',
   ));
   $this->cwd = Daemon::$settings['mod'.$this->modname.'cwd'];
  }

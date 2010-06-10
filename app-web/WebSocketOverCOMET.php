@@ -138,7 +138,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession
   }
   else
   {
-   if (Daemon::$settings['logerrors']) {Daemon::log('Undispatched packet (type = '.$type.', reqId = '.$reqId.', authKey = '.$authKey.', exists = '.(isset($this->appInstance->queue[$reqId])?'1':'0').').');}
+   if (Daemon::$settings['logerrors']) {Daemon::log('Undispatched packet (type = '.$type.', reqId = '.$reqId.', authKey = '.$authKey.', exists = '.(isset($this->appInstance->queue[$reqId])?'1 - '.get_class($this->appInstance->queue[$reqId]):'0').').');}
   }
   goto start;
  }

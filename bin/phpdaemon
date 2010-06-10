@@ -7,7 +7,7 @@
 /* @author kak.serpom.po.yaitsam@gmail.com
 /* @description Bootstrap init script.
 /**************************************************************************/
-$dir = realpath(dirname(__FILE__).'/..');
+$dir = realpath(__DIR__.'/..');
 require $dir.'/lib/misc.php';
 require $dir.'/lib/Daemon.class.php';
 require $dir.'/lib/Request.class.php';

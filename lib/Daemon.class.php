@@ -243,7 +243,7 @@ class Daemon
  */
  public static function compatRunEmul()
  {
-  Daemon::$dir = dirname(__FILE__);
+  Daemon::$dir = realpath(__DIR__.'/..');
   Daemon::$compatMode = TRUE;
   Daemon::initSettings();
   $argv = isset($_SERVER['CMD_ARGV'])?$_SERVER['CMD_ARGV']:'';
