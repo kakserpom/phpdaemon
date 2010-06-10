@@ -103,7 +103,7 @@ class AppInstance
  {
   $req = $this->beginRequest($parent,$upstream);
   if (!$req) {return $parent;}
-  $req->idAppQueue = $this->reqCounter++;
+  $req->idAppQueue = ++$this->reqCounter;
   if (Daemon::$settings['logqueue']) {Daemon::log('[WORKER '.Daemon::$worker->pid.'] request added to '.get_class($this).'->queue.');}
   $this->queue[$req->idAppQueue] = $req;
   return $req;
@@ -116,7 +116,7 @@ class AppInstance
  */
  public function pushRequest($req)
  {
-  $req->idAppQueue = $this->reqCounter++;
+  $req->idAppQueue = ++$this->reqCounter;
   $this->queue[$req->idAppQueue] = $req;
   Daemon::$worker->queue[get_class($this).'-'.$req->idAppQueue] = $req;
   return $req;
