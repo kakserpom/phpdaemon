@@ -26,5 +26,4 @@ Master process understands signals:
 	SIGUSR1 - reopen log-file.
 	SIGUSR2 - graceful restart all workers.
 
-If you have a need of develope non-trivial modules, we can discuss that.
 Maintainer: kak.serpom.po.yaitsam@gmail.com
