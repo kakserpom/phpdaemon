@@ -351,6 +351,7 @@ class WebSocketOverCOMET_Request extends Request
     }
    }
   }
+  if (!sizeof($this->bufferedPackets)) {return;}
   $packet = json_encode(array('ts' => microtime(TRUE),'packets' => $this->bufferedPackets));
   $packet = pack('CCN',WebSocketOverCOMET::IPCPacketType_S2C,strlen($h),strlen($packet)).$h.$packet;
   foreach ($this->polling as $connId)
