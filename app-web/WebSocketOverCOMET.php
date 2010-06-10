@@ -246,7 +246,7 @@ class WebSocketOverCOMET_Request extends Request
     $this->atime = time();
     $this->finish(0,TRUE);
    }
-   if ($this->atime < time()-10)
+   if ($this->atime < time()-30)
    {
     if (isset($this->downstream))
     {
@@ -288,9 +288,9 @@ class WebSocketOverCOMET_Request extends Request
     $a[] = $this->idAppQueue;
     unset($a);
     $this->out("\n");
-    $this->sleep(1);
+    $this->sleep(15);
    }
-   $this->sleep(10);
+   return Request::DONE;
   }
  }
  /* @method onAbort
