@@ -1,4 +1,4 @@
-* phpDaemon: *
+# phpDaemon:
 
 http://github.com/kakserpom/phpdaemon
 
