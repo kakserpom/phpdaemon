@@ -146,4 +146,3 @@ class AppInstance
   return $r;
  }
 }
-class FastCGI_AppInstance extends AppInstance {}
