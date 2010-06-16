@@ -17,7 +17,8 @@
                         url:{
                               ws     : 'ws://'+document.domain+'/exampleApp',
                               comet  : 'http://'+document.domain+'/WebSocketOverCOMET/?_route=exampleApp',
-                        	    polling : 'http://'+document.domain+'/WebSocketOverCOMET/?_route=exampleApp'
+                        	    polling : 'http://'+document.domain+'/WebSocketOverCOMET/?_route=exampleApp',
+                        	    root : '/websocket/js/'
                             }
                         };
 
@@ -32,10 +33,6 @@
         document.getElementById('log').innerHTML += 'WebSocket closed <br/>';
       }
       }
-
-
-
-
   </script>
   <button onclick="create();">Create WebSocket</button>
   <button onclick="ws.send('ping');">Send ping</button>
