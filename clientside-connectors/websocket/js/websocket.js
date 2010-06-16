@@ -12,11 +12,10 @@
 WebSocketConnection = function(params){
 
     var self = this;
-
     /**
      * Путь к js и swf файлам
      */
-    this.root = '/websocket/js/';
+    this.root = '/js/';
     
 
 
@@ -30,8 +29,9 @@ WebSocketConnection = function(params){
     /**
      * Статус WebSocket соединения
      */
-    this.readyState     = 3;
+    this.readyState     = 0;
     this.bufferedAmount = 0;
+    this.readyCallbacks = [];
 
 
 
@@ -39,6 +39,15 @@ WebSocketConnection = function(params){
      * Закрытие соединения с сервером
      */
     this.close = function(){if(WS)WS.close();};
+    
+    this.ready = function(c)
+    {
+     if (self.readyState == 1) {c();}
+     else
+     {
+      self.readyCallbacks.push(c);
+     }
+    };
 
 
 
@@ -55,10 +64,20 @@ WebSocketConnection = function(params){
     var onmessageEvent = function(e){if(self.onmessage)self.onmessage(e);};
 
     // соединение с сервером установлено
-    var onopenEvent = function(){if(self.onopen)self.onopen();};
+    var onopenEvent = function()
+    {
+     self.readyState = 1;
+     if(self.onopen)self.onopen();
+     var c;
+     while (c = self.readyCallbacks.pop()) {c();}
+    };
 
     // соединение с сервером закрыто
-    var oncloseEvent = function(){if(self.onclose)self.onclose();};
+    var oncloseEvent = function()
+    {
+     self.readyState = 3;
+     if(self.onclose)self.onclose();
+    };
 
 
 
@@ -174,7 +193,7 @@ WebSocketConnection = function(params){
                     flashinstalled = 1;
                 }
 
-                if (navigator.plugins["Shockwave Flash 9.0"] || navigator.plugins["Shockwave Flash 10.0"]){
+                if (navigator.plugins["Shockwave Flash 9.0"] || navigator.plugins["Shockwave Flash 10.0"] || navigator.plugins["Shockwave Flash 10.1"]){
                     flashinstalled = 2;
                 }
 
