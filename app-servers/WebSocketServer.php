@@ -265,8 +265,8 @@ class WebSocketSession extends SocketSession
    if ($c === "\x20") {++$spaces;}
    elseif (ctype_digit($c)) {$digits .= $c;}
   }
-  $result = (int) $digits;
-  if ($spaces > 0) {$result = (int) floor($result / $spaces);}
+  if ($spaces > 0) {$result = (int) floor($digits / $spaces);}
+  else {$result = (float) $digits;}
   return pack('N',$result);
  }
  /* @method stdin
