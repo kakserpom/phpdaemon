@@ -300,7 +300,7 @@ class MemcacheSession extends SocketSession
      if ($this->result === NULL) {$this->result = array();}
      $this->result[$e[1]] = $e[2];
     }
-    elseif (($e[0] === 'END') || ($e[0] === 'DELETED') || ($e[0] === 'ERROR') || ($e[0] === 'CLIENT_ERROR') || ($e[0] === 'SERVER_ERROR'))
+    elseif (($e[0] === 'STORED') || ($e[0] === 'END') || ($e[0] === 'DELETED') || ($e[0] === 'ERROR') || ($e[0] === 'CLIENT_ERROR') || ($e[0] === 'SERVER_ERROR'))
     {
      if ($e[0] !== 'END')
      {
