@@ -12,6 +12,23 @@
     this.onclose = function(){};
 
 
+    var readerIframe = document.createElement('iframe');
+	    with (readerIframe.style) {
+	      left       = top   = "-100px";
+	      height     = width = "1px";
+	      visibility = "hidden";
+	      position   = 'absolute';
+	      display    = 'none';
+	    }
+	    document.body.appendChild(readerIframe);
+	 var readerIframeWindow;
+	    if(readerIframe.window){
+	    	readerIframeWindow = readerIframe.window;
+	      }else if(readerIframe.contentWindow){
+	    	  readerIframeWindow = readerIframe.contentWindow;
+	      }	    
+	    readerIframeWindow.document.write("<html><body></body></html>");
+
 
 
 
@@ -141,15 +158,16 @@
            	var reader = document.createElement('script');
            	    reader.setAttribute('charset',     'utf-8');           	     
            	    reader.setAttribute('src', url+'&_script=1&_poll=1'+(!_ID ? '&_init=1' : '&_id='+_ID)+'&q='+qid+'&ts='+_TIME);
-           	var c = document.head || document.body;
+
+            var c = readerIframeWindow.document.body;      
                 c.appendChild(reader);
                if (callback) {
                var __TIMER = 0;
                var __INTERVAL = 50;
                var interval = setInterval(function() {
-           				if (eval("typeof " + respname) != 'undefined') {
-           				var response = eval(respname);
-                           clearInterval(interval);
+           				if (eval(readerIframeWindow[respname]) != undefined) {
+           				    var response = eval(readerIframeWindow[respname]);
+                                        clearInterval(interval);
            				callback(response);
            				c.removeChild(reader);
            				
