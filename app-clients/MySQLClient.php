@@ -318,7 +318,7 @@ class MySQLClientSession extends SocketSession
    pack('VVc',$this->clientFlags,$this->maxPacketSize,$this->charsetNumber)
    ."\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
    .$this->user."\x00"
-   .$this->buildLenEncodedBinary($this->getAuthToken($this->scramble,$this->password))
+   .($this->password === ''?"\x00":$this->buildLenEncodedBinary($this->getAuthToken($this->scramble,$this->password)))
    .($this->dbname !== ''?$this->dbname."\x00":'')
   );
  }
