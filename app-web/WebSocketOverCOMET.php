@@ -120,7 +120,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession
        if (isset($req->attrs->get['_script']))
        {
         $q = Request::getString($req->attrs->get['q']);
-        $body = 'var Response'.$q.' = '.$body.";\n";
+        $body = 'Response'.$q.' = '.$body.";\n";
        }
        else {$body .= "\n";}
        $req->out($body);
@@ -240,7 +240,7 @@ class WebSocketOverCOMET_Request extends Request
     if (isset($_REQUEST['_script']))
     {
      $q = self::getString($_GET['q']);
-     if (ctype_digit($q)) {$this->out('var Response'.$q.' = '.json_encode(array('id' => $id)).";\n");}
+     if (ctype_digit($q)) {$this->out('Response'.$q.' = '.json_encode(array('id' => $id)).";\n");}
     }
     else {echo json_encode(array('id' => $id));}
     $this->atime = time();
