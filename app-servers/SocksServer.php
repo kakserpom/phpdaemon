@@ -42,7 +42,7 @@ class SocksSession extends SocketSession
  public $state = 0; // (0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange)
  public $slave;
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */
@@ -212,7 +212,7 @@ class SocksServerSlaveSession extends SocketSession
   }
  }
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */

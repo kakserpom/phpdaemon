@@ -41,7 +41,7 @@ class MemcacheClient extends AsyncServer
  /* @method get
     @description Gets the key.
     @param string Key.
-    @param mixed Callback called when response recieved.
+    @param mixed Callback called when response received.
     @return void
  */
  public function get($key,$onResponse)
@@ -264,11 +264,11 @@ class MemcacheSession extends SocketSession
  public $result; // current result
  public $valueFlags; // flags of incoming value
  public $valueLength; // length of incoming value
- public $valueSize = 0; // size of recieved part of the value
+ public $valueSize = 0; // size of received part of the value
  public $error; // error message
  public $key; // current incoming key
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */

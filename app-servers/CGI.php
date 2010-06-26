@@ -112,7 +112,7 @@ class CGIRequest extends Request
  /* @method onReadData
     @param object Process pointer.
     @param string Data.
-    @description Called when new data recieved from process.
+    @description Called when new data received from process.
     @return void
  */
  public function onReadData($process,$data)
@@ -121,7 +121,7 @@ class CGIRequest extends Request
  }
  /* @method stdin
     @param string Piece of request's body.
-    @description Called when new piece of request's body is recieved.
+    @description Called when new piece of request's body is received.
     @return void
  */
  public function stdin($c)

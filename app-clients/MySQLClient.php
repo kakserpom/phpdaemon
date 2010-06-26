@@ -325,7 +325,7 @@ class MySQLClientSession extends SocketSession
  /* @method query
     @description Sends SQL-query.
     @param string Query.
-    @param callback Optional. Callback called when response recieved.
+    @param callback Optional. Callback called when response received.
     @return boolean Success.
  */
  public function query($q,$callback = NULL)
@@ -334,7 +334,7 @@ class MySQLClientSession extends SocketSession
  }
  /* @method ping
     @description Sends echo-request.
-    @param callback Optional. Callback called when response recieved.
+    @param callback Optional. Callback called when response received.
     @return boolean Success.
  */
  public function ping($callback = NULL)
@@ -345,7 +345,7 @@ class MySQLClientSession extends SocketSession
     @description Sends arbitrary command.
     @param integer Command's code. See constants above.
     @param string Data.
-    @param callback Optional. Callback called when response recieved.
+    @param callback Optional. Callback called when response received.
     @return boolean Success.
  */
  public function command($cmd,$q = '',$callback = NULL)
@@ -371,7 +371,7 @@ class MySQLClientSession extends SocketSession
   return TRUE;
  }
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */
@@ -505,7 +505,7 @@ class MySQLClientSession extends SocketSession
   goto start;
  }
  /* @method onResultDone
-    @description Called when the whole result recieved.
+    @description Called when the whole result received.
     @return void
  */
  public function onResultDone()

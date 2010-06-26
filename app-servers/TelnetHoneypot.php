@@ -35,7 +35,7 @@ class TelnetHoneypot extends AsyncServer
 class TelnetSession extends SocketSession
 {
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */

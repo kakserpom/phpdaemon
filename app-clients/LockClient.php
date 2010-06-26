@@ -125,7 +125,7 @@ class LockClient extends AsyncServer
 class LockClientSession extends SocketSession
 {
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */

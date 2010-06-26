@@ -353,6 +353,7 @@ class Daemon_WorkerThread extends Thread
   $this->setStatus(3);
   if ($hard) {exit(0);}
   $reloadReady = $this->appInstancesReloadReady();
+      Daemon::log('reloadReady = '.Daemon::var_dump($reloadReady));
   foreach ($this->queue as $r)
   {
    if ($r instanceof stdClass) {continue;}

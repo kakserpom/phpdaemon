@@ -599,7 +599,7 @@ class Request
  }
  /* @method stdin
     @param string Piece of request's body.
-    @description Called when new piece of request's body is recieved.
+    @description Called when new piece of request's body is received.
     @return void
  */
  public function stdin($c)

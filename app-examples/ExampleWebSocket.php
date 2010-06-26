@@ -22,7 +22,7 @@ class ExampleWebSocket extends AppInstance
 class ExampleWebSocketSession extends WebSocketRoute
 { 
  /* @method onFrame
-    @description Called when new frame recieved.
+    @description Called when new frame received.
     @param string Frame's contents.
     @param integer Frame's type.
     @return void
@@ -31,7 +31,7 @@ class ExampleWebSocketSession extends WebSocketRoute
  {
   if ($data === 'ping')
   {
-   $this->client->sendFrame('pong',WebSocketSERVER::STRING,function($client) {Daemon::log('ExampleWebSocket: \'pong\' recieved by client.');});
+   $this->client->sendFrame('pong',WebSocketSERVER::STRING,function($client) {Daemon::log('ExampleWebSocket: \'pong\' received by client.');});
   }
  }
 }

@@ -49,7 +49,7 @@ class MySQLProxySession extends SocketSession
   $this->upstream->downstream = $this;
  }
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */
@@ -72,7 +72,7 @@ class MySQLProxyUpserverSession extends SocketSession
 {
  public $downstream;
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */

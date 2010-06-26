@@ -45,7 +45,7 @@ class FlashPolicy extends AsyncServer
 class FlashPolicySession extends SocketSession
 {
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */

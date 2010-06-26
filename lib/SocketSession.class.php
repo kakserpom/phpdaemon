@@ -116,8 +116,8 @@ class SocketSession
   unset($this->appInstance->sessions[$this->connId]);
  }
  /* @method stdin
-    @description Called when new data recieved.
-    @param string New recieved data.
+    @description Called when new data received.
+    @param string New received data.
     @return void
  */
  public function stdin($buf)

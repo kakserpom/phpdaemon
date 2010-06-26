@@ -34,7 +34,7 @@ class RTEP extends AsyncServer
   $this->sessions[$connId]->clientAddr = $addr;
  }
  /* @method onEvent
-    @description Called when new packet recieved.
+    @description Called when new packet received.
     @param array Packet.
     @return void
  */
@@ -128,7 +128,7 @@ class RTEPSession extends SocketSession
   unset($this->appInstance->sessions[$this->connId]);
  }
  /* @method onRequest
-    @description Called when new request recieved.
+    @description Called when new request received.
     @return void
  */
  public function onRequest($packet)

@@ -84,7 +84,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession
  {
  }
  /* @method stdin
-    @description Called when new data recieved.
+    @description Called when new data received.
     @param string New data.
     @return void
  */
@@ -366,7 +366,7 @@ class WebSocketOverCOMET_Request extends Request
     @description Sends a frame.
     @param string Frame's data.
     @param integer Frame's type. See the constants.
-    @param callback Optional. Callback called when the frame is recieved by client.
+    @param callback Optional. Callback called when the frame is received by client.
     @return boolean Success.
  */
  public function sendFrame($data,$type = 0x00,$callback = NULL)

@@ -41,7 +41,7 @@ class MongoNode extends AppInstance
   }
  }
  /* @method cacheObject
-    @description Method called when object recieved.
+    @description Method called when object received.
     @param object Object.
     @return void
  */

@@ -128,7 +128,7 @@ class WebSocketSession extends SocketSession
     @description Sends a frame.
     @param string Frame's data.
     @param integer Frame's type. See the constants.
-    @param callback Optional. Callback called when the frame is recieved by client.
+    @param callback Optional. Callback called when the frame is received by client.
     @return boolean Success.
  */
  public function sendFrame($data,$type = 0x00,$callback = NULL)
@@ -168,7 +168,7 @@ class WebSocketSession extends SocketSession
   unset($this->appInstance->sessions[$this->connId]);
  }
  /* @method onFrame
-    @description Called when new frame recieved.
+    @description Called when new frame received.
     @param string Frame's data.
     @param integer Frame's type.
     @return boolean Success.
@@ -270,8 +270,8 @@ class WebSocketSession extends SocketSession
   return pack('N',$result);
  }
  /* @method stdin
-    @description Event of SocketSession (AsyncServer). Called when new data recieved.
-    @param string New recieved data.
+    @description Event of SocketSession (AsyncServer). Called when new data received.
+    @param string New received data.
     @return void
  */
  public function stdin($buf)
