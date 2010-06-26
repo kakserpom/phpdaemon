@@ -95,7 +95,6 @@ class MySQLClient extends AsyncServer
  const TIMESTAMP_FLAG = 0x400;
  const SET_FLAG = 0x800;
 
- public $ready = FALSE; // Ready?
  /* @method init
     @description Constructor.
     @return void
@@ -106,13 +105,7 @@ class MySQLClient extends AsyncServer
    'mod'.$this->modname.'server' => 'mysql://root@127.0.0.1',
    'mod'.$this->modname.'port' => 3306,
    'mod'.$this->modname.'protologging' => 0,
-   'mod'.$this->modname.'enable' => 0,
   ));
-  if (Daemon::$settings['mod'.$this->modname.'enable'])
-  {
-   Daemon::log(__CLASS__.' up.');
-   $this->ready = TRUE;
-  }
  }
  /* @method getConnection
     @description Establishes connection.
@@ -121,7 +114,6 @@ class MySQLClient extends AsyncServer
  */
  public function getConnection($addr = NULL)
  {
-  if (!$this->ready) {return FALSE;}
   if (empty($addr)) {$addr = Daemon::$settings['mod'.$this->modname.'server'];}
   if (isset($this->servConn[$addr]))
   {
