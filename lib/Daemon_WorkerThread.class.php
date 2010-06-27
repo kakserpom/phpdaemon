@@ -128,7 +128,7 @@ class Daemon_WorkerThread extends Thread
    if (($s = $this->checkState()) !== TRUE)
    {
     $this->closeSockets();
-    if (sizeof($this->queue) === 0) {return $s;}
+    return $s;
    }
    event_add($this->timeoutEvent, $this->microsleep);
    event_base_loop($this->eventBase, EVLOOP_ONCE);
@@ -353,7 +353,7 @@ class Daemon_WorkerThread extends Thread
   $this->setStatus(3);
   if ($hard) {exit(0);}
   $reloadReady = $this->appInstancesReloadReady();
-      Daemon::log('reloadReady = '.Daemon::var_dump($reloadReady));
+  Daemon::log('[WORKER '.$this->pid.'] reloadReady = '.Daemon::var_dump($reloadReady));
   foreach ($this->queue as $r)
   {
    if ($r instanceof stdClass) {continue;}
