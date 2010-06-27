@@ -10,6 +10,7 @@ class MongoClient extends AsyncServer
  public $lastReqId = 0; // ID of the last request
  public $collections = array(); // Objects of MongoClientCollection
  public $dbname = ''; // Current database
+ public $lastRequestSession; // Holds last used MongoClientSession object.
  /* Codes of operations */
  const OP_REPLY = 1;
  const OP_MSG = 1000;
@@ -86,6 +87,7 @@ class MongoClient extends AsyncServer
    $connId = $this->getConnectionByKey($key);
    $sess = $this->sessions[$connId];
   }
+  $this->lastRequestSession = $sess;
   $sess->write($p = pack('VVVV',strlen($data)+16,++$this->lastReqId,0,$opcode)
   .$data);
   if ($reply) {$sess->busy = TRUE;}
@@ -405,7 +407,7 @@ class MongoClient extends AsyncServer
    .bson_encode($cond)
    .bson_encode($data)
   );
-  if ($cb !== NULL) {$this->lastError($col,$cb,$key);}
+  if ($cb !== NULL) {$this->lastError($col,$cb,$this->lastRequestSession);}
  }
  /* @method updateMulti
     @description Updates several objects in collection.
@@ -448,7 +450,7 @@ class MongoClient extends AsyncServer
    .$col."\x00"
    .bson_encode($doc)
   );
-  if ($cb !== NULL) {$this->lastError($col,$cb,$key);}
+  if ($cb !== NULL) {$this->lastError($col,$cb,$this->lastRequestSession);}
   return $doc['_id'];
  }
  /* @method killCursors
@@ -459,7 +461,7 @@ class MongoClient extends AsyncServer
  */
  public function killCursors($cursors = array(),$key = '')
  {
-  $reqId = $this->request($key,self::OP_INSERT,
+  $reqId = $this->request($key,self::OP_KILL_CURSORS,
    "\x00\x00\x00\x00"
    .pack('V',sizeof($cursors))
    .implode('',$cursors)
@@ -488,7 +490,7 @@ class MongoClient extends AsyncServer
    .$col."\x00"
    .$bson
   );
-  if ($cb !== NULL) {$this->lastError($col,$cb,$key);}
+  if ($cb !== NULL) {$this->lastError($col,$cb,$this->lastRequestSession);}
   return $ids;
  }
  /* @method remove
@@ -509,7 +511,7 @@ class MongoClient extends AsyncServer
    ."\x00\x00\x00\x00"
    .bson_encode($cond)
   );
-  if ($cb !== NULL) {$this->lastError($col,$cb,$key);}
+  if ($cb !== NULL) {$this->lastError($col,$cb,$this->lastRequestSession);}
  }
  /* @method getMore
     @description Asks for more objects.
