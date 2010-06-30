@@ -23,6 +23,17 @@ class WebSocketOverCOMET extends AsyncServer
    $this->wss = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
   }
  }
+ /* @method onShutdown
+    @description Called when application instance is going to shutdown.
+    @return boolean Ready to shutdown?
+ */
+ public function onShutdown()
+ {
+  $path = sprintf(Daemon::$settings['mod'.$this->modname.'ipcpath'],$this->ipcId);
+  if (file_exists($path)) {unlink($path);}
+  return TRUE;
+ }
+ 
  /* @method onReady
     @description Called when the worker is ready to go.
     @return void
