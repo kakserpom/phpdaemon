@@ -107,6 +107,40 @@ class MySQLClient extends AsyncServer
    'mod'.$this->modname.'protologging' => 0,
   ));
  }
+ /* @method escape
+    @description Escapes the special symbols with trailing backslash.
+    @return string
+ */
+ public static function escape($string)
+ {
+  static $sqlescape = array(
+	"\x00"=> '\0',
+	"\n"	=> '\n',
+	"\r"	=> '\r',
+	'\\'	=> '\\\\',
+	'\''	=> '\\\'',
+	'"'		=> '\\"'
+  );
+  return strtr($string,$sqlescape);
+ }
+ /* @method likeEscape
+    @description Escapes the special symbols with a trailing backslash.
+    @return string
+ */
+ public static function likeEscape($string)
+ {
+  static $sqlescape = array(
+	"\x00"	=> '\0',
+	"\n"	=> '\n',
+	"\r"	=> '\r',
+	'\\'	=> '\\\\',
+	'\''	=> '\\\'',
+	'"'		=> '\\"',
+	'%'		=> '\%',
+	'_'		=> '\_'
+  );
+  return strtr($string,$sqlescape);
+ }
  /* @method getConnection
     @description Establishes connection.
     @param string Address.
