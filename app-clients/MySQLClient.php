@@ -455,7 +455,11 @@ class MySQLClientSession extends SocketSession
    }
    elseif ($fieldCount === 0x00) // OK Packet Empty
    {
-    if ($this->cstate === 2) {$this->cstate = 4;}
+    if ($this->cstate === 2)
+    {
+     $this->cstate = 4;
+     if ($this->dbname !== '') {$this->query('USE `'.$this->dbname.'`');}
+    }
     $this->affectedRows = $this->parseEncodedBinary($this->buf,$p);
 
     $this->insertId = $this->parseEncodedBinary($this->buf,$p);
