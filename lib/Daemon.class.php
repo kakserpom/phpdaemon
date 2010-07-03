@@ -75,7 +75,7 @@ class Daemon
    'logevents' => 0,
    'logqueue' => 0,
    'microsleep' => 100000,
-   'logsendrecordmiss' => 0,
+   'logtostderr' => 1,
    'workerpriority' => 4,
    'masterpriority' => 100,
    'throwexceptiononshutdown' => 0,
@@ -545,7 +545,7 @@ class Daemon
  public static function log($msg)
  {
   $mt = explode(' ',microtime());
-  if (defined('STDERR')) {fwrite(STDERR,'[PHPD] '.$msg."\n");}
+  if (Daemon::$settings['logtostderr'] && defined('STDERR')) {fwrite(STDERR,'[PHPD] '.$msg."\n");}
   if (Daemon::$logpointer)
   {
    fwrite(Daemon::$logpointer,'['.date('D, j M Y H:i:s',$mt[1]).'.'.sprintf('%06d',$mt[0]*1000000).' '.date('O').'] [PHPD] '.$msg."\n");
