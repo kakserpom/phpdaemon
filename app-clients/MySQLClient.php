@@ -277,8 +277,8 @@ class MySQLClientSession extends SocketSession
   $f = ord(binarySubstr($s,$p,1));
   ++$p;
   if ($f <= 250) {return $f;}
-  if ($s === 251) {return NULL;}
-  if ($s === 255) {return FALSE;}
+  if ($f === 251) {return NULL;}
+  if ($f === 255) {return FALSE;}
   if ($f === 252)
   {
    $o = $p;
