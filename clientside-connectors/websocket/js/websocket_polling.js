@@ -12,6 +12,9 @@
     this.onclose = function(){};
 
 
+   if (!window.console) console = {log: function(){ }, error: function(){ }};
+
+
     var readerIframe = document.createElement('iframe');
 	    with (readerIframe.style) {
 	      left       = top   = "-100px";
@@ -39,6 +42,8 @@
     this.send = function(data) {
       if(!_ID)return;
       
+      console.log('[WebSocket] send: ' + data);
+
       var iframe = document.createElement('iframe');
       var name = 'WebSocket_iframe_write' + autoId++;
       iframe.setAttribute('id',     name);
@@ -150,7 +155,7 @@
       /*
        * Send request to server
        */
-      var $q = function(callback) {
+       var $q = function(callback) {
 
            	var qid = Math.random().toString();
            	qid = qid.substr(3,5);
@@ -158,25 +163,32 @@
            	var reader = document.createElement('script');
            	    reader.setAttribute('charset',     'utf-8');           	     
            	    reader.setAttribute('src', url+'&_script=1&_poll=1'+(!_ID ? '&_init=1' : '&_id='+_ID)+'&q='+qid+'&ts='+_TIME);
-
-            var c = readerIframeWindow.document.body;      
+           	var c = document.head || document.body;
                 c.appendChild(reader);
                if (callback) {
-               var __TIMER = 0;
-               var __INTERVAL = 50;
-               var interval = setInterval(function() {
-           				if (eval(readerIframeWindow[respname]) != undefined) {
-           				    var response = eval(readerIframeWindow[respname]);
-                                        clearInterval(interval);
-           				callback(response);
-           				c.removeChild(reader);
-           				
-           			    }else if(__TIMER >= 15000){
-           			     clearInterval(interval);
-           			      $q(resp);
-           			    }
-           				__TIMER += __INTERVAL;
-           		}, __INTERVAL);
+            	   var __TIMER = 0;
+                   var __INTERVAL = 50;
+                   var __WAIT_TIME = 15000;
+                   
+              var interval = setInterval(function() {
+                   	
+          				if (typeof(readerIframeWindow[respname]) != 'undefined') {
+          					console.log('[WebSocket] received: ' + respname);
+          				    var response = readerIframeWindow[respname];
+                           clearInterval(interval);
+	           				callback(response);
+	           				c.removeChild(reader);
+          				
+          			    }else if(__TIMER >= __WAIT_TIME){
+          			       clearInterval(interval);
+          			       c.removeChild(reader);
+          			        $q(resp);
+          			    }else if(loaded){
+          			    	self.onclose();
+          			    }
+
+          				__TIMER += __INTERVAL;
+          		}, __INTERVAL);
            	}
 
        };
