@@ -233,7 +233,7 @@ class WebSocketOverCOMET_Request extends Request
    if (!$this->inited)
    {
     $this->authKey = sprintf('%x',crc32(microtime()."\x00".$this->attrs->server['REMOTE_ADDR']));
-    $this->header('Content-Type: text/plain; charset=utf-8');
+    $this->header('Content-Type: application/x-javascript; charset=utf-8');
     $this->inited = TRUE;
     $appName = self::getString($_REQUEST['_route']);
     if (!isset($this->appInstance->wss->routes[$appName]))
