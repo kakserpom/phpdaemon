@@ -187,7 +187,7 @@
            			       c.removeChild(reader);
            			        $q(resp);
            			    }else if(loaded){
-           			    	self.onclose();
+           			    	self.close();
            			    }
 
            				__TIMER += __INTERVAL;
