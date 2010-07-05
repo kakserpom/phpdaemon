@@ -59,8 +59,7 @@ class WebSocketOverCOMET extends AsyncServer
   if (!$connId) {return FALSE;}
   $this->sessions[$connId] = new WebSocketOverCOMET_IPCSession($connId,$this);
   $this->sessions[$connId]->ipcId = $id;
-  $this->IpcTransSessions[$id] = $connId;
-  return $connId;
+  return $this->IpcTransSessions[$id] = $connId;
  }
  /* @method onAccepted
     @description Called when new connection is accepted.
@@ -112,44 +111,45 @@ class WebSocketOverCOMET_IPCSession extends SocketSession
   $body = binarySubstr($this->buf,6+$hlen,$blen);
   $this->buf = binarySubstr($this->buf,6+$hlen+$blen);
   list($reqId,$authKey) = explode('.',$header);
-  if (isset($this->appInstance->queue[$reqId]->downstream) && $this->appInstance->queue[$reqId]->authKey == $authKey)
+  if ($type === WebSocketOverCOMET::IPCPacketType_S2C)
+  {
+   if (isset($this->appInstance->polling[$header]))
+   {
+    foreach ($this->appInstance->polling[$header] as $pollReqId)
+    {
+     if (isset($this->appInstance->queue[$pollReqId]))
+     {
+      $req = $this->appInstance->queue[$pollReqId];
+      if (isset($req->attrs->get['_script']))
+      {
+       $q = Request::getString($req->attrs->get['q']);
+       $body = 'Response'.$q.' = '.$body.";\n";
+      }
+      else {$body .= "\n";}
+      $req->out($body);
+      $req->finish();
+     }
+    }
+   }
+  }
+  elseif (isset($this->appInstance->queue[$reqId]->downstream) && $this->appInstance->queue[$reqId]->authKey == $authKey)
   {
    if ($type === WebSocketOverCOMET::IPCPacketType_C2S)
    {
     $this->appInstance->queue[$reqId]->downstream->onFrame($body,WebSocketServer::STRING);
     $this->appInstance->queue[$reqId]->atime = time();
    }
-   elseif ($type === WebSocketOverCOMET::IPCPacketType_S2C)
-   {
-    if (isset($this->appInstance->polling[$header]))
-    {
-     foreach ($this->appInstance->polling[$header] as $pollReqId)
-     {
-      if (isset($this->appInstance->queue[$pollReqId]))
-      {
-       $req = $this->appInstance->queue[$pollReqId];
-       if (isset($req->attrs->get['_script']))
-       {
-        $q = Request::getString($req->attrs->get['q']);
-        $body = 'Response'.$q.' = '.$body.";\n";
-       }
-       else {$body .= "\n";}
-       $req->out($body);
-       $req->finish();
-      }
-     }
-    }
-   }
    elseif ($type === WebSocketOverCOMET::IPCPacketType_POLL)
    {
-    $this->appInstance->queue[$reqId]->polling[] = $this->connId;
-    $this->appInstance->queue[$reqId]->flushBufferedPackets($body);
+    list ($ts,$instanceId) = explode('|',$body);
+    $this->appInstance->queue[$reqId]->polling[] = $instanceId;
+    $this->appInstance->queue[$reqId]->flushBufferedPackets($ts);
     $this->appInstance->queue[$reqId]->atime = time();
    }
   }
   else
   {
-   if (Daemon::$settings['logerrors']) {Daemon::log('Undispatched packet (type = '.$type.', reqId = '.$reqId.', authKey = '.$authKey.', exists = '.(isset($this->appInstance->queue[$reqId])?'1 - '.get_class($this->appInstance->queue[$reqId]):'0').').');}
+   if (Daemon::$settings['logerrors']) {Daemon::log('[WORKER with ipcId = '.$this->appInstance->ipcId.'] Undispatched packet (type = '.$type.', reqId = '.$reqId.', authKey = '.$authKey.', exists = '.(isset($this->appInstance->queue[$reqId])?'1 - '.get_class($this->appInstance->queue[$reqId]):'0').').');}
   }
   goto start;
  }
@@ -279,7 +279,7 @@ class WebSocketOverCOMET_Request extends Request
     if (sizeof($e) != 2) {$ret['error'] = 'Bad cookie.';}
     elseif ($connId = $this->appInstance->connectIPC(basename($e[0])))
     {
-     $body = self::getString($_REQUEST['ts']);
+     $body = self::getString($_REQUEST['ts']).'|'.$this->appInstance->ipcId;
      $this->appInstance->sessions[$connId]->write(pack('CCN',WebSocketOverCOMET::IPCPacketType_POLL,strlen($e[1]),strlen($body)).$e[1].$body);
     }
     else {$ret['error'] = 'IPC error.';}
@@ -365,10 +365,13 @@ class WebSocketOverCOMET_Request extends Request
   if (!sizeof($this->bufferedPackets)) {return;}
   $packet = json_encode(array('ts' => microtime(TRUE),'packets' => $this->bufferedPackets));
   $packet = pack('CCN',WebSocketOverCOMET::IPCPacketType_S2C,strlen($h),strlen($packet)).$h.$packet;
-  foreach ($this->polling as $connId)
+  foreach ($this->polling as $k => $instanceId)
   {
-   if (!isset($this->appInstance->sessions[$connId])) {continue;}
-   $this->appInstance->sessions[$connId]->write($packet);
+   if ($connId = $this->appInstance->connectIPC(basename($instanceId)))
+   {
+    $this->appInstance->sessions[$connId]->write($packet);
+   }
+   unset($this->polling[$k]);
   }
   for ($i = 0,$s = sizeof($this->callbacks); $i < $s; ++$i) {call_user_func(array_shift($this->callbacks),$this);}
   if (is_callable(array($this->downstream,'onWrite'))) {$this->downstream->onWrite();}
