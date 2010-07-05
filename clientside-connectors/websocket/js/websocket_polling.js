@@ -155,40 +155,43 @@
       /*
        * Send request to server
        */
-       var $q = function(callback) {
-
+      var $q = function(callback) {
+      
            	var qid = Math.random().toString();
            	qid = qid.substr(3,5);
            	var respname = 'Response'+qid;
+           	var loaded = false;
            	var reader = document.createElement('script');
            	    reader.setAttribute('charset',     'utf-8');           	     
            	    reader.setAttribute('src', url+'&_script=1&_poll=1'+(!_ID ? '&_init=1' : '&_id='+_ID)+'&q='+qid+'&ts='+_TIME);
-           	var c = document.head || document.body;
+           	    reader.onload = function(){loaded = true;};
+           	    
+           	var c = readerIframeWindow.document.body;           	
                 c.appendChild(reader);
+                
                if (callback) {
-            	   var __TIMER = 0;
-                   var __INTERVAL = 50;
-                   var __WAIT_TIME = 15000;
-                   
-              var interval = setInterval(function() {
-                   	
-          				if (typeof(readerIframeWindow[respname]) != 'undefined') {
-          					console.log('[WebSocket] received: ' + respname);
-          				    var response = readerIframeWindow[respname];
-                           clearInterval(interval);
+               var __TIMER = 0;
+               var __INTERVAL = 50;
+               var __WAIT_TIME = 15000;
+               var interval = setInterval(function() {
+            	
+           				if (typeof(readerIframeWindow[respname]) != 'undefined') {
+           					console.log('[WebSocket] received: ' + respname);
+           				    var response = readerIframeWindow[respname];
+                            clearInterval(interval);
 	           				callback(response);
 	           				c.removeChild(reader);
-          				
-          			    }else if(__TIMER >= __WAIT_TIME){
-          			       clearInterval(interval);
-          			       c.removeChild(reader);
-          			        $q(resp);
-          			    }else if(loaded){
-          			    	self.onclose();
-          			    }
+           				
+           			    }else if(__TIMER >= __WAIT_TIME){
+           			       clearInterval(interval);
+           			       c.removeChild(reader);
+           			        $q(resp);
+           			    }else if(loaded){
+           			    	self.onclose();
+           			    }
 
-          				__TIMER += __INTERVAL;
-          		}, __INTERVAL);
+           				__TIMER += __INTERVAL;
+           		}, __INTERVAL);
            	}
 
        };
