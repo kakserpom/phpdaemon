@@ -184,6 +184,7 @@ class WebSocketOverCOMET_Request extends Request
   elseif (isset($this->attrs->get['_poll']) && isset($this->attrs->get['_init'])) {$this->type = 'pollInit';}
   elseif (isset($this->attrs->get['_poll'])) {$this->type = 'poll';}
   else {$this->type = 'push';}
+  $this->server = &$this->attrs->server;
   $this->connId = $this->attrs->connId;
   $this->header('Cache-Control: no-cache, must-revalidate');
   $this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
