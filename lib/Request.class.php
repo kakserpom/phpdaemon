@@ -184,7 +184,12 @@ class Request
  */
  public function call()
  {
-  if ($this->state === 0) {return 1;}
+  if ($this->state === 0)
+  {
+   $this->state = 1;
+   $this->finish();
+   return 1;
+  }
   if ($this->attrs->params_done)
   {
    if (isset($this->appInstance->passphrase))
