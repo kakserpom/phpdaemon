@@ -317,7 +317,7 @@ class PostgreSQLClientSession extends SocketSession
    elseif ($authType === 5) // MD5
    {
     $salt = binarySubstr($packet,4,4);
-    $this->sendPacket('p',md5($this->password.$salt,TRUE)); // Password Message
+    $this->sendPacket('p','md5'.md5(md5($this->password.$this->user).$salt)); // Password Message
     $this->cstate = 2; // Auth. packet sent
    }
    elseif ($authType === 6) // SCM
