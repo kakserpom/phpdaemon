@@ -612,7 +612,7 @@ class MongoClientSession extends SocketSession
    $r = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength',binarySubstr($this->buf,16,20));
    $r['cursorId'] = binarySubstr($this->buf,20,8);
    $id = (int) $h['responseTo'];
-   $flagBits = decbin($r['flag']);
+   $flagBits = strrev(decbin($r['flag']));
    $cur = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00"?'c'.$r['cursorId']:'r'.$h['responseTo']);
    if (isset($this->appInstance->requests[$id][2]) && ($this->appInstance->requests[$id][2] === FALSE) && !isset($this->appInstance->cursors[$cur]))
    {
@@ -625,7 +625,17 @@ class MongoClientSession extends SocketSession
    }
    if (isset($this->appInstance->cursors[$cur]) && (($r['length'] === 0) || (binarySubstr($cur,0,1) === 'r')))
    {
-    $this->appInstance->cursors[$cur]->finished = $this->appInstance->cursors[$cur]->tailable?($flagBits[0] == '1'):TRUE;
+    if ($this->appInstance->cursors[$cur]->tailable)
+    {
+     if ($this->appInstance->cursors[$cur]->finished = ($flagBits[0] == '1'))
+     {
+      $this->appInstance->cursors[$cur]->destroy();
+     }
+    }
+    else
+    {
+     $this->appInstance->cursors[$cur]->finished = TRUE;
+    }
    }
    $p = 36;
    while ($p < $plen)
@@ -810,6 +820,7 @@ class MongoClientCursor
  public $finished = FALSE; // Is this cursor finished?
  public $failure = FALSE; // Is this query failured?
  public $await = FALSE; // awaitCapable?
+ public $destroyed = FALSE; // Is this cursor destroyed?
  /* @method __construct
     @description Constructor.
     @param string Cursor's ID.
@@ -840,6 +851,7 @@ class MongoClientCursor
  */
  public function destroy()
  {
+  $this->destroyed = TRUE;
   unset($this->appInstance->cursors[$this->id]);
   return TRUE;
  }
