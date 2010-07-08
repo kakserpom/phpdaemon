@@ -144,7 +144,7 @@ class MongoClient extends AsyncServer
    .$bson
    .(isset($p['fields'])?bson_encode($p['fields']):'')
   ,TRUE);
-  $this->requests[$reqId] = array($p['col'],$callback,FALSE,isset($p['parse_oplog']));
+  $this->requests[$reqId] = array($p['col'],$callback,FALSE,isset($p['parse_oplog']),isset($p['tailable']));
  }
  /* @method findOne
     @description Finds one object in collection.
@@ -612,16 +612,20 @@ class MongoClientSession extends SocketSession
    $r = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength',binarySubstr($this->buf,16,20));
    $r['cursorId'] = binarySubstr($this->buf,20,8);
    $id = (int) $h['responseTo'];
+   $flagBits = decbin($r['flag']);
    $cur = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00"?'c'.$r['cursorId']:'r'.$h['responseTo']);
    if (isset($this->appInstance->requests[$id][2]) && ($this->appInstance->requests[$id][2] === FALSE) && !isset($this->appInstance->cursors[$cur]))
    {
     $this->appInstance->cursors[$cur] = new MongoClientCursor($cur,$this->appInstance->requests[$id][0],$this);
+    $this->appInstance->cursors[$cur]->failure = $flagBits[1] == '1';
+    $this->appInstance->cursors[$cur]->await = $flagBits[3] == '1';
     $this->appInstance->cursors[$cur]->callback = $this->appInstance->requests[$id][1];
     $this->appInstance->cursors[$cur]->parseOplog = isset($this->appInstance->requests[$id][3]) && $this->appInstance->requests[$id][3];
+    $this->appInstance->cursors[$cur]->tailable = isset($this->appInstance->requests[$id][4]) && $this->appInstance->requests[$id][4];
    }
    if (isset($this->appInstance->cursors[$cur]) && (($r['length'] === 0) || (binarySubstr($cur,0,1) === 'r')))
    {
-    $this->appInstance->cursors[$cur]->finished = TRUE;
+    $this->appInstance->cursors[$cur]->finished = $this->appInstance->cursors[$cur]->tailable?($flagBits[0] == '1'):TRUE;
    }
    $p = 36;
    while ($p < $plen)
@@ -804,6 +808,8 @@ class MongoClientCursor
  public $item; // Current object
  public $session; // Network session
  public $finished = FALSE; // Is this cursor finished?
+ public $failure = FALSE; // Is this query failured?
+ public $await = FALSE; // awaitCapable?
  /* @method __construct
     @description Constructor.
     @param string Cursor's ID.
