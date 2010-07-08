@@ -1,4 +1,5 @@
-﻿/**
+﻿if (typeof (console) == 'undefined') {console = {log: function(msg) {}};}
+/**
    params = {
               url   : {
                         ws      : '',
