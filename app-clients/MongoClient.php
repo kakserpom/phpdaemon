@@ -810,6 +810,7 @@ class MongoClientCursor
  public $finished = FALSE; // Is this cursor finished?
  public $failure = FALSE; // Is this query failured?
  public $await = FALSE; // awaitCapable?
+ public $destroyed = FALSE; // Is this cursor destroyed?
  /* @method __construct
     @description Constructor.
     @param string Cursor's ID.
@@ -840,6 +841,7 @@ class MongoClientCursor
  */
  public function destroy()
  {
+  $this->destroyed = TRUE;
   unset($this->appInstance->cursors[$this->id]);
   return TRUE;
  }
