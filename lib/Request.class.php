@@ -631,7 +631,12 @@ class Request
  {
   if ($this->state === 0) {return;}
   if (!$zombie) {$this->state = 0;}
-  foreach ($this->shutdownFuncs as &$c) {call_user_func($c,$this);}
+  if (!($r = $this->running))
+  {
+   $this->onWakeup();
+  }
+  while (($c = array_shift($this->shutdownFuncs)) !== NULL) {call_user_func($c,$this);}
+  if (!$r) {$this->onSleep();}
   $this->onFinish();
   if (Daemon::$compatMode) {return;}
   if ((Daemon::$parsedSettings['autogc'] > 0) && (Daemon::$worker->queryCounter > 0) && (Daemon::$worker->queryCounter % Daemon::$parsedSettings['autogc'] === 0))
