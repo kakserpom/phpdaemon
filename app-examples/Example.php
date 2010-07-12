@@ -3,8 +3,6 @@ return new Example;
 class Example extends AppInstance
 {
  public $counter = 0;
- public $sharedcounter = 1;
- public $RTEPClient;
  /* @method init
     @description Constructor.
     @return void
@@ -12,23 +10,6 @@ class Example extends AppInstance
  public function init()
  {
   $o = $this;
-  $this->RTEPClient = Daemon::$appResolver->getInstanceByAppName('RTEPClient');
-  $RTEP = Daemon::$appResolver->getInstanceByAppName('RTEP');
-  if ($RTEP)
-  {
-   $RTEP->eventGroups['visitorHit'] = array(
-    function($session,$packet,$args = array())  { $session->addEvent('visitorHit');},
-    function($session,$packet,$args = array()) {$session->removeEvent('visitorHit');}
-   );
-  }  
-  if ($this->RTEPClient && $this->RTEPClient->client)
-  {
-   $this->RTEPClient->client->addEventCallback('visitorHit',function($event) use ($o)
-   {
-    if (Daemon::$settings['logevents']) {Daemon::log('Caught event '.$event['name'].'.');}
-     ++$o->sharedcounter;
-   });
-  }
  }
  /* @method onReady
     @description Called when the worker is ready to go.
@@ -69,15 +50,6 @@ class ExampleRequest extends Request
   {
    ?></html><?php
   });
-  if ($this->appInstance->RTEPClient && $this->appInstance->RTEPClient->client)
-  {
-   $this->appInstance->RTEPClient->client->request(array(
-    'op' => 'event',
-    'event' => array(
-      'name' => 'visitorHit',
-      'somevar' => 'somevalue... ',
-   )));
-  }
  ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -88,7 +60,6 @@ class ExampleRequest extends Request
 <h1>It works! Be happy! ;-)</h1>
 Hello world!
 <br />Counter of requests to this Application Instance: <b><?php echo ++$this->appInstance->counter; ?></b>
-<br />Shared counter of requests to this page: <b><?php echo $this->appInstance->sharedcounter; ?></b>
 <br />Memory usage: <?php $mem = memory_get_usage(); echo ($mem/1024/1024); ?> MB. (<?php echo $mem; ?>)
 <br />Memory real usage: <?php $mem = memory_get_usage(TRUE); echo ($mem/1024/1024); ?> MB. (<?php echo $mem; ?>)
 <br />Pool size: <?php echo sizeof(Daemon::$worker->pool); ?>.
