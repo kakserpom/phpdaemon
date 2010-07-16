@@ -373,9 +373,11 @@ class MySQLClientSession extends SocketSession
     @param string Data.
     @param callback Optional. Callback called when response received.
     @return boolean Success.
+    @throws MySQLClientSessionFinished
  */
  public function command($cmd,$q = '',$callback = NULL)
  {
+  if ($this->finished) {throw new MySQLClientSessionFinished;}
   if ($this->cstate !== 4) {return FALSE;}
   $this->callbacks[] = $callback;
   $this->seq = 0;
