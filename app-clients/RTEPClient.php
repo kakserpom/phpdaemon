@@ -10,7 +10,7 @@ class RTEPClient extends AppInstance
  public function init()
  {
   Daemon::addDefaultSettings(array(
-   'mod'.$this->modname.'listen' => 'tcpstream://127.0.0.1:844',
+   'mod'.$this->modname.'addr' => 'tcpstream://127.0.0.1:844',
    'mod'.$this->modname.'enable' => 0,
   ));
   if (Daemon::$settings['mod'.$this->modname.'enable'])
