@@ -4,13 +4,12 @@ class ExampleRTEP extends AppInstance
 {
  public $RTEPClient;
  public $RTEP;
- /* @method init
-    @description Constructor.
+ /* @method onReady
+    @description Called when the worker is ready to go.
     @return void
  */
- public function init()
+ public function onReady()
  {
-  $o = $this;
   $this->RTEPClient = Daemon::$appResolver->getInstanceByAppName('RTEPClient');
   $this->RTEP = Daemon::$appResolver->getInstanceByAppName('RTEP');
   if ($this->RTEPClient && $this->RTEPClient->client && $this->RTEP)
@@ -19,19 +18,11 @@ class ExampleRTEP extends AppInstance
    {
     $session->addEvent('testEvent');
    }); 
-   $this->RTEPClient->client->addEventCallback('testEvent',function($event) use ($o)
+   $this->RTEPClient->client->addEventCallback('testEvent',function($event)
    {
-    Daemon::log('Caught event '.$event['name'].'.');
+    Daemon::log('[WORKER '.Daemon::$worker->pid.'] Caught event '.$event['name'].'.');
    });
   }
- }
- /* @method onReady
-    @description Called when the worker is ready to go.
-    @return void
- */
- public function onReady()
- {
-  // Initialization.
  }
  /* @method onShutdown
     @description Called when application instance is going to shutdown.
