@@ -110,7 +110,7 @@ class Daemon_WorkerThread extends Thread
    {
     if (!$appInstance->ready)
     {
-     $this->ready = TRUE;
+     $appInstance->ready = TRUE;
      $appInstance->onReady();
     }
    }
