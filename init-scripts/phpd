@@ -7,15 +7,6 @@
 # processname: phpd
 # pidfile:     /var/run/phpd.pid
 
-# Source function library.
-. /etc/rc.d/init.d/functions
-
-# Source networking configuration.
-. /etc/sysconfig/network
-
-# Check that networking is up.
-[ "$NETWORKING" = "no" ] && exit 0
-
 phpd="/usr/sbin/phpd"
 prog=$(basename $phpd)
 
