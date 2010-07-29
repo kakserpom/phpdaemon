@@ -27,6 +27,7 @@ class Daemon_MasterThread extends Thread
   $this->spawnWorkers(min(Daemon::$settings['startworkers'],Daemon::$settings['maxworkers']));
   $mpmLast = time();
   $autoReloadLast = time();
+  $c = 1;
   while (TRUE)
   {
    pcntl_signal_dispatch();
@@ -36,7 +37,6 @@ class Daemon_MasterThread extends Thread
    { 
     $this->sigusr1();
    }
-   $c = 1;
    if (time() > $mpmLast+Daemon::$parsedSettings['mpmdelay'])
    {
     $mpmLast = time();

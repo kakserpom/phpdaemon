@@ -56,7 +56,7 @@ class ThreadCollection
   foreach ($this->threads as $k => &$t)
   {
    if ($t->terminated) {unset($this->threads[$k]);}
-   elseif ($check && (!$thread->signal(SIGTTIN))) {unset($this->threads[$k]);}
+   elseif ($check && (!$t->signal(SIGTTIN))) {unset($this->threads[$k]);}
    else {++$n;}
   }
   return $n;

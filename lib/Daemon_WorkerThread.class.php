@@ -475,4 +475,12 @@ class Daemon_WorkerThread extends Thread
   else {$sig = 'UNKNOWN';}
   Daemon::log('Worker '.getmypid().' caught signal #'.$signo.' ('.$sig.').');
  }
+ /* @method __destructor
+    @description Destructor of worker thread.
+    @return void
+ */
+ public function __destruct()
+ {
+  $this->setStatus(0x03);
+ }
 }
