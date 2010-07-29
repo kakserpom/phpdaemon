@@ -654,7 +654,17 @@ class MongoClientSession extends SocketSession
    if (isset($this->appInstance->requests[$id][2]) && $this->appInstance->requests[$id][2])
    {
     call_user_func($this->appInstance->requests[$id][1],isset($this->appInstance->cursors[$cur]->items[0])?$this->appInstance->cursors[$cur]->items[0]:FALSE);
-    if (isset($this->appInstance->cursors[$cur]) && ($this->appInstance->cursors[$cur] instanceof MongoClientCursor)) {$this->appInstance->cursors[$cur]->destroy();}
+    if (isset($this->appInstance->cursors[$cur]))
+    {
+     if ($this->appInstance->cursors[$cur] instanceof MongoClientCursor)
+     {
+      $this->appInstance->cursors[$cur]->destroy();
+     }
+     else
+     {
+      unset($this->appInstance->cursors[$cur]);
+     }
+    }
    }
    elseif (isset($this->appInstance->cursors[$cur]))
    {
