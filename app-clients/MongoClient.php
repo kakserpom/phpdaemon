@@ -383,6 +383,34 @@ class MongoClient extends AsyncServer
   $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
   $this->requests[$reqId] = array($p['col'],$callback,FALSE);
  }
+ /* @method updateWorker
+    @description Called when worker is going to update configuration.
+    @return void
+ */
+ public function updateWorker() {}
+ /* @method handleStatus
+    @param int Status code.
+    @description Handles the worker's status.
+    @return boolean Result.
+ */
+ public function handleStatus($ret)
+ {
+  if ($ret === 2) // script update
+  {
+   $r = $this->updateWorker();
+  }
+  elseif ($ret === 3) // graceful worker shutdown for restart
+  {
+   $r = $this->shutdown(TRUE);
+  }
+  elseif ($ret === 5) // shutdown worker
+  {
+   $r = $this->shutdown();
+  }
+  else {$r = TRUE;}
+  if ($r === NULL) {$r = TRUE;}
+  return $r;
+ }
  /* @method update
     @description Updates one object in collection.
     @param string Collection's name.

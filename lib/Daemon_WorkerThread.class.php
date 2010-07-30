@@ -171,7 +171,7 @@ class Daemon_WorkerThread extends Thread
  {
   foreach (Daemon::$appInstances as $k => $app)
   {
-   foreach ($app as $appInstance) {$appInstance->update();}
+   foreach ($app as $appInstance) {$appInstance->handleStatus(2);}
   }
  }
  /* @method addEvent
