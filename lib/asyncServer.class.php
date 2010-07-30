@@ -301,6 +301,7 @@ class AsyncServer extends AppInstance
   unset(Daemon::$worker->readPoolState[$connId]);
   unset($this->buf[$connId]);
   unset($this->poolQueue[$connId]);
+  unset($this->poolState[$connId]);
   unset(Daemon::$worker->poolState[$connId]);
  }
  /* @method connectTo
