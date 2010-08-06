@@ -104,8 +104,9 @@ class MongoClient extends AsyncServer
  {
   if (!isset($p['offset'])) {$p['offset'] = 0;}
   if (!isset($p['limit'])) {$p['limit'] = 0;}
-  if (!isset($p['opts'])) {$p['opts'] = 0;}
-  if (isset($p['tailable'])) {$p['opts'] += 2;}
+  if (!isset($p['opts'])) {$p['opts'] = '0';}
+  if (isset($p['tailable'])) {$p['opts'] = '01000100';}
+  if (isset($p['tailable'])) {$p['opts'] = '01000000';} // comment this to use AwaitData
   if (!isset($p['where'])) {$p['where'] = array();}
   if (strpos($p['col'],'.') === FALSE) {$p['col'] = $this->dbname.'.'.$p['col'];}
   if (isset($p['fields']) && is_string($p['fields']))
@@ -138,7 +139,7 @@ class MongoClient extends AsyncServer
    $bson = str_replace("\x11\$gt","\x09\$gt",$bson);
   }
   $reqId = $this->request($key,self::OP_QUERY,
-   pack('V',$p['opts'])
+   chr(bindec(strrev($p['opts'])))."\x00\x00\x00"
    .$p['col']."\x00"
    .pack('VV',$p['offset'],$p['limit'])
    .$bson
@@ -880,6 +881,7 @@ class MongoClientCursor
  */
  public function getMore($number = 0)
  {
+ //if ($this->tailable && $this->await) {return TRUE;}
   if (binarySubstr($this->id,0,1) === 'c') {$this->appInstance->getMore($this->col,binarySubstr($this->id,1),$number,$this->session);}
   return TRUE;
  }
