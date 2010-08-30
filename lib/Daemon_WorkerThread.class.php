@@ -357,6 +357,9 @@ class Daemon_WorkerThread extends Thread
   $this->setStatus(3);
   if ($hard) {exit(0);}
   $reloadReady = $this->appInstancesReloadReady();
+  
+  if ($this->reload === TRUE) {$reloadReady = $reloadReady && (microtime(TRUE) > $this->reloadTime);}
+  
   if (Daemon::$settings['logevents']) {Daemon::log('[WORKER '.$this->pid.'] reloadReady = '.Daemon::var_dump($reloadReady));}
   foreach ($this->queue as $r)
   {
@@ -369,6 +372,7 @@ class Daemon_WorkerThread extends Thread
    if ($n++ === 100)
    {
     $reloadReady = $this->appInstancesReloadReady();
+    if ($this->reload === TRUE) {$reloadReady = $reloadReady && (microtime(TRUE) > $this->reloadTime);}
     $n = 0;
    }
    pcntl_signal_dispatch();
