@@ -599,7 +599,7 @@ class MongoClient extends AsyncServer
   $connId = $this->connectTo($e[0],$e[1]);
   $this->sessions[$connId] = new MongoClientSession($connId,$this);
   $this->sessions[$connId]->addr = $addr;
-  $this->servConn[$addr][] = $connId;
+  $this->servConn[$addr][$connId] = $connId;
   return $connId;
  }
  /* @method getConnectionByKey
@@ -621,7 +621,9 @@ class MongoClient extends AsyncServer
 }
 class MongoClientSession extends SocketSession
 {
+ public $addr; // Address
  public $busy = FALSE; // Is this session busy?
+ public $finished = FALSE; // Is this session finished?
  /* @method stdin
     @description Called when new data received.
     @param string New data.

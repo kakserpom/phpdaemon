@@ -97,7 +97,8 @@ class LockClient extends AsyncServer
   $e = explode(':',$addr);
   $connId = $this->connectTo($e[0],$e[1]);
   $this->sessions[$connId] = new LockClientSession($connId,$this);
-  $this->servConn[$addr][] = $connId;
+  $this->sessions[$connId]->addr = $addr;
+  $this->servConn[$addr][$connId] = $connId;
   return $connId;
  }
  /* @method getConnectionByName
@@ -119,6 +120,8 @@ class LockClient extends AsyncServer
 }
 class LockClientSession extends SocketSession
 {
+ public $addr; // Address
+ public $finished = FALSE; // Is this session finished?
  /* @method stdin
     @description Called when new data received.
     @param string New data.
@@ -152,5 +155,15 @@ class LockClientSession extends SocketSession
     }
    }
   }
+ }
+ /* @method onFinish
+    @description Called when session finishes.
+    @return void
+ */
+ public function onFinish()
+ {
+  $this->finished = TRUE;
+  unset($this->appInstance->servConn[$this->addr][$this->connId]);
+  unset($this->appInstance->sessions[$this->connId]);
  }
 }

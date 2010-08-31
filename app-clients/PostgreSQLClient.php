@@ -50,7 +50,7 @@ class PostgreSQLClient extends AsyncServer
   if (isset($u['user'])) {$this->sessions[$connId]->user = $u['user'];}
   if (isset($u['pass'])) {$this->sessions[$connId]->password = $u['pass'];}
   if (isset($u['path'])) {$this->sessions[$connId]->dbname = ltrim($u['path'],'/');}
-  $this->servConn[$addr][] = $connId;
+  $this->servConn[$addr][$connId] = $connId;
   return $this->sessions[$connId];
  }
 }
@@ -77,6 +77,7 @@ class PostgreSQLClientSession extends SocketSession
  public $ready = FALSE;
  public $parameters = array(); // Runtime parameters from server
  public $backendKey;
+ public $finished = FALSE; // Is this session finished?
  /* @method onwrite
     @description Called when the connection is ready to accept new data.
     @return void

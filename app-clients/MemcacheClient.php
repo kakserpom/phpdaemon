@@ -189,7 +189,8 @@ class MemcacheClient extends AsyncServer
   $e = explode(':',$addr);
   $connId = $this->connectTo($e[0],$e[1]);
   $this->sessions[$connId] = new MemcacheSession($connId,$this);
-  $this->servConn[$addr][] = $connId;
+  $this->sessions[$connId]->addr = $addr;
+  $this->servConn[$addr][$connId] = $connId;
   return $connId;
  }
  /* @method getConnectionByKey
@@ -259,6 +260,7 @@ class MemcacheClient extends AsyncServer
 }
 class MemcacheSession extends SocketSession
 {
+ public $addr;
  public $onResponse = array(); // stack of onResponse callbacks
  public $state = 0; // current state of the connection
  public $result; // current result
@@ -267,6 +269,7 @@ class MemcacheSession extends SocketSession
  public $valueSize = 0; // size of received part of the value
  public $error; // error message
  public $key; // current incoming key
+ public $finished = FALSE; // Is this session finished?
  /* @method stdin
     @description Called when new data received.
     @param string New data.
@@ -334,5 +337,15 @@ class MemcacheSession extends SocketSession
     }
    }
   }
+ }
+ /* @method onFinish
+    @description Called when session finishes.
+    @return void
+ */
+ public function onFinish()
+ {
+  $this->finished = TRUE;
+  unset($this->appInstance->servConn[$this->addr][$this->connId]);
+  unset($this->appInstance->sessions[$this->connId]);
  }
 }
