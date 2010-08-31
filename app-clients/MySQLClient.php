@@ -575,7 +575,7 @@ class MySQLClientSession extends SocketSession
  public function onFinish()
  {
   $this->finished = TRUE;
-  unset($this->servConn[$this->url][$this->connId]);
+  unset($this->appInstance->servConn[$this->url][$this->connId]);
   unset($this->appInstance->sessions[$this->connId]);
  }
 }
