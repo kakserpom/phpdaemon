@@ -32,6 +32,11 @@ class Daemon_Bootstrap
    $error = TRUE;
   }
   if (isset(Daemon::$settings['locale'])) {setlocale(LC_ALL,explode(',',Daemon::$settings['locale']));}
+  if (Daemon::$settings['autoreimport'] && !is_callable('runkit_import'))
+  {
+   Daemon::log('runkit extension not found. You should install it or disable --auto-reimport.');
+   $error = TRUE;
+  }
   if (!is_callable('posix_kill'))
   {
    Daemon::log('Posix not found. You should compile PHP without \'--disable-posix\'.');

@@ -71,6 +71,7 @@ class Daemon
    'maxconcurrentrequestsperworker' => 1000,
    'logreads' => 0,
    'autoreload' => '0s',
+   'autoreimport' => 0,
    'logworkersetstatus' => 0,
    'logevents' => 0,
    'logqueue' => 0,

@@ -203,6 +203,27 @@ class Daemon_WorkerThread extends Thread
   }
   return FALSE;
  }
+ /* @method reimport
+    @description Looks up at changes of the last modification date of all included files. Re-imports modified files.
+    @return void
+ */
+ public function reimport()
+ {
+  static $hash = array();
+  $this->autoReloadLast = time();
+  $inc = get_included_files();
+  foreach ($inc as &$path)
+  {
+   $mt = filemtime($path);
+   if (isset($hash[$path]) && ($mt > $hash[$path]))
+   {
+    if (runkit_lint_file($path)) {runkit_import($path,RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);}
+    else {Daemon::log(__METHOD__.': Detected parse error in '.$path);}
+   }
+   $hash[$path] = $mt;
+  }
+  return FALSE;
+ }
  /* @method reloadCheck
     @description Looks up at changes of the last modification date of all included files.
     @return boolean - The whether we should go to reload.
@@ -213,10 +234,17 @@ class Daemon_WorkerThread extends Thread
   if ($this->terminated) {return FALSE;} 
   if ((Daemon::$parsedSettings['autoreload'] > 0) && (time() > $this->autoReloadLast+Daemon::$parsedSettings['autoreload']))
   {
-   if ($this->reloadCheck())
+   if (Daemon::$settings['autoreimport'])
    {
-    $this->reload = TRUE;
-    $this->setStatus($this->currentStatus);
+    $this->reimport();
+   }
+   else
+   {
+    if ($this->reloadCheck())
+    {
+     $this->reload = TRUE;
+     $this->setStatus($this->currentStatus);
+    }
    }
   }
   if ($this->status > 0) {return $this->status;}
