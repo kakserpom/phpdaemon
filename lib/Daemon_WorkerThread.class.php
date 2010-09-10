@@ -44,10 +44,23 @@ class Daemon_WorkerThread extends Thread
   $this->setStatus(4);
   Thread::setproctitle(Daemon::$runName.': worker process'.(Daemon::$settings['pidfile'] !== Daemon::$settings['defaultpidfile']?' ('.Daemon::$settings['pidfile'].')':''));
   register_shutdown_function(array($this,'shutdown'));
-  if (is_callable('runkit_function_redefine') && ini_get('runkit.internal_override'))
+  if (is_callable('runkit_function_add') && ini_get('runkit.internal_override'))
   {
    runkit_function_rename('register_shutdown_function','register_shutdown_function_native');
-   runkit_function_add('register_shutdown_function','$arg','if (Daemon::$req) {Daemon::$req->registerShutdownFunction($arg);}');
+   function register_shutdown_function($cb)
+   {
+    if (Daemon::$req) {return Daemon::$req->registerShutdownFunction($cb);}
+   }
+   runkit_function_copy('create_function','create_function_native');
+   runkit_function_redefine('create_function','$arg,$body','return __create_function($arg,$body);');
+   function __create_function($arg,$body)
+   {
+    static $cache = array();
+    $crc = crc32($arg.$body);
+    $cb = &$cache[$crc];
+    if ($cb !== NULL) {return $cb;}
+    return $cb = create_function_native($arg,$body);
+   }
   }
   if (Daemon::$parsedSettings['autogc'] > 0) {gc_enable();}
   else {gc_disable();}
