@@ -56,10 +56,28 @@ class Daemon_WorkerThread extends Thread
    function __create_function($arg,$body)
    {
     static $cache = array();
+    static $maxCacheSize = 64;
+    static $sorter;
+    if ($sorter === NULL)
+    {
+     $sorter = function($a,$b)
+     {
+      if ($a->hits == $b->hits) {return 0;}
+      return ($a->hits < $b->hits)? 1 : -1;
+     };
+    }
     $crc = crc32($arg.$body);
-    $cb = &$cache[$crc];
-    if ($cb !== NULL) {return $cb;}
-    return $cb = create_function_native($arg,$body);
+    if (isset($cache[$crc]))
+    {
+     ++$cache[$crc]->hits;
+     return $cache[$crc];
+    }
+    if (sizeof($cache) >= $maxCacheSize)
+    {
+     uasort($cache,$sorter);
+     array_pop($cache);
+    }
+    return $cache[$crc] = new DestructableLambda(create_function_native($arg,$body));
    }
   }
   if (Daemon::$parsedSettings['autogc'] > 0) {gc_enable();}
