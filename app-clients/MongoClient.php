@@ -30,15 +30,14 @@ class MongoClient extends AsyncServer
  public function init()
  {
   Daemon::addDefaultSettings(array(
-   'mod'.$this->modname.'servers' => '127.0.0.1',
+   'mod'.$this->modname.'servers' => 'mongo://127.0.0.1',
    'mod'.$this->modname.'port' => 27017,
   ));
   $this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
   $servers = explode(',',Daemon::$settings['mod'.$this->modname.'servers']);
   foreach ($servers as $s)
   {
-   $e = explode(':',$s);
-   $this->addServer($e[0],isset($e[1])?$e[1]:NULL);
+   $this->addServer($s);
   }
  }
  /* @method selectDB
@@ -51,17 +50,26 @@ class MongoClient extends AsyncServer
   $this->dbname = $name;
   return TRUE;
  }
+ /* @method getAuthKey
+    @description Generates auth. key.
+    @param string Username.
+    @param string Password.
+    @param string nonce.
+    @return string MD5 hash.
+ */
+ public static function getAuthKey($username,$password,$nonce)
+ {
+  return md5($nonce.$username.md5($username.':mongo:'.$password));
+ }
  /* @method addServer
-    @description Adds memcached server.
-    @param string Server's host.
-    @param string Server's port.
+    @description Adds mongo server.
+    @param string URL
     @param integer Weight.
     @return void
  */
- public function addServer($host,$port = NULL,$weight = NULL)
+ public function addServer($url,$weight = NULL)
  {
-  if ($port === NULL) {$port = Daemon::$settings['mod'.$this->modname.'port'];}
-  $this->servers[$host.':'.$port] = $weight;
+  $this->servers[$url] = $weight;
  }
  /* @method request
     @description Gets the key.
@@ -240,6 +248,50 @@ class MongoClient extends AsyncServer
   ;
   $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
   $this->requests[$reqId] = array($p['col'],$callback,TRUE);
+ }
+ /* @method auth
+    @description Sends authenciation packet.
+    @param array Hash of properties (dbname, user, password, nonce).
+    @param mixed Callback called when response received.
+    @param string Optional. Distribution key.
+    @return void
+ */
+ public function auth($p,$callback,$key = '')
+ {
+  if (!isset($p['opts'])) {$p['opts'] = 0;}
+  $query = array(
+   'authenticate' => 1,
+   'user' => $p['user'],
+   'nonce' => $p['nonce'],
+   'key' => MongoClient::getAuthKey($p['user'],$p['password'],$p['nonce']),
+  );
+  $packet = pack('V',$p['opts'])
+   .$p['dbname'].'.$cmd'."\x00"
+   .pack('VV',0,-1)
+   .bson_encode($query)
+   .(isset($p['fields'])?bson_encode($p['fields']):'')
+  ;
+  $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
+  $this->requests[$reqId] = array($p['dbname'],$callback,TRUE);
+ }
+ /* @method getNonce
+    @description Sends request of nonce.
+    @return void
+ */
+ public function getNonce($p,$callback,$key = '')
+ {
+  if (!isset($p['opts'])) {$p['opts'] = 0;}
+  $query = array(
+   'getnonce' => 1,
+  );
+  $packet = pack('V',$p['opts'])
+   .$p['dbname'].'.$cmd'."\x00"
+   .pack('VV',0,-1)
+   .bson_encode($query)
+   .(isset($p['fields'])?bson_encode($p['fields']):'')
+  ;
+  $reqId = $this->request($key,self::OP_QUERY,$packet,TRUE);
+  $this->requests[$reqId] = array($p['dbname'],$callback,TRUE);
  }
  /* @method lastError
     @description Gets last error.
@@ -582,24 +634,46 @@ class MongoClient extends AsyncServer
  }
  /* @method getConnection
     @description Establishes connection.
-    @param string Address.
+    @param string URL
     @return integer Connection's ID.
  */
- public function getConnection($addr)
+ public function getConnection($url)
  {
-  if (isset($this->servConn[$addr]))
+  if (isset($this->servConn[$url]))
   {
-   foreach ($this->servConn[$addr] as &$c)
+   foreach ($this->servConn[$url] as &$c)
    {
     if (isset($this->sessions[$c]) && !$this->sessions[$c]->busy) {return $c;}
    }
   }
-  else {$this->servConn[$addr] = array();}
-  $e = explode(':',$addr);
-  $connId = $this->connectTo($e[0],$e[1]);
-  $this->sessions[$connId] = new MongoClientSession($connId,$this);
-  $this->sessions[$connId]->addr = $addr;
-  $this->servConn[$addr][$connId] = $connId;
+  else {$this->servConn[$url] = array();}
+  $u = parse_url($url);
+  if (!isset($u['port'])) {$u['port'] = Daemon::$settings['mod'.$this->modname.'port'];}
+  $connId = $this->connectTo($u['host'],$u['port']);
+  $session = $this->sessions[$connId] = new MongoClientSession($connId,$this);
+  $session->url = $url;
+  if (isset($u['user'])) {$session->user = $u['user'];}
+  if (isset($u['pass'])) {$session->password = $u['pass'];}
+  if (isset($u['path'])) {$session->dbname = ltrim($u['path'],'/');}
+  $this->servConn[$url][$connId] = $connId;
+  
+  if ($session->user !== NULL)
+  {
+   $this->getNonce(array(),function($result) use ($session)
+   {
+    $session->appInstance->auth(array(
+     'user' => $session->user,
+     'password' => $session->password,
+     'nonce' => $result['nonce'],
+     'dbname' => $session->dbname,
+    ),function($result) use ($session)
+    {
+     if (!$result['ok']) {Daemon::log('MongoClient: authentication error with '.$session->url.': '.$result['errmsg']);}
+    },$session);
+   },$session);
+  }
+  
+  
   return $connId;
  }
  /* @method getConnectionByKey
@@ -614,14 +688,17 @@ class MongoClient extends AsyncServer
    $key = substr($key,$sp+1,$ep-$sp-1);
   }
   srand(crc32($key));
-  $addr = array_rand($this->servers);
+  $url = array_rand($this->servers);
   srand();  
-  return $this->getConnection($addr);
+  return $this->getConnection($url);
  }
 }
 class MongoClientSession extends SocketSession
 {
- public $addr; // Address
+ public $url; // url
+ public $user; // Username
+ public $password; // Password
+ public $dbname; // Database name
  public $busy = FALSE; // Is this session busy?
  public $finished = FALSE; // Is this session finished?
  /* @method stdin
@@ -713,7 +790,7 @@ class MongoClientSession extends SocketSession
  public function onFinish()
  {
   $this->finished = TRUE;
-  unset($this->servConn[$this->addr][$this->connId]);
+  unset($this->servConn[$this->url][$this->connId]);
   unset($this->appInstance->sessions[$this->connId]);
  }
 }

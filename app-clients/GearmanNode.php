@@ -23,6 +23,8 @@ class GearmanNode extends AppInstance
    
    $this->client = new GearmanClient;
    $this->worker = new GearmanWorker;
+   $this->worker->addOptions(GEARMAN_WORKER_NON_BLOCKING);
+   $this->worker->setTimeout(0);
    foreach (explode(',',Daemon::$settings['mod'.$this->modname.'servers']) as $address)
    {
     $e = explode(':',$address,2);
@@ -41,7 +43,14 @@ class GearmanNodeInterval extends Request
  */
  public function run()
  {
-  $this->worker->work();
+  $worker = $this->appInstance->worker;
+  start:
+  @$worker->work();
+  $ret = $worker->returnCode();
+  if ($ret == GEARMAN_IO_WAIT) {}
+  if ($ret == GEARMAN_NO_JOBS) {$this->sleep(0.2);}
+  if ($ret == GEARMAN_SUCCESS) {goto start;}
+  @$worker->wait();
   $this->sleep(0.2);
  }
 }
