@@ -659,7 +659,7 @@ class MongoClient extends AsyncServer
   
   if ($session->user !== NULL)
   {
-   $this->getNonce(array(),function($result) use ($session)
+   $this->getNonce(array('dbname' => $session->dbname),function($result) use ($session)
    {
     $session->appInstance->auth(array(
      'user' => $session->user,
@@ -720,7 +720,7 @@ class MongoClientSession extends SocketSession
    $r = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength',binarySubstr($this->buf,16,20));
    $r['cursorId'] = binarySubstr($this->buf,20,8);
    $id = (int) $h['responseTo'];
-   $flagBits = strrev(decbin($r['flag']));
+   $flagBits = str_pad(strrev(decbin($r['flag'])),8,'0',STR_PAD_LEFT);
    $cur = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00"?'c'.$r['cursorId']:'r'.$h['responseTo']);
    if (isset($this->appInstance->requests[$id][2]) && ($this->appInstance->requests[$id][2] === FALSE) && !isset($this->appInstance->cursors[$cur]))
    {
