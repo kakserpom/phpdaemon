@@ -46,6 +46,11 @@ class Daemon_WorkerThread extends Thread
   register_shutdown_function(array($this,'shutdown'));
   if (is_callable('runkit_function_add') && ini_get('runkit.internal_override'))
   {
+   runkit_function_rename('header','header_native');
+   function header()
+   { 
+    if (Daemon::$req) {return call_user_func_array(array(Daemon::$req,'header'),func_get_args());}
+   }
    runkit_function_rename('register_shutdown_function','register_shutdown_function_native');
    function register_shutdown_function($cb)
    {
