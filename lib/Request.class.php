@@ -314,11 +314,14 @@ class Request
  /* @method header
     @description Sets the header.
     @param string Header. Example: 'Location: http://php.net/'
+    @param boolean Optional. Replace?
+    @param int Optional. HTTP response code.
     @return void
     @throws RequestHeadersAlreadySent
  */
- public function header($s)
+ public function header($s,$replace = TRUE,$code = NULL)
  {
+  if ($code !== NULL) {$this->status($code);}
   if ($this->headers_sent)
   {
    throw new RequestHeadersAlreadySent();
@@ -331,10 +334,11 @@ class Request
    if (strncmp($s,'HTTP/',5) === 0) {$s = substr($s,9);}
   }
   $k = strtr(strtoupper($e[0]),Request::$htr);
+  if (!$replace && isset($this->headers[$k])) {return FALSE;}
   $this->headers[$k] = $s;
   if ($k === 'CONTENT_LENGTH') {$this->contentLength = (int) $e[1];}
   if ($k === 'LOCATION') {$this->status(301);}
-  if (Daemon::$compatMode) {header($s);}
+  if (Daemon::$compatMode) {is_callable('header_native')?header_native($s):header($s);}
   return TRUE;
  }
  /* @method parseParams
