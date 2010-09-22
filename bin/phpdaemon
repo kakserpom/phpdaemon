@@ -7,22 +7,22 @@
 /* @author kak.serpom.po.yaitsam@gmail.com
 /* @description Bootstrap init script.
 /**************************************************************************/
-$dir = realpath(__DIR__.'/..');
-require $dir.'/lib/misc.php';
-require $dir.'/lib/Daemon.class.php';
-require $dir.'/lib/Request.class.php';
-require $dir.'/lib/AppInstance.class.php';
-require $dir.'/lib/Terminal.class.php';
-require $dir.'/lib/thread.class.php';
-require $dir.'/lib/threadCollection.class.php';
-require $dir.'/lib/Daemon_Bootstrap.class.php';
-require $dir.'/lib/Daemon_WorkerThread.class.php';
-require $dir.'/lib/Daemon_MasterThread.class.php';
-require $dir.'/lib/AppResolver.class.php';
-require $dir.'/lib/asyncStream.class.php';
-require $dir.'/lib/asyncProcess.class.php';
-require $dir.'/lib/asyncServer.class.php';
-require $dir.'/lib/SocketSession.class.php';
-require $dir.'/lib/WebSocketRoute.class.php';
+$dir = realpath(__DIR__ . '/..');
+require $dir . '/lib/misc.php';
+require $dir . '/lib/Daemon.class.php';
+require $dir . '/lib/Request.class.php';
+require $dir . '/lib/AppInstance.class.php';
+require $dir . '/lib/Terminal.class.php';
+require $dir . '/lib/thread.class.php';
+require $dir . '/lib/threadCollection.class.php';
+require $dir . '/lib/Daemon_Bootstrap.class.php';
+require $dir . '/lib/Daemon_WorkerThread.class.php';
+require $dir . '/lib/Daemon_MasterThread.class.php';
+require $dir . '/lib/AppResolver.class.php';
+require $dir . '/lib/asyncStream.class.php';
+require $dir . '/lib/asyncProcess.class.php';
+require $dir . '/lib/asyncServer.class.php';
+require $dir . '/lib/SocketSession.class.php';
+require $dir . '/lib/WebSocketRoute.class.php';
 Daemon::$dir = $dir;
 Daemon_Bootstrap::init();
