@@ -56,18 +56,19 @@ class ExampleSandboxRequest extends Request {
 		$stime = microtime(TRUE);
 		$this->header('Content-Type: text/html; charset=utf-8');
  
-		$options = array(
-			'safe_mode' => TRUE,
-			'open_basedir' => '/var/www/users/jdoe/',
-			'allow_url_fopen' => 'false',
+		$sandbox = new Runkit_Sandbox(array(
+			'safe_mode'        => TRUE,
+			'open_basedir'     => '/var/www/users/jdoe/',
+			'allow_url_fopen'  => 'false',
 			'disable_functions'=>'exec,shell_exec,passthru,system',
-			'disable_classes' => '',
-			'output_handler' => array($this,'out')
-		);
-
-		$sandbox = new Runkit_Sandbox($options);
+			'disable_classes'  => '',
+			'output_handler'   => array($this,'out')
+		));
 		$sandbox->ini_set('html_errors',true);
-		$sandbox->eval('echo "Hello World!";');
+		$sandbox->call_user_func(function()
+		{
+		 echo "Hello World!";
+		});
 
 		return Request::DONE;
 	}
