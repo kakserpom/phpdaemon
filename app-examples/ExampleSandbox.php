@@ -64,11 +64,11 @@ class ExampleSandboxRequest extends Request {
 			'disable_classes'  => '',
 			'output_handler'   => array($this,'out')
 		));
+
 		$sandbox->ini_set('html_errors',true);
-		$sandbox->call_user_func(function()
-		{
-		 echo "Hello World!";
-		});
+		$sandbox->call_user_func(function() {
+			echo "Hello World!";
+		]);
 
 		return Request::DONE;
 	}
