@@ -238,6 +238,7 @@ class FastCGI extends AsyncServer {
 			$req->attrs->stdinbuf = '';
 			$req->attrs->stdinlen = 0;
 			$req->attrs->chunked = FALSE;
+			$req->attrs->noHttpVer = TRUE;
 
 			if (Daemon::$settings['mod' . $this->modname . 'logqueue']) {
 				Daemon::log('[WORKER ' . Daemon::$worker->pid . '] new request queued.');
