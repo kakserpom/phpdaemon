@@ -68,7 +68,7 @@ class ExampleSandboxRequest extends Request {
 		$sandbox->ini_set('html_errors',true);
 		$sandbox->call_user_func(function() {
 			echo "Hello World!";
-		]);
+		});
 
 		return Request::DONE;
 	}
