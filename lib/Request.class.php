@@ -399,14 +399,14 @@ class Request
  */
  public function out($s,$flush = TRUE)
  {
-  //Daemon::log('Output (len. '.strlen($s).', '.($this->headers_sent?'headers sent':'headers not sent').'): \''.$s.'\'');
   if ($flush) {ob_flush();}
   if ($this->aborted) {return FALSE;}
   $l = strlen($s);
   $this->answerlen += $l;
   if (!$this->headers_sent)
   {
-   $h = isset($this->headers['STATUS'])?$this->attrs->server['SERVER_PROTOCOL'].' '.$this->headers['STATUS']."\r\n":'';
+   if (isset($this->attrs->noHttpVer)) {$h = isset($this->headers['STATUS'])?'Status: '.$this->headers['STATUS']."\r\n":'';}
+   else {$h = isset($this->headers['STATUS'])?$this->attrs->server['SERVER_PROTOCOL'].' '.$this->headers['STATUS']."\r\n":'';}
    if ($this->attrs->chunked) {$this->header('Transfer-Encoding: chunked');}
    foreach ($this->headers as $k => $line)
    {
