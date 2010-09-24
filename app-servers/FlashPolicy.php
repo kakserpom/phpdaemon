@@ -73,9 +73,10 @@ class FlashPolicySession extends SocketSession {
 			$this->finish();
 		}
 		elseif (
-		     (strlen($this->buf) > 64) 
+			(strlen($this->buf) > 64) 
 			|| (strpos($this->buf, "\xff\xf4\xff\xfd\x06") !== FALSE) 
-			|| (strpos($this->buf, "\xff\xec") !== FALSE)) {
+			|| (strpos($this->buf, "\xff\xec") !== FALSE)
+		) {
 			$this->finish();
 		}
 	}
