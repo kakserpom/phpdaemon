@@ -39,7 +39,7 @@ class MongoClient extends AsyncServer {
 		));
 
 		$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
-		$servers = explode(', ', Daemon::$settings['mod' . $this->modname . 'servers']);
+		$servers = explode(',', Daemon::$settings['mod' . $this->modname . 'servers']);
 
 		foreach ($servers as $s) {
 			$this->addServer($s);
@@ -158,7 +158,7 @@ class MongoClient extends AsyncServer {
 			isset($p['fields']) 
 			&& is_string($p['fields'])
 		) {
-			$e = explode(', ', $p['fields']);
+			$e = explode(',', $p['fields']);
 			$p['fields'] = array();
 
 			foreach ($e as &$f) {
@@ -260,7 +260,7 @@ class MongoClient extends AsyncServer {
 			isset($p['fields']) 
 			&& is_string($p['fields'])
 		) {
-			$e = explode(', ', $p['fields']);
+			$e = explode(',', $p['fields']);
 			$p['fields'] = array();
 	
 			foreach ($e as &$f) {
