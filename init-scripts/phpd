@@ -10,111 +10,112 @@
 phpd="/usr/sbin/phpd"
 prog=$(basename $phpd)
 
-
 [ -f /etc/sysconfig/phpd ] && . /etc/sysconfig/phpd
 
 lockfile=/var/lock/subsys/phpd
 
 start() {
-    [ -x $phpd ] || exit 5
-    [ -f $phpd_CONF_FILE ] || exit 6
-    echo -n $"Starting $prog: "
-    daemon $phpd start
-    retval=$?
-    echo
-    [ $retval -eq 0 ] && touch $lockfile
-    return $retval
+	[ -x $phpd ] || exit 5
+	[ -f $phpd_CONF_FILE ] || exit 6
+	echo -n $"Starting $prog: "
+	daemon $phpd start
+	retval=$?
+	echo
+	[ $retval -eq 0 ] && touch $lockfile
+	return $retval
 }
 
 stop() {
-    echo -n $"Stopping $prog: "
-    killproc $prog
-    retval=$?
-    echo
-    [ $retval -eq 0 ] && rm -f $lockfile
-    return $retval
+	echo -n $"Stopping $prog: "
+	killproc $prog
+	retval=$?
+	echo
+	[ $retval -eq 0 ] && rm -f $lockfile
+	return $retval
 }
 
 restart() {
-    configtest_q || configtest || return 6
-    stop
-    start
+	configtest_q || configtest || return 6
+	stop
+	start
 }
 
 reload() {
-    configtest_q || configtest || return 6
-    echo -n $"Reloading $prog: "
-    killproc $phpd -HUP
-    echo
+	configtest_q || configtest || return 6
+	echo -n $"Reloading $prog: "
+	killproc $phpd -HUP
+	echo
 }
 
 configtest() {
-  $phpd configtest
+	$phpd configtest
 }
 
 configtest_q() {
-    configtest >/dev/null 2>&1
+	configtest >/dev/null 2>&1
 }
 
 rh_status() {
-    status $prog
+	status $prog
 }
 
 rh_status_q() {
-    rh_status >/dev/null 2>&1
+	rh_status >/dev/null 2>&1
 }
 
 # Upgrade the binary with no downtime.
 upgrade() {
-    local pidfile="/var/run/${prog}.pid"
-    local oldbin_pidfile="${pidfile}.oldbin"
+	local pidfile="/var/run/${prog}.pid"
+	local oldbin_pidfile="${pidfile}.oldbin"
 
-    configtest_q || configtest || return 6
-    echo -n $"Staring new master $prog: "
-    killproc $phpd -USR2
-    retval=$?
-    echo
-    sleep 1
-    if [[ -f ${oldbin_pidfile} && -f ${pidfile} ]];  then
-        echo -n $"Graceful shutdown of old $prog: "
-        killproc -p ${oldbin_pidfile} -QUIT
-        retval=$?
-        echo
-        return 0
-    else
-        echo $"Something bad happened, manual intervention required, maybe restart?"
-        return 1
-    fi
+	configtest_q || configtest || return 6
+	echo -n $"Staring new master $prog: "
+	killproc $phpd -USR2
+	retval=$?
+	echo
+	sleep 1
+
+	if [[ -f ${oldbin_pidfile} && -f ${pidfile} ]];  then
+		echo -n $"Graceful shutdown of old $prog: "
+		killproc -p ${oldbin_pidfile} -QUIT
+		retval=$?
+		echo
+		return 0
+	else
+		echo $"Something bad happened, manual intervention required, maybe restart?"
+		return 1
+	fi
 }
 
 case "$1" in
-    start)
-        rh_status_q && exit 0
-        $1
-        ;;
-    stop)
-        rh_status_q || exit 0
-        $1
-        ;;
-    restart|configtest)
-        $1
-        ;;
-    force-reload|upgrade)
-        rh_status_q || exit 7
-        upgrade
-        ;;
-    reload)
-        rh_status_q || exit 7
-        $1
-        ;;
-    status|status_q)
-        rh_$1
-        ;;
-    condrestart|try-restart)
-        rh_status_q || exit 7
-        restart
-            ;;
-    *)
-        echo $"Usage: $0 {start|stop|reload|configtest|status|force-reload|upgrade|restart}"
-        exit 2
+	start)
+		rh_status_q && exit 0
+		$1
+		;;
+	stop)
+		rh_status_q || exit 0
+		$1
+		;;
+	restart|configtest)
+		$1
+		;;
+	force-reload|upgrade)
+		rh_status_q || exit 7
+		upgrade
+		;;
+	reload)
+		rh_status_q || exit 7
+		$1
+		;;
+	status|status_q)
+		rh_$1
+		;;
+	condrestart|try-restart)
+		rh_status_q || exit 7
+		restart
+		;;
+	*)
+
+	echo $"Usage: $0 {start|stop|reload|configtest|status|force-reload|upgrade|restart}"
+	exit 2
 esac
