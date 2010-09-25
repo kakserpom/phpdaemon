@@ -45,7 +45,7 @@ class Daemon {
 		Daemon::$version = file_get_contents(Daemon::$dir . '/VERSION');
 
 		Daemon::$settings = array(
-			// Worker graceful restarging:
+			// Worker graceful restarting:
 			'maxrequests' => '1k',
 			'maxmemoryusage' => '0b',
 			'maxidle' => '0s',

@@ -328,7 +328,7 @@ class HTTP extends AsyncServer {
 				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;
 			}
 
-			$this->timeLastReq = time();
+			Daemon::$worker->timeLastReq = time();
 		}
 	}
 }
