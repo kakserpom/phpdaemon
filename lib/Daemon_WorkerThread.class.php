@@ -330,6 +330,8 @@ class Daemon_WorkerThread extends Thread {
 	 * @return boolean - The whether we should go to reload.
 	 */
 	public function checkState() {
+		$time = microtime(true);
+
 		pcntl_signal_dispatch();
 	
 		if ($this->terminated) {
@@ -338,7 +340,7 @@ class Daemon_WorkerThread extends Thread {
 
 		if (
 			(Daemon::$parsedSettings['autoreload'] > 0) 
-			&& (time() > $this->autoReloadLast+Daemon::$parsedSettings['autoreload'])
+			&& ($time > $this->autoReloadLast+Daemon::$parsedSettings['autoreload'])
 		) {
 			if (Daemon::$settings['autoreimport']) {
 				$this->reimport();
@@ -361,7 +363,7 @@ class Daemon_WorkerThread extends Thread {
 			Daemon::log('[WORKER ' . $this->pid . '] \'maxrequests\' exceed. Graceful shutdown.');
 
 			$this->reload = TRUE;
-			$this->reloadTime = microtime(TRUE) + $this->reloadDelay;
+			$this->reloadTime = $time + $this->reloadDelay;
 			$this->setStatus($this->currentStatus);
 			$this->status = 3;
 		}
@@ -373,7 +375,7 @@ class Daemon_WorkerThread extends Thread {
 			Daemon::log('[WORKER ' . $this->pid . '] \'maxmemoryusage\' exceed. Graceful shutdown.');
 
 			$this->reload = TRUE;
-			$this->reloadTime = microtime(TRUE) + $this->reloadDelay;
+			$this->reloadTime = $time + $this->reloadDelay;
 			$this->setStatus($this->currentStatus);
 			$this->status = 3;
 		}
@@ -381,12 +383,12 @@ class Daemon_WorkerThread extends Thread {
 		if (
 			Daemon::$parsedSettings['maxidle'] 
 			&& $this->timeLastReq 
-			&& (time() - $this->timeLastReq > Daemon::$parsedSettings['maxidle'])
+			&& ($time - $this->timeLastReq > Daemon::$parsedSettings['maxidle'])
 		) {
 			Daemon::log('[WORKER ' . $this->pid . '] \'maxworkeridle\' exceed. Graceful shutdown.');
 
 			$this->reload = TRUE;
-			$this->reloadTime = microtime(TRUE)+$this->reloadDelay;
+			$this->reloadTime = $time + $this->reloadDelay;
 			$this->setStatus($this->currentStatus);
 			$this->status = 3;
 		}
@@ -402,7 +404,7 @@ class Daemon_WorkerThread extends Thread {
 	
 		if (
 			($this->reload === TRUE) 
-			&& (microtime(TRUE) > $this->reloadTime)
+			&& ($time > $this->reloadTime)
 		) {
 			$this->status = 6;
 		}
