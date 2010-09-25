@@ -13,8 +13,8 @@ class Daemon_WorkerThread extends Thread {
 
 	public $update = FALSE;
 	public $reload = FALSE;
-	public $reloadTime = 0;
-	public $reloadDelay = 2;
+	private $reloadTime = 0;
+	private $reloadDelay = 2;
 	public $reloaded = FALSE;
 	public $pool = array();
 	public $poolApp = array();
@@ -24,13 +24,12 @@ class Daemon_WorkerThread extends Thread {
 	public $timeLastReq = 0;
 	public $readPoolState = array();
 	public $writePoolState = array();
-	public $autoReloadLast = 0;
-	public $currentStatus = 0;
-	public $microsleep;
-	public $eventsToAdd = array();
+	private $autoReloadLast = 0;
+	private $currentStatus = 0;
+	private $microsleep;
+	private $eventsToAdd = array();
 	public $eventBase;
-	public $timeoutEvent;
-	public $useSockets;
+	private $timeoutEvent;
 	public $status = 0;
 
 	/**
@@ -247,7 +246,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Reloads additional config-files on-the-fly.
 	 * @return void
 	 */
-	public function update() {
+	private function update() {
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {
 				$appInstance->handleStatus(2);
@@ -271,7 +270,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Looks up at changes of the last modification date of all included files.
 	 * @return boolean - The whether we should go to reload.
 	 */
-	public function reloadCheck() {
+	private function reloadCheck() {
 		static $hash = array();
 	
 		$this->autoReloadLast = time();
@@ -298,7 +297,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Looks up at changes of the last modification date of all included files. Re-imports modified files.
 	 * @return void
 	 */
-	public function reimport() {
+	private function reimport() {
 		static $hash = array();
 	
 		$this->autoReloadLast = time();
@@ -325,11 +324,10 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @method reloadCheck
-	 * @description Looks up at changes of the last modification date of all included files.
-	 * @return boolean - The whether we should go to reload.
+	 * @method checkState
+	 * @description ?????
 	 */
-	public function checkState() {
+	private function checkState() {
 		$time = microtime(true);
 
 		pcntl_signal_dispatch();
@@ -340,7 +338,7 @@ class Daemon_WorkerThread extends Thread {
 
 		if (
 			(Daemon::$parsedSettings['autoreload'] > 0) 
-			&& ($time > $this->autoReloadLast+Daemon::$parsedSettings['autoreload'])
+			&& ($time > $this->autoReloadLast + Daemon::$parsedSettings['autoreload'])
 		) {
 			if (Daemon::$settings['autoreimport']) {
 				$this->reimport();
@@ -427,7 +425,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Handles the queue of pending requests.
 	 * @return void
 	 */
-	public function runQueue() {
+	private function runQueue() {
 		$processed = 0;
 	
 		foreach ($this->queue as $k => &$r) {
@@ -497,7 +495,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Asks the running applications the whether we can go to shutdown current (old) worker.
 	 * @return boolean - Ready?
 	 */
-	public function appInstancesReloadReady() {
+	private function appInstancesReloadReady() {
 		$ready = TRUE;
 		
 		foreach (Daemon::$appInstances as $k => $app) {
@@ -695,7 +693,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		$this->reload = TRUE;
-		$this->reloadTime = microtime(TRUE)+$this->reloadDelay;
+		$this->reloadTime = microtime(TRUE) + $this->reloadDelay;
 		$this->setStatus($this->currentStatus);
 	}
 
