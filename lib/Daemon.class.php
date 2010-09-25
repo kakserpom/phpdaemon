@@ -45,47 +45,58 @@ class Daemon {
 		Daemon::$version = file_get_contents(Daemon::$dir . '/VERSION');
 
 		Daemon::$settings = array(
+		  // Worker graceful restarging:
 			'maxrequests' => '1k',
 			'maxmemoryusage' => '0b',
 			'maxidle' => '0s',
-			'expose' => 1,
+			
+			// Main Pathes
 			'pidfile' => '/var/run/phpd.pid',
 			'defaultpidfile' => '/var/run/phpd.pid',
 			'configfile' => Daemon::$dir.'/conf/phpdaemon.conf.php',
-			'chroot' => '/',
-			'cwd' => '.',
 			'path' => NULL,
+			'ipcwstate' => '/var/run/phpdaemon-wstate.ipc',
+			
+			// Master-related
+			'mpmdelay'=> '1s',
 			'startworkers' => 20,
 			'minworkers' => 20,
 			'maxworkers' => 80,
 			'minspareworkers' => 20,
 			'maxspareworkers' => 50,
+			'masterpriority' => 100,
+			 
+			 // Requests
 			'obfilterauto' => 1,
-			'logstorage' => '/var/log/phpdaemon-%DATE=d.m.Y%.log',
-			'logging' => 1,
-			'user' => NULL,
-			'group' => NULL,
+			'expose' => 1,
 			'keepalive' => '0s',
 			'autoreadbodyfile' => 1,
-			'ipcwstate' => '/var/run/phpdaemon-wstate.ipc',
-			'autogc' => '1',
-			'mpmdelay'=> '1s',
-			'logsignals' => 0,
 			'chunksize' => '8k',
 			'maxconcurrentrequestsperworker' => 1000,
-			'logreads' => 0,
+			
+			 // Worker-related
+			'user' => NULL,
+			'group' => NULL,
+			'autogc' => '1',
+			'chroot' => '/',
+			'cwd' => '.',
 			'autoreload' => '0s',
 			'autoreimport' => 0,
+			'microsleep' => 100000,
+			'workerpriority' => 4,
+			'throwexceptiononshutdown' => 0,
+			'locale' => '',
+			
+			 // Logging-related
+			'logging' => 1,
+		  'logtostderr' => 1,
+			'logstorage' => '/var/log/phpdaemon-%DATE=d.m.Y%.log',
+			'logerrors' => 1,
 			'logworkersetstatus' => 0,
 			'logevents' => 0,
 			'logqueue' => 0,
-			'microsleep' => 100000,
-			'logtostderr' => 1,
-			'workerpriority' => 4,
-			'masterpriority' => 100,
-			'throwexceptiononshutdown' => 0,
-			'locale' => '',
-			'logerrors' => 1,
+			'logreads' => 0,
+			'logsignals' => 0,
 		);
 
 		Daemon::loadSettings(Daemon::$settings);
