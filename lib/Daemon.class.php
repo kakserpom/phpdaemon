@@ -45,7 +45,7 @@ class Daemon {
 		Daemon::$version = file_get_contents(Daemon::$dir . '/VERSION');
 
 		Daemon::$settings = array(
-		  // Worker graceful restarging:
+			// Worker graceful restarging:
 			'maxrequests' => '1k',
 			'maxmemoryusage' => '0b',
 			'maxidle' => '0s',
@@ -89,7 +89,7 @@ class Daemon {
 			
 			 // Logging-related
 			'logging' => 1,
-		  'logtostderr' => 1,
+			'logtostderr' => 1,
 			'logstorage' => '/var/log/phpdaemon-%DATE=d.m.Y%.log',
 			'logerrors' => 1,
 			'logworkersetstatus' => 0,
