@@ -90,7 +90,7 @@ class Daemon {
 			 // Logging-related
 			'logging' => 1,
 			'logtostderr' => 1,
-			'logstorage' => '/var/log/phpdaemon-%DATE=d.m.Y%.log',
+			'logstorage' => '/var/log/phpdaemon.log',
 			'logerrors' => 1,
 			'logworkersetstatus' => 0,
 			'logevents' => 0,
