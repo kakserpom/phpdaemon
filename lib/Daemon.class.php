@@ -308,8 +308,8 @@ class Daemon {
 		}
 
 		if (
-			isset(Daemon::$settings['configfile']) 
-			&& !Daemon::loadConfig(Daemon::$settings['configfile'])
+			isset(Daemon::$parsedSettings['configfile']) 
+			&& !Daemon::loadConfig(Daemon::$parsedSettings['configfile'])
 		) {
 			$error = TRUE;
 		}
@@ -433,6 +433,9 @@ class Daemon {
 				}
 				elseif ($k === 'chunksize') {
 					Daemon::$parsedSettings[$k] = Daemon::parseSize($v);
+				}
+				elseif ($k === 'configfile') {
+					Daemon::$parsedSettings[$k] = realpath($v);
 				}
 
 				if (is_int(Daemon::$settings[$k])) {

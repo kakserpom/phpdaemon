@@ -664,8 +664,8 @@ class Daemon_WorkerThread extends Thread {
 			Daemon::log('Worker ' . $this->pid . ' caught SIGHUP (reload config).');
 		}
 
-		if (isset(Daemon::$settings['configfile'])) {
-			Daemon::loadConfig(Daemon::$settings['configfile']);
+		if (isset(Daemon::$parsedSettings['configfile'])) {
+			Daemon::loadConfig(Daemon::$parsedSettings['configfile']);
 		}
 
 		$this->update = TRUE;

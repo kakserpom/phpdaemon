@@ -43,11 +43,21 @@ class Daemon_MasterThread extends Thread {
 			if (Daemon::$logpointerpath !== Daemon::parseStoragepath(Daemon::$settings['logstorage'])) { 
 				$this->sigusr1();
 			}
+      
+      if (isset(Daemon::$parsedSettings['configfile']) && (Daemon::$parsedSettings['autoreload'] > 0))
+      {
+        $mt = filemtime(Daemon::$parsedSettings['configfile']);
+        if (!isset($cfgmtime)) {$cfgmtime = $mt;}
+				if ($cfgmtime < $mt) {
+					$cfgmtime = filemtime(Daemon::$parsedSettings['configfile']);
+					$this->sighup();
+				}
+			}
 	
 			if (time() > $mpmLast+Daemon::$parsedSettings['mpmdelay']) {
 				$mpmLast = time();
 				++$c;
-
+				
 				if ($c > 0xFFFFF) {
 					$c = 0;
 				}
@@ -258,8 +268,8 @@ class Daemon_MasterThread extends Thread {
 			Daemon::log('Master caught SIGHUP (reload config).');
 		}
 
-		if (isset(Daemon::$settings['configfile'])) {
-			Daemon::loadConfig(Daemon::$settings['configfile']);
+		if (isset(Daemon::$parsedSettings['configfile'])) {
+			Daemon::loadConfig(Daemon::$parsedSettings['configfile']);
 		}
 
 		$this->collections['workers']->signal(SIGHUP);
