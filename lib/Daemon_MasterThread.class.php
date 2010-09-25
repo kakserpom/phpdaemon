@@ -44,10 +44,16 @@ class Daemon_MasterThread extends Thread {
 				$this->sigusr1();
 			}
       
-      if (isset(Daemon::$parsedSettings['configfile']) && (Daemon::$parsedSettings['autoreload'] > 0))
-      {
-        $mt = filemtime(Daemon::$parsedSettings['configfile']);
-        if (!isset($cfgmtime)) {$cfgmtime = $mt;}
+			if (
+				isset(Daemon::$parsedSettings['configfile']) 
+				&& (Daemon::$parsedSettings['autoreload'] > 0)
+			) {
+				$mt = filemtime(Daemon::$parsedSettings['configfile']);
+
+				if (!isset($cfgmtime)) {
+					$cfgmtime = $mt;
+				}
+
 				if ($cfgmtime < $mt) {
 					$cfgmtime = filemtime(Daemon::$parsedSettings['configfile']);
 					$this->sighup();
