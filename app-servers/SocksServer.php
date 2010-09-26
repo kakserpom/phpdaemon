@@ -20,10 +20,14 @@ class SocksServer extends AsyncServer {
 			'mod' . $this->modname . 'username' => 'User',
 			'mod' . $this->modname . 'password' => 'Password',
 			'mod' . $this->modname . 'enable' => 0,
+			'mod' . $this->modname . 'allowedclients' => '',
 		);
 
 		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
 			Daemon::log(__CLASS__ . ' up.');
+			if (Daemon::$settings['mod' . $this->modname . 'allowedclients'] !== '') {
+					$this->allowedClients = explode(',', Daemon::$settings['mod' . $this->modname . 'allowedclients']);
+			}
 
 			$this->bindSockets(
 				Daemon::$settings['mod' . $this->modname . 'listen'],
