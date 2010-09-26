@@ -1,7 +1,4 @@
 <?php
-
-return new DebugConsole;
-
 class DebugConsole extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

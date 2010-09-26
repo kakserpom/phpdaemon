@@ -1,5 +1,4 @@
 <?php
-return new MongoNode;
 class MongoNode extends AppInstance
 {
  public $db; // MongoClient

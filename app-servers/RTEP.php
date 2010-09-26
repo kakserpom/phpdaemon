@@ -1,7 +1,4 @@
 <?php
-
-return new RTEP;
-
 class RTEP extends AsyncServer {
 
 	public $sessions = array();     // Active sessions

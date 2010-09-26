@@ -1,7 +1,4 @@
 <?php
-
-return new GearmanNode;
-
 class GearmanNode extends AppInstance {
 
 	public $client;

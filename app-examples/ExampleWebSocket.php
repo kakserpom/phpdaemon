@@ -1,7 +1,4 @@
 <?php
-
-return new ExampleWebSocket;
-
 class ExampleWebSocket extends AppInstance {
 	/**
 	 * @method onReady

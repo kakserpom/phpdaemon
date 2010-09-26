@@ -1,7 +1,4 @@
 <?php
-
-return new FlashPolicy;
-
 class FlashPolicy extends AsyncServer {
 
 	public $sessions = array();  // Active sessions

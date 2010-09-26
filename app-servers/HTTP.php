@@ -1,7 +1,4 @@
 <?php
-
-return new HTTP;
-
 class HTTP extends AsyncServer {
 
 	public $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer

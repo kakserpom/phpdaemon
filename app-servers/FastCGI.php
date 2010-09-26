@@ -1,7 +1,4 @@
 <?php
-
-return new FastCGI;
-
 class FastCGI extends AsyncServer {
 
 	public $initialLowMark = 8;          // initial value of the minimal amout of bytes in buffer

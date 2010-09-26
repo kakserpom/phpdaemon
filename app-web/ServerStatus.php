@@ -1,8 +1,5 @@
 <?php
-
-return new ServerStatus_AppInstance;
-
-class ServerStatus_AppInstance extends AppInstance {
+class ServerStatus extends AppInstance {
 
 	/**
 	 * @method beginRequest

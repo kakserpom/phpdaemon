@@ -1,7 +1,4 @@
 <?php
-
-return new WebSocketServer;
-
 class WebSocketServer extends AsyncServer
 {
 	public $sessions = array();

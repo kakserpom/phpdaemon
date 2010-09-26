@@ -1,7 +1,4 @@
 <?php
-
-return new ExampleWithPostgreSQL;
-
 class ExampleWithPostgreSQL extends AppInstance {
 
 	/**

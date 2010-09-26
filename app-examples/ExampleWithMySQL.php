@@ -1,7 +1,4 @@
 <?php
-
-return new ExampleWithMySQL;
-
 class ExampleWithMySQL extends AppInstance {
 
 	/**

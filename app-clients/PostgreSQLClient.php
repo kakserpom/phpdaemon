@@ -1,7 +1,4 @@
 <?php
-
-return new PostgreSQLClient;
-
 class PostgreSQLClient extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

@@ -1,7 +1,4 @@
 <?php
-
-return new SocksServer;
-
 class SocksServer extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

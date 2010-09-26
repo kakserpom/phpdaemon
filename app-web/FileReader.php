@@ -1,7 +1,4 @@
 <?php
-
-return new FileReader;
-
 class FileReader extends AppInstance {
 
 	/**

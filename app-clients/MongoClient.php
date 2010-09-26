@@ -1,7 +1,4 @@
 <?php
-
-return new MongoClient;
-
 class MongoClient extends AsyncServer {
 	public $sessions    = array(); // Active sessions
 	public $servers     = array(); // Array of servers

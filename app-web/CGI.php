@@ -1,7 +1,4 @@
 <?php
-
-return new CGI;
-
 class CGI extends AppInstance {
 
 	public $binPath = 'php-cgi';   // Default bin-path

@@ -1,7 +1,4 @@
 <?php
-
-return new ExampleAsyncStream;
-
 class ExampleAsyncStream extends AppInstance {
 
 	/**

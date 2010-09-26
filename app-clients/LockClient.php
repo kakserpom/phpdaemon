@@ -1,7 +1,4 @@
 <?php
-
-return new LockClient;
-
 class LockClient extends AsyncServer {
 
 	public $sessions = array();     // Active sessions

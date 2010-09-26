@@ -1,7 +1,4 @@
 <?php
-
-return new MySQLClient;
-
 class MySQLClient extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

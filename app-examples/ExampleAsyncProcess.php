@@ -1,7 +1,4 @@
 <?php
-
-return new ExampleAsyncProcess;
-
 class ExampleAsyncProcess extends AppInstance {
 
 	/**

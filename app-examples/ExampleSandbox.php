@@ -1,7 +1,4 @@
 <?php
-
-return new ExampleSandbox;
-
 class ExampleSandbox extends AppInstance {
 
 	public $counter = 0;

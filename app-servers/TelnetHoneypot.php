@@ -1,7 +1,4 @@
 <?php
-
-return new TelnetHoneypot;
-
 class TelnetHoneypot extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

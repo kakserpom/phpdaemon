@@ -1,7 +1,4 @@
 <?php
-
-return new MemcacheClient;
-
 class MemcacheClient extends AsyncServer {
 
 	public $sessions = array();      // Active sessions

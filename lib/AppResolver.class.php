@@ -83,25 +83,33 @@ class AppResolver {
 	 * @return object AppInstance.
 	 */
 	public function appInstantiate($app) {
-		$p = $this->getAppPath($app);
-
-		if (
-			!$p 
-			|| !is_file($p)
-		) {
-			Daemon::log('appInstantiate(' . $app . ') failed: application doesn\'t exist.');
-			return FALSE;
-		}
-
 		if (!isset(Daemon::$appInstances[$app])) {
 			Daemon::$appInstances[$app] = array();
 		}
 
-		$appInstance = include $p;
+		if (class_exists($app)) {
+				$appInstance = new $app;
+		}
+		else {
+			$p = $this->getAppPath($app);
 
+			if (
+					!$p 
+			|| !is_file($p)
+			) {
+				Daemon::log('appInstantiate(' . $app . ') failed: application doesn\'t exist.');
+				return FALSE;
+			}
+			$appInstance = include $p;
+		}
 		if (!is_object($appInstance)) {
-			Daemon::log('appInstantiate(' . $app . ') failed: catched application is n\'t an object.');
-			return FALSE;
+			if (class_exists($app)) {
+				$appInstance = new $app;
+			}
+		}
+		if (!is_object($appInstance)) {
+					Daemon::log('appInstantiate(' . $app . ') failed. Class not exists.');
+					return FALSE;
 		}
 	
 		Daemon::$appInstances[$app][] = $appInstance;

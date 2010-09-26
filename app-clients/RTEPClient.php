@@ -1,7 +1,4 @@
 <?php
-
-return new RTEPClient;
-
 class RTEPClient extends AppInstance {
 
 	public $client;

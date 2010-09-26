@@ -1,7 +1,4 @@
 <?php
-
-return new InteractivePHP;
-
 class InteractivePHP extends AppInstance {
 
 	public $db;

@@ -1,7 +1,4 @@
 <?php
-
-return new MySQLProxy;
-
 class MySQLProxy extends AsyncServer {
 
 	public $sessions = array();

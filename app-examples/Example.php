@@ -1,7 +1,4 @@
 <?php
-
-return new Example;
-
 class Example extends AppInstance {
 
 	public $counter = 0;

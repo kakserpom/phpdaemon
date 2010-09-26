@@ -1,7 +1,4 @@
 <?php
-
-return new ExampleRTEP;
-
 class ExampleRTEP extends AppInstance {
 
 	public $RTEPClient;
