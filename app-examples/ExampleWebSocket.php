@@ -3,16 +3,6 @@
 return new ExampleWebSocket;
 
 class ExampleWebSocket extends AppInstance {
-
-	/**
-	 * @method onHandshake
-	 * @description Called when the connection is handshaked.
-	 * @return object Session.
-	 */
-	public function onHandshake($client) {
-		return new ExampleWebSocketSession($client);
-	}
-
 	/**
 	 * @method onReady
 	 * @description Called when the worker is ready to go.
@@ -20,7 +10,10 @@ class ExampleWebSocket extends AppInstance {
 	 */
 	public function onReady() {
 		if ($this->WS = Daemon::$appResolver->getInstanceByAppName('WebSocketServer')) {
-			$this->WS->addRoute('exampleApp', array($this, 'onHandshake'));
+			$this->WS->addRoute('exampleApp',function ($client)
+			{
+			 return new ExampleWebSocketSession($client);
+			});
 		}
 	}
 }
