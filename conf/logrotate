@@ -1,0 +1,12 @@
+/var/log/phpdaemon.log {
+	daily
+	missingok
+	rotate 10
+	compress
+	delaycompress
+	notifempty
+	sharedscripts
+	postrotate
+		[ ! -f /var/run/phpd.pid ] || kill -USR1 `cat /var/run/phpd.pid`
+	endscript
+}
