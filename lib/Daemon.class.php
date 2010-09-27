@@ -53,7 +53,7 @@ class Daemon {
 			// Main Pathes
 			'pidfile' => '/var/run/phpd.pid',
 			'defaultpidfile' => '/var/run/phpd.pid',
-			'configfile' => '/etc/phpd.conf;' . Daemon::$dir . '/conf/phpdaemon.conf.php',
+			'configfile' => '/etc/phpd/phpd.conf;' . Daemon::$dir . '/conf/phpdaemon.conf.php',
 			'path' => NULL,
 			'ipcwstate' => '/var/run/phpdaemon-wstate.ipc',
 			
