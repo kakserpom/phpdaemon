@@ -53,7 +53,7 @@ class Daemon {
 			// Main Pathes
 			'pidfile' => '/var/run/phpd.pid',
 			'defaultpidfile' => '/var/run/phpd.pid',
-			'configfile' => Daemon::$dir.'/conf/phpdaemon.conf.php',
+			'configfile' => '/etc/phpd.conf;' . Daemon::$dir.'/conf/phpdaemon.conf.php',
 			'path' => NULL,
 			'ipcwstate' => '/var/run/phpdaemon-wstate.ipc',
 			
@@ -368,7 +368,14 @@ class Daemon {
 	 * @description Loads config-file. 
 	 * @return boolean - Success.
 	 */
-	public static function loadConfig($path) {
+	public static function loadConfig($paths) {
+		$apaths = explode(';', $path);
+
+		foreach($apaths as $path) {
+			if (file_exists($path)
+				break;
+		}
+
 		if (!is_file($p = realpath($path))) {
 			Daemon::log('Couldn\'t read the config file \'' . $path . '\'.');
 			return FALSE;
