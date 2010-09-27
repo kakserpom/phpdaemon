@@ -53,7 +53,7 @@ class Daemon {
 			// Main Pathes
 			'pidfile' => '/var/run/phpd.pid',
 			'defaultpidfile' => '/var/run/phpd.pid',
-			'configfile' => '/etc/phpd.conf;' . Daemon::$dir.'/conf/phpdaemon.conf.php',
+			'configfile' => '/etc/phpd.conf;' . Daemon::$dir . '/conf/phpdaemon.conf.php',
 			'path' => NULL,
 			'ipcwstate' => '/var/run/phpdaemon-wstate.ipc',
 			
@@ -369,30 +369,34 @@ class Daemon {
 	 * @return boolean - Success.
 	 */
 	public static function loadConfig($paths) {
-		$apaths = explode(';', $path);
+		$apaths = explode(';', $paths);
+		$found = false;
 
 		foreach($apaths as $path) {
-			if (file_exists($path)
-				break;
+			if (is_file($p = realpath($path))) {
+				$found = true;
+
+				$cfg = include($p);
+
+				if (!is_array($cfg)) {
+					Daemon::log('Config file \'' . $p . '\' returns bad value.');
+					continue;
+				}
+				
+				if (!Daemon::loadSettings($cfg)) {
+					Daemon::log('Couldn\'t load config file \'' . $p . '\'.');
+					continue;
+				}
+
+				return true;
+			}
 		}
 
-		if (!is_file($p = realpath($path))) {
-			Daemon::log('Couldn\'t read the config file \'' . $path . '\'.');
-			return FALSE;
+		if (!$found) {
+			Daemon::log('Config file not found in \'' . $paths . '\'.');
 		}
 
-		$cfg = include($p);
-
-		if (!is_array($cfg)) {
-			Daemon::log('Config file \'' . $p . '\' returned bad value.');
-			return FALSE;
-		}
-
-		if (!Daemon::loadSettings($cfg)) {
-			return FALSE;
-		}
-
-		return TRUE;
+		return false;
 	}
 
 	/**
