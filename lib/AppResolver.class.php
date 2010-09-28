@@ -94,8 +94,8 @@ class AppResolver {
 			$p = $this->getAppPath($app);
 
 			if (
-					!$p 
-			|| !is_file($p)
+				!$p 
+				|| !is_file($p)
 			) {
 				Daemon::log('appInstantiate(' . $app . ') failed: application doesn\'t exist.');
 				return FALSE;
