@@ -11,7 +11,41 @@
 
 class Daemon {
 
+	/**
+	 * PHPDaemon root directory
+	 * @access private
+	 * @var string
+	 */
+	public static $dir;
+	
+	/**
+	 * PHPDaemon version
+	 * @access public
+	 * @var string
+	 */
+	public static $version;
+
+	/**
+	 * PHPDaemon start time
+	 * @access private
+	 * @var integer
+	 */
 	public static $startTime;
+	
+	/**
+	 * Log file resource
+	 * @access private
+	 * @var resource
+	 */
+	private static $logpointer;
+	
+	/**
+	 * Log file path
+	 * @access public
+	 * @var string
+	 */
+	public static $logpointerpath;
+	
 	public static $pathReal;
 	public static $worker;
 	public static $appResolver;
@@ -20,18 +54,14 @@ class Daemon {
 	public static $sockets = array();
 	public static $socketEvents = array();
 	public static $req;
-	public static $logpointer;
-	public static $logpointerpath;
 	public static $settings = array();
 	public static $parsedSettings = array();
-	public static $workers;
-	public static $masters;
-	public static $version;
-	public static $initservervar;
+	private static $workers;
+	private static $masters;
+	private static $initservervar;
 	public static $shm_wstate;
-	public static $shm_wstate_size = 5120;
+	private static $shm_wstate_size = 5120;
 	public static $useSockets;
-	public static $dir;
 	public static $compatMode = FALSE;
 	public static $runName = 'phpdaemon';
 	public static $dummyRequest;
@@ -502,11 +532,11 @@ class Daemon {
 			Daemon::$logpointer = fopen(Daemon::$logpointerpath = Daemon::parseStoragepath(Daemon::$settings['logstorage']), 'a+');
 
 			if (isset(Daemon::$settings['group'])) {
-				chgrp(Daemon::$logpointerpath,Daemon::$settings['group']);
+				chgrp(Daemon::$logpointerpath, Daemon::$settings['group']);
 			}
 
 			if (isset(Daemon::$settings['user'])) {
-				chown(Daemon::$logpointerpath,Daemon::$settings['user']);
+				chown(Daemon::$logpointerpath, Daemon::$settings['user']);
 			}
 		}
 	}
