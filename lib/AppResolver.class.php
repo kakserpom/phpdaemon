@@ -88,7 +88,7 @@ class AppResolver {
 		}
 
 		if (class_exists($app)) {
-				$appInstance = new $app;
+			$appInstance = new $app;
 		}
 		else {
 			$p = $this->getAppPath($app);
@@ -100,6 +100,7 @@ class AppResolver {
 				Daemon::log('appInstantiate(' . $app . ') failed: application doesn\'t exist.');
 				return FALSE;
 			}
+
 			$appInstance = include $p;
 		}
 		if (!is_object($appInstance)) {
