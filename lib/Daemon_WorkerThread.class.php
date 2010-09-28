@@ -163,7 +163,7 @@ class Daemon_WorkerThread extends Thread {
 		
 		if (Daemon::$settings['cwd'] !== '.') {
 			if (!@chdir(Daemon::$settings['cwd'])) {
-				Daemon::log('WORKER ' . $this->pid . '] Couldn\'t change directory to \'' . Daemon::$settings['cwd'] . '.');
+				Daemon::log('Couldn\'t change directory to \'' . Daemon::$settings['cwd'] . '.');
 			}
 		}
 	
@@ -215,6 +215,15 @@ class Daemon_WorkerThread extends Thread {
 				|| $this->eventsToAdd
 			);
 		}
+	}
+
+	/**
+	 * @method log
+	 * @description Log something
+	 * @return void
+	 */
+	private function log($message) {
+		Daemon::log('#' . $this->pid . ' ' . $message);
 	}
 	
 	/**
@@ -358,7 +367,7 @@ class Daemon_WorkerThread extends Thread {
 			Daemon::$settings['maxrequests'] 
 			&& ($this->queryCounter >= Daemon::$settings['maxrequests'])
 		) {
-			Daemon::log('[WORKER ' . $this->pid . '] \'maxrequests\' exceed. Graceful shutdown.');
+			$this->log('\'maxrequests\' exceed. Graceful shutdown.');
 
 			$this->reload = TRUE;
 			$this->reloadTime = $time + $this->reloadDelay;
@@ -370,7 +379,7 @@ class Daemon_WorkerThread extends Thread {
 			(Daemon::$parsedSettings['maxmemoryusage'] > 0) 
 			&& (memory_get_usage(TRUE) > Daemon::$parsedSettings['maxmemoryusage'])
 		) {
-			Daemon::log('[WORKER ' . $this->pid . '] \'maxmemoryusage\' exceed. Graceful shutdown.');
+			$this->log('\'maxmemory\' exceed. Graceful shutdown.');
 
 			$this->reload = TRUE;
 			$this->reloadTime = $time + $this->reloadDelay;
@@ -383,7 +392,7 @@ class Daemon_WorkerThread extends Thread {
 			&& $this->timeLastReq 
 			&& ($time - $this->timeLastReq > Daemon::$parsedSettings['maxidle'])
 		) {
-			Daemon::log('[WORKER ' . $this->pid . '] \'maxworkeridle\' exceed. Graceful shutdown.');
+			$this->log('\'maxworkeridle\' exceed. Graceful shutdown.');
 
 			$this->reload = TRUE;
 			$this->reloadTime = $time + $this->reloadDelay;
@@ -439,13 +448,13 @@ class Daemon_WorkerThread extends Thread {
 				}
 	
 				if (Daemon::$settings['logqueue']) {
-					Daemon::log('[WORKER ' . $this->pid . '] event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() invoked.');
+					$this->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() invoked.');
 				}
 
 				$ret = $r->call();
 	
 				if (Daemon::$settings['logqueue']) {
-					Daemon::log('[WORKER ' . $this->pid . '] event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
+					$this->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
 				}
 
 				if ($ret === Request::DONE) {
@@ -455,13 +464,13 @@ class Daemon_WorkerThread extends Thread {
 	
 					if (isset($r->idAppQueue)) {
 						if (Daemon::$settings['logqueue']) {
-							Daemon::log('[WORKER ' . $this->pid . '] request removed from ' . get_class($r->appInstance) . '->queue.');
+							$this->log('request removed from ' . get_class($r->appInstance) . '->queue.');
 						}
 
 						unset($r->appInstance->queue[$r->idAppQueue]);
 					} else {
 						if (Daemon::$settings['logqueue']) {
-							Daemon::log('[WORKER ' . $this->pid . '] request can\'t be removed from AppInstance->queue.');
+							$this->log('request can\'t be removed from AppInstance->queue.');
 						}
 					}
 				}
@@ -479,13 +488,13 @@ class Daemon_WorkerThread extends Thread {
 	public function readPool() {
 		foreach ($this->readPoolState as $connId => $state) {
 			if (Daemon::$settings['logevents']) {
-				Daemon::log('[WORKER ' . $this->pid . '] event readConn(' . $connId . ') invoked.');
+				$this->log('event readConn(' . $connId . ') invoked.');
 			}
 
 			$this->poolApp[$connId]->readConn($connId);
 
 			if (Daemon::$settings['logevents']) {
-				Daemon::log('[WORKER ' . $this->pid . '] event readConn(' . $connId . ') finished.');
+				$this->log('event readConn(' . $connId . ') finished.');
 			}
 		}
 	}
@@ -501,7 +510,7 @@ class Daemon_WorkerThread extends Thread {
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {
 				if (!$appInstance->handleStatus($this->currentStatus)) {
-					Daemon::log('[WORKER ' . $this->pid . '] ' . __METHOD__ . ': waiting for ' . $k);
+					$this->log(__METHOD__ . ': waiting for ' . $k);
 				
 					$ready = FALSE;
 				}
@@ -518,7 +527,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function shutdown($hard = FALSE) {
 		if (Daemon::$settings['logevents']) {
-			Daemon::log('[WORKER ' . $this->pid . '] event shutdown(' . ($hard ? 'HARD' : '') . ') invoked.');
+			$this->log('event shutdown(' . ($hard ? 'HARD' : '') . ') invoked.');
 		}
 		
 		if (Daemon::$settings['throwexceptiononshutdown']) {
@@ -550,7 +559,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		if (Daemon::$settings['logevents']) {
-			Daemon::log('[WORKER ' . $this->pid . '] reloadReady = ' . Daemon::var_dump($reloadReady));
+			$this->log('reloadReady = ' . Daemon::var_dump($reloadReady));
 		}
 		
 		foreach ($this->queue as $r) {
@@ -607,7 +616,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 		
 		if (Daemon::$settings['logworkersetstatus']) {
-			Daemon::log('[WORKER ' . $this->pid . '] status is ' . $int);
+			$this->log('status is ' . $int);
 		}
 		
 		return shmop_write(Daemon::$shm_wstate, chr($int), $this->spawnid - 1);
@@ -620,7 +629,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function sigint() {
 		if (Daemon::$settings['logsignals']) {
-			Daemon::log('Worker ' . $this->pid . ' caught SIGINT.');
+			$this->log('caught SIGINT.');
 		}
 		
 		$this->shutdown(TRUE);
@@ -633,7 +642,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function sigterm() {
 		if (Daemon::$settings['logsignals']) {
-			Daemon::log('Worker ' . $this->pid . ' caught SIGTERM.');
+			$this->log('caught SIGTERM.');
 		}
 		
 		$this->shutdown();
@@ -646,7 +655,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function sigquit() {
 		if (Daemon::$settings['logsignals']) {
-			Daemon::log('Worker ' . $this->pid . ' caught SIGQUIT.');
+			$this->log('caught SIGQUIT.');
 		}
 		
 		$this->shutdown = TRUE;
@@ -659,7 +668,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function sighup() {
 		if (Daemon::$settings['logsignals']) {
-			Daemon::log('Worker ' . $this->pid . ' caught SIGHUP (reload config).');
+			$this->log('caught SIGHUP (reload config).');
 		}
 
 		if (isset(Daemon::$parsedSettings['configfile'])) {
@@ -676,7 +685,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function sigusr1() {
 		if (Daemon::$settings['logsignals']) {
-			Daemon::log('Worker ' . $this->pid . ' caught SIGUSR1 (re-open log-file).');
+			$this->log('caught SIGUSR1 (re-open log-file).');
 		}
 	
 		Daemon::openLogs();
@@ -689,7 +698,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function sigusr2() {
 		if (Daemon::$settings['logsignals']) {
-			Daemon::log('Worker ' . $this->pid . ' caught SIGUSR2 (graceful shutdown for update).');
+			$this->log('caught SIGUSR2 (graceful shutdown for update).');
 		}
 
 		$this->reload = TRUE;
@@ -710,7 +719,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sigxfsz() {
-		Daemon::log('Worker ' . $this->pid . ' SIGXFSZ.');
+		$this->log('SIGXFSZ.');
 	}
 	
 	/**
@@ -725,7 +734,7 @@ class Daemon_WorkerThread extends Thread {
 			$sig = 'UNKNOWN';
 		}
 		
-		Daemon::log('Worker ' . $this->pid . ' caught signal #' . $signo . ' (' . $sig . ').');
+		$this->log('caught signal #' . $signo . ' (' . $sig . ').');
 	}
 	
 	/**
