@@ -752,7 +752,7 @@ class Daemon {
 		}
 
 		if (Daemon::$logpointer) {
-			fwrite(Daemon::$logpointer, '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] [PHPD] ' . $msg . "\n");
+			fwrite(Daemon::$logpointer, '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] ' . $msg . "\n");
 		}
 	}
 
