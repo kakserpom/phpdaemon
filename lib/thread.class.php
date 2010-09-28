@@ -1,13 +1,12 @@
 <?php
 
 abstract class Thread {
-	public $spawnid;
 	public $pid;
 	public $shutdown = FALSE;
 	public $terminated = FALSE;
 	public $collections = array();
 
-	public static $signalsno = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
+	private static $signalsno = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
 	public static $signals = array(
 		SIGHUP    => 'SIGHUP',
 		SIGINT    => 'SIGINT',
@@ -56,7 +55,7 @@ abstract class Thread {
 		if ($pid == 0) {
 			$this->pid = posix_getpid();
 
-			foreach (Thread::$signals as $no => $name) {
+			foreach (self::$signals as $no => $name) {
 				if (
 					($name === 'SIGKILL') 
 					|| ($name == 'SIGSTOP')
@@ -74,6 +73,7 @@ abstract class Thread {
 		}
 
 		$this->pid = $pid;
+
 		return $pid;
 	}
 
@@ -83,8 +83,8 @@ abstract class Thread {
 	 * @param integer Signal's number.
 	 * @return void
 	 */
-	public function sighandler($signo) {
-		if (is_callable($c = array($this, strtolower(Thread::$signals[$signo])))) {
+	protected function sighandler($signo) {
+		if (is_callable($c = array($this, strtolower(self::$signals[$signo])))) {
 			call_user_func($c);
 		}
 		elseif (is_callable($c = array($this,'sigunknown'))) {
@@ -108,7 +108,7 @@ abstract class Thread {
 	 * @param integer Signal's number.
 	 * @return void
 	 */
-	public function backsig($sig) {
+	private function backsig($sig) {
 		return posix_kill(posix_getppid(), $sig);
 	}
 
@@ -138,7 +138,7 @@ abstract class Thread {
 	 * @description Called when the signal SIGCHLD caught.
 	 * @return void
 	 */
-	public function sigchld() {
+	protected function sigchld() {
 		$this->waitPid();
 	}
 
@@ -147,7 +147,7 @@ abstract class Thread {
 	 * @description Called when the signal SIGTERM caught.
 	 * @return void
 	 */
-	public function sigterm() {
+	protected function sigterm() {
 		exit(0);
 	}
 
@@ -156,7 +156,7 @@ abstract class Thread {
 	 * @description Called when the signal SIGINT caught.
 	 * @return void
 	 */
-	public function sigint() {
+	protected function sigint() {
 		exit(0);
 	}
 
@@ -165,7 +165,7 @@ abstract class Thread {
 	 * @description Called when the signal SIGTERM caught.
 	 * @return void
 	 */
-	public function sigquit() {
+	protected function sigquit() {
 		$this->shutdown = TRUE;
 	}
 
@@ -174,7 +174,7 @@ abstract class Thread {
 	 * @description Called when the signal SIGKILL caught.
 	 * @return void
 	 */
-	public function sigkill() {
+	protected function sigkill() {
 		exit(0);
 	}
 
@@ -195,7 +195,7 @@ abstract class Thread {
 	 * @description Checks for SIGCHLD.
 	 * @return boolean Success.
 	 */
-	public function waitPid() {
+	private function waitPid() {
 		$pid = pcntl_waitpid(-1, $status, WNOHANG);
 
 		if ($pid > 0) {
@@ -227,7 +227,7 @@ abstract class Thread {
 	 * @description Waits untill a children is alive.
 	 * @return void
 	 */
-	public function waitAll() {
+	protected function waitAll() {
 		do {
 			$n = 0;
 
@@ -247,7 +247,7 @@ abstract class Thread {
 	 * @param string Title.
 	 * @return void
 	 */
-	public static function setproctitle($title) {
+	protected function setproctitle($title) {
 		if (function_exists('setproctitle')) {
 			return setproctitle($title);
 		}
@@ -262,9 +262,9 @@ abstract class Thread {
 	 * @param int Nanoseconds.
 	 * @return void
 	 */
-	public function sigwait($sec = 0, $nano = 1) {
+	protected function sigwait($sec = 0, $nano = 1) {
 		$siginfo = NULL;
-		$signo = pcntl_sigtimedwait(Thread::$signalsno, $siginfo, $sec, $nano);
+		$signo = pcntl_sigtimedwait(self::$signalsno, $siginfo, $sec, $nano);
 
 		if (is_bool($signo)) {
 			return $signo;
@@ -281,6 +281,7 @@ abstract class Thread {
 }
 
 if (!function_exists('pcntl_sigtimedwait')) {
+	// FIXME: $signals or Thread::$signals?
 	function pcntl_sigtimedwait($signals, $siginfo, $sec, $nano) {
 		pcntl_signal_dispatch();
 

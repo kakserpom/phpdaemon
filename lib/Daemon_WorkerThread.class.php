@@ -46,7 +46,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->reloadDelay = Daemon::$parsedSettings['mpmdelay']+2;
 		$this->setStatus(4);
 
-		Thread::setproctitle(
+		$this->setproctitle(
 			Daemon::$runName . ': worker process' 
 			. (Daemon::$settings['pidfile'] !== Daemon::$settings['defaultpidfile'] ? ' (' . Daemon::$settings['pidfile'] . ')' : '')
 		);
@@ -627,7 +627,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Handler of the SIGINT (hard shutdown) signal in worker process.
 	 * @return void
 	 */
-	public function sigint() {
+	protected function sigint() {
 		if (Daemon::$settings['logsignals']) {
 			$this->log('caught SIGINT.');
 		}
@@ -640,7 +640,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Handler of the SIGTERM (graceful shutdown) signal in worker process.
 	 * @return void
 	 */
-	public function sigterm() {
+	protected function sigterm() {
 		if (Daemon::$settings['logsignals']) {
 			$this->log('caught SIGTERM.');
 		}
@@ -657,8 +657,8 @@ class Daemon_WorkerThread extends Thread {
 		if (Daemon::$settings['logsignals']) {
 			$this->log('caught SIGQUIT.');
 		}
-		
-		$this->shutdown = TRUE;
+
+		parent::sigquit();	
 	}
 	
 	/**

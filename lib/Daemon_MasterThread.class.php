@@ -22,7 +22,7 @@ class Daemon_MasterThread extends Thread {
 		register_shutdown_function(array($this,'onShutdown'));
 		$this->collections = array('workers' => new threadCollection);
 
-		Thread::setproctitle(
+		$this->setproctitle(
 			Daemon::$runName . ': master process' 
 			. (Daemon::$settings['pidfile'] !== Daemon::$settings['defaultpidfile'] ? ' (' . Daemon::$settings['pidfile'] . ')' : '')
 		);
@@ -214,12 +214,12 @@ class Daemon_MasterThread extends Thread {
 	 * @description Handler of the SIGCHLD (child is dead) signal in master process.
 	 * @return void
 	 */
-	public function sigchld() {
+	protected function sigchld() {
 		if (Daemon::$settings['logsignals']) {
 			Daemon::log('Master caught SIGCHLD.');
 		}
 
-		$this->waitPid();
+		parent::sigchld();
 	}
 
 	/**
@@ -227,7 +227,7 @@ class Daemon_MasterThread extends Thread {
 	 * @description Handler of the SIGINT (shutdown) signal in master process. Shutdown.
 	 * @return void
 	 */
-	public function sigint() {
+	protected function sigint() {
 		if (Daemon::$settings['logsignals']) {
 			Daemon::log('Master caught SIGINT.');
 		}
@@ -241,7 +241,7 @@ class Daemon_MasterThread extends Thread {
 	 * @description Handler of the SIGTERM (shutdown) signal in master process.
 	 * @return void
 	 */
-	public function sigterm() {
+	protected function sigterm() {
 		if (Daemon::$settings['logsignals']) {
 			Daemon::log('Master caught SIGTERM.');
 		}
@@ -255,7 +255,7 @@ class Daemon_MasterThread extends Thread {
 	 * @description Handler of the SIGQUIT signal in master process.
 	 * @return void
 	 */
-	public function sigquit() {
+	protected function sigquit() {
 		if (Daemon::$settings['logsignals']) {
 			Daemon::log('Master caught SIGQUIT.');
 		}
