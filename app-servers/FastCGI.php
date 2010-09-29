@@ -97,7 +97,7 @@ class FastCGI extends AsyncServer {
 		$connId = $req->attrs->connId;
 
 		if (Daemon::$settings['logevents']) {
-			Daemon::log('[WORKER ' . Daemon::$worker->pid . '] endRequest(' . implode(',', func_get_args()) . '): connId = ' . $connId . '.');
+			Daemon::$worker->log('endRequest(' . implode(',', func_get_args()) . '): connId = ' . $connId . '.');
 		};
 
 		$c = pack('NC', $appStatus, $protoStatus) // app status, protocol status
@@ -238,7 +238,7 @@ class FastCGI extends AsyncServer {
 			$req->attrs->noHttpVer = TRUE;
 
 			if (Daemon::$settings['mod' . $this->modname . 'logqueue']) {
-				Daemon::log('[WORKER ' . Daemon::$worker->pid . '] new request queued.');
+				Daemon::$worker->log('new request queued.');
 			}
 
 			Daemon::$worker->queue[$rid] = $req;

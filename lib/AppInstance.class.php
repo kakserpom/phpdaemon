@@ -129,7 +129,7 @@ class AppInstance {
 		$req->idAppQueue = ++$this->reqCounter;
 
 		if (Daemon::$settings['logqueue']) {
-			Daemon::log('[WORKER ' . Daemon::$worker->pid . '] request added to ' . get_class($this) . '->queue.');
+			Daemon::$worker->log('request added to ' . get_class($this) . '->queue.');
 		}
 
 		$this->queue[$req->idAppQueue] = $req;

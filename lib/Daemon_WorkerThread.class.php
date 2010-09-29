@@ -222,7 +222,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Log something
 	 * @return void
 	 */
-	private function log($message) {
+	public function log($message) {
 		Daemon::log('#' . $this->pid . ' ' . $message);
 	}
 	
