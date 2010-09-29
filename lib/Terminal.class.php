@@ -68,7 +68,7 @@ class Terminal {
 	 * @description Print param string like in man
 	 * @return void
 	 */
-	public function drawParam($name, $description, $values = '', $currentValue = '') {
+	public function drawParam($name, $description, $values = '') {
 		$paramw = round($this->columns / 3);
 
 		echo "\n";
@@ -76,7 +76,12 @@ class Terminal {
 		$leftcolumn = array();
 
 		$valstr = is_array($values) ? implode('|', array_keys($values)): $values;
-		$paramstr = '  --' . $name . '=' . $valstr = '[' . $valstr . ']';
+
+		if ('' !== $valstr) {
+			$valstr = '=[' . $valstr . ']';
+		}
+
+		$paramstr = "  \033[1m--" . $name . $valstr. "\033[0m";
 
 		$pl = strlen($paramstr);
 		if ($pl + 2 >= $paramw) {
@@ -117,8 +122,6 @@ class Terminal {
 				$rightcolumn[] = $descstr;
 			}
 		}
-
-//		$rightcolumn = str_split($description, $this->columns - $paramw);
 
 		while (
 			sizeof($leftcolumn) > 0

@@ -27,18 +27,15 @@ class Daemon_Bootstrap {
 			'desc' => 'Maximum requests to worker before respawn',
 			'val'  => array(
 				'n' => 'Count'
-			),
-			'skey' => 'maxrequests'
+			)
 		),
 		'path' => array(
 			'desc' => 'Path to your application resolver',
-			'val'  => '/path/to/resolver.php',
-			'skey' => 'path'
+			'val'  => '/path/to/resolver.php'
 		),
 		'config-file' => array(
 			'desc' => 'Paths to configuration file separated by semicolon. First found will be used.',
-			'val'  => '/path/to/config.conf',
-			'skey' => 'configfile'
+			'val'  => '/path/to/config.conf'
 		),
 		'logging' => array(
 			'desc' => 'Logging status',
@@ -49,18 +46,15 @@ class Daemon_Bootstrap {
 		),
 		'log-storage' => array(
 			'desc' => 'Log storage',
-			'val'  => '/path/to/storage.log',
-			'skey' => 'logstorage'
+			'val'  => '/path/to/storage.log'
 		),
 		'user' => array(
 			'desc' => 'User of master process',
-			'val'  => 'username',
-			'skey' => 'user'
+			'val'  => 'username'
 		),
 		'group' => array(
 			'desc' => 'Group of master process',
-			'val'  => 'groupname',
-			'skey' => 'group'
+			'val'  => 'groupname'
 		),
 		'help' => 'This help information'
 	);
@@ -90,6 +84,10 @@ class Daemon_Bootstrap {
 			self::printUsage();
 			exit;
 		}
+		elseif ('help' === $runmode) {
+			self::printHelp();
+			exit;
+		}
 
 		if (isset($args[$k = 'configfile'])) {
 			Daemon::$settings[$k] = $args[$k];
@@ -104,12 +102,6 @@ class Daemon_Bootstrap {
 
 		if (!Daemon::loadSettings($args)) {
 			$error = TRUE;
-		}
-
-		// we need some settings for help so config is loaded before
-		if ('help' === $runmode) {
-			self::printHelp();
-			exit;
 		}
 
 		if (version_compare(PHP_VERSION, '5.3.0', '>=') === 1) {
@@ -415,13 +407,12 @@ class Daemon_Bootstrap {
 				$term->drawParam(
 					$name,
 					isset($desc['desc']) ? $desc['desc'] : '',
-					isset($desc['val']) ? $desc['val'] : '',
-					isset($desc['skey']) && isset(Daemon::$settings[$desc['skey']]) 
-						? Daemon::$settings[$desc['skey']]
-						: ''
+					isset($desc['val']) ? $desc['val'] : ''
 				);
 			}
 		}
+
+		echo "\n";
 	}
 	
 	/**
