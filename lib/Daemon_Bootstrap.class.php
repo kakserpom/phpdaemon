@@ -14,6 +14,57 @@ class Daemon_Bootstrap {
 	public static $pidfile;
 	public static $pid;
 
+	private static $commands = array(
+		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest'
+	);
+
+	private static $params = array(
+		'pid-file' => array(
+			'val' => '/path/to/pid-file',
+			'desc' => 'Pid file'
+		),
+		'max-requests' => array(
+			'desc' => 'Maximum requests to worker before respawn',
+			'val'  => array(
+				'n' => 'Count'
+			),
+			'skey' => 'maxrequests'
+		),
+		'path' => array(
+			'desc' => 'Path to your application resolver',
+			'val'  => '/path/to/resolver.php',
+			'skey' => 'path'
+		),
+		'config-file' => array(
+			'desc' => 'Paths to configuration file separated by semicolon. First found will be used.',
+			'val'  => '/path/to/config.conf',
+			'skey' => 'configfile'
+		),
+		'logging' => array(
+			'desc' => 'Logging status',
+			'val'  => array(
+				'0' => 'Disabled',
+				'1' => 'Enabled'
+			)
+		),
+		'log-storage' => array(
+			'desc' => 'Log storage',
+			'val'  => '/path/to/storage.log',
+			'skey' => 'logstorage'
+		),
+		'user' => array(
+			'desc' => 'User of master process',
+			'val'  => 'username',
+			'skey' => 'user'
+		),
+		'group' => array(
+			'desc' => 'Group of master process',
+			'val'  => 'groupname',
+			'skey' => 'group'
+		),
+		'help' => 'This help information'
+	);
+
 	/**
 	 * @method init
 	 * @description Actions on early startup.
@@ -28,21 +79,37 @@ class Daemon_Bootstrap {
 		$runmode = isset($argv[1]) ? str_replace('-', '', $argv[1]) : '';
 		$args = Daemon_Bootstrap::getArgs($argv);
 
-		if (isset($args[$k = 'configfile'])) {
-			Daemon::$settings[$k] = $args[$k];
-		}
-		
+                if (isset($args[$k = 'configfile'])) {
+                        Daemon::$settings[$k] = $args[$k];
+                }
+
+                if (
+                        isset(Daemon::$settings['configfile'])
+                        && !Daemon::loadConfig(Daemon::$settings['configfile'])
+                ) {
+                        $error = TRUE;
+                }
+
+                if (!Daemon::loadSettings($args)) {
+                        $error = TRUE;
+                }
+
 		if (
-			isset(Daemon::$settings['configfile']) 
-			&& !Daemon::loadConfig(Daemon::$settings['configfile'])
+			!isset(self::$params[$runmode])
+			&& !in_array($runmode, self::$commands)
 		) {
-			$error = TRUE;
+			if ('' !== $runmode) {
+				echo('Unrecognized command: ' . $runmode . "\n");
+			}
+
+			self::printUsage();
+			exit;
 		}
-		
-		if (!Daemon::loadSettings($args)) {
-			$error = TRUE;
+		elseif ('help' === $runmode) {
+			self::printHelp();
+			exit;
 		}
-		
+
 		if (version_compare(PHP_VERSION, '5.3.0', '>=') === 1) {
 			Daemon::log('PHP >= 5.3.0 required.');
 			$error = TRUE;
@@ -321,28 +388,37 @@ class Daemon_Bootstrap {
 			
 			echo "\n";
 		}
-		elseif ($runmode == 'help') {
-			echo 'phpDaemon ' . Daemon::$version . ". Made in Russia. http://phpdaemon.googlecode.com/
-usage: " . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|help) ...\n
-\tAlso you can use some optional parameters to override the same config variables.
-\t--pid-file='/path/to/pid-file'  -  (Pid-file)
-\t--max-requests=" . Daemon::$settings['maxrequests'] . "  -  (Maximum requests to worker before respawn)
-\t--path='" . Daemon::$settings['path'] . "'  -  (You can set a path to your application resolver)
-\t--config-file='" . Daemon::$settings['configfile'] . "'  -  (You can set a path to configuration file manually)
-\t--logging=1  -  (Logging. 1-Enable, 0-Disable)
-\t--log-storage='" . Daemon::$settings['logstorage'] . "'  -  (Log storage. This field has special syntax, but it allows simple path.)
-\t--user='" . Daemon::$settings['user'] . "'  -  (You can set user of master process (aka sudo).) 
-\t--group='" . Daemon::$settings['group'] . "'  -  (You can set user of master process (aka sudo).)
-\t--manual  -  (Open the manual pages.)
-\t--help  -  (This help information.)
-\n";
-		} else {
-			if ($runmode !== '') {
-				echo 'Unrecognized command: ' . $runmode . "\n";
-			}
+	}
 
-			echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|help) ...\n";
-			exit;
+	private static function printUsage() {
+		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|help) ...\n";
+	}
+
+	private static function printHelp() {
+		$term = new Terminal();
+
+		echo 'phpDaemon ' . Daemon::$version . ". Made in Russia. http://phpdaemon.net\n";
+
+		self::printUsage();
+
+		echo "\nAlso you can use some optional parameters to override the same configuration variables:\n";
+
+		foreach(self::$params as $name => $desc) {
+			if (empty($desc)) {
+				continue;
+			} 
+			elseif (!is_array($desc)) {
+				$term->drawParam($name, $desc);
+			} else {
+				$term->drawParam(
+					$name,
+					isset($desc['desc']) ? $desc['desc'] : '',
+					isset($desc['val']) ? $desc['val'] : '',
+					isset($desc['skey']) && isset(Daemon::$settings[$desc['skey']]) 
+						? Daemon::$settings[$desc['skey']]
+						: ''
+				);
+			}
 		}
 	}
 	
