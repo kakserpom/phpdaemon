@@ -79,21 +79,6 @@ class Daemon_Bootstrap {
 		$runmode = isset($argv[1]) ? str_replace('-', '', $argv[1]) : '';
 		$args = Daemon_Bootstrap::getArgs($argv);
 
-                if (isset($args[$k = 'configfile'])) {
-                        Daemon::$settings[$k] = $args[$k];
-                }
-
-                if (
-                        isset(Daemon::$settings['configfile'])
-                        && !Daemon::loadConfig(Daemon::$settings['configfile'])
-                ) {
-                        $error = TRUE;
-                }
-
-                if (!Daemon::loadSettings($args)) {
-                        $error = TRUE;
-                }
-
 		if (
 			!isset(self::$params[$runmode])
 			&& !in_array($runmode, self::$commands)
@@ -105,7 +90,24 @@ class Daemon_Bootstrap {
 			self::printUsage();
 			exit;
 		}
-		elseif ('help' === $runmode) {
+
+		if (isset($args[$k = 'configfile'])) {
+			Daemon::$settings[$k] = $args[$k];
+		}
+
+		if (
+			isset(Daemon::$settings['configfile'])
+			&& !Daemon::loadConfig(Daemon::$settings['configfile'])
+		) {
+			$error = TRUE;
+		}
+
+		if (!Daemon::loadSettings($args)) {
+			$error = TRUE;
+		}
+
+		// we need some settings for help so config is loaded before
+		if ('help' === $runmode) {
 			self::printHelp();
 			exit;
 		}
