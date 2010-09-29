@@ -35,7 +35,7 @@ class Daemon_Bootstrap {
 		),
 		'config-file' => array(
 			'desc' => 'Paths to configuration file separated by semicolon. First found will be used.',
-			'val'  => '/path/to/config.conf'
+			'val'  => '/path/to/file'
 		),
 		'logging' => array(
 			'desc' => 'Logging status',
@@ -46,7 +46,7 @@ class Daemon_Bootstrap {
 		),
 		'log-storage' => array(
 			'desc' => 'Log storage',
-			'val'  => '/path/to/storage.log'
+			'val'  => '/path/to/file'
 		),
 		'user' => array(
 			'desc' => 'User of master process',

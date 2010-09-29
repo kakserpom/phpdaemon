@@ -108,7 +108,7 @@ class Terminal {
 			while (sizeof($m) > 0) {
 				$el = array_shift($m);
 
-				if (strlen($descstr) + strlen($el) > $descw) {
+				if (strlen($descstr) + strlen($el) >= $descw) {
 					$rightcolumn[] = $descstr;
 					$descstr = '';
 				} else {
@@ -130,7 +130,7 @@ class Terminal {
 			if ($l = array_shift($leftcolumn)) {
 				echo str_pad($l, $paramw, ' ');
 			} else {
-				echo str_repeat(' ', $paramw + 1);
+				echo str_repeat(' ', $paramw - 7);
 			}
 			
 			if ($r = array_shift($rightcolumn)) {
