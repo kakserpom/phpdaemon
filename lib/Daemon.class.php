@@ -11,6 +11,9 @@
 
 class Daemon {
 
+	const SUPPORT_RUNKIT_SANDBOX = 0;
+	const SUPPORT_RUNKIT_MODIFY  = 1;
+
 	/**
 	 * PHPDaemon root directory
 	 * @access private
@@ -45,6 +48,13 @@ class Daemon {
 	 * @var string
 	 */
 	public static $logpointerpath;
+
+	/**
+	 * Supported things array
+	 * @access private
+	 * @var string
+	 */
+	private static $support = array();
 	
 	public static $pathReal;
 	public static $worker;
@@ -279,6 +289,50 @@ class Daemon {
 	}
 
 	/**
+	 * Is thing supported
+	 * @param $what integer Thing to check
+	 * @return boolean
+	 */
+	public static function supported($what) {
+		return isset(self::$support[$what]);
+	}
+
+	/**
+	 * Method to fill $support array
+	 * @return void
+	 */
+	private static function checkSupports() {
+		if (is_callable('runkit_lint_file')) {
+			self::$support[self::SUPPORT_RUNKIT_SANDBOX] = 1;
+		}
+
+		if (is_callable('runkit_function_add')) {
+			self::$support[self::SUPPORT_RUNKIT_MODIFY] = 1;
+		}
+	}
+
+	/**
+	 * Check file syntax via runkit_lint_file if supported or via php -l
+	 * @param $filaname string File name
+	 * @return boolean
+	 */
+	public static function lintFile($filename) {
+		if (!file_exists($filename)) {
+			return false;
+		}
+
+		if (self::supported(self::SUPPORT_RUNKIT_SANDBOX)) {
+			return runkit_lint_file($filename);
+		}
+
+		$cmd = 'php -l ' . escapeshellcmd($filename) . ' 2>&1';
+
+		exec($cmd, $output, $retcode);
+
+		return 0 === $retcode;
+	}
+
+	/**
 	 * @method init
 	 * @description Performs initial actions.
 	 * @return void
@@ -288,6 +342,8 @@ class Daemon {
 		set_time_limit(0);
 
 		ob_start(array('Daemon', 'outputFilter'));
+
+		Daemon::checkSupports();
 
 		Daemon::$initservervar = $_SERVER;
 		Daemon::$masters = new threadCollection;
