@@ -44,8 +44,6 @@ class FastCGI extends AsyncServer {
 	);
 
 	public function __construct() {
-		parent::__construct();
-		
 		if (
 			($order = ini_get('request_order')) 
 			|| ($order = ini_get('variables_order'))
@@ -54,6 +52,8 @@ class FastCGI extends AsyncServer {
 		} else {
 			$this->variablesOrder = null;
 		}
+
+		parent::__construct();
 	}
 
 	/**
