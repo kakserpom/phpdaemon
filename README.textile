@@ -17,11 +17,9 @@ Also, you can build binary application server using compiler like "PHC":http://p
 
 Master process understands signals:
 
-```console	
-SIGINT, SIGTERM, SIGQUIT - termination.
-SIGHUP - update config from file.
-SIGUSR1 - reopen log-file.
-SIGUSR2 - graceful restart all workers.
-```
+	SIGINT, SIGTERM, SIGQUIT - termination.
+	SIGHUP - update config from file.
+	SIGUSR1 - reopen log-file.
+	SIGUSR2 - graceful restart all workers.
 
 Maintainer: kak.serpom.po.yaitsam@gmail.com
