@@ -1,8 +1,9 @@
 <?php
 class MemcacheClient extends AsyncServer {
 
+	// FIXME $sessions is checked onShutdown in asyncServer ('tis NOT great)
 	public $sessions = array();      // Active sessions
-	public $servers = array();       // Array of servers 
+	private $servers = array();       // Array of servers 
 	public $dtags_enabled = FALSE;   // Enables tags for distribution
 	public $servConn = array();      // Active connections
 	public $prefix = '';             // Prefix for all keys
