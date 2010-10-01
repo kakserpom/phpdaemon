@@ -17,12 +17,13 @@ class AsteriskDriver extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-	Daemon::addDefaultSettings(array(
-			'mod'.$this->modname.'server' => 'tcp://127.0.0.1',
-			'mod'.$this->modname.'port' => 5038,
-			'mod'.$this->modname.'enable' => 0
+		Daemon::addDefaultSettings(array(
+			'mod' . $this->modname . 'server' => 'tcp://127.0.0.1',
+			'mod' . $this->modname . 'port'   => 5038,
+			'mod' . $this->modname . 'enable' => 0
 		));
-		if(Daemon::$settings['mod'.$this->modname.'enable']) {
+
+		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
 			Daemon::log(__CLASS__ . ' up.');
 		}
 	}
@@ -34,23 +35,49 @@ class AsteriskDriver extends AsyncServer {
 	 * @return AsteriskDriverSession Session object.
 	 */
 	public function getConnection($addr = null) {
-		if(Daemon::$settings['mod'.$this->modname.'enable']) {
-			if (empty($addr)) {$addr = Daemon::$settings['mod'.$this->modname.'server'];}
+		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+			if (empty($addr)) {
+				$addr = Daemon::$settings['mod' . $this->modname . 'server'];
+			}
+
 			if (isset($this->servConn[$addr])) {
 				foreach ($this->servConn[$addr] as &$c)	{
-					if (isset($this->sessions[$c]) && !sizeof($this->sessions[$c]->callbacks)) {return $this->sessions[$c];}
+					if (
+						isset($this->sessions[$c]) 
+						&& !sizeof($this->sessions[$c]->callbacks)
+					) {
+						return $this->sessions[$c];
+					}
 				}
+			} else {
+				$this->servConn[$addr] = array();
 			}
-			else {$this->servConn[$addr] = array();}
+
 			$u = parse_url($addr);
-			if (!isset($u['port'])) {$u['port'] = Daemon::$settings['mod'.$this->modname.'port'];}
+
+			if (!isset($u['port'])) {
+				$u['port'] = Daemon::$settings['mod' . $this->modname . 'port'];
+			}
+
 			$connId = $this->connectTo($u['host'],$u['port']);
-			if (!$connId) {return;}
-			$this->sessions[$connId] = new AsteriskDriverSession($connId,$this);
+
+			if (!$connId) {
+				return;
+			}
+			
+			$this->sessions[$connId] = new AsteriskDriverSession($connId, $this);
 			$this->sessions[$connId]->addr = $addr;
-		 	if (isset($u['user'])) {$this->sessions[$connId]->username = $u['user'];}
-	  		if (isset($u['pass'])) {$this->sessions[$connId]->secret = $u['pass'];}
+
+		 	if (isset($u['user'])) {
+				$this->sessions[$connId]->username = $u['user'];
+			}
+
+	  		if (isset($u['pass'])) {
+				$this->sessions[$connId]->secret = $u['pass'];
+			}
+
 			$this->servConn[$addr][$connId] = $connId;
+
 			return $this->sessions[$connId];
 		}
 	}
@@ -86,19 +113,23 @@ class AsteriskDriverSession extends SocketSession {
 		$header = strtolower(trim($e[0]));
 		$value = isset($e[1]) ? trim($e[1]) : null;
 		$safe = false;
+
 		foreach ($this->safeCaseValues as $item) {
-			if(stripos($header, $item) === 0) {
+			if (stripos($header, $item) === 0) {
 				$safe = true;
 				break;
 			}
-			if(stripos($value, $item) === 0) {
+
+			if (stripos($value, $item) === 0) {
 				$safe = true;
 				break;
 			}
 		}
-		if(!$safe) {
+
+		if (!$safe) {
 			$value = strtolower($value);
 		}
+
 		return array($header, $value);
 	}
 
@@ -110,78 +141,88 @@ class AsteriskDriverSession extends SocketSession {
 	 */
 	public function stdin($buf) {
 		$this->buf .= $buf;
-		if($this->cstate == 0) {
+
+		if ($this->cstate == 0) {
 			$this->appInstance->amiVersion = trim($this->buf);
 			$this->auth();
 		}
-		elseif(strlen($this->buf) < 4) {
+		elseif (strlen($this->buf) < 4) {
 			return; // Not enough data buffered yet
 		}
-		elseif(strpos($this->buf, "\r\n\r\n") !== false) {
+		elseif (strpos($this->buf, "\r\n\r\n") !== false) {
 			while(($line = $this->gets()) !== false) {
-				if($line == "\r\n") {
+				if ($line == "\r\n") {
 					$this->state = 0;
 					$packet =& $this->packets[$this->cnt];
 					$this->cnt++;
-				}
-				else {
+				} else {
 					$this->state = 1;
 					list($header, $value) = $this->extract($line);
 					$this->packets[$this->cnt][$header] = $value;
 				}
-				if((int)$this->cstate == 1) {
-					if($this->state == 0) {
-						if($packet['response'] == 'success') {
-							if(stripos($this->authtype, 'md5') !== false && $this->cstate !== 1.1) {
-								if(is_callable($this->onChallenge)) {
+
+				if ((int)$this->cstate == 1) {
+					if ($this->state == 0) {
+						if ($packet['response'] == 'success') {
+							if (
+								stripos($this->authtype, 'md5') !== false 
+								&& $this->cstate !== 1.1
+							) {
+								if (is_callable($this->onChallenge)) {
 									call_user_func($this->onChallenge, $this, $packet['challenge']);
 								}
-							}
-							else {
-								if($packet['message'] == 'authentication accepted') {
+							} else {
+								if ($packet['message'] == 'authentication accepted') {
 									$this->cstate = 3;
 									Daemon::log(__CLASS__ . ': auth ok.');
-									if(is_callable($this->onConnected)) {
+
+									if (is_callable($this->onConnected)) {
 										call_user_func($this->onConnected, $this, true);
 									}
 								}
 							}
-						}
-						else {
+						} else {
 							$this->cstate = 2;
-							if(is_callable($this->onConnected)) {
+
+							if (is_callable($this->onConnected)) {
 								call_user_func($this->onConnected, $this, false);
 							}
+
 							$this->finish();
 						}
 						$this->packets = array();
 					}
 				}
-				elseif($this->cstate == 3) {
-					if($this->state == 0) {
+				elseif ($this->cstate == 3) {
+					if ($this->state == 0) {
 						// Event
-						if(isset($packet['event']) && !isset($packet['actionid'])) {
-							if(is_callable($this->onEvent)) {
+						if (
+							isset($packet['event']) 
+							&& !isset($packet['actionid'])
+						) {
+							if (is_callable($this->onEvent)) {
 								call_user_func($this->onEvent, $this, $packet);
 							}
 						}
 						// Response
-						elseif(isset($packet['actionid'])) {
+						elseif (isset($packet['actionid'])) {
 							$action_id =& $packet['actionid'];
-							if(isset($this->callbacks[$action_id])) {
-								if(isset($this->assertions[$action_id])) {
+
+							if (isset($this->callbacks[$action_id])) {
+								if (isset($this->assertions[$action_id])) {
 									$this->packets[$action_id][] = $packet;
-									if(count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) == count($this->assertions[$action_id])) {
-										if(is_callable($this->callbacks[$action_id])) {
+
+									if (count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) == count($this->assertions[$action_id])) {
+										if (is_callable($this->callbacks[$action_id])) {
 											call_user_func($this->callbacks[$action_id], $this, $this->packets[$action_id]);
 											unset($this->callbacks[$action_id]);
 										}
+
 										unset($this->assertions[$action_id]);
 										unset($this->packets[$action_id]);
 									}
-								}
-								else {
-									if(is_callable($this->callbacks[$action_id])) {
+								} else {
+									if (is_callable($this->callbacks[$action_id])) {
 										call_user_func($this->callbacks[$action_id], $this, $packet);
 										unset($this->callbacks[$action_id]);
 									}
@@ -204,10 +245,17 @@ class AsteriskDriverSession extends SocketSession {
 	 */
 	public function onConnected($callback) {
 		$this->onConnected = $callback;
-		if($this->cstate == 2 && is_callable($this->onConnected)) {
+
+		if (
+			$this->cstate == 2 
+			&& is_callable($this->onConnected)
+		) {
 			call_user_func($this->onConnected, $this, false);
 		}
-		elseif($this->cstate == 3 && is_callable($this->onConnected)) {
+		elseif (
+			$this->cstate == 3 
+			&& is_callable($this->onConnected)
+		) {
 			call_user_func($this->onConnected, $this, true);
 		}
 	}
@@ -218,11 +266,13 @@ class AsteriskDriverSession extends SocketSession {
 	 * @return void
 	 */
 	protected function auth() {
-		if($this->cstate !== 0) {
+		if ($this->cstate !== 0) {
 			return;
 		}
+
 		++$this->cstate;
-		if(stripos($this->authtype, 'md5') !== false) {
+
+		if (stripos($this->authtype, 'md5') !== false) {
 			$this->challenge(function($session, $challenge) {
 				$session->cstate = 1.1;
 				$packet = "Action: Login\r\n";
@@ -233,8 +283,7 @@ class AsteriskDriverSession extends SocketSession {
 				$packet .= "\r\n";
 				$session->sendPacket($packet);
 			});
-		}
-		else {
+		} else {
 			$this->login();
 		}
 	}
@@ -364,14 +413,18 @@ class AsteriskDriverSession extends SocketSession {
 		if ($this->finished) {
 			throw new AsteriskDriverSessionFinished;
 		}
-		if($this->cstate != 3) {
+
+		if ($this->cstate != 3) {
 			return;
 		}
+
 		$action_id = $this->uniqid();
 		$this->callbacks[$action_id] = $callback;
-		if($assertion !== null) {
+
+		if ($assertion !== null) {
 			$this->assertions[$action_id] = $assertion;
 		}
+
 		$this->sendPacket($packet . "ActionID: {$action_id}\r\n\r\n");
 	}
 
@@ -381,13 +434,16 @@ class AsteriskDriverSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish($callback = null) {
-		if($callback !== null && is_callable($callback)) {
+		if (
+			$callback !== null 
+			&& is_callable($callback)
+		) {
 			$this->onFinish = $callback;
-		}
-		else {
+		} else {
 			unset($this->appInstance->sessions[$this->connId]); 
 			unset($this->appInstance->servConn[$this->addr][$this->connId]);
-			if(is_callable($this->onFinish)) {
+
+			if (is_callable($this->onFinish)) {
 				call_user_func($this->onFinish, $this);
 			}
 		}
