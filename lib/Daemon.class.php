@@ -462,16 +462,27 @@ class Daemon {
 			if (is_file($p = realpath($path))) {
 				$found = true;
 
-				$cfg = include($p);
+        $ext = strtolower(pathinfo($path,PATHINFO_EXTENSION));
+        if ($ext == 'php') {
+					$cfg = include($p);
+				}
+				elseif ($ext == 'conf') {
+					$parser = new Daemon_ConfigParser($p);
+				  $cfg = $parser->result;
+				}
+				else{
+					Daemon::log('Config file \'' . $p . '\' has unsupported file extension.');
+					return FALSE;
+				}
 
 				if (!is_array($cfg)) {
 					Daemon::log('Config file \'' . $p . '\' returns bad value.');
-					continue;
+					return FALSE;
 				}
 				
 				if (!Daemon::loadSettings($cfg)) {
 					Daemon::log('Couldn\'t load config file \'' . $p . '\'.');
-					continue;
+					return FALSE;
 				}
 
 				return true;
