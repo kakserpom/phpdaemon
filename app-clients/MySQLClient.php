@@ -148,7 +148,7 @@ class MySQLClient extends AsyncServer {
 	/**
 	 * @method getConnection
 	 * @description Establishes connection.
-	 * @param string Address.
+	 * @param string Optional. Address.
 	 * @return integer Connection's ID.
 	 */
 	public function getConnection($addr = NULL)
