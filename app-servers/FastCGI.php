@@ -99,39 +99,39 @@ class FastCGI extends AsyncServer {
 	 * @param string The output.
 	 * @return void
 	 */
-	public function requestOut($r, $s) {
-		$l = strlen($s);
+	public function requestOut($request, $output) {
+		$outlen = strlen($output);
 
 		if (Daemon::$settings['mod' . $this->modname . 'logrecords']) {
-			Daemon::log('[DEBUG] requestOut(' . $r->attrs->id . ',[...' . $l . '...])');
+			Daemon::log('[DEBUG] requestOut(' . $request->attrs->id . ',[...' . $outlen . '...])');
 		}
 
-		if (!isset(Daemon::$worker->pool[$r->attrs->connId])) {
+		if (!isset(Daemon::$worker->pool[$request->attrs->connId])) {
 			if (
 				Daemon::$settings['mod' . $this->modname . 'logrecordsmiss'] 
 				|| Daemon::$settings['mod' . $this->modname . 'logrecords']
 			) {
-				Daemon::log('[DEBUG] requestOut(' . $r->attrs->id . ',[...' . $l . '...]) connId ' . $connId . ' not found.');
+				Daemon::log('[DEBUG] requestOut(' . $request->attrs->id . ',[...' . $outlen . '...]) connId ' . $connId . ' not found.');
 			}
 
 			return FALSE;
 		}
 
-		for ($o = 0; $o < $l;) {
-			$c = min(Daemon::$parsedSettings['chunksize'], $l - $o);
-			Daemon::$worker->writePoolState[$r->attrs->connId] = TRUE;
+		for ($o = 0; $o < $outlen;) {
+			$c = min(Daemon::$parsedSettings['chunksize'], $outlen - $o);
+			Daemon::$worker->writePoolState[$request->attrs->connId] = TRUE;
 
-			$w = event_buffer_write($this->buf[$r->attrs->connId],
-				"\x01"                                         // protocol version
-				. "\x06"                                       // record type (STDOUT)
-				. pack('nn', $r->attrs->id, $c)                // id, content length
-				. "\x00"                                       // padding length
-				. "\x00"                                       // reserved 
-				. ($c === $l ? $s : binarySubstr($s, $o, $c))  // content
+			$w = event_buffer_write($this->buf[$request->attrs->connId],
+				"\x01"                                                        // protocol version
+				. "\x06"                                                      // record type (STDOUT)
+				. pack('nn', $request->attrs->id, $c)                         // id, content length
+				. "\x00"                                                      // padding length
+				. "\x00"                                                      // reserved 
+				. ($c === $outlen ? $output : binarySubstr($output, $o, $c))  // content
 			);
 
 			if ($w === FALSE) {
-				$r->abort();
+				$request->abort();
 				return FALSE;
 			}
 
@@ -168,7 +168,7 @@ class FastCGI extends AsyncServer {
 		if ($protoStatus === -1) {
 			$this->closeConnection($connId);
 		}
-		elseif (!Daemon::$parsedSettings['mod'.$this->modname.'keepalive']) {
+		elseif (!Daemon::$parsedSettings['mod' . $this->modname . 'keepalive']) {
 			$this->finishConnection($connId);
 		}
 	}
