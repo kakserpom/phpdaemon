@@ -325,7 +325,7 @@ class Daemon {
 			return runkit_lint_file($filename);
 		}
 
-		$cmd = 'php -l ' . escapeshellcmd($filename) . ' 2>&1';
+		$cmd = 'php -l ' . escapeshellarg($filename) . ' 2>&1';
 
 		exec($cmd, $output, $retcode);
 
