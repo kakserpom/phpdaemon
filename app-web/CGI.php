@@ -18,15 +18,15 @@ class CGI extends AppInstance {
 	 * @return void
 	 */
 	public function onReady() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'allow-override-binpath' => TRUE,
-			'mod' . $this->modname . 'allow-override-cwd' => TRUE,
-			'mod' . $this->modname . 'allow-override-chroot' => TRUE,
-			'mod' . $this->modname . 'allow-override-user' => TRUE,
-			'mod' . $this->modname . 'allow-override-group' => TRUE,
-			'mod' . $this->modname . 'cwd' => NULL,
-			'mod' . $this->modname . 'output-errors' => TRUE,
-			'mod' . $this->modname . 'errlog-file' => __DIR__.'/cgi-error.log',
+		$this->defaultConfig(array(
+			'allow-override-binpath' => TRUE,
+			'allow-override-cwd' => TRUE,
+			'allow-override-chroot' => TRUE,
+			'allow-override-user' => TRUE,
+			'allow-override-group' => TRUE,
+			'cwd' => NULL,
+			'output-errors' => TRUE,
+			'errlog-file' => __DIR__ . '/cgi-error.log',
 		));
 
 		$this->cwd = Daemon::$settings['mod' . $this->modname . 'cwd'];

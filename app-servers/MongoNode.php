@@ -14,11 +14,11 @@ class MongoNode extends AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'enable' => 0,
+		$this->defaultConfig(array(
+			'enable' => 0,
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			$this->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
 			Daemon::log(__CLASS__ . ' up.');
 			
@@ -34,7 +34,7 @@ class MongoNode extends AppInstance {
 	 * @return void
 	 */
 	public function onReady() {
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			$appInstance = $this;
 			
 			$this->LockClient->job(__CLASS__,TRUE,

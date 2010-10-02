@@ -100,10 +100,10 @@ class MySQLClient extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'server'       => 'mysql://root@127.0.0.1',
-			'mod' . $this->modname . 'port'         => 3306,
-			'mod' . $this->modname . 'protologging' => 0,
+		$this->defaultConfig(array(
+			'server'       => 'mysql://root@127.0.0.1',
+			'port'         => 3306,
+			'protologging' => 0,
 		));
 	}
 
@@ -137,9 +137,9 @@ class MySQLClient extends AsyncServer {
 			"\r"	=> '\r',
 			'\\'	=> '\\\\',
 			'\''	=> '\\\'',
-			'"'		=> '\\"',
-			'%'		=> '\%',
-			'_'		=> '\_'
+			'"'	=> '\\"',
+			'%'	=> '\%',
+			'_'	=> '\_'
 		);
 
 		return strtr($string, $sqlescape);
@@ -154,7 +154,7 @@ class MySQLClient extends AsyncServer {
 	public function getConnection($addr = NULL)
 	{
 		if (empty($addr)) {
-			$addr = Daemon::$settings['mod' . $this->modname . 'server'];
+			$addr = $this->config->server->value;
 		}
 		
 		if (isset($this->servConn[$addr])) {
@@ -173,7 +173,7 @@ class MySQLClient extends AsyncServer {
 		$u = parse_url($addr);
 		
 		if (!isset($u['port'])) {
-			$u['port'] = Daemon::$settings['mod' . $this->modname . 'port'];
+			$u['port'] = $this->config->port->value;
 		}
 		
 		$connId = $this->connectTo($u['host'], $u['port']);
@@ -538,7 +538,7 @@ class MySQLClientSession extends SocketSession {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 
-		if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+		if ($this->appInstance->config->protologging->value) {
 			Daemon::log('Server --> Client: ' . Daemon::exportBytes($buf) . "\n\n");
 		}
 		
@@ -729,7 +729,7 @@ class MySQLClientSession extends SocketSession {
 		$this->resultRows = array();
 		$this->resultFields = array();
 		
-		if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+		if ($this->appInstance->config->protologging->value) {
 			Daemon::log(__METHOD__);
 		}
 	}

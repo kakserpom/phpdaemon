@@ -10,25 +10,26 @@ class SocksServer extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'listen' => 'tcp://0.0.0.0',
-			'mod' . $this->modname . 'listenport' => 1080,
-			'mod' . $this->modname . 'auth' => 0,
-			'mod' . $this->modname . 'username' => 'User',
-			'mod' . $this->modname . 'password' => 'Password',
-			'mod' . $this->modname . 'enable' => 0,
-			'mod' . $this->modname . 'allowedclients' => '',
+		$this->defaultConfig(array(
+			'listen'         => 'tcp://0.0.0.0',
+			'listenport'     => 1080,
+			'auth'           => 0,
+			'username'       => 'User',
+			'password'       => 'Password',
+			'enable'         => 0,
+			'allowedclients' => '',
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
-			if (Daemon::$settings['mod' . $this->modname . 'allowedclients'] !== '') {
-					$this->allowedClients = explode(',', Daemon::$settings['mod' . $this->modname . 'allowedclients']);
+
+			if ($this->config->allowedclients->value !== '') {
+					$this->allowedClients = explode(',', $this->config->allowedclients->value);
 			}
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'],
-				Daemon::$settings['mod' . $this->modname . 'listenport'],
+				$this->config->listen->value,
+				$this->config->listenport->value,
 				TRUE
 			);
 		}
@@ -93,7 +94,7 @@ class SocksSession extends SocketSession {
 			$methods = binarySubstr($this->buf, 2, $n);
 			$this->buf = binarySubstr($this->buf, $n + 2);
 
-			if (!Daemon::$settings['mod' . $this->appInstance->modname . 'auth']) {
+			if (!$this->appInstance->config->auth->value) {
 				// No auth
 				$m = "\x00";
 				$this->state = 3;
@@ -148,8 +149,8 @@ class SocksSession extends SocketSession {
 			$password = binarySubstr($this->buf, 2 + $ulen, $plen);
 
 			if (
-				($username != Daemon::$settings['mod' . $this->appInstance->modname . 'username']) 
-				|| ($password != Daemon::$settings['mod' . $this->appInstance->modname . 'password'])
+				($username != $this->appInstance->config->username->value) 
+				|| ($password != $this->appInstance->config->password->value)
 			) {
 				$this->state = 1;
 				$m = "\x01";
@@ -298,10 +299,10 @@ class SocksServerSlaveSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-	if (isset($this->client)) {
-		$this->client->finish();
-	}
+		if (isset($this->client)) {
+			$this->client->finish();
+		}
 	
-	unset($this->client);
+		unset($this->client);
 	}
 }

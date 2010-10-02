@@ -18,7 +18,7 @@ class LockServer extends AsyncServer {
 			'enable'         => 0,
 		));
 
-		if (Daemon::$config->enable->value]) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
 			$this->allowedClients = explode(',', Daemon::$config['allowedclients']);

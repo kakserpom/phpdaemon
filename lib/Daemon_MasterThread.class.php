@@ -30,7 +30,10 @@ class Daemon_MasterThread extends Thread {
 		Daemon::$appResolver = require Daemon::$config->path->value;
 		Daemon::$appResolver->preloadPrivileged(); 
 
-		$this->spawnWorkers(min(Daemon::$config->startworkers,Daemon::$config->maxworkers));
+		$this->spawnWorkers(min(
+			Daemon::$config->startworkers->value,
+			Daemon::$config->maxworkers->value
+		));
 		$mpmLast = time();
 		$autoReloadLast = time();
 		$c = 1;
@@ -40,22 +43,22 @@ class Daemon_MasterThread extends Thread {
 			$this->sigwait(1,0);
 			clearstatcache();
 
-			if (Daemon::$logpointerpath !== Daemon::parseStoragepath(Daemon::$config->logstorage)) { 
+			if (Daemon::$logpointerpath !== Daemon::parseStoragepath(Daemon::$config->logstorage->value)) { 
 				$this->sigusr1();
 			}
       
 			if (
-				isset(Daemon::$parsedSettings['configfile']) 
-				&& (Daemon::$parsedSettings['autoreload'] > 0)
+				isset(Daemon::$config->configfile) 
+				&& (Daemon::$config->autoreload->value > 0)
 			) {
-				$mt = filemtime(Daemon::$parsedSettings['configfile']);
+				$mt = filemtime(Daemon::$config->configfile->value);
 
 				if (!isset($cfgmtime)) {
 					$cfgmtime = $mt;
 				}
 
 				if ($cfgmtime < $mt) {
-					$cfgmtime = filemtime(Daemon::$parsedSettings['configfile']);
+					$cfgmtime = filemtime(Daemon::$config->configfile->value);
 					$this->sighup();
 				}
 			}
@@ -75,6 +78,7 @@ class Daemon_MasterThread extends Thread {
 					$this->collections['workers']->removeTerminated();
 				}
 				
+				/* FIXME mpm function in config
 				if (
 					isset(Daemon::$config->mpm) 
 					&& is_callable($c = Daemon::$config->mpm)
@@ -108,7 +112,7 @@ class Daemon_MasterThread extends Thread {
 							$this->stopWorkers($n);
 						}
 					}
-				}
+				} */
 			}
 		}
 	}
@@ -215,7 +219,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigchld() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGCHLD.');
 		}
 
@@ -228,7 +232,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigint() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGINT.');
 		}
 	
@@ -242,7 +246,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigterm() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGTERM.');
 		}
 	
@@ -256,7 +260,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigquit() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGQUIT.');
 		}
 
@@ -270,12 +274,12 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function sighup() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGHUP (reload config).');
 		}
 
-		if (isset(Daemon::$parsedSettings['configfile'])) {
-			Daemon::loadConfig(Daemon::$parsedSettings['configfile']);
+		if (isset(Daemon::$config->configfile)) {
+			Daemon::loadConfig(Daemon::$config->configfile->value);
 		}
 
 		$this->collections['workers']->signal(SIGHUP);
@@ -287,7 +291,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function sigusr1() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGUSR1 (re-open log-file).');
 		}
 
@@ -301,7 +305,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function sigusr2() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGUSR2 (graceful restart all workers).');
 		}
 

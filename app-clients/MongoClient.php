@@ -30,13 +30,13 @@ class MongoClient extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'servers' => 'mongo://127.0.0.1', 
-			'mod' . $this->modname . 'port'    => 27017, 
+		$this->defaultConfig(array(
+			'servers' => 'mongo://127.0.0.1', 
+			'port'    => 27017, 
 		));
 
 		$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
-		$servers = explode(',', Daemon::$settings['mod' . $this->modname . 'servers']);
+		$servers = explode(',', $this->config->servers->value);
 
 		foreach ($servers as $s) {
 			$this->addServer($s);

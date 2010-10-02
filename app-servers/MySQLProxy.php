@@ -9,20 +9,20 @@ class MySQLProxy extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'upserver'     => '127.0.0.1:3306',
-			'mod' . $this->modname . 'listen'       => 'tcp://0.0.0.0',
-			'mod' . $this->modname . 'listenport'   => 3307,
-			'mod' . $this->modname . 'protologging' => 0,
-			'mod' . $this->modname . 'enable'       => 0,
+		$this->defaultConfig(array(
+			'upserver'     => '127.0.0.1:3306',
+			'listen'       => 'tcp://0.0.0.0',
+			'listenport'   => 3307,
+			'protologging' => 0,
+			'enable'       => 0,
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'],
-				Daemon::$settings['mod' . $this->modname . 'listenport']
+				$this->config->listen->value,
+				$this->config->listenport->value
 			);
 		}
 	}
@@ -50,11 +50,11 @@ class MySQLProxySession extends SocketSession {
 	 * @return void
 	 */
 	public function init() {
-		$e = explode(':', Daemon::$settings['mod' . $this->appInstance->modname . 'upserver']);
+		$e = explode(':', $this->appInstance->config->upserver->value);
 
 		$connId = $this->appInstance->connectTo($e[0], $e[1]);
 
-		$this->upstream = $this->appInstance->sessions[$connId] = new MySQLProxyUpserverSession($connId,$this->appInstance);
+		$this->upstream = $this->appInstance->sessions[$connId] = new MySQLProxyUpserverSession($connId, $this->appInstance);
 		$this->upstream->downstream = $this;
 	}
 
@@ -66,7 +66,7 @@ class MySQLProxySession extends SocketSession {
 	 */
 	public function stdin($buf) {
 		// from client to mysqld.
-		if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+		if ($this->appInstance->config->protologging->value) {
 			Daemon::log('MySQLProxy: Client --> Server: ' . Daemon::exportBytes($buf) . "\n\n");
 		}
 
@@ -95,7 +95,7 @@ class MySQLProxyUpserverSession extends SocketSession {
 	 */
 	public function stdin($buf) {
 		// from mysqld to client.
-		if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+		if ($this->appInstance->config->protologging->value) {
 			Daemon::log('MysqlProxy: Server --> Client: ' . Daemon::exportBytes($buf) . "\n\n");
 		}
 

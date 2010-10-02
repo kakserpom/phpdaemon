@@ -38,17 +38,18 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function run() {
-		proc_nice(Daemon::$config->workerpriority);
+		proc_nice(Daemon::$config->workerpriority->value);
 
 		Daemon::$worker = $this;
 		$this->microsleep = Daemon::$config->microsleep;
 		$this->autoReloadLast = time();
-		$this->reloadDelay = Daemon::$parsedSettings['mpmdelay']+2;
+		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
 		$this->setStatus(4);
 
 		$this->setproctitle(
 			Daemon::$runName . ': worker process' 
-			. (Daemon::$config->pidfile !== Daemon::$config->defaultpidfile ? ' (' . Daemon::$config->pidfile . ')' : '')
+			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value 
+				? ' (' . Daemon::$config->pidfile->value . ')' : '')
 		);
 		
 		register_shutdown_function(array($this,'shutdown'));
@@ -108,18 +109,18 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 		
-		if (Daemon::$parsedSettings['autogc'] > 0) {
+		if (Daemon::$config->autogc->value > 0) {
 			gc_enable();
 		} else {
 			gc_disable();
 		}
 		
-		if (isset(Daemon::$config->group)) {
-			$sg = posix_getgrnam(Daemon::$config->group);
+		if (isset(Daemon::$config->group->value)) {
+			$sg = posix_getgrnam(Daemon::$config->group->value);
 		}
 		
-		if (isset(Daemon::$config->user)) {
-			$su = posix_getpwnam(Daemon::$config->user);
+		if (isset(Daemon::$config->user->value)) {
+			$su = posix_getpwnam(Daemon::$config->user->value);
 		}
 	
 		if (Daemon::$config->chroot !== '/') {
@@ -127,43 +128,43 @@ class Daemon_WorkerThread extends Thread {
 				Daemon::log('You must have the root privileges to change root.');
 				exit(0);
 			}
-			elseif (!chroot(Daemon::$config->chroot)) {
-				Daemon::log('Couldn\'t change root to \''.Daemon::$config->chroot.'\'.');
+			elseif (!chroot(Daemon::$config->chroot->value)) {
+				Daemon::log('Couldn\'t change root to \'' . Daemon::$config->chroot->value . '\'.');
 				exit(0);
 			}
 		}
 		
-		if (isset(Daemon::$config->group)) {
+		if (isset(Daemon::$config->group->value)) {
 			if ($sg === FALSE) {
-				Daemon::log('Couldn\'t change group to \'' . Daemon::$config->group . '\'. You must replace config-variable \'group\' with existing group.');
+				Daemon::log('Couldn\'t change group to \'' . Daemon::$config->group->value . '\'. You must replace config-variable \'group\' with existing group.');
 				exit(0);
 			}
 			elseif (
 				($sg['gid'] != posix_getgid()) 
 				&& (!posix_setgid($sg['gid']))
 			) {
-				Daemon::log('Couldn\'t change group to \'' . Daemon::$config->group . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
+				Daemon::log('Couldn\'t change group to \'' . Daemon::$config->group->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
 			}
 		}
 		
 		if (isset(Daemon::$config->user)) {
 			if ($su === FALSE) {
-				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user . '\', user not found. You must replace config-variable \'user\' with existing username.');
+				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . '\', user not found. You must replace config-variable \'user\' with existing username.');
 				exit(0);
 			}
 			elseif (
 				($su['uid'] != posix_getuid()) 
 				&& (!posix_setuid($su['uid']))
 			) {
-				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
+				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
 			}
 		}
 		
 		if (Daemon::$config->cwd !== '.') {
 			if (!@chdir(Daemon::$config->cwd)) {
-				Daemon::log('Couldn\'t change directory to \'' . Daemon::$config->cwd . '.');
+				Daemon::log('Couldn\'t change directory to \'' . Daemon::$config->cwd->value . '.');
 			}
 		}
 	

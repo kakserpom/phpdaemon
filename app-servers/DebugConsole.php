@@ -9,7 +9,7 @@ class DebugConsole extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-	$this->defaultConfig(array(
+		$this->defaultConfig(array(
 			'listen'     => 'tcp://0.0.0.0',
 			'listenport' => 8818,
 			'passphrase' => 'secret',
