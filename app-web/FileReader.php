@@ -8,7 +8,7 @@ class FileReader extends AppInstance {
 	 */
 	public function init() {
 		$this->defaultConfig(array(
-			'indexfiles' => 'index.html/index.htm'
+			'indexfiles'	=> 'index.html/index.htm',
 		));
 
 		$this->indexFiles = explode('/', $this->config->indexfiles->value);
@@ -179,7 +179,7 @@ while (($fn = readdir($h)) !== FALSE) {
 </div> 
 <?php 
 
-if (Daemon::$config->expose->value) {
+if ($this->upstream->config->expose->value) {
 	echo '<div class="foot">phpDaemon/' . Daemon::$version . '</div>';
 } 
 
