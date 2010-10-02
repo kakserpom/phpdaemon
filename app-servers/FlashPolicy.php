@@ -13,7 +13,7 @@ class FlashPolicy extends AsyncServer {
 		$this->defaultConfig(array(
 			'listen'     => 'tcp://0.0.0.0',
 			'listenport' => 843,
-			'file'       => Daemon::$dir.'/conf/crossdomain.xml',
+			'file'       => Daemon::$dir . '/conf/crossdomain.xml',
 			'enable'     => 0
 		));
 

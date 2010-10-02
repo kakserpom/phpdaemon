@@ -19,7 +19,7 @@ class Request {
 	public $mpartoffset = 0;
 	public $mpartcondisp = FALSE;
 	public $headers = array('STATUS' => '200 OK');
-	public $headers_sent = FALSE;
+	private $headers_sent = FALSE;
 	public $appInstance;
 	public $boundary = FALSE;
 	public $aborted = FALSE;
@@ -609,25 +609,6 @@ class Request {
 
 			return $this->upstream->requestOut($this, $s);
 		}
-	}
-
-	/**
-	 * @method combinedOut
-	 * @param string String to out.
-	 * @description Outputs data with headers (split by \r\n\r\n)
-	 * @return boolean Success.
-	 */
-	public function headers_sent() {
-		return $this->headers_sent;
-	}
-
-	/**
-	 * @method headers_list
-	 * @description Returns current list of headers.
-	 * @return array Headers.
-	 */
-	public function headers_list() {
-		return array_values($this->headers);
 	}
 
 	/**
