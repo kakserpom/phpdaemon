@@ -2,7 +2,6 @@
 class CGI extends AppInstance {
 
 	public $binPath = 'php-cgi';   // Default bin-path
-	public $cwd;                   // Default CWD
 	public $binAliases = array(
 		'php5'   => '/usr/local/php/bin/php-cgi',
 		'php6'   => '/usr/local/php6/bin/php-cgi',
@@ -28,17 +27,6 @@ class CGI extends AppInstance {
 			'output-errors' => TRUE,
 			'errlog-file' => __DIR__ . '/cgi-error.log',
 		));
-
-		$this->cwd = Daemon::$settings['mod' . $this->modname . 'cwd'];
-	}
-
-	/**
-	 * @method update
-	 * @description Called when worker is going to update configuration.
-	 * @return void
-	 */
-	public function update() {
-		$this->cwd = Daemon::$settings['mod' . $this->modname . 'cwd'];
 	}
 
 	/**
@@ -106,12 +94,12 @@ class CGIRequest extends Request {
 
 		if (
 			isset($this->attrs->server['CWD']) 
-			&& Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverridecwd']
+			&& $this->appInstance->config->allowoverridecwd->value
 		) {
 			$this->proc->cwd = $this->attrs->server['CWD'];
 		}
-		elseif ($this->appInstance->cwd !== NULL) {
-			$this->proc->cwd = $this->appInstance->cwd;
+		elseif ($this->appInstance->config->cwd->value !== NULL) {
+			$this->proc->cwd = $this->appInstance->config->cwd->value;
 		} else {
 			$this->proc->cwd = dirname($this->attrs->server['SCRIPT_FILENAME']);
 		}

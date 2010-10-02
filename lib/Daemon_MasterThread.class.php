@@ -63,7 +63,7 @@ class Daemon_MasterThread extends Thread {
 				}
 			}
 	
-			if (time() > $mpmLast+Daemon::$parsedSettings['mpmdelay']) {
+			if (time() > $mpmLast+Daemon::$config->mpmdelay->value) {
 				$mpmLast = time();
 				++$c;
 				

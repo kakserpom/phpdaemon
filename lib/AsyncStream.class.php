@@ -459,7 +459,7 @@ class AsyncStream {
 	}
 
 	public function onReadEvent($buf = NULL, $arg = NULL) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . '()');
 		}
 		
@@ -480,7 +480,7 @@ class AsyncStream {
 	}
 
 	public function onWriteEvent($buf, $arg = NULL) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . '()');
 		}
 		
@@ -496,10 +496,7 @@ class AsyncStream {
 	}
 	
 	public function onReadFailureEvent($buf, $arg = NULL) {
-		if (
-			Daemon::$settings['logevents']
-			|| 1
-		) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . '()');
 		}
 
@@ -513,7 +510,7 @@ class AsyncStream {
 	}
 
 	public function onWriteFailureEvent($buf, $arg = NULL) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . '()');
 		}
 

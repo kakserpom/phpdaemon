@@ -956,7 +956,7 @@ class MongoClient extends AsyncServer {
 		$u = parse_url($url);
 		
 		if (!isset($u['port'])) {
-			$u['port'] = Daemon::$settings['mod' . $this->modname . 'port'];
+			$u['port'] = $this->config->port->value;
 		}
 		
 		$connId = $this->connectTo($u['host'], $u['port']);

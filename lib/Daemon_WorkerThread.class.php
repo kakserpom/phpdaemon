@@ -26,7 +26,6 @@ class Daemon_WorkerThread extends Thread {
 	public $writePoolState = array();
 	private $autoReloadLast = 0;
 	private $currentStatus = 0;
-	private $microsleep;
 	private $eventsToAdd = array();
 	public $eventBase;
 	private $timeoutEvent;
@@ -41,7 +40,6 @@ class Daemon_WorkerThread extends Thread {
 		proc_nice(Daemon::$config->workerpriority->value);
 
 		Daemon::$worker = $this;
-		$this->microsleep = Daemon::$config->microsleep;
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
 		$this->setStatus(4);
@@ -123,7 +121,7 @@ class Daemon_WorkerThread extends Thread {
 			$su = posix_getpwnam(Daemon::$config->user->value);
 		}
 	
-		if (Daemon::$config->chroot !== '/') {
+		if (Daemon::$config->chroot->value !== '/') {
 			if (posix_getuid() != 0) {
 				Daemon::log('You must have the root privileges to change root.');
 				exit(0);
@@ -148,7 +146,7 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 		
-		if (isset(Daemon::$config->user)) {
+		if (isset(Daemon::$config->user->value)) {
 			if ($su === FALSE) {
 				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . '\', user not found. You must replace config-variable \'user\' with existing username.');
 				exit(0);
@@ -198,7 +196,7 @@ class Daemon_WorkerThread extends Thread {
 				return $s;
 			}
 
-			event_add($this->timeoutEvent, $this->microsleep);
+			event_add($this->timeoutEvent, Daemon::$config->microsleep->value);
 			event_base_loop($this->eventBase, EVLOOP_ONCE);
 
 			do {
@@ -347,10 +345,10 @@ class Daemon_WorkerThread extends Thread {
 		} 
 
 		if (
-			(Daemon::$parsedSettings['autoreload'] > 0) 
-			&& ($time > $this->autoReloadLast + Daemon::$parsedSettings['autoreload'])
+			(Daemon::$config->autoreload->value > 0) 
+			&& ($time > $this->autoReloadLast + Daemon::$config->autoreload->value)
 		) {
-			if (Daemon::$config->autoreimport) {
+			if (Daemon::$config->autoreimport->value) {
 				$this->reimport();
 			} else {
 				if ($this->reloadCheck()) {
@@ -365,8 +363,8 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		if (
-			Daemon::$parsedSettings['maxrequests'] 
-			&& ($this->queryCounter >= Daemon::$parsedSettings['maxrequests'])
+			Daemon::$config->maxrequests->value
+			&& ($this->queryCounter >= Daemon::$config->maxrequests->value)
 		) {
 			$this->log('\'maxrequests\' exceed. Graceful shutdown.');
 
@@ -377,8 +375,8 @@ class Daemon_WorkerThread extends Thread {
 		}
 	
 		if (
-			(Daemon::$parsedSettings['maxmemoryusage'] > 0) 
-			&& (memory_get_usage(TRUE) > Daemon::$parsedSettings['maxmemoryusage'])
+			(Daemon::$config->maxmemoryusage->value > 0) 
+			&& (memory_get_usage(TRUE) > Daemon::$config->maxmemoryusage->value)
 		) {
 			$this->log('\'maxmemory\' exceed. Graceful shutdown.');
 
@@ -389,9 +387,9 @@ class Daemon_WorkerThread extends Thread {
 		}
 	
 		if (
-			Daemon::$parsedSettings['maxidle'] 
+			Daemon::$config->maxidle->value 
 			&& $this->timeLastReq 
-			&& ($time - $this->timeLastReq > Daemon::$parsedSettings['maxidle'])
+			&& ($time - $this->timeLastReq > Daemon::$config->maxidle->value)
 		) {
 			$this->log('\'maxworkeridle\' exceed. Graceful shutdown.');
 
@@ -448,13 +446,13 @@ class Daemon_WorkerThread extends Thread {
 					}
 				}
 	
-				if (Daemon::$config->logqueue) {
+				if (Daemon::$config->logqueue->value) {
 					$this->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() invoked.');
 				}
 
 				$ret = $r->call();
 	
-				if (Daemon::$config->logqueue) {
+				if (Daemon::$config->logqueue->value) {
 					$this->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
 				}
 
@@ -464,13 +462,13 @@ class Daemon_WorkerThread extends Thread {
 					unset($this->queue[$k]);
 	
 					if (isset($r->idAppQueue)) {
-						if (Daemon::$config->logqueue) {
+						if (Daemon::$config->logqueue->value) {
 							$this->log('request removed from ' . get_class($r->appInstance) . '->queue.');
 						}
 
 						unset($r->appInstance->queue[$r->idAppQueue]);
 					} else {
-						if (Daemon::$config->logqueue) {
+						if (Daemon::$config->logqueue->value) {
 							$this->log('request can\'t be removed from AppInstance->queue.');
 						}
 					}
@@ -488,13 +486,13 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function readPool() {
 		foreach ($this->readPoolState as $connId => $state) {
-			if (Daemon::$config->logevents) {
+			if (Daemon::$config->logevents->value) {
 				$this->log('event readConn(' . $connId . ') invoked.');
 			}
 
 			$this->poolApp[$connId]->readConn($connId);
 
-			if (Daemon::$config->logevents) {
+			if (Daemon::$config->logevents->value) {
 				$this->log('event readConn(' . $connId . ') finished.');
 			}
 		}
@@ -527,11 +525,11 @@ class Daemon_WorkerThread extends Thread {
 	 * @return boolean - Ready?
 	 */
 	public function shutdown($hard = FALSE) {
-		if (Daemon::$config->logevents) {
+		if (Daemon::$config->logevents->value) {
 			$this->log('event shutdown(' . ($hard ? 'HARD' : '') . ') invoked.');
 		}
 		
-		if (Daemon::$config->throwexceptiononshutdown) {
+		if (Daemon::$config->throwexceptiononshutdown->value) {
 			throw new Exception('event shutdown');
 		}
 		
@@ -559,7 +557,7 @@ class Daemon_WorkerThread extends Thread {
 			$reloadReady = $reloadReady && (microtime(TRUE) > $this->reloadTime);
 		}
 
-		if (Daemon::$config->logevents) {
+		if (Daemon::$config->logevents->value) {
 			$this->log('reloadReady = ' . Daemon::var_dump($reloadReady));
 		}
 		
@@ -588,7 +586,7 @@ class Daemon_WorkerThread extends Thread {
 			
 			pcntl_signal_dispatch();
 			
-			event_add($this->timeoutEvent, $this->microsleep);
+			event_add($this->timeoutEvent, Daemon::$config->microsleep->value);
 			event_base_loop($this->eventBase,EVLOOP_ONCE);
 			
 			$this->readPool();
@@ -616,7 +614,7 @@ class Daemon_WorkerThread extends Thread {
 			$int += 100;
 		}
 		
-		if (Daemon::$config->logworkersetstatus) {
+		if (Daemon::$config->logworkersetstatus->value) {
 			$this->log('status is ' . $int);
 		}
 		
@@ -629,7 +627,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function sigint() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGINT.');
 		}
 		
@@ -642,7 +640,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function sigterm() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGTERM.');
 		}
 		
@@ -655,7 +653,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sigquit() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGQUIT.');
 		}
 
@@ -668,12 +666,12 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sighup() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGHUP (reload config).');
 		}
 
-		if (isset(Daemon::$parsedSettings['configfile'])) {
-			Daemon::loadConfig(Daemon::$parsedSettings['configfile']);
+		if (isset(Daemon::$config->configfile->value)) {
+			Daemon::loadConfig(Daemon::$config->configfile->value);
 		}
 
 		$this->update = TRUE;
@@ -685,7 +683,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sigusr1() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGUSR1 (re-open log-file).');
 		}
 	
@@ -698,7 +696,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sigusr2() {
-		if (Daemon::$config->logsignals) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGUSR2 (graceful shutdown for update).');
 		}
 

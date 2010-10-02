@@ -15,12 +15,12 @@ class WebSocketOverCOMET extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'enable' => 0,
-			'mod' . $this->modname . 'ipcpath' => '/tmp/WsOverComet-%s.sock',
+		$this->defaultConfig(array(
+			'enable' => 0,
+			'ipcpath' => '/tmp/WsOverComet-%s.sock',
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			$this->wss = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
 		}
 	}
@@ -31,7 +31,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
-		$path = sprintf(Daemon::$settings['mod' . $this->modname . 'ipcpath'], $this->ipcId);
+		$path = sprintf($this->config->ipcpath->value, $this->ipcId);
 
 		if (file_exists($path)) {
 			unlink($path);
@@ -46,9 +46,9 @@ class WebSocketOverCOMET extends AsyncServer {
 	 * @return void
 	 */
 	public function onReady() {
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {   
+		if ($this->config->enable->value) {   
 			$this->ipcId = sprintf('%x', crc32(Daemon::$worker->pid . '-' . microtime(TRUE)));
-			$this->bindSockets('unix:' . sprintf(Daemon::$settings['mod' . $this->modname . 'ipcpath'], $this->ipcId), 0, FALSE);
+			$this->bindSockets('unix:' . sprintf($this->config->ipcpath->value, $this->ipcId), 0, FALSE);
 			$this->enableSocketEvents();
 		}
 	}
@@ -64,7 +64,7 @@ class WebSocketOverCOMET extends AsyncServer {
 			return $this->IpcTransSessions[$id];
 		}
 
-		$connId = $this->connectTo('unix:' . sprintf(Daemon::$settings['mod' . $this->modname . 'ipcpath'], basename($id)));
+		$connId = $this->connectTo('unix:' . sprintf($this->config->ipcpath->value, basename($id)));
 
 		if (!$connId) {
 			return FALSE;
@@ -95,7 +95,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		if (!Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if (!$this->config->enable->value) {
 			return $req;
 		}
 
@@ -177,7 +177,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession {
 					$this->appInstance->queue[$reqId]->atime = time();
 				}
 			} else {
-				if (Daemon::$settings['logerrors']) {
+				if (Daemon::$config->logerrors->value) {
 					Daemon::log('[WORKER with ipcId = ' . $this->appInstance->ipcId 
 						. '] Undispatched packet (type = ' . $type . ', reqId = ' . $reqId 
 						. ', authKey = ' . $authKey . ', exists = ' 
@@ -293,8 +293,8 @@ class WebSocketOverCOMET_Request extends Request {
 
 				if (!isset($this->appInstance->wss->routes[$appName])) {
 					if (
-						isset(Daemon::$settings['logerrors']) 
-						&& Daemon::$settings['logerrors']
+						isset(Daemon::$config->logerrors->value) 
+						&& Daemon::$config->logerrors->value
 					) {
 						Daemon::log(__METHOD__ . ': undefined route \'' . $appName . '\'.');
 					}
@@ -318,8 +318,8 @@ class WebSocketOverCOMET_Request extends Request {
 
 				if (!isset($this->appInstance->wss->routes[$appName])) {
 					if (
-						isset(Daemon::$settings['logerrors']) 
-						&& Daemon::$settings['logerrors']
+						isset(Daemon::$config->logerrors) 
+						&& Daemon::$config->logerrors
 					) {
 						Daemon::log(__METHOD__ . ': undefined route \'' . $appName . '\'.');
 					}

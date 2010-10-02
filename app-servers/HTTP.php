@@ -92,7 +92,7 @@ class HTTP extends AsyncServer {
 	 * @return void
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log('[WORKER ' . Daemon::$worker->pid . '] endRequest(' . implode(',', func_get_args()) . ').');
 		};
 
@@ -108,7 +108,7 @@ class HTTP extends AsyncServer {
 			}
 
 			if (
-				(!Daemon::$parsedSettings['keepalive']) 
+				(!$this->config->keepalive->value) 
 				|| (!isset($req->attrs->server['HTTP_CONNECTION'])) 
 				|| ($req->attrs->server['HTTP_CONNECTION'] !== 'keep-alive')
 			) {
@@ -175,7 +175,7 @@ class HTTP extends AsyncServer {
 			$req->attrs->inbuf = '';
 			$req->attrs->chunked = FALSE;
 
-			if (Daemon::$settings['mod'.$this->modname.'logqueue']) {
+			if ($this->config->logqueue->value) {
 				Daemon::log('[WORKER ' . Daemon::$worker->pid . '] new request queued.');
 			}
 
@@ -254,7 +254,7 @@ class HTTP extends AsyncServer {
 						return;
 					}
 				} else {
-					$req = Daemon::$appResolver->getRequest($req, $this, isset(Daemon::$settings[$k = 'responder']) ? Daemon::$settings[$k] : NULL);
+					$req = Daemon::$appResolver->getRequest($req, $this, isset($this->config->responder->value) ? $this->config->responder->value : NULL);
 				}
 
 				if ($req instanceof stdClass) {
@@ -262,14 +262,14 @@ class HTTP extends AsyncServer {
 					unset(Daemon::$worker->queue[$rid]);
 				} else {
 					if (
-						Daemon::$settings['sendfile'] 
+						$this->config->sendfile->value
 						&& (
-							!Daemon::$settings['sendfileonlybycommand'] 
+							!$this->config->sendfileonlybycommand->value
 							|| isset($req->attrs->server['USE_SENDFILE'])
 						) 
 						&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
 					) {
-						$fn = tempnam(Daemon::$settings['sendfiledir'], Daemon::$settings['sendfileprefix']);
+						$fn = tempnam($this->config->sendfiledir->value, $this->config->sendfileprefix->value);
 						$req->sendfp = fopen($fn, 'wb');
 						$req->header('X-Sendfile: ' . $fn);
 					}
@@ -288,7 +288,7 @@ class HTTP extends AsyncServer {
 		if ($this->poolState[$connId]['state'] === 2) {
 			$req->stdin($buf);
 
-			if (Daemon::$settings['logevents']) {
+			if (Daemon::$config->logevents->value) {
 				Daemon::log('stdin_done = ' . ($req->attrs->stdin_done ? '1' : '0'));
 			}
 
