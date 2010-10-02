@@ -42,10 +42,6 @@ class Daemon_MasterThread extends Thread {
 			pcntl_signal_dispatch();
 			$this->sigwait(1,0);
 			clearstatcache();
-
-			if (Daemon::$logpointerpath !== Daemon::parseStoragepath(Daemon::$config->logstorage->value)) { 
-				$this->sigusr1();
-			}
       
 			if (
 				isset(Daemon::$config->configfile) 

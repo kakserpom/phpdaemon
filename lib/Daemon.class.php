@@ -39,13 +39,6 @@ class Daemon {
 	 */
 	private static $logpointer;
 	
-	/**
-	 * Log file path
-	 * @access public
-	 * @var string
-	 */
-	public static $logpointerpath;
-	
 	public static $worker;
 	public static $appResolver;
 	public static $appInstances = array();
@@ -406,14 +399,14 @@ class Daemon {
 				Daemon::$logpointer = FALSE;
 			}
 
-			Daemon::$logpointer = fopen(Daemon::$logpointerpath = Daemon::parseStoragepath(Daemon::$config->logstorage->value), 'a+');
+			Daemon::$logpointer = fopen(Daemon::$config->logstorage->value, 'a+');
 
 			if (isset(Daemon::$config->group)) {
-				chgrp(Daemon::$logpointerpath, Daemon::$config->group->value);
+				chgrp(Daemon::$config->logstorage->value, Daemon::$config->group->value);
 			}
 
 			if (isset(Daemon::$config->user)) {
-				chown(Daemon::$logpointerpath, Daemon::$config->user->value);
+				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value);
 			}
 		}
 	}
@@ -559,32 +552,6 @@ class Daemon {
 		if (Daemon::$logpointer) {
 			fwrite(Daemon::$logpointer, '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] ' . $msg . "\n");
 		}
-	}
-
-	/**
-	 * @method parseStoragepath
-	 * @param string $path - path to parse.
-	 * @description it replaces meta-variables in path with values.
-	 * @return string - path
-	 */
-	public static function parseStoragepath($path) {
-		$path = preg_replace_callback(
-			'~%(.*?)%~', 
-			function($m) {
-				$e = explode('=', $m[1]);
-
-				if (strtolower($e[0]) == 'date') {
-					return date($e[1]);
-				}
-
-				return $m[0];
-			}, $path);
-
-		if (stripos($path, 'file://') === 0) {
-			$path = substr($path, 7);
-		}
-
-		return $path;
 	}
 
 	/**
