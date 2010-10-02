@@ -114,7 +114,7 @@ while (($fn = readdir($h)) !== FALSE) {
 	$type = is_dir($path) ? 'Directory' : Daemon::getMIME($path);
 
 	?>
-<tr><td class="n"><a href="<?php echo htmlspecialchars($fn) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($fn); ?></a></td><td class="m"><?php echo date('Y-M-D H:i:s', filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory' ? '-' : Daemon::humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
+<tr><td class="n"><a href="<?php echo htmlspecialchars($fn) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($fn); ?></a></td><td class="m"><?php echo date('Y-M-D H:i:s', filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory' ? '-' : $this->humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
 	<?php
 }
 
@@ -207,5 +207,26 @@ if (Daemon::$config->expose->value) {
 		}
 
 		return Request::DONE;
+	}
+	
+	/**
+	 * @method humanSize
+	 * @description Returns human-readable size.
+	 * @return void
+	 */
+	private function humanSize($size) {
+		if ($size >= 1073741824) {
+			$size = round($size / 1073741824, 2) . 'G';
+		}
+		elseif ($size >= 1048576) {
+			$size = round($size / 1048576, 2) .'M';
+		}
+		elseif ($size >= 1024) {
+			$size = round($size / 1024 * 100, 2) .'K';
+		} else {
+			$size = $size . 'B';
+		}
+
+		return $size;
 	}
 }
