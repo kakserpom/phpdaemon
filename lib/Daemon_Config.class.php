@@ -18,7 +18,7 @@ class Daemon_Config implements ArrayAccess {
 	// Main Pathes
 	public $pidfile = '/var/run/phpd.pid';
 	public $defaultpidfile = '/var/run/phpd.pid';
-	public $configfile = '/etc/phpd/phpd.conf;./conf/phpdaemon.conf';
+	public $configfile = '/etc/phpd/phpd.conf;./conf/phpd.conf';
 	public $path = './conf/appResolver.php';
 	public $ipcwstate = '/var/run/phpdaemon-wstate.ipc';
 			

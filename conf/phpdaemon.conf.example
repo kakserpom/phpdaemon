@@ -1,0 +1,15 @@
+## Config file
+
+user web;
+group web;
+
+max-workers 1;
+min-workers 1;
+max-requests 1m;
+max-idle 0;
+start-workers 1;
+
+FastCGI
+{
+ #...
+}
