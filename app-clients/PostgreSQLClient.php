@@ -12,14 +12,14 @@ class PostgreSQLClient extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'server'       => 'pg://root@127.0.0.1', 
-			'mod' . $this->modname . 'port'         => 5432, 
-			'mod' . $this->modname . 'protologging' => 0, 
-			'mod' . $this->modname . 'enable'       => 0, 
+		$this->defaultConfig(array(
+			'server'       => 'pg://root@127.0.0.1', 
+			'port'         => 5432, 
+			'protologging' => 0, 
+			'enable'       => 0, 
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 			$this->ready = TRUE;
 		}
@@ -37,7 +37,7 @@ class PostgreSQLClient extends AsyncServer {
 		}
 		
 		if (empty($addr)) {
-			$addr = Daemon::$settings['mod' . $this->modname . 'server'];
+			$addr = $this->config->server->value;
 		}
 		
 		if (isset($this->servConn[$addr])) {
@@ -56,7 +56,7 @@ class PostgreSQLClient extends AsyncServer {
 		$u = parse_url($addr);
 		
 		if (!isset($u['port'])) {
-			$u['port'] = Daemon::$settings['mod' . $this->modname . 'port'];
+			$u['port'] = $this->config->port->value;
 		}
 		
 		$connId = $this->connectTo($u['host'], $u['port']);
@@ -218,7 +218,7 @@ class PostgreSQLClientSession extends SocketSession {
 		$this->write($header);
 		$this->write($packet);
 
-		if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+		if ($this->appInstance->config->protologging->value) {
 			Daemon::log('Client --> Server: ' . Daemon::exportBytes($header . $packet) . "\n\n");
 		}
 		
@@ -402,7 +402,7 @@ class PostgreSQLClientSession extends SocketSession {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 
-		if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+		if ($this->appInstance->config->protologging->value) {
 			Daemon::log('Server --> Client: ' . Daemon::exportBytes($buf) . "\n\n");
 		}
 		
@@ -434,7 +434,7 @@ class PostgreSQLClientSession extends SocketSession {
 	
 			if ($authType === 0) {
 				// Successful
-				if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+				if ($this->appInstance->config->protologging->value) {
 					Daemon::log(__CLASS__ . ': auth. ok.');
 				}
 
@@ -464,7 +464,7 @@ class PostgreSQLClientSession extends SocketSession {
 			elseif ($authType === 5) {
 				// MD5
 				$salt = binarySubstr($packet, 4, 4);
-				$this->sendPacket('p', 'md5'.md5(md5($this->password . $this->user) . $salt)); // Password Message
+				$this->sendPacket('p', 'md5' . md5(md5($this->password . $this->user) . $salt)); // Password Message
 				$this->cstate = 2; // Auth. packet sent
 			}
 			elseif ($authType === 6) {
@@ -526,7 +526,7 @@ class PostgreSQLClientSession extends SocketSession {
 		) {
 			// Copy in response
 			// The backend is ready to copy data from the frontend to a table; see Section 45.2.5.
-			if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+			if ($this->appInstance->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': Caught CopyInResponse');
 			}
 		}
@@ -592,7 +592,7 @@ class PostgreSQLClientSession extends SocketSession {
 			
 			$this->onError();
 		
-			if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+			if ($this->appInstance->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': Error response caught (0x' . dechex($code) . '): ' . $message);
 			}
 		}
@@ -604,7 +604,7 @@ class PostgreSQLClientSession extends SocketSession {
 		}
 		elseif ($type === 'S') {
 			// Portal Suspended
-			if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+			if ($this->appInstance->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': Caught PortalSuspended');
 			}
 		}
@@ -615,7 +615,7 @@ class PostgreSQLClientSession extends SocketSession {
 			if (isset($u[0])) {
 				$this->parameters[$u[0]] = isset($u[1]) ? $u[1] : NULL;
 
-				if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+				if ($this->appInstance->config->protologging->value) {
 					Daemon::log(__CLASS__ . ': Parameter ' . $u[0] . ' = \'' . $this->parameters[$u[0]] . '\'');
 				}
 			}
@@ -625,7 +625,7 @@ class PostgreSQLClientSession extends SocketSession {
 			list(, $this->backendKey) = unpack('N', $packet);
 			$this->backendKey = isset($u[1])?$u[1]:NULL;
 	
-			if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+			if ($this->appInstance->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': BackendKey is ' . $this->backendKey);
 			}
 		}
@@ -633,7 +633,7 @@ class PostgreSQLClientSession extends SocketSession {
 			// Ready For Query
 			$this->status = $packet;
 		
-			if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+			if ($this->appInstance->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': Ready For Query. Status: ' . $this->status);
 			}
 		} else {
@@ -688,7 +688,7 @@ class PostgreSQLClientSession extends SocketSession {
 		$this->resultRows = array();
 		$this->resultFields = array();
 		
-		if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+		if ($this->appInstance->config->protologging->value) {
 			Daemon::log(__METHOD__);
 		}
 	}

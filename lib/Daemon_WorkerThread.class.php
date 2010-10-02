@@ -26,7 +26,6 @@ class Daemon_WorkerThread extends Thread {
 	public $writePoolState = array();
 	private $autoReloadLast = 0;
 	private $currentStatus = 0;
-	private $microsleep;
 	private $eventsToAdd = array();
 	public $eventBase;
 	private $timeoutEvent;
@@ -38,23 +37,23 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function run() {
-		proc_nice(Daemon::$settings['workerpriority']);
+		proc_nice(Daemon::$config->workerpriority->value);
 
 		Daemon::$worker = $this;
-		$this->microsleep = Daemon::$settings['microsleep'];
 		$this->autoReloadLast = time();
-		$this->reloadDelay = Daemon::$parsedSettings['mpmdelay']+2;
+		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
 		$this->setStatus(4);
 
 		$this->setproctitle(
 			Daemon::$runName . ': worker process' 
-			. (Daemon::$settings['pidfile'] !== Daemon::$settings['defaultpidfile'] ? ' (' . Daemon::$settings['pidfile'] . ')' : '')
+			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value 
+				? ' (' . Daemon::$config->pidfile->value . ')' : '')
 		);
 		
 		register_shutdown_function(array($this,'shutdown'));
 		
 		if (
-			Daemon::supported(Daemon::SUPPORT_RUNKIT_MODIFY) 
+			is_callable('runkit_function_add') 
 			&& ini_get('runkit.internal_override')
 		) {
 			runkit_function_rename('header','header_native');
@@ -108,62 +107,62 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 		
-		if (Daemon::$parsedSettings['autogc'] > 0) {
+		if (Daemon::$config->autogc->value > 0) {
 			gc_enable();
 		} else {
 			gc_disable();
 		}
 		
-		if (isset(Daemon::$settings['group'])) {
-			$sg = posix_getgrnam(Daemon::$settings['group']);
+		if (isset(Daemon::$config->group->value)) {
+			$sg = posix_getgrnam(Daemon::$config->group->value);
 		}
 		
-		if (isset(Daemon::$settings['user'])) {
-			$su = posix_getpwnam(Daemon::$settings['user']);
+		if (isset(Daemon::$config->user->value)) {
+			$su = posix_getpwnam(Daemon::$config->user->value);
 		}
 	
-		if (Daemon::$settings['chroot'] !== '/') {
+		if (Daemon::$config->chroot->value !== '/') {
 			if (posix_getuid() != 0) {
 				Daemon::log('You must have the root privileges to change root.');
 				exit(0);
 			}
-			elseif (!chroot(Daemon::$settings['chroot'])) {
-				Daemon::log('Couldn\'t change root to \''.Daemon::$settings['chroot'].'\'.');
+			elseif (!chroot(Daemon::$config->chroot->value)) {
+				Daemon::log('Couldn\'t change root to \'' . Daemon::$config->chroot->value . '\'.');
 				exit(0);
 			}
 		}
 		
-		if (isset(Daemon::$settings['group'])) {
+		if (isset(Daemon::$config->group->value)) {
 			if ($sg === FALSE) {
-				Daemon::log('Couldn\'t change group to \'' . Daemon::$settings['group'] . '\'. You must replace config-variable \'group\' with existing group.');
+				Daemon::log('Couldn\'t change group to \'' . Daemon::$config->group->value . '\'. You must replace config-variable \'group\' with existing group.');
 				exit(0);
 			}
 			elseif (
 				($sg['gid'] != posix_getgid()) 
 				&& (!posix_setgid($sg['gid']))
 			) {
-				Daemon::log('Couldn\'t change group to \'' . Daemon::$settings['group'] . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
+				Daemon::log('Couldn\'t change group to \'' . Daemon::$config->group->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
 			}
 		}
 		
-		if (isset(Daemon::$settings['user'])) {
+		if (isset(Daemon::$config->user->value)) {
 			if ($su === FALSE) {
-				Daemon::log('Couldn\'t change user to \'' . Daemon::$settings['user'] . '\', user not found. You must replace config-variable \'user\' with existing username.');
+				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . '\', user not found. You must replace config-variable \'user\' with existing username.');
 				exit(0);
 			}
 			elseif (
 				($su['uid'] != posix_getuid()) 
 				&& (!posix_setuid($su['uid']))
 			) {
-				Daemon::log('Couldn\'t change user to \'' . Daemon::$settings['user'] . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
+				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
 			}
 		}
 		
-		if (Daemon::$settings['cwd'] !== '.') {
-			if (!@chdir(Daemon::$settings['cwd'])) {
-				Daemon::log('Couldn\'t change directory to \'' . Daemon::$settings['cwd'] . '.');
+		if (Daemon::$config->cwd->value !== '.') {
+			if (!@chdir(Daemon::$config->cwd->value)) {
+				Daemon::log('Couldn\'t change directory to \'' . Daemon::$config->cwd->value . '.');
 			}
 		}
 	
@@ -197,7 +196,7 @@ class Daemon_WorkerThread extends Thread {
 				return $s;
 			}
 
-			event_add($this->timeoutEvent, $this->microsleep);
+			event_add($this->timeoutEvent, Daemon::$config->microsleep->value);
 			event_base_loop($this->eventBase, EVLOOP_ONCE);
 
 			do {
@@ -319,7 +318,7 @@ class Daemon_WorkerThread extends Thread {
 				isset($hash[$path]) 
 				&& ($mt > $hash[$path])
 			) {
-				if (Daemon::lintFile($path)) {
+				if (runkit_lint_file($path)) {
 					runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
 				} else {
 					Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);
@@ -346,10 +345,10 @@ class Daemon_WorkerThread extends Thread {
 		} 
 
 		if (
-			(Daemon::$parsedSettings['autoreload'] > 0) 
-			&& ($time > $this->autoReloadLast + Daemon::$parsedSettings['autoreload'])
+			(Daemon::$config->autoreload->value > 0) 
+			&& ($time > $this->autoReloadLast + Daemon::$config->autoreload->value)
 		) {
-			if (Daemon::$settings['autoreimport']) {
+			if (Daemon::$config->autoreimport->value) {
 				$this->reimport();
 			} else {
 				if ($this->reloadCheck()) {
@@ -364,8 +363,8 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		if (
-			Daemon::$settings['maxrequests'] 
-			&& ($this->queryCounter >= Daemon::$settings['maxrequests'])
+			Daemon::$config->maxrequests->value
+			&& ($this->queryCounter >= Daemon::$config->maxrequests->value)
 		) {
 			$this->log('\'maxrequests\' exceed. Graceful shutdown.');
 
@@ -376,8 +375,8 @@ class Daemon_WorkerThread extends Thread {
 		}
 	
 		if (
-			(Daemon::$parsedSettings['maxmemoryusage'] > 0) 
-			&& (memory_get_usage(TRUE) > Daemon::$parsedSettings['maxmemoryusage'])
+			(Daemon::$config->maxmemoryusage->value > 0) 
+			&& (memory_get_usage(TRUE) > Daemon::$config->maxmemoryusage->value)
 		) {
 			$this->log('\'maxmemory\' exceed. Graceful shutdown.');
 
@@ -388,9 +387,9 @@ class Daemon_WorkerThread extends Thread {
 		}
 	
 		if (
-			Daemon::$parsedSettings['maxidle'] 
+			Daemon::$config->maxidle->value 
 			&& $this->timeLastReq 
-			&& ($time - $this->timeLastReq > Daemon::$parsedSettings['maxidle'])
+			&& ($time - $this->timeLastReq > Daemon::$config->maxidle->value)
 		) {
 			$this->log('\'maxworkeridle\' exceed. Graceful shutdown.');
 
@@ -447,13 +446,13 @@ class Daemon_WorkerThread extends Thread {
 					}
 				}
 	
-				if (Daemon::$settings['logqueue']) {
+				if (Daemon::$config->logqueue->value) {
 					$this->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() invoked.');
 				}
 
 				$ret = $r->call();
 	
-				if (Daemon::$settings['logqueue']) {
+				if (Daemon::$config->logqueue->value) {
 					$this->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
 				}
 
@@ -463,13 +462,13 @@ class Daemon_WorkerThread extends Thread {
 					unset($this->queue[$k]);
 	
 					if (isset($r->idAppQueue)) {
-						if (Daemon::$settings['logqueue']) {
+						if (Daemon::$config->logqueue->value) {
 							$this->log('request removed from ' . get_class($r->appInstance) . '->queue.');
 						}
 
 						unset($r->appInstance->queue[$r->idAppQueue]);
 					} else {
-						if (Daemon::$settings['logqueue']) {
+						if (Daemon::$config->logqueue->value) {
 							$this->log('request can\'t be removed from AppInstance->queue.');
 						}
 					}
@@ -487,13 +486,13 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function readPool() {
 		foreach ($this->readPoolState as $connId => $state) {
-			if (Daemon::$settings['logevents']) {
+			if (Daemon::$config->logevents->value) {
 				$this->log('event readConn(' . $connId . ') invoked.');
 			}
 
 			$this->poolApp[$connId]->readConn($connId);
 
-			if (Daemon::$settings['logevents']) {
+			if (Daemon::$config->logevents->value) {
 				$this->log('event readConn(' . $connId . ') finished.');
 			}
 		}
@@ -526,11 +525,11 @@ class Daemon_WorkerThread extends Thread {
 	 * @return boolean - Ready?
 	 */
 	public function shutdown($hard = FALSE) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			$this->log('event shutdown(' . ($hard ? 'HARD' : '') . ') invoked.');
 		}
 		
-		if (Daemon::$settings['throwexceptiononshutdown']) {
+		if (Daemon::$config->throwexceptiononshutdown->value) {
 			throw new Exception('event shutdown');
 		}
 		
@@ -558,8 +557,8 @@ class Daemon_WorkerThread extends Thread {
 			$reloadReady = $reloadReady && (microtime(TRUE) > $this->reloadTime);
 		}
 
-		if (Daemon::$settings['logevents']) {
-			$this->log('reloadReady = ' . Daemon::var_dump($reloadReady));
+		if (Daemon::$config->logevents->value) {
+			$this->log('reloadReady = ' . Debug::dump($reloadReady));
 		}
 		
 		foreach ($this->queue as $r) {
@@ -587,7 +586,7 @@ class Daemon_WorkerThread extends Thread {
 			
 			pcntl_signal_dispatch();
 			
-			event_add($this->timeoutEvent, $this->microsleep);
+			event_add($this->timeoutEvent, Daemon::$config->microsleep->value);
 			event_base_loop($this->eventBase,EVLOOP_ONCE);
 			
 			$this->readPool();
@@ -615,7 +614,7 @@ class Daemon_WorkerThread extends Thread {
 			$int += 100;
 		}
 		
-		if (Daemon::$settings['logworkersetstatus']) {
+		if (Daemon::$config->logworkersetstatus->value) {
 			$this->log('status is ' . $int);
 		}
 		
@@ -628,7 +627,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function sigint() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGINT.');
 		}
 		
@@ -641,7 +640,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function sigterm() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGTERM.');
 		}
 		
@@ -654,7 +653,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sigquit() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGQUIT.');
 		}
 
@@ -667,12 +666,12 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sighup() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGHUP (reload config).');
 		}
 
-		if (isset(Daemon::$parsedSettings['configfile'])) {
-			Daemon::loadConfig(Daemon::$parsedSettings['configfile']);
+		if (isset(Daemon::$config->configfile->value)) {
+			Daemon::loadConfig(Daemon::$config->configfile->value);
 		}
 
 		$this->update = TRUE;
@@ -684,7 +683,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sigusr1() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGUSR1 (re-open log-file).');
 		}
 	
@@ -697,7 +696,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function sigusr2() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGUSR2 (graceful shutdown for update).');
 		}
 

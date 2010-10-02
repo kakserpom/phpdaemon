@@ -16,15 +16,29 @@ class AppInstance {
 	public $reqCounter = 0;    // counter of requests
 	public $queue = array();   // queue of requests
 	public $ready = FALSE;     // ready to start?
-	public $modname;           // application's name in lower case.
+  public $name;							// name of instance
+	public $config;
  
 	/**	
 	 * @method __contruct
 	 * @description Application constructor.
 	 * @return void
 	 */
-	public function __construct() {
-		$this->modname = strtolower(get_class($this));
+	public function __construct($name = NULL) {
+	  $this->name = $name;
+	  $fullname = get_class($this).($this->name !== NULL ? '-'.urlencode($this->name) : '');
+	  if (!isset(Daemon::$config->{$fullname})) {
+			Daemon::$config->{$fullname} = new Daemon_ConfigSection;
+		}
+		else	{
+			if (
+					!isset(Daemon::$config->{$fullname}->enable)
+			&&	!isset(Daemon::$config->{$fullname}->disable)) {
+				Daemon::$config->{$fullname}->enable = new Daemon_ConfigEntry;
+				Daemon::$config->{$fullname}->enable->setValue(1);
+		 }
+		}
+		$this->config = Daemon::$config->{$fullname};
 		$this->init();
 
 		if (Daemon::$worker) {
@@ -32,7 +46,40 @@ class AppInstance {
 			$this->ready = TRUE;
 		}
 	}
- 
+
+ 	/**
+	 * @method defaultConfig
+	 * @param array {"setting": "value"}
+	 * @description Adds default settings to repository.
+	 * @return boolean - Succes.
+	 */
+	public function defaultConfig($settings = array()) {
+		foreach ($settings as $k => $v) {
+			$k = strtolower(str_replace('-', '', $k));
+
+			if (!isset($this->config->{$k})) {
+			  if (is_scalar($v))	{
+					$this->config->{$k} = new Daemon_ConfigEntry($v);
+				}
+				else {
+					$this->config->{$k} = $v;
+				}
+			}
+			else {
+				$current = $this->config->{$k}->value;
+			  if (is_scalar($v))	{
+					$this->config->{$k} = new Daemon_ConfigEntry($v);
+				}
+				else {
+					$this->config->{$k} = $v;
+				}
+				$this->config->{$k}->setHumanValue($current);
+			}
+		}
+
+		return TRUE;
+	}
+	
 	/**
 	 * @method onReady
 	 * @description Called when the worker is ready to go.
@@ -97,7 +144,7 @@ class AppInstance {
 	 * @return void
 	 */
 	public function shutdown($graceful = FALSE) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked. Size of the queue: ' . sizeof($this->queue) . '.');
 		}
 
@@ -128,7 +175,7 @@ class AppInstance {
 
 		$req->idAppQueue = ++$this->reqCounter;
 
-		if (Daemon::$settings['logqueue']) {
+		if (Daemon::$config->logqueue->value) {
 			Daemon::$worker->log('request added to ' . get_class($this) . '->queue.');
 		}
 

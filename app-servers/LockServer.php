@@ -11,21 +11,21 @@ class LockServer extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'listen'         => 'tcp://0.0.0.0',
-			'mod' . $this->modname . 'listenport'     => 833,
-			'mod' . $this->modname . 'allowedclients' => '127.0.0.1',
-			'mod' . $this->modname . 'enable'         => 0,
+		$this->defaultConfig(array(
+			'listen'         => 'tcp://0.0.0.0',
+			'listenport'     => 833,
+			'allowedclients' => '127.0.0.1',
+			'enable'         => 0,
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
-			$this->allowedClients = explode(',', Daemon::$settings['mod' . $this->modname . 'allowedclients']);
+			$this->allowedClients = explode(',', Daemon::$config['allowedclients']);
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'],
-				Daemon::$settings['mod' . $this->modname . 'listenport']
+				Daemon::$config->listen->value,
+				Daemon::$config->listenport->value
 			);
 		}
 	}
@@ -115,7 +115,7 @@ class LockServerSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config['logevents']) {
 			Daemon::log(__METHOD__ . ' invoked');
 		}
 

@@ -66,7 +66,7 @@ class AsyncRTEPclient extends AsyncStream {
 	}
 	
 	public function onReadEvent($buf, $arg = NULL) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . '()');
 		}
 		
@@ -98,14 +98,14 @@ class AsyncRTEPclient extends AsyncStream {
 	}
 	
 	public function onResponse($packet) {
-		if (Daemon::$settings['logevents']) {
-			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
+		if (Daemon::$config->logevents->value) {
+			Daemon::log(__METHOD__ . ': ' . Debug::dump($packet));
 		}
 	}
 	
 	public function onEvent($packet) {
-		if (Daemon::$settings['logevents']) {
-			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
+		if (Daemon::$config->logevents->value) {
+			Daemon::log(__METHOD__ . ': ' . Debug::dump($packet));
 		}
 		
 		$event = $packet['event'];
@@ -122,8 +122,8 @@ class AsyncRTEPclient extends AsyncStream {
 	}
 	
 	public function onRequest($packet) {
-		if (Daemon::$settings['logevents']) {
-			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
+		if (Daemon::$config->logevents->value) {
+			Daemon::log(__METHOD__ . ': ' . Debug::dump($packet));
 		}
 	}
 	

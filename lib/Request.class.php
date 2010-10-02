@@ -96,7 +96,7 @@ class Request {
 		$this->upstream = $upstream;
 		$this->attrs = $req->attrs;
 
-		if (Daemon::$settings['expose']) {
+		if (isset($this->upstream->expose->value) && $this->upstream->expose->value) {
 			$this->header('X-Powered-By: phpDaemon/' . Daemon::$version);
 		}
 
@@ -582,7 +582,7 @@ class Request {
 
 		if ($this->attrs->chunked) {
 			for ($o = 0; $o < $l;) {
-				$c = min(Daemon::$parsedSettings['chunksize'], $l - $o);
+				$c = min($this->upstream->chunksize->value, $l - $o);
 
 				$chunk = dechex($c) . "\r\n"
 					. ($c === $l ? $s : binarySubstr($s, $o, $c)) // content
@@ -837,7 +837,7 @@ class Request {
 			&& ($this->state > 1) 
 			&& !Daemon::$compatMode
 		) {
-			if (!Daemon::$parsedSettings['keepalive']) {
+			if (!isset($this->upstream->keepalive->value) || !$this->upstream->keepalive->value) {
 				$this->upstream->closeConnection($this->attrs->connId);
 			}
 		} else {
@@ -863,7 +863,8 @@ class Request {
 
 			if (
 				isset($this->attrs->server['REQUEST_BODY_FILE']) 
-				&& Daemon::$settings['autoreadbodyfile']
+				&& isset($this->upstream->config->autoreadbodyfile->value)
+				&& $this->upstream->config->autoreadbodyfile->value
 			) {
 				$this->readBodyFile();
 			}
@@ -928,9 +929,9 @@ class Request {
 		}
 
 		if (
-			(Daemon::$parsedSettings['autogc'] > 0) 
+			(Daemon::$config->autogc->value > 0) 
 			&& (Daemon::$worker->queryCounter > 0) 
-			&& (Daemon::$worker->queryCounter % Daemon::$parsedSettings['autogc'] === 0)
+			&& (Daemon::$worker->queryCounter % Daemon::$config->autogc->value === 0)
 		) {
 			gc_collect_cycles();
 		}

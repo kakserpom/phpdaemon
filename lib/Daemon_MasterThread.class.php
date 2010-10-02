@@ -17,20 +17,23 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function run() {
-		proc_nice(Daemon::$settings['masterpriority']);
+		proc_nice(Daemon::$config->masterpriority->value);
 		gc_enable();
 		register_shutdown_function(array($this,'onShutdown'));
-		$this->collections = array('workers' => new threadCollection);
+		$this->collections = array('workers' => new ThreadCollection);
 
 		$this->setproctitle(
 			Daemon::$runName . ': master process' 
-			. (Daemon::$settings['pidfile'] !== Daemon::$settings['defaultpidfile'] ? ' (' . Daemon::$settings['pidfile'] . ')' : '')
+			. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
 		);
 
-		Daemon::$appResolver = require Daemon::$settings['path'];
+		Daemon::$appResolver = require Daemon::$config->path->value;
 		Daemon::$appResolver->preloadPrivileged(); 
 
-		$this->spawnWorkers(min(Daemon::$settings['startworkers'],Daemon::$settings['maxworkers']));
+		$this->spawnWorkers(min(
+			Daemon::$config->startworkers->value,
+			Daemon::$config->maxworkers->value
+		));
 		$mpmLast = time();
 		$autoReloadLast = time();
 		$c = 1;
@@ -39,28 +42,23 @@ class Daemon_MasterThread extends Thread {
 			pcntl_signal_dispatch();
 			$this->sigwait(1,0);
 			clearstatcache();
-
-			if (Daemon::$logpointerpath !== Daemon::parseStoragepath(Daemon::$settings['logstorage'])) { 
-				$this->sigusr1();
-			}
       
 			if (
-				isset(Daemon::$parsedSettings['configfile']) 
-				&& (Daemon::$parsedSettings['autoreload'] > 0)
+				isset(Daemon::$config->configfile) 
+				&& (Daemon::$config->autoreload->value > 0)
 			) {
-				$mt = filemtime(Daemon::$parsedSettings['configfile']);
+				$mt = filemtime(Daemon::$config->configfile->value);
 
 				if (!isset($cfgmtime)) {
 					$cfgmtime = $mt;
 				}
 
 				if ($cfgmtime < $mt) {
-					$cfgmtime = filemtime(Daemon::$parsedSettings['configfile']);
+					$cfgmtime = filemtime(Daemon::$config->configfile->value);
 					$this->sighup();
 				}
 			}
-	
-			if (time() > $mpmLast+Daemon::$parsedSettings['mpmdelay']) {
+			if (time() > $mpmLast+Daemon::$config->mpmdelay->value) {
 				$mpmLast = time();
 				++$c;
 				
@@ -76,10 +74,10 @@ class Daemon_MasterThread extends Thread {
 				}
 				
 				if (
-					isset(Daemon::$settings['mpm']) 
-					&& is_callable($c = Daemon::$settings['mpm'])
+					isset(Daemon::$config->mpm->value) 
+					&& is_callable(Daemon::$config->mpm->value)
 				) {
-					call_user_func($c);
+					call_user_func(Daemon::$config->mpm->value);
 				} else {
 					// default MPM
 					$state = Daemon::getStateOfWorkers($this);
@@ -87,10 +85,10 @@ class Daemon_MasterThread extends Thread {
 					if ($state) {
 						$n = max(
 							min(
-								Daemon::$settings['minspareworkers'] - $state['idle'], 
-								Daemon::$settings['maxworkers'] - $state['alive']
+								Daemon::$config->minspareworkers->value - $state['idle'], 
+								Daemon::$config->maxworkers->value - $state['alive']
 							),
-							Daemon::$settings['minworkers'] - $state['alive']
+							Daemon::$config->minworkers->value - $state['alive']
 						);
 
 						if ($n > 0) {
@@ -99,8 +97,8 @@ class Daemon_MasterThread extends Thread {
 						}
 
 						$n = min(
-							$state['idle'] - Daemon::$settings['maxspareworkers'],
-							$state['alive'] - Daemon::$settings['minworkers']
+							$state['idle'] - Daemon::$config->maxspareworkers->value,
+							$state['alive'] - Daemon::$config->minworkers->value
 						);
 						
 						if ($n > 0) {
@@ -204,7 +202,7 @@ class Daemon_MasterThread extends Thread {
 			shmop_delete(Daemon::$shm_wstate);
 		}
 		
-		file_put_contents(Daemon_Bootstrap::$pidfile,'');
+		file_put_contents(Daemon::$config->pidfile->value,'');
 		
 		exit(0);
 	}
@@ -215,7 +213,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigchld() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGCHLD.');
 		}
 
@@ -228,7 +226,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigint() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGINT.');
 		}
 	
@@ -242,7 +240,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigterm() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGTERM.');
 		}
 	
@@ -256,7 +254,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigquit() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGQUIT.');
 		}
 
@@ -270,12 +268,12 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function sighup() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGHUP (reload config).');
 		}
 
-		if (isset(Daemon::$parsedSettings['configfile'])) {
-			Daemon::loadConfig(Daemon::$parsedSettings['configfile']);
+		if (isset(Daemon::$config->configfile)) {
+			Daemon::loadConfig(Daemon::$config->configfile->value);
 		}
 
 		$this->collections['workers']->signal(SIGHUP);
@@ -287,7 +285,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function sigusr1() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGUSR1 (re-open log-file).');
 		}
 
@@ -301,7 +299,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function sigusr2() {
-		if (Daemon::$settings['logsignals']) {
+		if (Daemon::$config->logsignals->value) {
 			Daemon::log('Master caught SIGUSR2 (graceful restart all workers).');
 		}
 

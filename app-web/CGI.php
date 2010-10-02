@@ -2,7 +2,6 @@
 class CGI extends AppInstance {
 
 	public $binPath = 'php-cgi';   // Default bin-path
-	public $cwd;                   // Default CWD
 	public $binAliases = array(
 		'php5'   => '/usr/local/php/bin/php-cgi',
 		'php6'   => '/usr/local/php6/bin/php-cgi',
@@ -18,27 +17,16 @@ class CGI extends AppInstance {
 	 * @return void
 	 */
 	public function onReady() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'allow-override-binpath' => TRUE,
-			'mod' . $this->modname . 'allow-override-cwd' => TRUE,
-			'mod' . $this->modname . 'allow-override-chroot' => TRUE,
-			'mod' . $this->modname . 'allow-override-user' => TRUE,
-			'mod' . $this->modname . 'allow-override-group' => TRUE,
-			'mod' . $this->modname . 'cwd' => NULL,
-			'mod' . $this->modname . 'output-errors' => TRUE,
-			'mod' . $this->modname . 'errlog-file' => __DIR__.'/cgi-error.log',
+		$this->defaultConfig(array(
+			'allow-override-binpath' => TRUE,
+			'allow-override-cwd' => TRUE,
+			'allow-override-chroot' => TRUE,
+			'allow-override-user' => TRUE,
+			'allow-override-group' => TRUE,
+			'cwd' => NULL,
+			'output-errors' => TRUE,
+			'errlog-file' => __DIR__ . '/cgi-error.log',
 		));
-
-		$this->cwd = Daemon::$settings['mod' . $this->modname . 'cwd'];
-	}
-
-	/**
-	 * @method update
-	 * @description Called when worker is going to update configuration.
-	 * @return void
-	 */
-	public function update() {
-		$this->cwd = Daemon::$settings['mod' . $this->modname . 'cwd'];
 	}
 
 	/**
@@ -70,7 +58,6 @@ class CGIRequest extends Request {
 		$this->proc->readPacketSize = $this->appInstance->readPacketSize;
 		$this->proc->onReadData(array($this,'onReadData'));
 		$this->proc->onWrite(array($this,'onWrite'));
-		$this->proc->outputErrors = Daemon::$settings['mod'.$this->appInstance->modname.'outputerrors'];
 		$this->proc->binPath = $this->appInstance->binPath;
 		$this->proc->chroot = $this->appInstance->chroot;
 
@@ -78,40 +65,40 @@ class CGIRequest extends Request {
 			if (isset($this->appInstance->binAliases[$this->attrs->server['BINPATH']])) {
 				$this->proc->binPath = $this->appInstance->binAliases[$this->attrs->server['BINPATH']];
 			}
-			elseif (Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverridebinpath']) {
+			elseif ($this->appInstance->config->allowoverridebinpath->value) {
 				$this->proc->binPath = $this->attrs->server['BINPATH'];
 			}
 		}
 
 		if (
 			isset($this->attrs->server['CHROOT']) 
-			&& Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverridechroot']
+			&& $this->appInstance->config->allowoverridechroot->value
 		) {
 			$this->proc->chroot = $this->attrs->server['CHROOT'];
 		}
 
 		if (
 			isset($this->attrs->server['SETUSER']) 
-			&& Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverrideuser']
+			&& $this->appInstance->config->allowoverrideuser->value
 		) {
 			$this->proc->setUser = $this->attrs->server['SETUSER'];
 		}
 
 		if (
 			isset($this->attrs->server['SETGROUP']) 
-			&& Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverridegroup']
+			&& $this->appInstance->config->allowoverridegroup->value
 		) {
 			$this->proc->setGroup = $this->attrs->server['SETGROUP'];
 		}
 
 		if (
 			isset($this->attrs->server['CWD']) 
-			&& Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverridecwd']
+			&& $this->appInstance->config->allowoverridecwd->value
 		) {
 			$this->proc->cwd = $this->attrs->server['CWD'];
 		}
-		elseif ($this->appInstance->cwd !== NULL) {
-			$this->proc->cwd = $this->appInstance->cwd;
+		elseif ($this->appInstance->config->cwd->value !== NULL) {
+			$this->proc->cwd = $this->appInstance->config->cwd->value;
 		} else {
 			$this->proc->cwd = dirname($this->attrs->server['SCRIPT_FILENAME']);
 		}

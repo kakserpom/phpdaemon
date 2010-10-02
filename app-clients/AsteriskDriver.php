@@ -17,13 +17,13 @@ class AsteriskDriver extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'server' => 'tcp://127.0.0.1',
-			'mod' . $this->modname . 'port'   => 5038,
-			'mod' . $this->modname . 'enable' => 0
+		$this->defaultConfig(array(
+			'server' => 'tcp://127.0.0.1',
+			'port'   => 5038,
+			'enable' => 0
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 		}
 	}
@@ -35,9 +35,9 @@ class AsteriskDriver extends AsyncServer {
 	 * @return AsteriskDriverSession Session object.
 	 */
 	public function getConnection($addr = null) {
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			if (empty($addr)) {
-				$addr = Daemon::$settings['mod' . $this->modname . 'server'];
+				$addr = $this->config->server->value;
 			}
 
 			if (isset($this->servConn[$addr])) {
@@ -56,10 +56,10 @@ class AsteriskDriver extends AsyncServer {
 			$u = parse_url($addr);
 
 			if (!isset($u['port'])) {
-				$u['port'] = Daemon::$settings['mod' . $this->modname . 'port'];
+				$u['port'] = $this->config->port->value;
 			}
 
-			$connId = $this->connectTo($u['host'],$u['port']);
+			$connId = $this->connectTo($u['host'], $u['port']);
 
 			if (!$connId) {
 				return;

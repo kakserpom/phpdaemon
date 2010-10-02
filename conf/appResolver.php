@@ -1,7 +1,4 @@
 <?php
-
-return new MyAppResolver;
-
 class MyAppResolver extends AppResolver {
 
 	public $defaultApp = 'Example';
@@ -58,3 +55,4 @@ class MyAppResolver extends AppResolver {
 		}
 	}
 }
+return new MyAppResolver;

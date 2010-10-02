@@ -11,18 +11,18 @@ class RTEP extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname.'listen'     => 'tcp://0.0.0.0',
-			'mod' . $this->modname.'listenport' => 844,
-			'mod' . $this->modname.'enable'     => 0,
+		$this->defaultConfig(array(
+			'listen'     => 'tcp://0.0.0.0',
+			'listenport' => 844,
+			'enable'     => 0,
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
-			Daemon::log(__CLASS__.' up.');
+		if ($this->config->enable->value) {
+			Daemon::log(__CLASS__ . ' up.');
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'], 
-				Daemon::$settings['mod' . $this->modname . 'listenport']
+				$this->config->listen->value, 
+				$this->config->listenport->value
 			);
 		}
 	}
@@ -46,8 +46,8 @@ class RTEP extends AsyncServer {
 	 * @return void
 	 */
 	public function onEvent($packet) {
-		if (Daemon::$settings['logevents']) {
-			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
+		if (Daemon::$config->logevents->value) {
+			Daemon::log(__METHOD__ . ': ' . Debug::dump($packet));
 		}
 
 		$evName = isset($packet['event']['name']) ? (string) $packet['event']['name'] : '';
@@ -81,8 +81,8 @@ class RTEPSession extends SocketSession {
 	 * @return void
 	 */
 	public function send($packet) {
-		if (Daemon::$settings['logevents']) {
-			Daemon::log(__METHOD__ . ' invoked (' . $this->clientAddr . '): ' . Daemon::var_dump($packet));
+		if (Daemon::$config->logevents->value) {
+			Daemon::log(__METHOD__ . ' invoked (' . $this->clientAddr . '): ' . Debug::dump($packet));
 		}
 
 		if ($this->http) {
@@ -90,7 +90,7 @@ class RTEPSession extends SocketSession {
 			$l = strlen($s);
 
 			for ($o = 0; $o < $l;) {
-				$c = min(Daemon::$parsedSettings['chunksize'], $l - $o);
+				$c = min(Daemon::$config->chunksize->value, $l - $o);
 				$chunk = dechex($c) . "\r\n"
 					. ($c === $l ? $s : binarySubstr($s, $o, $c))
 					. "\r\n";
@@ -121,7 +121,7 @@ class RTEPSession extends SocketSession {
 			$this->events[] = $evName;
 		}
 
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log('Event \'' . $evName . '\' added to client ' . $this->clientAddr . '.');
 		}
 	}
@@ -145,7 +145,7 @@ class RTEPSession extends SocketSession {
 
 		--$s;
 
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log('Event \'' . $evName . '\' removed from client ' . $this->clientAddr . '.');
 		}
 
@@ -158,7 +158,7 @@ class RTEPSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked');
 		}
 
@@ -175,8 +175,8 @@ class RTEPSession extends SocketSession {
 	 * @return void
 	 */
 	public function onRequest($packet) {
-		if (Daemon::$settings['logevents']) {
-			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
+		if (Daemon::$config->logevents->value) {
+			Daemon::log(__METHOD__ . ': ' . Debug::dump($packet));
 		}
 
 		$request = (isset($packet['request']) && is_array($packet['request'])) ? $packet['request'] : array();

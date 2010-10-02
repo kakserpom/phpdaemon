@@ -14,14 +14,14 @@ class LockClient extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'servers' => '127.0.0.1',
-			'mod' . $this->modname . 'port'    => 833,
-			'mod' . $this->modname . 'prefix'  => '',
+		$this->defaultConfig(array(
+			'servers' => '127.0.0.1',
+			'port'    => 833,
+			'prefix'  => '',
 		));
 
-		$this->prefix = &Daemon::$settings['mod' . $this->modname . 'prefix'];
-		$servers = explode(',', Daemon::$settings['mod' . $this->modname . 'servers']);
+		$this->prefix = $this->config->prefix->value;
+		$servers = explode(',', $this->config->servers->value);
 
 		foreach ($servers as $s) {
 			$e = explode(':',$s);
@@ -39,7 +39,7 @@ class LockClient extends AsyncServer {
 	*/
 	public function addServer($host, $port = NULL, $weight = NULL) {
 		if ($port === NULL) {
-			$port = Daemon::$settings['mod' . $this->modname . 'port'];
+			$port = $this->config->port->value;
 		}
 
 		$this->servers[$host . ':' . $port] = $weight;

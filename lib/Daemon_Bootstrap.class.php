@@ -11,7 +11,6 @@
 
 class Daemon_Bootstrap {
 
-	public static $pidfile;
 	public static $pid;
 
 	private static $commands = array(
@@ -89,15 +88,13 @@ class Daemon_Bootstrap {
 			exit;
 		}
 
-		if (isset($args[$k = 'configfile'])) {
-			Daemon::$settings[$k] = $args[$k];
+		if (isset($args['configfile'])) {
+			Daemon::$config->configfile->setHumanValue($args[$k]);
 		}
 
-		if (
-			isset(Daemon::$settings['configfile'])
-			&& !Daemon::loadConfig(Daemon::$settings['configfile'])
-		) {
+		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
 			$error = TRUE;
+			exit;
 		}
 
 		if (!Daemon::loadSettings($args)) {
@@ -109,12 +106,12 @@ class Daemon_Bootstrap {
 			$error = TRUE;
 		}
 		
-		if (isset(Daemon::$settings['locale'])) {
-			setlocale(LC_ALL,explode(',', Daemon::$settings['locale']));
+		if (isset(Daemon::$config->locale)) {
+			setlocale(LC_ALL,explode(',', Daemon::$config->locale->value));
 		}
 		
 		if (
-			Daemon::$settings['autoreimport'] 
+			Daemon::$config->autoreimport
 			&& !is_callable('runkit_import')
 		) {
 			Daemon::log('runkit extension not found. You should install it or disable --auto-reimport.');
@@ -146,65 +143,59 @@ class Daemon_Bootstrap {
 			$error = TRUE;
 		}
 		
-		if (!isset(Daemon::$settings['user'])) {
+		if (!isset(Daemon::$config->user)) {
 			Daemon::log('You must set \'user\' parameter.');
 			$error = TRUE;
 		}
 		
-		if (!isset(Daemon::$settings['path'])) {
+		if (!isset(Daemon::$config->path)) {
 			Daemon::log('You must set \'path\' parameter (path to your application resolver).');
 			$error = TRUE;
 		}
 		
-		Daemon_Bootstrap::$pidfile = realpath(Daemon::$settings['pidfile']);
-		
-		if (!Daemon_Bootstrap::$pidfile) {
-			Daemon_Bootstrap::$pidfile = Daemon::$settings['pidfile'];
-		}
-		
-		if (!file_exists(Daemon_Bootstrap::$pidfile)) {
-			if (!touch(Daemon_Bootstrap::$pidfile)) {
-				Daemon::log('Couldn\'t create pid-file \'' . Daemon_Bootstrap::$pidfile . '\'.');
+		if (!file_exists(Daemon::$config->pidfile->value)) {
+			if (!touch(Daemon::$config->pidfile->value)) {
+				Daemon::log('Couldn\'t create pid-file \'' . Daemon::$config->pidfile->value . '\'.');
 				$error = TRUE;
 			}
 
 			Daemon_Bootstrap::$pid = 0;
 		}
-		elseif (!is_file(Daemon_Bootstrap::$pidfile)) {
-			Daemon::log('Pid-file \'' . Daemon_Bootstrap::$pidfile . '\' must be a regular file.');
+		elseif (!is_file(Daemon::$config->pidfile->value)) {
+			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be a regular file.');
 			Daemon_Bootstrap::$pid = FALSE;
 			$error = TRUE;
 		}
-		elseif (!is_writable(Daemon_Bootstrap::$pidfile)) {
-			Daemon::log('Pid-file \'' . Daemon_Bootstrap::$pidfile . '\' must be writable.');
+		elseif (!is_writable(Daemon::$config->pidfile->value)) {
+			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be writable.');
 			$error = TRUE;
 		}
-		elseif (!is_readable(Daemon_Bootstrap::$pidfile)) {
-			Daemon::log('Pid-file \'' . Daemon_Bootstrap::$pidfile . '\' must be readable.');
+		elseif (!is_readable(Daemon::$config->pidfile->value)) {
+			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be readable.');
 			Daemon_Bootstrap::$pid = FALSE;
 			$error = TRUE;
 		} else {
-			Daemon_Bootstrap::$pid = (int) file_get_contents(Daemon_Bootstrap::$pidfile);
+			Daemon_Bootstrap::$pid = (int) file_get_contents(Daemon::$config->pidfile->value);
 		}
 		
-		if (Daemon::$settings['chroot'] !== '/') {
+		if (Daemon::$config->chroot !== '/') {
 			if (posix_getuid() != 0) {
 				Daemon::log('You must have the root privileges to change root.');
 				$error = TRUE;
 			}
 		}
 		
-		if (!@is_file(Daemon::$pathReal)) {
-			Daemon::log('Your application resolver \'' . Daemon::$settings['path'] . '\' is not available.');
+		if (!@is_file(Daemon::$config->path->value)) {
+			Daemon::log('Your application resolver \'' . Daemon::$config->path->value . '\' is not available.');
 			$error = TRUE;
 		}
 
 		if (
-			isset(Daemon::$settings['group']) 
+			isset(Daemon::$config->group->value) 
 			&& is_callable('posix_getgid')
 		) {
-			if (($sg = posix_getgrnam(Daemon::$settings['group'])) === FALSE) {
-				Daemon::log('Unexisting group \'' . Daemon::$settings['group'] . '\'. You have to replace config-variable \'group\' with existing group-name.');
+			if (($sg = posix_getgrnam(Daemon::$config->group->value)) === FALSE) {
+				Daemon::log('Unexisting group \'' . Daemon::$config->group->value . '\'. You have to replace config-variable \'group\' with existing group-name.');
 				$error = TRUE;
 			}
 			elseif (($sg['gid'] != posix_getgid()) && (posix_getuid() != 0)) {
@@ -214,11 +205,11 @@ class Daemon_Bootstrap {
 		}
 		
 		if (
-			isset(Daemon::$settings['user']) 
+			isset(Daemon::$config->user->value) 
 			&& is_callable('posix_getuid')
 		) {
-			if (($su = posix_getpwnam(Daemon::$settings['user'])) === FALSE) {
-				Daemon::log('Unexisting user \'' . Daemon::$settings['user'] . '\', user not found. You have to replace config-variable \'user\' with existing username.');
+			if (($su = posix_getpwnam(Daemon::$config->user->value)) === FALSE) {
+				Daemon::log('Unexisting user \'' . Daemon::$config->user->value . '\', user not found. You have to replace config-variable \'user\' with existing username.');
 				$error = TRUE;
 			}
 			elseif (
@@ -231,21 +222,21 @@ class Daemon_Bootstrap {
 		}
 		
 		if (
-			isset(Daemon::$settings['minspareworkers']) 
-			&& isset(Daemon::$settings['maxspareworkers'])
+			isset(Daemon::$config->minspareworkers) 
+			&& isset(Daemon::$config->maxspareworkers)
 		) {
-			if (Daemon::$settings['minspareworkers'] > Daemon::$settings['maxspareworkers']) {
+			if (Daemon::$config->minspareworkers > Daemon::$config->maxspareworkers) {
 				Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
 				$error = TRUE;
 			}
 		}
 		
 		if (
-			isset(Daemon::$settings['minworkers']) 
-			&& isset(Daemon::$settings['maxworkers'])
+			isset(Daemon::$config->minworkers) 
+			&& isset(Daemon::$config->maxworkers)
 		) {
-			if (Daemon::$settings['minworkers'] > Daemon::$settings['maxworkers']) {
-				Daemon::$settings['maxworkers'] = Daemon::$settings['minworkers'];
+			if (Daemon::$config->minworkers > Daemon::$config->maxworkers) {
+				Daemon::$config->maxworkers = Daemon::$config->minworkers;
 			}
 		}
 		
@@ -259,15 +250,15 @@ class Daemon_Bootstrap {
 			|| $runmode == 'fullstatus'
 		) {
 			$status = Daemon_Bootstrap::$pid && posix_kill(Daemon_Bootstrap::$pid, SIGTTIN);
-			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon_Bootstrap::$pidfile . ").\n";
+			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon::$config->pidfile->value . ").\n";
 
 			if (
 				$status 
 				&& ($runmode == 'fullstatus')
 			) {
-				echo 'Uptime: ' . Daemon::date_period_text(filemtime(Daemon_Bootstrap::$pidfile), time()) . "\n";
+				echo 'Uptime: ' . Daemon::date_period_text(filemtime(Daemon::$config->pidfile->value), time()) . "\n";
 
-				Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$settings['ipcwstate'], 0, 'wstate', FALSE);
+				Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate, 0, 'wstate', FALSE);
 
 				$stat = Daemon::getStateOfWorkers();
 
@@ -330,14 +321,16 @@ class Daemon_Bootstrap {
 				'_bold'     => TRUE,
 			);
 			
-			foreach (Daemon::$settings as $name => &$value) {
+			foreach (Daemon::$config as $name => $entry) {
+				if (!$entry instanceof Daemon_ConfigEntry) {continue;}
+				
 				$row = array(
 					'parameter' => $name,
-					'value'     => var_export($value, TRUE),
+					'value'     => var_export($entry->humanValue, TRUE),
 				);
 
-				if (isset(Daemon::$parsedSettings[$name])) {
-					$row['value'] .= ' (' . Daemon::$parsedSettings[$name] . ')';
+				if ($entry->defaultValue != $entry->humanValue) {
+					$row['value'] .= ' (' . var_export($entry->defaultValue, TRUE) . ')';
 				}
 			
 				$rows[] = $row;
@@ -425,13 +418,13 @@ class Daemon_Bootstrap {
 			Daemon_Bootstrap::$pid 
 			&& posix_kill(Daemon_Bootstrap::$pid, SIGTTIN)
 		) {
-			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon_Bootstrap::$pidfile . '\' is running already (PID ' . Daemon_Bootstrap::$pid . ')');
+			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Daemon_Bootstrap::$pid . ')');
 			exit;
 		}
 
 		Daemon::init();
 		$pid = Daemon::spawnMaster();
-		file_put_contents(Daemon_Bootstrap::$pidfile, $pid);
+		file_put_contents(Daemon::$config->pidfile->value, $pid);
 	}
 
 	/**

@@ -9,18 +9,18 @@ class RTEPClient extends AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'addr'   => 'tcpstream://127.0.0.1:844',
-			'mod' . $this->modname . 'enable' => 0,
+		$this->defaultConfig(array(
+			'addr'   => 'tcpstream://127.0.0.1:844',
+			'enable' => 0,
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
 			require_once Daemon::$dir . '/lib/asyncRTEPclient.class.php';
 
 			$this->client = new AsyncRTEPclient;
-			$this->client->addServer(Daemon::$settings[$k = 'mod' . $this->modname . 'addr']);
+			$this->client->addServer($this->config->addr->value);
 			$this->client->trace = TRUE;
 		}
 	}

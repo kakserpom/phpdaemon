@@ -10,21 +10,21 @@ class FlashPolicy extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'listen'     => 'tcp://0.0.0.0',
-			'mod' . $this->modname . 'listenport' => 843,
-			'mod' . $this->modname . 'file'       => Daemon::$dir.'/conf/crossdomain.xml',
-			'mod' . $this->modname . 'enable'     => 0
+		$this->defaultConfig(array(
+			'listen'     => 'tcp://0.0.0.0',
+			'listenport' => 843,
+			'file'       => Daemon::$dir.'/conf/crossdomain.xml',
+			'enable'     => 0
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'],
-				Daemon::$settings['mod' . $this->modname . 'listenport']
+				$this->config->listen->value,
+				$this->config->listenport->value
 			);
-
+			
 			$this->update();
 		}
 	}
@@ -35,7 +35,7 @@ class FlashPolicy extends AsyncServer {
 	 * @return void
 	 */
 	public function update() {
-		$this->policyData = file_get_contents(Daemon::$settings['mod' . $this->modname . 'file']);
+		$this->policyData = file_get_contents($this->config->file->value);
 	}
 
 	/**

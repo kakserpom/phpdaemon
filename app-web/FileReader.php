@@ -7,11 +7,11 @@ class FileReader extends AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'indexfiles' => 'index.html/index.htm'
+		$this->defaultConfig(array(
+			'indexfiles'	=> 'index.html/index.htm',
 		));
 
-		$this->indexFiles = explode('/', Daemon::$settings['mod' . $this->modname . 'indexfiles']);
+		$this->indexFiles = explode('/', $this->config->indexfiles->value);
 	}
 
 	/**
@@ -29,6 +29,61 @@ class FileReader extends AppInstance {
 class FileReaderRequest extends Request {
 
 	public $stream;
+	
+	private static $fileTypes = array(
+		'txt'  => 'text/plain',
+		'htm'  => 'text/html',
+		'html' => 'text/html',
+		'php'  => 'text/html',
+		'css'  => 'text/css',
+		'js'   => 'application/javascript',
+		'json' => 'application/json',
+		'xml'  => 'application/xml',
+		'swf'  => 'application/x-shockwave-flash',
+		'flv'  => 'video/x-flv',
+
+		// images
+		'png'  => 'image/png',
+		'jpe'  => 'image/jpeg',
+		'jpeg' => 'image/jpeg',
+		'jpg'  => 'image/jpeg',
+		'gif'  => 'image/gif',
+		'bmp'  => 'image/bmp',
+		'ico'  => 'image/vnd.microsoft.icon',
+		'tiff' => 'image/tiff',
+		'tif'  => 'image/tiff',
+		'svg'  => 'image/svg+xml',
+		'svgz' => 'image/svg+xml',
+
+		// archives
+		'zip' => 'application/zip',
+		'rar' => 'application/x-rar-compressed',
+		'exe' => 'application/x-msdownload',
+		'msi' => 'application/x-msdownload',
+		'cab' => 'application/vnd.ms-cab-compressed',
+
+		// audio/video
+		'mp3' => 'audio/mpeg',
+		'qt'  => 'video/quicktime',
+		'mov' => 'video/quicktime',
+
+		// adobe
+		'pdf' => 'application/pdf',
+		'psd' => 'image/vnd.adobe.photoshop',
+		'ai'  => 'application/postscript',
+		'eps' => 'application/postscript',
+		'ps'  => 'application/postscript',
+
+		// ms office
+		'doc' => 'application/msword',
+		'rtf' => 'application/rtf',
+		'xls' => 'application/vnd.ms-excel',
+		'ppt' => 'application/vnd.ms-powerpoint',
+
+		// open office
+		'odt' => 'application/vnd.oasis.opendocument.text',
+		'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
+	);
 
 	/**
 	 * @method init
@@ -111,10 +166,10 @@ while (($fn = readdir($h)) !== FALSE) {
 	}
 
 	$path = $this->stream->filePath . $fn;
-	$type = is_dir($path) ? 'Directory' : Daemon::getMIME($path);
+	$type = is_dir($path) ? 'Directory' : self::getMIME($path);
 
 	?>
-<tr><td class="n"><a href="<?php echo htmlspecialchars($fn) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($fn); ?></a></td><td class="m"><?php echo date('Y-M-D H:i:s', filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory' ? '-' : Daemon::humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
+<tr><td class="n"><a href="<?php echo htmlspecialchars($fn) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($fn); ?></a></td><td class="m"><?php echo date('Y-M-D H:i:s', filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory' ? '-' : $this->humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
 	<?php
 }
 
@@ -124,7 +179,7 @@ while (($fn = readdir($h)) !== FALSE) {
 </div> 
 <?php 
 
-if (Daemon::$settings['expose']) {
+if ($this->upstream->config->expose->value) {
 	echo '<div class="foot">phpDaemon/' . Daemon::$version . '</div>';
 } 
 
@@ -148,7 +203,7 @@ if (Daemon::$settings['expose']) {
 					return;
 				}
 
-				$this->header('Content-Type: ' . Daemon::getMIME($this->stream->filePath));
+				$this->header('Content-Type: ' . self::getMIME($this->stream->filePath));
 			}
 
 			$this->stream->
@@ -208,4 +263,54 @@ if (Daemon::$settings['expose']) {
 
 		return Request::DONE;
 	}
+	
+	/**
+	 * @method humanSize
+	 * @description Returns human-readable size.
+	 * @return void
+	 */
+	private function humanSize($size) {
+		if ($size >= 1073741824) {
+			$size = round($size / 1073741824, 2) . 'G';
+		}
+		elseif ($size >= 1048576) {
+			$size = round($size / 1048576, 2) .'M';
+		}
+		elseif ($size >= 1024) {
+			$size = round($size / 1024 * 100, 2) .'K';
+		} else {
+			$size = $size . 'B';
+		}
+
+		return $size;
+	}
+	
+	/**
+	 * @method getMIME()
+	 * @param string - Path
+	 * @description Returns MIME type of the given file.
+	 * @return string - MIME type.
+	 */
+	public static function getMIME($path) {
+		$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+		if (isset(self::$fileTypes[$ext])) {
+			return self::$fileTypes[$ext];
+		}
+		elseif (function_exists('finfo_open')) {
+			if (!is_readable($path)) {
+				return 'application/octet-stream';
+			}
+
+			$finfo = finfo_open(FILEINFO_MIME);
+			$mimetype = finfo_file($finfo, $path);
+
+			finfo_close($finfo);
+
+			return $mimetype;
+		} else {
+			return 'application/octet-stream';
+		}
+	}
+	
 }

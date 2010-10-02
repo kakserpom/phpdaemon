@@ -13,21 +13,21 @@ class WebSocketServer extends AsyncServer
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'listen'           => 'tcp://0.0.0.0',
-			'mod' . $this->modname . 'listenport'       => 8047,
-			'mod' . $this->modname . 'maxallowedpacket' => '16k',
-			'mod' . $this->modname . 'enable'           => 0
+		$this->defaultConfig(array(
+			'listen'           => 'tcp://0.0.0.0',
+			'listenport'       => 8047,
+			'maxallowedpacket' => new Daemon_ConfigEntrySize('16k'),
+			'enable'           => 0
 		));
 		
 		$this->update();
 		
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'],
-				Daemon::$settings['mod' . $this->modname . 'listenport']
+				$this->config->listen->value,
+				$this->config->listenport->value
 			);
 		}
 	}
@@ -49,7 +49,7 @@ class WebSocketServer extends AsyncServer
 		
 		$set = event_buffer_set_callback(
 			$this->buf[$connId], 
-			$this->directReads ? NULL : array($this,'onReadEvent'),
+			$this->directReads ? NULL : array($this, 'onReadEvent'),
 			array($this, 'onWriteEvent'),
 			array($this, 'onFailureEvent'),
 			array($connId)
@@ -66,17 +66,6 @@ class WebSocketServer extends AsyncServer
 		$this->sessions[$connId]->stdin("\r\n" . $req->attrs->inbuf);
 	}
 
-	/**
-	 * @method update
-	 * @description Called when worker is going to update configuration.
-	 * @return void
-	 */
-	public function update()
-	{
-		Daemon::$parsedSettings['mod' . $this->modname . 'maxallowedpacket'] = 
-			Daemon::parseSize(Daemon::$settings['mod' . $this->modname . 'maxallowedpacket']);
-	}
-	
 	/**
 	 * @method addRoute
 	 * @description Adds a route if it doesn't exist already.
@@ -130,7 +119,7 @@ class WebSocketServer extends AsyncServer
 	 * @return void
 	 */
 	public function onReady() {
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			$this->enableSocketEvents();
 		}
 	}
@@ -211,7 +200,7 @@ class WebSocketSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked');
 		}
 		
@@ -267,10 +256,7 @@ class WebSocketSession extends SocketSession {
 		$appName = isset($e[1])?$e[1]:'';
 
 		if (!isset($this->appInstance->routes[$appName])) {
-			if (
-				isset(Daemon::$settings['logerrors']) 
-				&& Daemon::$settings['logerrors']
-			) {
+			if (Daemon::$config->logerrors->value) {
 				Daemon::log(__METHOD__ . ': undefined route \'' . $appName . '\'.');
 			}
 		
@@ -457,7 +443,7 @@ class WebSocketSession extends SocketSession {
 						$len += $n;
 					} while ($b > 0x80);
 
-					if (Daemon::$parsedSettings['mod' . $this->appInstance->modname . 'maxallowedpacket'] <= $len) {
+					if ($this->appInstance->config->maxallowedpacket->value <= $len) {
 						// Too big packet
 						$this->finish();
 						return;
@@ -473,7 +459,7 @@ class WebSocketSession extends SocketSession {
 					$this->onFrame($data, $frametype);
 				} else {
 					if (($p = strpos($this->buf, "\xFF")) !== FALSE) {
-						if (Daemon::$parsedSettings['mod' . $this->appInstance->modname . 'maxallowedpacket'] <= $p - 1) {
+						if ($this->appInstance->config->maxallowedpacket->value <= $p - 1) {
 							// Too big packet
 							$this->finish();
 							return;
@@ -484,7 +470,7 @@ class WebSocketSession extends SocketSession {
 						$this->onFrame($data,$frametype);
 					} else {
 						// not enough data yet
-						if (Daemon::$parsedSettings['mod' . $this->appInstance->modname . 'maxallowedpacket'] <= strlen($this->buf)) {
+						if ($this->appInstance->config->maxallowedpacket->value <= strlen($this->buf)) {
 							// Too big packet
 							$this->finish();
 						}

@@ -11,9 +11,6 @@
 
 class Daemon {
 
-	const SUPPORT_RUNKIT_SANDBOX = 0;
-	const SUPPORT_RUNKIT_MODIFY  = 1;
-
 	/**
 	 * PHPDaemon root directory
 	 * @access private
@@ -42,21 +39,6 @@ class Daemon {
 	 */
 	private static $logpointer;
 	
-	/**
-	 * Log file path
-	 * @access public
-	 * @var string
-	 */
-	public static $logpointerpath;
-
-	/**
-	 * Supported things array
-	 * @access private
-	 * @var string
-	 */
-	private static $support = array();
-	
-	public static $pathReal;
 	public static $worker;
 	public static $appResolver;
 	public static $appInstances = array();
@@ -64,8 +46,6 @@ class Daemon {
 	public static $sockets = array();
 	public static $socketEvents = array();
 	public static $req;
-	public static $settings = array();
-	public static $parsedSettings = array();
 	private static $workers;
 	private static $masters;
 	private static $initservervar;
@@ -75,6 +55,7 @@ class Daemon {
 	public static $compatMode = FALSE;
 	public static $runName = 'phpdaemon';
 	public static $dummyRequest;
+	public static $config;
 
 	/**
 	 * @method initSettings
@@ -84,62 +65,7 @@ class Daemon {
 	public static function initSettings() {
 		Daemon::$version = file_get_contents(Daemon::$dir . '/VERSION');
 
-		Daemon::$settings = array(
-			// Worker graceful restarting:
-			'maxrequests' => '1k',
-			'maxmemoryusage' => '0b',
-			'maxidle' => '0s',
-			
-			// Main Pathes
-			'pidfile' => '/var/run/phpd.pid',
-			'defaultpidfile' => '/var/run/phpd.pid',
-			'configfile' => '/etc/phpd/phpd.conf;' . Daemon::$dir . '/conf/phpdaemon.conf.php',
-			'path' => NULL,
-			'ipcwstate' => '/var/run/phpdaemon-wstate.ipc',
-			
-			// Master-related
-			'mpmdelay'=> '1s',
-			'startworkers' => 20,
-			'minworkers' => 20,
-			'maxworkers' => 80,
-			'minspareworkers' => 20,
-			'maxspareworkers' => 50,
-			'masterpriority' => 100,
-			 
-			 // Requests
-			'obfilterauto' => 1,
-			'expose' => 1,
-			'keepalive' => '0s',
-			'autoreadbodyfile' => 1,
-			'chunksize' => '8k',
-			'maxconcurrentrequestsperworker' => 1000,
-			
-			 // Worker-related
-			'user' => NULL,
-			'group' => NULL,
-			'autogc' => '1',
-			'chroot' => '/',
-			'cwd' => '.',
-			'autoreload' => '0s',
-			'autoreimport' => 0,
-			'microsleep' => 100000,
-			'workerpriority' => 4,
-			'throwexceptiononshutdown' => 0,
-			'locale' => '',
-			
-			 // Logging-related
-			'logging' => 1,
-			'logtostderr' => 1,
-			'logstorage' => '/var/log/phpdaemon.log',
-			'logerrors' => 1,
-			'logworkersetstatus' => 0,
-			'logevents' => 0,
-			'logqueue' => 0,
-			'logreads' => 0,
-			'logsignals' => 0,
-		);
-
-		Daemon::loadSettings(Daemon::$settings);
+		Daemon::$config = new Daemon_Config;
 
 		Daemon::$useSockets = version_compare(PHP_VERSION, '5.3.1', '>=');
 
@@ -148,24 +74,6 @@ class Daemon {
 		Daemon::$dummyRequest->attrs->stdin_done = TRUE;
 		Daemon::$dummyRequest->attrs->params_done = TRUE;
 		Daemon::$dummyRequest->attrs->chunked = FALSE;
-	}
-
-	/**
-	 * @method addDefaultSettings
-	 * @param array {"setting": "value"}
-	 * @description Adds default settings to repositoty.
-	 * @return boolean - Succes.
-	 */
-	public static function addDefaultSettings($settings = array()) {
-		foreach ($settings as $k => $v) {
-			$k = strtolower(str_replace('-', '', $k));
-
-			if (!isset(Daemon::$settings[$k])) {
-				Daemon::$settings[$k] = $v;
-			}
-		}
-
-		return TRUE;
 	}
 
 	/**
@@ -180,7 +88,7 @@ class Daemon {
 		}
 
 		if (
-			Daemon::$settings['obfilterauto'] 
+			Daemon::$config->obfilterauto 
 			&& (Daemon::$req !== NULL)
 		) {
 			Daemon::$req->out($s,FALSE);
@@ -189,147 +97,6 @@ class Daemon {
 		}
 
 		return '';
-	}
-
-	/**
-	 * @method getMIME()
-	 * @param string - Path
-	 * @description Returns MIME type of the given file.
-	 * @return string - MIME type.
-	 */
-	public static function getMIME($path) {
-		static $types = array(
-			'txt'  => 'text/plain',
-			'htm'  => 'text/html',
-			'html' => 'text/html',
-			'php'  => 'text/html',
-			'css'  => 'text/css',
-			'js'   => 'application/javascript',
-			'json' => 'application/json',
-			'xml'  => 'application/xml',
-			'swf'  => 'application/x-shockwave-flash',
-			'flv'  => 'video/x-flv',
-
-			// images
-			'png'  => 'image/png',
-			'jpe'  => 'image/jpeg',
-			'jpeg' => 'image/jpeg',
-			'jpg'  => 'image/jpeg',
-			'gif'  => 'image/gif',
-			'bmp'  => 'image/bmp',
-			'ico'  => 'image/vnd.microsoft.icon',
-			'tiff' => 'image/tiff',
-			'tif'  => 'image/tiff',
-			'svg'  => 'image/svg+xml',
-			'svgz' => 'image/svg+xml',
-
-			// archives
-			'zip' => 'application/zip',
-			'rar' => 'application/x-rar-compressed',
-			'exe' => 'application/x-msdownload',
-			'msi' => 'application/x-msdownload',
-			'cab' => 'application/vnd.ms-cab-compressed',
-
-			// audio/video
-			'mp3' => 'audio/mpeg',
-			'qt'  => 'video/quicktime',
-			'mov' => 'video/quicktime',
-
-			// adobe
-			'pdf' => 'application/pdf',
-			'psd' => 'image/vnd.adobe.photoshop',
-			'ai'  => 'application/postscript',
-			'eps' => 'application/postscript',
-			'ps'  => 'application/postscript',
-
-			// ms office
-			'doc' => 'application/msword',
-			'rtf' => 'application/rtf',
-			'xls' => 'application/vnd.ms-excel',
-			'ppt' => 'application/vnd.ms-powerpoint',
-
-			// open office
-			'odt' => 'application/vnd.oasis.opendocument.text',
-			'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
-		);
-
-		$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-
-		if (isset($types[$ext])) {
-			return $types[$ext];
-		}
-		elseif (function_exists('finfo_open')) {
-			if (!is_readable($path)) {
-				return 'application/octet-stream';
-			}
-
-			$finfo = finfo_open(FILEINFO_MIME);
-			$mimetype = finfo_file($finfo, $path);
-
-			finfo_close($finfo);
-
-			return $mimetype;
-		} else {
-			return 'application/octet-stream';
-		}
-	}
-
-	/**
-	 * @method header
-	 * @param string
-	 * @description Static wrapper of Request->header().
-	 * @return boolean
-	 */
-	public static function header($h) {
-		if (Daemon::$req === NULL) {
-			throw new Exception('Daemon::header() called out of request context');
-		}
-
-		return Daemon::$req->header($h);
-	}
-
-	/**
-	 * Is thing supported
-	 * @param $what integer Thing to check
-	 * @return boolean
-	 */
-	public static function supported($what) {
-		return isset(self::$support[$what]);
-	}
-
-	/**
-	 * Method to fill $support array
-	 * @return void
-	 */
-	private static function checkSupports() {
-		if (is_callable('runkit_lint_file')) {
-			self::$support[self::SUPPORT_RUNKIT_SANDBOX] = 1;
-		}
-
-		if (is_callable('runkit_function_add')) {
-			self::$support[self::SUPPORT_RUNKIT_MODIFY] = 1;
-		}
-	}
-
-	/**
-	 * Check file syntax via runkit_lint_file if supported or via php -l
-	 * @param $filaname string File name
-	 * @return boolean
-	 */
-	public static function lintFile($filename) {
-		if (!file_exists($filename)) {
-			return false;
-		}
-
-		if (self::supported(self::SUPPORT_RUNKIT_SANDBOX)) {
-			return runkit_lint_file($filename);
-		}
-
-		$cmd = 'php -l ' . escapeshellarg($filename) . ' 2>&1';
-
-		exec($cmd, $output, $retcode);
-
-		return 0 === $retcode;
 	}
 
 	/**
@@ -343,47 +110,10 @@ class Daemon {
 
 		ob_start(array('Daemon', 'outputFilter'));
 
-		Daemon::checkSupports();
-
 		Daemon::$initservervar = $_SERVER;
-		Daemon::$masters = new threadCollection;
-		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$settings['ipcwstate'],Daemon::$shm_wstate_size,'wstate');
+		Daemon::$masters = new ThreadCollection;
+		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate->value,Daemon::$shm_wstate_size,'wstate');
 		Daemon::openLogs();
-	}
-
-	/**
-	 * @method getBacktrace
-	 * @description Returns textual backtrace.
-	 * @return void
-	 */
-	public static function getBacktrace() {
-		ob_start();
-		debug_print_backtrace();
-		$dump = ob_get_contents();
-		ob_end_clean();
-
-		return $dump;
-	}
-
-	/**
-	 * @method humanSize
-	 * @description Returns human-readable size.
-	 * @return void
-	 */
-	public static function humanSize($size) {
-		if ($size >= 1073741824) {
-			$size = round($size / 1073741824, 2) . 'G';
-		}
-		elseif ($size >= 1048576) {
-			$size = round($size / 1048576, 2) .'M';
-		}
-		elseif ($size >= 1024) {
-			$size = round($size / 1024 * 100, 2) .'K';
-		} else {
-			$size = $size . 'B';
-		}
-
-		return $size;
 	}
 
 	/**
@@ -401,12 +131,12 @@ class Daemon {
 		$args = Daemon_Bootstrap::getArgs($argv);
 
 		if (isset($args[$k = 'configfile'])) {
-			Daemon::$settings[$k] = $args[$k];
+			Daemon::$config[$k] = $args[$k];
 		}
 
 		if (
-			isset(Daemon::$parsedSettings['configfile']) 
-			&& !Daemon::loadConfig(Daemon::$parsedSettings['configfile'])
+			isset(Daemon::$config->configfile->value) 
+			&& !Daemon::loadConfig(Daemon::$config->configfile->value)
 		) {
 			$error = TRUE;
 		}
@@ -415,11 +145,11 @@ class Daemon {
 			$error = TRUE;
 		}
 
-		if (!isset(Daemon::$settings['path'])) {
+		if (!isset(Daemon::$config->path)) {
 			exit('\'path\' is not defined');
 		}
 
-		$appResolver = require Daemon::$settings['path'];
+		$appResolver = require Daemon::$config->path;
 		$appResolver->init();
 
 		$req = new stdClass();
@@ -463,28 +193,16 @@ class Daemon {
 				$found = true;
 
         $ext = strtolower(pathinfo($path,PATHINFO_EXTENSION));
-        if ($ext == 'php') {
-					$cfg = include($p);
-				}
-				elseif ($ext == 'conf') {
+        if ($ext == 'conf') {
 					$parser = new Daemon_ConfigParser($p);
-				  $cfg = $parser->result;
+					if ($parser->errorneus) {
+					 return FALSE;
+					}
 				}
 				else{
 					Daemon::log('Config file \'' . $p . '\' has unsupported file extension.');
 					return FALSE;
 				}
-
-				if (!is_array($cfg)) {
-					Daemon::log('Config file \'' . $p . '\' returns bad value.');
-					return FALSE;
-				}
-				
-				if (!Daemon::loadSettings($cfg)) {
-					Daemon::log('Couldn\'t load config file \'' . $p . '\'.');
-					return FALSE;
-				}
-
 				return true;
 			}
 		}
@@ -524,63 +242,37 @@ class Daemon {
 					$v = NULL;
 				}
 			}
-
-			if (array_key_exists($k, Daemon::$settings)) {
-				if ($k === 'maxmemoryusage') {
-					Daemon::$parsedSettings[$k] = Daemon::parseSize($v);
+			if (isset(Daemon::$config->{$k})) {
+				if (Daemon::$config->{$k} instanceof Daemon_ConfigEntry) {
+					Daemon::$config->{$k}->setHumanValue($v);
 				}
-				elseif ($k === 'maxrequests') {
-					Daemon::$parsedSettings[$k] = Daemon::parseNum($v);
-				}
-				elseif ($k === 'autogc') {
-					Daemon::$parsedSettings[$k] = Daemon::parseNum($v);
-				}
-				elseif ($k === 'maxidle') {
-					Daemon::$parsedSettings[$k] = Daemon::parseTime($v);
-				}
-				elseif ($k === 'autoreload') {
-					Daemon::$parsedSettings[$k] = Daemon::parseTime($v);
-				}
-				elseif ($k === 'maxconcurrentrequestsperworker') {
-					Daemon::$parsedSettings[$k] = Daemon::parseNum($v);
-				}
-				elseif ($k === 'keepalive') {
-					Daemon::$parsedSettings[$k] = Daemon::parseTime($v);
-				}
-				elseif ($k === 'mpmdelay') {
-					Daemon::$parsedSettings[$k] = Daemon::parseTime($v);
-				}
-				elseif ($k === 'chunksize') {
-					Daemon::$parsedSettings[$k] = Daemon::parseSize($v);
-				}
-				elseif ($k === 'configfile') {
-					Daemon::$parsedSettings[$k] = realpath($v);
-				}
-
-				if (is_int(Daemon::$settings[$k])) {
-					Daemon::$settings[$k] = (int) $v;
-				} else {
-					Daemon::$settings[$k] = $v;
+				else	{
+					if (is_int(Daemon::$config->{$k})) {
+						Daemon::$config->{$k} = (int) $v;
+					}
 				}
 			}
-			elseif (strpos($k, 'mod') === 0) {
-				Daemon::$settings[$k] = $v;
-			} else {
+			elseif (strpos($k, 'mod-') === 0) {
+			  $e = explode('-',strtolower($k),3);
+			  $kk = $e[1];
+			  $name = str_replace('-',$e[2]);
+				if (isset(Daemon::$config->{$kk}->{$name})) {
+					if (Daemon::$config->{$kk}->{$name} instanceof Daemon_ConfigEntry) {
+						Daemon::$config->{$kk}->{$name}->setHumanValue($v);
+					}
+					elseif (is_int($this->{$kk}->{$name})) {
+					  Daemon::$config->{$kk}->{$name} = (int) $v;
+					}
+				}
+				else {
+					Daemon::$config->{$kk}->{$name} = $v;
+				}
+			}
+			else {
 				Daemon::log('Unrecognized parameter \'' . $k . '\'');
 				$error = TRUE;
 			}
 		}
-
-		if (isset($settings['path'])) {
-			if (isset(Daemon::$settings['chroot'])) {
-				Daemon::$pathReal = realpath(Daemon::$settings['chroot']
-				. ((substr(Daemon::$settings['chroot'], -1) != '/') ? '/' : '')
-				. Daemon::$settings['path']);
-			} else {
-				Daemon::$pathReal = realpath(Daemon::$settings['path']);
-			}
-		}
-
 		return !$error;
 	}
 
@@ -590,124 +282,22 @@ class Daemon {
 	 * @return void
 	 */
 	public static function openLogs() {
-		if (Daemon::$settings['logging']) {
+		if (Daemon::$config->logging) {
 			if (Daemon::$logpointer) {
 				fclose(Daemon::$logpointer);
 				Daemon::$logpointer = FALSE;
 			}
 
-			Daemon::$logpointer = fopen(Daemon::$logpointerpath = Daemon::parseStoragepath(Daemon::$settings['logstorage']), 'a+');
+			Daemon::$logpointer = fopen(Daemon::$config->logstorage->value, 'a+');
 
-			if (isset(Daemon::$settings['group'])) {
-				chgrp(Daemon::$logpointerpath, Daemon::$settings['group']);
+			if (isset(Daemon::$config->group)) {
+				chgrp(Daemon::$config->logstorage->value, Daemon::$config->group->value);
 			}
 
-			if (isset(Daemon::$settings['user'])) {
-				chown(Daemon::$logpointerpath, Daemon::$settings['user']);
+			if (isset(Daemon::$config->user)) {
+				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value);
 			}
 		}
-	}
-
-	/**
-	 * @method parseSize
-	 * @param string $str - size-string to parse.
-	 * @description Converts string representation of size (INI-style) to bytes.
-	 * @return int - size in bytes.
-	 */
-	public static function parseSize($str) {
-		$l = strtolower(substr($str, -1));
-
-		if ($l === 'b') {
-			return ((int) substr($str, 0, -1));
-		}
-
-		if ($l === 'k') {
-			return ((int) substr($str, 0, -1) * 1024);
-		}
-
-		if ($l === 'm') {
-			return ((int) substr($str, 0, -1) * 1024 * 1024);
-		}
-
-		if ($l === 'g') {
-			return ((int) substr($str, 0, -1) * 1024 * 1024 * 1024);
-		}
-
-		return $str;
-	}
-
-	/**
-	 * @method parseNum
-	 * @param string $str - number-string to parse.
-	 * @description Converts string representation of number (INI-style) to integer.
-	 * @return int - number.
-	*/
-	public static function parseNum($str) {
-		$l = substr($str, -1);
-
-		if (
-			($l === 'k') 
-			|| ($l === 'K')
-		) {
-			return ((int) substr($str, 0, -1) * 100);
-		}
-
-		if (
-			($l === 'm') 
-			|| ($l === 'M')
-		) {
-			return ((int) substr($str, 0, -1) * 1000 * 1000);
-		}
-
-		if (
-			($l === 'G') 
-			|| ($l === 'G')
-		) {
-			return ((int) substr($str, 0, -1) * 1000 * 1000 * 1000);
-		}
-
-		return (int) $str;
-	}
-
-	/**
-	 * @method parseTime
-	 * @param string $str - time-string to parse.
-	 * @description Converts string representation of time (INI-style) to seconds.
-	 * @return int - seconds.
-	 */
-	public static function parseTime($str) {
-		$time = 0;
-
-		preg_replace_callback('~(\d+)\s*([smhd])\s*|(.+)~i', function($m) use (&$time) {
-			if (
-				isset($m[3]) 
-				&& ($m[3] !== '')
-			) {
-				$time = FALSE;
-			}
-
-			if ($time === FALSE) {
-				return;
-			}
-
-			$n = (int) $m[1];
-			$l = strtolower($m[2]);
-
-			if ($l === 's') {
-				$time += $n;
-			}
-			elseif ($l === 'm') {
-				$time += $n * 60;
-			}
-			elseif ($l === 'h') {
-				$time += $n * 60 * 60;
-			}
-			elseif ($l === 'd') {
-				$time += $n * 60 * 60 * 24;
-			}
-		}, $str);
-
-		return $time;
 	}
 
 	/**
@@ -842,7 +432,7 @@ class Daemon {
 		$mt = explode(' ', microtime());
 
 		if (
-			Daemon::$settings['logtostderr'] 
+			Daemon::$config->logtostderr 
 			&& defined('STDERR')
 		) {
 			fwrite(STDERR, '[PHPD] ' . $msg . "\n");
@@ -851,32 +441,6 @@ class Daemon {
 		if (Daemon::$logpointer) {
 			fwrite(Daemon::$logpointer, '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] ' . $msg . "\n");
 		}
-	}
-
-	/**
-	 * @method parseStoragepath
-	 * @param string $path - path to parse.
-	 * @description it replaces meta-variables in path with values.
-	 * @return string - path
-	 */
-	public static function parseStoragepath($path) {
-		$path = preg_replace_callback(
-			'~%(.*?)%~', 
-			function($m) {
-				$e = explode('=', $m[1]);
-
-				if (strtolower($e[0]) == 'date') {
-					return date($e[1]);
-				}
-
-				return $m[0];
-			}, $path);
-
-		if (stripos($path, 'file://') === 0) {
-			$path = substr($path, 7);
-		}
-
-		return $path;
 	}
 
 	/**
@@ -905,7 +469,7 @@ class Daemon {
 	 */
 	public static function exportBytes($str, $all = FALSE) {
 		return preg_replace_callback(
-			'~' . ($all ? '.' : '[^A-Za-z\d\.$:;\-_/\\\\]') . '~s',
+			'~' . ($all ? '.' : '[^A-Za-z\d\.\{\}$:;\-_/\\\\]') . '~s',
 			function($m) use ($all) {
 				if (!$all) {
 					if ($m[0] == "\r") {
@@ -919,24 +483,6 @@ class Daemon {
 
 				return sprintf('\x%02x', ord($m[0]));
 			}, $str);
-	}
-
-	/**
-	 * @method var_dump
-	 * @description Wrapper of var_dump.
-	 * @return string - Result of var_dump().
-	 */
-	public static function var_dump() {
-		ob_start();
-
-		foreach (func_get_args() as $v) {
-			var_dump($v);
-		}
-
-		$dump = ob_get_contents();
-		ob_end_clean();
-
-		return $dump;
 	}
 
 	/**
