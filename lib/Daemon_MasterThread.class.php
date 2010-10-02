@@ -62,7 +62,6 @@ class Daemon_MasterThread extends Thread {
 					$this->sighup();
 				}
 			}
-	
 			if (time() > $mpmLast+Daemon::$config->mpmdelay->value) {
 				$mpmLast = time();
 				++$c;
@@ -78,12 +77,11 @@ class Daemon_MasterThread extends Thread {
 					$this->collections['workers']->removeTerminated();
 				}
 				
-				/* FIXME mpm function in config
 				if (
-					isset(Daemon::$config->mpm) 
-					&& is_callable($c = Daemon::$config->mpm)
+					isset(Daemon::$config->mpm->value) 
+					&& is_callable(Daemon::$config->mpm->value)
 				) {
-					call_user_func($c);
+					call_user_func(Daemon::$config->mpm->value);
 				} else {
 					// default MPM
 					$state = Daemon::getStateOfWorkers($this);
@@ -91,10 +89,10 @@ class Daemon_MasterThread extends Thread {
 					if ($state) {
 						$n = max(
 							min(
-								Daemon::$config->minspareworkers - $state['idle'], 
-								Daemon::$config->maxworkers - $state['alive']
+								Daemon::$config->minspareworkers->value - $state['idle'], 
+								Daemon::$config->maxworkers->value - $state['alive']
 							),
-							Daemon::$config->minworkers - $state['alive']
+							Daemon::$config->minworkers->value - $state['alive']
 						);
 
 						if ($n > 0) {
@@ -103,8 +101,8 @@ class Daemon_MasterThread extends Thread {
 						}
 
 						$n = min(
-							$state['idle'] - Daemon::$config->maxspareworkers,
-							$state['alive'] - Daemon::$config->minworkers
+							$state['idle'] - Daemon::$config->maxspareworkers->value,
+							$state['alive'] - Daemon::$config->minworkers->value
 						);
 						
 						if ($n > 0) {
@@ -112,7 +110,7 @@ class Daemon_MasterThread extends Thread {
 							$this->stopWorkers($n);
 						}
 					}
-				} */
+				}
 			}
 		}
 	}
