@@ -113,7 +113,7 @@ class MongoNode extends AppInstance {
 			     
 				foreach ($cursor->items as $k => &$item) {
 					if (Daemon::$config->logevents->value) {
-						Daemon::log(get_class($node) . ': caught oplog-record with ts = (' . Daemon::var_dump($item['ts']) . ')');
+						Daemon::log(get_class($node) . ': caught oplog-record with ts = (' . Debug::dump($item['ts']) . ')');
 					}
 				    
 					$cursor->lastOpId = $item['ts'];
@@ -188,7 +188,7 @@ class MongoNode_ReplicationRequest extends Request {
 						}
 					   
 						if (Daemon::$config->logevents->value) {
-							Daemon::log('MongoNode: replication point - ' . $answer->result . ' (' . Daemon::var_dump($ts) . ')');
+							Daemon::log('MongoNode: replication point - ' . $answer->result . ' (' . Debug::dump($ts) . ')');
 						}
 					   
 						$req->appInstance->initSlave($ts);

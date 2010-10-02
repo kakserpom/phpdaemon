@@ -47,7 +47,7 @@ class RTEP extends AsyncServer {
 	 */
 	public function onEvent($packet) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
+			Daemon::log(__METHOD__ . ': ' . Debug::dump($packet));
 		}
 
 		$evName = isset($packet['event']['name']) ? (string) $packet['event']['name'] : '';
@@ -82,7 +82,7 @@ class RTEPSession extends SocketSession {
 	 */
 	public function send($packet) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::log(__METHOD__ . ' invoked (' . $this->clientAddr . '): ' . Daemon::var_dump($packet));
+			Daemon::log(__METHOD__ . ' invoked (' . $this->clientAddr . '): ' . Debug::dump($packet));
 		}
 
 		if ($this->http) {
@@ -176,7 +176,7 @@ class RTEPSession extends SocketSession {
 	 */
 	public function onRequest($packet) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
+			Daemon::log(__METHOD__ . ': ' . Debug::dump($packet));
 		}
 
 		$request = (isset($packet['request']) && is_array($packet['request'])) ? $packet['request'] : array();

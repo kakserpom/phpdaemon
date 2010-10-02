@@ -558,7 +558,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		if (Daemon::$config->logevents->value) {
-			$this->log('reloadReady = ' . Daemon::var_dump($reloadReady));
+			$this->log('reloadReady = ' . Debug::dump($reloadReady));
 		}
 		
 		foreach ($this->queue as $r) {

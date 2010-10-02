@@ -131,20 +131,6 @@ class Daemon {
 	}
 
 	/**
-	 * @method getBacktrace
-	 * @description Returns textual backtrace.
-	 * @return void
-	 */
-	public static function getBacktrace() {
-		ob_start();
-		debug_print_backtrace();
-		$dump = ob_get_contents();
-		ob_end_clean();
-
-		return $dump;
-	}
-
-	/**
 	 * @method compatRunEmul
 	 * @description It allows to run your simple web-apps in spawn-fcgi/php-fpm environment.
 	 * @return boolean - Success.
@@ -511,24 +497,6 @@ class Daemon {
 
 				return sprintf('\x%02x', ord($m[0]));
 			}, $str);
-	}
-
-	/**
-	 * @method var_dump
-	 * @description Wrapper of var_dump.
-	 * @return string - Result of var_dump().
-	 */
-	public static function var_dump() {
-		ob_start();
-
-		foreach (func_get_args() as $v) {
-			var_dump($v);
-		}
-
-		$dump = ob_get_contents();
-		ob_end_clean();
-
-		return $dump;
 	}
 
 	/**

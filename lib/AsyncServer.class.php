@@ -40,7 +40,7 @@ class AsyncServer extends AppInstance {
 			array($this, 'onAcceptEvent'),
 			array(Daemon::$sockCounter, $type)
 		)) {
-			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on binded socket: ' . Daemon::var_dump($sock));
+			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on binded socket: ' . Debug::dump($sock));
 			return;
 		}
 
@@ -644,7 +644,7 @@ class AsyncServer extends AppInstance {
 		$connId = is_int($arg) ? array_search($stream, Daemon::$worker->pool, TRUE) : $arg[0];
 
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked. ' . Daemon::var_dump(Daemon::$worker->pool[$connId]));
+			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked. ' . Debug::dump(Daemon::$worker->pool[$connId]));
 		}
 
 		if ($this->queuedReads) {
