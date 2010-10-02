@@ -1,15 +1,15 @@
 ## Config file
 
-user web;
-group web;
+user www-data;
+group www-data;
 
-max-workers 1;
-min-workers 1;
-max-requests 1m;
-max-idle 0;
-start-workers 1;
+max-workers	1;
+min-workers	1;
+start-workers	1;
 
-FastCGI
-{
- #...
+max-requests	1m;
+max-idle	0;
+
+FastCGI {
+	## your config
 }
