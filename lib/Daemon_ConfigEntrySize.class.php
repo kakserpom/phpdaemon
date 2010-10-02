@@ -10,8 +10,8 @@
 /**************************************************************************/
 
 class Daemon_ConfigEntrySize extends Daemon_ConfigEntry {
-	public function HumanToPlain($value)
-	{
+
+	public function HumanToPlain($value) {
 		$l = strtolower(substr($value, -1));
 
 		if ($l === 'b') {
@@ -31,4 +31,5 @@ class Daemon_ConfigEntrySize extends Daemon_ConfigEntry {
 		}
 		return (int) $value;
 	}
+
 }

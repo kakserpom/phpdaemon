@@ -10,40 +10,42 @@
 /**************************************************************************/
 
 class Daemon_ConfigEntry {
+
 	public $defaultValue;
 	public $value;
 	public $humanValue;
-	public function __construct($defaultValue = NULL)
-	{
-		if ($defaultValue !== NULL){
+
+	public function __construct($defaultValue = NULL) {
+		if ($defaultValue !== NULL) {
 			$this->setDefaultValue($defaultValue);
 			$this->setHumanValue($defaultValue);
 		}
 	}
-	public function setValue($value)
-	{
-	 $this->value = $value;
-	 $this->humanValue = $this->PlainToHuman($value);
+
+	public function setValue($value) {
+		$this->value = $value;
+		$this->humanValue = $this->PlainToHuman($value);
 	}
-	public function setValueType($type)
-	{
-	 $this->valueType = $type;
+
+	public function setValueType($type) {
+		$this->valueType = $type;
 	}
-	public function setDefaultValue($value)
-	{
-	 $this->defaultValue = $value;
+
+	public function setDefaultValue($value) {
+		$this->defaultValue = $value;
 	}
-	public function setHumanValue($value)
-	{
-	 $this->humanValue = $value;
-	 $this->value = $this->HumanToPlain($value);
+
+	public function setHumanValue($value) {
+		$this->humanValue = $value;
+		$this->value = $this->HumanToPlain($value);
 	}
-	public function HumanToPlain($value)
-	{
-	 return $value;
+
+	public function HumanToPlain($value) {
+		return $value;
 	}
-	public function PlainToHuman($value)
-	{
-	 return $value;
+
+	public function PlainToHuman($value) {
+		return $value;
 	}
+
 }

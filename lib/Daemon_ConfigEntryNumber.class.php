@@ -10,8 +10,8 @@
 /**************************************************************************/
 
 class Daemon_ConfigEntryNumber extends Daemon_ConfigEntry {
-	public function HumanToPlain($value)
-	{
+
+	public function HumanToPlain($value) {
 	 	$l = substr($value, -1);
 
 		if (
@@ -36,4 +36,5 @@ class Daemon_ConfigEntryNumber extends Daemon_ConfigEntry {
 		}
 		return (int) $value;
 	}
+
 }

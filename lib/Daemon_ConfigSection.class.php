@@ -11,19 +11,24 @@
 
 class Daemon_ConfigSection implements ArrayAccess {
 
-  public function getRealOffsetName($offset) {
-	  return str_replace('-','',strtolower($offset));
-  }
+	public function getRealOffsetName($offset) {
+		return str_replace('-', '', strtolower($offset));
+	}
+
 	public function offsetExists($offset) {
 		return $this->offsetGet($offset) !== NULL;
 	}
+
 	public function offsetGet($offset) {;
 		return $this->{$this->getRealOffsetName($offset)}->value;
 	}
+
 	public function offsetSet($offset,$value) {
 		$this->{$this->getRealOffsetName($offset)} = $value;
 	}
+
 	public function offsetUnset($offset) {
 		unset($this->{$this->getRealOffsetName($offset)});
 	}
+
 }
