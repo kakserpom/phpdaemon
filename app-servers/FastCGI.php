@@ -23,6 +23,8 @@ class FastCGI extends AsyncServer {
 			'send-file-dir'           => '/dev/shm',
 			'send-file-prefix'        => 'fcgi-',
 			'send-file-onlybycommand' => 0,
+			'expose' => 1,
+			'auto-read-body-file' => 1,
 			'keepalive'               => new Daemon_ConfigEntryTime('0s'),
 			'enable'                  => 0,
 		));

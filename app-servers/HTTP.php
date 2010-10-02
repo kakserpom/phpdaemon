@@ -21,6 +21,7 @@ class HTTP extends AsyncServer {
 			'send-file-dir' => '/dev/shm',
 			'send-file-prefix' => 'http-',
 			'send-file-onlybycommand' => 0,
+			'expose' => 1,
 			'keepalive' => new Daemon_ConfigEntryTime('0s'),
 			'enable' => 0,
 		));

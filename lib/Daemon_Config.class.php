@@ -33,9 +33,6 @@ class Daemon_Config implements ArrayAccess {
 			 
 	// Requests
 	public $obfilterauto = 1;
-	public $expose = 1;
-	public $autoreadbodyfile = 1;
-	public $chunksize = '8k';
 	public $maxconcurrentrequestsperworker = 1000;
 			
 	// Worker-related

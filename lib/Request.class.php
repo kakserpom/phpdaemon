@@ -96,7 +96,7 @@ class Request {
 		$this->upstream = $upstream;
 		$this->attrs = $req->attrs;
 
-		if (Daemon::$config->expose->value) {
+		if (isset($this->upstream->expose->value) && $this->upstream->expose->value) {
 			$this->header('X-Powered-By: phpDaemon/' . Daemon::$version);
 		}
 
@@ -863,7 +863,8 @@ class Request {
 
 			if (
 				isset($this->attrs->server['REQUEST_BODY_FILE']) 
-				&& Daemon::$config->autoreadbodyfile->value
+				&& isset($this->upstream->config->autoreadbodyfile->value)
+				&& $this->upstream->config->autoreadbodyfile->value
 			) {
 				$this->readBodyFile();
 			}
