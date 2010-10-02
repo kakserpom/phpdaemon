@@ -16,7 +16,7 @@ class AppInstance {
 	public $reqCounter = 0;    // counter of requests
 	public $queue = array();   // queue of requests
 	public $ready = FALSE;     // ready to start?
-  public $name;							// name of instance
+	public $name;							// name of instance
 	public $config;
  
 	/**	
@@ -25,19 +25,21 @@ class AppInstance {
 	 * @return void
 	 */
 	public function __construct($name = NULL) {
-	  $this->name = $name;
-	  $fullname = get_class($this).($this->name !== NULL ? '-'.urlencode($this->name) : '');
-	  if (!isset(Daemon::$config->{$fullname})) {
+		$this->name = $name;
+		$fullname = get_class($this).($this->name !== NULL ? '-'.urlencode($this->name) : '');
+
+		if (!isset(Daemon::$config->{$fullname})) {
 			Daemon::$config->{$fullname} = new Daemon_ConfigSection;
-		}
-		else	{
+		} else {
 			if (
-					!isset(Daemon::$config->{$fullname}->enable)
-			&&	!isset(Daemon::$config->{$fullname}->disable)) {
+				!isset(Daemon::$config->{$fullname}->enable)
+				&& !isset(Daemon::$config->{$fullname}->disable)
+			) {
 				Daemon::$config->{$fullname}->enable = new Daemon_ConfigEntry;
 				Daemon::$config->{$fullname}->enable->setValue(1);
-		 }
+			}
 		}
+
 		$this->config = Daemon::$config->{$fullname};
 		$this->init();
 
