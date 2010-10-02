@@ -162,8 +162,8 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 		
-		if (Daemon::$config->cwd !== '.') {
-			if (!@chdir(Daemon::$config->cwd)) {
+		if (Daemon::$config->cwd->value !== '.') {
+			if (!@chdir(Daemon::$config->cwd->value)) {
 				Daemon::log('Couldn\'t change directory to \'' . Daemon::$config->cwd->value . '.');
 			}
 		}
