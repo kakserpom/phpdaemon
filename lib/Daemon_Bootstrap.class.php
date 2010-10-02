@@ -11,7 +11,6 @@
 
 class Daemon_Bootstrap {
 
-	public static $pidfile;
 	public static $pid;
 
 	private static $commands = array(
@@ -154,35 +153,29 @@ class Daemon_Bootstrap {
 			$error = TRUE;
 		}
 		
-		Daemon_Bootstrap::$pidfile = realpath(Daemon::$config->pidfile->value);
-		
-		if (!Daemon_Bootstrap::$pidfile) {
-			Daemon_Bootstrap::$pidfile = Daemon::$config->pidfile->value;
-		}
-		
-		if (!file_exists(Daemon_Bootstrap::$pidfile)) {
-			if (!touch(Daemon_Bootstrap::$pidfile)) {
-				Daemon::log('Couldn\'t create pid-file \'' . Daemon_Bootstrap::$pidfile . '\'.');
+		if (!file_exists(Daemon::$config->pidfile->value)) {
+			if (!touch(Daemon::$config->pidfile->value)) {
+				Daemon::log('Couldn\'t create pid-file \'' . Daemon::$config->pidfile->value . '\'.');
 				$error = TRUE;
 			}
 
 			Daemon_Bootstrap::$pid = 0;
 		}
-		elseif (!is_file(Daemon_Bootstrap::$pidfile)) {
-			Daemon::log('Pid-file \'' . Daemon_Bootstrap::$pidfile . '\' must be a regular file.');
+		elseif (!is_file(Daemon::$config->pidfile->value)) {
+			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be a regular file.');
 			Daemon_Bootstrap::$pid = FALSE;
 			$error = TRUE;
 		}
-		elseif (!is_writable(Daemon_Bootstrap::$pidfile)) {
-			Daemon::log('Pid-file \'' . Daemon_Bootstrap::$pidfile . '\' must be writable.');
+		elseif (!is_writable(Daemon::$config->pidfile->value)) {
+			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be writable.');
 			$error = TRUE;
 		}
-		elseif (!is_readable(Daemon_Bootstrap::$pidfile)) {
-			Daemon::log('Pid-file \'' . Daemon_Bootstrap::$pidfile . '\' must be readable.');
+		elseif (!is_readable(Daemon::$config->pidfile->value)) {
+			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be readable.');
 			Daemon_Bootstrap::$pid = FALSE;
 			$error = TRUE;
 		} else {
-			Daemon_Bootstrap::$pid = (int) file_get_contents(Daemon_Bootstrap::$pidfile);
+			Daemon_Bootstrap::$pid = (int) file_get_contents(Daemon::$config->pidfile->value);
 		}
 		
 		if (Daemon::$config->chroot !== '/') {
@@ -257,13 +250,13 @@ class Daemon_Bootstrap {
 			|| $runmode == 'fullstatus'
 		) {
 			$status = Daemon_Bootstrap::$pid && posix_kill(Daemon_Bootstrap::$pid, SIGTTIN);
-			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon_Bootstrap::$pidfile . ").\n";
+			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon::$config->pidfile->value . ").\n";
 
 			if (
 				$status 
 				&& ($runmode == 'fullstatus')
 			) {
-				echo 'Uptime: ' . Daemon::date_period_text(filemtime(Daemon_Bootstrap::$pidfile), time()) . "\n";
+				echo 'Uptime: ' . Daemon::date_period_text(filemtime(Daemon::$config->pidfile->value), time()) . "\n";
 
 				Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate, 0, 'wstate', FALSE);
 
@@ -425,13 +418,13 @@ class Daemon_Bootstrap {
 			Daemon_Bootstrap::$pid 
 			&& posix_kill(Daemon_Bootstrap::$pid, SIGTTIN)
 		) {
-			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon_Bootstrap::$pidfile . '\' is running already (PID ' . Daemon_Bootstrap::$pid . ')');
+			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Daemon_Bootstrap::$pid . ')');
 			exit;
 		}
 
 		Daemon::init();
 		$pid = Daemon::spawnMaster();
-		file_put_contents(Daemon_Bootstrap::$pidfile, $pid);
+		file_put_contents(Daemon::$config->pidfile->value, $pid);
 	}
 
 	/**

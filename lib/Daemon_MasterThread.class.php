@@ -202,7 +202,7 @@ class Daemon_MasterThread extends Thread {
 			shmop_delete(Daemon::$shm_wstate);
 		}
 		
-		file_put_contents(Daemon_Bootstrap::$pidfile,'');
+		file_put_contents(Daemon::$config->pidfile->value,'');
 		
 		exit(0);
 	}
