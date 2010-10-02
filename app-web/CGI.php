@@ -58,7 +58,6 @@ class CGIRequest extends Request {
 		$this->proc->readPacketSize = $this->appInstance->readPacketSize;
 		$this->proc->onReadData(array($this,'onReadData'));
 		$this->proc->onWrite(array($this,'onWrite'));
-		$this->proc->outputErrors = Daemon::$settings['mod'.$this->appInstance->modname.'outputerrors'];
 		$this->proc->binPath = $this->appInstance->binPath;
 		$this->proc->chroot = $this->appInstance->chroot;
 
@@ -66,28 +65,28 @@ class CGIRequest extends Request {
 			if (isset($this->appInstance->binAliases[$this->attrs->server['BINPATH']])) {
 				$this->proc->binPath = $this->appInstance->binAliases[$this->attrs->server['BINPATH']];
 			}
-			elseif (Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverridebinpath']) {
+			elseif ($this->appInstance->config->allowoverridebinpath->value) {
 				$this->proc->binPath = $this->attrs->server['BINPATH'];
 			}
 		}
 
 		if (
 			isset($this->attrs->server['CHROOT']) 
-			&& Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverridechroot']
+			&& $this->appInstance->config->allowoverridechroot->value
 		) {
 			$this->proc->chroot = $this->attrs->server['CHROOT'];
 		}
 
 		if (
 			isset($this->attrs->server['SETUSER']) 
-			&& Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverrideuser']
+			&& $this->appInstance->config->allowoverrideuser->value
 		) {
 			$this->proc->setUser = $this->attrs->server['SETUSER'];
 		}
 
 		if (
 			isset($this->attrs->server['SETGROUP']) 
-			&& Daemon::$settings['mod' . $this->appInstance->modname . 'allowoverridegroup']
+			&& $this->appInstance->config->allowoverridegroup->value
 		) {
 			$this->proc->setGroup = $this->attrs->server['SETGROUP'];
 		}

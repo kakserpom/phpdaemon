@@ -274,8 +274,8 @@ class Daemon {
 		}
 
 		if (
-			isset(Daemon::$Settings['configfile']) 
-			&& !Daemon::loadConfig(Daemon::$settings['configfile'])
+			isset(Daemon::$config->configfile->value) 
+			&& !Daemon::loadConfig(Daemon::$config->configfile->value)
 		) {
 			$error = TRUE;
 		}
