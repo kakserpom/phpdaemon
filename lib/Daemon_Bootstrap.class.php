@@ -95,6 +95,7 @@ class Daemon_Bootstrap {
 
 		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
 			$error = TRUE;
+			exit;
 		}
 
 		if (!Daemon::loadSettings($args)) {
