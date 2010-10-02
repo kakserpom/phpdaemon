@@ -192,17 +192,19 @@ class Daemon {
 			if (is_file($p = realpath($path))) {
 				$found = true;
 
-        $ext = strtolower(pathinfo($path,PATHINFO_EXTENSION));
-        if ($ext == 'conf') {
+				$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+				if ($ext == 'conf') {
 					$parser = new Daemon_ConfigParser($p);
+
 					if ($parser->errorneus) {
-					 return FALSE;
+						return FALSE;
 					}
-				}
-				else{
+				} else {
 					Daemon::log('Config file \'' . $p . '\' has unsupported file extension.');
 					return FALSE;
 				}
+
 				return true;
 			}
 		}

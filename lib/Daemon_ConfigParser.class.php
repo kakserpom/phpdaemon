@@ -18,12 +18,12 @@ class Daemon_ConfigParser {
 	const T_BLOCK = 5;
 	const T_CVALUE = 5;
 
-	public $file;
-	public $line = 1;
-	public $col = 1;
+	private $file;
+	private $line = 1;
+	private $col = 1;
 	public $p = 0;
 	public $state = array();
-	public $result;
+	private $result;
 	public $errorneus = FALSE;
 
 	/**
