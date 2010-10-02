@@ -21,20 +21,21 @@ class Request {
 	public $headers = array('STATUS' => '200 OK');
 	private $headers_sent = FALSE;
 	public $appInstance;
-	public $boundary = FALSE;
-	public $aborted = FALSE;
+	private $boundary = FALSE;
+	private $aborted = FALSE;
 	public $state = 1;
 	public $codepoint;
 	public $sendfp;
 	public static $hvaltr = array(';' => '&', ' ' => '');
 	public static $htr = array('-' => '_');
 	public $attrs;
-	public $shutdownFuncs = array();
+	private $shutdownFuncs = array();
 	public $sleepuntil;
 	public $running = FALSE;
 	public $upstream;
 	public $answerlen = 0;
 	public $contentLength;
+
 	public static $codes = array (
 		100 => 'Continue',
 		101 => 'Switching Protocols',
