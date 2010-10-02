@@ -155,6 +155,25 @@ class Request {
 	public function onWrite() {}
 
 	/**
+	 * @method combinedOut
+	 * @param string String to out.
+	 * @description Outputs data with headers (split by \r\n\r\n)
+	 * @return boolean Success.
+	 */
+	public function headers_sent() {
+		return $this->headers_sent;
+	}
+
+	/**
+	 * @method headers_list
+	 * @description Returns current list of headers.
+	 * @return array Headers.
+	 */
+	public function headers_list() {
+		return array_values($this->headers);
+	}
+
+	/**
 	 * @method registerShutdownFunction
 	 * @description Adds new callback called before the request finished.
 	 * @return void
