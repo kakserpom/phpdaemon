@@ -155,10 +155,9 @@ class Request {
 	public function onWrite() {}
 
 	/**
-	 * @method combinedOut
-	 * @param string String to out.
-	 * @description Outputs data with headers (split by \r\n\r\n)
-	 * @return boolean Success.
+	 * @method headers_sent
+	 * @description Analog of standard PHP function headers_sent
+	 * @return boolean Success
 	 */
 	public function headers_sent() {
 		return $this->headers_sent;
