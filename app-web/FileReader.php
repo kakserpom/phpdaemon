@@ -166,7 +166,7 @@ while (($fn = readdir($h)) !== FALSE) {
 	}
 
 	$path = $this->stream->filePath . $fn;
-	$type = is_dir($path) ? 'Directory' : Daemon::getMIME($path);
+	$type = is_dir($path) ? 'Directory' : self::getMIME($path);
 
 	?>
 <tr><td class="n"><a href="<?php echo htmlspecialchars($fn) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($fn); ?></a></td><td class="m"><?php echo date('Y-M-D H:i:s', filemtime($path)); ?></td><td class="s"><?php echo ($type === 'Directory' ? '-' : $this->humanSize(filesize($path))); ?> &nbsp;</td><td class="t"><?php echo $type; ?></td></tr>
@@ -203,7 +203,7 @@ if (Daemon::$config->expose->value) {
 					return;
 				}
 
-				$this->header('Content-Type: ' . Daemon::getMIME($this->stream->filePath));
+				$this->header('Content-Type: ' . self::getMIME($this->stream->filePath));
 			}
 
 			$this->stream->
