@@ -100,20 +100,6 @@ class Daemon {
 	}
 
 	/**
-	 * @method header
-	 * @param string
-	 * @description Static wrapper of Request->header().
-	 * @return boolean
-	 */
-	public static function header($h) {
-		if (Daemon::$req === NULL) {
-			throw new Exception('Daemon::header() called out of request context');
-		}
-
-		return Daemon::$req->header($h);
-	}
-
-	/**
 	 * @method init
 	 * @description Performs initial actions.
 	 * @return void
