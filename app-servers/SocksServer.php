@@ -10,7 +10,7 @@ class SocksServer extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::$settings += array(
+		Daemon::addDefaultSettings(array(
 			'mod' . $this->modname . 'listen' => 'tcp://0.0.0.0',
 			'mod' . $this->modname . 'listenport' => 1080,
 			'mod' . $this->modname . 'auth' => 0,
@@ -18,7 +18,7 @@ class SocksServer extends AsyncServer {
 			'mod' . $this->modname . 'password' => 'Password',
 			'mod' . $this->modname . 'enable' => 0,
 			'mod' . $this->modname . 'allowedclients' => '',
-		);
+		));
 
 		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
 			Daemon::log(__CLASS__ . ' up.');

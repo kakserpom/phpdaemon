@@ -19,7 +19,7 @@ class MemcacheClient extends AsyncServer {
 			'mod' . $this->modname . 'prefix'  => '',
 		));
 
-		$this->prefix = &Daemon::$settings['mod' . $this->modname . 'prefix'];
+		$this->prefix = Daemon::$settings['mod' . $this->modname . 'prefix'];
 		$servers = explode(',',Daemon::$settings['mod' . $this->modname . 'servers']);
 
 		foreach ($servers as $s) {

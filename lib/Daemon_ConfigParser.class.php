@@ -33,7 +33,7 @@ class Daemon_ConfigParser {
 	{
 	 $cfg = $this;
 	 $cfg->file = $file;
-	 $cfg->result = new stdClass;
+	 $cfg->result = Daemon::$config;
 	 $cfg->data = file_get_contents($file);
 	 $cfg->data = str_replace("\r",'',$cfg->data);
 	 $cfg->len = strlen($cfg->data);
@@ -150,10 +150,13 @@ class Daemon_ConfigParser {
 					{
 						$l = strtolower($elements[$k]);
 						if ($l == 'true') {
-							$elements[$k] = 1;
+							$elements[$k] = true;
 						}
 						elseif ($l == 'false') {
-							$elements[$k] = 0;
+							$elements[$k] = false;
+						}
+						elseif ($l == 'null') {
+							$elements[$k] = null;
 						}
 					}
 				}
@@ -163,10 +166,23 @@ class Daemon_ConfigParser {
 			}
 			elseif ($tokenType == Daemon_ConfigParser::T_VAR) {
 				$name = str_replace('-','',strtolower($elements[0]));
-    	  $cfg->getCurrentScope()->{$name} = isset($elements[1])?$elements[1]:1;
+				$scope = $cfg->getCurrentScope();
+				if (isset($scope->{$name})) {
+					if (($elTypes[1] == Daemon_ConfigParser::T_CVALUE) && is_string($elements[1])) {
+						$scope->{$name}->setHumanValue($elements[1]);
+					}
+					else {
+						$scope->{$name}->setValue($elements[1]);
+					}
+				}
+				else {
+					$scope->{$name} = new Daemon_ConfigEntry();
+					$scope->{$name}->setValue($elements[1]);
+					$scope->{$name}->setValueType($elTypes[1]);
+				}
 			}
 			elseif ($tokenType == Daemon_ConfigParser::T_BLOCK) {;
-				$cfg->state[] = array(Daemon_ConfigParser::T_ALL,$cfg->getCurrentScope()->{implode('-',$elements)} = new stdClass);
+				$cfg->state[] = array(Daemon_ConfigParser::T_ALL,$cfg->getCurrentScope()->{implode('-',$elements)} = new Daemon_ConfigSection);
 			}
 	   }
 	   else {

@@ -1,60 +1,9 @@
 <?php
 class FastCGI extends AsyncServer {
 
-	protected $initialLowMark  = 8;         // initial value of the minimal amout of bytes in buffer
-	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
-	protected $queuedReads     = TRUE;
-
-	private $variablesOrder;
-
-	const FCGI_BEGIN_REQUEST     = 1;
-	const FCGI_ABORT_REQUEST     = 2;
-	const FCGI_END_REQUEST       = 3;
-	const FCGI_PARAMS            = 4;
-	const FCGI_STDIN             = 5;
-	const FCGI_STDOUT            = 6;
-	const FCGI_STDERR            = 7;
-	const FCGI_DATA              = 8;
-	const FCGI_GET_VALUES        = 9;
-	const FCGI_GET_VALUES_RESULT = 10;
-	const FCGI_UNKNOWN_TYPE      = 11;
-	
-	const FCGI_RESPONDER         = 1;
-	const FCGI_AUTHORIZER        = 2;
-	const FCGI_FILTER            = 3;
-	
-	private static $roles = array(
-		self::FCGI_RESPONDER         => 'FCGI_RESPONDER',
-		self::FCGI_AUTHORIZER        => 'FCGI_AUTHORIZER',
-		self::FCGI_FILTER            => 'FCGI_FILTER',
-	);
-
-	private static $requestTypes = array(
-		self::FCGI_BEGIN_REQUEST     => 'FCGI_BEGIN_REQUEST',
-		self::FCGI_ABORT_REQUEST     => 'FCGI_ABORT_REQUEST',
-		self::FCGI_END_REQUEST       => 'FCGI_END_REQUEST',
-		self::FCGI_PARAMS            => 'FCGI_PARAMS',
-		self::FCGI_STDIN             => 'FCGI_STDIN',
-		self::FCGI_STDOUT            => 'FCGI_STDOUT',
-		self::FCGI_STDERR            => 'FCGI_STDERR',
-		self::FCGI_DATA              => 'FCGI_DATA',
-		self::FCGI_GET_VALUES        => 'FCGI_GET_VALUES',
-		self::FCGI_GET_VALUES_RESULT => 'FCGI_GET_VALUES_RESULT',
-		self::FCGI_UNKNOWN_TYPE      => 'FCGI_UNKNOWN_TYPE',
-	);
-
-	public function __construct() {
-		if (
-			($order = ini_get('request_order')) 
-			|| ($order = ini_get('variables_order'))
-		) {
-			$this->variablesOrder = $order;
-		} else {
-			$this->variablesOrder = null;
-		}
-
-		parent::__construct();
-	}
+	public $initialLowMark = 8;          // initial value of the minimal amout of bytes in buffer
+	public $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
+	public $queuedReads = TRUE;
 
 	/**
 	 * @method init
@@ -62,32 +11,30 @@ class FastCGI extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'listen'                  =>  'tcp://127.0.0.1,unix:/tmp/phpdaemon.fcgi.sock',
-			'mod' . $this->modname . 'listen-port'             => 9000,
-			'mod' . $this->modname . 'allowed-clients'         => '127.0.0.1',
-			'mod' . $this->modname . 'log-records'             => 0,
-			'mod' . $this->modname . 'log-records-miss'        => 0,
-			'mod' . $this->modname . 'log-events'              => 0,
-			'mod' . $this->modname . 'log-queue'               => 0,
-			'mod' . $this->modname . 'send-file'               => 0,
-			'mod' . $this->modname . 'send-file-dir'           => '/dev/shm',
-			'mod' . $this->modname . 'send-file-prefix'        => 'fcgi-',
-			'mod' . $this->modname . 'send-file-onlybycommand' => 0,
-			'mod' . $this->modname . 'keepalive'               => '0s',
-			'mod' . $this->modname . 'enable'                  => 0,
+		$this->defaultConfig(array(
+			'listen'                  =>  'tcp://127.0.0.1,unix:/tmp/phpdaemon.fcgi.sock',
+			'listen-port'             => 9000,
+			'allowed-clients'         => '127.0.0.1',
+			'log-records'             => 0,
+			'log-records-miss'        => 0,
+			'log-events'              => 0,
+			'log-queue'               => 0,
+			'send-file'               => 0,
+			'send-file-dir'           => '/dev/shm',
+			'send-file-prefix'        => 'fcgi-',
+			'send-file-onlybycommand' => 0,
+			'keepalive'               => new Daemon_ConfigEntryTime('0s'),
+			'enable'                  => 0,
 		));
 
-		Daemon::$parsedSettings['mod' . $this->modname . 'keepalive'] = Daemon::parseTime(Daemon::$settings['mod' . $this->modname . 'keepalive']);
-
-		if (Daemon::$settings['mod' . $this->modname.'enable']) {
+		if ($this->config->enable) {
 			Daemon::log(__CLASS__ . ' up.');
 
-			$this->allowedClients = explode(',', Daemon::$settings['mod' . $this->modname . 'allowedclients']);
+			$this->allowedClients = explode(',', $this->config->allowedclients->value);
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'],
-				Daemon::$settings['mod' . $this->modname . 'listenport']
+				$this->config->listen->value,
+				$this->config->listenport->value
 			);
 		}
 	}
@@ -99,39 +46,39 @@ class FastCGI extends AsyncServer {
 	 * @param string The output.
 	 * @return void
 	 */
-	public function requestOut($request, $output) {
-		$outlen = strlen($output);
+	public function requestOut($r, $s) {
+		$l = strlen($s);
 
-		if (Daemon::$settings['mod' . $this->modname . 'logrecords']) {
-			Daemon::log('[DEBUG] requestOut(' . $request->attrs->id . ',[...' . $outlen . '...])');
+		if ($this->config->logrecords->value) {
+			Daemon::log('[DEBUG] requestOut(' . $r->attrs->id . ',[...' . $l . '...])');
 		}
 
-		if (!isset(Daemon::$worker->pool[$request->attrs->connId])) {
+		if (!isset(Daemon::$worker->pool[$r->attrs->connId])) {
 			if (
-				Daemon::$settings['mod' . $this->modname . 'logrecordsmiss'] 
-				|| Daemon::$settings['mod' . $this->modname . 'logrecords']
+				$this->config->logrecordsmiss->value 
+				|| $this->config->logrecords->value
 			) {
-				Daemon::log('[DEBUG] requestOut(' . $request->attrs->id . ',[...' . $outlen . '...]) connId ' . $connId . ' not found.');
+				Daemon::log('[DEBUG] requestOut(' . $r->attrs->id . ',[...' . $l . '...]) connId ' . $connId . ' not found.');
 			}
 
 			return FALSE;
 		}
 
-		for ($o = 0; $o < $outlen;) {
-			$c = min(Daemon::$parsedSettings['chunksize'], $outlen - $o);
-			Daemon::$worker->writePoolState[$request->attrs->connId] = TRUE;
+		for ($o = 0; $o < $l;) {
+			$c = min(Daemon::$config->chunksize->value, $l - $o);
+			Daemon::$worker->writePoolState[$r->attrs->connId] = TRUE;
 
-			$w = event_buffer_write($this->buf[$request->attrs->connId],
-				"\x01"                                                        // protocol version
-				. "\x06"                                                      // record type (STDOUT)
-				. pack('nn', $request->attrs->id, $c)                         // id, content length
-				. "\x00"                                                      // padding length
-				. "\x00"                                                      // reserved 
-				. ($c === $outlen ? $output : binarySubstr($output, $o, $c))  // content
+			$w = event_buffer_write($this->buf[$r->attrs->connId],
+				"\x01"                                         // protocol version
+				. "\x06"                                       // record type (STDOUT)
+				. pack('nn', $r->attrs->id, $c)                // id, content length
+				. "\x00"                                       // padding length
+				. "\x00"                                       // reserved 
+				. ($c === $l ? $s : binarySubstr($s, $o, $c))  // content
 			);
 
 			if ($w === FALSE) {
-				$request->abort();
+				$r->abort();
 				return FALSE;
 			}
 
@@ -147,8 +94,8 @@ class FastCGI extends AsyncServer {
 	public function endRequest($req, $appStatus, $protoStatus) {
 		$connId = $req->attrs->connId;
 
-		if (Daemon::$settings['logevents']) {
-			Daemon::$worker->log('endRequest(' . implode(',', func_get_args()) . '): connId = ' . $connId . '.');
+		if ($this->config->logevents->value) {
+			Daemon::log('[WORKER ' . Daemon::$worker->pid . '] endRequest(' . implode(',', func_get_args()) . '): connId = ' . $connId . '.');
 		};
 
 		$c = pack('NC', $appStatus, $protoStatus) // app status, protocol status
@@ -168,7 +115,7 @@ class FastCGI extends AsyncServer {
 		if ($protoStatus === -1) {
 			$this->closeConnection($connId);
 		}
-		elseif (!Daemon::$parsedSettings['mod' . $this->modname . 'keepalive']) {
+		elseif (!Daemon::$config->keepalive->value) {
 			$this->finishConnection($connId);
 		}
 	}
@@ -180,6 +127,26 @@ class FastCGI extends AsyncServer {
 	 * @return void
 	 */
 	public function readConn($connId) {
+		static $roles = array(
+			1 => 'FCGI_RESPONDER',
+			2 => 'FCGI_AUTHORIZER',
+			3 => 'FCGI_FILTER',
+		);
+
+		static $reqtypes = array(
+			1  => 'FCGI_BEGIN_REQUEST',
+			2  => 'FCGI_ABORT_REQUEST',
+			3  => 'FCGI_END_REQUEST',
+			4  => 'FCGI_PARAMS',
+			5  => 'FCGI_STDIN',
+			6  => 'FCGI_STDOUT',
+			7  => 'FCGI_STDERR',
+			8  => 'FCGI_DATA',
+			9  => 'FCGI_GET_VALUES',
+			10 => 'FCGI_GET_VALUES_RESULT',
+			11 => 'FCGI_UNKNOWN_TYPE',
+		);
+
 		$state = sizeof($this->poolState[$connId]);
 
 		if ($state === 0) {
@@ -234,41 +201,42 @@ class FastCGI extends AsyncServer {
 
 		$this->poolState[$connId] = array();
 		$type = &$r['type'];
-		$r['ttype'] = isset(self::$requestTypes[$type]) ? self::$requestTypes[$type] : $type;
+		$r['ttype'] = isset($reqtypes[$type]) ? $reqtypes[$type] : $type;
 		$rid = $connId . '-' . $r['reqid'];
 
-		if (Daemon::$settings['mod' . $this->modname.'logrecords']) {
+		if ($this->config->logrecords) {
 			Daemon::log('[DEBUG] FastCGI-record #' . $r['type'] . ' (' . $r['ttype'] . '). Request ID: ' . $rid 
 				. '. Content length: ' . $r['conlen'] . ' (' . strlen($c) . ') Padding length: ' . $r['padlen'] 
 				. ' (' . strlen($pad) . ')');
 		}
 
-		if ($type == self::FCGI_BEGIN_REQUEST) {
+		if ($type == 1) {
+			// FCGI_BEGIN_REQUEST
 			++Daemon::$worker->queryCounter;
 			$rr = unpack('nrole/Cflags',$c);
 
 			$req = new stdClass();
 			$req->attrs = new stdClass();
-			$req->attrs->request     = array();
-			$req->attrs->get         = array();
-			$req->attrs->post        = array();
-			$req->attrs->cookie      = array();
-			$req->attrs->server      = array();
-			$req->attrs->files       = array();
-			$req->attrs->session     = NULL;
-			$req->attrs->connId      = $connId;
-			$req->attrs->trole       = self::$roles[$rr['role']];
-			$req->attrs->flags       = $rr['flags'];
-			$req->attrs->id          = $r['reqid'];
+			$req->attrs->request = array();
+			$req->attrs->get = array();
+			$req->attrs->post = array();
+			$req->attrs->cookie = array();
+			$req->attrs->server = array();
+			$req->attrs->files = array();
+			$req->attrs->session = NULL;
+			$req->attrs->connId = $connId;
+			$req->attrs->trole = $roles[$rr['role']];
+			$req->attrs->flags = $rr['flags'];
+			$req->attrs->id = $r['reqid'];
 			$req->attrs->params_done = FALSE;
-			$req->attrs->stdin_done  = FALSE;
-			$req->attrs->stdinbuf    = '';
-			$req->attrs->stdinlen    = 0;
-			$req->attrs->chunked     = FALSE;
-			$req->attrs->noHttpVer   = TRUE;
+			$req->attrs->stdin_done = FALSE;
+			$req->attrs->stdinbuf = '';
+			$req->attrs->stdinlen = 0;
+			$req->attrs->chunked = FALSE;
+			$req->attrs->noHttpVer = TRUE;
 
-			if (Daemon::$settings['mod' . $this->modname . 'logqueue']) {
-				Daemon::$worker->log('new request queued.');
+			if ($this->config->logqueue->value) {
+				Daemon::log('[WORKER ' . Daemon::$worker->pid . '] new request queued.');
 			}
 
 			Daemon::$worker->queue[$rid] = $req;
@@ -282,30 +250,32 @@ class FastCGI extends AsyncServer {
 			return;
 		}
 
-		if ($type === self::FCGI_ABORT_REQUEST) {
+		if ($type === 2) {
+			// FCGI_ABORT_REQUEST
 			$req->abort();
 		}
-		elseif ($type === self::FCGI_PARAMS) {
+		elseif ($type === 4) {
+			// FCGI_PARAMS
 			if ($c === '') {
 				$req->attrs->params_done = TRUE;
 
 				$req = Daemon::$appResolver->getRequest($req, $this);
 
 				if ($req instanceof stdClass) {
-					$this->endRequest($req, 0, 0);
+					$this->endRequest($req,0,0);
 					unset(Daemon::$worker->queue[$rid]);
 				} else {
 					if (
-						Daemon::$settings['mod' . $this->modname . 'sendfile'] 
+						$this->config->sendfile->value 
 						&& (
-							!Daemon::$settings['mod' . $this->modname . 'sendfileonlybycommand'] 
+							!$this->config->sendfileonlybycommand->value 
 							|| isset($req->attrs->server['USE_SENDFILE'])
 						) 
 						&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
 					) {
 						$fn = tempnam(
-							Daemon::$settings['mod' . $this->modname . 'sendfiledir'], 
-							Daemon::$settings['mod' . $this->modname . 'sendfileprefix']
+							$this->config->sendfiledir->value, 
+							$this->config->sendfileprefix->value
 						);
 
 						$req->sendfp = fopen($fn, 'wb');
@@ -339,7 +309,8 @@ class FastCGI extends AsyncServer {
 				}
 			}
 		}
-		elseif ($type === self::FCGI_STDIN) {
+		elseif ($type === 5) {
+			// FCGI_STDIN
 			if ($c === '') {
 				$req->attrs->stdin_done = TRUE;
 			}
@@ -351,11 +322,12 @@ class FastCGI extends AsyncServer {
 			$req->attrs->stdin_done 
 			&& $req->attrs->params_done
 		) {
-			if (is_null($this->variablesOrder)) {
-				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;
-			} else {
-				for ($i = 0, $s = strlen($this->variablesOrder); $i < $s; ++$i) {
-					$char = $this->variablesOrder[$i];
+			if (
+				($order = ini_get('request_order')) 
+				|| ($order = ini_get('variables_order'))
+			) {
+				for ($i = 0, $s = strlen($order); $i < $s; ++$i) {
+					$char = $order[$i];
 
 					if ($char == 'G') {
 						$req->attrs->request += $req->attrs->get;
@@ -367,6 +339,8 @@ class FastCGI extends AsyncServer {
 						$req->attrs->request += $req->attrs->cookie;
 					}
 				}
+			} else {
+				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;
 			}
 
 			Daemon::$worker->timeLastReq = time();

@@ -69,7 +69,7 @@ class Terminal {
 	 * @return void
 	 */
 	public function drawParam($name, $description, $values = '') {
-		$paramw = round($this->columns / 2.5);
+		$paramw = round($this->columns / 3);
 
 		echo "\n";
 

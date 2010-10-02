@@ -11,9 +11,6 @@
 
 class Daemon {
 
-	const SUPPORT_RUNKIT_SANDBOX = 0;
-	const SUPPORT_RUNKIT_MODIFY  = 1;
-
 	/**
 	 * PHPDaemon root directory
 	 * @access private
@@ -48,15 +45,7 @@ class Daemon {
 	 * @var string
 	 */
 	public static $logpointerpath;
-
-	/**
-	 * Supported things array
-	 * @access private
-	 * @var string
-	 */
-	private static $support = array();
 	
-	public static $pathReal;
 	public static $worker;
 	public static $appResolver;
 	public static $appInstances = array();
@@ -64,8 +53,6 @@ class Daemon {
 	public static $sockets = array();
 	public static $socketEvents = array();
 	public static $req;
-	public static $settings = array();
-	public static $parsedSettings = array();
 	private static $workers;
 	private static $masters;
 	private static $initservervar;
@@ -75,6 +62,7 @@ class Daemon {
 	public static $compatMode = FALSE;
 	public static $runName = 'phpdaemon';
 	public static $dummyRequest;
+	public static $config;
 
 	/**
 	 * @method initSettings
@@ -84,62 +72,7 @@ class Daemon {
 	public static function initSettings() {
 		Daemon::$version = file_get_contents(Daemon::$dir . '/VERSION');
 
-		Daemon::$settings = array(
-			// Worker graceful restarting:
-			'maxrequests' => '1k',
-			'maxmemoryusage' => '0b',
-			'maxidle' => '0s',
-			
-			// Main Pathes
-			'pidfile' => '/var/run/phpd.pid',
-			'defaultpidfile' => '/var/run/phpd.pid',
-			'configfile' => '/etc/phpd/phpd.conf;' . Daemon::$dir . '/conf/phpdaemon.conf.php',
-			'path' => NULL,
-			'ipcwstate' => '/var/run/phpdaemon-wstate.ipc',
-			
-			// Master-related
-			'mpmdelay'=> '1s',
-			'startworkers' => 20,
-			'minworkers' => 20,
-			'maxworkers' => 80,
-			'minspareworkers' => 20,
-			'maxspareworkers' => 50,
-			'masterpriority' => 100,
-			 
-			 // Requests
-			'obfilterauto' => 1,
-			'expose' => 1,
-			'keepalive' => '0s',
-			'autoreadbodyfile' => 1,
-			'chunksize' => '8k',
-			'maxconcurrentrequestsperworker' => 1000,
-			
-			 // Worker-related
-			'user' => NULL,
-			'group' => NULL,
-			'autogc' => '1',
-			'chroot' => '/',
-			'cwd' => '.',
-			'autoreload' => '0s',
-			'autoreimport' => 0,
-			'microsleep' => 100000,
-			'workerpriority' => 4,
-			'throwexceptiononshutdown' => 0,
-			'locale' => '',
-			
-			 // Logging-related
-			'logging' => 1,
-			'logtostderr' => 1,
-			'logstorage' => '/var/log/phpdaemon.log',
-			'logerrors' => 1,
-			'logworkersetstatus' => 0,
-			'logevents' => 0,
-			'logqueue' => 0,
-			'logreads' => 0,
-			'logsignals' => 0,
-		);
-
-		Daemon::loadSettings(Daemon::$settings);
+		Daemon::$config = new Daemon_Config;
 
 		Daemon::$useSockets = version_compare(PHP_VERSION, '5.3.1', '>=');
 
@@ -148,24 +81,6 @@ class Daemon {
 		Daemon::$dummyRequest->attrs->stdin_done = TRUE;
 		Daemon::$dummyRequest->attrs->params_done = TRUE;
 		Daemon::$dummyRequest->attrs->chunked = FALSE;
-	}
-
-	/**
-	 * @method addDefaultSettings
-	 * @param array {"setting": "value"}
-	 * @description Adds default settings to repositoty.
-	 * @return boolean - Succes.
-	 */
-	public static function addDefaultSettings($settings = array()) {
-		foreach ($settings as $k => $v) {
-			$k = strtolower(str_replace('-', '', $k));
-
-			if (!isset(Daemon::$settings[$k])) {
-				Daemon::$settings[$k] = $v;
-			}
-		}
-
-		return TRUE;
 	}
 
 	/**
@@ -180,7 +95,7 @@ class Daemon {
 		}
 
 		if (
-			Daemon::$settings['obfilterauto'] 
+			Daemon::$config->obfilterauto 
 			&& (Daemon::$req !== NULL)
 		) {
 			Daemon::$req->out($s,FALSE);
@@ -289,50 +204,6 @@ class Daemon {
 	}
 
 	/**
-	 * Is thing supported
-	 * @param $what integer Thing to check
-	 * @return boolean
-	 */
-	public static function supported($what) {
-		return isset(self::$support[$what]);
-	}
-
-	/**
-	 * Method to fill $support array
-	 * @return void
-	 */
-	private static function checkSupports() {
-		if (is_callable('runkit_lint_file')) {
-			self::$support[self::SUPPORT_RUNKIT_SANDBOX] = 1;
-		}
-
-		if (is_callable('runkit_function_add')) {
-			self::$support[self::SUPPORT_RUNKIT_MODIFY] = 1;
-		}
-	}
-
-	/**
-	 * Check file syntax via runkit_lint_file if supported or via php -l
-	 * @param $filaname string File name
-	 * @return boolean
-	 */
-	public static function lintFile($filename) {
-		if (!file_exists($filename)) {
-			return false;
-		}
-
-		if (self::supported(self::SUPPORT_RUNKIT_SANDBOX)) {
-			return runkit_lint_file($filename);
-		}
-
-		$cmd = 'php -l ' . escapeshellarg($filename) . ' 2>&1';
-
-		exec($cmd, $output, $retcode);
-
-		return 0 === $retcode;
-	}
-
-	/**
 	 * @method init
 	 * @description Performs initial actions.
 	 * @return void
@@ -343,11 +214,9 @@ class Daemon {
 
 		ob_start(array('Daemon', 'outputFilter'));
 
-		Daemon::checkSupports();
-
 		Daemon::$initservervar = $_SERVER;
-		Daemon::$masters = new threadCollection;
-		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$settings['ipcwstate'],Daemon::$shm_wstate_size,'wstate');
+		Daemon::$masters = new ThreadCollection;
+		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate->value,Daemon::$shm_wstate_size,'wstate');
 		Daemon::openLogs();
 	}
 
@@ -401,12 +270,12 @@ class Daemon {
 		$args = Daemon_Bootstrap::getArgs($argv);
 
 		if (isset($args[$k = 'configfile'])) {
-			Daemon::$settings[$k] = $args[$k];
+			Daemon::$config[$k] = $args[$k];
 		}
 
 		if (
-			isset(Daemon::$parsedSettings['configfile']) 
-			&& !Daemon::loadConfig(Daemon::$parsedSettings['configfile'])
+			isset(Daemon::$Settings['configfile']) 
+			&& !Daemon::loadConfig(Daemon::$settings['configfile'])
 		) {
 			$error = TRUE;
 		}
@@ -415,11 +284,11 @@ class Daemon {
 			$error = TRUE;
 		}
 
-		if (!isset(Daemon::$settings['path'])) {
+		if (!isset(Daemon::$config->path)) {
 			exit('\'path\' is not defined');
 		}
 
-		$appResolver = require Daemon::$settings['path'];
+		$appResolver = require Daemon::$config->path;
 		$appResolver->init();
 
 		$req = new stdClass();
@@ -463,28 +332,16 @@ class Daemon {
 				$found = true;
 
         $ext = strtolower(pathinfo($path,PATHINFO_EXTENSION));
-        if ($ext == 'php') {
-					$cfg = include($p);
-				}
-				elseif ($ext == 'conf') {
+        if ($ext == 'conf') {
 					$parser = new Daemon_ConfigParser($p);
-				  $cfg = $parser->result;
+					if ($parser->errorneus) {
+					 return FALSE;
+					}
 				}
 				else{
 					Daemon::log('Config file \'' . $p . '\' has unsupported file extension.');
 					return FALSE;
 				}
-
-				if (!is_array($cfg)) {
-					Daemon::log('Config file \'' . $p . '\' returns bad value.');
-					return FALSE;
-				}
-				
-				if (!Daemon::loadSettings($cfg)) {
-					Daemon::log('Couldn\'t load config file \'' . $p . '\'.');
-					return FALSE;
-				}
-
 				return true;
 			}
 		}
@@ -524,63 +381,37 @@ class Daemon {
 					$v = NULL;
 				}
 			}
-
-			if (array_key_exists($k, Daemon::$settings)) {
-				if ($k === 'maxmemoryusage') {
-					Daemon::$parsedSettings[$k] = Daemon::parseSize($v);
+			if (isset(Daemon::$config->{$k})) {
+				if (Daemon::$config->{$k} instanceof Daemon_ConfigEntry) {
+					Daemon::$config->{$k}->setHumanValue($v);
 				}
-				elseif ($k === 'maxrequests') {
-					Daemon::$parsedSettings[$k] = Daemon::parseNum($v);
-				}
-				elseif ($k === 'autogc') {
-					Daemon::$parsedSettings[$k] = Daemon::parseNum($v);
-				}
-				elseif ($k === 'maxidle') {
-					Daemon::$parsedSettings[$k] = Daemon::parseTime($v);
-				}
-				elseif ($k === 'autoreload') {
-					Daemon::$parsedSettings[$k] = Daemon::parseTime($v);
-				}
-				elseif ($k === 'maxconcurrentrequestsperworker') {
-					Daemon::$parsedSettings[$k] = Daemon::parseNum($v);
-				}
-				elseif ($k === 'keepalive') {
-					Daemon::$parsedSettings[$k] = Daemon::parseTime($v);
-				}
-				elseif ($k === 'mpmdelay') {
-					Daemon::$parsedSettings[$k] = Daemon::parseTime($v);
-				}
-				elseif ($k === 'chunksize') {
-					Daemon::$parsedSettings[$k] = Daemon::parseSize($v);
-				}
-				elseif ($k === 'configfile') {
-					Daemon::$parsedSettings[$k] = realpath($v);
-				}
-
-				if (is_int(Daemon::$settings[$k])) {
-					Daemon::$settings[$k] = (int) $v;
-				} else {
-					Daemon::$settings[$k] = $v;
+				else	{
+					if (is_int(Daemon::$config->{$k})) {
+						Daemon::$config->{$k} = (int) $v;
+					}
 				}
 			}
-			elseif (strpos($k, 'mod') === 0) {
-				Daemon::$settings[$k] = $v;
-			} else {
+			elseif (strpos($k, 'mod-') === 0) {
+			  $e = explode('-',strtolower($k),3);
+			  $kk = $e[1];
+			  $name = str_replace('-',$e[2]);
+				if (isset(Daemon::$config->{$kk}->{$name})) {
+					if (Daemon::$config->{$kk}->{$name} instanceof Daemon_ConfigEntry) {
+						Daemon::$config->{$kk}->{$name}->setHumanValue($v);
+					}
+					elseif (is_int($this->{$kk}->{$name})) {
+					  Daemon::$config->{$kk}->{$name} = (int) $v;
+					}
+				}
+				else {
+					Daemon::$config->{$kk}->{$name} = $v;
+				}
+			}
+			else {
 				Daemon::log('Unrecognized parameter \'' . $k . '\'');
 				$error = TRUE;
 			}
 		}
-
-		if (isset($settings['path'])) {
-			if (isset(Daemon::$settings['chroot'])) {
-				Daemon::$pathReal = realpath(Daemon::$settings['chroot']
-				. ((substr(Daemon::$settings['chroot'], -1) != '/') ? '/' : '')
-				. Daemon::$settings['path']);
-			} else {
-				Daemon::$pathReal = realpath(Daemon::$settings['path']);
-			}
-		}
-
 		return !$error;
 	}
 
@@ -590,20 +421,20 @@ class Daemon {
 	 * @return void
 	 */
 	public static function openLogs() {
-		if (Daemon::$settings['logging']) {
+		if (Daemon::$config->logging) {
 			if (Daemon::$logpointer) {
 				fclose(Daemon::$logpointer);
 				Daemon::$logpointer = FALSE;
 			}
 
-			Daemon::$logpointer = fopen(Daemon::$logpointerpath = Daemon::parseStoragepath(Daemon::$settings['logstorage']), 'a+');
+			Daemon::$logpointer = fopen(Daemon::$logpointerpath = Daemon::parseStoragepath(Daemon::$config->logstorage->value), 'a+');
 
-			if (isset(Daemon::$settings['group'])) {
-				chgrp(Daemon::$logpointerpath, Daemon::$settings['group']);
+			if (isset(Daemon::$config->group)) {
+				chgrp(Daemon::$logpointerpath, Daemon::$config->group->value);
 			}
 
-			if (isset(Daemon::$settings['user'])) {
-				chown(Daemon::$logpointerpath, Daemon::$settings['user']);
+			if (isset(Daemon::$config->user)) {
+				chown(Daemon::$logpointerpath, Daemon::$config->user->value);
 			}
 		}
 	}
@@ -613,6 +444,7 @@ class Daemon {
 	 * @param string $str - size-string to parse.
 	 * @description Converts string representation of size (INI-style) to bytes.
 	 * @return int - size in bytes.
+	 * @deprecated
 	 */
 	public static function parseSize($str) {
 		$l = strtolower(substr($str, -1));
@@ -641,6 +473,7 @@ class Daemon {
 	 * @param string $str - number-string to parse.
 	 * @description Converts string representation of number (INI-style) to integer.
 	 * @return int - number.
+	 * @deprecated
 	*/
 	public static function parseNum($str) {
 		$l = substr($str, -1);
@@ -649,7 +482,7 @@ class Daemon {
 			($l === 'k') 
 			|| ($l === 'K')
 		) {
-			return ((int) substr($str, 0, -1) * 100);
+			return ((int) substr($str, 0, -1) * 1000);
 		}
 
 		if (
@@ -674,6 +507,7 @@ class Daemon {
 	 * @param string $str - time-string to parse.
 	 * @description Converts string representation of time (INI-style) to seconds.
 	 * @return int - seconds.
+	 * @deprecated
 	 */
 	public static function parseTime($str) {
 		$time = 0;
@@ -842,7 +676,7 @@ class Daemon {
 		$mt = explode(' ', microtime());
 
 		if (
-			Daemon::$settings['logtostderr'] 
+			Daemon::$config->logtostderr 
 			&& defined('STDERR')
 		) {
 			fwrite(STDERR, '[PHPD] ' . $msg . "\n");
@@ -905,7 +739,7 @@ class Daemon {
 	 */
 	public static function exportBytes($str, $all = FALSE) {
 		return preg_replace_callback(
-			'~' . ($all ? '.' : '[^A-Za-z\d\.$:;\-_/\\\\]') . '~s',
+			'~' . ($all ? '.' : '[^A-Za-z\d\.\{\}$:;\-_/\\\\]') . '~s',
 			function($m) use ($all) {
 				if (!$all) {
 					if ($m[0] == "\r") {

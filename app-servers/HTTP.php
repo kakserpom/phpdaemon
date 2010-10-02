@@ -1,10 +1,9 @@
 <?php
 class HTTP extends AsyncServer {
 
-	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
-	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
-	protected $queuedReads     = TRUE;
-
+	public $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
+	public $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
+	public $queuedReads = TRUE;
 	public $WS;
 
 	/**
@@ -13,27 +12,24 @@ class HTTP extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'listen' =>  'tcp://0.0.0.0',
-			'mod' . $this->modname . 'listen-port' => 80,
-			'mod' . $this->modname . 'log-events' => 0,
-			'mod' . $this->modname . 'log-queue' => 0,
-			'mod' . $this->modname . 'send-file' => 0,
-			'mod' . $this->modname . 'send-file-dir' => '/dev/shm',
-			'mod' . $this->modname . 'send-file-prefix' => 'http-',
-			'mod' . $this->modname . 'send-file-onlybycommand' => 0,
-			'mod' . $this->modname . 'keepalive' => '0s',
-			'mod' . $this->modname . 'enable' => 0,
+		$this->defaultConfig(array(
+			'listen' =>  'tcp://0.0.0.0',
+			'listen-port' => 80,
+			'log-events' => 0,
+			'log-queue' => 0,
+			'send-file' => 0,
+			'send-file-dir' => '/dev/shm',
+			'send-file-prefix' => 'http-',
+			'send-file-onlybycommand' => 0,
+			'keepalive' => new Daemon_ConfigEntryTime('0s'),
+			'enable' => 0,
 		));
-
-		Daemon::$parsedSettings['mod' . $this->modname . 'keepalive'] = Daemon::parseTime(Daemon::$settings['mod' . $this->modname . 'keepalive']);
-
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'],
-				Daemon::$settings['mod' . $this->modname . 'listenport']
+				$this->config->listen->value,
+				$this->config->listenport->value
 			);
 		}
 	}
@@ -44,7 +40,7 @@ class HTTP extends AsyncServer {
 	 * @return void
 	*/
 	public function onReady() {
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			$this->WS = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
 			$this->enableSocketEvents();
 		}
@@ -97,7 +93,7 @@ class HTTP extends AsyncServer {
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
 		if (Daemon::$settings['logevents']) {
-			Daemon::$worker->log('endRequest(' . implode(',', func_get_args()) . ').');
+			Daemon::log('[WORKER ' . Daemon::$worker->pid . '] endRequest(' . implode(',', func_get_args()) . ').');
 		};
 
 		if ($protoStatus === -1) {
@@ -112,7 +108,7 @@ class HTTP extends AsyncServer {
 			}
 
 			if (
-				(!Daemon::$parsedSettings['mod' . $this->modname . 'keepalive']) 
+				(!Daemon::$parsedSettings['keepalive']) 
 				|| (!isset($req->attrs->server['HTTP_CONNECTION'])) 
 				|| ($req->attrs->server['HTTP_CONNECTION'] !== 'keep-alive')
 			) {
@@ -180,7 +176,7 @@ class HTTP extends AsyncServer {
 			$req->attrs->chunked = FALSE;
 
 			if (Daemon::$settings['mod'.$this->modname.'logqueue']) {
-				Daemon::$worker->log('new request queued.');
+				Daemon::log('[WORKER ' . Daemon::$worker->pid . '] new request queued.');
 			}
 
 			Daemon::$worker->queue[$rid] = $req;
@@ -258,7 +254,7 @@ class HTTP extends AsyncServer {
 						return;
 					}
 				} else {
-					$req = Daemon::$appResolver->getRequest($req, $this, isset(Daemon::$settings[$k = 'mod' . $this->modname . 'responder']) ? Daemon::$settings[$k] : NULL);
+					$req = Daemon::$appResolver->getRequest($req, $this, isset(Daemon::$settings[$k = 'responder']) ? Daemon::$settings[$k] : NULL);
 				}
 
 				if ($req instanceof stdClass) {
@@ -266,14 +262,14 @@ class HTTP extends AsyncServer {
 					unset(Daemon::$worker->queue[$rid]);
 				} else {
 					if (
-						Daemon::$settings['mod' . $this->modname . 'sendfile'] 
+						Daemon::$settings['sendfile'] 
 						&& (
-							!Daemon::$settings['mod' . $this->modname . 'sendfileonlybycommand'] 
+							!Daemon::$settings['sendfileonlybycommand'] 
 							|| isset($req->attrs->server['USE_SENDFILE'])
 						) 
 						&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
 					) {
-						$fn = tempnam(Daemon::$settings['mod' . $this->modname . 'sendfiledir'], Daemon::$settings['mod' . $this->modname . 'sendfileprefix']);
+						$fn = tempnam(Daemon::$settings['sendfiledir'], Daemon::$settings['sendfileprefix']);
 						$req->sendfp = fopen($fn, 'wb');
 						$req->header('X-Sendfile: ' . $fn);
 					}

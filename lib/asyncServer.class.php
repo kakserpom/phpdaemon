@@ -11,15 +11,14 @@
 
 class AsyncServer extends AppInstance {
 
-	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
-	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
-	protected $queuedReads     = FALSE;
-
 	public $buf             = array();   // collects connection's buffers.
+	public $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
+	public $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
 	public $poolState       = array();
 	public $poolQueue       = array();
 	public $allowedClients  = NULL;
 	public $directReads     = FALSE;
+	public $queuedReads     = FALSE;
 	public $readPacketSize  = 4096;
 	public $socketEvents    = array();
 	public $readEvents      = array();
@@ -203,9 +202,9 @@ class AsyncServer extends AppInstance {
 
 				if (
 					($group === FALSE) 
-					&& isset(Daemon::$settings['group'])
+					&& isset(Daemon::$config->group->value)
 				) {
-					$group = Daemon::$settings['group'];
+					$group = Daemon::$config->group->value;
 				}
 
 				if ($group !== FALSE) {
@@ -219,9 +218,9 @@ class AsyncServer extends AppInstance {
 				
 				if (
 					($user === FALSE) 
-					&& isset(Daemon::$settings['user'])
+					&& isset(Daemon::$config->user->value)
 				) {
-					$user = Daemon::$settings['user'];
+					$user = Daemon::$config->user->value;
 				}
 
 				if ($user !== FALSE) {

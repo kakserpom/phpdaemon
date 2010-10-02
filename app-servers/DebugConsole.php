@@ -9,19 +9,19 @@ class DebugConsole extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'listen'     => 'tcp://0.0.0.0',
-			'mod' . $this->modname . 'listenport' => 8818,
-			'mod' . $this->modname . 'passphrase' => 'secret',
-			'mod' . $this->modname . 'enable'     => 0,
+	$this->defaultConfig(array(
+			'listen'     => 'tcp://0.0.0.0',
+			'listenport' => 8818,
+			'passphrase' => 'secret',
+			'enable'     => 0,
 		));
 
-		if (Daemon::$settings['mod' . $this->modname . 'enable']) {
+		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
 			$this->bindSockets(
-				Daemon::$settings['mod' . $this->modname . 'listen'],
-				Daemon::$settings['mod' . $this->modname . 'listenport']
+				$this->config->listen->value,
+				$this->config->listenport->value
 			);
 		}
 	}
@@ -78,7 +78,7 @@ class DebugConsoleSession extends SocketSession {
 				if ($this->auth) {
 					$this->writeln('You are authorized already.');
 				}
-				elseif ($arg === Daemon::$settings['mod' . $this->appInstance->modname . 'passphrase']) {
+				elseif ($arg === $this->appInstance->config->passphrase->value) {
 					$this->auth = TRUE;
 					$this->writeln('OK.');
 				} else {
