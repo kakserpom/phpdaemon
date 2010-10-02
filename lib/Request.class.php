@@ -582,7 +582,7 @@ class Request {
 
 		if ($this->attrs->chunked) {
 			for ($o = 0; $o < $l;) {
-				$c = min(Daemon::$config->chunksize->value, $l - $o);
+				$c = min($this->upstream->chunksize->value, $l - $o);
 
 				$chunk = dechex($c) . "\r\n"
 					. ($c === $l ? $s : binarySubstr($s, $o, $c)) // content

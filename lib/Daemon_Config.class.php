@@ -61,7 +61,7 @@ class Daemon_Config implements ArrayAccess {
 
   public function __construct()
   {
-		static $sizes = array('maxmemoryusage','chunksize');
+		static $sizes = array('maxmemoryusage');
 		static $times = array('maxidle','autoreload','mpmdelay');
 		static $numbers = array('maxrequests','autogc');
    

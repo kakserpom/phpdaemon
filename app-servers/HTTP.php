@@ -23,6 +23,7 @@ class HTTP extends AsyncServer {
 			'send-file-onlybycommand' => 0,
 			'expose' => 1,
 			'keepalive' => new Daemon_ConfigEntryTime('0s'),
+			'chunksize'               => new Daemon_ConfigEntrySize('8k'),
 			'enable' => 0,
 		));
 		if ($this->config->enable->value) {

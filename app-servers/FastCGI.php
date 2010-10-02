@@ -26,6 +26,7 @@ class FastCGI extends AsyncServer {
 			'expose' => 1,
 			'auto-read-body-file' => 1,
 			'keepalive'               => new Daemon_ConfigEntryTime('0s'),
+			'chunksize'               => new Daemon_ConfigEntrySize('8k'),
 			'enable'                  => 0,
 		));
 
@@ -67,7 +68,7 @@ class FastCGI extends AsyncServer {
 		}
 
 		for ($o = 0; $o < $l;) {
-			$c = min(Daemon::$config->chunksize->value, $l - $o);
+			$c = min($this->config->chunksize->value, $l - $o);
 			Daemon::$worker->writePoolState[$r->attrs->connId] = TRUE;
 
 			$w = event_buffer_write($this->buf[$r->attrs->connId],
