@@ -13,10 +13,13 @@ error_reporting(E_ALL);
 $dir = dirname(__DIR__);
 
 spl_autoload_register(function($classname) use ($dir) {
-  $path = $dir . '/lib/'.basename($classname).'.class.php';
-  if (is_file($path)) {require $path;}
+	$path = $dir . '/lib/' . basename($classname) . '.class.php';
+
+	if (is_file($path)) {
+		require $path;
+	}
 });
-require $dir . '/lib/binarySubstr.php';
+require $dir . '/lib/BinarySubstr.php';
 
 chdir(Daemon::$dir = $dir);
 
