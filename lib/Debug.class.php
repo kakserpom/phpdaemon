@@ -6,7 +6,7 @@
 /* ===========================
 /* @class Debug
 /* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Implementation of the master thread.
+/* @description Debug static functions.
 /**************************************************************************/
 
 class Debug {
