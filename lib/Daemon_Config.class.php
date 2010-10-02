@@ -34,7 +34,6 @@ class Daemon_Config implements ArrayAccess {
 	// Requests
 	public $obfilterauto = 1;
 	public $expose = 1;
-	public $keepalive = '0s';
 	public $autoreadbodyfile = 1;
 	public $chunksize = '8k';
 	public $maxconcurrentrequestsperworker = 1000;
@@ -66,7 +65,7 @@ class Daemon_Config implements ArrayAccess {
   public function __construct()
   {
 		static $sizes = array('maxmemoryusage','chunksize');
-		static $times = array('maxidle','autoreload','keepalive','mpmdelay');
+		static $times = array('maxidle','autoreload','mpmdelay');
 		static $numbers = array('maxrequests','autogc');
    
 		foreach ($this as $name => $value)

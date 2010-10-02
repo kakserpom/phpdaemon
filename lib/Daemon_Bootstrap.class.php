@@ -89,8 +89,8 @@ class Daemon_Bootstrap {
 			exit;
 		}
 
-		if (isset($args[$k = 'configfile'])) {
-			Daemon::$settings[$k] = $args[$k];
+		if (isset($args['configfile'])) {
+			Daemon::$config->configfile->setHumanValue($args[$k]);
 		}
 
 		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
@@ -328,14 +328,16 @@ class Daemon_Bootstrap {
 				'_bold'     => TRUE,
 			);
 			
-			foreach (Daemon::$settings as $name => &$value) {
+			foreach (Daemon::$config as $name => $entry) {
+				if (!$entry instanceof Daemon_ConfigEntry) {continue;}
+				
 				$row = array(
 					'parameter' => $name,
-					'value'     => var_export($value, TRUE),
+					'value'     => var_export($entry->humanValue, TRUE),
 				);
 
-				if (isset(Daemon::$parsedSettings[$name])) {
-					$row['value'] .= ' (' . Daemon::$parsedSettings[$name] . ')';
+				if ($entry->defaultValue != $entry->humanValue) {
+					$row['value'] .= ' (' . var_export($entry->defaultValue, TRUE) . ')';
 				}
 			
 				$rows[] = $row;

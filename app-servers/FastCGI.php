@@ -115,7 +115,7 @@ class FastCGI extends AsyncServer {
 		if ($protoStatus === -1) {
 			$this->closeConnection($connId);
 		}
-		elseif (!Daemon::$config->keepalive->value) {
+		elseif (!$this->config->keepalive->value) {
 			$this->finishConnection($connId);
 		}
 	}
