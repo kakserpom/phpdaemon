@@ -340,7 +340,7 @@ class AsyncServer extends AppInstance {
 			return FALSE;
 		}
 		
-		return Daemon::$parsedSettings['maxconcurrentrequestsperworker'] >= sizeof($this->queue);
+		return Daemon::$config->maxconcurrentrequestsperworker->value >= sizeof($this->queue);
 	}
 	
 	/**
@@ -350,7 +350,7 @@ class AsyncServer extends AppInstance {
 	 * @return void
 	 */
 	public function closeConnection($connId) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::$worker->log('closeConnection(' . $connId . ').');
 		}
 		
@@ -390,7 +390,7 @@ class AsyncServer extends AppInstance {
 	 * @return integer Connection's ID. Boolean false when failed.
 	 */
 	public function connectTo($host, $port = 0) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $host . ':' . $port . ') invoked.');
 		}
 
@@ -491,7 +491,7 @@ class AsyncServer extends AppInstance {
 	public function onAcceptEvent($stream, $events, $arg) {
 		$sockId = $arg[0];
 
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
 		}
 		
@@ -616,7 +616,7 @@ class AsyncServer extends AppInstance {
 	 * @return boolean Success.
 	 */
 	public function finishConnection($connId) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
 		}
 		
@@ -643,7 +643,7 @@ class AsyncServer extends AppInstance {
 	public function onReadEvent($stream, $arg) {
 		$connId = is_int($arg) ? array_search($stream, Daemon::$worker->pool, TRUE) : $arg[0];
 
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked. ' . Daemon::var_dump(Daemon::$worker->pool[$connId]));
 		}
 
@@ -676,7 +676,7 @@ class AsyncServer extends AppInstance {
 		$connId = $arg[0];
 		unset(Daemon::$worker->writePoolState[$connId]);
 		
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::$worker->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
 		}
 
@@ -684,7 +684,7 @@ class AsyncServer extends AppInstance {
 			$this->closeConnection($connId);
 		}
 		
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::$worker->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') finished.');
 		}
 
@@ -720,7 +720,7 @@ class AsyncServer extends AppInstance {
 			$connId = array_search($stream, $this->buf, TRUE);
 		}
 		
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::$worker->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
 		}
 
@@ -794,7 +794,7 @@ class AsyncServer extends AppInstance {
 			|| ($read === NULL) 
 			|| ($read === FALSE)
 		) {
-			if (Daemon::$settings['logreads']) {
+			if (Daemon::$config->logreads->value) {
 				Daemon::log('read(' . $connId . ',' . $n . ') interrupted.');
 			}
 
@@ -803,7 +803,7 @@ class AsyncServer extends AppInstance {
 			return FALSE;
 		}
 		
-		if (Daemon::$settings['logreads']) {
+		if (Daemon::$config->logreads->value) {
 			Daemon::log('read(' . $connId . ',' . $n . ',[' . gettype($read) . '-' . ($read === FALSE ? 'false' : strlen($read)) . ':' . Daemon::exportBytes($read) . ']).');
 		}
 

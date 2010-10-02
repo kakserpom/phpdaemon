@@ -16,7 +16,7 @@ class WebSocketServer extends AsyncServer
 		$this->defaultConfig(array(
 			'listen'           => 'tcp://0.0.0.0',
 			'listenport'       => 8047,
-			'maxallowedpacket' => '16k',
+			'maxallowedpacket' => new Daemon_ConfigEntrySize('16k'),
 			'enable'           => 0
 		));
 		
@@ -200,7 +200,7 @@ class WebSocketSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked');
 		}
 		
@@ -256,10 +256,7 @@ class WebSocketSession extends SocketSession {
 		$appName = isset($e[1])?$e[1]:'';
 
 		if (!isset($this->appInstance->routes[$appName])) {
-			if (
-				isset(Daemon::$settings['logerrors']) 
-				&& Daemon::$settings['logerrors']
-			) {
+			if (Daemon::$config->logerrors->value) {
 				Daemon::log(__METHOD__ . ': undefined route \'' . $appName . '\'.');
 			}
 		
@@ -446,7 +443,7 @@ class WebSocketSession extends SocketSession {
 						$len += $n;
 					} while ($b > 0x80);
 
-					if (Daemon::$parsedSettings['mod' . $this->appInstance->modname . 'maxallowedpacket'] <= $len) {
+					if ($this->appInstance->config->maxallowedpacket->value <= $len) {
 						// Too big packet
 						$this->finish();
 						return;
@@ -462,7 +459,7 @@ class WebSocketSession extends SocketSession {
 					$this->onFrame($data, $frametype);
 				} else {
 					if (($p = strpos($this->buf, "\xFF")) !== FALSE) {
-						if (Daemon::$parsedSettings['mod' . $this->appInstance->modname . 'maxallowedpacket'] <= $p - 1) {
+						if ($this->appInstance->config->maxallowedpacket->value <= $p - 1) {
 							// Too big packet
 							$this->finish();
 							return;
@@ -473,7 +470,7 @@ class WebSocketSession extends SocketSession {
 						$this->onFrame($data,$frametype);
 					} else {
 						// not enough data yet
-						if (Daemon::$parsedSettings['mod' . $this->appInstance->modname . 'maxallowedpacket'] <= strlen($this->buf)) {
+						if ($this->appInstance->config->maxallowedpacket->value <= strlen($this->buf)) {
 							// Too big packet
 							$this->finish();
 						}

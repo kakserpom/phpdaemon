@@ -7,11 +7,11 @@ class FileReader extends AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		Daemon::addDefaultSettings(array(
-			'mod' . $this->modname . 'indexfiles' => 'index.html/index.htm'
+		$this->defaultConfig(array(
+			'indexfiles' => 'index.html/index.htm'
 		));
 
-		$this->indexFiles = explode('/', Daemon::$settings['mod' . $this->modname . 'indexfiles']);
+		$this->indexFiles = explode('/', $this->config->indexfiles->value);
 	}
 
 	/**
@@ -124,7 +124,7 @@ while (($fn = readdir($h)) !== FALSE) {
 </div> 
 <?php 
 
-if (Daemon::$settings['expose']) {
+if (Daemon::$config->expose->value) {
 	echo '<div class="foot">phpDaemon/' . Daemon::$version . '</div>';
 } 
 

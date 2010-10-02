@@ -319,7 +319,7 @@ class MySQLClientSession extends SocketSession {
 		$this->write($header);
 		$this->write($packet);
 
-		if (Daemon::$settings['mod' . $this->appInstance->modname . 'protologging']) {
+		if ($this->appInstance->config->protologging->value) {
 			Daemon::log('Client --> Server: ' . Daemon::exportBytes($header . $packet) . "\n\n");
 		}
 

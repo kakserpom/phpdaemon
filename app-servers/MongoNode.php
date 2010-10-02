@@ -52,7 +52,7 @@ class MongoNode extends AppInstance {
 	 * @return void
 	 */
 	public function cacheObject($o) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
 		}
 
@@ -64,7 +64,7 @@ class MongoNode extends AppInstance {
 		if (isset($o['_ev'])) {
 			$o['name'] = $o['_ev'];
 			
-			if (Daemon::$settings['logevents']) {
+			if (Daemon::$config->logevents->value) {
 				Daemon::log('MongoNode send event ' . $o['name']);
 			}
 
@@ -82,7 +82,7 @@ class MongoNode extends AppInstance {
 	 * @return void
 	 */
 	public function deleteObject($o) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
 		}
 	      
@@ -112,7 +112,7 @@ class MongoNode extends AppInstance {
 				$cursor->lastOpId = NULL;
 			     
 				foreach ($cursor->items as $k => &$item) {
-					if (Daemon::$settings['logevents']) {
+					if (Daemon::$config->logevents->value) {
 						Daemon::log(get_class($node) . ': caught oplog-record with ts = (' . Daemon::var_dump($item['ts']) . ')');
 					}
 				    
@@ -187,7 +187,7 @@ class MongoNode_ReplicationRequest extends Request {
 							$ts = new MongoTimestamp(0, 0);
 						}
 					   
-						if (Daemon::$settings['logevents']) {
+						if (Daemon::$config->logevents->value) {
 							Daemon::log('MongoNode: replication point - ' . $answer->result . ' (' . Daemon::var_dump($ts) . ')');
 						}
 					   

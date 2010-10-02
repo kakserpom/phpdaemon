@@ -144,7 +144,7 @@ class AppInstance {
 	 * @return void
 	 */
 	public function shutdown($graceful = FALSE) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked. Size of the queue: ' . sizeof($this->queue) . '.');
 		}
 
@@ -175,7 +175,7 @@ class AppInstance {
 
 		$req->idAppQueue = ++$this->reqCounter;
 
-		if (Daemon::$settings['logqueue']) {
+		if (Daemon::$config->logqueue->value) {
 			Daemon::$worker->log('request added to ' . get_class($this) . '->queue.');
 		}
 

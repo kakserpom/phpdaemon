@@ -46,7 +46,7 @@ class RTEP extends AsyncServer {
 	 * @return void
 	 */
 	public function onEvent($packet) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
 		}
 
@@ -81,7 +81,7 @@ class RTEPSession extends SocketSession {
 	 * @return void
 	 */
 	public function send($packet) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked (' . $this->clientAddr . '): ' . Daemon::var_dump($packet));
 		}
 
@@ -90,7 +90,7 @@ class RTEPSession extends SocketSession {
 			$l = strlen($s);
 
 			for ($o = 0; $o < $l;) {
-				$c = min(Daemon::$parsedSettings['chunksize'], $l - $o);
+				$c = min(Daemon::$config->chunksize->value, $l - $o);
 				$chunk = dechex($c) . "\r\n"
 					. ($c === $l ? $s : binarySubstr($s, $o, $c))
 					. "\r\n";
@@ -121,7 +121,7 @@ class RTEPSession extends SocketSession {
 			$this->events[] = $evName;
 		}
 
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log('Event \'' . $evName . '\' added to client ' . $this->clientAddr . '.');
 		}
 	}
@@ -145,7 +145,7 @@ class RTEPSession extends SocketSession {
 
 		--$s;
 
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log('Event \'' . $evName . '\' removed from client ' . $this->clientAddr . '.');
 		}
 
@@ -158,7 +158,7 @@ class RTEPSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked');
 		}
 
@@ -175,7 +175,7 @@ class RTEPSession extends SocketSession {
 	 * @return void
 	 */
 	public function onRequest($packet) {
-		if (Daemon::$settings['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ': ' . Daemon::var_dump($packet));
 		}
 
