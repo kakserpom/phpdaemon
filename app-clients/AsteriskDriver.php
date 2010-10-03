@@ -1,7 +1,7 @@
 <?php
 /**
  * Driver for Asterisk Call Manager/1.1
- * 
+ *
  * @version 1.0.0
  * @author Dmitry Ponomarev <ponomarev.workspace@gmail.com>
  */
@@ -9,7 +9,7 @@ class AsteriskDriver extends AsyncServer {
 
 	public $sessions = array(); // Active sessions
 	public $servConn = array(); // Active connections
-	public $amiVersion;
+	public $amiVersions = array(); // Asterisk Call Manager Interface versions for each session
 
 	/**
 	 * Constructor
@@ -31,7 +31,7 @@ class AsteriskDriver extends AsyncServer {
 	/**
 	 * Establishes connection.
 	 *
-	 * @param string Address.
+	 * @param string Optional address.
 	 * @return AsteriskDriverSession Session object.
 	 */
 	public function getConnection($addr = null) {
@@ -41,9 +41,9 @@ class AsteriskDriver extends AsyncServer {
 			}
 
 			if (isset($this->servConn[$addr])) {
-				foreach ($this->servConn[$addr] as &$c)	{
+				foreach ($this->servConn[$addr] as &$c) {
 					if (
-						isset($this->sessions[$c]) 
+						isset($this->sessions[$c])
 						&& !sizeof($this->sessions[$c]->callbacks)
 					) {
 						return $this->sessions[$c];
@@ -64,15 +64,15 @@ class AsteriskDriver extends AsyncServer {
 			if (!$connId) {
 				return;
 			}
-			
+
 			$this->sessions[$connId] = new AsteriskDriverSession($connId, $this);
 			$this->sessions[$connId]->addr = $addr;
 
-		 	if (isset($u['user'])) {
+			if (isset($u['user'])) {
 				$this->sessions[$connId]->username = $u['user'];
 			}
 
-	  		if (isset($u['pass'])) {
+			if (isset($u['pass'])) {
 				$this->sessions[$connId]->secret = $u['pass'];
 			}
 
@@ -85,8 +85,8 @@ class AsteriskDriver extends AsyncServer {
 
 class AsteriskDriverSession extends SocketSession {
 
-	public $username;
-	public $secret;
+	public $username; // The username to access the interface
+	public $secret; // The password defined in manager interface of server
 	public $context; // Property holds a reference to user's object.
 	public $onChallenge; // Callback. Called when received response on challenge action.
 	public $onConnected; // Callback. Called when connection's handshaked.
@@ -99,7 +99,7 @@ class AsteriskDriverSession extends SocketSession {
 	public $onEvent; // Callback. Called when asterisk send event.
 	public $onError; // Callback.
 	public $onFinish; // Callback.
-	public $authtype = 'md5'; //Enabling the ability to handle encrypted connections. NULL or 'md5'.
+	public $authtype = 'md5'; // Enabling the ability to handle encrypted connections. NULL or 'md5'.
 	public $safeCaseValues = array('dialstring', 'calleridname', 'callerid');
 
 	/**
@@ -143,7 +143,7 @@ class AsteriskDriverSession extends SocketSession {
 		$this->buf .= $buf;
 
 		if ($this->cstate == 0) {
-			$this->appInstance->amiVersion = trim($this->buf);
+			$this->appInstance->amiVersions[$this->addr] = trim($this->buf);
 			$this->auth();
 		}
 		elseif (strlen($this->buf) < 4) {
@@ -165,7 +165,7 @@ class AsteriskDriverSession extends SocketSession {
 					if ($this->state == 0) {
 						if ($packet['response'] == 'success') {
 							if (
-								stripos($this->authtype, 'md5') !== false 
+								stripos($this->authtype, 'md5') !== false
 								&& $this->cstate !== 1.1
 							) {
 								if (is_callable($this->onChallenge)) {
@@ -197,7 +197,7 @@ class AsteriskDriverSession extends SocketSession {
 					if ($this->state == 0) {
 						// Event
 						if (
-							isset($packet['event']) 
+							isset($packet['event'])
 							&& !isset($packet['actionid'])
 						) {
 							if (is_callable($this->onEvent)) {
@@ -236,10 +236,10 @@ class AsteriskDriverSession extends SocketSession {
 			}
 		}
 	}
-	
+
 	/**
 	 * Executes the given callback when/if the connection is handshaked.
-	 * 
+	 *
 	 * @param $callback
 	 * @return void
 	 */
@@ -247,13 +247,13 @@ class AsteriskDriverSession extends SocketSession {
 		$this->onConnected = $callback;
 
 		if (
-			$this->cstate == 2 
+			$this->cstate == 2
 			&& is_callable($this->onConnected)
 		) {
 			call_user_func($this->onConnected, $this, false);
 		}
 		elseif (
-			$this->cstate == 3 
+			$this->cstate == 3
 			&& is_callable($this->onConnected)
 		) {
 			call_user_func($this->onConnected, $this, true);
@@ -327,7 +327,7 @@ class AsteriskDriverSession extends SocketSession {
 	 * Peerlist will follow as separate events, followed by a final event called
 	 * PeerlistComplete.
 	 * Variables:
-	 * ActionID: <id>        Action ID for this transaction. Will be returned.
+	 * ActionID: <id>	Action ID for this transaction. Will be returned.
 	 *
 	 * @param $callback
 	 * @return void
@@ -364,9 +364,71 @@ class AsteriskDriverSession extends SocketSession {
 	public function getConfig($filename, $callback) {
 		$this->command("Action: GetConfig\r\nFilename: {$filename}\r\n", $callback);
 	}
-	
+
+	/**
+	 * Action: GetConfigJSON
+	 * Synopsis: Retrieve configuration
+	 * Privilege: system,config,all
+	 * Description: A 'GetConfigJSON' action will dump the contents of a configuration
+	 * file by category and contents in JSON format.  This only makes sense to be used
+	 * using rawman over the HTTP interface.
+	 * Variables:
+	 *    Filename: Configuration filename (e.g. foo.conf)
+	 *
+	 * @param $callback
+	 * @return void
+	 */
 	public function getConfigJSON($filename, $callback) {
-		
+		$this->command("Action: GetConfigJSON\r\nFilename: {$filename}\r\n", $callback);
+	}
+
+	/**
+	 * Action: Redirect
+	 * Synopsis: Redirect (transfer) a call
+	 * Privilege: call,all
+	 * Description: Redirect (transfer) a call.
+	 * Variables: (Names marked with * are required)
+	 * *Channel: Channel to redirect
+	 *  ExtraChannel: Second call leg to transfer (optional)
+	 * *Exten: Extension to transfer to
+	 * *Context: Context to transfer to
+	 * *Priority: Priority to transfer to
+	 * ActionID: Optional Action id for message matching.
+	 *
+	 * @param array $params
+	 * @param $callback
+	 * @return void
+	 */
+	public function redirect(array $params, $callback) {
+		$this->command("Action: Redirect\r\n" . $this->implodeParams($params), $callback);
+	}
+
+	/**
+	 * Action: Ping
+	 * Description: A 'Ping' action will ellicit a 'Pong' response.  Used to keep the
+	 *   manager connection open.
+	 * Variables: NONE
+	 *
+	 * @param $callback
+	 * @return void
+	 */
+	public function ping($callback) {
+		$this->command("Action: Ping\r\n", $callback);
+	}
+
+	/**
+	 * For almost any actions in Action: ListCommands
+	 * Privilege: depends on $action
+	 *
+	 * @param string $action
+	 * @param $callback
+	 * @param array|null $params
+	 * @param array|null $assertion
+	 * @return void
+	 */
+	public function action($action, $callback, array $params = null, array $assertion = null) {
+		$action = trim($action);
+		$this->command("Action: {$action}\r\n" . ($params ? $this->implodeParams($params) : ''), $callback, $assertion);
 	}
 
 	/**
@@ -382,23 +444,23 @@ class AsteriskDriverSession extends SocketSession {
 	public function logoff($callback = null) {
 		$this->command("Action: Logoff\r\n", $callback);
 	}
-	
+
 	/**
 	 * Called when event occured.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function onEvent($callback) {
 		$this->onEvent = $callback;
 	}
-	
+
 	/**
 	 * Called when error occured.
-	 * 
+	 *
 	 * @return void
 	 */
 	public function onError($callback) {
-		
+
 	}
 
 	protected function uniqid() {
@@ -428,6 +490,14 @@ class AsteriskDriverSession extends SocketSession {
 		$this->sendPacket($packet . "ActionID: {$action_id}\r\n\r\n");
 	}
 
+	protected function implodeParams(array $params) {
+		$s = '';
+		foreach($params as $header => $value) {
+			$s .= trim($header) . ": " . trim($value) . "\r\n";
+		}
+		return $s;
+	}
+
 	/**
 	 * Called when session finishes or set onFinish callback.
 	 *
@@ -435,12 +505,12 @@ class AsteriskDriverSession extends SocketSession {
 	 */
 	public function onFinish($callback = null) {
 		if (
-			$callback !== null 
+			$callback !== null
 			&& is_callable($callback)
 		) {
 			$this->onFinish = $callback;
 		} else {
-			unset($this->appInstance->sessions[$this->connId]); 
+			unset($this->appInstance->sessions[$this->connId]);
 			unset($this->appInstance->servConn[$this->addr][$this->connId]);
 
 			if (is_callable($this->onFinish)) {
@@ -451,3 +521,4 @@ class AsteriskDriverSession extends SocketSession {
 }
 
 class AsteriskDriverSessionFinished extends Exception {}
+
