@@ -30,6 +30,57 @@ class Daemon_WorkerThread extends Thread {
 	public $eventBase;
 	private $timeoutEvent;
 	public $status = 0;
+	public $delayedSigReg = TRUE;
+	public $sigEvents = array();
+
+	/**
+	 * @method registerSignals
+	 * @description Registers signals.
+	 * @return void
+	 */
+	public function registerSignals()
+	{
+		foreach (self::$signals as $no => $name) {
+		if (
+			($name === 'SIGKILL') 
+				|| ($name == 'SIGSTOP')
+			) {
+				continue;
+			}
+			$ev = event_new();
+			if (!event_set(
+				$ev,
+				$no,
+				EV_SIGNAL | EV_PERSIST,
+				array($this,'eventSighandler'),
+				array($no))
+			) {
+				throw new Exception('Cannot event_set for '.$name.' signal');
+			}
+			event_base_set($ev, $this->eventBase);
+			event_add($ev);
+			$this->sigEvents[$no] = $ev;
+		}
+	}
+
+	/**
+	 * @method eventSighandler
+	 * @description Called when a signal caught.
+	 * @param integer Signal's number.
+	 * @param integer Events.
+	 * @param mixed Argument.
+	 * @return void
+	 */
+	public function eventSighandler($fd,$events,$arg) {
+		$signo = $arg[0];
+		if (is_callable($c = array($this, strtolower(self::$signals[$signo])))) {
+			call_user_func($c);
+		}
+		elseif (is_callable($c = array($this,'sigunknown'))) {
+			call_user_func($c, $signo);
+		}
+	}
+
 
 	/**
 	 * @method run
@@ -37,19 +88,79 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function run() {
-		proc_nice(Daemon::$config->workerpriority->value);
 
 		Daemon::$worker = $this;
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
 		$this->setStatus(4);
 
-		$this->setproctitle(
-			Daemon::$runName . ': worker process' 
-			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value 
-				? ' (' . Daemon::$config->pidfile->value . ')' : '')
-		);
+		if (Daemon::$config->autogc->value > 0) {
+			gc_enable();
+		} else {
+			gc_disable();
+		}
 		
+		$this->prepareSystemEnv();
+		$this->overrideNativeFuncs();
+	
+		$this->setStatus(6);
+		$this->eventBase = event_base_new();
+		$this->registerSignals();
+		
+		
+		Daemon::$appResolver->preload();
+	
+		foreach (Daemon::$appInstances as $app) {
+			foreach ($app as $appInstance) {
+				if (!$appInstance->ready) {
+					$appInstance->ready = TRUE;
+					$appInstance->onReady();
+				}
+			}
+		}
+
+		$this->setStatus(1);
+
+		$ev = event_new();
+		event_set($ev, STDIN, EV_TIMEOUT, function() {}, array());
+		event_base_set($ev, $this->eventBase);
+
+		$this->timeoutEvent = $ev;
+
+		while (TRUE) {
+		
+			if (($s = $this->checkState()) !== TRUE) {
+				$this->closeSockets();
+
+				return $s;
+			}
+
+			event_add($this->timeoutEvent, Daemon::$config->microsleep->value);
+			event_base_loop($this->eventBase, EVLOOP_ONCE);
+
+			do {
+				for ($i = 0, $s = sizeof($this->eventsToAdd); $i < $s; ++$i) {
+					event_add($this->eventsToAdd[$i]);
+			
+					unset($this->eventsToAdd[$i]);
+				}
+
+				$this->readPool();
+				$processed = $this->runQueue();
+			} while (
+				$processed 
+				|| $this->readPoolState 
+				|| $this->eventsToAdd
+			);
+		}
+	}
+	/**
+	 * @method overrideNativeFuncs
+	 * @description Overrides native PHP functions.
+	 * @return void
+	 */
+	public function overrideNativeFuncs()
+	{
 		register_shutdown_function(array($this,'shutdown'));
 		
 		if (
@@ -135,12 +246,20 @@ class Daemon_WorkerThread extends Thread {
 				return $cache[$crc] = new DestructableLambda(create_function_native($arg, $body));
 			}
 		}
-		
-		if (Daemon::$config->autogc->value > 0) {
-			gc_enable();
-		} else {
-			gc_disable();
-		}
+	}
+	/**
+	 * @method prepareSystemEnv
+	 * @description Setup settings on start.
+	 * @return void
+	 */
+	public function prepareSystemEnv()
+	{
+		proc_nice(Daemon::$config->workerpriority->value);
+		$this->setproctitle(
+			Daemon::$runName . ': worker process' 
+			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value 
+				? ' (' . Daemon::$config->pidfile->value . ')' : '')
+		);
 		
 		if (isset(Daemon::$config->group->value)) {
 			$sg = posix_getgrnam(Daemon::$config->group->value);
@@ -194,57 +313,7 @@ class Daemon_WorkerThread extends Thread {
 				Daemon::log('Couldn\'t change directory to \'' . Daemon::$config->cwd->value . '.');
 			}
 		}
-	
-		$this->setStatus(6);
-		$this->eventBase = event_base_new();
-		Daemon::$appResolver->preload();
-	
-		foreach (Daemon::$appInstances as $app) {
-			foreach ($app as $appInstance) {
-				if (!$appInstance->ready) {
-					$appInstance->ready = TRUE;
-					$appInstance->onReady();
-				}
-			}
-		}
-
-		$this->setStatus(1);
-
-		$ev = event_new();
-		event_set($ev, STDIN, EV_TIMEOUT, function() {}, array());
-		event_base_set($ev, $this->eventBase);
-
-		$this->timeoutEvent = $ev;
-
-		while (TRUE) {
-			pcntl_signal_dispatch();
-		
-			if (($s = $this->checkState()) !== TRUE) {
-				$this->closeSockets();
-
-				return $s;
-			}
-
-			event_add($this->timeoutEvent, Daemon::$config->microsleep->value);
-			event_base_loop($this->eventBase, EVLOOP_ONCE);
-
-			do {
-				for ($i = 0, $s = sizeof($this->eventsToAdd); $i < $s; ++$i) {
-					event_add($this->eventsToAdd[$i]);
-			
-					unset($this->eventsToAdd[$i]);
-				}
-
-				$this->readPool();
-				$processed = $this->runQueue();
-			} while (
-				$processed 
-				|| $this->readPoolState 
-				|| $this->eventsToAdd
-			);
-		}
 	}
-
 	/**
 	 * @method log
 	 * @description Log something

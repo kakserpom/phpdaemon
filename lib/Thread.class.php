@@ -40,7 +40,26 @@ abstract class Thread {
 		SIGUSR1   => 'SIGUSR1',
 		SIGUSR2   => 'SIGUSR2',
 	);
-
+	public $delayedSigReg = FALSE;
+	/**
+	 * @method registerSignals
+	 * @description Registers signals.
+	 * @return void
+	 */
+	public function registerSignals()
+	{
+		foreach (self::$signals as $no => $name) {
+		if (
+			($name === 'SIGKILL') 
+				|| ($name == 'SIGSTOP')
+			) {
+				continue;
+			}
+				if (!pcntl_signal($no, array($this, 'sighandler'), TRUE)) {
+				throw new Exception('Cannot assign '.$name.' signal');
+			}
+		}
+	}
 	/**
 	 * @method start
 	 * @description Starts the process.
@@ -55,19 +74,7 @@ abstract class Thread {
 		if ($pid == 0) {
 			$this->pid = posix_getpid();
 
-			foreach (self::$signals as $no => $name) {
-				if (
-					($name === 'SIGKILL') 
-					|| ($name == 'SIGSTOP')
-				) {
-					continue;
-				}
-
-				if (!pcntl_signal($no, array($this, 'sighandler'), TRUE)) {
-					throw new Exception('Cannot assign '.$name.' signal');
-				}
-			}
-
+			if (!$this->delayedSigReg) {$this->registerSignals();}
 			$this->run();
 			$this->shutdown();
 		}
