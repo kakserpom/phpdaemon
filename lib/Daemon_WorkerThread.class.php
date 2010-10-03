@@ -424,7 +424,7 @@ class Daemon_WorkerThread extends Thread {
 				isset($hash[$path]) 
 				&& ($mt > $hash[$path])
 			) {
-				if (runkit_lint_file($path)) {
+				if (Daemon::lintFile($path)) {
 					runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
 				} else {
 					Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);
