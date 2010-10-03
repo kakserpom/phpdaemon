@@ -26,7 +26,7 @@ class FileReader extends AppInstance {
 	}
 }
 
-class FileReaderRequest extends Request {
+class FileReaderRequest extends HTTPRequest {
 
 	public $stream;
 	

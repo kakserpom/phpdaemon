@@ -41,7 +41,7 @@ class CGI extends AppInstance {
 	}
 }
 
-class CGIRequest extends Request {
+class CGIRequest extends HTTPRequest {
 
 	public $terminateOnAbort = FALSE;
 	public $proc;

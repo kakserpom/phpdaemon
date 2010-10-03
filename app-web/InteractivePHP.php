@@ -68,7 +68,7 @@ class InteractivePHP extends AppInstance {
 	}
 }
 
-class InteractivePHPRequest extends Request {
+class InteractivePHPRequest extends HTTPRequest {
 
 	public $eState = 0;
 

@@ -13,7 +13,7 @@ class ServerStatus extends AppInstance {
 	}
 }
 
-class ServerStatus_Request extends Request {
+class ServerStatus_Request extends HTTPRequest {
 
 	/**
 	 * @method run

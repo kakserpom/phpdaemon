@@ -204,7 +204,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession {
 	}
 }
 
-class WebSocketOverCOMET_Request extends Request {
+class WebSocketOverCOMET_Request extends HTTPRequest {
 
 	public $inited = FALSE;
 	public $authKey;
