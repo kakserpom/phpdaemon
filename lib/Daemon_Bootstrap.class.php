@@ -106,12 +106,12 @@ class Daemon_Bootstrap {
 			$error = TRUE;
 		}
 		
-		if (isset(Daemon::$config->locale)) {
+		if (isset(Daemon::$config->locale->value) && Daemon::$config->locale->value !== '') {
 			setlocale(LC_ALL,explode(',', Daemon::$config->locale->value));
 		}
 		
 		if (
-			Daemon::$config->autoreimport
+			Daemon::$config->autoreimport->value
 			&& !is_callable('runkit_import')
 		) {
 			Daemon::log('runkit extension not found. You should install it or disable --auto-reimport.');
