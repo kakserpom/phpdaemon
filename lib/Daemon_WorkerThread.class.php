@@ -64,6 +64,34 @@ class Daemon_WorkerThread extends Thread {
 				}
 			}
 
+		
+			runkit_function_rename('headers_sent','headers_sent_native');
+
+			function headers_sent() { 
+				if (Daemon::$req) {
+					return Daemon::$req->headers_sent();
+				}
+			}
+
+
+			runkit_function_rename('headers_list','headers_list_native');
+
+			function headers_list() { 
+				if (Daemon::$req) {
+					return Daemon::$req->headers_list();
+				}
+			}
+
+
+			runkit_function_rename('setcookie','setcookie_native');
+
+			function setcookie() { 
+				if (Daemon::$req) {
+					return call_user_func_array(array(Daemon::$req, 'setcookie'), func_get_args());
+				}
+			}
+
+		
 			runkit_function_rename('register_shutdown_function','register_shutdown_function_native');
 
 			function register_shutdown_function($cb) {
@@ -72,6 +100,7 @@ class Daemon_WorkerThread extends Thread {
 				}
 			}
 			
+		
 			runkit_function_copy('create_function','create_function_native');
 			runkit_function_redefine('create_function','$arg,$body','return __create_function($arg,$body);');
 			
