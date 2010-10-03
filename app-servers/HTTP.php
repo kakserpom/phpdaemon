@@ -1,9 +1,10 @@
 <?php
+
 class HTTP extends AsyncServer {
 
-	public $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
-	public $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
-	public $queuedReads = TRUE;
+	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
+	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
+	protected $queuedReads = TRUE;
 	public $WS;
 
 	/**

@@ -12,13 +12,13 @@
 class AsyncServer extends AppInstance {
 
 	public $buf             = array();   // collects connection's buffers.
-	public $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
-	public $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
+	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
+	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
+	protected $queuedReads     = FALSE;
 	public $poolState       = array();
 	public $poolQueue       = array();
 	public $allowedClients  = NULL;
 	public $directReads     = FALSE;
-	public $queuedReads     = FALSE;
 	public $readPacketSize  = 4096;
 	public $socketEvents    = array();
 	public $readEvents      = array();
