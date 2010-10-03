@@ -41,7 +41,7 @@ class Example extends AppInstance {
 	}
 }
 
-class ExampleRequest extends Request {
+class ExampleRequest extends HTTPRequest {
 
 	/**
 	 * @method run

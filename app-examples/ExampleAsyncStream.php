@@ -13,7 +13,7 @@ class ExampleAsyncStream extends AppInstance {
 	}
 }
 
-class ExampleAsyncStreamRequest extends Request {
+class ExampleAsyncStreamRequest extends HTTPRequest {
 
 	public $stream;
 

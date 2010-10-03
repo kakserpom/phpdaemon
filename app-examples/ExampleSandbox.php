@@ -42,7 +42,7 @@ class ExampleSandbox extends AppInstance {
 	}
 }
 
-class ExampleSandboxRequest extends Request {
+class ExampleSandboxRequest extends HTTPRequest {
 
 	/**
 	 * @method run

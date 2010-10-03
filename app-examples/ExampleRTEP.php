@@ -54,7 +54,7 @@ class ExampleRTEP extends AppInstance {
 	}
 }
 
-class ExampleRTEPRequest extends Request {
+class ExampleRTEPRequest extends HTTPRequest {
 
 	/**
 	 * @method run

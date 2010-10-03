@@ -13,7 +13,7 @@ class ExampleWithPostgreSQL extends AppInstance {
 	}
 }
 
-class ExampleWithPostgreSQLRequest extends Request {
+class ExampleWithPostgreSQLRequest extends HTTPRequest {
 
 	public $stime;
 	public $queryResult;

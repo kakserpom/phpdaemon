@@ -13,7 +13,7 @@ class ExampleWithMySQL extends AppInstance {
 	}
 }
 
-class ExampleWithMySQLRequest extends Request {
+class ExampleWithMySQLRequest extends HTTPRequest {
 
 	public $stime;
 	public $queryResult;

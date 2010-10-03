@@ -13,7 +13,7 @@ class ExampleAsyncProcess extends AppInstance {
 	}
 }
 
-class ExampleAsyncProcessRequest extends Request {
+class ExampleAsyncProcessRequest extends HTTPRequest {
 
 	public $proc;
 
