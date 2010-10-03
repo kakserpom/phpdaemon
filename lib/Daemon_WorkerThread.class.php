@@ -134,7 +134,7 @@ class Daemon_WorkerThread extends Thread {
 				
 			$self->mainTimedEvent->timeout();
 		
-		},pow(10,6) * 0.03);
+		},pow(10,6) * 0.005);
 		
 		$this->checkStateTimedEvent = new Daemon_TimedEvent(function() 	{
 		
