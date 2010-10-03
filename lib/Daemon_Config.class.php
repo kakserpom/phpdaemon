@@ -44,7 +44,6 @@ class Daemon_Config implements ArrayAccess {
 	public $cwd                      = '.';
 	public $autoreload               = '0s';
 	public $autoreimport             = 0;
-	public $microsleep               = 100000;
 	public $workerpriority           = 4;
 	public $throwexceptiononshutdown = 0;
 	public $locale                   = '';

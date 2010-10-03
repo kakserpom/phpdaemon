@@ -26,12 +26,14 @@ class Daemon_WorkerThread extends Thread {
 	public $writePoolState = array();
 	private $autoReloadLast = 0;
 	private $currentStatus = 0;
-	private $eventsToAdd = array();
+	public $eventsToAdd = array();
 	public $eventBase;
-	private $timeoutEvent;
+	public $timeoutEvent;
 	public $status = 0;
 	public $delayedSigReg = TRUE;
 	public $sigEvents = array();
+	public $breakMainLoop = FALSE;
+	public $reloadReady = FALSE;
 
 	/**
 	 * @method registerSignals
@@ -65,20 +67,14 @@ class Daemon_WorkerThread extends Thread {
 
 	/**
 	 * @method eventSighandler
-	 * @description Called when a signal caught.
+	 * @description Called when a signal caught through libevent.
 	 * @param integer Signal's number.
 	 * @param integer Events.
 	 * @param mixed Argument.
 	 * @return void
 	 */
 	public function eventSighandler($fd,$events,$arg) {
-		$signo = $arg[0];
-		if (is_callable($c = array($this, strtolower(self::$signals[$signo])))) {
-			call_user_func($c);
-		}
-		elseif (is_callable($c = array($this,'sigunknown'))) {
-			call_user_func($c, $signo);
-		}
+	  $this->sighandler($arg[0]);
 	}
 
 
@@ -121,37 +117,41 @@ class Daemon_WorkerThread extends Thread {
 
 		$this->setStatus(1);
 
-		$ev = event_new();
-		event_set($ev, STDIN, EV_TIMEOUT, function() {}, array());
-		event_base_set($ev, $this->eventBase);
 
-		$this->timeoutEvent = $ev;
+		$this->mainTimedEvent = new Daemon_TimedEvent(function() 	{
 
-		while (TRUE) {
-		
-			if (($s = $this->checkState()) !== TRUE) {
-				$this->closeSockets();
-
-				return $s;
-			}
-
-			event_add($this->timeoutEvent, Daemon::$config->microsleep->value);
-			event_base_loop($this->eventBase, EVLOOP_ONCE);
-
-			do {
-				for ($i = 0, $s = sizeof($this->eventsToAdd); $i < $s; ++$i) {
-					event_add($this->eventsToAdd[$i]);
+			$self = Daemon::$worker;
 			
-					unset($this->eventsToAdd[$i]);
-				}
+			for ($i = 0, $s = sizeof($self->eventsToAdd); $i < $s; ++$i) {
+					event_add($self->eventsToAdd[$i]);
+			
+					unset($self->eventsToAdd[$i]);
+			}
+			
+			$self->readPool();
+			
+			$self->runQueue();
+				
+			$self->mainTimedEvent->timeout();
+		
+		},pow(10,6) * 0.03);
+		
+		$this->checkStateTimedEvent = new Daemon_TimedEvent(function() 	{
+		
+			$self = Daemon::$worker;
+			
+			if ($self->checkState() !== TRUE) {
+				$self->closeSockets();
+				$self->breakMainLoop = TRUE;
+				event_base_loopexit($self->eventBase);
+				return;
+			}
+			
+			$self->checkStateTimedEvent->timeout();
+		},pow(10,6));
 
-				$this->readPool();
-				$processed = $this->runQueue();
-			} while (
-				$processed 
-				|| $this->readPoolState 
-				|| $this->eventsToAdd
-			);
+		while (!$this->breakMainLoop) {
+			event_base_loop($this->eventBase);
 		}
 	}
 	/**
@@ -433,7 +433,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @method checkState
 	 * @description ?????
 	 */
-	private function checkState() {
+	public function checkState() {
 		$time = microtime(true);
 
 		pcntl_signal_dispatch();
@@ -531,7 +531,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Handles the queue of pending requests.
 	 * @return void
 	 */
-	private function runQueue() {
+	public function runQueue() {
 		$processed = 0;
 	
 		foreach ($this->queue as $k => &$r) {
@@ -649,14 +649,14 @@ class Daemon_WorkerThread extends Thread {
 			exit(0);
 		}
 		
-		$reloadReady = $this->appInstancesReloadReady();
+		$this->reloadReady = $this->appInstancesReloadReady();
 
 		if ($this->reload === TRUE) {
-			$reloadReady = $reloadReady && (microtime(TRUE) > $this->reloadTime);
+			$this->reloadReady = $this->reloadReady && (microtime(TRUE) > $this->reloadTime);
 		}
 
 		if (Daemon::$config->logevents->value) {
-			$this->log('reloadReady = ' . Debug::dump($reloadReady));
+			$this->log('reloadReady = ' . Debug::dump($this->reloadReady));
 		}
 		
 		foreach ($this->queue as $r) {
@@ -671,24 +671,24 @@ class Daemon_WorkerThread extends Thread {
 		
 		$n = 0;
 		
-		while (!$reloadReady) {
-			if ($n++ === 100) {
-				$reloadReady = $this->appInstancesReloadReady();
+		unset($this->checkStateTimedEvent);
+		
+    $this->checkReloadReady = new Daemon_TimedEvent(function() 	{
+		
+			$self = Daemon::$worker;
+			
+			$this->reloadReady = $self->appInstancesReloadReady();
 				
-				if ($this->reload === TRUE) {
-					$reloadReady = $reloadReady && (microtime(TRUE) > $this->reloadTime);
-				}
-				
-				$n = 0;
+			if ($self->reload === TRUE) {
+				$this->reloadReady = $this->reloadReady && (microtime(TRUE) > $this->reloadTime);
 			}
-			
-			pcntl_signal_dispatch();
-			
-			event_add($this->timeoutEvent, Daemon::$config->microsleep->value);
-			event_base_loop($this->eventBase,EVLOOP_ONCE);
-			
-			$this->readPool();
-			$this->runQueue();
+				
+			$self->checkStateTimedEvent->timeout();
+		},pow(10,6));
+		
+		
+		while (!$this->reloadReady) {
+			event_base_loop($this->eventBase);
 		}
 		
 		posix_kill(posix_getppid(), SIGCHLD);
