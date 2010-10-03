@@ -96,7 +96,7 @@ class HTTP extends AsyncServer {
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::log('[WORKER ' . Daemon::$worker->pid . '] endRequest(' . implode(',', func_get_args()) . ').');
+			Daemon::$worker->log('endRequest(' . implode(',', func_get_args()) . ').');
 		};
 
 		if ($protoStatus === -1) {
@@ -179,7 +179,7 @@ class HTTP extends AsyncServer {
 			$req->attrs->chunked = FALSE;
 
 			if ($this->config->logqueue->value) {
-				Daemon::log('[WORKER ' . Daemon::$worker->pid . '] new request queued.');
+				Daemon::$worker->log('new request queued.');
 			}
 
 			Daemon::$worker->queue[$rid] = $req;
