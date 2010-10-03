@@ -19,7 +19,7 @@ class Request {
 	public $mpartoffset = 0;
 	public $mpartcondisp = FALSE;
 	public $headers = array('STATUS' => '200 OK');
-	private $headers_sent = FALSE;
+	public $headers_sent = FALSE; // FIXME: move to httprequest and make private
 	public $appInstance;
 	private $boundary = FALSE;
 	private $aborted = FALSE;
