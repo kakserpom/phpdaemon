@@ -11,6 +11,10 @@
 
 class Daemon {
 
+	const SUPPORT_RUNKIT_SANDBOX         = 0;	
+	const SUPPORT_RUNKIT_MODIFY          = 1;
+	const SUPPORT_RUNKIT_INTERNAL_MODIFY = 2;
+
 	/**
 	 * PHPDaemon root directory
 	 * @access private
@@ -38,6 +42,13 @@ class Daemon {
 	 * @var resource
 	 */
 	private static $logpointer;
+	
+	/**	
+	 * Supported things array	
+	 * @access private	
+	 * @var string	
+	 */	
+	private static $support = array();
 	
 	public static $worker;
 	public static $appResolver;
@@ -88,7 +99,7 @@ class Daemon {
 		}
 
 		if (
-			Daemon::$config->obfilterauto 
+			Daemon::$config->obfilterauto->value
 			&& (Daemon::$req !== NULL)
 		) {
 			Daemon::$req->out($s,FALSE);
@@ -109,11 +120,65 @@ class Daemon {
 		set_time_limit(0);
 
 		ob_start(array('Daemon', 'outputFilter'));
+		
+		Daemon::checkSupports();
 
 		Daemon::$initservervar = $_SERVER;
 		Daemon::$masters = new ThreadCollection;
-		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate->value,Daemon::$shm_wstate_size,'wstate');
+		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate->value, Daemon::$shm_wstate_size, 'wstate');
 		Daemon::openLogs();
+	}
+	
+
+	/**
+	 * Is thing supported
+	 * @param $what integer Thing to check
+	 * @return boolean
+	 */
+	public static function supported($what) {
+		return isset(self::$support[$what]);
+	}
+
+	/**
+	 * Method to fill $support array
+	 * @return void
+	 */
+	private static function checkSupports() {
+		if (is_callable('runkit_lint_file')) {
+			self::$support[self::SUPPORT_RUNKIT_SANDBOX] = 1;
+		}
+
+		if (is_callable('runkit_function_add')) {
+			self::$support[self::SUPPORT_RUNKIT_MODIFY] = 1;
+		}
+		
+		if (
+			self::supported(self::SUPPORT_RUNKIT_MODIFY)
+			&& ini_get('runkit.internal_override')
+		) {		
+			self::$support[self::SUPPORT_RUNKIT_INTERNAL_MODIFY] = 1;
+		}
+	}
+
+	/**
+	 * Check file syntax via runkit_lint_file if supported or via php -l
+	 * @param $filaname string File name
+	 * @return boolean
+	 */
+	public static function lintFile($filename) {
+		if (!file_exists($filename)) {
+			return false;
+		}
+
+		if (self::supported(self::SUPPORT_RUNKIT_SANDBOX)) {
+			return runkit_lint_file($filename);
+		}
+
+		$cmd = 'php -l ' . escapeshellcmd($filename) . ' 2>&1';
+
+		exec($cmd, $output, $retcode);
+
+		return 0 === $retcode;
 	}
 
 	/**
@@ -145,11 +210,11 @@ class Daemon {
 			$error = TRUE;
 		}
 
-		if (!isset(Daemon::$config->path)) {
+		if (!isset(Daemon::$config->path->value)) {
 			exit('\'path\' is not defined');
 		}
 
-		$appResolver = require Daemon::$config->path;
+		$appResolver = require Daemon::$config->path->value;
 		$appResolver->init();
 
 		$req = new stdClass();
@@ -284,7 +349,7 @@ class Daemon {
 	 * @return void
 	 */
 	public static function openLogs() {
-		if (Daemon::$config->logging) {
+		if (Daemon::$config->logging->value) {
 			if (Daemon::$logpointer) {
 				fclose(Daemon::$logpointer);
 				Daemon::$logpointer = FALSE;
@@ -434,7 +499,7 @@ class Daemon {
 		$mt = explode(' ', microtime());
 
 		if (
-			Daemon::$config->logtostderr 
+			Daemon::$config->logtostderr->value
 			&& defined('STDERR')
 		) {
 			fwrite(STDERR, '[PHPD] ' . $msg . "\n");

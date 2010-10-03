@@ -178,7 +178,7 @@ class Daemon_Bootstrap {
 			Daemon_Bootstrap::$pid = (int) file_get_contents(Daemon::$config->pidfile->value);
 		}
 		
-		if (Daemon::$config->chroot !== '/') {
+		if (Daemon::$config->chroot->value !== '/') {
 			if (posix_getuid() != 0) {
 				Daemon::log('You must have the root privileges to change root.');
 				$error = TRUE;
@@ -222,21 +222,21 @@ class Daemon_Bootstrap {
 		}
 		
 		if (
-			isset(Daemon::$config->minspareworkers) 
-			&& isset(Daemon::$config->maxspareworkers)
+			isset(Daemon::$config->minspareworkers->value) 
+			&& isset(Daemon::$config->maxspareworkers->value)
 		) {
-			if (Daemon::$config->minspareworkers > Daemon::$config->maxspareworkers) {
+			if (Daemon::$config->minspareworkers->value > Daemon::$config->maxspareworkers->value) {
 				Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
 				$error = TRUE;
 			}
 		}
 		
 		if (
-			isset(Daemon::$config->minworkers) 
-			&& isset(Daemon::$config->maxworkers)
+			isset(Daemon::$config->minworkers->value) 
+			&& isset(Daemon::$config->maxworkers->value)
 		) {
-			if (Daemon::$config->minworkers > Daemon::$config->maxworkers) {
-				Daemon::$config->maxworkers = Daemon::$config->minworkers;
+			if (Daemon::$config->minworkers->value > Daemon::$config->maxworkers->value) {
+				Daemon::$config->maxworkers->value = Daemon::$config->minworkers->value;
 			}
 		}
 		
@@ -258,7 +258,7 @@ class Daemon_Bootstrap {
 			) {
 				echo 'Uptime: ' . Daemon::date_period_text(filemtime(Daemon::$config->pidfile->value), time()) . "\n";
 
-				Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate, 0, 'wstate', FALSE);
+				Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate->value, 0, 'wstate', FALSE);
 
 				$stat = Daemon::getStateOfWorkers();
 

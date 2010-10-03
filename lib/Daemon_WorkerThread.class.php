@@ -163,47 +163,55 @@ class Daemon_WorkerThread extends Thread {
 	{
 		register_shutdown_function(array($this,'shutdown'));
 		
-		if (
-			is_callable('runkit_function_add') 
-			&& ini_get('runkit.internal_override')
-		) {
-			runkit_function_rename('header','header_native');
+		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
+			runkit_function_rename('header', 'header_native');
 
 			function header() { 
-				if (Daemon::$req) {
+				if (
+					Daemon::$req
+					&& Daemon::$req instanceof HTTPRequest
+				) {
 					return call_user_func_array(array(Daemon::$req, 'header'), func_get_args());
 				}
 			}
 
-		
-			runkit_function_rename('headers_sent','headers_sent_native');
+			runkit_function_rename('headers_sent', 'headers_sent_native');
 
 			function headers_sent() { 
-				if (Daemon::$req) {
+				if (
+					Daemon::$req
+					&& Daemon::$req instanceof HTTPRequest
+				) {
 					return Daemon::$req->headers_sent();
 				}
 			}
 
 
-			runkit_function_rename('headers_list','headers_list_native');
+			runkit_function_rename('headers_list', 'headers_list_native');
 
 			function headers_list() { 
-				if (Daemon::$req) {
+				if (
+					Daemon::$req
+					&& Daemon::$req instanceof HTTPRequest
+				) {
 					return Daemon::$req->headers_list();
 				}
 			}
 
 
-			runkit_function_rename('setcookie','setcookie_native');
+			runkit_function_rename('setcookie', 'setcookie_native');
 
 			function setcookie() { 
-				if (Daemon::$req) {
+				if (
+					Daemon::$req
+					&& Daemon::$req instanceof HTTPRequest
+				) {
 					return call_user_func_array(array(Daemon::$req, 'setcookie'), func_get_args());
 				}
 			}
 
 		
-			runkit_function_rename('register_shutdown_function','register_shutdown_function_native');
+			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
 
 			function register_shutdown_function($cb) {
 				if (Daemon::$req) {
@@ -212,8 +220,8 @@ class Daemon_WorkerThread extends Thread {
 			}
 			
 		
-			runkit_function_copy('create_function','create_function_native');
-			runkit_function_redefine('create_function','$arg,$body','return __create_function($arg,$body);');
+			runkit_function_copy('create_function', 'create_function_native');
+			runkit_function_redefine('create_function', '$arg,$body', 'return __create_function($arg,$body);');
 			
 			function __create_function($arg, $body) {
 				static $cache = array();
