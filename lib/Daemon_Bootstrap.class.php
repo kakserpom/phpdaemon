@@ -89,7 +89,7 @@ class Daemon_Bootstrap {
 		}
 
 		if (isset($args['configfile'])) {
-			Daemon::$config->configfile->setHumanValue($args[$k]);
+			Daemon::$config->configfile->setHumanValue($args['configfile']);
 		}
 
 		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
