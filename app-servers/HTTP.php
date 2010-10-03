@@ -239,7 +239,7 @@ class HTTP extends AsyncServer {
 					$e = explode(': ', $h[$i]);
 
 					if (isset($e[1])) {
-						$req->attrs->server['HTTP_' . strtoupper(strtr($e[0], Request::$htr))] = $e[1];
+						$req->attrs->server['HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr))] = $e[1];
 					}
 				}
 

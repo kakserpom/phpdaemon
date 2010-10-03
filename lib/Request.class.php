@@ -15,26 +15,16 @@ class Request {
 	const DONE = 1;
 
 	public $idAppQueue;
-	public $mpartstate = 0;
-	public $mpartoffset = 0;
-	public $mpartcondisp = FALSE;
-	public $headers = array('STATUS' => '200 OK');
-	public $headers_sent = FALSE; // FIXME: move to httprequest and make private
 	public $appInstance;
-	private $boundary = FALSE;
-	private $aborted = FALSE;
+	public $aborted = FALSE;
 	public $state = 1;
 	public $codepoint;
 	public $sendfp;
-	public static $hvaltr = array(';' => '&', ' ' => '');
-	public static $htr = array('-' => '_');
 	public $attrs;
-	private $shutdownFuncs = array();
+	public $shutdownFuncs = array();
 	public $sleepuntil;
 	public $running = FALSE;
 	public $upstream;
-	public $answerlen = 0;
-	public $contentLength;
 
 	/**
 	 * @method __construct
@@ -45,27 +35,24 @@ class Request {
 	 * @return void
 	 */
 	public function __construct($appInstance, $upstream, $req = NULL) {
-		if ($req === NULL) {
-			$req = clone Daemon::$dummyRequest;
-		}
 
 		$this->appInstance = $appInstance;
 		$this->upstream = $upstream;
-		$this->attrs = $req->attrs;
 
-		if (
-			isset($this->upstream->expose->value) 
-			&& $this->upstream->expose->value
-		) {
-			$this->header('X-Powered-By: phpDaemon/' . Daemon::$version);
-		}
-
-		$this->parseParams();
+		$this->preinit($req);
 		$this->onWakeup();
 		$this->init();
 		$this->onSleep();
 	}
-
+	/**
+	 * @method preint
+	 * @description Preparing before init.
+	 * @param object Source request.
+	 * @return void
+	 */
+	public function preinit()
+	{
+	}
 	/**
 	 * @method __toString()
 	 * @description This magic method called when the object casts to string.
@@ -75,15 +62,6 @@ class Request {
 		return 'Request of type ' . get_class($this);
 	}
 
-	/**
-	 * @method chunked
-	 * @description Use chunked encoding.
-	 * @return void
-	 */
-	public function chunked() {
-		$this->header('Transfer-Encoding: chunked');
-		$this->attrs->chunked = TRUE;
-	}
 
 	/**
 	 * @method init
@@ -303,362 +281,6 @@ class Request {
 	}	
 
 	/**
-	 * @method parseParams
-	 * @description Parses GET-query string and other request's headers.  
-	 * @return void
-	 */
-	public function parseParams() {
-		if (
-			isset($this->attrs->server['CONTENT_TYPE']) 
-			&& !isset($this->attrs->server['HTTP_CONTENT_TYPE'])
-		) {
-			$this->attrs->server['HTTP_CONTENT_TYPE'] = $this->attrs->server['CONTENT_TYPE'];
-		}
-
-		if (isset($this->attrs->server['QUERY_STRING'])) {
-			$this->parse_str($this->attrs->server['QUERY_STRING'], $this->attrs->get);
-		}
-
-		if (
-			isset($this->attrs->server['REQUEST_METHOD']) 
-			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST') 
-			&& isset($this->attrs->server['HTTP_CONTENT_TYPE'])
-		) {
-			parse_str(strtr($this->attrs->server['HTTP_CONTENT_TYPE'], Request::$hvaltr), $contype);
-
-			if (
-				isset($contype['multipart/form-data']) 
-				&& (isset($contype['boundary']))
-			) {
-				$this->boundary = $contype['boundary'];
-			}
-		}
-
-		if (isset($this->attrs->server['HTTP_COOKIE'])) {
-			$this->parse_str(strtr($this->attrs->server['HTTP_COOKIE'], Request::$hvaltr), $this->attrs->cookie);
-		}
-
-		if (isset($this->attrs->server['HTTP_AUTHORIZATION'])) {
-			$e = explode(' ', $this->attrs->server['HTTP_AUTHORIZATION'], 2);
-
-			if (
-				($e[0] == 'Basic') 
-				&& isset($e[1])
-			) {
-				$e[1] = base64_decode($e[1]);
-				$e = explode(':', $e[1], 2);
-
-				if (isset($e[1])) {
-					list($this->attrs->server['PHP_AUTH_USER'], $this->attrs->server['PHP_AUTH_PW']) = $e;
-				}
-			}
-		}
-
-		$this->onParsedParams();
-	}
-
-	/**
-	 * @method onParsedParams
-	 * @description Called when request's headers parsed.
-	 * @return void
-	 */
-	public function onParsedParams() {}
-
-	/**
-	 * @method combinedOut
-	 * @param string String to out.
-	 * @description Outputs data with headers (split by \r\n\r\n)
-	 * @return boolean Success.
-	 */
-	public function combinedOut($s) {
-		if (!$this->headers_sent) {
-			$e = explode("\r\n\r\n", $s, 2);
-			$h = explode("\r\n", $e[0]);
-
-			foreach ($h as $l) {
-				$this->header($l);
-			}
-
-			if (isset($e[1])) {
-				return $this->out($e[1]);
-			}
-
-			return TRUE;
-		} else {
-			return $this->out($s);
-		}
-	}
-
-	/**
-	 * @method out
-	 * @param string String to out.
-	 * @description Outputs data.
-	 * @return boolean Success.
-	 */
-	public function out($s, $flush = TRUE) {
-		if ($flush) {
-			ob_flush();
-		}
-
-		if ($this->aborted) {
-			return FALSE;
-		}
-
-		$l = strlen($s);
-		$this->answerlen += $l;
-
-		if (!$this->headers_sent) {
-			if (isset($this->headers['STATUS'])) {
-				$h = (isset($this->attrs->noHttpVer) && ($this->attrs->noHttpVer) ? 'Status: ' : $this->attrs->server['SERVER_PROTOCOL']) . ' ' . $this->headers['STATUS'] . "\r\n";
-			} else {
-				$h = '';
-			}
-
-			if ($this->attrs->chunked) {
-				$this->header('Transfer-Encoding: chunked');
-			}
-
-			foreach ($this->headers as $k => $line) {
-				if ($k !== 'STATUS') {
-					$h .= $line . "\r\n";
-				}
-			}
-
-			$h .= "\r\n";
-			$this->headers_sent = TRUE;
-
-			if (!Daemon::$compatMode) {
-				if (
-					!$this->attrs->chunked 
-					&& !$this->sendfp
-				) {
-					return $this->upstream->requestOut($this, $h . $s);
-				}
-
-				$this->upstream->requestOut($this,$h);
-			}
-		}
-
-		if ($this->attrs->chunked) {
-			for ($o = 0; $o < $l;) {
-				$c = min($this->upstream->chunksize->value, $l - $o);
-
-				$chunk = dechex($c) . "\r\n"
-					. ($c === $l ? $s : binarySubstr($s, $o, $c)) // content
-					. "\r\n";
-
-				if ($this->sendfp) {
-					fwrite($this->sendfp, $chunk);
-				} else {
-					$this->upstream->requestOut($this, $chunk);
-				}
-
-				$o += $c;
-			}
-		} else {
-			if ($this->sendfp) {
-				fwrite($this->sendfp, $s);
-				return TRUE;
-			}
-
-			if (Daemon::$compatMode) {
-				echo $s;
-				return TRUE;
-			}
-
-			return $this->upstream->requestOut($this, $s);
-		}
-	}
-
-	/**
-	 * @method parseStdin
-	 * @description Parses request's body.
-	 * @return void
-	 */
-	public function parseStdin() {
-		do {
-			if ($this->boundary === FALSE) {
-				break;
-			}
-
-			$continue = FALSE;
-
-			if ($this->mpartstate === 0) {
-				// seek to the nearest boundary
-				if (($p = strpos($this->attrs->stdinbuf, $ndl = '--' . $this->boundary . "\r\n", $this->mpartoffset)) !== FALSE) {
-					// we have found the nearest boundary at position $p
-					$this->mpartoffset = $p + strlen($ndl);
-					$this->mpartstate = 1;
-					$continue = TRUE;
-				}
-			}
-			elseif ($this->mpartstate === 1) {
-				// parse the part's headers
-				$this->mpartcondisp = FALSE;
-
-				if (($p = strpos($this->attrs->stdinbuf, "\r\n\r\n", $this->mpartoffset)) !== FALSE) {
-					// we got all of the headers
-					$h = explode("\r\n", binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset));
-					$this->mpartoffset = $p + 4;
-					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-					$this->mpartoffset = 0;
-
-					for ($i = 0, $s = sizeof($h); $i < $s; ++$i) {
-						$e = explode(':', $h[$i], 2);
-						$e[0] = strtr(strtoupper($e[0]), Request::$htr);
-
-						if (isset($e[1])) {
-							$e[1] = ltrim($e[1]);
-						}
-
-						if (
-							($e[0] == 'CONTENT_DISPOSITION') 
-							&& isset($e[1])
-						) {
-							parse_str(strtr($e[1], Request::$hvaltr), $this->mpartcondisp);
-
-							if (!isset($this->mpartcondisp['form-data'])) {
-								break;
-							}
-
-							if (!isset($this->mpartcondisp['name'])) {
-								break;
-							}
-
-							$this->mpartcondisp['name'] = trim($this->mpartcondisp['name'], '"');
-
-							if (isset($this->mpartcondisp['filename'])) {
-								$this->mpartcondisp['filename'] = trim($this->mpartcondisp['filename'], '"');
-
-								if (!ini_get('file_uploads')) {
-									break;
-								}
-
-								$this->attrs->files[$this->mpartcondisp['name']] = array(
-									'name'     => $this->mpartcondisp['filename'],
-									'type'     => '',
-									'tmp_name' => '',
-									'error'    => UPLOAD_ERR_OK,
-									'size'     => 0,
-								);
-
-								$tmpdir = ini_get('upload_tmp_dir');
-
-								if ($tmpdir === FALSE) {
-									$this->attrs->files[$this->mpartcondisp['name']]['fp'] = FALSE;
-									$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_NO_TMP_DIR;
-								} else {
-									$this->attrs->files[$this->mpartcondisp['name']]['fp'] = @fopen($this->attrs->files[$this->mpartcondisp['name']]['tmp_name'] = tempnam($tmpdir, 'php'), 'w');
-
-									if (!$this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-										$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_CANT_WRITE;
-									}
-								}
-
-								$this->mpartstate = 3;
-							} else {
-								$this->attrs->post[$this->mpartcondisp['name']] = '';
-							}
-						}
-						elseif (
-							($e[0] == 'CONTENT_TYPE') 
-							&& isset($e[1])
-						) {
-							if (
-								isset($this->mpartcondisp['name']) 
-								&& isset($this->mpartcondisp['filename'])
-							) {
-								$this->attrs->files[$this->mpartcondisp['name']]['type'] = $e[1];
-							}
-						}
-					}
-
-					if ($this->mpartstate === 1) {
-						$this->mpartstate = 2;
-					}
-
-					$continue = TRUE;
-				}
-			}
-			elseif (
-				($this->mpartstate === 2) 
-				|| ($this->mpartstate === 3)
-			) {
-				 // process the body
-				if (
-					(($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "\r\n", $this->mpartoffset)) !== FALSE)
-					|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== FALSE)
-				) {
-					if (
-						($this->mpartstate === 2) 
-						&& isset($this->mpartcondisp['name'])
-					) {
-						$this->attrs->post[$this->mpartcondisp['name']] .= binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset);
-					}
-					elseif (
-						($this->mpartstate === 3) 
-						&& isset($this->mpartcondisp['filename'])
-					) {
-						if ($this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-							fwrite($this->attrs->files[$this->mpartcondisp['name']]['fp'], binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset));
-						}
-
-						$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p-$this->mpartoffset;
-					}
-
-					if ($ndl === "\r\n--" . $this->boundary . "--\r\n") {
-						$this->mpartoffset = $p+strlen($ndl);
-						$this->mpartstate = 0; // we done at all
-					} else {
-						$this->mpartoffset = $p;
-						$this->mpartstate = 1; // let us parse the next part
-						$continue = TRUE;
-					}
-
-					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-					$this->mpartoffset = 0;
-				} else {
-					$p = strrpos($this->attrs->stdinbuf, "\r\n", $this->mpartoffset);
-
-					if ($p !== FALSE) {
-						if (
-							($this->mpartstate === 2) 
-							&& isset($this->mpartcondisp['name'])
-						) {
-							$this->attrs->post[$this->mpartcondisp['name']] .= binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
-						}
-						elseif (
-							($this->mpartstate === 3) 
-							&& isset($this->mpartcondisp['filename'])
-						) {
-							if ($this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-								fwrite($this->attrs->files[$this->mpartcondisp['name']]['fp'], binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset));
-							}
-
-							$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
-
-							if (Daemon::parseSize(ini_get('upload_max_filesize')) < $this->attrs->files[$this->mpartcondisp['name']]['size']) {
-								$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_INI_SIZE;
-							}
-
-							if (
-								isset($this->attrs->post['MAX_FILE_SIZE']) 
-								&& ($this->attrs->post['MAX_FILE_SIZE'] < $this->attrs->files[$this->mpartcondisp['name']]['size'])
-							) {
-								$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_FORM_SIZE;
-							}
-						}
-
-						$this->mpartoffset = $p;
-						$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-						$this->mpartoffset = 0;
-					}
-				}
-			}
-		} while ($continue);
-	}
-
-	/**
 	 * @method abort
 	 * @description Aborts the request.
 	 * @return void
@@ -685,53 +307,6 @@ class Request {
 		}
 
 		$this->onSleep();
-	}
-
-	/**
-	 * @method postPrepare
-	 * @description Prepares the request's body.
-	 * @return void
-	 */
-	public function postPrepare() {
-		if (
-			isset($this->attrs->server['REQUEST_METHOD']) 
-			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
-		) {
-			if ($this->boundary === FALSE) {
-				$this->parse_str($this->attrs->stdinbuf, $this->attrs->post);
-			}
-
-			if (
-				isset($this->attrs->server['REQUEST_BODY_FILE']) 
-				&& isset($this->upstream->config->autoreadbodyfile->value)
-				&& $this->upstream->config->autoreadbodyfile->value
-			) {
-				$this->readBodyFile();
-			}
-		}
-	}
-
-	/**
-	 * @method stdin
-	 * @param string Piece of request's body.
-	 * @description Called when new piece of request's body is received.
-	 * @return void
-	 */
-	public function stdin($c) {
-		if ($c !== '') {
-			$this->attrs->stdinbuf .= $c;
-			$this->attrs->stdinlen += strlen($c);
-		}
-
-		if (
-			!isset($this->attrs->server['HTTP_CONTENT_LENGTH']) 
-			|| ($this->attrs->server['HTTP_CONTENT_LENGTH'] <= $this->attrs->stdinlen)
-		) {
-			$this->attrs->stdin_done = TRUE;
-			$this->postPrepare();
-		}
-
-		$this->parseStdin();
 	}
 
 	/**
@@ -810,59 +385,6 @@ class Request {
 				session_commit();
 			}
 		}
-	}
-
-	/**
-	 * @method readBodyFile
-	 * @description Reads request's body from file.
-	 * @return void
-	 */
-	public function readBodyFile() {
-		if (!isset($this->attrs->server['REQUEST_BODY_FILE'])) {
-			return FALSE;
-		}
-
-		$fp = fopen($this->attrs->server['REQUEST_BODY_FILE'], 'rb');
-
-		if (!$fp) {
-			Daemon::log('Couldn\'t open request-body file \'' . $this->attrs->server['REQUEST_BODY_FILE'] . '\' (REQUEST_BODY_FILE).');
-			return FALSE;
-		}
-
-		while (!feof($fp)) {
-			$this->stdin($this->fread($fp, 4096));
-		}
-
-		fclose($fp);
-		$this->attrs->stdin_done = TRUE;
-	}
-
-	/**
-	 * @method parse_str
-	 * @param string String to parse.
-	 * @param array Reference to the resulting array.
-	 * @description Replacement for default parse_str(), it supoorts UCS-2 like this: %uXXXX.
-	 * @return void
-	 */
-	public function parse_str($s, &$array) {
-		if (
-			(stripos($s,'%u') !== FALSE) 
-			&& preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)
-		) {
-			$s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i', array($this, 'parse_str_callback'), $s);
-		}
-
-		parse_str($s, $array);
-	}
-
-	/**
-	 * @method parse_str_callback
-	 * @param array Match.
-	 * @description Called in preg_replace_callback in parse_str.
-	 * @return string Replacement.
-	 */
-	public function parse_str_callback($m) {
-		return urlencode(html_entity_decode('&#' . hexdec($m[1]) . ';', ENT_NOQUOTES, 'utf-8'));
 	}
 }
 
