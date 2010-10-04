@@ -250,14 +250,10 @@ class Daemon {
 			if (is_file($p = realpath($path))) {
 				$found = true;
 
-				$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+				$ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));
 
 				if ($ext == 'conf') {
-					$parser = new Daemon_ConfigParser($p);
-
-					if ($parser->errorneus) {
-						return FALSE;
-					}
+					return Daemon::$config->loadFile($p);
 				} else {
 					Daemon::log('Config file \'' . $p . '\' has unsupported file extension.');
 					return FALSE;
@@ -521,36 +517,11 @@ class Daemon {
 	}
 
 	/**
-	 * @method exportBytes
-	 * @param string String.
-	 * @param boolean Whether to replace all of chars with escaped sequences.
-	 * @description Exports binary data.
-	 * @return string - Escaped string.
-	 */
-	public static function exportBytes($str, $all = FALSE) {
-		return preg_replace_callback(
-			'~' . ($all ? '.' : '[^A-Za-z\d\.\{\}$:;\-_/\\\\]') . '~s',
-			function($m) use ($all) {
-				if (!$all) {
-					if ($m[0] == "\r") {
-						return "\n" . '\r';
-					}
-
-					if ($m[0] == "\n") {
-						return '\n';
-					}
-				}
-
-				return sprintf('\x%02x', ord($m[0]));
-			}, $str);
-	}
-
-	/**
 	 * @method date_period
 	 * @description Calculates a difference between two dates.
 	 * @return array [seconds,minutes,hours,days,months,years]
 	 */
-	public function date_period($st, $fin) {
+	public static function date_period($st, $fin) {
 		if (
 			(is_int($st)) 
 			|| (ctype_digit($st))
@@ -604,7 +575,7 @@ class Daemon {
 	 * @description Calculates a difference between two dates.
 	 * @return string Something like this: 1 year. 2 mon. 6 day. 4 hours. 21 min. 10 sec.
 	 */
-	function date_period_text($date_start, $date_finish) {
+	public static function date_period_text($date_start, $date_finish) {
 		$result = Daemon::date_period($date_start, $date_finish);
 
 		$str  = '';

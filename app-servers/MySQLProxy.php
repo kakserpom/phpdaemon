@@ -67,7 +67,7 @@ class MySQLProxySession extends SocketSession {
 	public function stdin($buf) {
 		// from client to mysqld.
 		if ($this->appInstance->config->protologging->value) {
-			Daemon::log('MySQLProxy: Client --> Server: ' . Daemon::exportBytes($buf) . "\n\n");
+			Daemon::log('MySQLProxy: Client --> Server: ' . Debug::exportBytes($buf) . "\n\n");
 		}
 
 		$this->upstream->write($buf);
@@ -96,7 +96,7 @@ class MySQLProxyUpserverSession extends SocketSession {
 	public function stdin($buf) {
 		// from mysqld to client.
 		if ($this->appInstance->config->protologging->value) {
-			Daemon::log('MysqlProxy: Server --> Client: ' . Daemon::exportBytes($buf) . "\n\n");
+			Daemon::log('MysqlProxy: Server --> Client: ' . Debug::exportBytes($buf) . "\n\n");
 		}
 
 		$this->downstream->write($buf);

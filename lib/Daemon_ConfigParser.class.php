@@ -31,11 +31,11 @@ class Daemon_ConfigParser {
 	 * @description Constructor
 	 * @return void
 	 */
-	public function __construct($file)
+	public function __construct($file,$config)
 	{
 		$cfg = $this;
 		$cfg->file = $file;
-		$cfg->result = Daemon::$config;
+		$cfg->result = $config;
 		$cfg->data = file_get_contents($file);
 		$cfg->data = str_replace("\r", '', $cfg->data);
 		$cfg->len = strlen($cfg->data);
@@ -193,7 +193,7 @@ class Daemon_ConfigParser {
 						);
 					}
 				} else {
-					$cfg->raiseError('Unexpected char \''.Daemon::exportBytes($c).'\'');
+					$cfg->raiseError('Unexpected char \''.Debug::exportBytes($c).'\'');
 				}
 			}
 		);

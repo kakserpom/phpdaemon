@@ -12,6 +12,31 @@
 class Debug {
 
 	/**
+	 * @method exportBytes
+	 * @param string String.
+	 * @param boolean Whether to replace all of chars with escaped sequences.
+	 * @description Exports binary data.
+	 * @return string - Escaped string.
+	 */
+	public static function exportBytes($str, $all = FALSE) {
+		return preg_replace_callback(
+			'~' . ($all ? '.' : '[^A-Za-z\d\.\{\}$:;\-_/\\\\]') . '~s',
+			function($m) use ($all) {
+				if (!$all) {
+					if ($m[0] == "\r") {
+						return "\n" . '\r';
+					}
+
+					if ($m[0] == "\n") {
+						return '\n';
+					}
+				}
+
+				return sprintf('\x%02x', ord($m[0]));
+			}, $str);
+	}
+	
+	/**
 	 * @method dump
 	 * @description Wrapper of var_dump.
 	 * @return string - Result of var_dump().

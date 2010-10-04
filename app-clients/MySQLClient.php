@@ -320,7 +320,7 @@ class MySQLClientSession extends SocketSession {
 		$this->write($packet);
 
 		if ($this->appInstance->config->protologging->value) {
-			Daemon::log('Client --> Server: ' . Daemon::exportBytes($header . $packet) . "\n\n");
+			Daemon::log('Client --> Server: ' . Debug::exportBytes($header . $packet) . "\n\n");
 		}
 
 		return TRUE;
@@ -539,7 +539,7 @@ class MySQLClientSession extends SocketSession {
 		$this->buf .= $buf;
 
 		if ($this->appInstance->config->protologging->value) {
-			Daemon::log('Server --> Client: ' . Daemon::exportBytes($buf) . "\n\n");
+			Daemon::log('Server --> Client: ' . Debug::exportBytes($buf) . "\n\n");
 		}
 		
 		start:

@@ -58,7 +58,7 @@ class Daemon_Config implements ArrayAccess {
 	public $logqueue           = 0;
 	public $logreads           = 0;
 	public $logsignals         = 0;
-
+	
 	public function __construct() {
 		static $sizes = array('maxmemoryusage');
 		static $times = array('maxidle', 'autoreload', 'mpmdelay');
@@ -81,6 +81,11 @@ class Daemon_Config implements ArrayAccess {
 			$entry->setHumanValue($value);
 			$this->{$name} = $entry;
 		}
+	}
+
+	public function loadFile($path) {
+		$parser = new Daemon_ConfigParser($path,$this);
+		return !$parser->errorneus;
 	}
 
 	public function getRealOffsetName($offset) {

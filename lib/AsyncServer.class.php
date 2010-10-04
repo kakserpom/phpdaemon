@@ -804,7 +804,7 @@ class AsyncServer extends AppInstance {
 		}
 		
 		if (Daemon::$config->logreads->value) {
-			Daemon::log('read(' . $connId . ',' . $n . ',[' . gettype($read) . '-' . ($read === FALSE ? 'false' : strlen($read)) . ':' . Daemon::exportBytes($read) . ']).');
+			Daemon::log('read(' . $connId . ',' . $n . ',[' . gettype($read) . '-' . ($read === FALSE ? 'false' : strlen($read)) . ':' . Debug::exportBytes($read) . ']).');
 		}
 
 		return $read;
