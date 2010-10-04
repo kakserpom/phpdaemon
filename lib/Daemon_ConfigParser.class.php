@@ -99,8 +99,10 @@ class Daemon_ConfigParser {
 						}
 
 						if (ctype_space($c)) {
-							++$i;
-							$elTypes[$i] = NULL;
+							if ($elTypes[$i] !== NULL)	{
+								++$i;
+								$elTypes[$i] = NULL;
+							}
 						}
 						elseif (
 							($c == '"') 
