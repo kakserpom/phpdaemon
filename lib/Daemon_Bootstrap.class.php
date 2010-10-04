@@ -299,8 +299,10 @@ class Daemon_Bootstrap {
 			}
 		}
 		elseif ($runmode == 'restart') {
-			Daemon_Bootstrap::stop(2);
-			Daemon_Bootstrap::start();
+			if ($error === FALSE) {
+				Daemon_Bootstrap::stop(2);
+				Daemon_Bootstrap::start();
+			}
 		}
 		elseif ($runmode == 'hardrestart') {
 			Daemon_Bootstrap::stop(3);

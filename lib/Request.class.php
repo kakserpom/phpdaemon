@@ -170,7 +170,15 @@ class Request {
 	public function wakeup() {
 		$this->state = 1;
 	}
-
+	/**
+	 * @method precall
+	 * @description Called by call() to check if ready.
+	 * @return mixed Integer status/Boolean ready.
+	 */
+	public function preCall()
+	{
+		return TRUE;
+	}
 	/**
 	 * @method call
 	 * @description Called by queue dispatcher to touch the request.
@@ -183,22 +191,12 @@ class Request {
 			return 1;
 		}
 
-		if ($this->attrs->params_done) {
-			if (isset($this->appInstance->passphrase)) {
-				if (
-					!isset($this->attrs->server['PASSPHRASE']) 
-					|| ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
-				) {
-					$this->state = 1;
-					return 1;
-				}
-			}
+		$ret = $this->preCall();
+		if (is_int($ret)) {
+			return $ret;
 		}
-
-		if (
-			$this->attrs->params_done 
-			&& $this->attrs->stdin_done
-		) {
+		
+		if ($ret === TRUE) {
 			$this->state = 2;
 			$this->onWakeup();
 

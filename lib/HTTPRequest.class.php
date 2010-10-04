@@ -91,7 +91,27 @@ class HTTPRequest extends Request {
 
 		$this->parseParams();
 	}
-	
+	/**
+	 * @method precall
+	 * @description Called by call() to check if ready.
+	 * @return mixed Integer status/Boolean ready.
+	 */
+	public function preCall()
+	{
+		if ($this->attrs->params_done) {
+			if (isset($this->appInstance->passphrase)) {
+				if (
+					!isset($this->attrs->server['PASSPHRASE']) 
+					|| ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
+				) {
+					$this->state = 1;
+					return 1;
+				}
+			}
+			return TRUE;
+		}
+		return FALSE;
+	}
 	/**
 	 * @method parseParams
 	 * @description Parses GET-query string and other request's headers.  
