@@ -69,7 +69,7 @@ class HTTPRequest extends Request {
 	private $boundary = FALSE;
 		
 	/**
-	 * @method preint
+	 * @method preinit
 	 * @description Preparing before init.
 	 * @param object Source request.
 	 * @return void
@@ -77,7 +77,11 @@ class HTTPRequest extends Request {
 	public function preinit($req)
 	{
 		if ($req === NULL) {
-			$req = clone Daemon::$dummyRequest;
+			$req = new stdClass;
+			$req->attrs = new stdClass;
+			$req->attrs->stdin_done = TRUE;
+			$req->attrs->params_done = TRUE;
+			$req->attrs->chunked = FALSE;
 		}
 		
 		$this->attrs = $req->attrs;
@@ -704,5 +708,27 @@ class HTTPRequest extends Request {
 	 */
 	public function parse_str_callback($m) {
 		return urlencode(html_entity_decode('&#' . hexdec($m[1]) . ';', ENT_NOQUOTES, 'utf-8'));
+	}
+	public function postFinishHandler()
+	{
+		if (!$this->headers_sent) {
+			$this->out('');
+		}
+		if ($this->sendfp) {
+			fclose($this->sendfp);
+		}
+		if (isset($this->attrs->files)) {
+			foreach ($this->attrs->files as &$f) {
+				if (
+					($f['error'] === UPLOAD_ERR_OK) 
+					&& file_exists($f['tmp_name'])
+				) {
+					unlink($f['tmp_name']);
+				}
+			}
+		}
+		if (isset($this->attrs->session)) {
+			session_commit();
+		}
 	}
 }

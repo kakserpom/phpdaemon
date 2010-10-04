@@ -45,13 +45,19 @@ class Request {
 		$this->onSleep();
 	}
 	/**
-	 * @method preint
+	 * @method preinit
 	 * @description Preparing before init.
 	 * @param object Source request.
 	 * @return void
 	 */
-	public function preinit()
+	public function preinit($req)
 	{
+		if ($req === NULL) {
+			$req = new stdClass;
+			$req->attrs = new stdClass;
+		}
+		
+		$this->attrs = $req->attrs;
 	}
 	/**
 	 * @method __toString()
@@ -356,33 +362,15 @@ class Request {
 		ob_flush();
 
 		if ($status !== -1) {
-			if (!$this->headers_sent) {
-				$this->out('');
-			}
-
+			$this->postFinishHandler();
 			// $status: 0 - FCGI_REQUEST_COMPLETE, 1 - FCGI_CANT_MPX_CONN, 2 - FCGI_OVERLOADED, 3 - FCGI_UNKNOWN_ROLE
 			$appStatus = 0;
 			$this->upstream->endRequest($this, $appStatus, $status);
 
-			if ($this->sendfp) {
-				fclose($this->sendfp);
-			}
-
-			if (isset($this->attrs->files)) {
-				foreach ($this->attrs->files as &$f) {
-					if (
-						($f['error'] === UPLOAD_ERR_OK) 
-						&& file_exists($f['tmp_name'])
-					) {
-						unlink($f['tmp_name']);
-					}
-				}
-			}
-
-			if (isset($this->attrs->session)) {
-				session_commit();
-			}
 		}
+	}
+	public function postFinishHandler()
+	{
 	}
 }
 
