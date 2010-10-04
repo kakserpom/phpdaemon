@@ -36,6 +36,7 @@ class Daemon_ConfigParser {
 		$cfg = $this;
 		$cfg->file = $file;
 		$cfg->result = $config;
+		$cfg->revision = ++Daemon_Config::$lastRevision;
 		$cfg->data = file_get_contents($file);
 		$cfg->data = str_replace("\r", '', $cfg->data);
 		$cfg->len = strlen($cfg->data);
@@ -80,6 +81,7 @@ class Daemon_ConfigParser {
 				}
 				elseif ($c == '}') {
 					if (sizeof($cfg->state) > 1) {
+						$cfg->purgeScope($cfg->getCurrentScope());
 						array_pop($cfg->state);
 					} else {
 						$cfg->raiseError('Unexpected \'}\'');
@@ -172,24 +174,38 @@ class Daemon_ConfigParser {
 						$scope = $cfg->getCurrentScope();
 
 						if (isset($scope->{$name})) {
-							if (
-								($elTypes[1] == Daemon_ConfigParser::T_CVALUE) 
-								&& is_string($elements[1])
-							) {
-								$scope->{$name}->setHumanValue($elements[1]);
-							} else {
-								$scope->{$name}->setValue($elements[1]);
+							if ($scope->{$name}->source != 'cmdline')	{
+								if (
+									($elTypes[1] == Daemon_ConfigParser::T_CVALUE) 
+									&& is_string($elements[1])
+								) {
+									$scope->{$name}->setHumanValue($elements[1]);
+								} else {
+									$scope->{$name}->setValue($elements[1]);
+								}
+								$scope->{$name}->source = 'config';
+								$scope->{$name}->revision = $cfg->revision;
 							}
-						} else {
+						} elseif (sizeof($cfg->state) > 1) {
 							$scope->{$name} = new Daemon_ConfigEntry();
+							$scope->{$name}->source = 'config';
+							$scope->{$name}->revision = $cfg->revision;
 							$scope->{$name}->setValue($elements[1]);
 							$scope->{$name}->setValueType($elTypes[1]);
 						}
+						else {$cfg->raiseError('Unrecognized parameter \''.$name.'\'');}
 					}
 					elseif ($tokenType == Daemon_ConfigParser::T_BLOCK) {
+						$scope = $cfg->getCurrentScope();
+						$sectionName = implode('-', $elements);
+						if (!isset($scope->{$sectionName})) {
+							$scope->{$sectionName} = new Daemon_ConfigSection;
+						}
+						$scope->{$sectionName}->source = 'config';
+						$scope->{$sectionName}->revision = $cfg->revision;
 						$cfg->state[] = array(
 							Daemon_ConfigParser::T_ALL,
-							$cfg->getCurrentScope()->{implode('-', $elements)} = new Daemon_ConfigSection
+							$scope->{$sectionName},
 						);
 					}
 				} else {
@@ -203,8 +219,32 @@ class Daemon_ConfigParser {
 			$e = end($this->state);
 			$cfg->token($e[0], $c);
 		}
+		$this->purgeScope($this->result);
 	}
-
+	public function purgeScope($scope)
+	{
+	 $cfg = $this;
+		foreach ($scope as $name => $obj) {
+			if ($obj instanceof Daemon_ConfigEntry) {
+					if ($obj->source === 'config' && ($obj->revision < $cfg->revision))	{
+						if (!$obj->resetToDefault()) {
+							unset($scope->{$name});
+						}
+					}
+			}
+			elseif ($obj instanceof Daemon_ConfigSection) {
+				
+				if ($obj->source === 'config' && ($obj->revision < $cfg->revision))	{
+					if (count($obj) === 0) {
+						unset($scope->{$name});
+					}
+					elseif (isset($obj->enable)) {
+						$obj->enable->setValue(FALSE);
+					}
+				}
+			}
+		}			
+	}
 	/**
 	 * @method getCurrentScope
 	 * @description Returns current variable scope

@@ -14,11 +14,14 @@ class Daemon_ConfigEntry {
 	public $defaultValue;
 	public $value;
 	public $humanValue;
+	public $source;
+	public $revision;
+	public $hasDefaultValue = FALSE;
 
-	public function __construct($defaultValue = NULL) {
-		if ($defaultValue !== NULL) {
-			$this->setDefaultValue($defaultValue);
-			$this->setHumanValue($defaultValue);
+	public function __construct() {
+		if (func_num_args() == 1)	{
+			$this->setDefaultValue(func_get_arg(0));
+			$this->setHumanValue(func_get_arg(0));
 		}
 	}
 
@@ -31,8 +34,18 @@ class Daemon_ConfigEntry {
 		$this->valueType = $type;
 	}
 
+  public function resetToDefault()
+  {
+		if ($this->hasDefaultValue)	{
+			$this->setHumanValue($this->defaultValue);
+			return TRUE;
+		}
+		return FALSE;
+  }
+ 
 	public function setDefaultValue($value) {
 		$this->defaultValue = $value;
+		$this->hasDefaultValue = TRUE;
 	}
 
 	public function setHumanValue($value) {

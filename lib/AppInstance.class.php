@@ -36,7 +36,7 @@ class AppInstance {
 				&& !isset(Daemon::$config->{$fullname}->disable)
 			) {
 				Daemon::$config->{$fullname}->enable = new Daemon_ConfigEntry;
-				Daemon::$config->{$fullname}->enable->setValue(1);
+				Daemon::$config->{$fullname}->enable->setValue(TRUE);
 			}
 		}
 
@@ -68,14 +68,16 @@ class AppInstance {
 				}
 			}
 			else {
-				$current = $this->config->{$k}->value;
+				$current = $this->config->{$k};
 			  if (is_scalar($v))	{
 					$this->config->{$k} = new Daemon_ConfigEntry($v);
 				}
 				else {
 					$this->config->{$k} = $v;
 				}
-				$this->config->{$k}->setHumanValue($current);
+				$this->config->{$k}->setHumanValue($current->value);
+				$this->config->{$k}->source = $current->source;
+				$this->config->{$k}->revision = $current->revision;
 			}
 		}
 

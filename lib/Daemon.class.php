@@ -199,7 +199,7 @@ class Daemon {
 			$error = TRUE;
 		}
 
-		if (!Daemon::loadSettings($args)) {
+		if (!Daemon::$config->loadCmdLineArgs($args)) {
 			$error = TRUE;
 		}
 
@@ -268,68 +268,6 @@ class Daemon {
 		}
 
 		return false;
-	}
-
-	/**
-	 * @method loadSetings
-	 * @param array Settings.
-	 * @description Checks and loads settings to registry.
-	 * @return boolean - Success.
-	*/
-	public static function loadSettings($settings) {
-		$error = FALSE;
-
-		static $ktr = array(
-			'-' => '',
-		);
-
-		foreach ($settings as $k => $v) {
-			$k = strtolower(strtr($k, $ktr));
-
-			if ($k === 'config') {
-				$k = 'configfile';
-			}
-
-			if (
-				($k === 'user') 
-				|| ($k === 'group')
-			) {
-				if ($v === '') {
-					$v = NULL;
-				}
-			}
-			if (isset(Daemon::$config->{$k})) {
-				if (Daemon::$config->{$k} instanceof Daemon_ConfigEntry) {
-					Daemon::$config->{$k}->setHumanValue($v);
-				}
-				else	{
-					if (is_int(Daemon::$config->{$k})) {
-						Daemon::$config->{$k} = (int) $v;
-					}
-				}
-			}
-			elseif (strpos($k, 'mod-') === 0) {
-			  $e = explode('-',strtolower($k),3);
-			  $kk = $e[1];
-			  $name = str_replace('-',$e[2]);
-				if (isset(Daemon::$config->{$kk}->{$name})) {
-					if (Daemon::$config->{$kk}->{$name} instanceof Daemon_ConfigEntry) {
-						Daemon::$config->{$kk}->{$name}->setHumanValue($v);
-					}
-					elseif (is_int($this->{$kk}->{$name})) {
-					  Daemon::$config->{$kk}->{$name} = (int) $v;
-					}
-				}
-				else {
-					Daemon::$config->{$kk}->{$name} = $v;
-				}
-			}
-			else {
-				Daemon::log('Unrecognized parameter \'' . $k . '\'');
-				$error = TRUE;
-			}
-		}
-		return !$error;
 	}
 
 	/**

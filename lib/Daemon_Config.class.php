@@ -59,6 +59,7 @@ class Daemon_Config implements ArrayAccess {
 	public $logreads           = 0;
 	public $logsignals         = 0;
 	
+	public static $lastRevision = 0;
 	public function __construct() {
 		static $sizes = array('maxmemoryusage');
 		static $times = array('maxidle', 'autoreload', 'mpmdelay');
@@ -141,5 +142,44 @@ class Daemon_Config implements ArrayAccess {
 	public function offsetUnset($offset) {
 		unset($this->{$this->getRealOffsetName($offset)});
 	}
+	/**
+	 * @method loadCmdLineArgs
+	 * @param array Settings.
+	 * @description Imports parameters from command line args.
+	 * @return boolean - Success.
+	*/
+	public static function loadCmdLineArgs($settings) {
+		$error = FALSE;
 
+		static $ktr = array(
+			'-' => '',
+		);
+
+		foreach ($settings as $k => $v) {
+			$k = strtolower(strtr($k, $ktr));
+
+			if ($k === 'config') {
+				$k = 'configfile';
+			}
+
+			if (
+				($k === 'user') 
+				|| ($k === 'group')
+			) {
+				if ($v === '') {
+					$v = NULL;
+				}
+			}
+			if (isset(Daemon::$config->{$k})) {
+				Daemon::$config->{$k}->setHumanValue($v);
+				Daemon::$config->{$k}->source = 'cmdline';
+				
+			}
+			else {
+				Daemon::log('Unrecognized parameter \'' . $k . '\'');
+				$error = TRUE;
+			}
+		}
+		return !$error;
+	}
 }
