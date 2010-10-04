@@ -609,7 +609,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @description Asks the running applications the whether we can go to shutdown current (old) worker.
 	 * @return boolean - Ready?
 	 */
-	private function appInstancesReloadReady() {
+	public function appInstancesReloadReady() {
 		$ready = TRUE;
 		
 		foreach (Daemon::$appInstances as $k => $app) {
