@@ -175,8 +175,7 @@ class AsteriskDriverSession extends SocketSession {
 							} else {
 								if ($packet['message'] == 'authentication accepted') {
 									$this->cstate = 3;
-									Daemon::log(__CLASS__ . ': auth ok.');
-
+									Daemon::log(__CLASS__.': Authentication ok. Connected to '.$this->addr);
 									if (is_callable($this->onConnected)) {
 										call_user_func($this->onConnected, $this, true);
 									}
@@ -184,7 +183,7 @@ class AsteriskDriverSession extends SocketSession {
 							}
 						} else {
 							$this->cstate = 2;
-
+							Daemon::log(__CLASS__.': Authentication failed. Connection to '.$this->addr.' failed.');
 							if (is_callable($this->onConnected)) {
 								call_user_func($this->onConnected, $this, false);
 							}
