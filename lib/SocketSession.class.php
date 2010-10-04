@@ -15,7 +15,6 @@ class SocketSession {
 	public $connId;
 	public $appInstance;
 	public $state = 0;
-	public $auth = FALSE;
 	public $finished = FALSE;
 	public $readLocked = FALSE;
 	public $addr;

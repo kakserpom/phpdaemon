@@ -40,7 +40,17 @@ class DebugConsole extends AsyncServer {
 
 class DebugConsoleSession extends SocketSession {
 
-	public $auth = FALSE; // Is this client authorized?
+	/**
+	 * Are we authorized?
+	 * @var boolean
+	 */
+	private $auth = false;
+
+	/**
+	 * How much time to try before disconnect
+	 * @var integer
+	 */
+	private $authTries = 3;
 
 	/**
 	 * @method init
@@ -48,7 +58,72 @@ class DebugConsoleSession extends SocketSession {
 	 * @return void
 	 */
 	public function init() {
-		$this->write("Welcome! DebugConsole for phpDaemon.\n\n");
+		$this->write('Welcome to the debug console for phpDaemon.
+
+Please enter the password or type "exit": ');
+	}
+
+	/**
+	 * Disconnecting
+	 */
+	private function disconnect() {
+		$this->writeln('Disconnecting...');
+		$this->finish();
+	}
+
+	/**
+	 * Let's check the password
+	 * @param $pass string Password
+	 * @return boolean
+	 */
+	private function checkPassword($pass = '') {
+		if ($pass != $this->appInstance->config->passphrase->value) {
+			--$this->authTries;
+			
+			if (0 === $this->authTries) {
+				$this->disconnect();
+			} else {
+				sleep(2);
+				$this->write('Wrong password. Please, try again: ');
+			}
+		} else {
+			$this->writeln('You are authorized
+');
+			$this->auth = true;
+		}
+	}
+
+	/**
+	 * Run the command
+	 * @param $command string Command to execute
+	 * @param $argument string Argument
+	 * @return void
+	 */
+	private function processCommand($command = '', $argument = '') {
+		switch ($command) {
+			case 'help':
+				$this->writeln('
+Debug console for phpDaemon.
+Allowed commands:
+
+help	eval	exit
+');
+				break;
+			case 'ping':
+				$this->writeln('pong');
+				break;
+			case 'eval':
+				ob_start();
+				eval($argument);
+				$out = ob_get_contents();
+				ob_end_clean();
+				$this->writeln($out);
+				break;
+			default:
+				$this->writeln('Unknown command "' . $command . '".
+Type "help" to get the list of allowed commands.');
+		}
+
 	}
 
 	/**
@@ -71,55 +146,13 @@ class DebugConsoleSession extends SocketSession {
 			$cmd = trim(strtolower($e[0]));
 			$arg = isset($e[1]) ? $e[1] : '';
 
-			if ($cmd === 'ping') {
-				$this->writeln('pong');
-			}
-			elseif ($cmd === 'login') {
-				if ($this->auth) {
-					$this->writeln('You are authorized already.');
-				}
-				elseif ($arg === $this->appInstance->config->passphrase->value) {
-					$this->auth = TRUE;
-					$this->writeln('OK.');
-				} else {
-					$this->writeln('Incorrect passphrase.');
-				}
-			}
-			elseif ($cmd === 'logout') {
-				if (!$this->auth) {
-					$this->writeln('You are not authorized.');
-				} else {
-					$this->auth = FALSE;
-					$this->writeln('OK.');
-				}
+			if (in_array($cmd, array('quit', 'exit'))) {
+				$this->disconnect();
 			} 
-			elseif ($cmd === 'eval') {
-				if (!$this->auth) {
-					$this->writeln('You must be authorized.');
-				} else {
-					ob_start();
-					eval($arg);
-					$out = ob_get_contents();
-					ob_end_clean();
-					$this->writeln($out);
-				}
-			}
-			elseif ($cmd === 'help') {
-				$this->writeln('DebugConsole for phpDaemon.
-Commands:
-1) help
-2) login [password]
-3) logout
-4) eval');
-			}
-			elseif (
-				($cmd === 'exit') 
-				|| ($cmd === 'quit')
-			) {
-				$this->writeln('Quit');
-				$this->finish();
+			elseif (!$this->auth) {
+				$this->checkPassword($e[0]);
 			} else {
-				$this->writeln('Unknown command "'.$cmd.'"');
+				$this->processCommand($cmd, $arg);
 			}
 		}
 
