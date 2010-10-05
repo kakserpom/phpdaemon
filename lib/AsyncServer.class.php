@@ -340,7 +340,7 @@ class AsyncServer extends AppInstance {
 			return FALSE;
 		}
 		
-		return Daemon::$config->maxconcurrentrequestsperworker->value >= sizeof($this->queue);
+		return TRUE;
 	}
 	
 	/**
@@ -496,7 +496,7 @@ class AsyncServer extends AppInstance {
 		}
 		
 		if ($this->checkAccept()) {
-			Daemon::$worker->addEvent($this->socketEvents[$sockId]);
+			event_add($this->socketEvents[$sockId]);
 		}
 		
 		if (Daemon::$useSockets) {

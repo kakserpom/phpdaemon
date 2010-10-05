@@ -26,7 +26,6 @@ class Daemon_WorkerThread extends Thread {
 	public $writePoolState = array();
 	private $autoReloadLast = 0;
 	private $currentStatus = 0;
-	public $eventsToAdd = array();
 	public $eventBase;
 	public $timeoutEvent;
 	public $status = 0;
@@ -121,12 +120,6 @@ class Daemon_WorkerThread extends Thread {
 		$this->mainTimedEvent = new Daemon_TimedEvent(function() 	{
 
 			$self = Daemon::$worker;
-			
-			for ($i = 0, $s = sizeof($self->eventsToAdd); $i < $s; ++$i) {
-					event_add($self->eventsToAdd[$i]);
-			
-					unset($self->eventsToAdd[$i]);
-			}
 			
 			$self->readPool();
 			
@@ -366,17 +359,6 @@ class Daemon_WorkerThread extends Thread {
 				$appInstance->handleStatus(2);
 			}
 		}
-	}
-	
-	/**
-	 * @method addEvent
-	 * @description Adds event to the queue. Event will be added before next baseloop().
-	 * @return boolean - Success.
-	 */
-	public function addEvent($e) {
-		$this->eventsToAdd[sizeof($this->eventsToAdd)] = $e;
-	
-		return TRUE;
 	}
 	
 	/**

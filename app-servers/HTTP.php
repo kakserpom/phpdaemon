@@ -48,7 +48,18 @@ class HTTP extends AsyncServer {
 			$this->enableSocketEvents();
 		}
 	}
-
+	/**
+	 * @method checkAccept
+	 * @description Called when remote host is trying to establish the connection.
+	 * @return boolean If true then we can accept new connections, else we can't.
+	 */
+	public function checkAccept() {
+		if (Daemon::$worker->reload) {
+			return FALSE;
+		}
+		
+		return Daemon::$config->maxconcurrentrequestsperworker->value >= sizeof($this->queue);
+	}
 	/**
 	 * @method onAccepted
 	 * @description Called when new connection is accepted.
