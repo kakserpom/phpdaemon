@@ -71,7 +71,5 @@ class ExampleRTEPRequest extends HTTPRequest {
 		));
 
 		echo 'OK';
-
-		return Request::DONE;
 	}
 }

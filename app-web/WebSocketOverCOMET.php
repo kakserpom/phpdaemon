@@ -276,7 +276,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 
 			echo json_encode($ret);
 
-			return Request::DONE;
+			return;
 		} 
 		elseif ($this->type === 'pull') {
 			if (!$this->inited) {
@@ -299,11 +299,11 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 						Daemon::log(__METHOD__ . ': undefined route \'' . $appName . '\'.');
 					}
 
-					return Request::DONE;
+					return;
 				}
 
 				if (!$this->downstream = call_user_func($this->appInstance->wss->routes[$appName], $this)) {
-					return Request::DONE;
+					return;
 				}
 			}
 
@@ -326,12 +326,12 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 
 					echo json_encode(array('error' => 404));
 
-					return Request::DONE;
+					return;
 				}
 
 				if (!$this->downstream = call_user_func($this->appInstance->wss->routes[$appName], $this)) {
 					echo json_encode(array('error' => 403));
-					return Request::DONE;
+					return;
 				}
 
 				$id = $this->appInstance->ipcId . '.' . $this->idAppQueue . '.' . $this->authKey;
@@ -394,7 +394,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 
 				if (sizeof($ret)) {
 					echo json_encode($ret);
-					return Request::DONE;
+					return;
 				}
 
 				$this->reqIdAuthKey = $e[1];
@@ -412,7 +412,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 				$this->sleep(15);
 			}
 
-			return Request::DONE;
+			return;
 		}
 	}
 

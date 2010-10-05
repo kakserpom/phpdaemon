@@ -66,7 +66,5 @@ class ExampleAsyncStreamRequest extends HTTPRequest {
 		if (!$this->stream->eof()) {
 			$this->sleep();
 		}
-
-		return Request::DONE;
 	}
 }

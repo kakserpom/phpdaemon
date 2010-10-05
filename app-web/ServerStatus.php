@@ -46,6 +46,6 @@ class ServerStatus_Request extends HTTPRequest {
 </body>
 </html>
 <?php
-		return Request::DONE;
+		return;
 	}
 }

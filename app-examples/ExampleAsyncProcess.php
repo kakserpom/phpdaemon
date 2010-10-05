@@ -60,7 +60,5 @@ class ExampleAsyncProcessRequest extends HTTPRequest {
 		if (!$this->proc->eof()) {
 			$this->sleep(1);
 		}
-
-		return Request::DONE;
 	}
 }

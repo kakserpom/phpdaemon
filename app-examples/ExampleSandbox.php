@@ -66,7 +66,5 @@ class ExampleSandboxRequest extends HTTPRequest {
 		$sandbox->call_user_func(function() {
 			echo "Hello World!";
 		});
-
-		return Request::DONE;
 	}
 }

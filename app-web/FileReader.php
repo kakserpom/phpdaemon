@@ -260,8 +260,6 @@ if ($this->upstream->config->expose->value) {
 		if (!$this->stream->eof()) {
 			$this->sleep();
 		}
-
-		return Request::DONE;
 	}
 	
 	/**

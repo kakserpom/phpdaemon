@@ -92,7 +92,7 @@ class InteractivePHPRequest extends HTTPRequest {
 
 		if (self::getString($_REQUEST['pwd']) != 'abcd') {
 			echo 'Permission denied.';
-			return Request::DONE;
+			return;
 		}
 
 		if (!strlen($this->session)) {
@@ -105,7 +105,7 @@ class InteractivePHPRequest extends HTTPRequest {
 
 			ob_flush();
 
-			return Request::DONE;
+			return;
 		}
 
 		Daemon::log('start sendcommand');
@@ -153,6 +153,6 @@ if (!$this->appInstance->getSession($this->session)->EOF) {
 </form>
 </body>
 </html><?php
-		return Request::DONE;
+		return;
 	}
 }
