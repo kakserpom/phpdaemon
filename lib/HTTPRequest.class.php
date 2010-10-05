@@ -102,7 +102,7 @@ class HTTPRequest extends Request {
 	 */
 	public function preCall()
 	{
-		if (!$this->attrs->params_done) {
+		if (!$this->attrs->params_done || !$this->attrs->stdin_done) {
 			$this->state = Request::STATE_SLEEPING;
 		}
 		else {
