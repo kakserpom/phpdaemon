@@ -98,23 +98,23 @@ class HTTPRequest extends Request {
 	/**
 	 * @method precall
 	 * @description Called by call() to check if ready.
-	 * @return mixed Integer status/Boolean ready.
+	 * @return void
 	 */
 	public function preCall()
 	{
-		if ($this->attrs->params_done) {
+		if (!$this->attrs->params_done) {
+			$this->state = Request::STATE_SLEEPING;
+		}
+		else {
 			if (isset($this->appInstance->passphrase)) {
 				if (
 					!isset($this->attrs->server['PASSPHRASE']) 
 					|| ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
 				) {
-					$this->state = 1;
-					return 1;
+					$this->finish();
 				}
 			}
-			return TRUE;
 		}
-		return FALSE;
 	}
 	/**
 	 * @method parseParams

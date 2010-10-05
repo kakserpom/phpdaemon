@@ -544,9 +544,9 @@ class Daemon_WorkerThread extends Thread {
 	
 		foreach ($this->queue as $k => &$r) {
 			if (!$r instanceof stdClass) {
-				if ($r->state === 3) {
+				if ($r->state === Request::STATE_SLEEPING) {
 					if (microtime(TRUE) > $r->sleepuntil) {
-						$r->state = 1;
+						$r->state = Request::STATE_ALIVE;
 					} else {
 						continue;
 					}

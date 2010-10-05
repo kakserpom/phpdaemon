@@ -11,13 +11,17 @@
 
 class Request {
 
-	const INTERRUPT = 0;
-	const DONE = 1;
+	const INTERRUPT = 3; // alias of STATE_SLEEPING
+	const DONE = 0; // alias of STATE_FINISHED
 
+	const STATE_FINISHED = 0;
+	const STATE_ALIVE = 1;
+	const STATE_RUNNING = 2;
+	const STATE_SLEEPING = 3;
 	public $idAppQueue;
 	public $appInstance;
 	public $aborted = FALSE;
-	public $state = 1;
+	public $state = 1; // 0 - finished, 1 - alive, 2 - running, 3 - sleeping
 	public $codepoint;
 	public $sendfp;
 	public $attrs;
@@ -142,7 +146,7 @@ class Request {
 	 * @return void
 	 */
 	public function sleep($time = 0, $set = FALSE) {
-		if ($this->state === 0) {
+		if ($this->state === Request::STATE_FINISHED) {
 			return;
 		}
 
@@ -152,7 +156,7 @@ class Request {
 			throw new RequestSleepException;
 		}
 
-		$this->state = 3;
+		$this->state = Request::STATE_SLEEPING;
 	}
 
 	/**
@@ -174,12 +178,12 @@ class Request {
 	 * @return void
 	 */
 	public function wakeup() {
-		$this->state = 1;
+		$this->state = Request::STATE_ALIVE;
 	}
 	/**
 	 * @method precall
 	 * @description Called by call() to check if ready.
-	 * @return mixed Integer status/Boolean ready.
+	 * @return void
 	 */
 	public function preCall()
 	{
@@ -191,50 +195,51 @@ class Request {
 	 * @return int Status.
 	 */
 	public function call() {
-		if ($this->state === 0) {
-			$this->state = 1;
+		if ($this->state === Request::STATE_FINISHED) {
+			$this->state = Request::STATE_ALIVE;
 			$this->finish();
-			return 1;
+			return Request::STATE_FINISHED;
 		}
 
-		$ret = $this->preCall();
-		if (is_int($ret)) {
-			return $ret;
-		}
-		
-		if ($ret === TRUE) {
-			$this->state = 2;
-			$this->onWakeup();
-
-			try {
-				$ret = $this->run();
-
-				if ($this->state === 0) {
-					// Finished while running
-					return 1;
-				}
-
-				$this->state = $ret;
-
-				if ($this->state === NULL) {
-					Daemon::log('Method ' . get_class($this) . '::run() returned null.');
-				}
-			} catch (RequestSleepException $e) {
-				$this->state = 3;
-			} catch (RequestTerminatedException $e) {
-				$this->state = 1;
-			}
-
-			if ($this->state === 1) {
-				$this->finish();
-			}
-
-			$this->onSleep();
-
+		$this->preCall();
+		if ($this->state !== Request::STATE_ALIVE)
+		{
 			return $this->state;
 		}
+		
+		$this->state = Request::STATE_RUNNING;
+		$this->onWakeup();
 
-		return 0;
+		try {
+			$ret = $this->run();
+
+			if ($this->state === Request::STATE_FINISHED) {
+				// Finished while running
+				return Request::STATE_FINISHED;
+			}
+
+			if ($ret === NULL) {
+				$ret = Request::STATE_FINISHED;
+			}
+			if ($ret === Request::STATE_FINISHED) {
+				$this->finish();
+			}
+			elseif ($ret === Request::STATE_SLEEPING) {
+				$this->state = $ret;
+			}
+		} catch (RequestSleepException $e) {
+			$this->state = Request::STATE_SLEEPING;
+		} catch (RequestTerminatedException $e) {
+			$this->state = Request::STATE_FINISHED;
+		}
+
+		if ($this->state === Request::STATE_FINISHED) {
+			$this->finish();
+		}
+
+		$this->onSleep();
+
+		return $this->state;
 	}
 
 	/**
@@ -300,7 +305,7 @@ class Request {
 
 		if (
 			(ignore_user_abort() === 1) 
-			&& ($this->state > 1) 
+			&& (($this->state === Request::STATE_RUNNING) || ($this->state === Request::STATE_SLEEPING))
 			&& !Daemon::$compatMode
 		) {
 			if (!isset($this->upstream->keepalive->value) || !$this->upstream->keepalive->value) {
@@ -321,12 +326,12 @@ class Request {
 	 * @return void
 	 */
 	public function finish($status = 0, $zombie = FALSE) {
-		if ($this->state === 0) {
+		if ($this->state === Request::STATE_FINISHED) {
 			return;
 		}
 
 		if (!$zombie) {
-			$this->state = 0;
+			$this->state = Request::STATE_FINISHED;
 		}
 
 		if (!($r = $this->running)) {
