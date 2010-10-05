@@ -118,9 +118,16 @@ class Request {
 			$this->finish();
 			return Request::STATE_FINISHED;
 		}
-
+		$this->state = Request::STATE_ALIVE;
+		
 		$this->preCall();
+
+		if ($this->state !== Request::STATE_ALIVE) {
+		 return $this->state;
+		}
+		
 		$this->state = Request::STATE_RUNNING;
+		
 		$this->onWakeup();
 
 		try {

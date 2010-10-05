@@ -469,6 +469,27 @@ class HTTPRequest extends Request {
 		return TRUE;
 	}
 	
+	public function parseSize($value) {
+		$l = strtolower(substr($value, -1));
+
+		if ($l === 'b') {
+			return ((int) substr($value, 0, -1));
+		}
+
+		if ($l === 'k') {
+			return ((int) substr($value, 0, -1) * 1024);
+		}
+
+		if ($l === 'm') {
+			return ((int) substr($value, 0, -1) * 1024 * 1024);
+		}
+
+		if ($l === 'g') {
+			return ((int) substr($value, 0, -1) * 1024 * 1024 * 1024);
+		}
+		return (int) $value;
+	}
+	
 	/**
 	 * @method parseStdin
 	 * @description Parses request's body.
@@ -636,7 +657,7 @@ class HTTPRequest extends Request {
 
 							$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
 
-							if (Daemon::parseSize(ini_get('upload_max_filesize')) < $this->attrs->files[$this->mpartcondisp['name']]['size']) {
+							if ($this->parseSize(ini_get('upload_max_filesize')) < $this->attrs->files[$this->mpartcondisp['name']]['size']) {
 								$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_INI_SIZE;
 							}
 
