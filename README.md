@@ -17,7 +17,7 @@ Main features and possibilites:
 
 Also, you can build binary application server using compiler like PHC (http://phpcompiler.org/).
 
-Installation guide: http://wiki.github.com/kakserpom/phpdaemon/install
+Installation guide: http://github.com/kakserpom/phpdaemon/wiki/Installation-(common)
 
 Master process understands signals:
 	
