@@ -96,10 +96,6 @@ class Daemon_ConfigParser {
 					for (;$cfg->p < $cfg->len; ++$cfg->p) {
 						$c = $cfg->getCurrentChar();
 
-						if ($c === "\n") {
-							continue;
-						}
-
 						if (ctype_space($c)) {
 							if ($elTypes[$i] !== NULL)	{
 								++$i;
