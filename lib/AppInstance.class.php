@@ -171,19 +171,16 @@ class AppInstance {
 	 * @return object Request.
 	 */
 	public function handleRequest($parent, $upstream) {
+	
 		$req = $this->beginRequest($parent, $upstream);
 
 		if (!$req) {
 			return $parent;
 		}
 
-		$req->idAppQueue = ++$this->reqCounter;
-
 		if (Daemon::$config->logqueue->value) {
 			Daemon::$worker->log('request added to ' . get_class($this) . '->queue.');
 		}
-
-		$this->queue[$req->idAppQueue] = $req;
 
 		return $req;
 	}
@@ -193,11 +190,9 @@ class AppInstance {
 	 * @param object Request.
 	 * @description Pushes request to the queue.
 	 * @return object Request.
+	 * @deprecated
 	 */
 	public function pushRequest($req) {
-		$req->idAppQueue = ++$this->reqCounter;
-		$this->queue[$req->idAppQueue] = $req;
-		Daemon::$worker->queue[get_class($this) . '-' . $req->idAppQueue] = $req;
 
 		return $req;
 	}

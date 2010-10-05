@@ -165,10 +165,9 @@ class HTTP extends AsyncServer {
 				return;
 			}
 
-			++Daemon::$worker->queryCounter;
 			++$this->poolState[$connId]['n'];
 
-			$rid = $connId . '-' . $this->poolState[$connId]['n'];
+			$rid = ++Daemon::$worker->reqCounter;
 			$this->poolState[$connId]['state'] = 1;
 
 			$req = new stdClass();
@@ -188,6 +187,8 @@ class HTTP extends AsyncServer {
 			$req->attrs->stdinlen = 0;
 			$req->attrs->inbuf = '';
 			$req->attrs->chunked = FALSE;
+			
+			$req->queueId = $rid;
 
 			if ($this->config->logqueue->value) {
 				Daemon::$worker->log('new request queued.');
@@ -197,7 +198,7 @@ class HTTP extends AsyncServer {
 
 			$this->poolQueue[$connId][$req->attrs->id] = $req;
 		} else {
-			$rid = $connId . '-' . $this->poolState[$connId]['n'];
+			$rid = $this->poolQueue[$connId][$this->poolState[$connId]['n']]->queueId;
 
 			if (isset(Daemon::$worker->queue[$rid])) {
 				$req = Daemon::$worker->queue[$rid];
@@ -290,8 +291,6 @@ class HTTP extends AsyncServer {
 
 					$req->stdin($req->attrs->inbuf);
 					$req->attrs->inbuf = '';
-
-					Daemon::$worker->queue[$rid] = $req;
 
 					$this->poolQueue[$connId][$req->attrs->id] = $req;
 					$this->poolState[$connId]['state'] = 2;

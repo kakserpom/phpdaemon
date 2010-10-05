@@ -167,8 +167,8 @@ class FastCGI extends AsyncServer {
 		$c = pack('NC', $appStatus, $protoStatus) // app status, protocol status
 			. "\x00\x00\x00";
 
+		if (!isset($this->buf[$connId])) {return;}
 		Daemon::$worker->writePoolState[$connId] = TRUE;
-
 		$w = event_buffer_write($this->buf[$connId],
 			"\x01"                                     // protocol version
 			. "\x03"                                   // record type (END_REQUEST)
@@ -257,7 +257,7 @@ class FastCGI extends AsyncServer {
 		}
 
 		if ($type == self::FCGI_BEGIN_REQUEST) {
-			++Daemon::$worker->queryCounter;
+			++Daemon::$worker->reqCounter;
 			$rr = unpack('nrole/Cflags',$c);
 
 			$req = new stdClass();
@@ -279,6 +279,7 @@ class FastCGI extends AsyncServer {
 			$req->attrs->stdinlen    = 0;
 			$req->attrs->chunked     = FALSE;
 			$req->attrs->noHttpVer   = TRUE;
+			$req->queueId = $rid;
 
 			if ($this->config->logqueue->value) {
 				Daemon::$worker->log('new request queued.');

@@ -19,7 +19,7 @@ class Daemon_WorkerThread extends Thread {
 	public $pool = array();
 	public $poolApp = array();
 	public $connCounter = 0;
-	public $queryCounter = 0;
+	public $reqCounter = 0;
 	public $queue = array();
 	public $timeLastReq = 0;
 	public $readPoolState = array();
@@ -117,15 +117,11 @@ class Daemon_WorkerThread extends Thread {
 		$this->setStatus(1);
 
 
-		$this->mainTimedEvent = new Daemon_TimedEvent(function() 	{
+		$this->readPoolEvent = new Daemon_TimedEvent(function() 	{
 
-			$self = Daemon::$worker;
-			
-			$self->readPool();
-			
-			$self->runQueue();
+			Daemon::$worker->readPool();
 				
-			$self->mainTimedEvent->timeout();
+			Daemon::$worker->readPoolEvent->timeout();
 		
 		},pow(10,6) * 0.005);
 		
@@ -154,8 +150,6 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function overrideNativeFuncs()
 	{
-		register_shutdown_function(array($this,'shutdown'));
-		
 		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
 			runkit_function_rename('header', 'header_native');
 
@@ -314,6 +308,7 @@ class Daemon_WorkerThread extends Thread {
 				Daemon::log('Couldn\'t change directory to \'' . Daemon::$config->cwd->value . '.');
 			}
 		}
+		register_shutdown_function(array($this,'shutdown'));
 	}
 	/**
 	 * @method log
@@ -452,7 +447,7 @@ class Daemon_WorkerThread extends Thread {
 
 		if (
 			Daemon::$config->maxrequests->value
-			&& ($this->queryCounter >= Daemon::$config->maxrequests->value)
+			&& ($this->reqCounter >= Daemon::$config->maxrequests->value)
 		) {
 			$this->log('\'maxrequests\' exceed. Graceful shutdown.');
 
@@ -514,53 +509,6 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		return TRUE;
-	}
-
-	/**
-	 * @method runQueue
-	 * @description Handles the queue of pending requests.
-	 * @return void
-	 */
-	public function runQueue() {
-	
-		foreach ($this->queue as $k => &$r) {
-			if (!$r instanceof stdClass) {
-				if ($r->state === Request::STATE_SLEEPING) {
-					if (microtime(TRUE) > $r->sleepuntil) {
-						$r->state = Request::STATE_ALIVE;
-					} else {
-						continue;
-					}
-				}
-	
-				if (Daemon::$config->logqueue->value) {
-					$this->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() invoked.');
-				}
-
-				$ret = $r->call();
-	
-				if (Daemon::$config->logqueue->value) {
-					$this->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
-				}
-
-				if ($ret === Request::DONE) {
-
-					unset($this->queue[$k]);
-	
-					if (isset($r->idAppQueue)) {
-						if (Daemon::$config->logqueue->value) {
-							$this->log('request removed from ' . get_class($r->appInstance) . '->queue.');
-						}
-
-						unset($r->appInstance->queue[$r->idAppQueue]);
-					} else {
-						if (Daemon::$config->logqueue->value) {
-							$this->log('request can\'t be removed from AppInstance->queue.');
-						}
-					}
-				}
-			}
-		}
 	}
 	
 	/**

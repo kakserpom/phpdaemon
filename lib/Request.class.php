@@ -19,6 +19,7 @@ class Request {
 	const STATE_RUNNING = 2;
 	const STATE_SLEEPING = 3;
 	public $idAppQueue;
+	public $queueId;
 	public $appInstance;
 	public $aborted = FALSE;
 	public $state = 1; // 0 - finished, 1 - alive, 2 - running, 3 - sleeping
@@ -26,9 +27,10 @@ class Request {
 	public $sendfp;
 	public $attrs;
 	public $shutdownFuncs = array();
-	public $sleepuntil;
 	public $running = FALSE;
 	public $upstream;
+	public $ev;
+	public $sleepTime = 10000;
 
 	/**
 	 * @method __construct
@@ -38,16 +40,121 @@ class Request {
 	 * @param object Source request.
 	 * @return void
 	 */
-	public function __construct($appInstance, $upstream, $req = NULL) {
+	public function __construct($appInstance, $upstream, $parent = NULL) {
 
 		$this->appInstance = $appInstance;
 		$this->upstream = $upstream;
 
-		$this->preinit($req);
+		$this->idAppQueue = ++$this->appInstance->idAppQueue;
+		$this->appInstance->queue[$this->idAppQueue] = $this;
+		
+		$this->queueId = ($parent !== NULL)?$parent->queueId:(++Daemon::$worker->reqCounter);
+		Daemon::$worker->queue[$this->queueId] = $this;
+		
+		$this->preinit($parent);
 		$this->onWakeup();
 		$this->init();
 		$this->onSleep();
+		
+		$this->ev = event_new();
+		event_set($this->ev, STDIN, EV_TIMEOUT
+		, array('Request','eventCall')
+		, array($this->queueId));
+		event_base_set($this->ev, Daemon::$worker->eventBase);
+		event_add($this->ev,100);
 	}
+	public static function eventCall($fd,$flags,$arg)
+	{
+		$k = $arg[0];
+		if (!isset(Daemon::$worker->queue[$k])) 
+		{
+		 Daemon::log('Bad event call.');
+		 return;
+		}
+		$r = Daemon::$worker->queue[$k];
+		
+		if ($r->state === Request::STATE_SLEEPING) {
+			$r->state = Request::STATE_ALIVE;
+		}
+		
+		if (Daemon::$config->logqueue->value) {
+			Daemon::$worker->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() invoked.');
+		}
+
+		$ret = $r->call();
+	
+		if (Daemon::$config->logqueue->value) {
+			Daemon::$worker->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
+		}
+
+		if ($ret === Request::STATE_FINISHED) {
+
+			unset(Daemon::$worker->queue[$k]);
+
+			if (isset($r->idAppQueue)) {
+				if (Daemon::$config->logqueue->value) {
+					Daemon::$worker->log('request removed from ' . get_class($r->appInstance) . '->queue.');
+				}
+				unset($r->appInstance->queue[$r->idAppQueue]);
+			} else {
+				if (Daemon::$config->logqueue->value) {
+					Daemon::$worker->log('request can\'t be removed from AppInstance->queue.');
+				}
+			}
+		}
+		elseif ($ret === REQUEST::STATE_SLEEPING) {
+			event_add($r->ev,$r->sleepTime);
+		}
+	}
+	
+	/**
+	 * @method call
+	 * @description Called by queue dispatcher to touch the request.
+	 * @return int Status.
+	 */
+	public function call() {
+		if ($this->state === Request::STATE_FINISHED) {
+			$this->state = Request::STATE_ALIVE;
+			$this->finish();
+			return Request::STATE_FINISHED;
+		}
+
+		$this->preCall();
+		$this->state = Request::STATE_RUNNING;
+		$this->onWakeup();
+
+		try {
+			$ret = $this->run();
+
+			if ($this->state === Request::STATE_FINISHED) {
+				// Finished while running
+				return Request::STATE_FINISHED;
+			}
+
+			if ($ret === NULL) {
+				$ret = Request::STATE_FINISHED;
+			}
+			if ($ret === Request::STATE_FINISHED) {
+				$this->finish();
+			}
+			elseif ($ret === Request::STATE_SLEEPING) {
+				$this->state = $ret;
+			}
+		} catch (RequestSleepException $e) {
+			$this->state = Request::STATE_SLEEPING;
+		} catch (RequestTerminatedException $e) {
+			$this->state = Request::STATE_FINISHED;
+		}
+
+		if ($this->state === Request::STATE_FINISHED) {
+			$this->finish();
+		}
+
+		$this->onSleep();
+
+		return $this->state;
+	}
+	
 	/**
 	 * @method preinit
 	 * @description Preparing before init.
@@ -150,7 +257,7 @@ class Request {
 			return;
 		}
 
-		$this->sleepuntil = microtime(TRUE) + $time;
+		$this->sleepTime = $time*1000000;
 
 		if (!$set) {
 			throw new RequestSleepException;
@@ -179,7 +286,10 @@ class Request {
 	 */
 	public function wakeup() {
 		$this->state = Request::STATE_ALIVE;
+		event_del($this->ev);
+		event_add($this->ev,1);
 	}
+	
 	/**
 	 * @method precall
 	 * @description Called by call() to check if ready.
@@ -188,58 +298,6 @@ class Request {
 	public function preCall()
 	{
 		return TRUE;
-	}
-	/**
-	 * @method call
-	 * @description Called by queue dispatcher to touch the request.
-	 * @return int Status.
-	 */
-	public function call() {
-		if ($this->state === Request::STATE_FINISHED) {
-			$this->state = Request::STATE_ALIVE;
-			$this->finish();
-			return Request::STATE_FINISHED;
-		}
-
-		$this->preCall();
-		if ($this->state !== Request::STATE_ALIVE)
-		{
-			return $this->state;
-		}
-		
-		$this->state = Request::STATE_RUNNING;
-		$this->onWakeup();
-
-		try {
-			$ret = $this->run();
-
-			if ($this->state === Request::STATE_FINISHED) {
-				// Finished while running
-				return Request::STATE_FINISHED;
-			}
-
-			if ($ret === NULL) {
-				$ret = Request::STATE_FINISHED;
-			}
-			if ($ret === Request::STATE_FINISHED) {
-				$this->finish();
-			}
-			elseif ($ret === Request::STATE_SLEEPING) {
-				$this->state = $ret;
-			}
-		} catch (RequestSleepException $e) {
-			$this->state = Request::STATE_SLEEPING;
-		} catch (RequestTerminatedException $e) {
-			$this->state = Request::STATE_FINISHED;
-		}
-
-		if ($this->state === Request::STATE_FINISHED) {
-			$this->finish();
-		}
-
-		$this->onSleep();
-
-		return $this->state;
 	}
 
 	/**
@@ -354,8 +412,8 @@ class Request {
 
 		if (
 			(Daemon::$config->autogc->value > 0) 
-			&& (Daemon::$worker->queryCounter > 0) 
-			&& (Daemon::$worker->queryCounter % Daemon::$config->autogc->value === 0)
+			&& (Daemon::$worker->reqCounter > 0) 
+			&& (Daemon::$worker->reqCounter % Daemon::$config->autogc->value === 0)
 		) {
 			gc_collect_cycles();
 		}
@@ -374,8 +432,11 @@ class Request {
 
 		}
 	}
-	public function postFinishHandler()
-	{
+	public function postFinishHandler()	{}
+	
+	public function __destruct() {
+		event_del($this->ev);
+		event_free($this->ev);
 	}
 }
 
