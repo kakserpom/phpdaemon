@@ -522,7 +522,6 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function runQueue() {
-		$processed = 0;
 	
 		foreach ($this->queue as $k => &$r) {
 			if (!$r instanceof stdClass) {
@@ -545,7 +544,6 @@ class Daemon_WorkerThread extends Thread {
 				}
 
 				if ($ret === Request::DONE) {
-					++$processed;
 
 					unset($this->queue[$k]);
 	
@@ -563,8 +561,6 @@ class Daemon_WorkerThread extends Thread {
 				}
 			}
 		}
-	
-		return $processed;
 	}
 	
 	/**

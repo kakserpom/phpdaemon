@@ -38,6 +38,15 @@ class Daemon_ConfigParser {
 		$cfg->result = $config;
 		$cfg->revision = ++Daemon_Config::$lastRevision;
 		$cfg->data = file_get_contents($file);
+		
+		if (substr($cfg->data,0,2) == '#!') 	{
+			if (!is_executable($file)) {
+				$this->raiseError('Shebang (#!) detected in the first line, but file hasn\'t +x mode.');
+				return;
+			}
+			$cfg->data = shell_exec($file);
+		}
+		
 		$cfg->data = str_replace("\r", '', $cfg->data);
 		$cfg->len = strlen($cfg->data);
 		$cfg->state[] = array(self::T_ALL, $cfg->result);
