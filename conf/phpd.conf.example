@@ -13,3 +13,5 @@ max-idle	0;
 FastCGI {
 	## your config
 }
+
+include conf.d/*.conf;

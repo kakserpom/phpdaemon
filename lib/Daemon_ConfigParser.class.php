@@ -177,8 +177,19 @@ class Daemon_ConfigParser {
 					elseif ($tokenType == Daemon_ConfigParser::T_VAR) {
 						$name = str_replace('-', '', strtolower($elements[0]));
 						$scope = $cfg->getCurrentScope();
-
-						if (isset($scope->{$name})) {
+						
+						if ($name === 'include') {
+							$path = $elements[1];
+							if (substr($path,0,1) !== '/') {
+								$path = 'conf/'.$path;
+							}
+							$files = glob($path);
+							if ($files) {
+								foreach ($files as $fn) {
+									$parser = new Daemon_ConfigParser($fn,$scope);
+								}
+							}
+						} elseif (isset($scope->{$name})) {
 							if ($scope->{$name}->source != 'cmdline')	{
 								if (
 									($elTypes[1] == Daemon_ConfigParser::T_CVALUE) 
