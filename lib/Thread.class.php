@@ -1,12 +1,45 @@
 <?php
 
+/**************************************************************************/
+/* phpDaemon
+/* Web: http://github.com/kakserpom/phpdaemon
+/* ===========================
+/* @class Thread
+/* @author kak.serpom.po.yaitsam@gmail.com
+/* @description Thread class
+/**************************************************************************/
+
 abstract class Thread {
+
+	/**
+	 * Process identificator
+	 * @var int
+	 */
 	public $pid;
+
+	/**
+	 * FIXME: Add a description
+	 * @var boolean
+	 */
 	public $shutdown = FALSE;
+
+	/**
+	 * FIXME: Add a description
+	 * @var boolean
+	 */
 	public $terminated = FALSE;
+
+	/**
+	 * FIXME: Add a description
+	 * @var array
+	 */
 	public $collections = array();
 
-	private static $signalsno = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
+	private static $signalsno = array(
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
+		18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+	);
+
 	public static $signals = array(
 		SIGHUP    => 'SIGHUP',
 		SIGINT    => 'SIGINT',
@@ -40,29 +73,35 @@ abstract class Thread {
 		SIGUSR1   => 'SIGUSR1',
 		SIGUSR2   => 'SIGUSR2',
 	);
-	public $delayedSigReg = FALSE;
+
 	/**
-	 * @method registerSignals
-	 * @description Registers signals.
+	 * FIXME: Add a description
+	 * @var boolean
+	 */
+	public $delayedSigReg = FALSE;
+
+	/**
+	 * Registers signals
 	 * @return void
 	 */
 	public function registerSignals()
 	{
 		foreach (self::$signals as $no => $name) {
-		if (
-			($name === 'SIGKILL') 
+			if (
+				($name === 'SIGKILL') 
 				|| ($name == 'SIGSTOP')
 			) {
 				continue;
 			}
-				if (!pcntl_signal($no, array($this, 'sighandler'), TRUE)) {
-				throw new Exception('Cannot assign '.$name.' signal');
+
+			if (!pcntl_signal($no, array($this, 'sighandler'), TRUE)) {
+				throw new Exception('Cannot assign ' . $name . ' signal');
 			}
 		}
 	}
+
 	/**
-	 * @method start
-	 * @description Starts the process.
+	 * Starts the process
 	 * @return void
 	 */
 	public function start() {
@@ -70,11 +109,14 @@ abstract class Thread {
 
 		if ($pid === -1) {
 			throw new Exception('Could not fork');
-		} else
-		if ($pid == 0) {
+		} 
+		elseif ($pid == 0) {
 			$this->pid = posix_getpid();
 
-			if (!$this->delayedSigReg) {$this->registerSignals();}
+			if (!$this->delayedSigReg) {
+				$this->registerSignals();
+			}
+
 			$this->run();
 			$this->shutdown();
 		}
@@ -85,23 +127,21 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method sighandler
-	 * @description Called when a signal caught.
-	 * @param integer Signal's number.
+	 * Called when the signal is caught
+	 * @param integer Signal's number
 	 * @return void
 	 */
 	protected function sighandler($signo) {
 		if (is_callable($c = array($this, strtolower(self::$signals[$signo])))) {
 			call_user_func($c);
 		}
-		elseif (is_callable($c = array($this,'sigunknown'))) {
+		elseif (is_callable($c = array($this, 'sigunknown'))) {
 			call_user_func($c, $signo);
 		}
 	}
 
 	/** 
-	 * @method shutdown
-	 * @description Shutdowns the current process properly.
+	 * Shutdowns the current process properly
 	 * @return void
 	 */
 	public function shutdown() {
@@ -110,9 +150,8 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method backsig
-	 * @description Semds the signal to parent process.
-	 * @param integer Signal's number.
+	 * Sends the signal to parent process
+	 * @param integer Signal's number
 	 * @return void
 	 */
 	private function backsig($sig) {
@@ -120,9 +159,8 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method sleep
-	 * @description Delays the process execution for the given number of seconds.
-	 * @param integer Halt time in seconds.
+	 * Delays the process execution for the given number of seconds
+	 * @param integer Sleep time in seconds
 	 * @return void
 	 */
 	public function sleep($s) {
@@ -141,8 +179,7 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method sigchld
-	 * @description Called when the signal SIGCHLD caught.
+	 * Called when the signal SIGCHLD caught
 	 * @return void
 	 */
 	protected function sigchld() {
@@ -150,8 +187,7 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method sigterm
-	 * @description Called when the signal SIGTERM caught.
+	 * Called when the signal SIGTERM caught
 	 * @return void
 	 */
 	protected function sigterm() {
@@ -159,8 +195,7 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method sigint
-	 * @description Called when the signal SIGINT caught.
+	 * Called when the signal SIGINT caught
 	 * @return void
 	 */
 	protected function sigint() {
@@ -168,8 +203,7 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method sigquit
-	 * @description Called when the signal SIGTERM caught.
+	 * Called when the signal SIGTERM caught
 	 * @return void
 	 */
 	protected function sigquit() {
@@ -177,8 +211,7 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method sigkill
-	 * @description Called when the signal SIGKILL caught.
+	 * Called when the signal SIGKILL caught
 	 * @return void
 	 */
 	protected function sigkill() {
@@ -186,21 +219,19 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method stop
-	 * @description Terminates the process.
+	 * Terminates the process
 	 * @param boolean Kill?
 	 * @return void
 	 */
-	public function stop($kill = FALSE) {
-		$this->shutdown = TRUE;
+	public function stop($kill = false) {
+		$this->shutdown = true;
 
 		return posix_kill($this->pid, $kill ? SIGKILL : SIGTERM);
 	}
 
 	/**
-	 * @method waitPid
-	 * @description Checks for SIGCHLD.
-	 * @return boolean Success.
+	 * Checks for SIGCHLD
+	 * @return boolean Success
 	 */
 	private function waitPid() {
 		$pid = pcntl_waitpid(-1, $status, WNOHANG);
@@ -220,18 +251,16 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method signal
-	 * @description Sends arbitrary signal to the process.
-	 * @param integer Signal's number.
-	 * @return boolean Success.
+	 * Sends arbitrary signal to the process
+	 * @param integer Signal's number
+	 * @return boolean Success
 	 */
 	public function signal($sig) {
 		return posix_kill($this->pid, $sig);
 	}
 
 	/**
-	 * @method waitAll
-	 * @description Waits untill a children is alive.
+	 * Waits until children is alive
 	 * @return void
 	 */
 	protected function waitAll() {
@@ -249,9 +278,8 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method setproctitle
-	 * @description Sets a title of the current process.
-	 * @param string Title.
+	 * Sets a title of the current process
+	 * @param string Title
 	 * @return void
 	 */
 	protected function setproctitle($title) {
@@ -263,10 +291,9 @@ abstract class Thread {
 	}
 
 	/**
-	 * @method sigwait
-	 * @description Waits for signals, with a timeout.
-	 * @param int Seconds.
-	 * @param int Nanoseconds.
+	 * Waits for signals, with a timeout
+	 * @param int Seconds
+	 * @param int Nanoseconds
 	 * @return void
 	 */
 	protected function sigwait($sec = 0, $nano = 1) {

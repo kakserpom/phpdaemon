@@ -1,14 +1,37 @@
 <?php
 
+/**************************************************************************/
+/* phpDaemon
+/* Web: http://github.com/kakserpom/phpdaemon
+/* ===========================
+/* @class ThreadCollection
+/* @author kak.serpom.po.yaitsam@gmail.com
+/* @description Collection of threads
+/**************************************************************************/
+
+
 class ThreadCollection {
+
+	/**
+	 * Array of threads
+	 * @var array
+	 */
 	public $threads = array();
+
+	/**
+	 * FIXME: Add a description
+	 */
 	public $waitstatus;
+
+	/**
+	 * FIXME: Add a description
+	 * @var int
+	 */
 	public $spawncounter = 0;
 
 	/**
-	 * @method push
-	 * @description Pushes certain thread to the collection.
-	 * @param object Thread to push.
+	 * Pushes certain thread to the collection
+	 * @param object Thread to push
 	 * @return void
 	 */
 	public function push($thread) {
@@ -18,8 +41,7 @@ class ThreadCollection {
 	}
 
 	/**
-	 * @method start
-	 * @description Starts the collected threads.
+	 * Start all collected threads
 	 * @return void
 	 */
 	public function start() {
@@ -29,45 +51,42 @@ class ThreadCollection {
 	}
 
 	/**
-	 * @method stop
-	 * @description Stops the collected threads.
+	 * Stop all collected threads
+	 * @param boolean Kill?
 	 * @return void
 	 */
-	public function stop($kill = FALSE) {
+	public function stop($kill = false) {
 		foreach ($this->threads as $thread) {
 			$thread->stop($kill);
 		}
 	}
 
 	/**
-	 * @method getNumber
-	 * @description Returns a number of collected threads.
-	 * @return integer Number.
+	 * Return the collected threads count
+	 * @return integer Count
 	 */
-	public function getNumber() {
+	public function getCount() {
 		return sizeof($this->threads);
 	}
 
 	/**
-	 * @method removeTerminated
-	 * @description Removes terminated threads from the collection.
-	 * @param boolean Whether to check the threads using signal.
-	 * @return integer Number of removed threads.
+	 * Remove terminated threads from the collection
+	 * @param boolean Whether to check the threads using signal
+	 * @return integer Removed threads count
 	 */
 	public function removeTerminated($check = FALSE) {
 		$n = 0;
 
 		foreach ($this->threads as $k => &$t) {
-			if ($t->terminated) {
-				unset($this->threads[$k]);
-			}
-			elseif (
-				$check 
-				&& (!$t->signal(SIGTTIN))
+			if (
+				$t->terminated
+				|| (
+					$check
+					&& !$t->signal(SIGTTIN)
+				)
 			) {
 				unset($this->threads[$k]);
-			} else {
-				++$n;
+				$n++;
 			}
 		}
 
@@ -75,9 +94,8 @@ class ThreadCollection {
 	}
 
 	/**
-	 * @method signal
-	 * @description Sends a signal to threads.
-	 * @param integer Signal's number.
+	 * Send a signal to threads
+	 * @param integer Signal's number
 	 * @return void
 	 */
 	public function signal($sig) {
