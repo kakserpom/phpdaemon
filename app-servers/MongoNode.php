@@ -9,15 +9,23 @@ class MongoNode extends AppInstance {
 	public $cursor; // Tailable cursor
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// disabled by default
+			'enable'     => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'enable' => 0,
-		));
-
 		if ($this->config->enable->value) {
 			$this->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
 			Daemon::log(__CLASS__ . ' up.');

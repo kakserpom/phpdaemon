@@ -8,18 +8,29 @@ class WebSocketServer extends AsyncServer
 	const STRING = 0x00;
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// listen to
+			'listen'     => 'tcp://0.0.0.0',
+			// listen port
+			'listenport' => 8047,
+			// max allowed packet size
+			'maxallowedpacket' => new Daemon_ConfigEntrySize('16k'),
+			// disabled by default
+			'enable'     => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Event of appInstance. Adds default settings and binds sockets.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'listen'           => 'tcp://0.0.0.0',
-			'listenport'       => 8047,
-			'maxallowedpacket' => new Daemon_ConfigEntrySize('16k'),
-			'enable'           => 0
-		));
-		
 		$this->update();
 		
 		if ($this->config->enable->value) {

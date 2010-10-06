@@ -41,6 +41,12 @@ class AppInstance {
 		}
 
 		$this->config = Daemon::$config->{$fullname};
+
+		$defaults = $this->getConfigDefaults();
+		if ($defaults) {
+			$this->processDefaultConfig($defaults);
+		}
+
 		$this->init();
 
 		if (Daemon::$worker) {
@@ -49,13 +55,21 @@ class AppInstance {
 		}
 	}
 
- 	/**
-	 * @method defaultConfig
-	 * @param array {"setting": "value"}
-	 * @description Adds default settings to repository.
-	 * @return boolean - Succes.
+	/**
+	 * Function to get default config options from application
+	 * Override to set your own
+	 * @return array|false
 	 */
-	public function defaultConfig($settings = array()) {
+	protected function getConfigDefaults() {
+		return false;
+	}
+
+ 	/**
+	 * Process default config
+	 * @param array {"setting": "value"}
+	 * @return void
+	 */
+	private function processDefaultConfig($settings = array()) {
 		foreach ($settings as $k => $v) {
 			$k = strtolower(str_replace('-', '', $k));
 
@@ -78,8 +92,6 @@ class AppInstance {
 				$this->config->{$k}->revision = $current->revision;
 			}
 		}
-
-		return TRUE;
 	}
 	
 	/**

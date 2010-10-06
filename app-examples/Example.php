@@ -4,6 +4,16 @@ class Example extends AppInstance {
 	public $counter = 0;
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * Uncomment and return array with your default options
+	 * @return array|false
+	 */
+	//protected function getConfigDefaults() {
+	//	return false;
+	//}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void

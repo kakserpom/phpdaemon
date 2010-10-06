@@ -2,7 +2,30 @@
 class SocksServer extends AsyncServer {
 
 	public $sessions = array(); // Active sessions
-	// public $directReads = TRUE;
+
+	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// listen to
+			'listen'         => 'tcp://0.0.0.0',
+			// listen port
+			'listenport'     => 1080,
+			// authentication required
+			'auth'           => 0,
+			// user name
+			'username'       => 'User',
+			// password
+			'password'       => 'Password',
+			// allowed clients ip list
+			'allowedclients' => '',
+			// disabled by default
+			'enable'         => 0
+		);
+	}
 
 	/**
 	 * @method init
@@ -10,16 +33,6 @@ class SocksServer extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'listen'         => 'tcp://0.0.0.0',
-			'listenport'     => 1080,
-			'auth'           => 0,
-			'username'       => 'User',
-			'password'       => 'Password',
-			'enable'         => 0,
-			'allowedclients' => '',
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 

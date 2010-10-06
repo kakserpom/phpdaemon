@@ -5,18 +5,29 @@ class FlashPolicy extends AsyncServer {
 	public $policyData;          // Cached policy-file.
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// listen to
+			'listen'     => 'tcp://0.0.0.0',
+			// listen port
+			'listenport' => 8818,
+			// crossdomain file path
+			'file'       => Daemon::$dir . '/conf/crossdomain.xml',
+			// disabled by default
+			'enable'     => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'listen'     => 'tcp://0.0.0.0',
-			'listenport' => 843,
-			'file'       => Daemon::$dir . '/conf/crossdomain.xml',
-			'enable'     => 0
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 

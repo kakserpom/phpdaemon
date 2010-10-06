@@ -2,6 +2,20 @@
 class RTEPClient extends AppInstance {
 
 	public $client;
+	
+	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// default stream address
+			'addr'   => 'tcpstream://127.0.0.1:844',
+			// disabled by default
+			'enable' => 0
+		);
+	}
 
 	/**
 	 * @method init
@@ -9,11 +23,6 @@ class RTEPClient extends AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'addr'   => 'tcpstream://127.0.0.1:844',
-			'enable' => 0,
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 

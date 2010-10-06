@@ -4,19 +4,31 @@ class MySQLProxy extends AsyncServer {
 	public $sessions = array();
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// FIXME: add description
+			'upserver'     => '127.0.0.1:3306',
+			// listen to
+			'listen'       => 'tcp://0.0.0.0',
+			// listen port
+			'listenport'   => 3307,
+			// FIXME: add description
+			'protologging' => 0,
+			// disabled by default
+			'enable'       => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'upserver'     => '127.0.0.1:3306',
-			'listen'       => 'tcp://0.0.0.0',
-			'listenport'   => 3307,
-			'protologging' => 0,
-			'enable'       => 0,
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 

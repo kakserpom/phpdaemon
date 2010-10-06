@@ -25,16 +25,25 @@ class MongoClient extends AsyncServer {
 	public $cache;                 // object of MemcacheClient
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// default server list
+			'servers' => 'mongo://127.0.0.1',
+			// default port
+			'port'    => 27017
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'servers' => 'mongo://127.0.0.1', 
-			'port'    => 27017, 
-		));
-
 		$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
 		$servers = explode(',', $this->config->servers->value);
 

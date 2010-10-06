@@ -56,14 +56,15 @@ class FastCGI extends AsyncServer {
 
 		parent::__construct();
 	}
-
+	
 	/**
-	 * @method init
-	 * @description Constructor.
-	 * @return void
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
 	 */
-	public function init() {
-		$this->defaultConfig(array(
+	protected function getConfigDefaults() {
+		return array(
+			// FIXME: add description strings
 			'expose'                  => 1,
 			'auto-read-body-file'     => 1,
 			'listen'                  =>  'tcp://127.0.0.1,unix:/tmp/phpdaemon.fcgi.sock',
@@ -79,9 +80,17 @@ class FastCGI extends AsyncServer {
 			'send-file-onlybycommand' => 0,
 			'keepalive'               => new Daemon_ConfigEntryTime('0s'),
 			'chunksize'               => new Daemon_ConfigEntrySize('8k'),
-			'enable'                  => 0,
-		));
+			// disabled by default
+			'enable'                  => 0
+		);
+	}
 
+	/**
+	 * @method init
+	 * @description Constructor.
+	 * @return void
+	 */
+	public function init() {
 		if ($this->config->enable) {
 			Daemon::log(__CLASS__ . ' up.');
 

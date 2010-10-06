@@ -6,17 +6,27 @@ class GearmanNode extends AppInstance {
 	public $interval;
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// default server
+			'server' => '127.0.0.1',
+			// default port
+			'port'   => 4730,
+			// disabled by default
+			'enable' => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'servers' => '127.0.0.1',
-			'port'    => 4730,
-			'enable'  => 0,
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
    

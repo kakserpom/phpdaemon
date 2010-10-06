@@ -10,16 +10,25 @@ class WebSocketOverCOMET extends AsyncServer {
 	public $ipcId;
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// IPC file path
+			'ipcpath' => '/tmp/WsOverComet-%s.sock',
+			// disabled by default
+			'enable'     => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'enable' => 0,
-			'ipcpath' => '/tmp/WsOverComet-%s.sock',
-		));
-
 		if ($this->config->enable->value) {
 			$this->wss = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
 		}

@@ -7,18 +7,29 @@ class PostgreSQLClient extends AsyncServer {
 	public $ready = FALSE; // Ready?
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// default server
+			'server' => 'pg://root@127.0.0.1',
+			// default port
+			'port'   => 5432,
+			// FIXME: add description
+			'protologging' => 0,
+			// disabled by default
+			'enable' => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'server'       => 'pg://root@127.0.0.1', 
-			'port'         => 5432, 
-			'protologging' => 0, 
-			'enable'       => 0, 
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 			$this->ready = TRUE;

@@ -6,6 +6,36 @@ class HTTP extends AsyncServer {
 	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
 	protected $queuedReads = TRUE;
 	public $WS;
+	
+	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// listen to
+			'listen'     => 'tcp://0.0.0.0',
+			// listen port
+			'listenport' => 80,
+			// log events
+			'log-events' => 0,
+			// log queue
+			'log-queue' => 0,
+			// FIXME: add description strings
+			'send-file' => 0,
+			'send-file-dir' => '/dev/shm',
+			'send-file-prefix' => 'http-',
+			'send-file-onlybycommand' => 0,
+			// expose your soft by X-Powered-By string
+			'expose' => 1,
+			// FIXME: add description strings
+			'keepalive' => new Daemon_ConfigEntryTime('0s'),
+			'chunksize' => new Daemon_ConfigEntrySize('8k'),
+			// disabled by default
+			'enable'     => 0
+		);
+	}
 
 	/**
 	 * @method init
@@ -13,20 +43,6 @@ class HTTP extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'listen' =>  'tcp://0.0.0.0',
-			'listen-port' => 80,
-			'log-events' => 0,
-			'log-queue' => 0,
-			'send-file' => 0,
-			'send-file-dir' => '/dev/shm',
-			'send-file-prefix' => 'http-',
-			'send-file-onlybycommand' => 0,
-			'expose' => 1,
-			'keepalive' => new Daemon_ConfigEntryTime('0s'),
-			'chunksize'               => new Daemon_ConfigEntrySize('8k'),
-			'enable' => 0,
-		));
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 

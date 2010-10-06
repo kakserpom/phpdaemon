@@ -6,18 +6,29 @@ class LockServer extends AsyncServer {
 	public $lockConnState = array();  // Array of session's state
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// listen to
+			'listen'         => 'tcp://0.0.0.0',
+			// listen port
+			'listenport'     => 833,
+			// allowed clients ip list
+			'allowedclients' => '127.0.0.1',
+			// disabled by default
+			'enable'         => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'listen'         => 'tcp://0.0.0.0',
-			'listenport'     => 833,
-			'allowedclients' => '127.0.0.1',
-			'enable'         => 0,
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 

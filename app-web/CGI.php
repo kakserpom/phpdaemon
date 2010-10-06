@@ -9,15 +9,17 @@ class CGI extends AppInstance {
 		'python' => '/usr/local/bin/python',
 		'ruby'   => '/usr/local/bin/ruby',
 	);
+
 	public $chroot = '/';          // default chroot
 
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
-	 * @return void
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
 	 */
-	public function onReady() {
-		$this->defaultConfig(array(
+	protected function getConfigDefaults() {
+		return array(
+			// FIXME: add description strings
 			'allow-override-binpath' => TRUE,
 			'allow-override-cwd' => TRUE,
 			'allow-override-chroot' => TRUE,
@@ -26,7 +28,16 @@ class CGI extends AppInstance {
 			'cwd' => NULL,
 			'output-errors' => TRUE,
 			'errlog-file' => __DIR__ . '/cgi-error.log',
-		));
+		);
+	}
+
+	/**
+	 * @method onReady
+	 * @description Called when the worker is ready to go.
+	 * @return void
+	 */
+	public function onReady() {
+
 	}
 
 	/**

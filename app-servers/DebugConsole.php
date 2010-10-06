@@ -4,18 +4,29 @@ class DebugConsole extends AsyncServer {
 	public $sessions = array(); // Active sessions
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// listen to
+			'listen'     => 'tcp://0.0.0.0',
+			// listen port
+			'listenport' => 8818,
+			// password to login
+			'passphrase' => 'secret',
+			// disabled by default
+			'enable'     => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'listen'     => 'tcp://0.0.0.0',
-			'listenport' => 8818,
-			'passphrase' => 'secret',
-			'enable'     => 0,
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 

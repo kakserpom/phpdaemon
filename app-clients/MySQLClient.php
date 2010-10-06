@@ -95,16 +95,28 @@ class MySQLClient extends AsyncServer {
 	const SET_FLAG                = 0x800;
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// default server
+			'server'       => 'mysql://root@127.0.0.1',
+			// default port
+			'port'         => 3306,
+			// FIXME: add description
+			'protologging' => 0
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'server'       => 'mysql://root@127.0.0.1',
-			'port'         => 3306,
-			'protologging' => 0,
-		));
+
 	}
 
 	/**

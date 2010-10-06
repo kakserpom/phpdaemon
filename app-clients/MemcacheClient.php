@@ -9,17 +9,27 @@ class MemcacheClient extends AsyncServer {
 	public $prefix = '';             // Prefix for all keys
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// default servers list
+			'servers' => '127.0.0.1',
+			// default port
+			'port'    => 11211,
+			// FIXME: add description
+			'prefix'  => ''
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'servers' => '127.0.0.1',
-			'port'    => 11211,
-			'prefix'  => '',
-		));
-
 		$this->prefix = $this->config->prefix->value;
 		$servers = explode(',', $this->config->servers->value);
 

@@ -2,15 +2,23 @@
 class FileReader extends AppInstance {
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// index file names
+			'indexfiles'	=> 'index.html/index.htm'
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'indexfiles'	=> 'index.html/index.htm',
-		));
-
 		$this->indexFiles = explode('/', $this->config->indexfiles->value);
 	}
 

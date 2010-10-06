@@ -9,17 +9,27 @@ class LockClient extends AsyncServer {
 	public $dtags_enabled = FALSE;  // Enables tags for distibution
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// default server
+			'servers' => '127.0.0.1',
+			// default port
+			'port'    => 833,
+			// FIXME: add description
+			'prefix'  => '',
+		);
+	}
+
+	/**
 	 * @method init
 	 * @description Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'servers' => '127.0.0.1',
-			'port'    => 833,
-			'prefix'  => '',
-		));
-
 		$this->prefix = $this->config->prefix->value;
 		$servers = explode(',', $this->config->servers->value);
 

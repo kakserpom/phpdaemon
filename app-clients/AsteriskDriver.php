@@ -42,17 +42,27 @@ class AsteriskDriver extends AsyncServer {
 	public $amiVersions = array();
 
 	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// default server
+			'server' => 'tcp://127.0.0.1',
+			// default port
+			'port'   => 5038,
+			// disabled by default
+			'enable' => 0
+		);
+	}
+
+	/**
 	 * Constructor.
 	 *
 	 * @return void
 	 */
 	public function init() {
-		$this->defaultConfig(array(
-			'server' => 'tcp://127.0.0.1', // Default server
-			'port'   => 5038, // Default port
-			'enable' => 0
-		));
-
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 		}
