@@ -16,7 +16,7 @@ class AppInstance {
 	public $reqCounter = 0;    // counter of requests
 	public $queue = array();   // queue of requests
 	public $ready = FALSE;     // ready to start?
-	public $name;							// name of instance
+	public $name;              // name of instance
 	public $config;
  
 	/**	
@@ -62,19 +62,17 @@ class AppInstance {
 			if (!isset($this->config->{$k})) {
 			  if (is_scalar($v))	{
 					$this->config->{$k} = new Daemon_ConfigEntry($v);
-				}
-				else {
+				} else {
 					$this->config->{$k} = $v;
 				}
-			}
-			else {
+			} else {
 				$current = $this->config->{$k};
 			  if (is_scalar($v))	{
 					$this->config->{$k} = new Daemon_ConfigEntry($v);
-				}
-				else {
+				} else {
 					$this->config->{$k} = $v;
 				}
+				
 				$this->config->{$k}->setHumanValue($current->value);
 				$this->config->{$k}->source = $current->source;
 				$this->config->{$k}->revision = $current->revision;
@@ -171,7 +169,6 @@ class AppInstance {
 	 * @return object Request.
 	 */
 	public function handleRequest($parent, $upstream) {
-	
 		$req = $this->beginRequest($parent, $upstream);
 
 		if (!$req) {

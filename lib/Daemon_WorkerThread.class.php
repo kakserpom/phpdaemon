@@ -42,22 +42,26 @@ class Daemon_WorkerThread extends Thread {
 	public function registerSignals()
 	{
 		foreach (self::$signals as $no => $name) {
-		if (
-			($name === 'SIGKILL') 
+			if (
+				($name === 'SIGKILL') 
 				|| ($name == 'SIGSTOP')
 			) {
 				continue;
 			}
+			
 			$ev = event_new();
-			if (!event_set(
-				$ev,
-				$no,
-				EV_SIGNAL | EV_PERSIST,
-				array($this,'eventSighandler'),
-				array($no))
+			if (
+				!event_set(
+					$ev,
+					$no,
+					EV_SIGNAL | EV_PERSIST,
+					array($this,'eventSighandler'),
+					array($no)
+				)
 			) {
 				throw new Exception('Cannot event_set for '.$name.' signal');
 			}
+			
 			event_base_set($ev, $this->eventBase);
 			event_add($ev);
 			$this->sigEvents[$no] = $ev;
@@ -72,10 +76,9 @@ class Daemon_WorkerThread extends Thread {
 	 * @param mixed Argument.
 	 * @return void
 	 */
-	public function eventSighandler($fd,$events,$arg) {
+	public function eventSighandler($fd, $events, $arg) {
 	  $this->sighandler($arg[0]);
 	}
-
 
 	/**
 	 * @method run
@@ -83,7 +86,6 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function run() {
-
 		Daemon::$worker = $this;
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
@@ -101,8 +103,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->setStatus(6);
 		$this->eventBase = event_base_new();
 		$this->registerSignals();
-		
-		
+
 		Daemon::$appResolver->preload();
 	
 		foreach (Daemon::$appInstances as $app) {
@@ -116,15 +117,9 @@ class Daemon_WorkerThread extends Thread {
 
 		$this->setStatus(1);
 
-
-		/**
-	 * @closure readPoolEvent
-	 * @description Invokes the AppInstance->readConn() method for every updated connection in pool. readConn() reads new data from the buffer.
-	 * @return void
-	 */
-		$this->readPoolEvent = new Daemon_TimedEvent(function() 	{
-			
+		$this->readPoolEvent = new Daemon_TimedEvent(function() {
 			$self = Daemon::$worker;
+			
 			foreach ($self->readPoolState as $connId => $state) {
 				if (Daemon::$config->logevents->value) {
 					$this->log('event readConn(' . $connId . ') invoked.');
@@ -136,13 +131,13 @@ class Daemon_WorkerThread extends Thread {
 					$self->log('event readConn(' . $connId . ') finished.');
 				}
 			}
+			
 			if (sizeof($self->readPoolState) > 0) {
 				$self->readPoolEvent->timeout();
 			}
-		},pow(10,6) * 0.005);
+		}, pow(10,6) * 0.005);
 		
-		$this->checkStateTimedEvent = new Daemon_TimedEvent(function() 	{
-		
+		$this->checkStateTimedEvent = new Daemon_TimedEvent(function() {
 			$self = Daemon::$worker;
 			
 			if ($self->checkState() !== TRUE) {
@@ -153,19 +148,19 @@ class Daemon_WorkerThread extends Thread {
 			}
 			
 			$self->checkStateTimedEvent->timeout();
-		},pow(10,6) * 1);
+		}, pow(10,6) * 1);
 
 		while (!$this->breakMainLoop) {
 			event_base_loop($this->eventBase);
 		}
 	}
+	
 	/**
 	 * @method overrideNativeFuncs
 	 * @description Overrides native PHP functions.
 	 * @return void
 	 */
-	public function overrideNativeFuncs()
-	{
+	public function overrideNativeFuncs() {
 		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
 			runkit_function_rename('header', 'header_native');
 
@@ -189,7 +184,6 @@ class Daemon_WorkerThread extends Thread {
 				}
 			}
 
-
 			runkit_function_rename('headers_list', 'headers_list_native');
 
 			function headers_list() { 
@@ -201,7 +195,6 @@ class Daemon_WorkerThread extends Thread {
 				}
 			}
 
-
 			runkit_function_rename('setcookie', 'setcookie_native');
 
 			function setcookie() { 
@@ -212,7 +205,6 @@ class Daemon_WorkerThread extends Thread {
 					return call_user_func_array(array(Daemon::$req, 'setcookie'), func_get_args());
 				}
 			}
-
 		
 			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
 
@@ -221,8 +213,7 @@ class Daemon_WorkerThread extends Thread {
 					return Daemon::$req->registerShutdownFunction($cb);
 				}
 			}
-			
-		
+
 			runkit_function_copy('create_function', 'create_function_native');
 			runkit_function_redefine('create_function', '$arg,$body', 'return __create_function($arg,$body);');
 			
@@ -258,14 +249,15 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 	}
+	
 	/**
 	 * @method prepareSystemEnv
 	 * @description Setup settings on start.
 	 * @return void
 	 */
-	public function prepareSystemEnv()
-	{
+	public function prepareSystemEnv() {
 		proc_nice(Daemon::$config->workerpriority->value);
+		
 		$this->setproctitle(
 			Daemon::$runName . ': worker process' 
 			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value 
@@ -326,6 +318,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 		register_shutdown_function(array($this,'shutdown'));
 	}
+	
 	/**
 	 * @method log
 	 * @description Log something
@@ -602,19 +595,17 @@ class Daemon_WorkerThread extends Thread {
 		
 		unset($this->checkStateTimedEvent);
 		
-    $this->checkReloadReady = new Daemon_TimedEvent(function() 	{
-		
+		$this->checkReloadReady = new Daemon_TimedEvent(function() 	{
 			$self = Daemon::$worker;
-			
-			$self->reloadReady = $self->appInstancesReloadReady();
 				
+			$self->reloadReady = $self->appInstancesReloadReady();
+					
 			if ($self->reload === TRUE) {
 				$self->reloadReady = $self->reloadReady && (microtime(TRUE) > $self->reloadTime);
 			}
 				
 			$self->checkReloadReady->timeout();
-		},pow(10,6));
-		
+		}, pow(10,6));
 		
 		while (!$this->reloadReady) {
 			event_base_loop($this->eventBase);
