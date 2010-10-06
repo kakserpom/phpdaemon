@@ -1,25 +1,47 @@
 <?php
 
+/**************************************************************************/
+/* phpDaemon
+/* Web: http://github.com/kakserpom/phpdaemon
+/* ===========================
+/* @class Terminal
+/* @author kak.serpom.po.yaitsam@gmail.com
+/* @description Terminal class.
+/**************************************************************************/
+
 class Terminal {
-	public $enable_color = FALSE;
+
+	/**
+	 * Is color allowed in terminal?
+	 * @var boolean
+	 */
+	public $enable_color = false;
+
+	/**
+	 * Maximum terminal width
+	 * @var int
+	 */
 	private $columns = 80;
 
+	/**
+	 * Constructor
+	 * @return void
+	 */
 	public function __construct() {
+		// get terminal char width
 		$this->columns = $this->getMaxColumns();
 	}
 
 	/**
-	 * @method readln
-	 * @description Reads a line from STDIN.
-	 * @return string Line.
+	 * Read a line from STDIN
+	 * @return string Line
 	 */
 	public function readln() {
 		return fgets(STDIN);
 	}
 
 	/**
-	 * @method clearScreen
-	 * @description Sends CLR.
+	 * Clear the terminal with CLR
 	 * @return void
 	 */
 	public function clearScreen() {
@@ -27,9 +49,8 @@ class Terminal {
 	}
 
 	/**
-	 * @method setStyle
-	 * @param string Style.
-	 * @description Sets text-style.
+	 * Set text style
+	 * @param string Style
 	 * @return void
 	 */
 	public function setStyle($c) {
@@ -39,8 +60,7 @@ class Terminal {
 	}
 
 	/**
-	 * @method resetStyle
-	 * @description Sets default style.
+	 * Reset style to default
 	 * @return void
 	 */
 	public function resetStyle() {
@@ -49,9 +69,13 @@ class Terminal {
 		}
 	}
 
+	/**
+	 * Counting terminal char width
+	 * @return int
+	 */
 	private function getMaxColumns() {
 		if (
-			preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a |grep columns')), $output)
+			preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
 			&& 2 == sizeof($output)
 		) {
 			return $output[1][0];
@@ -61,11 +85,10 @@ class Terminal {
 	}
 
 	/**
-	 * @method drawParam
-	 * @param $name string Param name
-	 * @param $description string Param description
-	 * @param $currentValue string Param current value
-	 * @description Print param string like in man
+	 * Draw param (like in man)
+	 * @param string Param name
+	 * @param string Param description
+	 * @param array Param allowed values
 	 * @return void
 	 */
 	public function drawParam($name, $description, $values = '') {
@@ -142,9 +165,8 @@ class Terminal {
 	}
 
 	/**
-	 * @method drawTable
+	 * Draw a table
 	 * @param array Array of table's rows.
-	 * @description Draw textual table.
 	 * @return void
 	 */
 	public function drawTable($rows) {

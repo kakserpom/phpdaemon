@@ -12,11 +12,10 @@
 class Debug {
 
 	/**
-	 * @method exportBytes
-	 * @param string String.
-	 * @param boolean Whether to replace all of chars with escaped sequences.
-	 * @description Exports binary data.
-	 * @return string - Escaped string.
+	 * Export binary data
+	 * @param string String
+	 * @param boolean Whether to replace all of chars with escaped sequences
+	 * @return string - Escaped string
 	 */
 	public static function exportBytes($str, $all = FALSE) {
 		return preg_replace_callback(
@@ -37,9 +36,8 @@ class Debug {
 	}
 	
 	/**
-	 * @method dump
-	 * @description Wrapper of var_dump.
-	 * @return string - Result of var_dump().
+	 * Wrapper of var_dump
+	 * @return string Result of var_dump()
 	 */
 	public static function dump() {
 		ob_start();
@@ -55,9 +53,8 @@ class Debug {
 	}
 	
 	/**
-	 * @method backtrace
-	 * @description Returns textual backtrace.
-	 * @return void
+	 * Returns textual backtrace.
+	 * @return string
 	 */
 	public static function backtrace() {
 		ob_start();
