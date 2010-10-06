@@ -612,7 +612,7 @@ class Daemon_WorkerThread extends Thread {
 				$self->reloadReady = $self->reloadReady && (microtime(TRUE) > $self->reloadTime);
 			}
 				
-			$self->checkStateTimedEvent->timeout();
+			$self->checkReloadReady->timeout();
 		},pow(10,6));
 		
 		

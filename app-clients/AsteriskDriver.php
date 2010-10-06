@@ -75,11 +75,6 @@ class AsteriskDriver extends AsyncServer {
 					if (
 						isset($this->sessions[$c])
 						&& !sizeof($this->sessions[$c]->callbacks)
-						&& !$this->sessions[$c]->onChallenge
-						&& !$this->sessions[$c]->onConnected
-						&& !$this->sessions[$c]->onError
-						&& !$this->sessions[$c]->onEvent
-						&& !$this->sessions[$c]->onFinish
 					) {
 						return $this->sessions[$c];
 					}
