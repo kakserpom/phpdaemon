@@ -8,17 +8,25 @@
 /* @author kak.serpom.po.yaitsam@gmail.com
 /* @description Bootstrap init script.
 /**************************************************************************/
+
 error_reporting(E_ALL);
 
 $dir = dirname(__DIR__);
 
 spl_autoload_register(function($classname) use ($dir) {
-	$path = $dir . '/lib/' . basename($classname) . '.class.php';
+	$parts = explode('\\', $classname);
+	if (sizeof($parts) > 1) {
+		// namespaces support (remove first "PHPDaemon\" part)
+		array_shift($parts);
+	}
 
+	$path = $dir . '/lib/' . implode('/', $parts) . '.class.php';
+	
 	if (is_file($path)) {
 		require $path;
 	}
 });
+
 require $dir . '/lib/BinarySubstr.php';
 
 chdir(Daemon::$dir = $dir);
