@@ -246,7 +246,7 @@ class Daemon_WorkerThread extends Thread {
 				}
 				
 				if (sizeof($cache) >= $maxCacheSize) {
-					uasort($cache,$sorter);
+					uasort($cache, $sorter);
 					array_pop($cache);
 				}
 	
