@@ -117,6 +117,11 @@ class Daemon_WorkerThread extends Thread {
 
 		$this->setStatus(1);
 
+		/**
+		 * @closure readPoolEvent
+		 * @description Invokes the AppInstance->readConn() method for every updated connection in pool. readConn() reads new data from the buffer.
+		 * @return void
+		 */
 		$this->readPoolEvent = new Daemon_TimedEvent(function() {
 			$self = Daemon::$worker;
 			
