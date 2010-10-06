@@ -606,10 +606,10 @@ class Daemon_WorkerThread extends Thread {
 		
 			$self = Daemon::$worker;
 			
-			$this->reloadReady = $self->appInstancesReloadReady();
+			$self->reloadReady = $self->appInstancesReloadReady();
 				
 			if ($self->reload === TRUE) {
-				$this->reloadReady = $this->reloadReady && (microtime(TRUE) > $this->reloadTime);
+				$self->reloadReady = $self->reloadReady && (microtime(TRUE) > $self->reloadTime);
 			}
 				
 			$self->checkStateTimedEvent->timeout();
