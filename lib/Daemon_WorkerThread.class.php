@@ -127,7 +127,7 @@ class Daemon_WorkerThread extends Thread {
 			
 			foreach ($self->readPoolState as $connId => $state) {
 				if (Daemon::$config->logevents->value) {
-					$this->log('event readConn(' . $connId . ') invoked.');
+					$self->log('event readConn(' . $connId . ') invoked.');
 				}
 
 				$self->poolApp[$connId]->readConn($connId);
