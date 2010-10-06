@@ -30,7 +30,7 @@ class Request {
 	public $running = FALSE;
 	public $upstream;
 	public $ev;
-	public $sleepTime = 10000;
+	public $sleepTime = 1000;
 
 	/**
 	 * @method __construct

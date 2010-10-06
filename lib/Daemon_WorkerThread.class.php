@@ -117,12 +117,28 @@ class Daemon_WorkerThread extends Thread {
 		$this->setStatus(1);
 
 
+		/**
+	 * @closure readPoolEvent
+	 * @description Invokes the AppInstance->readConn() method for every updated connection in pool. readConn() reads new data from the buffer.
+	 * @return void
+	 */
 		$this->readPoolEvent = new Daemon_TimedEvent(function() 	{
+			
+			$self = Daemon::$worker;
+			foreach ($self->readPoolState as $connId => $state) {
+				if (Daemon::$config->logevents->value) {
+					$this->log('event readConn(' . $connId . ') invoked.');
+				}
 
-			Daemon::$worker->readPool();
-				
-			Daemon::$worker->readPoolEvent->timeout();
-		
+				$self->poolApp[$connId]->readConn($connId);
+
+				if (Daemon::$config->logevents->value) {
+					$self->log('event readConn(' . $connId . ') finished.');
+				}
+			}
+			if (sizeof($self->readPoolState) > 0) {
+				$self->readPoolEvent->timeout();
+			}
 		},pow(10,6) * 0.005);
 		
 		$this->checkStateTimedEvent = new Daemon_TimedEvent(function() 	{
@@ -137,7 +153,7 @@ class Daemon_WorkerThread extends Thread {
 			}
 			
 			$self->checkStateTimedEvent->timeout();
-		},pow(10,6));
+		},pow(10,6) * 1);
 
 		while (!$this->breakMainLoop) {
 			event_base_loop($this->eventBase);
@@ -421,8 +437,6 @@ class Daemon_WorkerThread extends Thread {
 	public function checkState() {
 		$time = microtime(true);
 
-		pcntl_signal_dispatch();
-	
 		if ($this->terminated) {
 			return FALSE;
 		} 
@@ -509,25 +523,6 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		return TRUE;
-	}
-	
-	/**
-	 * @method readPool
-	 * @description Invokes the AppInstance->readPool() method for every updated connection in pool. readConn() reads new data from the buffer.
-	 * @return void
-	 */
-	public function readPool() {
-		foreach ($this->readPoolState as $connId => $state) {
-			if (Daemon::$config->logevents->value) {
-				$this->log('event readConn(' . $connId . ') invoked.');
-			}
-
-			$this->poolApp[$connId]->readConn($connId);
-
-			if (Daemon::$config->logevents->value) {
-				$this->log('event readConn(' . $connId . ') finished.');
-			}
-		}
 	}
 	
 	/**
