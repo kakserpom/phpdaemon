@@ -189,6 +189,8 @@ class Daemon_ConfigParser {
 									$parser = new Daemon_ConfigParser($fn,$scope);
 								}
 							}
+						} elseif (substr(strtolower($elements[0]),0,4) === 'mod-') {
+							$cfg->raiseError('Variable started with \'mod-\'. This style is deprecated. You should replace it with block.');
 						} elseif (isset($scope->{$name})) {
 							if ($scope->{$name}->source != 'cmdline')	{
 								if (
