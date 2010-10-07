@@ -31,7 +31,7 @@ class Daemon_ConfigParser {
 	 * @description Constructor
 	 * @return void
 	 */
-	public function __construct($file,$config)
+	public function __construct($file,$config,$included = FALSE)
 	{
 		$cfg = $this;
 		$cfg->file = $file;
@@ -186,7 +186,7 @@ class Daemon_ConfigParser {
 							$files = glob($path);
 							if ($files) {
 								foreach ($files as $fn) {
-									$parser = new Daemon_ConfigParser($fn,$scope);
+									$parser = new Daemon_ConfigParser($fn,$scope,TRUE);
 								}
 							}
 						} elseif (substr(strtolower($elements[0]),0,4) === 'mod-') {
@@ -237,7 +237,7 @@ class Daemon_ConfigParser {
 			$e = end($this->state);
 			$cfg->token($e[0], $c);
 		}
-		$this->purgeScope($this->result);
+		if (!$included) {$this->purgeScope($this->result);}
 	}
 	public function purgeScope($scope)
 	{
