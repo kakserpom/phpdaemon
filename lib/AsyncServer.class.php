@@ -11,10 +11,14 @@
 
 class AsyncServer extends AppInstance {
 
-	public $buf             = array();   // collects connection's buffers.
+	const TYPE_TCP    = 0;
+	const TYPE_SOCKET = 1;
+
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
 	protected $queuedReads     = FALSE;
+
+	public $buf             = array();   // collects connection's buffers.
 	public $poolState       = array();
 	public $poolQueue       = array();
 	public $allowedClients  = NULL;
@@ -24,12 +28,11 @@ class AsyncServer extends AppInstance {
 	public $readEvents      = array();
 
 	/**
-	 * @method addSocket
-	 * @description Routes incoming request to related application.
-	 * @param resource Socket,
-	 * @param int Type (1 - TCP, 2 - Unix-socket).
-	 * @param string Address.
-	 * @return void.
+	 * Route incoming request to related application
+	 * @param resource Socket
+	 * @param int Type (TYPE_* constants)
+	 * @param string Address
+	 * @return void
 	 */
 	public function addSocket($sock, $type, $addr) {
 		$ev = event_new();
@@ -51,21 +54,19 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method enableSocketEvents
-	 * @description Enables all events of sockets.
-	 * @return void.
+	 * Enable all events of sockets
+	 * @return void
 	*/
 	public function enableSocketEvents() {
 		foreach ($this->socketEvents as $ev) {
-			event_base_set($ev,Daemon::$worker->eventBase);
+			event_base_set($ev, Daemon::$worker->eventBase);
 			event_add($ev);
 		}
 	}
 	
 	/**
-	 * @method disableSocketEvents
-	 * @description Disables all events of sockets.
-	 * @return void.
+	 * Disable all events of sockets
+	 * @return void
 	 */
 	public function disableSocketEvents() {  
 		foreach ($this->socketEvents as $k => $ev) {
@@ -77,12 +78,12 @@ class AsyncServer extends AppInstance {
 	}
 
 	/**
-	 * @method onShutdown
-	 * @description Called when application instance is going to shutdown.
+	 * Called when application instance is going to shutdown
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
 		//$this->disableSocketEvents(); // very important, it causes infinite loop in baseloop.
+		
 		if (isset($this->sessions)) {
 			$result = TRUE;
 	
@@ -104,8 +105,7 @@ class AsyncServer extends AppInstance {
 	}
 
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go
 	 * @return void
 	 */
 	public function onReady() {
@@ -113,11 +113,10 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method bindSockets
-	 * @param mixed Addresses to bind.
-	 * @param integer Optional. Default port to listen.
-	 * @param boolean SO_REUSE. Default is true.
-	 * @description Binds given sockets.
+	 * Bind given sockets
+	 * @param mixed Addresses to bind
+	 * @param integer Optional. Default port to listen
+	 * @param boolean SO_REUSE. Default is true
 	 * @return void
 	 */
 	public function bindSockets($addrs = array(), $listenport = 0, $reuse = TRUE) {
@@ -128,9 +127,9 @@ class AsyncServer extends AppInstance {
 		for ($i = 0, $s = sizeof($addrs); $i < $s; ++$i) {
 			$addr = trim($addrs[$i]);
 	
-			if (stripos($addr,'unix:') === 0) {
-				$type = 2;
-				$e = explode(':',$addr, 4);
+			if (stripos($addr, 'unix:') === 0) {
+				$type = self::TYPE_SOCKET;
+				$e = explode(':', $addr, 4);
 
 				if (sizeof($e) == 4) {
 					$user = $e[1];
@@ -147,8 +146,8 @@ class AsyncServer extends AppInstance {
 					$path = $e[1];
 				}
 
-				if (pathinfo($path,PATHINFO_EXTENSION) !== 'sock') {
-					Daemon::log('Unix-socket \''.$path.'\' must has \'.sock\' extension.');
+				if (pathinfo($path, PATHINFO_EXTENSION) !== 'sock') {
+					Daemon::log('Unix-socket \'' . $path . '\' must has \'.sock\' extension.');
 					continue;
 				}
 				
@@ -189,7 +188,7 @@ class AsyncServer extends AppInstance {
 
 					socket_set_nonblock($sock);
 				} else {
-					if (!$sock = @stream_socket_server('unix://'.$path,$errno,$errstr,STREAM_SERVER_BIND | STREAM_SERVER_LISTEN)) {
+					if (!$sock = @stream_socket_server('unix://' . $path, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN)) {
 						Daemon::log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . $errstr . ').');
 
 						continue;
@@ -232,7 +231,7 @@ class AsyncServer extends AppInstance {
 					}
 				}
 			} else {
-				$type = 1;
+				$type = self::TYPE_TCP;
 		
 				if (stripos($addr,'tcp://') === 0) {
 					$addr = substr($addr, 6);
@@ -300,10 +299,9 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method setReadPacketSize
-	 * @param integer Size.
-	 * @description Sets size of data to read at each reading.
-	 * @return object This.
+	 * Set the size of data to read at each reading
+	 * @param integer Size
+	 * @return object This
 	 */
 	public function setReadPacketSize($n) {
 		$this->readPacketSize = $n;
@@ -312,11 +310,10 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method onAccept
-	 * @param integer Connection's ID.
-	 * @param string Address.
-	 * @description Called when remote host is trying to establish the connection.
-	 * @return boolean Accept/Drop the connection.
+	 * Called when remote host is trying to establish the connection
+	 * @param integer Connection's ID
+	 * @param string Address
+	 * @return boolean Accept/Drop the connection
 	 */
 	public function onAccept($connId, $addr) {
 		if ($this->allowedClients === NULL) {
@@ -331,9 +328,8 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method checkAccept
-	 * @description Called when remote host is trying to establish the connection.
-	 * @return boolean If true then we can accept new connections, else we can't.
+	 * Called when remote host is trying to establish the connection
+	 * @return boolean If true then we can accept new connections, else we can't
 	 */
 	public function checkAccept() {
 		if (Daemon::$worker->reload) {
@@ -344,9 +340,8 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method closeConnection
-	 * @param integer Connection's ID.
-	 * @description Closes the connection.
+	 * Close the connection
+	 * @param integer Connection's ID
 	 * @return void
 	 */
 	public function closeConnection($connId) {
@@ -383,10 +378,9 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method connectTo
-	 * @param string Destination Host/IP/UNIX-socket.
-	 * @param integer Optional. Destination port.
-	 * @description Establishes a connection with remote peer.
+	 * Establish a connection with remote peer
+	 * @param string Destination Host/IP/UNIX-socket
+	 * @param integer Optional. Destination port
 	 * @return integer Connection's ID. Boolean false when failed.
 	 */
 	public function connectTo($host, $port = 0) {
@@ -481,11 +475,10 @@ class AsyncServer extends AppInstance {
 	}
 
 	/**
-	 * @method onAcceptEvent
-	 * @param resource Descriptor.
-	 * @param integer Events.
-	 * @param mixed Attached variable.
-	 * @description Called when new connections is waiting for accept.
+	 * Called when new connections is waiting for accept
+	 * @param resource Descriptor
+	 * @param integer Events
+	 * @param mixed Attached variable
 	 * @return void
 	 */
 	public function onAcceptEvent($stream, $events, $arg) {
@@ -508,7 +501,7 @@ class AsyncServer extends AppInstance {
 			
 			socket_set_nonblock($conn);
 			
-			if (Daemon::$sockets[$sockId][1] === 2) {
+			if (Daemon::$sockets[$sockId][1] === self::TYPE_SOCKET) {
 				$addr = '';
 			} else {
 				socket_getpeername($conn, $host, $port);
@@ -580,20 +573,18 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method onAccepted
-	 * @description Called when new connection is accepted.
-	 * @param integer Connection's ID.
-	 * @param string Address of the connected peer.
+	 * Called when new connection is accepted
+	 * @param integer Connection's ID
+	 * @param string Address of the connected peer
 	 * @return void
 	 */
-	public function onAccepted($connId, $addr) { }
+	protected function onAccepted($connId, $addr) { }
 
 	/**
-	 * @method write
-	 * @param integer Connection's ID.
-	 * @param string Data to send.
-	 * @description Sends a data to the connection.
-	 * @return boolean Success.
+	 * Send a data to the connection
+	 * @param integer Connection's ID
+	 * @param string Data to send
+	 * @return boolean Success
 	 */
 	public function write($connId, $s) {
 		Daemon::$worker->writePoolState[$connId] = TRUE; 
@@ -610,10 +601,9 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method finishConnection
-	 * @param integer Connection's ID.
-	 * @description Finishes the connection.
-	 * @return boolean Success.
+	 * Finish the connection
+	 * @param integer Connection's ID
+	 * @return boolean Success
 	 */
 	public function finishConnection($connId) {
 		if (Daemon::$config->logevents->value) {
@@ -634,10 +624,9 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method onReadEvent
-	 * @param resource Descriptor.
-	 * @param mixed Attacted variable.
-	 * @description Called when the connection has got new data.
+	 * Called when the connection has got new data
+	 * @param resource Descriptor
+	 * @param mixed Attacted variable
 	 * @return void
 	 */
 	public function onReadEvent($stream, $arg) {
@@ -667,10 +656,9 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method onWriteEvent
-	 * @param resource Descriptor.
-	 * @param mixed Attacted variable.
-	 * @description Called when the connection is ready to accept new data.
+	 * Called when the connection is ready to accept new data
+	 * @param resource Descriptor
+	 * @param mixed Attacted variable
 	 * @return void
 	 */
 	public function onWriteEvent($stream, $arg) {
@@ -705,10 +693,9 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method onFailureEvent
-	 * @param resource Descriptor.
-	 * @param mixed Attacted variable.
-	 * @description Called when the connection failed.
+	 * Called when the connection failed
+	 * @param resource Descriptor
+	 * @param mixed Attacted variable
 	 * @return void
 	 */
 	public function onFailureEvent($stream, $arg) {
@@ -742,9 +729,8 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method abortRequestsByConnection
+	 * Abort each of alive requests related with the give connection's id
 	 * @param integer Connection's ID.
-	 * @description Aborts each of alive requests related with the give connection's id.
 	 * @return void
 	 */
 	public function abortRequestsByConnection($connId) {
@@ -760,11 +746,10 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method read
-	 * @description Reads data from the connection's buffer.
-	 * @param integer Connection's ID.
-	 * @param integer Max. number of bytes to read.
-	 * @return string Readed data.
+	 * Read data from the connection's buffer
+	 * @param integer Connection's ID
+	 * @param integer Max. number of bytes to read
+	 * @return string Readed data
 	 */
 	public function read($connId, $n) {
 		if (!isset($this->buf[$connId])) {
@@ -812,13 +797,12 @@ class AsyncServer extends AppInstance {
 	}
 
 	/**
-	 * @method netMatch
-	 * @description Checks if the CIDR-mask matches the IP.
-	 * @param string CIDR-mask
+	 * Checks if the CIDR-mask matches the IP
+	 * @param string CIDR-mas
 	 * @param string IP
-	 * @return boolean Result.
+	 * @return boolean Result
 	 */
-	public function netMatch($CIDR, $IP) {
+	protected function netMatch($CIDR, $IP) {
 		/* TODO: IPV6 */
 		if (is_array($CIDR)) {
 			foreach ($CIDR as &$v) {
@@ -838,4 +822,5 @@ class AsyncServer extends AppInstance {
 
 		return (ip2long ($IP) & ~((1 << (32 - $e[1])) - 1)) === ip2long($e[0]);
 	}
+	
 }

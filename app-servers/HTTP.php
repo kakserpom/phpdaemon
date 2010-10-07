@@ -64,6 +64,7 @@ class HTTP extends AsyncServer {
 			$this->enableSocketEvents();
 		}
 	}
+	
 	/**
 	 * @method checkAccept
 	 * @description Called when remote host is trying to establish the connection.
@@ -76,14 +77,14 @@ class HTTP extends AsyncServer {
 		
 		return Daemon::$config->maxconcurrentrequestsperworker->value >= sizeof($this->queue);
 	}
+	
 	/**
-	 * @method onAccepted
-	 * @description Called when new connection is accepted.
-	 * @param integer Connection's ID.
-	 * @param string Address of the connected peer.
+	 * Called when new connection is accepted
+	 * @param integer Connection's ID
+	 * @param string Address of the connected peer
 	 * @return void
 	 */
-	public function onAccepted($connId, $addr) {
+	protected function onAccepted($connId, $addr) {
 		$this->poolState[$connId] = array(
 			'n'     => 0,
 			'state' => 0,

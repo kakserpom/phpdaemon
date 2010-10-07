@@ -1,4 +1,5 @@
 <?php
+
 class LockServer extends AsyncServer {
 
 	public $sessions = array();       // Active sessions
@@ -42,13 +43,12 @@ class LockServer extends AsyncServer {
 	}
 
 	/**
-	 * @method onAccepted
-	 * @description Called when new connection is accepted.
-	 * @param integer Connection's ID.
-	 * @param string Address of the connected peer.
+	 * Called when new connection is accepted
+	 * @param integer Connection's ID
+	 * @param string Address of the connected peer
 	 * @return void
 	 */
-	public function onAccepted($connId, $addr) {
+	protected function onAccepted($connId, $addr) {
 		if (
 			(($p = strrpos($addr, ':')) !== FALSE) 
 			&& !$this->netMatch($this->allowedClients, substr($addr, 0, $p))
@@ -59,6 +59,7 @@ class LockServer extends AsyncServer {
 		$this->sessions[$connId] = new LockServerSession($connId, $this);
 		$this->sessions[$connId]->clientAddr = $addr;
 	}
+	
 }
 
 class LockServerSession extends SocketSession {

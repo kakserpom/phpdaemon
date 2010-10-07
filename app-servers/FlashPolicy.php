@@ -1,4 +1,5 @@
 <?php
+
 class FlashPolicy extends AsyncServer {
 
 	public $sessions = array();  // Active sessions
@@ -50,15 +51,15 @@ class FlashPolicy extends AsyncServer {
 	}
 
 	/**
-	 * @method onAccepted
-	 * @description Called when new connection is accepted.
-	 * @param integer Connection's ID.
-	 * @param string Address of the connected peer.
+	 * Called when new connection is accepted
+	 * @param integer Connection's ID
+	 * @param string Address of the connected peer
 	 * @return void
 	 */
-	public function onAccepted($connId, $addr) {
+	protected function onAccepted($connId, $addr) {
 		$this->sessions[$connId] = new FlashPolicySession($connId, $this);
 	}
+	
 }
 
 class FlashPolicySession extends SocketSession {
