@@ -33,15 +33,13 @@ class Request {
 	public $sleepTime = 1000;
 
 	/**
-	 * @method __construct
-	 * @description 
+	 * Constructor
 	 * @param object Parent AppInstance.
 	 * @param object Upstream.
 	 * @param object Source request.
 	 * @return void
 	 */
 	public function __construct($appInstance, $upstream, $parent = NULL) {
-
 		$this->appInstance = $appInstance;
 		$this->upstream = $upstream;
 
@@ -63,14 +61,18 @@ class Request {
 		event_base_set($this->ev, Daemon::$worker->eventBase);
 		event_add($this->ev,100);
 	}
-	public static function eventCall($fd,$flags,$arg)
-	{
+
+	/**
+	 * FIXME description is missing
+	 */
+	public static function eventCall($fd, $flags, $arg) {
 		$k = $arg[0];
-		if (!isset(Daemon::$worker->queue[$k])) 
-		{
-		 Daemon::log('Bad event call.');
-		 return;
+
+		if (!isset(Daemon::$worker->queue[$k])) {
+			Daemon::log('Bad event call.');
+			return;
 		}
+
 		$r = Daemon::$worker->queue[$k];
 		
 		if ($r->state === Request::STATE_SLEEPING) {
@@ -88,13 +90,13 @@ class Request {
 		}
 
 		if ($ret === Request::STATE_FINISHED) {
-
 			unset(Daemon::$worker->queue[$k]);
 
 			if (isset($r->idAppQueue)) {
 				if (Daemon::$config->logqueue->value) {
 					Daemon::$worker->log('request removed from ' . get_class($r->appInstance) . '->queue.');
 				}
+
 				unset($r->appInstance->queue[$r->idAppQueue]);
 			} else {
 				if (Daemon::$config->logqueue->value) {
@@ -103,14 +105,13 @@ class Request {
 			}
 		}
 		elseif ($ret === REQUEST::STATE_SLEEPING) {
-			event_add($r->ev,$r->sleepTime);
+			event_add($r->ev, $r->sleepTime);
 		}
 	}
 	
 	/**
-	 * @method call
-	 * @description Called by queue dispatcher to touch the request.
-	 * @return int Status.
+	 * Called by queue dispatcher to touch the request
+	 * @return int Status
 	 */
 	public function call() {
 		if ($this->state === Request::STATE_FINISHED) {
@@ -118,12 +119,13 @@ class Request {
 			$this->finish();
 			return Request::STATE_FINISHED;
 		}
+
 		$this->state = Request::STATE_ALIVE;
 		
 		$this->preCall();
 
 		if ($this->state !== Request::STATE_ALIVE) {
-		 return $this->state;
+			return $this->state;
 		}
 		
 		$this->state = Request::STATE_RUNNING;
@@ -163,9 +165,8 @@ class Request {
 	}
 	
 	/**
-	 * @method preinit
-	 * @description Preparing before init.
-	 * @param object Source request.
+	 * Preparing before init
+	 * @param object Source request
 	 * @return void
 	 */
 	public function preinit($req)
@@ -177,27 +178,24 @@ class Request {
 		
 		$this->attrs = $req->attrs;
 	}
+
 	/**
-	 * @method __toString()
-	 * @description This magic method called when the object casts to string.
-	 * @return string Description.
+	 * This magic method called when the object casts to string
+	 * @return string Description
 	 */
 	public function __toString() {
 		return 'Request of type ' . get_class($this);
 	}
 
-
 	/**
-	 * @method init
-	 * @description Called when request constructs.
+	 * Called when request constructs
 	 * @return void
 	 */
-	protected function init() {}
+	protected function init() { }
 
 	/**
-	 * @method getString
+	 * Get string value from the given variable
 	 * @param Reference of variable.
-	 * @description Gets string value from the given variable.
 	 * @return string Value.
 	 */
 	public function getString(&$var) {
@@ -209,15 +207,13 @@ class Request {
 	}
 
 	/**
-	 * @method onWrite
-	 * @description Called when the connection is ready to accept new data.
+	 * Called when the connection is ready to accept new data
 	 * @return void
 	 */
-	public function onWrite() {}
+	public function onWrite() { }
 
 	/**
-	 * @method registerShutdownFunction
-	 * @description Adds new callback called before the request finished.
+	 * Adds new callback called before the request finished
 	 * @return void
 	 */
 	public function registerShutdownFunction($callback) {
@@ -225,8 +221,7 @@ class Request {
 	}
 
 	/**
-	 * @method unregisterShutdownFunction
-	 * @description Remove the given callback.
+	 * Remove the given callback
 	 * @return void
 	 */
 	public function unregisterShutdownFunction($callback) {
@@ -236,10 +231,9 @@ class Request {
 	}
 
 	/**
-	 * @method codepoint
-	 * @param string Name.
-	 * @description Helper for easy switching between several interruptable stages of request's execution.
-	 * @return boolean Execute.
+	 * Helper for easy switching between several interruptable stages of request's execution
+	 * @param string Name
+	 * @return boolean Execute
 	 */
 	public function codepoint($p) {
 		if ($this->codepoint !== $p) {
@@ -252,11 +246,10 @@ class Request {
 	}
 
 	/**
-	 * @method sleep
+	 * Delays the request execution for the given number of seconds
 	 * @throws RequestSleepException
-	 * @param float Time to sleep in seconds.
-	 * @param boolean Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now.
-	 * @description Delays the request execution for the given number of seconds.
+	 * @param float Time to sleep in seconds
+	 * @param boolean Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
 	 * @return void
 	 */
 	public function sleep($time = 0, $set = FALSE) {
@@ -274,8 +267,7 @@ class Request {
 	}
 
 	/**
-	 * @method terminate
-	 * @description Throws terminating exception.
+	 * Throws terminating exception
 	 * @return void
 	 */
 	public function terminate($s = NULL) {
@@ -287,43 +279,41 @@ class Request {
 	}
 
 	/**
-	 * @method wakeup
-	 * @description Cancel current sleep.
+	 * Cancel current sleep
 	 * @return void
 	 */
 	public function wakeup() {
 		$this->state = Request::STATE_ALIVE;
 		event_del($this->ev);
-		event_add($this->ev,1);
+		event_add($this->ev, 1);
 	}
 	
 	/**
-	 * @method precall
-	 * @description Called by call() to check if ready.
+	 * Called by call() to check if ready
+	 * FIXME -> protected?
 	 * @return void
 	 */
-	public function preCall()
-	{
+	public function preCall() {
 		return TRUE;
 	}
 
 	/**
-	 * @method onAbort
-	 * @description Called when the request aborted.
+	 * Called when the request aborted
+	 * FIXME protected?
 	 * @return void
 	 */
-	public function onAbort() {}
+	public function onAbort() { }
 
 	/**
-	 * @method onFinish
-	 * @description Called when the request finished.
+	 * Called when the request finished
+	 * FIXME protected?
 	 * @return void
 	 */
-	public function onFinish() {}
+	public function onFinish() { }
 
 	/**
-	 * @method onWakeUp
-	 * @description Called when the request wakes up.
+	 * Called when the request wakes up
+	 * FIXME protected?
 	 * @return void
 	 */
 	protected function onWakeup() {
@@ -339,8 +329,8 @@ class Request {
 	}
 
 	/**
-	 * @method onSleep
-	 * @description Called when the request starts sleep.
+	 * Called when the request starts sleep
+	 * FIXME protected?
 	 * @return void
 	 */
 	public function onSleep() {
@@ -355,8 +345,7 @@ class Request {
 	}	
 
 	/**
-	 * @method abort
-	 * @description Aborts the request.
+	 * Aborts the request
 	 * @return void
 	 */
 	public function abort() {
@@ -370,10 +359,16 @@ class Request {
 
 		if (
 			(ignore_user_abort() === 1) 
-			&& (($this->state === Request::STATE_RUNNING) || ($this->state === Request::STATE_SLEEPING))
+			&& (
+				($this->state === Request::STATE_RUNNING) 
+				|| ($this->state === Request::STATE_SLEEPING)
+			)
 			&& !Daemon::$compatMode
 		) {
-			if (!isset($this->upstream->keepalive->value) || !$this->upstream->keepalive->value) {
+			if (
+				!isset($this->upstream->keepalive->value) 
+				|| !$this->upstream->keepalive->value
+			) {
 				$this->upstream->closeConnection($this->attrs->connId);
 			}
 		} else {
@@ -384,10 +379,9 @@ class Request {
 	}
 
 	/**
-	 * @method finish
+	 * Finish the request
 	 * @param integer Optional. Status. 0 - normal, -1 - abort, -2 - termination
-	 * @param boolean Optional. Zombie. Default is false.
-	 * @description Finishes the request.
+	 * @param boolean Optional. Zombie. Default is false
 	 * @return void
 	 */
 	public function finish($status = 0, $zombie = FALSE) {
@@ -439,7 +433,8 @@ class Request {
 
 		}
 	}
-	public function postFinishHandler()	{}
+
+	public function postFinishHandler() { }
 	
 	public function __destruct() {
 		event_del($this->ev);
@@ -448,7 +443,5 @@ class Request {
 }
 
 class RequestSleepException extends Exception {}
-
 class RequestTerminatedException extends Exception {}
-
 class RequestHeadersAlreadySent extends Exception {}
