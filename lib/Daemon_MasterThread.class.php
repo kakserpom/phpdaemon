@@ -12,8 +12,7 @@
 class Daemon_MasterThread extends Thread {
 
 	/**
-	 * @method run
-	 * @description Runtime of Master process.
+	 * Runtime of Master process
 	 * @return void
 	 */
 	public function run() {
@@ -34,6 +33,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
 		));
+
 		$mpmLast = time();
 		$autoReloadLast = time();
 		$c = 1;
@@ -58,6 +58,7 @@ class Daemon_MasterThread extends Thread {
 					$this->sighup();
 				}
 			}
+
 			if (time() > $mpmLast+Daemon::$config->mpmdelay->value) {
 				$mpmLast = time();
 				++$c;
@@ -110,7 +111,10 @@ class Daemon_MasterThread extends Thread {
 			}
 		}
 	}
-	
+
+	/**
+	 * FIXME description missed
+	 */	
 	public function reloadWorker($spawnId) {
 		if (isset($this->collections['workers']->threads[$spawnId])) {
 			if (!$this->collections['workers']->threads[$spawnId]->reloaded) {
@@ -123,9 +127,8 @@ class Daemon_MasterThread extends Thread {
 	}
 	
 	/**
-	 * @method spawnWorkers
+	 * Spawn new worker processes
 	 * @param $n - integer - number of workers to spawn
-	 * @description spawn new workers processes.
 	 * @return boolean - success
 	 */
 	public function spawnWorkers($n = 1) {
@@ -144,9 +147,8 @@ class Daemon_MasterThread extends Thread {
 	}
 
 	/**
-	 * @method stopWorkers
+	 * Stop the workers
 	 * @param $n - integer - number of workers to stop
-	 * @description stop the workers.
 	 * @return boolean - success
 	 */
 	public function stopWorkers($n = 1) {
@@ -170,8 +172,8 @@ class Daemon_MasterThread extends Thread {
 	}
 	
 	/**
-	 * @method onShutdown
-	 * @description Called when master is going to shutdown.
+	 * Called when master is going to shutdown
+	 * FIXME -> protected?
 	 * @return void
 	 */
 	public function onShutdown() {
@@ -189,9 +191,8 @@ class Daemon_MasterThread extends Thread {
 	}
 
 	/**
-	 * @method shutdown
-	 * @param integer System singal's number.
-	 * @description Called when master is going to shutdown.
+	 * Called when master is going to shutdown
+	 * @param integer System singal's number
 	 * @return void
 	 */
 	public function shutdown($signo = FALSE) {
@@ -208,8 +209,8 @@ class Daemon_MasterThread extends Thread {
 	}
 	
 	/**
-	 * @method sigchld
-	 * @description Handler of the SIGCHLD (child is dead) signal in master process.
+	 * Handler for the SIGCHLD (child is dead) signal in master process.
+	 * FIXME +on?
 	 * @return void
 	 */
 	protected function sigchld() {
@@ -221,8 +222,8 @@ class Daemon_MasterThread extends Thread {
 	}
 
 	/**
-	 * @method sigint
-	 * @description Handler of the SIGINT (shutdown) signal in master process. Shutdown.
+	 * Handler for the SIGINT (shutdown) signal in master process. Shutdown.
+	 * FIXME +on ?
 	 * @return void
 	 */
 	protected function sigint() {
@@ -235,8 +236,8 @@ class Daemon_MasterThread extends Thread {
 	}
 	
 	/**
-	 * @method sigterm
-	 * @description Handler of the SIGTERM (shutdown) signal in master process.
+	 * Handler for the SIGTERM (shutdown) signal in master process
+	 * FIXME +on & -> protected?
 	 * @return void
 	 */
 	protected function sigterm() {
@@ -249,8 +250,8 @@ class Daemon_MasterThread extends Thread {
 	}
 	
 	/**
-	 * @method sigquit
-	 * @description Handler of the SIGQUIT signal in master process.
+	 * Handler for the SIGQUIT signal in master process
+	 * FIXME +on & -> protected?
 	 * @return void
 	 */
 	protected function sigquit() {
@@ -263,8 +264,8 @@ class Daemon_MasterThread extends Thread {
 	}
 
 	/**
-	 * @method sighup
-	 * @description Handler of the SIGHUP (reload config) signal in master process.
+	 * Handler for the SIGHUP (reload config) signal in master process
+	 * FIXME +on & -> protected?
 	 * @return void
 	 */
 	public function sighup() {
@@ -280,8 +281,8 @@ class Daemon_MasterThread extends Thread {
 	}
 
 	/**
-	 * @method sigusr1
-	 * @description Handler of the SIGUSR1 (re-open log-file) signal in master process.
+	 * Handler for the SIGUSR1 (re-open log-file) signal in master process
+	 * FIXME +on & -> protected?
 	 * @return void
 	 */
 	public function sigusr1() {
@@ -294,8 +295,8 @@ class Daemon_MasterThread extends Thread {
 	}
 
 	/**
-	 * @method sigusr2
-	 * @description Handler of the SIGUSR2 (graceful restart all workers) signal in master process.
+	 * Handler for the SIGUSR2 (graceful restart all workers) signal in master process
+	 * FIXME +on & -> protected?
 	 * @return void
 	 */
 	public function sigusr2() {
@@ -307,15 +308,15 @@ class Daemon_MasterThread extends Thread {
 	}
 
 	/**
-	 * @method sigttin
-	 * @description Handler of the SIGTTIN signal in master process.
+	 * Handler for the SIGTTIN signal in master process
+	 * FIXME not used or -> protected?
 	 * @return void
 	 */
 	public function sigttin() { }
 
 	/**
-	 * @method sigxfsz
-	 * @description Handler of the SIGXSFZ signal in master process.
+	 * Handler for the SIGXSFZ signal in master process
+	 * FIXME +on & -> protected?
 	 * @return void
 	 */
 	public function sigxfsz() {
@@ -323,8 +324,8 @@ class Daemon_MasterThread extends Thread {
 	}
 	
 	/**
-	 * @method sigunknown
-	 * @description Handler of non-known signals.
+	 * Handler for non-known signals
+	 * FIXME +on & -> protected?
 	 * @return void
 	 */
 	public function sigunknown($signo) {
@@ -336,4 +337,5 @@ class Daemon_MasterThread extends Thread {
 
 		Daemon::log('Master caught signal #' . $signo . ' (' . $sig . ').');
 	}
+
 }

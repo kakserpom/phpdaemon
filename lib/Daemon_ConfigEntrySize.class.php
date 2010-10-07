@@ -29,6 +29,7 @@ class Daemon_ConfigEntrySize extends Daemon_ConfigEntry {
 		if ($l === 'g') {
 			return ((int) substr($value, 0, -1) * 1024 * 1024 * 1024);
 		}
+
 		return (int) $value;
 	}
 

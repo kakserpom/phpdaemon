@@ -19,7 +19,7 @@ class Daemon_ConfigEntry {
 	public $hasDefaultValue = FALSE;
 
 	public function __construct() {
-		if (func_num_args() == 1)	{
+		if (func_num_args() == 1) {
 			$this->setDefaultValue(func_get_arg(0));
 			$this->setHumanValue(func_get_arg(0));
 		}
@@ -34,18 +34,19 @@ class Daemon_ConfigEntry {
 		$this->valueType = $type;
 	}
 
-  public function resetToDefault()
-  {
-		if ($this->hasDefaultValue)	{
+	public function resetToDefault() {
+		if ($this->hasDefaultValue) {
 			$this->setHumanValue($this->defaultValue);
-			return TRUE;
+
+			return true;
 		}
-		return FALSE;
-  }
+
+		return false;
+	}
  
 	public function setDefaultValue($value) {
 		$this->defaultValue = $value;
-		$this->hasDefaultValue = TRUE;
+		$this->hasDefaultValue = true;
 	}
 
 	public function setHumanValue($value) {
