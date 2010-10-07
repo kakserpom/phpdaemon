@@ -434,7 +434,7 @@ class WebSocketSession extends SocketSession {
 					$e = explode(': ', $l);
 					
 					if (isset($e[1])) {
-						$this->server['HTTP_' . strtoupper(strtr($e[0], Request::$htr))] = rtrim($e[1], "\r\n");
+						$this->server['HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr))] = rtrim($e[1], "\r\n");
 					}
 				}
 			}
