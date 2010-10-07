@@ -11,25 +11,56 @@
 
 class AsyncProcess extends AsyncStream {
 
-	public $cmd;                                   // command's string
-	public $binPath;                               // path to executable
-	public $pipes;                                 // opened pipes
-	public $pd;                                    // process's descriptor
-	public $run = FALSE;                           // run?
-	public $outputErrors = FALSE;                  // output errors?
+	/**
+	 * Command string
+	 * @var string
+	 */
+	private $cmd;
+
+	/**
+	 * Executable path
+	 * @var string
+	 */
+	public $binPath;
+
+	/**
+	 * Opened pipes
+	 * @var array
+	 */
+	public $pipes;
+
+	/**
+	 * Process descriptor
+	 * @var resource Resource? FIXME
+	 */
+	public $pd;
+
+	/**
+	 * Output errors? FIXME used only in this module without any changes
+	 * @var boolean
+	 */
+	public $outputErrors = false;
+
+	// FIXME make methods setUser and setGroup, variables change to $user and $group with null values
 	public $setUser;                               // optinal SUID.
 	public $setGroup;                              // optional SGID.
+
+	// FIXME the same, make a method setChroot
 	public $chroot = '/';                          // optional chroot.
+
 	public $env = array();                         // hash of environment's variables
+
+	// FIXME setCwd
 	public $cwd;                                   // optional chdir
 	public $errlogfile = '/tmp/cgi-errorlog.log';  // path to error logfile
 	public $args;                                  // array of arguments
+
+	// FIXME setNice
 	public $nice;                                  // optional priority
  
 	/**
-	 * @method __contruct
-	 * @description AsyncProcess constructor.
-	 * @param string Command's string.
+	 * AsyncProcess constructor
+	 * @param string Command's string
 	 * @return void
 	 */
 	public function __construct($cmd = NULL) {
@@ -39,41 +70,40 @@ class AsyncProcess extends AsyncStream {
 	}
 
 	/**
-	 * @method setArgs
-	 * @description Sets an array of arguments.
-	 * @param array Arguments.
+	 * Sets an array of arguments
+	 * @param array Arguments
 	 * @return object AsyncProccess
 	 */
 	public function setArgs($args = NULL) {
 		$this->args = $args;
+
 		return $this;
 	}
 
 	/**
-	 * @method setEnv
-	 * @description Sets a hash of environment's variables.
-	 * @param array Hash of environment's variables.
+	 * Set a hash of environment's variables
+	 * @param array Hash of environment's variables
 	 * @return object AsyncProccess
 	 */
 	public function setEnv($env = NULL) {
 		$this->env = $env;
+
 		return $this;
 	}
 
 	/**
-	 * @method nice
-	 * @description Sets a priority.
-	 * @param integer Priority.
+	 * Set priority.
+	 * @param integer Priority
 	 * @return object AsyncProccess
 	 */
 	public function nice($nice = NULL) {
 		$this->nice = $nice;
+
 		return $this;
 	}
 
 	/**
-	 * @method execute
-	 * @description Executes.
+	 * Execute
 	 * @param string Optional. Binpath.
 	 * @param array Optional. Arguments.
 	 * @param array Optional. Hash of environment's variables.
@@ -148,9 +178,8 @@ class AsyncProcess extends AsyncStream {
 	}
 
 	/**
-	 * @method close
-	 * @description Closes the process.
-	 * @return object AsyncProccess
+	 * Close the process
+	 * @return void
 	 */
 	public function close() {
 		$this->closeRead();
@@ -162,8 +191,7 @@ class AsyncProcess extends AsyncStream {
 	}
 
 	/**
-	 * @method eof
-	 * @description Tests for end-of-file on a process pointer.
+	 * Tests for end-of-file on a process pointer
 	 * @return boolean EOF?
 	 */
 	public function eof() {
@@ -180,4 +208,5 @@ class AsyncProcess extends AsyncStream {
 
 		return $this->EOF;
 	}
+
 }
