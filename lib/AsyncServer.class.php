@@ -580,20 +580,18 @@ class AsyncServer extends AppInstance {
 	}
 	
 	/**
-	 * @method onAccepted
-	 * @description Called when new connection is accepted.
-	 * @param integer Connection's ID.
-	 * @param string Address of the connected peer.
+	 * Called when new connection is accepted
+	 * @param integer Connection's ID
+	 * @param string Address of the connected peer
 	 * @return void
 	 */
-	public function onAccepted($connId, $addr) { }
+	protected function onAccepted($connId, $addr) { }
 
 	/**
-	 * @method write
-	 * @param integer Connection's ID.
-	 * @param string Data to send.
-	 * @description Sends a data to the connection.
-	 * @return boolean Success.
+	 * Send a data to the connection
+	 * @param integer Connection's ID
+	 * @param string Data to send
+	 * @return boolean Success
 	 */
 	public function write($connId, $s) {
 		Daemon::$worker->writePoolState[$connId] = TRUE; 

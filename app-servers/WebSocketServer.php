@@ -1,6 +1,7 @@
 <?php
-class WebSocketServer extends AsyncServer
-{
+
+class WebSocketServer extends AsyncServer {
+
 	public $sessions = array();
 	public $routes = array();
 
@@ -136,16 +137,16 @@ class WebSocketServer extends AsyncServer
 	}
 
 	/**
-	 * @method onAccepted
-	 * @description Event of asyncServer.
-	 * @param integer Connection's ID.
-	 * @param string Peer's address.
+	 * Event of asyncServer
+	 * @param integer Connection's ID
+	 * @param string Peer's address
 	 * @return void
 	 */
-	public function onAccepted($connId, $addr) {
+	protected function onAccepted($connId, $addr) {
 		$this->sessions[$connId] = new WebSocketSession($connId, $this);
 		$this->sessions[$connId]->clientAddr = $addr;
 	}
+	
 }
 
 class WebSocketSession extends SocketSession {
