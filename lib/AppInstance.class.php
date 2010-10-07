@@ -20,13 +20,12 @@ class AppInstance {
 	public $config;
  
 	/**	
-	 * @method __contruct
-	 * @description Application constructor.
+	 * Application constructor
 	 * @return void
 	 */
 	public function __construct($name = NULL) {
 		$this->name = $name;
-		$fullname = get_class($this).($this->name !== NULL ? '-'.urlencode($this->name) : '');
+		$fullname = get_class($this) . ($this->name !== NULL ? '-' . urlencode($this->name) : '');
 
 		if (!isset(Daemon::$config->{$fullname})) {
 			Daemon::$config->{$fullname} = new Daemon_ConfigSection;
@@ -66,6 +65,7 @@ class AppInstance {
 
  	/**
 	 * Process default config
+	 * FIXME move it to Daemon_Config class
 	 * @param array {"setting": "value"}
 	 * @return void
 	 */
@@ -95,11 +95,11 @@ class AppInstance {
 	}
 	
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go
+	 * FIXME -> protected?
 	 * @return void
 	 */
-	public function onReady() {}
+	public function onReady() { }
  
 	/**
 	 * @method init
@@ -109,15 +109,16 @@ class AppInstance {
 	public function init() {}
  
 	/**
-	 * @method update
-	 * @description Called when worker is going to update configuration.
+	 * Called when worker is going to update configuration
+	 * FIXME call it only when application section config is changed
+	 * FIXME rename to onConfigChanged()
 	 * @return void
 	 */
 	public function update() {}
  
 	/**
-	 * @method onShutdown
-	 * @description Called when application instance is going to shutdown.
+	 * Called when application instance is going to shutdown
+	 * FIXME protected?
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
@@ -125,39 +126,37 @@ class AppInstance {
 	}
  
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * Create Request
+	 * FIXME more description needed
+	 * @param object Request
+	 * @param object Upstream application instance
+	 * @return object Request
 	 */
 	public function beginRequest($req, $upstream) {
 		return FALSE;
 	}
  
 	/**
-	 * @method requestOut
-	 * @description Handles the output from downstream requests.
-	 * @param object Request.
-	 * @param string The output.
+	 * Handles the output from downstream requests
+	 * FIXME more description
+	 * @param object Request
+	 * @param string The output
 	 * @return void
 	 */
-	public function requestOut($r, $s) {}
+	public function requestOut($r, $s) { }
  
 	/**
-	 * @method endRequest
-	 * @description Handles the output from downstream requests.
+	 * Handles the output from downstream requests
 	 * @return void
 	 */
-	public function endRequest($req, $appStatus, $protoStatus) {}
+	public function endRequest($req, $appStatus, $protoStatus) { }
  
 	/** 
-	 * @method shutdown
-	 * @param boolean Graceful.
-	 * @description Shutdowns the application instance.
+	 * Shutdown the application instance
+	 * @param boolean Graceful?
 	 * @return void
 	 */
-	public function shutdown($graceful = FALSE) {
+	public function shutdown($graceful = false) {
 		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked. Size of the queue: ' . sizeof($this->queue) . '.');
 		}
@@ -174,11 +173,10 @@ class AppInstance {
 	}
  
 	/**
-	 * @method handleRequest
-	 * @param object Parent request.
-	 * @param object Upstream application.
-	 * @description Handles the request.
-	 * @return object Request.
+	 * Handle the request
+	 * @param object Parent request
+	 * @param object Upstream application  FIXME is upstream really needed?
+	 * @return object Request
 	 */
 	public function handleRequest($parent, $upstream) {
 		$req = $this->beginRequest($parent, $upstream);
@@ -195,22 +193,21 @@ class AppInstance {
 	}
  
 	/**
-	 * @method pushRequest
-	 * @param object Request.
-	 * @description Pushes request to the queue.
-	 * @return object Request.
+	 * Pushes request to the queue
+	 * FIXME log warning message and then sometime remove it
+	 * @param object Request
+	 * @return object Request
 	 * @deprecated
 	 */
 	public function pushRequest($req) {
-
 		return $req;
 	}
  
 	/**
+	 * Handle the worker status
 	 * @method handleStatus
-	 * @param int Status code.
-	 * @description Handles the worker's status.
-	 * @return boolean Result.
+	 * @param int Status code FIXME use constants in method
+	 * @return boolean Result
 	 */
 	public function handleStatus($ret) {
 		if ($ret === 2) {
@@ -230,4 +227,5 @@ class AppInstance {
 
 		return $r;
 	}
+
 }
