@@ -32,11 +32,11 @@ class LockServer extends AsyncServer {
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
 
-			$this->allowedClients = explode(',', Daemon::$config['allowedclients']);
+			$this->allowedClients = explode(',',$this->config->allowedclients->value);
 
 			$this->bindSockets(
-				Daemon::$config->listen->value,
-				Daemon::$config->listenport->value
+				$this->config->listen->value,
+				$this->config->listenport->value
 			);
 		}
 	}
@@ -126,7 +126,7 @@ class LockServerSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-		if (Daemon::$config['logevents']) {
+		if (Daemon::$config->logevents->value) {
 			Daemon::log(__METHOD__ . ' invoked');
 		}
 
