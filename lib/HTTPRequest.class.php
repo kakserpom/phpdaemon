@@ -11,6 +11,10 @@
 
 class HTTPRequest extends Request {
 
+	/**
+	 * Status codes
+	 * @var array
+	 */
 	private static $codes = array (
 		100 => 'Continue',
 		101 => 'Switching Protocols',
@@ -55,6 +59,8 @@ class HTTPRequest extends Request {
 		505 => 'HTTP Version Not Supported',
 	);
 
+	// FIXME phpdoc needed
+
 	public $answerlen = 0;
 	public $contentLength;
 	
@@ -65,20 +71,19 @@ class HTTPRequest extends Request {
 	public $mpartoffset = 0;
 	public $mpartcondisp = FALSE;
 	public $headers = array('STATUS' => '200 OK');
-	public $headers_sent = FALSE; // FIXME: move to httprequest and make private
+	public $headers_sent = FALSE; // FIXME make private
 	private $boundary = FALSE;
 		
 	/**
-	 * @method preinit
-	 * @description Preparing before init.
-	 * @param object Source request.
+	 * Preparing before init
+	 * FIXME protected?
+	 * @param object Source request
 	 * @return void
 	 */
-	public function preinit($req)
-	{
+	public function preinit($req) {
 		if ($req === NULL) {
-			$req = new stdClass;
-			$req->attrs = new stdClass;
+			$req = new \stdClass;
+			$req->attrs = new \stdClass;
 			$req->attrs->stdin_done = TRUE;
 			$req->attrs->params_done = TRUE;
 			$req->attrs->chunked = FALSE;
@@ -95,17 +100,19 @@ class HTTPRequest extends Request {
 
 		$this->parseParams();
 	}
+
 	/**
-	 * @method precall
-	 * @description Called by call() to check if ready.
+	 * Called by call() to check if ready
+	 * FIXME protected?
 	 * @return void
 	 */
-	public function preCall()
-	{
-		if (!$this->attrs->params_done || !$this->attrs->stdin_done) {
+	public function preCall() {
+		if (
+			!$this->attrs->params_done 
+			|| !$this->attrs->stdin_done
+		) {
 			$this->state = Request::STATE_SLEEPING;
-		}
-		else {
+		} else {
 			if (isset($this->appInstance->passphrase)) {
 				if (
 					!isset($this->attrs->server['PASSPHRASE']) 
@@ -116,9 +123,10 @@ class HTTPRequest extends Request {
 			}
 		}
 	}
+
 	/**
-	 * @method parseParams
-	 * @description Parses GET-query string and other request's headers.  
+	 * Parses GET-query string and other request's headers
+	 * FIXME private?  
 	 * @return void
 	 */
 	public function parseParams() {
@@ -172,8 +180,7 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method postPrepare
-	 * @description Prepares the request's body.
+	 * Prepares the request's body
 	 * @return void
 	 */
 	public function postPrepare() {
@@ -196,9 +203,8 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method stdin
-	 * @param string Piece of request's body.
-	 * @description Called when new piece of request's body is received.
+	 * @description Called when new piece of request's body is received
+	 * @param string Piece of request body
 	 * @return void
 	 */
 	public function stdin($c) {
@@ -219,10 +225,9 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method out
-	 * @param string String to out.
-	 * @description Outputs data.
-	 * @return boolean Success.
+	 * Output some data
+	 * @param string String to out
+	 * @return boolean Success
 	 */
 	public function out($s, $flush = TRUE) {
 		if ($flush) {
@@ -300,16 +305,15 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method onParsedParams
-	 * @description Called when request's headers parsed.
+	 * Called when request's headers parsed
 	 * @return void
 	 */
-	public function onParsedParams() {}
+	public function onParsedParams() { }
 
 	/**
-	 * @method combinedOut
-	 * @param string String to out.
-	 * @description Outputs data with headers (split by \r\n\r\n)
+	 * Outputs data with headers (split by \r\n\r\n)
+	 * FIXME description missed (what is the difference between this and out()) ?
+	 * @param string String to out
 	 * @return boolean Success.
 	 */
 	public function combinedOut($s) {
@@ -332,8 +336,7 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method chunked
-	 * @description Use chunked encoding.
+	 * Use chunked encoding
 	 * @return void
 	 */
 	public function chunked() {
@@ -342,8 +345,7 @@ class HTTPRequest extends Request {
 	}
 	
 	/**
-	 * @method onWakeUp
-	 * @description Called when the request wakes up.
+	 * Called when the request wakes up
 	 * @return void
 	 */
 	protected function onWakeup() {
@@ -359,10 +361,9 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method status
+	 * Send HTTP-status
 	 * @throws RequestHeadersAlreadySent
 	 * @param int Code
-	 * @description Sends HTTP-status (200, 403, 404, 500, etc)
 	 * @return void
 	 */
 	public function status($code = 200) {
@@ -376,8 +377,7 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method headers_sent
-	 * @description Analog of standard PHP function headers_sent
+	 * Analog of standard PHP function headers_sent
 	 * @return boolean Success
 	 */
 	public function headers_sent() {
@@ -385,8 +385,7 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method headers_list
-	 * @description Returns current list of headers.
+	 * Return current list of headers
 	 * @return array Headers.
 	 */
 	public function headers_list() {
@@ -394,10 +393,9 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method setcookie
-	 * @description Sets the cookie.
-	 * @param string Name of cookie.
-	 * @param string Value.
+	 * Set the cookie
+	 * @param string Name of cookie
+	 * @param string Value
 	 * @param integer. Optional. Max-Age. Default is 0.
 	 * @param string. Optional. Path. Default is empty string.
 	 * @param boolean. Optional. Secure. Default is false.
@@ -416,8 +414,7 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method header
-	 * @description Sets the header.
+	 * Send the header
 	 * @param string Header. Example: 'Location: http://php.net/'
 	 * @param boolean Optional. Replace?
 	 * @param int Optional. HTTP response code.
@@ -469,6 +466,9 @@ class HTTPRequest extends Request {
 		return TRUE;
 	}
 	
+	/**
+	 * FIXME description missing
+	 */
 	public function parseSize($value) {
 		$l = strtolower(substr($value, -1));
 
@@ -491,8 +491,7 @@ class HTTPRequest extends Request {
 	}
 	
 	/**
-	 * @method parseStdin
-	 * @description Parses request's body.
+	 * Parse request body
 	 * @return void
 	 */
 	public function parseStdin() {
@@ -679,8 +678,8 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method readBodyFile
-	 * @description Reads request's body from file.
+	 * Read request body from file
+	 * FIXME from what file? Need extended description
 	 * @return void
 	 */
 	public function readBodyFile() {
@@ -704,10 +703,9 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method parse_str
+	 * Replacement for default parse_str(), it supoorts UCS-2 like this: %uXXXX
 	 * @param string String to parse.
 	 * @param array Reference to the resulting array.
-	 * @description Replacement for default parse_str(), it supoorts UCS-2 like this: %uXXXX.
 	 * @return void
 	 */
 	public function parse_str($s, &$array) {
@@ -722,22 +720,28 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @method parse_str_callback
-	 * @param array Match.
-	 * @description Called in preg_replace_callback in parse_str.
+	 * Called in preg_replace_callback in parse_str
+	 * FIXME private?
+	 * @param array Match
 	 * @return string Replacement.
 	 */
 	public function parse_str_callback($m) {
 		return urlencode(html_entity_decode('&#' . hexdec($m[1]) . ';', ENT_NOQUOTES, 'utf-8'));
 	}
-	public function postFinishHandler()
-	{
+
+	/**
+	 * FIXME description missing
+	 * FIXME protected?
+	 */
+	public function postFinishHandler() {
 		if (!$this->headers_sent) {
 			$this->out('');
 		}
+
 		if ($this->sendfp) {
 			fclose($this->sendfp);
 		}
+
 		if (isset($this->attrs->files)) {
 			foreach ($this->attrs->files as &$f) {
 				if (
@@ -752,4 +756,5 @@ class HTTPRequest extends Request {
 			session_commit();
 		}
 	}
+
 }
