@@ -25,8 +25,7 @@ class LockClient extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {
@@ -40,11 +39,10 @@ class LockClient extends AsyncServer {
 	}
 
 	/**
-	 * @method addServer
-	 * @description Adds memcached server.
-	 * @param string Server's host.
-	 * @param string Server's port.
-	 * @param integer Weight.
+	 * Adds memcached server
+	 * @param string Server's host
+	 * @param string Server's port
+	 * @param integer Weight
 	 * @return void
 	*/
 	public function addServer($host, $port = NULL, $weight = NULL) {
@@ -56,13 +54,12 @@ class LockClient extends AsyncServer {
 	}
 
 	/**
-	 * @method job
-	 * @description Runs a job.
-	 * @param string Name of job.
+	 * Runs a job
+	 * @param string Name of job
 	 * @param callback onRun. Job's runtime.
 	 * @param callback onSuccess. Called when job successfully done.
 	 * @param callback onFailure. Called when job failed.
-	 * @param integer Weight.
+	 * @param integer Weight
 	 * @return void
 	 */
 	public function job($name, $wait, $onRun, $onSuccess = NULL, $onFailure = NULL) {
@@ -79,9 +76,8 @@ class LockClient extends AsyncServer {
 	}
 
 	/**
-	 * @method done
-	 * @description Sends done-event.
-	 * @param string Name of job.
+	 * Sends done-event
+	 * @param string Name of job
 	 * @return void
 	 */
 	public function done($name) {
@@ -91,9 +87,8 @@ class LockClient extends AsyncServer {
 	}
 
 	/**
-	 * @method failed
-	 * @description Sends failed-event.
-	 * @param string Name of job.
+	 * Sends failed-event
+	 * @param string Name of job
 	 * @return void
 	 */
 	public function failed($name) {
@@ -103,10 +98,9 @@ class LockClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getConnection
-	 * @description Establishes connection.
-	 * @param string Address.
-	 * @return integer Connection's ID.
+	 * Establishes connection
+	 * @param string Address
+	 * @return integer Connection's ID
 	 */
 	public function getConnection($addr) {
 		if (isset($this->servConn[$addr])) {
@@ -129,9 +123,8 @@ class LockClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getConnectionByName
-	 * @description Returns available connection from the pool by name.
-	 * @param string Key.
+	 * Returns available connection from the pool by name
+	 * @param string Key
 	 * @return object MemcacheSession
 	 */
 	public function getConnectionByName($name) {
@@ -158,9 +151,8 @@ class LockClientSession extends SocketSession {
 	public $finished = FALSE;   // Is this session finished?
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
-	 * @param string New data.
+	 * Called when new data received
+	 * @param string New data
 	 * @return void
 	 */
 	public function stdin($buf) {
@@ -188,8 +180,7 @@ class LockClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when session finishes.
+	 * Called when session finishes
 	 * @return void
 	 */
 	public function onFinish() {

@@ -1,9 +1,10 @@
 <?php
+
 class MemcacheClient extends AsyncServer {
 
 	// FIXME $sessions is checked onShutdown in asyncServer ('tis NOT great)
 	public $sessions = array();      // Active sessions
-	private $servers = array();       // Array of servers 
+	private $servers = array();      // Array of servers 
 	public $dtags_enabled = FALSE;   // Enables tags for distribution
 	public $servConn = array();      // Active connections
 	public $prefix = '';             // Prefix for all keys
@@ -25,8 +26,7 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {
@@ -40,11 +40,10 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method addServer
-	 * @description Adds memcached server.
-	 * @param string Server's host.
-	 * @param string Server's port.
-	 * @param integer Weight.
+	 * Adds memcached server
+	 * @param string Server's host
+	 * @param string Server's port
+	 * @param integer Weight
 	 * @return void
 	 */
 	public function addServer($host, $port = NULL, $weight = NULL) {
@@ -56,10 +55,9 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method get
-	 * @description Gets the key.
-	 * @param string Key.
-	 * @param mixed Callback called when response received.
+	 * Gets the key
+	 * @param string Key
+	 * @param mixed Callback called when response received
 	 * @return void
 	 */
 	public function get($key, $onResponse) {
@@ -74,12 +72,11 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method set
-	 * @description Sets the key.
-	 * @param string Key.
-	 * @param string Value.
-	 * @param integer Lifetime in seconds. 0 - immortal.
-	 * @param mixed Callback called when the request complete.
+	 * Sets the key
+	 * @param string Key
+	 * @param string Value
+	 * @param integer Lifetime in seconds (0 - immortal)
+	 * @param mixed Callback called when the request complete
 	 * @return void
 	 */
 	public function set($key, $value, $exp = 0, $onResponse = NULL) {
@@ -107,12 +104,11 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method Adds
-	 * @description Adds the key.
-	 * @param string Key.
-	 * @param string Value.
-	 * @param integer Lifetime in seconds. 0 - immortal.
-	 * @param mixed Callback called when the request complete.
+	 * Adds the key
+	 * @param string Key
+	 * @param string Value
+	 * @param integer Lifetime in seconds (0 - immortal)
+	 * @param mixed Callback called when the request complete
 	 * @return void
 	 */
 	public function add($key, $value, $exp = 0, $onResponse = NULL) {
@@ -140,11 +136,10 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method delete
-	 * @description Deletes the key.
-	 * @param string Key.
-	 * @param mixed Callback called when the request complete.
-	 * @param integer Time to block this key.
+	 * Deletes the key
+	 * @param string Key
+	 * @param mixed Callback called when the request complete
+	 * @param integer Time to block this key
 	 * @return void
 	 */
 	public function delete($key, $onResponse = NULL, $time = 0) {
@@ -164,12 +159,11 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method Replace
-	 * @description Replaces the key.
-	 * @param string Key.
-	 * @param string Value.
-	 * @param integer Lifetime in seconds. 0 - immortal.
-	 * @param mixed Callback called when the request complete.
+	 * Replaces the key
+	 * @param string Key
+	 * @param string Value
+	 * @param integer Lifetime in seconds (0 - immortal)
+	 * @param mixed Callback called when the request complete
 	 * @return void
 	 */
 	public function replace($key, $value, $exp = 0, $onResponse = NULL) {
@@ -190,12 +184,11 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method append
-	 * @description Appends a string to the key's value.
-	 * @param string Key.
-	 * @param string Value to append.
-	 * @param integer Lifetime in seconds. 0 - immortal.
-	 * @param mixed Callback called when the request complete.
+	 * Appends a string to the key's value
+	 * @param string Key
+	 * @param string Value to append
+	 * @param integer Lifetime in seconds (0 - immortal)
+	 * @param mixed Callback called when the request complete
 	 * @return void
 	 */
 	public function append($key, $value, $exp = 0, $onResponse = NULL) {
@@ -215,12 +208,11 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method prepend
-	 * @description Prepends a string to the key's value.
-	 * @param string Key.
-	 * @param string Value to prepend.
-	 * @param integer Lifetime in seconds. 0 - immortal.
-	 * @param mixed Callback called when the request complete.
+	 * Prepends a string to the key's value
+	 * @param string Key
+	 * @param string Value to prepend
+	 * @param integer Lifetime in seconds (0 - immortal)
+	 * @param mixed Callback called when the request complete
 	 * @return void
 	 */
 	public function prepend($key, $value, $exp = 0, $onResponse = NULL) {
@@ -240,10 +232,9 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method stats
-	 * @description Gets a statistics.
-	 * @param mixed Callback called when the request complete.
-	 * @param string Server.
+	 * Gets a statistics
+	 * @param mixed Callback called when the request complete
+	 * @param string Server
 	 * @return void
 	 */
 	public function stats($onResponse, $server = NULL) {
@@ -251,10 +242,9 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getConnection
-	 * @description Returns available connection from the pool.
-	 * @param string Address.
-	 * @return @return object MemcacheSession
+	 * Returns available connection from the pool
+	 * @param string Address
+	 * @return object MemcacheSession
 	 */
 	public function getConnection($addr) {
 		if (isset($this->servConn[$addr])) {
@@ -287,9 +277,8 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getConnectionByKey
-	 * @description Returns available connection from the pool by key.
-	 * @param string Key.
+	 * Returns available connection from the pool by key
+	 * @param string Key
 	 * @return object MemcacheSession
 	 */
 	public function getConnectionByKey($key) {
@@ -310,11 +299,10 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method requestByServer
-	 * @description Sends a request to arbitrary server.
-	 * @param string Server.
-	 * @param string Request.
-	 * @param mixed Callback called when the request complete.
+	 * Sends a request to arbitrary server
+	 * @param string Server
+	 * @param string Request
+	 * @param mixed Callback called when the request complete
 	 * @return object MemcacheSession
 	 */
 	public function requestByServer($k, $s, $onResponse) {
@@ -351,11 +339,10 @@ class MemcacheClient extends AsyncServer {
 	}
 
 	/**
-	 * @method requestByKey
-	 * @description Sends a request to server according to the key.
-	 * @param string Key.
-	 * @param string Request.
-	 * @param mixed Callback called when the request complete.
+	 * Sends a request to server according to the key
+	 * @param string Key
+	 * @param string Request
+	 * @param mixed Callback called when the request complete
 	 * @return object MemcacheSession
 	 */
 	public function requestByKey($k, $s, $onResponse) {
@@ -370,6 +357,7 @@ class MemcacheClient extends AsyncServer {
 		$sess->write($s);
 		$sess->write("\r\n");
 	}
+	
 }
 
 class MemcacheSession extends SocketSession {
@@ -386,9 +374,8 @@ class MemcacheSession extends SocketSession {
 	public $finished = FALSE;      // is this session finished?
 
 	/**
-	 * @method stdin 
-	 * @description Called when new data received.
-	 * @param string New data.
+	 * Called when new data received
+	 * @param string New data
 	 * @return void
 	*/
 	public function stdin($buf) {
@@ -465,8 +452,7 @@ class MemcacheSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when session finishes.
+	 * Called when session finishes
 	 * @return void
 	 */
 	public function onFinish() {
@@ -475,4 +461,5 @@ class MemcacheSession extends SocketSession {
 		unset($this->appInstance->servConn[$this->addr][$this->connId]);
 		unset($this->appInstance->sessions[$this->connId]);
 	}
+	
 }

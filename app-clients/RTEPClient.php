@@ -18,8 +18,7 @@ class RTEPClient extends AppInstance {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {

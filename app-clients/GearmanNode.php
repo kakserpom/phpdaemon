@@ -22,8 +22,7 @@ class GearmanNode extends AppInstance {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {
@@ -47,14 +46,14 @@ class GearmanNode extends AppInstance {
 			$this->interval = $this->pushRequest(new GearmanNodeInterval($this, $this));
 		}
 	}
+	
 }
 
 class GearmanNodeInterval extends Request {
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
-	 * @return integer Status.
+	 * Called when request iterated
+	 * @return integer Status
 	 */
 	public function run() {
 		$worker = $this->appInstance->worker;
@@ -77,4 +76,5 @@ class GearmanNodeInterval extends Request {
 		@$worker->wait();
 		$this->sleep(0.2);
 	}
+	
 }

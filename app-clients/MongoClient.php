@@ -1,5 +1,7 @@
 <?php
+
 class MongoClient extends AsyncServer {
+
 	public $sessions    = array(); // Active sessions
 	public $servers     = array(); // Array of servers
 	public $servConn    = array(); // Active connections
@@ -39,8 +41,7 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {
@@ -53,10 +54,9 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method selectDB
-	 * @description Sets default database name.
-	 * @param string Database name.
-	 * @return boolean Success.
+	 * Sets default database name
+	 * @param string Database name
+	 * @return boolean Success
 	 */
 	public function selectDB($name) {
 		$this->dbname = $name;
@@ -65,22 +65,20 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getAuthKey
-	 * @description Generates auth. key.
-	 * @param string Username.
-	 * @param string Password.
-	 * @param string nonce.
-	 * @return string MD5 hash.
+	 * Generates auth. key
+	 * @param string Username
+	 * @param string Password
+	 * @param string nonce
+	 * @return string MD5 hash
 	 */
 	public static function getAuthKey($username, $password, $nonce) {
 		return md5($nonce . $username . md5($username . ':mongo:' . $password));
 	}
 
 	/**
-	 * @method addServer
-	 * @description Adds mongo server.
+	 * Adds mongo server
 	 * @param string URL
-	 * @param integer Weight.
+	 * @param integer Weight
 	 * @return void
 	 */
 	public function addServer($url, $weight = NULL) {
@@ -88,13 +86,12 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method request
-	 * @description Gets the key.
-	 * @param string Key.
-	 * @param integer Opcode (see constants above).
-	 * @param string Data.
+	 * Gets the key
+	 * @param string Key
+	 * @param integer Opcode (see constants above)
+	 * @param string Data
 	 * @param boolean Is an answer expected?
-	 * @return integer Request ID.
+	 * @return integer Request ID
 	 * @throws MongoClientSessionFinished
 	 */
 	public function request($key, $opcode, $data, $reply = FALSE) {
@@ -123,10 +120,9 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method find
-	 * @description Finds objects in collection.
-	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog).
-	 * @param mixed Callback called when response received.
+	 * Finds objects in collection
+	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
+	 * @param mixed Callback called when response received
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
@@ -224,11 +220,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method findOne
-	 * @description Finds one object in collection.
-	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog).
-	 * @param mixed Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * Finds one object in collection
+	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
+	 * @param mixed Callback called when response received
+	 * @param string Optional. Distribution key
 	 * @return void
 	 */
 	public function findOne($p, $callback, $key = '') {
@@ -320,11 +315,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method count
-	 * @description Counts objects in collection.
-	 * @param array Hash of properties (offset,  limit,  opts,  where,  col).
-	 * @param mixed Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * Counts objects in collection
+	 * @param array Hash of properties (offset,  limit,  opts,  where,  col)
+	 * @param mixed Callback called when response received
+	 * @param string Optional. Distribution key
 	 * @return void
 	 */
 	public function count($p, $callback, $key = '') {
@@ -377,11 +371,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method auth
-	 * @description Sends authenciation packet.
-	 * @param array Hash of properties (dbname,  user,  password,  nonce).
-	 * @param mixed Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * Sends authenciation packet
+	 * @param array Hash of properties (dbname,  user,  password,  nonce)
+	 * @param mixed Callback called when response received
+	 * @param string Optional. Distribution key
 	 * @return void
 	 */
 	public function auth($p, $callback, $key = '') {
@@ -407,8 +400,7 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getNonce
-	 * @description Sends request of nonce.
+	 * Sends request of nonce
 	 * @return void
 	 */
 	public function getNonce($p, $callback, $key = '') {
@@ -431,11 +423,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method lastError
-	 * @description Gets last error.
-	 * @param string Dbname.
-	 * @param mixed Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * Gets last error
+	 * @param string Dbname
+	 * @param mixed Callback called when response received
+	 * @param string Optional. Distribution key
 	 * @return void
 	 */
 	public function lastError($db, $callback, $key = '') {
@@ -451,11 +442,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method range
-	 * @description Finds objects in collection using min/max specifiers.
-	 * @param array Hash of properties (offset,  limit,  opts,  where,  col,  min,  max).
-	 * @param mixed Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * Find objects in collection using min/max specifiers
+	 * @param array Hash of properties (offset,  limit,  opts,  where,  col,  min,  max)
+	 * @param mixed Callback called when response received
+	 * @param string Optional. Distribution key
 	 * @return void
 	 */
 	public function range($p, $callback, $key = '') {
@@ -522,11 +512,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method evaluate
-	 * @description Evaluates a code on the server side.
-	 * @param string Code.
-	 * @param mixed Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * Evaluates a code on the server side
+	 * @param string Code
+	 * @param mixed Callback called when response received
+	 * @param string Optional. Distribution key
 	 * @return void
 	 */
 	public function evaluate($code, $callback, $key = '') {
@@ -561,11 +550,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method distinct
-	 * @description Returns distinct values of the property.
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col).
-	 * @param mixed Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * Returns distinct values of the property
+	 * @param array Hash of properties (offset,  limit,  opts,  key,  col)
+	 * @param mixed Callback called when response received
+	 * @param string Optional. Distribution key
 	 * @return void
 	 */
 	public function distinct($p, $callback, $key = '') {
@@ -607,11 +595,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method group
-	 * @description Groupping function.
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial).
-	 * @param mixed Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * Groupping function
+	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
+	 * @param mixed Callback called when response received
+	 * @param string Optional. Distribution key
 	 * @return void
 	 */
 	public function group($p, $callback, $key = '') {
@@ -677,16 +664,14 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method updateWorker
-	 * @description Called when worker is going to update configuration.
+	 * Called when worker is going to update configuration
 	 * @return void
 	 */
-	public function updateWorker() {}
+	public function updateWorker() { }
 
 	/**
-	 * @method handleStatus
+	 * Handles the worker's status.	
 	 * @param int Status code.
-	 * @description Handles the worker's status.
 	 * @return boolean Result.
 	 */
 	public function handleStatus($ret) {
@@ -713,11 +698,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method update
-	 * @description Updates one object in collection.
-	 * @param string Collection's name.
-	 * @param array Conditions.
-	 * @param array Data.
+	 * Updates one object in collection
+	 * @param string Collection's name
+	 * @param array Conditions
+	 * @param array Data
 	 * @param integer Optional. Flags.
 	 * @param string Optional. Distribution key.
 	 * @return void
@@ -752,11 +736,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method updateMulti
-	 * @description Updates several objects in collection.
-	 * @param string Collection's name.
-	 * @param array Conditions.
-	 * @param array Data.
+	 * Updates several objects in collection
+	 * @param string Collection's name
+	 * @param array Conditions
+	 * @param array Data
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
@@ -765,11 +748,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method upsert
-	 * @description Upserts an object (updates if exists,  insert if not exists).
-	 * @param string Collection's name.
-	 * @param array Conditions.
-	 * @param array Data.
+	 * Upserts an object (updates if exists,  insert if not exists)
+	 * @param string Collection's name
+	 * @param array Conditions
+	 * @param array Data
 	 * @param boolean Optional. Multi-flag.
 	 * @param string Optional. Distribution key.
 	 * @return void
@@ -779,10 +761,9 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method insert
-	 * @description Inserts an object.
-	 * @param string Collection's name.
-	 * @param array Data.
+	 * Inserts an object
+	 * @param string Collection's name
+	 * @param array Data
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
@@ -809,9 +790,8 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method killCursors
-	 * @description Sends a request to kill certain cursors on the server side.
-	 * @param array Array of cursors.
+	 * Sends a request to kill certain cursors on the server side
+	 * @param array Array of cursors
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
@@ -824,10 +804,9 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method insertMulti
-	 * @description Inserts several documents.
-	 * @param string Collection's name.
-	 * @param array Array of docs.
+	 * Inserts several documents
+	 * @param string Collection's name
+	 * @param array Array of docs
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
@@ -863,10 +842,9 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method remove
-	 * @description Removes objects from collection.
-	 * @param string Collection's name.
-	 * @param array Conditions.
+	 * Remove objects from collection
+	 * @param string Collection's name
+	 * @param array Conditions
 	 * @param mixed Optional. Callback called when response received.
 	 * @param string Optional. Distribution key.
 	 * @return void
@@ -893,11 +871,10 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getMore
-	 * @description Asks for more objects.
-	 * @param string Collection's name.
-	 * @param string Cursor's ID.
-	 * @param integer Number of objects.
+	 * Asks for more objects
+	 * @param string Collection's name
+	 * @param string Cursor's ID
+	 * @param integer Number of objects
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
@@ -915,9 +892,8 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getCollection
-	 * @description Returns an object of collection.
-	 * @param string Collection's name.
+	 * Returns an object of collection
+	 * @param string Collection's name
 	 * @return object MongoClientCollection
 	 */
 	public function getCollection($col) {
@@ -933,9 +909,8 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method __get
-	 * @description Magic getter-method. Proxy for getCollection. 
-	 * @param string Collection's name.
+	 * Magic getter-method. Proxy for getCollection. 
+	 * @param string Collection's name
 	 * @return void
 	 */
 	public function __get($name) {
@@ -943,8 +918,7 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getConnection
-	 * @description Establishes connection.
+	 * Establishes connection
 	 * @param string URL
 	 * @return integer Connection's ID.
 	 */
@@ -1012,9 +986,8 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getConnectionByKey
-	 * @description Establishes connection.
-	 * @param string Distrubution key.
+	 * Establishes connection
+	 * @param string Distrubution key
 	 * @return integer Connection's ID.
 	 */
 	public function getConnectionByKey($key) {
@@ -1044,9 +1017,8 @@ class MongoClientSession extends SocketSession {
 	public $finished = FALSE;  // Is this session finished?
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
-	 * @param string New data.
+	 * Called when new data received
+	 * @param string New data
 	 * @return void
 	 */
 	public function stdin($buf) {
@@ -1160,8 +1132,7 @@ class MongoClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when session finished.
+	 * Called when session finished
 	 * @return void
 	 */
 	public function onFinish() {
@@ -1170,6 +1141,7 @@ class MongoClientSession extends SocketSession {
 		unset($this->servConn[$this->url][$this->connId]);
 		unset($this->appInstance->sessions[$this->connId]);
 	}
+	
 }
 
 class MongoClientCollection {
@@ -1177,10 +1149,9 @@ class MongoClientCollection {
 	public $name; // Name of collection.
 
 	/**
-	 * @method __contruct
-	 * @description Contructor of MongoClientCOllection
-	 * @param string Name of collection.
-	 * @param string Application's instance.
+	 * Contructor of MongoClientCOllection
+	 * @param string Name of collection
+	 * @param string Application's instance
 	 * @return void
 	 */
 	public function __construct($name, $appInstance) {
@@ -1189,10 +1160,9 @@ class MongoClientCollection {
 	}
 
 	/**
-	 * @method find
-	 * @description Finds objects in collection.
-	 * @param mixed Callback called when response received.
-	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog).
+	 * Finds objects in collection
+	 * @param mixed Callback called when response received
+	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
@@ -1203,10 +1173,9 @@ class MongoClientCollection {
 	}
 
 	/**
-	 * @method findOne
-	 * @description Finds one object in collection.
-	 * @param mixed Callback called when response received.
-	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog).
+	 * Finds one object in collection
+	 * @param mixed Callback called when response received
+	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
 	 * @param string Optional. Distribution key.
 	 * @return void
  	*/
@@ -1217,10 +1186,9 @@ class MongoClientCollection {
 	}
 
 	/**
-	 * @method count
-	 * @description Counts objects in collection.
-	 * @param mixed Callback called when response received.
-	 * @param array Hash of properties (offset,  limit,  opts,  where,  col).
+	 * Counts objects in collection
+	 * @param mixed Callback called when response received
+	 * @param array Hash of properties (offset,  limit,  opts,  where,  col)
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
@@ -1232,10 +1200,9 @@ class MongoClientCollection {
 	}
 
 	/**
-	 * @method group
-	 * @description Groupping function.
-	 * @param mixed Callback called when response received.
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial).
+	 * Groupping function
+	 * @param mixed Callback called when response received
+	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
 	 * @return void
 	 */
 	public function group($callback, $p = array(), $key = '') {
@@ -1245,9 +1212,8 @@ class MongoClientCollection {
 	}
 
 	/**
-	 * @method insert
-	 * @description Inserts an object.
-	 * @param array Data.
+	 * Inserts an object
+	 * @param array Data
 	 * @param mixed Optional. Callback called when response received.
 	 * @param string Optional. Distribution key.
 	 * @return void
@@ -1257,9 +1223,8 @@ class MongoClientCollection {
 	}
 
 	/**
-	 * @method insertMulti
-	 * @description Inserts several documents.
-	 * @param array Array of docs.
+	 * Inserts several documents
+	 * @param array Array of docs
 	 * @param mixed Optional. Callback called when response received.
 	 * @param string Optional. Distribution key.
 	 * @return void
@@ -1269,10 +1234,9 @@ class MongoClientCollection {
 	}
 
 	/**
-	 * @method update
-	 * @description Updates one object in collection.
-	 * @param array Conditions.
-	 * @param array Data.
+	 * Updates one object in collection
+	 * @param array Conditions
+	 * @param array Data
 	 * @param integer Optional. Flags.
 	 * @param mixed Optional. Callback called when response received.
 	 * @param string Optional. Distribution key.
@@ -1282,23 +1246,22 @@ class MongoClientCollection {
 		return $this->appInstance->update($this->name, $cond, $data, $flags, $cb, $key);
 	}
 
-	/* @method updateMulti
-	@description Updates several objects in collection.
-	@param array Conditions.
-	@param array Data.
-	@param mixed Optional. Callback called when response received.
-	@param string Optional. Distribution key.
-	@return void
-	*/
+	/**
+	 * Updates several objects in collection
+	 * @param array Conditions
+	 * @param array Data
+	 * @param mixed Optional. Callback called when response received.
+	 * @param string Optional. Distribution key.
+	 * @return void
+	 */
 	public function updateMulti($cond, $data, $cb = NULL, $key = '') {
-	return $this->appInstance->updateMulti($this->name, $cond, $data, $cb, $key);
+		return $this->appInstance->updateMulti($this->name, $cond, $data, $cb, $key);
 	}
 
 	/**
-	 * @method upsert
-	 * @description Upserts an object (updates if exists,  insert if not exists).
-	 * @param array Conditions.
-	 * @param array Data.
+	 * Upserts an object (updates if exists,  insert if not exists)
+	 * @param array Conditions
+	 * @param array Data
 	 * @param boolean Optional. Multi-flag.
 	 * @param mixed Optional. Callback called when response received.
 	 * @param string Optional. Distribution key.
@@ -1309,9 +1272,8 @@ class MongoClientCollection {
 	}
 
 	/**
-	 * @method remove
-	 * @description Removes objects from collection.
-	 * @param array Conditions.
+	 * Removes objects from collection
+	 * @param array Conditions
 	 * @param mixed Optional. Callback called when response received.
 	 * @param string Optional. Distribution key.
 	 * @return void
@@ -1319,6 +1281,7 @@ class MongoClientCollection {
 	public function remove($cond = array(), $cb = NULL, $key = '') {
 		return $this->appInstance->remove($this->name, $cond, $cb, $key);
 	}
+	
 }
 
 class MongoClientCursor {
@@ -1334,10 +1297,9 @@ class MongoClientCursor {
 	public $destroyed = FALSE;  // Is this cursor destroyed?
 
 	/**
-	 * @method __construct
-	 * @description Constructor.
-	 * @param string Cursor's ID.
-	 * @param string Collection's name.
+	 * Constructor
+	 * @param string Cursor's ID
+	 * @param string Collection's name
 	 * @param object Network session (MongoClientSession), 
 	 * @return void
 	 */
@@ -1349,9 +1311,8 @@ class MongoClientCursor {
 	}
 
 	/**
-	 * @method getMore
-	 * @description Asks for more objects.
-	 * @param integer Number of objects.
+	 * Asks for more objects
+	 * @param integer Number of objects
 	 * @return void
 	 */
 	public function getMore($number = 0) {
@@ -1364,9 +1325,8 @@ class MongoClientCursor {
 	}
 
 	/**
-	 * @method destroy
-	 * @description Destroys the cursors.
-	 * @return boolean Success.
+	 * Destroys the cursors
+	 * @return boolean Success
 	 */
 	public function destroy() {
 		$this->destroyed = TRUE;
@@ -1376,8 +1336,7 @@ class MongoClientCursor {
 	}
 
 	/**
-	 * @method __destruct
-	 * @description Cursor's destructor. Sends a signal to the server.
+	 * Cursor's destructor. Sends a signal to the server.
 	 * @return void
 	 */
 	public function __destruct() {

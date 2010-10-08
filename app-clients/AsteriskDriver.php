@@ -22,21 +22,18 @@ class AsteriskDriver extends AsyncServer {
 
 	/**
 	 * Active sessions.
-	 * 
 	 * @var array
 	 */
 	public $sessions = array();
 	
 	/**
 	 * Active connections.
-	 * 
 	 * @var array
 	 */
 	public $servConn = array();
 	
 	/**
 	 * Asterisk Call Manager Interface versions for each session.
-	 * 
 	 * @var array
 	 */
 	public $amiVersions = array();
@@ -59,7 +56,6 @@ class AsteriskDriver extends AsyncServer {
 
 	/**
 	 * Constructor.
-	 *
 	 * @return void
 	 */
 	public function init() {
@@ -70,7 +66,6 @@ class AsteriskDriver extends AsyncServer {
 
 	/**
 	 * Establishes connection.
-	 *
 	 * @param string $addr Optional address.
 	 * @return AsteriskDriverSession Session object.
 	 */
@@ -131,63 +126,54 @@ class AsteriskDriverSession extends SocketSession {
 	
 	/**
 	 * The username to access the interface.
-	 *
 	 * @var string
 	 */
 	public $username;
 	
 	/**
 	 * The password defined in manager interface of server.
-	 *
 	 * @var string
 	 */
 	public $secret;
 	
 	/**
 	 * Enabling the ability to handle encrypted authentication if set to 'md5'.
-	 *
 	 * @var string|null
 	 */
 	public $authtype = 'md5';
 	
 	/**
 	 * Property holds a reference to user's object.
-	 * 
 	 * @var AppInstance
 	 */
 	public $context;
 	
 	/**
 	 * Connection's state.
-	 * 
 	 * @var float
 	 */
 	public $cstate = AsteriskDriver::CONN_STATE_START;
 	
 	/**
 	 * Input state.
-	 * 
 	 * @var integer
 	 */
 	public $instate = AsteriskDriver::INPUT_STATE_START;
 	
 	/**
 	 * Received packets.
-	 * 
 	 * @var array
 	 */
 	public $packets = array();
 	
 	/**
 	 * For composite response on action.
-	 * 
 	 * @var integer
 	 */
 	public $cnt = 0;
 	
 	/**
 	 * Stack of callbacks called when response received.
-	 * 
 	 * @var array
 	 */
 	public $callbacks = array();
@@ -203,49 +189,42 @@ class AsteriskDriverSession extends SocketSession {
 	
 	/**
 	 * Callback. Called when received response on challenge action.
-	 * 
 	 * @var callback
 	 */
 	public $onChallenge;
 	
 	/**
 	 * Callback. Called when connection's handshaked.
-	 * 
 	 * @var callback
 	 */
 	public $onConnected;
 	
 	/**
 	 * Callback. Called when asterisk send event.
-	 * 
 	 * @var callback
 	 */
 	public $onEvent;
 	
 	/**
 	 * Callback. Called when error occured.
-	 * 
 	 * @var callback
 	 */
 	public $onError;
 	
 	/**
 	 * Callback. Called when session finishes.
-	 * 
 	 * @var callback
 	 */
 	public $onFinish;
 	
 	/**
 	 * Beginning of the string in the header or value that indicates whether the save value case.
-	 * 
 	 * @var array
 	 */
 	public $safeCaseValues = array('dialstring', 'callerid');
 
 	/**
 	 * Extract key and value pair from line.
-	 *
 	 * @param string $line
 	 * @return array
 	 */
@@ -276,7 +255,6 @@ class AsteriskDriverSession extends SocketSession {
 
 	/**
 	 * Called when new data received.
-	 *
 	 * @param string $buf New received data.
 	 * @return void
 	 */
@@ -378,8 +356,7 @@ class AsteriskDriverSession extends SocketSession {
 	}
 
 	/**
-	 * Executes the given callback when/if the connection is handshaked.
-	 *
+	 * Execute the given callback when/if the connection is handshaked.
 	 * @param $callback
 	 * @return void
 	 */
@@ -402,7 +379,6 @@ class AsteriskDriverSession extends SocketSession {
 
 	/**
 	 * Send authentication packet
-	 *
 	 * @return void
 	 */
 	protected function auth() {
@@ -587,7 +563,6 @@ class AsteriskDriverSession extends SocketSession {
 
 	/**
 	 * Called when event occured.
-	 * 
 	 * @param $callback
 	 * @return void
 	 */
@@ -597,7 +572,6 @@ class AsteriskDriverSession extends SocketSession {
 
 	/**
 	 * Called when error occured.
-	 *
 	 * @param $callback
 	 * @return void
 	 */
@@ -607,7 +581,6 @@ class AsteriskDriverSession extends SocketSession {
 
 	/**
 	 * Generate a unique ID.
-	 *
 	 * @return Returns the unique identifier, as a string. 
 	 */
 	protected function uniqid() {
@@ -616,7 +589,6 @@ class AsteriskDriverSession extends SocketSession {
 	
 	/**
 	 * Sends a packet.
-	 *
 	 * @param string $pacekt Data
 	 * @return void
 	 */
@@ -626,7 +598,6 @@ class AsteriskDriverSession extends SocketSession {
 	
 	/**
 	 * Sends arbitrary command.
-	 * 
 	 * @param string $packet A packet for sending by the connected client to Asterisk
 	 * @param $callback Callback called when response received.
 	 * @param array $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent. 
@@ -652,7 +623,6 @@ class AsteriskDriverSession extends SocketSession {
 
 	/**
 	 * Generate AMI packet string from associative array provided.
-	 *
 	 * @param array $params
 	 * @return string 
 	 */
@@ -666,7 +636,6 @@ class AsteriskDriverSession extends SocketSession {
 
 	/**
 	 * Called when session finishes or set onFinish callback.
-	 *
 	 * @param $callback
 	 * @return void
 	 */

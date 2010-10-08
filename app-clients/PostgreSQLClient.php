@@ -25,8 +25,7 @@ class PostgreSQLClient extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {
@@ -37,10 +36,9 @@ class PostgreSQLClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getConnection
-	 * @description Establishes connection.
-	 * @param string Address.
-	 * @return integer Connection's ID.
+	 * Establish connection
+	 * @param string Address
+	 * @return integer Connection's ID
 	 */
 	public function getConnection($addr = NULL) {
 		if (!$this->ready) {
@@ -122,8 +120,7 @@ class PostgreSQLClientSession extends SocketSession {
 	public $finished      = FALSE;     // Is this session finished?
 
 	/**
-	 * @method onwrite
-	 * @description Called when the connection is ready to accept new data.
+	 * Called when the connection is ready to accept new data
 	 * @return void
 	 */
 	public function onWrite() {
@@ -151,9 +148,8 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onConnected
-	 * @description Executes the given callback when/if the connection is handshaked.
-	 * @description Callback.
+	 * Executes the given callback when/if the connection is handshaked.
+	 * Callback.
 	 * @return void
 	 */
 	public function onConnected($callback) {
@@ -167,11 +163,11 @@ class PostgreSQLClientSession extends SocketSession {
 		}
 	}
 
-	/** @method bytes2int
-	 * @description Converts binary string to integer.
-	 * @param string Binary string.
+	/** 
+	 * Converts binary string to integer
+	 * @param string Binary string
 	 * @param boolean Optional. Little endian. Default value - true.
-	 * @return integer Resulting integer.
+	 * @return integer Resulting integer
 	 */
 	public function bytes2int($str, $l = TRUE) {
 		if ($l) {
@@ -189,12 +185,11 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method int2bytes
-	 * @description Converts integer to binary string.
-	 * @param integer Length.
-	 * @param integer Integer.
+	 * Converts integer to binary string
+	 * @param integer Length
+	 * @param integer Integer
 	 * @param boolean Optional. Little endian. Default value - true.
-	 * @return string Resulting binary string.
+	 * @return string Resulting binary string
 	 */
 	function int2bytes($len, $int = 0, $l = TRUE) {
 		$hexstr = dechex($int);
@@ -218,10 +213,9 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method sendPacket
-	 * @description Sends a packet.
-	 * @param string Data.
-	 * @return boolean Success.
+	 * Send a packet
+	 * @param string Data
+	 * @return boolean Success
 	 */
 	public function sendPacket($type = '',  $packet) {
 		$header = $type . pack('N', strlen($packet) + 4); 
@@ -237,10 +231,9 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method buildLenEncodedBinary
-	 * @description Builds length-encoded binary string.
-	 * @param string String.
-	 * @return string Resulting binary string.
+	 * Builds length-encoded binary string
+	 * @param string String
+	 * @return string Resulting binary string
 	 */
 	public function buildLenEncodedBinary($s) {
 		if ($s === NULL) {
@@ -265,10 +258,9 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method parseEncodedBinary
-	 * @description Parses length-encoded binary.
-	 * @param string Reference to source string.
-	 * @return integer Result.
+	 * Parses length-encoded binary
+	 * @param string Reference to source string
+	 * @return integer Result
 	 */
 	public function parseEncodedBinary(&$s, &$p) {
 		$f = ord(binarySubstr($s, $p, 1));
@@ -307,11 +299,10 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method parseEncodedBinary
-	 * @description Parses length-encoded string.
-	 * @param string Reference to source string.
-	 * @param integer Reference to pointer.
-	 * @return integer Result.
+	 * Parse length-encoded string
+	 * @param string Reference to source string
+	 * @param integer Reference to pointer
+	 * @return integer Result
 	 */
 	public function parseEncodedString(&$s, &$p) {
 		$l = $this->parseEncodedBinary($s, $p);
@@ -330,52 +321,48 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method query
-	 * @description Sends SQL-query.
-	 * @param string Query.
+	 * Send SQL-query
+	 * @param string Query
 	 * @param callback Optional. Callback called when response received.
-	 * @return boolean Success.
+	 * @return boolean Success
 	 */
 	public function query($q, $callback = NULL) {
 		return $this->command('Q', $q . "\x00", $callback);
 	}
 
 	/** 
-	 * @method ping
-	 * @description Sends echo-request.
-	 * @param callback Optional. Callback called when response received.
-	 * @return boolean Success.
+	 * Send echo-request
+	 * @param callback Optional. Callback called when response received
+	 * @return boolean Success
 	 */
 	public function ping($callback = NULL) {
+		//FIXME ???
 		//return $this->command(, '', $callback);
 	}
 
 	/**
-	 * @method sync
-	 * @description Sends sync-request.
+	 * Sends sync-request
 	 * @param callback Optional. Callback called when response received.
-	 * @return boolean Success.
+	 * @return boolean Success
 	 */
 	public function sync($callback = NULL) {
 		return $this->command('S', '', $callback);
 	}
 
 	/**
-	 * @method terminate
-	 * @description Sends terminate-request to shutdown the connection.
-	 * @return boolean Success.
+	 * Send terminate-request to shutdown the connection
+	 * @return boolean Success
 	 */
 	public function terminate() {
 		return $this->command('X', '', $callback);
 	}
 
 	/**
-	 * @method command
-	 * @description Sends arbitrary command.
+	 * Sends arbitrary command
 	 * @param integer Command's code. See constants above.
-	 * @param string Data.
+	 * @param string Data
 	 * @param callback Optional. Callback called when response received.
-	 * @return boolean Success.
+	 * @return boolean Success
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {
 		if ($this->cstate !== 4) {
@@ -389,10 +376,9 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method selectDB
-	 * @description Sets default database name.
-	 * @param string Database name.
-	 * @return boolean Success.
+	 * Set default database name
+	 * @param string Database name
+	 * @return boolean Success
 	 */
 	public function selectDB($name) {
 		$this->dbname = $name;
@@ -405,9 +391,8 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
-	 * @param string New data.
+	 * Called when new data received
+	 * @param string New data
 	 * @return void
 	 */
 	public function stdin($buf) {
@@ -454,7 +439,7 @@ class PostgreSQLClientSession extends SocketSession {
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, TRUE);
 				}
-			}
+			} // FIXME move to constant values
 			elseif ($authType === 2) {
 				// KerberosV5
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: KerberosV5.');
@@ -655,12 +640,11 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method decodeNULstrings
-	 * @description Decodes strings from the NUL-terminated representation.
-	 * @param string Binary data.
+	 * Decode strings from the NUL-terminated representation
+	 * @param string Binary data
 	 * @param integer Optional. Limit of count. Default is 1.
 	 * @param reference Optional. Pointer.
-	 * @return array Decoded strings.
+	 * @return array Decoded strings
 	 */
 	public function decodeNULstrings($data, $limit = 1, &$p = 0) {
 		$r = array();
@@ -681,8 +665,7 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onResultDone
-	 * @description Called when the whole result received.
+	 * Called when the whole result received
 	 * @return void
 	 */
 	public function onResultDone() {
@@ -705,8 +688,7 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onError
-	 * @description Called when error occured.
+	 * Called when error occured
 	 * @return void
 	 */
 	public function onError() {
@@ -733,8 +715,7 @@ class PostgreSQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when session finishes.
+	 * Called when session finishes
 	 * @return void
 	 */
 	public function onFinish() {

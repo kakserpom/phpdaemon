@@ -1,4 +1,5 @@
 <?php
+
 class MySQLClient extends AsyncServer {
 
 	public $sessions = array(); // Active sessions
@@ -111,8 +112,7 @@ class MySQLClient extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {
@@ -120,8 +120,7 @@ class MySQLClient extends AsyncServer {
 	}
 
 	/**
-	 * @method escape
-	 * @description Escapes the special symbols with trailing backslash.
+	 * Escapes the special symbols with trailing backslash
 	 * @return string
 	 */
 	public static function escape($string) {
@@ -138,8 +137,7 @@ class MySQLClient extends AsyncServer {
 	}
 	
 	/**
-	 * @method likeEscape
-	 * @description Escapes the special symbols with a trailing backslash.
+	 * Escapes the special symbols with a trailing backslash
 	 * @return string
 	 */
 	public static function likeEscape($string) {
@@ -158,10 +156,9 @@ class MySQLClient extends AsyncServer {
 	}
 
 	/**
-	 * @method getConnection
-	 * @description Establishes connection.
+	 * Establish connection
 	 * @param string Optional. Address.
-	 * @return integer Connection's ID.
+	 * @return integer Connection's ID
 	 */
 	public function getConnection($addr = NULL)
 	{
@@ -237,9 +234,8 @@ class MySQLClientSession extends SocketSession {
 	public $finished = FALSE;           // Is this session finished?
 	
 	/**
-	 * @method onConnected
-	 * @description Executes the given callback when/if the connection is handshaked.
-	 * @description Callback.
+	 * Executes the given callback when/if the connection is handshaked
+	 * Callback
 	 * @return void
 	 */
 	public function onConnected($callback) 
@@ -255,11 +251,10 @@ class MySQLClientSession extends SocketSession {
 	}
 	
 	/**
-	 * @method bytes2int
-	 * @description Converts binary string to integer.
-	 * @param string Binary string.
+	 * Converts binary string to integer
+	 * @param string Binary string
 	 * @param boolean Optional. Little endian. Default value - true.
-	 * @return integer Resulting integer.
+	 * @return integer Resulting integer
 	 */
 	public function bytes2int($str, $l = TRUE)
 	{
@@ -278,12 +273,11 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method int2bytes
-	 * @description Converts integer to binary string.
-	 * @param integer Length.
-	 * @param integer Integer.
+	 * Converts integer to binary string
+	 * @param integer Length
+	 * @param integer Integer
 	 * @param boolean Optional. Little endian. Default value - true.
-	 * @return string Resulting binary string.
+	 * @return string Resulting binary string
 	 */
 	function int2bytes($len, $int = 0, $l = TRUE) {
 		$hexstr = dechex($int);
@@ -307,8 +301,7 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method getPacketHeader
-	 * @description Returns packet's header.
+	 * Returns packet's header
 	 * @return array [length, seq]
 	 */
 	private function getPacketHeader() {
@@ -320,10 +313,9 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method sendPacket
-	 * @description Sends a packet.
-	 * @param string Data.
-	 * @return boolean Success.
+	 * Sends a packet
+	 * @param string Data
+	 * @return boolean Success
 	 */
 	public function sendPacket($packet) {
 		$header = $this->int2bytes(3, strlen($packet)) . chr($this->seq++); 
@@ -339,10 +331,9 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method buildLenEncodedBinary
-	 * @description Builds length-encoded binary string.
-	 * @param string String.
-	 * @return string Resulting binary string.
+	 * Builds length-encoded binary string
+	 * @param string String
+	 * @return string Resulting binary string
 	 */
 	public function buildLenEncodedBinary($s) {
 		if ($s === NULL) {
@@ -367,10 +358,9 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method parseEncodedBinary
-	 * @description Parses length-encoded binary.
-	 * @param string Reference to source string.
-	 * @return integer Result.
+	 * Parses length-encoded binary
+	 * @param string Reference to source string
+	 * @return integer Result
 	 */
 	public function parseEncodedBinary(&$s, &$p) {
 		$f = ord(binarySubstr($s, $p, 1));
@@ -409,11 +399,10 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method parseEncodedBinary
-	 * @description Parses length-encoded string.
-	 * @param string Reference to source string.
-	 * @param integer Reference to pointer.
-	 * @return integer Result.
+	 * Parse length-encoded string
+	 * @param string Reference to source string
+	 * @param integer Reference to pointer
+	 * @return integer Result
 	 */
 	public function parseEncodedString(&$s,&$p) {
 		$l = $this->parseEncodedBinary($s, $p);
@@ -432,22 +421,20 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method getAuthToken
-	 * @description Generates auth. token.
-	 * @param string Scramble string.
-	 * @param string Password.
-	 * @return string Result.
+	 * Generates auth. token
+	 * @param string Scramble string
+	 * @param string Password
+	 * @return string Result
 	 */
 	public function getAuthToken($scramble, $password) {
 		return sha1($scramble . sha1($hash1 = sha1($password, TRUE), TRUE), TRUE) ^ $hash1;
 	}
 
 	/**
-	 * @method auth
-	 * @description Sends auth. packet.
-	 * @param string Scramble string.
-	 * @param string Password.
-	 * @return string Result.
+	 * Sends auth. packet
+	 * @param string Scramble string
+	 * @param string Password
+	 * @return string Result
 	 */
 	public function auth() {
 		if ($this->cstate !== 1) {
@@ -480,33 +467,30 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method query
-	 * @description Sends SQL-query.
-	 * @param string Query.
+	 * Sends SQL-query
+	 * @param string Query
 	 * @param callback Optional. Callback called when response received.
-	 * @return boolean Success.
+	 * @return boolean Success
 	 */
 	public function query($q, $callback = NULL) {
 		return $this->command(MySQLClient::COM_QUERY, $q, $callback);
 	}
 
 	/**
-	 * @method ping
-	 * @description Sends echo-request.
+	 * Sends echo-request
 	 * @param callback Optional. Callback called when response received.
-	 * @return boolean Success.
+	 * @return boolean Success
 	 */
 	public function ping($callback = NULL) {
 		return $this->command(MySQLClient::COM_PING, '', $callback);
 	}
 
 	/**
-	 * @method command
-	 * @description Sends arbitrary command.
+	 * Sends arbitrary command
 	 * @param integer Command's code. See constants above.
-	 * @param string Data.
+	 * @param string Data
 	 * @param callback Optional. Callback called when response received.
-	 * @return boolean Success.
+	 * @return boolean Success
 	 * @throws MySQLClientSessionFinished
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {
@@ -526,10 +510,9 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method selectDB
-	 * @description Sets default database name.
-	 * @param string Database name.
-	 * @return boolean Success.
+	 * Sets default database name
+	 * @param string Database name
+	 * @return boolean Success
 	 */
 	public function selectDB($name) {
 		$this->dbname = $name;
@@ -542,9 +525,8 @@ class MySQLClientSession extends SocketSession {
 	}
 	
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
-	 * @param string New data.
+	 * Called when new data received
+	 * @param string New data
 	 * @return void
 	 */
 	public function stdin($buf) {
@@ -723,8 +705,7 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onResultDone
-	 * @description Called when the whole result received.
+	 * Called when the whole result received
 	 * @return void
 	 */
 	public function onResultDone() {
@@ -747,8 +728,7 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onError
-	 * @description Called when error occured.
+	 * Called when error occured
 	 * @return void
 	 */
 	public function onError() {
@@ -775,8 +755,7 @@ class MySQLClientSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when session finishes.
+	 * Called when session finishes
 	 * @return void
 	 */
 	public function onFinish() {
@@ -785,6 +764,7 @@ class MySQLClientSession extends SocketSession {
 		unset($this->appInstance->servConn[$this->url][$this->connId]);
 		unset($this->appInstance->sessions[$this->connId]);
 	}
+
 }
 
 class MySQLClientSessionFinished extends Exception {}
