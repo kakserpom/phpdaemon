@@ -186,7 +186,7 @@ class Daemon_ConfigParser {
 							$files = glob($path);
 							if ($files) {
 								foreach ($files as $fn) {
-									$parser = new Daemon_ConfigParser($fn,$scope,TRUE);
+									$parser = new Daemon_ConfigParser($fn,$scope,true);
 								}
 							}
 						} elseif (substr(strtolower($elements[0]),0,4) === 'mod-') {
@@ -208,6 +208,10 @@ class Daemon_ConfigParser {
 							$scope->{$name} = new Daemon_ConfigEntry();
 							$scope->{$name}->source = 'config';
 							$scope->{$name}->revision = $cfg->revision;
+							if (!isset($elements[1])) {
+							 $elements[1] = true;
+							 $elTypes[1] = Daemon_ConfigParser::T_CVALUE;
+							}
 							$scope->{$name}->setValue($elements[1]);
 							$scope->{$name}->setValueType($elTypes[1]);
 						}
@@ -283,7 +287,7 @@ class Daemon_ConfigParser {
 	 */
 	public function raiseError($msg, $level = 'emerg') {
 		if ($level == 'emerg') {
-			$this->errorneus = TRUE;
+			$this->errorneus = true;
 		}
 
 		Daemon::log('[conf#' . $level . '][' . $this->file . ' L:' . $this->line . ' C: ' . ($this->col-1) . ']   '.$msg);

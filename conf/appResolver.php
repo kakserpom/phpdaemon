@@ -1,15 +1,5 @@
 <?php
 class MyAppResolver extends AppResolver {
-
-	public $defaultApp = 'Example';
-	public $appDir;
-	public $appPreload = array(); // [appName1 => numberOfInstances1], ...
-	public $appPreloadPrivileged = array(
-		'FastCGI', 'HTTP', 'DebugConsole', 'TelnetHoneypot', 'FlashPolicy',
-		'RTEP', 'LockServer', 'MySQLProxy', 'WebSocketServer', 'SocksServer',
-		'PostgreSQLProxy'
-	);
-
 	/**
 	 * @method getRequestRoute
 	 * @param object Request.
@@ -31,28 +21,6 @@ class MyAppResolver extends AppResolver {
 			$req->attrs->server['FR_AUTOINDEX'] = TRUE;
 			return 'FileReader';
 		} */
-	}
-
-	public function __construct() {
-		$this->appDir = array(
-			Daemon::$dir . '/app-servers/',
-			Daemon::$dir . '/app-clients/',
-			Daemon::$dir . '/app-web/',
-			Daemon::$dir . '/app-examples/', // you can comment this.
-			Daemon::$dir . '/applications/',
-		);
-
-		foreach ($this->appDir as $dir) {
-			$files = glob($dir . '*.php');
-
-			foreach ($files as $fn) {
-				$p = pathinfo($fn, PATHINFO_FILENAME);
-
-				if (!isset($this->appPreload[$p])) {
-					$this->appPreload[$p] = 1;
-				}
-			}
-		}
 	}
 }
 return new MyAppResolver;

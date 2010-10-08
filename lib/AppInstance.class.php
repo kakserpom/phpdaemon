@@ -23,10 +23,10 @@ class AppInstance {
 	 * Application constructor
 	 * @return void
 	 */
-	public function __construct($name = NULL) {
+	public function __construct($name = '') {
 		$this->name = $name;
-		$fullname = get_class($this) . ($this->name !== NULL ? '-' . urlencode($this->name) : '');
-
+		$fullname = get_class($this) . ($this->name !== '' ? '-' . $this->name : '');
+		
 		if (!isset(Daemon::$config->{$fullname})) {
 			Daemon::$config->{$fullname} = new Daemon_ConfigSection;
 		} else {

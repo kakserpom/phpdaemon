@@ -1,47 +1,35 @@
 <?php
 
 class AppResolver {
-
-	public $appPreloadPrivileged = array();  // list of preloaded applications that must be started before setuid.
-	public $appPreload = array();            // list of preloaded application.
-	public $defaultApp = 'Default';          // name of the application that handles web-requests without APPNAME.
-
-	/**
-	 * @method preload
-	 * @description Preloads applications after setuid.
-	 * @return void
-	 */
-	public function preload() {
-		foreach ($this->appPreload as $app => $num) {
-			if (isset(Daemon::$appInstances[$app])) {
-				$num -= sizeof(Daemon::$appInstances[$app]);
-			}
-
-			for ($i = 0; $i < $num; ++$i) {
-				$this->appInstantiate($app);
-			}
-		}
-	}
-
-	/**
+	/*
 	 * @method preloadPrivileged
-	 * @description Preloads applications before setuid.
+	 * @description Preloads applications.
+	 * @param boolean Privileged.
 	 * @return void
 	 */
-	public function preloadPrivileged() {
-		foreach ($this->appPreloadPrivileged as $app) {
-			if (!isset($this->appPreload[$app])) {
+	public function preload($privileged = false) {
+	
+		foreach (Daemon::$config as $fullname => $section) {
+		
+			if (!$section instanceof Daemon_ConfigSection)	{
 				continue;
 			}
-
-			$num = $this->appPreload[$app];
-
-			if (isset(Daemon::$appInstances[$app])) {
-				$num -= sizeof(Daemon::$appInstances[$app]);
-			}
-
-			for ($i = 0; $i < $num; ++$i) {
-				$this->appInstantiate($app);
+			if (
+					(isset($section->enable) && $section->enable->value)
+					||
+					(!isset($section->enable) && !isset($section->disable))
+			) {
+				if ($privileged && (!isset($section->privileged) || !$section->privileged->value)) {
+					continue;
+				}
+				if (strpos($fullname,'-') === false) {
+					$fullname .= '-';
+				}
+				list($app, $name) = explode('-', $fullname, 2);
+				if (isset(Daemon::$appInstances[$app][$name])) {
+					continue;
+				}
+				$this->appInstantiate($app,$name);
 			}
 		}
 	}
@@ -52,12 +40,12 @@ class AppResolver {
 	 * @description Gets instance of application by it's name.
 	 * @return object AppInstance.
 	 */
-	public function getInstanceByAppName($appName) {
-		if (!isset(Daemon::$appInstances[$appName])) {
-			return $this->appInstantiate($appName);
+	public function getInstanceByAppName($appName,$name =	'') {
+		if (!isset(Daemon::$appInstances[$appName][$name])) {
+			return $this->appInstantiate($appName,$name);
 		}
 
-		return Daemon::$appInstances[$appName][array_rand(Daemon::$appInstances[$appName])];
+		return Daemon::$appInstances[$appName][$name !== NULL?$name : array_rand(Daemon::$appInstances[$appName])];
 	}
 
 	/**
@@ -67,28 +55,24 @@ class AppResolver {
 	 * @return string Path.
 	 */
 	public function getAppPath($app) {
-		foreach ($this->appDir as $dir) {
-			if (is_file($p = $dir . $app . '.php')) {
-				return $p;
-			}
-		}
-
-		return FALSE;
-	}
+		$files = glob(sprintf(Daemon::$config->appfilepath->value,$app), GLOB_BRACE);
+		return isset($files[0]) ? $files[0] : false;
+ 	}
 
 	/**
 	 * @method appInstantiate
 	 * @param string Application name
+	 * @param string Name of instance
 	 * @description Run new application instance.
 	 * @return object AppInstance.
 	 */
-	public function appInstantiate($app) {
+	public function appInstantiate($app,$name) {
 		if (!isset(Daemon::$appInstances[$app])) {
 			Daemon::$appInstances[$app] = array();
 		}
 
 		if (class_exists($app)) {
-			$appInstance = new $app;
+			$appInstance = new $app($name);
 		}
 		else {
 			$p = $this->getAppPath($app);
@@ -105,7 +89,7 @@ class AppResolver {
 		}
 		if (!is_object($appInstance)) {
 			if (class_exists($app)) {
-				$appInstance = new $app;
+				$appInstance = new $app($name);
 			}
 		}
 		if (!is_object($appInstance)) {
@@ -113,7 +97,7 @@ class AppResolver {
 					return FALSE;
 		}
 	
-		Daemon::$appInstances[$app][] = $appInstance;
+		Daemon::$appInstances[$app][$name] = $appInstance;
 
 		return $appInstance;
 	}
@@ -132,7 +116,7 @@ class AppResolver {
 		}
 		elseif (($appName = $this->getRequestRoute($req, $upstream)) !== NULL) {}
 		else {
-			$appName = $defaultApp !== NULL ? $defaultApp : $this->defaultApp;
+			$appName = $defaultApp;
 		}
 
 		$appInstance = $this->getInstanceByAppName($appName);

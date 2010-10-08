@@ -27,7 +27,7 @@ class Daemon_MasterThread extends Thread {
 		);
 
 		Daemon::$appResolver = require Daemon::$config->path->value;
-		Daemon::$appResolver->preloadPrivileged(); 
+		Daemon::$appResolver->preload(true); 
 
 		$this->spawnWorkers(min(
 			Daemon::$config->startworkers->value,
@@ -37,7 +37,7 @@ class Daemon_MasterThread extends Thread {
 		$mpmLast = $autoReloadLast = time();
 		$c = 1;
 
-		while (TRUE) {
+		while (true) {
 			pcntl_signal_dispatch();
 			$this->sigwait(1,0);
 			clearstatcache();
@@ -69,7 +69,7 @@ class Daemon_MasterThread extends Thread {
 				}
 				
 				if (($c % 10 == 0)) {
-					$this->collections['workers']->removeTerminated(TRUE);
+					$this->collections['workers']->removeTerminated(true);
 					gc_collect_cycles();
 				} else {
 					$this->collections['workers']->removeTerminated();
@@ -122,7 +122,7 @@ class Daemon_MasterThread extends Thread {
 				Daemon::log('Spawning worker-replacer for reloaded worker #' . $spawnId . '.');
 			
 				$this->spawnWorkers();
-				$this->collections['workers']->threads[$spawnId]->reloaded = TRUE;
+				$this->collections['workers']->threads[$spawnId]->reloaded = true;
 			}
 		}
 	}
@@ -144,7 +144,7 @@ class Daemon_MasterThread extends Thread {
 			}
 		}
 
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -169,7 +169,7 @@ class Daemon_MasterThread extends Thread {
 			++$i;
 		}
 		
-		return TRUE;
+		return true;
 	}
 	
 	/**
@@ -182,7 +182,7 @@ class Daemon_MasterThread extends Thread {
 			return;
 		}
 
-		if ($this->shutdown === TRUE) {
+		if ($this->shutdown === true) {
 			return;
 		}
 
@@ -196,8 +196,8 @@ class Daemon_MasterThread extends Thread {
 	 * @param integer System singal's number
 	 * @return void
 	 */
-	public function shutdown($signo = FALSE) {
-		$this->shutdown = TRUE;
+	public function shutdown($signo = false) {
+		$this->shutdown = true;
 		$this->waitAll($signo);
 
 		if (Daemon::$shm_wstate) {
