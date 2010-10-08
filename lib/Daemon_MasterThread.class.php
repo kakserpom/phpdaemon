@@ -15,7 +15,7 @@ class Daemon_MasterThread extends Thread {
 	 * Runtime of Master process
 	 * @return void
 	 */
-	public function run() {
+	protected function run() {
 		proc_nice(Daemon::$config->masterpriority->value);
 		gc_enable();
 		register_shutdown_function(array($this,'onShutdown'));
