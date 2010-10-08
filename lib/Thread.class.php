@@ -73,6 +73,12 @@ abstract class Thread {
 		SIGUSR1   => 'SIGUSR1',
 		SIGUSR2   => 'SIGUSR2',
 	);
+	
+	/**
+	 * Run thread process
+	 * @return void
+	 */
+	protected function run() { }
 
 	/**
 	 * FIXME: Add a description

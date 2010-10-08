@@ -82,10 +82,10 @@ class Daemon_WorkerThread extends Thread {
 
 	/**
 	 * @method run
-	 * @description Runtime of Master process.
+	 * @description Runtime of Worker process.
 	 * @return void
 	 */
-	public function run() {
+	protected function run() {
 		Daemon::$worker = $this;
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
