@@ -23,8 +23,7 @@ class DebugConsole extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -65,8 +64,7 @@ class DebugConsoleSession extends SocketSession {
 	private $authTries = 3;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -85,7 +83,7 @@ Please enter the password or type "exit": ');
 
 	/**
 	 * Let's check the password
-	 * @param $pass string Password
+	 * @param string Password
 	 * @return boolean
 	 */
 	private function checkPassword($pass = '') {
@@ -107,8 +105,8 @@ Please enter the password or type "exit": ');
 
 	/**
 	 * Run the command
-	 * @param $command string Command to execute
-	 * @param $argument string Argument
+	 * @param string Command to execute
+	 * @param string Argument
 	 * @return void
 	 */
 	private function processCommand($command = '', $argument = '') {
@@ -139,8 +137,7 @@ Type "help" to get the list of allowed commands.');
 	}
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -172,4 +169,5 @@ Type "help" to get the list of allowed commands.');
 			$this->finish();
 		}
 	}
+	
 }

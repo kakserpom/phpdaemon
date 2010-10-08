@@ -27,8 +27,7 @@ class Daemon_ConfigParser {
 	public $errorneus = FALSE;
 
 	/**
-	 * @method __construct
-	 * @description Constructor
+	 * Constructor
 	 * @return void
 	 */
 	public function __construct($file,$config,$included = FALSE)
@@ -243,8 +242,11 @@ class Daemon_ConfigParser {
 		}
 		if (!$included) {$this->purgeScope($this->result);}
 	}
-	public function purgeScope($scope)
-	{
+	
+	/**
+	 * FIXME description?
+	 */
+	public function purgeScope($scope) {
 	 $cfg = $this;
 		foreach ($scope as $name => $obj) {
 			if ($obj instanceof Daemon_ConfigEntry) {
@@ -267,9 +269,9 @@ class Daemon_ConfigParser {
 			}
 		}			
 	}
+	
 	/**
-	 * @method getCurrentScope
-	 * @description Returns current variable scope
+	 * Returns current variable scope
 	 * @return object Scope.
 	 */
 	public function getCurrentScope() {
@@ -279,8 +281,7 @@ class Daemon_ConfigParser {
 	}
 
 	/**
-	 * @method raiseError
-	 * @description Raises error message.
+	 * Raises error message.
 	 * @param string Message.
 	 * @param string Level.
 	 * @return void
@@ -294,8 +295,7 @@ class Daemon_ConfigParser {
 	}
 
 	/**
-	 * @method token
-	 * @description executes token-parse callback.
+	 * executes token-parse callback.
 	 * @return void
 	 */
 	public function token($token, $c) {
@@ -303,8 +303,7 @@ class Daemon_ConfigParser {
 	}
 	
 	/**
-	 * @method getCurrentChar
-	 * @description Returns current character.
+	 * Current character.
 	 * @return string Character.
 	 */
 	public function getCurrentChar() {
@@ -321,8 +320,7 @@ class Daemon_ConfigParser {
 	}
 
 	/**
-	 * @method getNextChar
-	 * @description Returns next character.
+	 * Returns next character.
 	 * @return string Character.
 	 */
 	public function getNextChar() {
@@ -330,8 +328,7 @@ class Daemon_ConfigParser {
 	}
 
 	/**
-	 * @method rewind
-	 * @description Rewinds the pointer back.
+	 * Rewinds the pointer back.
 	 * @param integer Number of characters to rewind back.
 	 * @return void
 	 */

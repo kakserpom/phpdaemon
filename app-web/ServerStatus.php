@@ -1,9 +1,9 @@
 <?php
+
 class ServerStatus extends AppInstance {
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -11,13 +11,13 @@ class ServerStatus extends AppInstance {
 	public function beginRequest($req, $upstream) {
 		return new ServerStatus_Request($this, $upstream, $req);
 	}
+	
 }
 
 class ServerStatus_Request extends HTTPRequest {
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -48,4 +48,5 @@ class ServerStatus_Request extends HTTPRequest {
 <?php
 		return;
 	}
+	
 }

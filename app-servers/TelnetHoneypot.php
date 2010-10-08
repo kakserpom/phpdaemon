@@ -21,8 +21,7 @@ class TelnetHoneypot extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -52,8 +51,7 @@ class TelnetHoneypot extends AsyncServer {
 class TelnetSession extends SocketSession {
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -90,4 +88,5 @@ class TelnetSession extends SocketSession {
 			$this->finish();
 		}
 	}
+	
 }

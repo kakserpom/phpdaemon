@@ -17,35 +17,30 @@ class Daemon {
 
 	/**
 	 * PHPDaemon root directory
-	 * @access private
 	 * @var string
 	 */
 	public static $dir;
 	
 	/**
 	 * PHPDaemon version
-	 * @access public
 	 * @var string
 	 */
 	public static $version;
 
 	/**
 	 * PHPDaemon start time
-	 * @access private
 	 * @var integer
 	 */
 	public static $startTime;
 	
 	/**
 	 * Log file resource
-	 * @access private
 	 * @var resource
 	 */
 	private static $logpointer;
 	
 	/**	
 	 * Supported things array	
-	 * @access private	
 	 * @var string	
 	 */	
 	private static $support = array();
@@ -68,8 +63,7 @@ class Daemon {
 	public static $config;
 
 	/**
-	 * @method initSettings
-	 * @description Loads default setting.
+	 * Loads default setting.
 	 * @return void
 	 */
 	public static function initSettings() {
@@ -81,9 +75,8 @@ class Daemon {
 	}
 
 	/**
-	 * @method outputFilter
+	 * Callback-function, output filter.
 	 * @param string - String.
-	 * @description Callback-function, output filter.
 	 * @return string - buffer
 	 */
 	public static function outputFilter($s) {
@@ -104,8 +97,7 @@ class Daemon {
 	}
 
 	/**
-	 * @method init
-	 * @description Performs initial actions.
+	 * Performs initial actions.
 	 * @return void
 	 */
 	public static function init() {
@@ -125,7 +117,7 @@ class Daemon {
 
 	/**
 	 * Is thing supported
-	 * @param $what integer Thing to check
+	 * @param integer Thing to check
 	 * @return boolean
 	 */
 	public static function supported($what) {
@@ -155,7 +147,7 @@ class Daemon {
 
 	/**
 	 * Check file syntax via runkit_lint_file if supported or via php -l
-	 * @param $filaname string File name
+	 * @param string File name
 	 * @return boolean
 	 */
 	public static function lintFile($filename) {
@@ -175,8 +167,7 @@ class Daemon {
 	}
 
 	/**
-	 * @method compatRunEmul
-	 * @description It allows to run your simple web-apps in spawn-fcgi/php-fpm environment.
+	 * It allows to run your simple web-apps in spawn-fcgi/php-fpm environment.
 	 * @return boolean - Success.
 	 */
 	public static function compatRunEmul() {
@@ -237,9 +228,8 @@ class Daemon {
 	}
 
 	/**
-	 * @method loadConfig
+	 * Load config-file
 	 * @param string Path
-	 * @description Loads config-file. 
 	 * @return boolean - Success.
 	 */
 	public static function loadConfig($paths) {
@@ -271,8 +261,7 @@ class Daemon {
 	}
 
 	/**
-	 * @method openLogs
-	 * @description Open log descriptors.
+	 * Open log descriptors.
 	 * @return void
 	 */
 	public static function openLogs() {
@@ -295,8 +284,7 @@ class Daemon {
 	}
 
 	/**
-	 * @method getStateOfWorkers
-	 * @description Get state of workers.
+	 * Get state of workers.
 	 * @return array - information.
 	 */
 	public static function getStateOfWorkers($master = NULL) {
@@ -374,12 +362,11 @@ class Daemon {
 	}
 
 	/**
-	 * @method shmop_open
+	 * Opens segment of shared memory.
 	 * @param string Path to file.
 	 * @param int Size of segment.
 	 * @param string Name of segment.
 	 * @param boolean Whether to create if it doesn't exist.
-	 * @description Opens segment of shared memory.
 	 * @return int Resource ID.
 	 */
 	public static function shmop_open($path, $size, $name, $create = TRUE) {
@@ -417,10 +404,9 @@ class Daemon {
 	}
 
 	/**
-	 * @method log
-	 * @param string $msg - message.
-	 * @description Send message to log.
-	 * @return string - message
+	 * Send message to log.
+	 * @param string message.
+	 * @return string message
 	 */
 	public static function log($msg) {
 		$mt = explode(' ', microtime());
@@ -438,8 +424,7 @@ class Daemon {
 	}
 
 	/**
-	 * @method spawnMaster
-	 * @description spawn new master process.
+	 * spawn new master process.
 	 * @return boolean - success
 	 */
 	public static function spawnMaster() {
@@ -455,9 +440,8 @@ class Daemon {
 	}
 
 	/**
-	 * @method date_period
-	 * @description Calculates a difference between two dates.
-	 * @return array [seconds,minutes,hours,days,months,years]
+	 * Calculates a difference between two dates.
+	 * @return array [seconds, minutes, hours, days, months, years]
 	 */
 	public static function date_period($st, $fin) {
 		if (
@@ -509,8 +493,7 @@ class Daemon {
 	}
 
 	/**
-	 * @method date_period_text
-	 * @description Calculates a difference between two dates.
+	 * Calculates a difference between two dates.
 	 * @return string Something like this: 1 year. 2 mon. 6 day. 4 hours. 21 min. 10 sec.
 	 */
 	public static function date_period_text($date_start, $date_finish) {
@@ -547,4 +530,5 @@ class Daemon {
 
 		return rtrim($str);
 	}
+	
 }

@@ -2,8 +2,7 @@
 class ExampleAsyncStream extends AppInstance {
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -11,6 +10,7 @@ class ExampleAsyncStream extends AppInstance {
 	public function beginRequest($req, $upstream) {
 		return new ExampleAsyncStreamRequest($this, $upstream, $req);
 	}
+	
 }
 
 class ExampleAsyncStreamRequest extends HTTPRequest {
@@ -18,8 +18,7 @@ class ExampleAsyncStreamRequest extends HTTPRequest {
 	public $stream;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -47,8 +46,7 @@ class ExampleAsyncStreamRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method onAbort
-	 * @description Called when the request aborted.
+	 * Called when the request aborted.
 	 * @return void
 	 */
 	 public function onAbort() {
@@ -58,8 +56,7 @@ class ExampleAsyncStreamRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -67,4 +64,5 @@ class ExampleAsyncStreamRequest extends HTTPRequest {
 			$this->sleep();
 		}
 	}
+	
 }

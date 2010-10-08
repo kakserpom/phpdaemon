@@ -14,8 +14,7 @@ class FileReader extends AppInstance {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -23,8 +22,7 @@ class FileReader extends AppInstance {
 	}
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -94,8 +92,7 @@ class FileReaderRequest extends HTTPRequest {
 	);
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -240,8 +237,7 @@ if ($this->upstream->config->expose->value) {
 	}
 
 	/**
-	 * @method onAbort
-	 * @description Called when the request aborted.
+	 * Called when the request aborted.
 	 * @return void
 	 */
 	public function onAbort() {
@@ -249,8 +245,7 @@ if ($this->upstream->config->expose->value) {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when the request finished.
+	 * Called when the request finished.
 	 * @return void
 	 */
 	public function onFinish() {
@@ -260,8 +255,7 @@ if ($this->upstream->config->expose->value) {
 	}
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -271,8 +265,7 @@ if ($this->upstream->config->expose->value) {
 	}
 	
 	/**
-	 * @method humanSize
-	 * @description Returns human-readable size.
+	 * Returns human-readable size.
 	 * @return void
 	 */
 	private function humanSize($size) {
@@ -292,9 +285,8 @@ if ($this->upstream->config->expose->value) {
 	}
 	
 	/**
-	 * @method getMIME()
+	 * Returns MIME type of the given file.	
 	 * @param string - Path
-	 * @description Returns MIME type of the given file.
 	 * @return string - MIME type.
 	 */
 	public static function getMIME($path) {

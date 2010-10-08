@@ -2,8 +2,7 @@
 class ExampleAsyncProcess extends AppInstance {
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -18,8 +17,7 @@ class ExampleAsyncProcessRequest extends HTTPRequest {
 	public $proc;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -52,8 +50,7 @@ class ExampleAsyncProcessRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -61,4 +58,5 @@ class ExampleAsyncProcessRequest extends HTTPRequest {
 			$this->sleep(1);
 		}
 	}
+	
 }

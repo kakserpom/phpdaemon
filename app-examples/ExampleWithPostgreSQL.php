@@ -2,8 +2,7 @@
 class ExampleWithPostgreSQL extends AppInstance {
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -11,6 +10,7 @@ class ExampleWithPostgreSQL extends AppInstance {
 	 public function beginRequest($req, $upstream) {
 		return new ExampleWithPostgreSQLRequest($this, $upstream, $req);
 	}
+	
 }
 
 class ExampleWithPostgreSQLRequest extends HTTPRequest {
@@ -21,8 +21,7 @@ class ExampleWithPostgreSQLRequest extends HTTPRequest {
 	public $runstate = 0;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -54,8 +53,7 @@ class ExampleWithPostgreSQLRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -96,4 +94,5 @@ echo '<br />Request (http) took: ' . round(microtime(TRUE) - $this->stime, 6);
 </html>
 <?php
 	}
+	
 }

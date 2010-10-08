@@ -35,8 +35,7 @@ class Daemon_WorkerThread extends Thread {
 	public $reloadReady = FALSE;
 
 	/**
-	 * @method registerSignals
-	 * @description Registers signals.
+	 * Register signals.
 	 * @return void
 	 */
 	public function registerSignals()
@@ -69,8 +68,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @method eventSighandler
-	 * @description Called when a signal caught through libevent.
+	 * Called when a signal caught through libevent.
 	 * @param integer Signal's number.
 	 * @param integer Events.
 	 * @param mixed Argument.
@@ -81,8 +79,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @method run
-	 * @description Runtime of Worker process.
+	 * Runtime of Worker process.
 	 * @return void
 	 */
 	protected function run() {
@@ -161,8 +158,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method overrideNativeFuncs
-	 * @description Overrides native PHP functions.
+	 * Overrides native PHP functions.
 	 * @return void
 	 */
 	public function overrideNativeFuncs() {
@@ -256,8 +252,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method prepareSystemEnv
-	 * @description Setup settings on start.
+	 * Setup settings on start.
 	 * @return void
 	 */
 	public function prepareSystemEnv() {
@@ -325,8 +320,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method log
-	 * @description Log something
+	 * Log something
 	 * @return void
 	 */
 	public function log($message) {
@@ -334,8 +328,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method closeSockets
-	 * @description Close each of binded sockets.
+	 * Close each of binded sockets.
 	 * @return void
 	 */
 	public function closeSockets() {
@@ -358,8 +351,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method update
-	 * @description Reloads additional config-files on-the-fly.
+	 * Reloads additional config-files on-the-fly.
 	 * @return void
 	 */
 	private function update() {
@@ -371,8 +363,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method reloadCheck
-	 * @description Looks up at changes of the last modification date of all included files.
+	 * Looks up at changes of the last modification date of all included files.
 	 * @return boolean - The whether we should go to reload.
 	 */
 	private function reloadCheck() {
@@ -398,8 +389,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @method reimport
-	 * @description Looks up at changes of the last modification date of all included files. Re-imports modified files.
+	 * Looks up at changes of the last modification date of all included files. Re-imports modified files.
 	 * @return void
 	 */
 	private function reimport() {
@@ -429,8 +419,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @method checkState
-	 * @description ?????
+	 * FIXME description?
 	 */
 	public function checkState() {
 		$time = microtime(true);
@@ -524,8 +513,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method appInstancesReloadReady
-	 * @description Asks the running applications the whether we can go to shutdown current (old) worker.
+	 * Asks the running applications the whether we can go to shutdown current (old) worker.
 	 * @return boolean - Ready?
 	 */
 	public function appInstancesReloadReady() {
@@ -544,9 +532,8 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method shutdown
+	 * FIXME description?
 	 * @param boolean - Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
-	 * @description 
 	 * @return boolean - Ready?
 	 */
 	public function shutdown($hard = FALSE) {
@@ -621,9 +608,8 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @method setStatus
+	 * Changes the worker's status.	
 	 * @param int - Integer status.
-	 * @description Changes the worker's status.
 	 * @return boolean - Success.
 	 */
 	public function setStatus($int) {
@@ -645,8 +631,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method sigint
-	 * @description Handler of the SIGINT (hard shutdown) signal in worker process.
+	 * Handler of the SIGINT (hard shutdown) signal in worker process.
 	 * @return void
 	 */
 	protected function sigint() {
@@ -658,8 +643,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method sigterm
-	 * @description Handler of the SIGTERM (graceful shutdown) signal in worker process.
+	 * Handler of the SIGTERM (graceful shutdown) signal in worker process.
 	 * @return void
 	 */
 	protected function sigterm() {
@@ -671,8 +655,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method sigquit
-	 * @description Handler of the SIGQUIT (graceful shutdown) signal in worker process.
+	 * Handler of the SIGQUIT (graceful shutdown) signal in worker process.
 	 * @return void
 	 */
 	public function sigquit() {
@@ -684,8 +667,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method sighup
-	 * @description Handler of the SIGHUP (reload config) signal in worker process.
+	 * Handler of the SIGHUP (reload config) signal in worker process.
 	 * @return void
 	 */
 	public function sighup() {
@@ -701,8 +683,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @method sigusr1
-	 * @description Handler of the SIGUSR1 (re-open log-file) signal in worker process.
+	 * Handler of the SIGUSR1 (re-open log-file) signal in worker process.
 	 * @return void
 	 */
 	public function sigusr1() {
@@ -714,8 +695,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method sigusr2
-	 * @description Handler of the SIGUSR2 (graceful shutdown for update) signal in worker process.
+	 * Handler of the SIGUSR2 (graceful shutdown for update) signal in worker process.
 	 * @return void
 	 */
 	public function sigusr2() {
@@ -729,15 +709,13 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @method sigttin
-	 * @description Handler of the SIGTTIN signal in worker process.
+	 * Handler of the SIGTTIN signal in worker process.
 	 * @return void
 	 */
 	public function sigttin() { }
 	
 	/**
-	 * @method sigxfsz
-	 * @description Handler of the SIGXSFZ ignal in worker process.
+	 * Handler of the SIGXSFZ ignal in worker process.
 	 * @return void
 	 */
 	public function sigxfsz() {
@@ -745,8 +723,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method sigunknown
-	 * @description Handler of non-known signals.
+	 * Handler of non-known signals.
 	 * @return void
 	 */
 	public function sigunknown($signo) {
@@ -760,12 +737,12 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * @method __destructor
-	 * @description Destructor of worker thread.
+	 * Destructor of worker thread.
 	 * @return void
 	 */
 	public function __destruct()
 	{
 		$this->setStatus(0x03);
 	}
+	
 }

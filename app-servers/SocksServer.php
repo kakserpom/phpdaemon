@@ -29,8 +29,7 @@ class SocksServer extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -69,8 +68,7 @@ class SocksSession extends SocketSession {
 	public $slave;
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -264,8 +262,7 @@ class SocksSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Event of SocketSession (asyncServer).
+	 * Event of SocketSession (asyncServer).
 	 * @return void
 	 */
 	public function onFinish() {
@@ -283,8 +280,7 @@ class SocksServerSlaveSession extends SocketSession {
 	public $ready = FALSE;
 
 	/**
-	 * @method onwrite
-	 * @description Called when the connection is ready to accept new data.
+	 * Called when the connection is ready to accept new data.
 	 * @return void
 	 */
 	public function onWrite() {
@@ -298,8 +294,7 @@ class SocksServerSlaveSession extends SocketSession {
 	}
 	
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -308,8 +303,7 @@ class SocksServerSlaveSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Event of SocketSession (asyncServer).
+	 * Event of SocketSession (asyncServer).
 	 * @return void
 	 */
 	public function onFinish() {
@@ -319,4 +313,5 @@ class SocksServerSlaveSession extends SocketSession {
 	
 		unset($this->client);
 	}
+	
 }

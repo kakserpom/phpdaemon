@@ -1,9 +1,9 @@
 <?php
 
 class AppResolver {
+
 	/*
-	 * @method preloadPrivileged
-	 * @description Preloads applications.
+	 * Preloads applications.
 	 * @param boolean Privileged.
 	 * @return void
 	 */
@@ -35,9 +35,8 @@ class AppResolver {
 	}
 
 	/**
-	 * @method getInstanceByAppName
-	 * @param string Application name.
-	 * @description Gets instance of application by it's name.
+	 * Gets instance of application by it's name.
+	 * @param string Application name.	 
 	 * @return object AppInstance.
 	 */
 	public function getInstanceByAppName($appName,$name =	'') {
@@ -49,9 +48,8 @@ class AppResolver {
 	}
 
 	/**
-	 * @method getAppPath
+	 * Gets path to application's PHP-file.	
 	 * @param string Application name
-	 * @description Gets path to application's PHP-file.
 	 * @return string Path.
 	 */
 	public function getAppPath($app) {
@@ -60,10 +58,9 @@ class AppResolver {
  	}
 
 	/**
-	 * @method appInstantiate
+	 * Run new application instance	
 	 * @param string Application name
 	 * @param string Name of instance
-	 * @description Run new application instance.
 	 * @return object AppInstance.
 	 */
 	public function appInstantiate($app,$name) {
@@ -103,11 +100,10 @@ class AppResolver {
 	}
 
 	/**
-	 * @method getRequest
+	 * Routes incoming request to related application
 	 * @param object Request.
 	 * @param object AppInstance of Upstream.
 	 * @param string Default application name.
-	 * @description Routes incoming request to related application.
 	 * @return object Request.
 	 */
 	public function getRequest($req, $upstream, $defaultApp = NULL) {
@@ -129,11 +125,11 @@ class AppResolver {
 	}
 
 	/**
-	 * @method getRequestRoute
+	 * Routes incoming request to related application. Method is for overloading.	
 	 * @param object Request.
 	 * @param object AppInstance of Upstream.
-	 * @description Routes incoming request to related application. Method is for overloading.
 	 * @return string Application's name.
 	 */
-	public function getRequestRoute($req, $upstream) {}
+	public function getRequestRoute($req, $upstream) { }
+	
 }

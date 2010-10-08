@@ -15,8 +15,7 @@ class WebSocketRoute {
 	public $appInstance;
 
 	/**
-	 * @method __construct
-	 * @description Called when client connected.
+	 * Called when client connected.
 	 * @param object Remote client (WebSocketSession).
 	 * @return void
 	 */
@@ -29,22 +28,19 @@ class WebSocketRoute {
 	}
 
 	/**
-	 * @method onHandshake
-	 * @description Called when the connection is handshaked.
+	 * Called when the connection is handshaked.
 	 * @return void
 	 */
 	public function onHandshake() {}
 
 	/**
-	 * @method onFinish
-	 * @description Called when session finished.
+	 * Called when session finished.
 	 * @return void
 	 */
 	public function onFinish() {}
 
 	/**
-	 * @method gracefulShutdown
-	 * @description Called when the worker is going to shutdown.
+	 * Called when the worker is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
 	public function gracefulShutdown() {

@@ -17,6 +17,10 @@ class Daemon_Bootstrap {
 		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest'
 	);
 
+	/**
+	 * Command-line params
+	 * @var array
+	 */
 	private static $params = array(
 		'pid-file' => array(
 			'val' => '/path/to/pid-file',
@@ -59,8 +63,7 @@ class Daemon_Bootstrap {
 	);
 
 	/**
-	 * @method init
-	 * @description Actions on early startup.
+	 * Actions on early startup.
 	 * @return void
 	 */
 	public static function init() {
@@ -410,8 +413,7 @@ class Daemon_Bootstrap {
 	}
 	
 	/**
-	 * @method start
-	 * @description Start script.
+	 * Start script.
 	 * @return void
 	 */
 	public static function start() {
@@ -429,8 +431,7 @@ class Daemon_Bootstrap {
 	}
 
 	/**
-	 * @method stop
-	 * @description Stop script.
+	 * Stop script.
 	 * @return void
 	 */
 	public static function stop($mode = 1) {
@@ -454,9 +455,8 @@ class Daemon_Bootstrap {
 	}
 
 	/**
-	 * @method getArgs
+	 * Parses command-line arguments.
 	 * @param array $_SERVER['argv']
-	 * @description Parses command-line arguments.
 	 * @return void
 	 */
 	public static function getArgs($args) {
@@ -491,4 +491,5 @@ class Daemon_Bootstrap {
 		
 		return $out;
 	}
+	
 }

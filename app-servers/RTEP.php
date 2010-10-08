@@ -23,8 +23,7 @@ class RTEP extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -50,8 +49,7 @@ class RTEP extends AsyncServer {
 	}
 
 	/**
-	 * @method onEvent
-	 * @description Called when new packet received.
+	 * Called when new packet received.
 	 * @param array Packet.
 	 * @return void
 	 */
@@ -73,6 +71,7 @@ class RTEP extends AsyncServer {
 			}
 		}
 	}
+	
 }
 
 class RTEPSession extends SocketSession {
@@ -85,8 +84,7 @@ class RTEPSession extends SocketSession {
 	public $pstate = 0;
 
 	/**
-	 * @method send
-	 * @description Sends a packet.
+	 * Sends a packet.
 	 * @param array Packet.
 	 * @return void
 	 */
@@ -115,8 +113,7 @@ class RTEPSession extends SocketSession {
 	}
 
 	/**
-	 * @method addEvent
-	 * @description Adds event.
+	 * Adds event.
 	 * @param string Event name.
 	 * @return void
 	 */
@@ -137,8 +134,7 @@ class RTEPSession extends SocketSession {
 	}
 
 	/**
-	 * @method removeEvent
-	 * @description Removes event.
+	 * Removes event.
 	 * @param string Event name.
 	 * @return void
 	 */
@@ -163,8 +159,7 @@ class RTEPSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when the session finished.
+	 * Called when the session finished.
 	 * @return void
 	 */
 	public function onFinish() {
@@ -180,8 +175,7 @@ class RTEPSession extends SocketSession {
 	}
 
 	/**
-	 * @method onRequest
-	 * @description Called when new request received.
+	 * Called when new request received.
 	 * @return void
 	 */
 	public function onRequest($packet) {
@@ -262,6 +256,9 @@ class RTEPSession extends SocketSession {
 		$this->send($out);
 	}
 
+	/**
+	 * FIXME descriptio missing
+	 */
 	public function stdin($buf) {
 		$this->buf .= $buf;
 

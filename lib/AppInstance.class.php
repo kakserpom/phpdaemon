@@ -102,8 +102,7 @@ class AppInstance {
 	public function onReady() { }
  
 	/**
-	 * @method init
-	 * @description Called when creates instance of the application.
+	 * Called when creates instance of the application
 	 * @return void
 	 */
 	public function init() {}
@@ -205,7 +204,6 @@ class AppInstance {
  
 	/**
 	 * Handle the worker status
-	 * @method handleStatus
 	 * @param int Status code FIXME use constants in method
 	 * @return boolean Result
 	 */

@@ -24,8 +24,7 @@ class FlashPolicy extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -42,8 +41,7 @@ class FlashPolicy extends AsyncServer {
 	}
 
 	/**
-	 * @method update
-	 * @description Called when worker is going to update configuration.
+	 * Called when worker is going to update configuration.
 	 * @return void
 	 */
 	public function update() {
@@ -65,8 +63,7 @@ class FlashPolicy extends AsyncServer {
 class FlashPolicySession extends SocketSession {
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -89,4 +86,5 @@ class FlashPolicySession extends SocketSession {
 			$this->finish();
 		}
 	}
+	
 }

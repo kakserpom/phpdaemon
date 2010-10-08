@@ -4,15 +4,13 @@ class ExampleSandbox extends AppInstance {
 	public $counter = 0;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() { }
 
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 
@@ -21,8 +19,7 @@ class ExampleSandbox extends AppInstance {
 	}
 
 	/**
-	 * @method onShutdown
-	 * @description Called when application instance is going to shutdown.
+	 * Called when application instance is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
@@ -31,8 +28,7 @@ class ExampleSandbox extends AppInstance {
 	}
 
 	/** 
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -40,13 +36,13 @@ class ExampleSandbox extends AppInstance {
 	public function beginRequest($req, $upstream) {
 		return new ExampleSandboxRequest($this, $upstream, $req);
 	}
+	
 }
 
 class ExampleSandboxRequest extends HTTPRequest {
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -67,4 +63,5 @@ class ExampleSandboxRequest extends HTTPRequest {
 			echo "Hello World!";
 		});
 	}
+	
 }

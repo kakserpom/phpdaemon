@@ -1,12 +1,12 @@
 <?php
+
 class ExampleRTEP extends AppInstance {
 
 	public $RTEPClient;
 	public $RTEP;
 
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 	public function onReady() {
@@ -33,8 +33,7 @@ class ExampleRTEP extends AppInstance {
 	}
 
 	/**
-	 * @method onShutdown
-	 * @description Called when application instance is going to shutdown.
+	 * Called when application instance is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
@@ -43,8 +42,7 @@ class ExampleRTEP extends AppInstance {
 	}
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -57,8 +55,7 @@ class ExampleRTEP extends AppInstance {
 class ExampleRTEPRequest extends HTTPRequest {
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -72,4 +69,5 @@ class ExampleRTEPRequest extends HTTPRequest {
 
 		echo 'OK';
 	}
+	
 }

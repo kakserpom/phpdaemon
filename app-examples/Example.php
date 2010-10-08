@@ -14,15 +14,13 @@ class Example extends AppInstance {
 	//}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() { }
 
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 	public function onReady() {
@@ -30,8 +28,7 @@ class Example extends AppInstance {
 	}
 
 	/**
-	 * @method onShutdown
-	 * @description Called when application instance is going to shutdown.
+	 * Called when application instance is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
@@ -40,8 +37,7 @@ class Example extends AppInstance {
 	}
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -54,8 +50,7 @@ class Example extends AppInstance {
 class ExampleRequest extends HTTPRequest {
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -127,4 +122,5 @@ if ($displaystate) {
 <br />Request took: <?php printf('%f', round(microtime(TRUE) - $stime, 6)); ?>
 </body><?php
 	}
+	
 }

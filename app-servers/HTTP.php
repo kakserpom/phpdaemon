@@ -38,8 +38,7 @@ class HTTP extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -54,8 +53,7 @@ class HTTP extends AsyncServer {
 	}
 
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go.
 	 * @return void
 	*/
 	public function onReady() {
@@ -66,8 +64,7 @@ class HTTP extends AsyncServer {
 	}
 	
 	/**
-	 * @method checkAccept
-	 * @description Called when remote host is trying to establish the connection.
+	 * Called when remote host is trying to establish the connection.
 	 * @return boolean If true then we can accept new connections, else we can't.
 	 */
 	public function checkAccept() {
@@ -93,8 +90,7 @@ class HTTP extends AsyncServer {
 	}
 
 	/**
-	 * @method requestOut
-	 * @description Handles the output from downstream requests.
+	 * Handles the output from downstream requests.
 	 * @param object Request.
 	 * @param string The output.
 	 * @return void
@@ -118,8 +114,7 @@ class HTTP extends AsyncServer {
 	}
 
 	/**
-	 * @method endRequest
-	 * @description Handles the output from downstream requests.
+	 * Handles the output from downstream requests.
 	 * @return void
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
@@ -149,8 +144,7 @@ class HTTP extends AsyncServer {
 	}
 
 	/**
-	 * @method readConn
-	 * @description Reads data from the connection's buffer.
+	 * Reads data from the connection's buffer.
 	 * @param integer Connection's ID.
 	 * @return void
 	 */
@@ -355,4 +349,5 @@ class HTTP extends AsyncServer {
 			Daemon::$worker->timeLastReq = time();
 		}
 	}
+	
 }

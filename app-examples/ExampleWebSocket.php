@@ -1,8 +1,9 @@
 <?php
+
 class ExampleWebSocket extends AppInstance {
+
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 	public function onReady() {
@@ -13,13 +14,13 @@ class ExampleWebSocket extends AppInstance {
 			});
 		}
 	}
+	
 }
 
 class ExampleWebSocketSession extends WebSocketRoute { 
 
 	/**
-	 * @method onFrame
-	 * @description Called when new frame received.
+	 * Called when new frame received.
 	 * @param string Frame's contents.
 	 * @param integer Frame's type.
 	 * @return void
@@ -33,4 +34,5 @@ class ExampleWebSocketSession extends WebSocketRoute {
 			);
   		}
 	}
+	
 }

@@ -1,10 +1,11 @@
 <?php
+
 class MyAppResolver extends AppResolver {
+	
 	/**
-	 * @method getRequestRoute
+	 * Routes incoming request to related application. Method is for overloading.	
 	 * @param object Request.
 	 * @param object AppInstance of Upstream.
-	 * @description Routes incoming request to related application. Method is for overloading.
 	 * @return string Application's name.
 	 */
 	public function getRequestRoute($req, $upstream) {
@@ -22,5 +23,7 @@ class MyAppResolver extends AppResolver {
 			return 'FileReader';
 		} */
 	}
+	
 }
+
 return new MyAppResolver;

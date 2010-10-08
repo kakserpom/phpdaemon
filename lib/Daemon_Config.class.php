@@ -61,6 +61,9 @@ class Daemon_Config implements ArrayAccess {
 	public $logsignals         = 0;
 	
 	public static $lastRevision = 0;
+	
+	// FIXME phpdoc missed
+	
 	public function __construct() {
 		static $sizes = array('maxmemoryusage');
 		static $times = array('maxidle', 'autoreload', 'mpmdelay');
@@ -143,12 +146,12 @@ class Daemon_Config implements ArrayAccess {
 	public function offsetUnset($offset) {
 		unset($this->{$this->getRealOffsetName($offset)});
 	}
+	
 	/**
-	 * @method loadCmdLineArgs
+	 * Imports parameters from command line args
 	 * @param array Settings.
-	 * @description Imports parameters from command line args.
 	 * @return boolean - Success.
-	*/
+	 */
 	public static function loadCmdLineArgs($settings) {
 		$error = FALSE;
 
@@ -181,6 +184,8 @@ class Daemon_Config implements ArrayAccess {
 				$error = TRUE;
 			}
 		}
+		
 		return !$error;
 	}
+	
 }

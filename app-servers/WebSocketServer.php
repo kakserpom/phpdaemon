@@ -27,8 +27,7 @@ class WebSocketServer extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Event of appInstance. Adds default settings and binds sockets.
+	 * Event of appInstance. Adds default settings and binds sockets.
 	 * @return void
 	 */
 	public function init() {
@@ -45,8 +44,7 @@ class WebSocketServer extends AsyncServer {
 	}
 	
 	/**
-	 * @method inheritFromRequest
-	 * @description Called when a request to HTTP-server looks like WebSocket handshake query.
+	 * Called when a request to HTTP-server looks like WebSocket handshake query.
 	 * @return void
 	 */
 	public function inheritFromRequest($req, $appInstance) {
@@ -79,8 +77,7 @@ class WebSocketServer extends AsyncServer {
 	}
 
 	/**
-	 * @method addRoute
-	 * @description Adds a route if it doesn't exist already.
+	 * Adds a route if it doesn't exist already.
 	 * @param string Route name.
 	 * @param mixed Route's callback.
 	 * @return boolean Success.
@@ -97,8 +94,7 @@ class WebSocketServer extends AsyncServer {
 	}
 	
 	/**
-	 * @method setRoute
-	 * @description Force add/replace a route.
+	 * Force add/replace a route.
 	 * @param string Route name.
 	 * @param mixed Route's callback.
 	 * @return boolean Success.
@@ -110,8 +106,7 @@ class WebSocketServer extends AsyncServer {
 	}
 	
 	/**
-	 * @method removeRoute
-	 * @description Removes a route.
+	 * Removes a route.
 	 * @param string Route name.
 	 * @return boolean Success.
 	 */
@@ -126,8 +121,7 @@ class WebSocketServer extends AsyncServer {
 	}
 	
 	/**
-	 * @method onReady
-	 * @description Event of appInstance.
+	 * Event of appInstance.
 	 * @return void
 	 */
 	public function onReady() {
@@ -150,6 +144,7 @@ class WebSocketServer extends AsyncServer {
 }
 
 class WebSocketSession extends SocketSession {
+	
 	public $secprotocol;
 	public $resultKey;
 	public $handshaked = FALSE;
@@ -160,8 +155,7 @@ class WebSocketSession extends SocketSession {
 	public $callbacks = array();
 	
 	/**
-	 * @method sendFrame
-	 * @description Sends a frame.
+	 * Sends a frame.
 	 * @param string Frame's data.
 	 * @param integer Frame's type. See the constants.
 	 * @param callback Optional. Callback called when the frame is received by client.
@@ -207,8 +201,7 @@ class WebSocketSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Event of SocketSession (asyncServer).
+	 * Event of SocketSession (asyncServer).
 	 * @return void
 	 */
 	public function onFinish() {
@@ -225,8 +218,7 @@ class WebSocketSession extends SocketSession {
 	}
 	
 	/**
-	 * @method onFrame
-	 * @description Called when new frame received.
+	 * Called when new frame received.
 	 * @param string Frame's data.
 	 * @param integer Frame's type.
 	 * @return boolean Success.
@@ -242,8 +234,7 @@ class WebSocketSession extends SocketSession {
 	}
 	
 	/**
-	 * @method onWrite
-	 * @description Called when the connection is ready to accept new data.
+	 * Called when the connection is ready to accept new data.
 	 * @return void
 	 */
 	public function onWrite() {
@@ -259,8 +250,7 @@ class WebSocketSession extends SocketSession {
 	}
 	
 	/**
-	 * @method onHandshake
-	 * @description Called when the connection is handshaked.
+	 * Called when the connection is handshaked.
 	 * @return void
 	 */
 	public function onHandshake() {
@@ -283,8 +273,7 @@ class WebSocketSession extends SocketSession {
 	}
 	
 	/**
-	 * @method gracefulShutdown
-	 * @description Event of SocketSession (AsyncServer). Called when the worker is going to shutdown.
+	 * Event of SocketSession (AsyncServer). Called when the worker is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
 	public function gracefulShutdown() {
@@ -301,8 +290,7 @@ class WebSocketSession extends SocketSession {
 	}
 
 	/**
-	 * @method handshake
-	 * @description Called when we're going to handshake.
+	 * Called when we're going to handshake.
 	 * @return void
 	 */
 	public function handshake() {
@@ -336,8 +324,7 @@ class WebSocketSession extends SocketSession {
 	}
 	
 	/**
-	 * @method computeKey
-	 * @description Computes key for Sec-WebSocket.
+	 * Computes key for Sec-WebSocket.
 	 * @param string Key
 	 * @return string Result
 	 */
@@ -366,8 +353,7 @@ class WebSocketSession extends SocketSession {
 	}
 	
 	/**
-	 * @method stdin
-	 * @description Event of SocketSession (AsyncServer). Called when new data received.
+	 * Event of SocketSession (AsyncServer). Called when new data received.
 	 * @param string New received data.
 	 * @return void
 	 */
@@ -507,4 +493,5 @@ class WebSocketSession extends SocketSession {
 			}
 		}
 	}
+	
 }

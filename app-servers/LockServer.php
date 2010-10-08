@@ -25,8 +25,7 @@ class LockServer extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -68,10 +67,9 @@ class LockServerSession extends SocketSession {
 	public $locks = array();  // State of locks.
 
 	/**
-	 * @method acquireLock
+	 * Called when client is trying to acquire lock.	
 	 * @param string Name of job.
 	 * @param boolean Wait if already acquired?
-	 * @description Called when client is trying to acquire lock.
 	 * @return string Result.
 	 */
 	public function acquireLock($name, $wait = FALSE) {
@@ -96,10 +94,9 @@ class LockServerSession extends SocketSession {
 	}
 
 	/**
-	 * @method done
+	 * Called when client sends done- or failed-event.	
 	 * @param string Name of job.
 	 * @param string Result.
-	 * @description Called when client sends done- or failed-event.
 	 * @return string Result.
 	 */
 	public function done($name, $result) {
@@ -122,8 +119,7 @@ class LockServerSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Event of SocketSession (asyncServer).
+	 * Event of SocketSession (asyncServer).
 	 * @return void
 	 */
 	public function onFinish() {
@@ -144,8 +140,7 @@ class LockServerSession extends SocketSession {
 	}
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -183,4 +178,5 @@ class LockServerSession extends SocketSession {
 			$this->finish();
 		}
 	}
+	
 }

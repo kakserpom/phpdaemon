@@ -1,4 +1,5 @@
 <?php
+
 class WebSocketOverCOMET extends AsyncServer {
 
 	const IPCPacketType_C2S = 0x01;
@@ -24,8 +25,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -35,8 +35,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	}
 
 	/**
-	 * @method onShutdown
-	 * @description Called when application instance is going to shutdown.
+	 * Called when application instance is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
@@ -50,8 +49,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	}
  
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 	public function onReady() {
@@ -63,8 +61,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	}
 
 	/**
-	 * @method connectIPC
-	 * @description Establish connection with the given application instance of WebSocketOverCOMET.
+	 * Establish connection with the given application instance of WebSocketOverCOMET.
 	 * @param string ID
 	 * @return integer connId
 	 */
@@ -96,8 +93,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	}
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -109,6 +105,7 @@ class WebSocketOverCOMET extends AsyncServer {
 
 		return new WebSocketOverCOMET_Request($this, $upstream, $req);
 	}
+	
 }
 
 class WebSocketOverCOMET_IPCSession extends SocketSession {
@@ -116,15 +113,13 @@ class WebSocketOverCOMET_IPCSession extends SocketSession {
 	public $ipcId;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() { }
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -199,8 +194,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when the session finished.
+	 * Called when the session finished.
 	 * @return void
 	 */
 	public function onFinish() {
@@ -210,6 +204,7 @@ class WebSocketOverCOMET_IPCSession extends SocketSession {
 			unset($this->appInstance->IpcTransSessions[$this->ipcId]);
 		}
 	}
+	
 }
 
 class WebSocketOverCOMET_Request extends HTTPRequest {
@@ -225,8 +220,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	public $connId;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -253,8 +247,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	}
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -425,8 +418,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	}
 
 	/**
-	 * @method onAbort
-	 * @description Called when the request aborted.
+	 * Called when the request aborted.
 	 * @return void
 	 */
 	public function onAbort() {
@@ -441,8 +433,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	}
 
 	/**
-	 * @method onWrite
-	 * @description Called when the connection is ready to accept new data.
+	 * Called when the connection is ready to accept new data.
 	 * @return void
 	 */
 	public function onWrite() {
@@ -467,9 +458,8 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	}
 
 	/**
-	 * @method flushBufferedPackets()
+	 * Flushes buffered packets (only for the long-polling method)	
 	 * @param string Optional. Last timestamp.
-	 * @description Flushes buffered packets (only for the long-polling method)
 	 * @return void
 	 */
 	public function flushBufferedPackets($ts = NULL) {
@@ -527,8 +517,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	}
 
 	/**
-	 * @method sendFrame
-	 * @description Sends a frame.
+	 * Sends a frame.
 	 * @param string Frame's data.
 	 * @param integer Frame's type. See the constants.
 	 * @param callback Optional. Callback called when the frame is received by client.
@@ -551,11 +540,11 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Called when the request finished.
+	 * Called when the request finished.
 	 * @return void
 	 */
 	public function onFinish() {
 		unset($this->appInstance->clients[$this->idAppQueue]);
 	}
+	
 }

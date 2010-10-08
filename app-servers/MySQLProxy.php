@@ -25,8 +25,7 @@ class MySQLProxy extends AsyncServer {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -58,8 +57,7 @@ class MySQLProxySession extends SocketSession {
 	public $upstream;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -72,8 +70,7 @@ class MySQLProxySession extends SocketSession {
 	}
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -87,8 +84,7 @@ class MySQLProxySession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Event of SocketSession (asyncServer).
+	 * Event of SocketSession (asyncServer).
 	 * @return void
 	 */
 	public function onFinish() {
@@ -101,8 +97,7 @@ class MySQLProxyUpserverSession extends SocketSession {
 	public $downstream;
 
 	/**
-	 * @method stdin
-	 * @description Called when new data received.
+	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
@@ -116,11 +111,11 @@ class MySQLProxyUpserverSession extends SocketSession {
 	}
 
 	/**
-	 * @method onFinish
-	 * @description Event of SocketSession (asyncServer).
+	 * Event of SocketSession (asyncServer).
 	 * @return void
 	 */
 	public function onFinish() {
 		$this->downstream->finish();
 	}
+	
 }

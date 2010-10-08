@@ -21,8 +21,7 @@ class MongoNode extends AppInstance {
 	}
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -37,8 +36,7 @@ class MongoNode extends AppInstance {
 	}
 
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 	public function onReady() {
@@ -54,8 +52,7 @@ class MongoNode extends AppInstance {
 	}
 
 	/**
-	 * @method cacheObject
-	 * @description Method called when object received.
+	 * Method called when object received.
 	 * @param object Object.
 	 * @return void
 	 */
@@ -84,8 +81,7 @@ class MongoNode extends AppInstance {
 	}
 
 	/**
-	 * @method cacheObject
-	 * @description Method called when object deleted.
+	 * Method called when object deleted.
 	 * @param object Object.
 	 * @return void
 	 */
@@ -105,8 +101,7 @@ class MongoNode extends AppInstance {
 	}
 
 	/**
-	 * @method initSlave
-	 * @description Initializes slave session.
+	 * Initializes slave session.
 	 * @param object Object.
 	 * @return void
 	 */
@@ -167,6 +162,7 @@ class MongoNode extends AppInstance {
 			)
 		);
 	}
+	
 }
 
 class MongoNode_ReplicationRequest extends Request {
@@ -174,8 +170,7 @@ class MongoNode_ReplicationRequest extends Request {
 	public $inited = FALSE; // Initialized?
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return void
 	 */
 	public function run() {
@@ -219,4 +214,5 @@ class MongoNode_ReplicationRequest extends Request {
 		
 		$this->sleep(0.3);
 	}
+	
 }

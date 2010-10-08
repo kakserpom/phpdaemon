@@ -1,4 +1,5 @@
 <?php
+
 class CGI extends AppInstance {
 
 	public $binPath = 'php-cgi';   // Default bin-path
@@ -32,8 +33,7 @@ class CGI extends AppInstance {
 	}
 
 	/**
-	 * @method onReady
-	 * @description Called when the worker is ready to go.
+	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 	public function onReady() {
@@ -41,8 +41,7 @@ class CGI extends AppInstance {
 	}
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -58,8 +57,7 @@ class CGIRequest extends HTTPRequest {
 	public $proc;
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -120,8 +118,7 @@ class CGIRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return void
 	 */
 	public function run() {
@@ -138,8 +135,7 @@ class CGIRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method onAbort
-	 * @description Called when the request aborted.
+	 * Called when the request aborted.
 	 * @return void
 	 */
 	public function onAbort() {
@@ -152,8 +148,7 @@ class CGIRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method onAbort
-	 * @description Called when the request aborted.
+	 * Called when the request aborted.
 	 * @return void
 	 */
 	public function onWrite($process) {
@@ -166,10 +161,9 @@ class CGIRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method onReadData
+	 * Called when new data received from process.	
 	 * @param object Process pointer.
 	 * @param string Data.
-	 * @description Called when new data received from process.
 	 * @return void
 	 */
 	public function onReadData($process, $data) {
@@ -177,9 +171,8 @@ class CGIRequest extends HTTPRequest {
 	}
 
 	/**
-	 * @method stdin
+	 * Called when new piece of request's body is received.	
 	 * @param string Piece of request's body.
-	 * @description Called when new piece of request's body is received.
 	 * @return void
 	 */
 	public function stdin($c) {
@@ -189,4 +182,5 @@ class CGIRequest extends HTTPRequest {
 
 		$this->proc->write($c);
 	}
+	
 }

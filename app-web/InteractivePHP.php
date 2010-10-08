@@ -5,8 +5,7 @@ class InteractivePHP extends AppInstance {
 	public $proc = array();
 
 	/**
-	 * @method init
-	 * @description Constructor.
+	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
@@ -14,8 +13,7 @@ class InteractivePHP extends AppInstance {
 	}
 
 	/**
-	 * @method getSession
-	 * @description Returns pointer of process.
+	 * Returns pointer of process.
 	 * @param string Id.
 	 * @return resource Pointer.
 	 */
@@ -28,8 +26,7 @@ class InteractivePHP extends AppInstance {
 	}
 
 	/**
-	 * @method sendCommand
-	 * @description Sends command to the process.
+	 * Sends command to the process.
 	 * @param string Id.
 	 * @param string Commmand.
 	 * @return resource Pointer.
@@ -57,8 +54,7 @@ class InteractivePHP extends AppInstance {
 	}
 
 	/**
-	 * @method beginRequest
-	 * @description Creates Request.
+	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
 	 * @return object Request.
@@ -73,8 +69,7 @@ class InteractivePHPRequest extends HTTPRequest {
 	public $eState = 0;
 
 	/**
-	 * @method run
-	 * @description Called when request iterated.
+	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
@@ -155,4 +150,5 @@ if (!$this->appInstance->getSession($this->session)->EOF) {
 </html><?php
 		return;
 	}
+	
 }
