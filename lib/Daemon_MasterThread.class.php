@@ -34,8 +34,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->maxworkers->value
 		));
 
-		$mpmLast = time();
-		$autoReloadLast = time();
+		$mpmLast = $autoReloadLast = time();
 		$c = 1;
 
 		while (TRUE) {
@@ -59,8 +58,10 @@ class Daemon_MasterThread extends Thread {
 				}
 			}
 
-			if (time() > $mpmLast+Daemon::$config->mpmdelay->value) {
-				$mpmLast = time();
+			$time = time();
+			
+			if ($time > $mpmLast+Daemon::$config->mpmdelay->value) {
+				$mpmLast = $time;
 				++$c;
 				
 				if ($c > 0xFFFFF) {
