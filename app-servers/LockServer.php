@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage LockServer
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class LockServer extends AsyncServer {
 
 	public $sessions = array();       // Active sessions

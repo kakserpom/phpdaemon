@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class AsyncServer
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description AsyncServer class.
-/**************************************************************************/
-
+/**
+ * Asynchronous server
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class AsyncServer extends AppInstance {
 
 	const TYPE_TCP    = 0;

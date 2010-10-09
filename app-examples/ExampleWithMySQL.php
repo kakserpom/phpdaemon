@@ -3,8 +3,9 @@
 /**
  * @package Examples
  * @subpackage MySQL
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class ExampleWithMySQL extends AppInstance {
 
 	/**

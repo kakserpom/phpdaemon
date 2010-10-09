@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon_Bootstrap
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Bootstrap class.
-/**************************************************************************/
-
+/**
+ * Bootstrap for PHPDaemon
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class Daemon_Bootstrap {
 
 	public static $pid;

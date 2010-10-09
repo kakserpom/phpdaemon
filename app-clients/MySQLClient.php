@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage MySQLClient
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class MySQLClient extends AsyncServer {
 
 	public $sessions = array(); // Active sessions
@@ -111,7 +112,7 @@ class MySQLClient extends AsyncServer {
 			'server'       => 'mysql://root@127.0.0.1',
 			// default port
 			'port'         => 3306,
-			// FIXME: add description
+			// @todo add description
 			'protologging' => 0
 		);
 	}

@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class DestructableLambda
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description DestructableLambda class.
-/**************************************************************************/
-
+/**
+ * Destructable lambda function class
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class DestructableLambda {
 
 	/**

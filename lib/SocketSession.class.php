@@ -1,26 +1,24 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class SocketSession
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description SocketSession class.
-/*************************************************************************/
-
+/**
+ * Socket session
+ * 
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class SocketSession {
 
 	public $buf = '';
 	public $connId;
 
-	// FIXME make private and add new method ->getApplication()
+	// @todo make private and add new method ->getApplication()
 	public $appInstance;
 
-	// FIXME migrate to constants
+	// @todo migrate to constants
 	public $state = 0;
 
-	// FIXME not great
+	// @todo not great
 	public $finished = FALSE;
 	public $readLocked = FALSE;
 	public $addr;
@@ -39,7 +37,7 @@ class SocketSession {
 
 	/**
 	 * Called when the session constructed
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	public function init() {}
@@ -73,7 +71,7 @@ class SocketSession {
 
 	/** 
 	 * Lock read
-	 * FIXME add more description
+	 * @todo add more description
 	 * @return void
 	 */
 	public function lockRead() {
@@ -82,7 +80,7 @@ class SocketSession {
 
 	/**
 	 * Lock read
-	 * FIXME more description
+	 * @todo more description
 	 * @return void
 	 */
 	public function unlockRead() {
@@ -96,7 +94,7 @@ class SocketSession {
 
 	/**
 	 * Called when the connection is ready to accept new data
-	 * FIXME protected?
+	 * @todo protected?
 	 * @return void
 	 */
 	public function onWrite() { }
@@ -135,7 +133,7 @@ class SocketSession {
 
 	/**
 	 * Called when the session finished
-	 * FIXME protected?
+	 * @todo protected?
 	 * @return void
 	 */
 	public function onFinish() {
@@ -144,7 +142,7 @@ class SocketSession {
 
 	/**
 	 * Called when new data received
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @param string New received data
 	 * @return void
 	 */

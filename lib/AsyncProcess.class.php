@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class AsyncProcess
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description AsyncProcess class
-/**************************************************************************/
-
+/**
+ * Asynchronous process
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class AsyncProcess extends AsyncStream {
 
 	/**
@@ -31,31 +29,32 @@ class AsyncProcess extends AsyncStream {
 
 	/**
 	 * Process descriptor
-	 * @var resource Resource? FIXME
+	 * @var resource Resource? @todo resource?
 	 */
 	public $pd;
 
 	/**
-	 * Output errors? FIXME used only in this module without any changes
+	 * Output errors? 
+	 * @todo used only in this module without any changes
 	 * @var boolean
 	 */
 	public $outputErrors = false;
 
-	// FIXME make methods setUser and setGroup, variables change to $user and $group with null values
+	// @todo make methods setUser and setGroup, variables change to $user and $group with null values
 	public $setUser;                               // optinal SUID.
 	public $setGroup;                              // optional SGID.
 
-	// FIXME the same, make a method setChroot
+	// @todo the same, make a method setChroot
 	public $chroot = '/';                          // optional chroot.
 
 	public $env = array();                         // hash of environment's variables
 
-	// FIXME setCwd
+	// @todo setCwd
 	public $cwd;                                   // optional chdir
 	public $errlogfile = '/tmp/cgi-errorlog.log';  // path to error logfile
 	public $args;                                  // array of arguments
 
-	// FIXME setNice
+	// @todo setNice
 	public $nice;                                  // optional priority
  
 	/**

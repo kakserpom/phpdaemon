@@ -3,8 +3,9 @@
 /**
  * @package Examples
  * @subpackage PostgreSQL
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class ExampleWithPostgreSQL extends AppInstance {
 
 	/**

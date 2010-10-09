@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage FastCGI
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class FastCGI extends AsyncServer {
 
 	protected $initialLowMark  = 8;         // initial value of the minimal amout of bytes in buffer
@@ -69,7 +70,7 @@ class FastCGI extends AsyncServer {
 	 */
 	protected function getConfigDefaults() {
 		return array(
-			// FIXME: add description strings
+			// @todo add description strings
 			'expose'                  => 1,
 			'auto-read-body-file'     => 1,
 			'listen'                  =>  'tcp://127.0.0.1,unix:/tmp/phpdaemon.fcgi.sock',

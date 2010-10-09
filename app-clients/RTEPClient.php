@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage RTEPClient
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class RTEPClient extends AppInstance {
 
 	public $client;

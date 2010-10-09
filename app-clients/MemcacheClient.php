@@ -3,11 +3,12 @@
 /**
  * @package Applications
  * @subpackage MemcacheClient
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class MemcacheClient extends AsyncServer {
 
-	// FIXME $sessions is checked onShutdown in asyncServer ('tis NOT great)
+	// @todo $sessions is checked onShutdown in asyncServer ('tis NOT great)
 	public $sessions = array();      // Active sessions
 	private $servers = array();      // Array of servers 
 	public $dtags_enabled = FALSE;   // Enables tags for distribution
@@ -25,7 +26,7 @@ class MemcacheClient extends AsyncServer {
 			'servers' => '127.0.0.1',
 			// default port
 			'port'    => 11211,
-			// FIXME: add description
+			// @todo add description
 			'prefix'  => ''
 		);
 	}

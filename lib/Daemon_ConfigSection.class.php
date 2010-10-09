@@ -5,9 +5,9 @@
  *
  * @package Core
  * @subpackage Config
- * @author kak.serpom.po.yaitsam@gmail.com
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 interface Interface_Daemon_ConfigSection extends ArrayAccess, Countable {}
 
 class Daemon_ConfigSection implements Interface_Daemon_ConfigSection {

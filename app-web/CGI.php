@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage CGI
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class CGI extends AppInstance {
 
 	public $binPath = 'php-cgi';   // Default bin-path
@@ -25,7 +26,7 @@ class CGI extends AppInstance {
 	 */
 	protected function getConfigDefaults() {
 		return array(
-			// FIXME: add description strings
+			// @todo add description strings
 			'allow-override-binpath' => TRUE,
 			'allow-override-cwd' => TRUE,
 			'allow-override-chroot' => TRUE,

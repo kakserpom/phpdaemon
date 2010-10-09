@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon_MasterThread
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Implementation of the master thread.
-/**************************************************************************/
-
+/**
+ * Implementation of the master thread
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class Daemon_MasterThread extends Thread {
 
 	public $delayedSigReg = TRUE;
@@ -140,7 +138,7 @@ class Daemon_MasterThread extends Thread {
 		);
 	}
 	/**
-	 * FIXME description missed
+	 * @todo description missed
 	 */	
 	public function reloadWorker($spawnId) {
 		if (isset($this->collections['workers']->threads[$spawnId])) {
@@ -200,7 +198,7 @@ class Daemon_MasterThread extends Thread {
 	
 	/**
 	 * Called when master is going to shutdown
-	 * FIXME -> protected?
+	 * @todo -> protected?
 	 * @return void
 	 */
 	public function onShutdown() {
@@ -237,7 +235,7 @@ class Daemon_MasterThread extends Thread {
 	
 	/**
 	 * Handler for the SIGCHLD (child is dead) signal in master process.
-	 * FIXME +on?
+	 * @todo +on?
 	 * @return void
 	 */
 	protected function sigchld() {
@@ -250,7 +248,7 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGINT (shutdown) signal in master process. Shutdown.
-	 * FIXME +on ?
+	 * @todo +on ?
 	 * @return void
 	 */
 	protected function sigint() {
@@ -264,7 +262,7 @@ class Daemon_MasterThread extends Thread {
 	
 	/**
 	 * Handler for the SIGTERM (shutdown) signal in master process
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	protected function sigterm() {
@@ -278,7 +276,7 @@ class Daemon_MasterThread extends Thread {
 	
 	/**
 	 * Handler for the SIGQUIT signal in master process
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	protected function sigquit() {
@@ -292,7 +290,7 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGHUP (reload config) signal in master process
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	public function sighup() {
@@ -309,7 +307,7 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGUSR1 (re-open log-file) signal in master process
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	public function sigusr1() {
@@ -323,7 +321,7 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGUSR2 (graceful restart all workers) signal in master process
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	public function sigusr2() {
@@ -336,14 +334,14 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGTTIN signal in master process
-	 * FIXME not used or -> protected?
+	 * @todo not used or -> protected?
 	 * @return void
 	 */
 	public function sigttin() { }
 
 	/**
 	 * Handler for the SIGXSFZ signal in master process
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	public function sigxfsz() {
@@ -352,7 +350,7 @@ class Daemon_MasterThread extends Thread {
 	
 	/**
 	 * Handler for non-known signals
-	 * FIXME +on & -> protected?
+	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	public function sigunknown($signo) {

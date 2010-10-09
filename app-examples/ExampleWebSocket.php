@@ -3,8 +3,9 @@
 /**
  * @package Examples
  * @subpackage WebSocket
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class ExampleWebSocket extends AppInstance {
 
 	/**

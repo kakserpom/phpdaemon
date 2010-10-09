@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage TelnetHoneypot
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class TelnetHoneypot extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

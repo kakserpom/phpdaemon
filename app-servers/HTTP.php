@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage HTTP
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class HTTP extends AsyncServer {
 
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
@@ -27,14 +28,14 @@ class HTTP extends AsyncServer {
 			'log-events' => 0,
 			// log queue
 			'log-queue' => 0,
-			// FIXME: add description strings
+			// @todo add description strings
 			'send-file' => 0,
 			'send-file-dir' => '/dev/shm',
 			'send-file-prefix' => 'http-',
 			'send-file-onlybycommand' => 0,
 			// expose your soft by X-Powered-By string
 			'expose' => 1,
-			// FIXME: add description strings
+			// @todo add description strings
 			'keepalive' => new Daemon_ConfigEntryTime('0s'),
 			'chunksize' => new Daemon_ConfigEntrySize('8k'),
 			// disabled by default

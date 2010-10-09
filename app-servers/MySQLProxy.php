@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage MySQLProxy
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class MySQLProxy extends AsyncServer {
 
 	public $sessions = array();
@@ -16,13 +17,13 @@ class MySQLProxy extends AsyncServer {
 	 */
 	protected function getConfigDefaults() {
 		return array(
-			// FIXME: add description
+			// @todo add description
 			'upserver'     => '127.0.0.1:3306',
 			// listen to
 			'listen'       => 'tcp://0.0.0.0',
 			// listen port
 			'listenport'   => 3307,
-			// FIXME: add description
+			// @todo add description
 			'protologging' => 0,
 			// disabled by default
 			'enable'       => 0

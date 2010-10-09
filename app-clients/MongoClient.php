@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage MongoClient
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class MongoClient extends AsyncServer {
 
 	public $sessions    = array(); // Active sessions

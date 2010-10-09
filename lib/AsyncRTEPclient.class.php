@@ -1,15 +1,15 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class AsyncRTEPclient
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description AsyncRTEPclient class
-/**************************************************************************/
-
+/**
+ * Asynchronous RTEP client
+ * 
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class AsyncRTEPclient extends AsyncStream {
+	// @todo move to apps?
+
 	public $buf = '';
 	public $servers = array();
 	public $trace = FALSE;

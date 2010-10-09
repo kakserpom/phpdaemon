@@ -1,15 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class ThreadCollection
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Collection of threads
-/**************************************************************************/
-
-
+/**
+ * Collection of threads
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class ThreadCollection {
 
 	/**
@@ -19,12 +16,12 @@ class ThreadCollection {
 	public $threads = array();
 
 	/**
-	 * FIXME: Add a description
+	 * @todo Add a description
 	 */
 	public $waitstatus;
 
 	/**
-	 * FIXME: Add a description
+	 * @todo Add a description
 	 * @var int
 	 */
 	public $spawncounter = 0;

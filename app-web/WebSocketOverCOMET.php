@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage WebSocketOverCOMET
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class WebSocketOverCOMET extends AsyncServer {
 
 	const IPCPacketType_C2S = 0x01;

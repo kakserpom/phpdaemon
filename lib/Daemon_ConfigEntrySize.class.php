@@ -5,9 +5,9 @@
  *
  * @package Core
  * @subpackage Config
- * @author kak.serpom.po.yaitsam@gmail.com
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class Daemon_ConfigEntrySize extends Daemon_ConfigEntry {
 
 	public function HumanToPlain($value) {

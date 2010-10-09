@@ -3,8 +3,9 @@
 /**
  * @package Examples
  * @subpackage RTEP
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class ExampleRTEP extends AppInstance {
 
 	public $RTEPClient;

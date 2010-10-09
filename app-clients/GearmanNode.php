@@ -5,8 +5,9 @@
  *
  * @package Applications
  * @subpackage GearmanNode
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class GearmanNode extends AppInstance {
 
 	public $client;

@@ -3,8 +3,9 @@
 /**
  * @package Examples
  * @subpackage AsyncStream
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class ExampleAsyncStream extends AppInstance {
 
 	/**

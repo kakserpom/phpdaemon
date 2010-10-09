@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon_WorkerThread
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Implementation of the worker thread.
-/**************************************************************************/
-
+/**
+ * Implementation of the worker thread
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class Daemon_WorkerThread extends Thread {
 
 	public $update = FALSE;
@@ -374,7 +372,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * FIXME description?
+	 * @todo description?
 	 */
 	public function checkState() {
 		$time = microtime(true);
@@ -487,7 +485,7 @@ class Daemon_WorkerThread extends Thread {
 	}
 	
 	/**
-	 * FIXME description?
+	 * @todo description?
 	 * @param boolean - Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
 	 * @return boolean - Ready?
 	 */

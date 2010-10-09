@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Request
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Request class.
-/**************************************************************************/
-
+/**
+ * Request
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class Request {
 
 	const INTERRUPT = 3; // alias of STATE_SLEEPING
@@ -63,7 +61,7 @@ class Request {
 	}
 
 	/**
-	 * FIXME description is missing
+	 * @todo description is missing
 	 */
 	public static function eventCall($fd, $flags, $arg) {
 		$k = $arg[0];
@@ -290,7 +288,7 @@ class Request {
 	
 	/**
 	 * Called by call() to check if ready
-	 * FIXME -> protected?
+	 * @todo -> protected?
 	 * @return void
 	 */
 	public function preCall() {
@@ -299,21 +297,21 @@ class Request {
 
 	/**
 	 * Called when the request aborted
-	 * FIXME protected?
+	 * @todo protected?
 	 * @return void
 	 */
 	public function onAbort() { }
 
 	/**
 	 * Called when the request finished
-	 * FIXME protected?
+	 * @todo protected?
 	 * @return void
 	 */
 	public function onFinish() { }
 
 	/**
 	 * Called when the request wakes up
-	 * FIXME protected?
+	 * @todo protected?
 	 * @return void
 	 */
 	protected function onWakeup() {
@@ -330,7 +328,7 @@ class Request {
 
 	/**
 	 * Called when the request starts sleep
-	 * FIXME protected?
+	 * @todo protected?
 	 * @return void
 	 */
 	public function onSleep() {

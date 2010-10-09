@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage SocksServer
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class SocksServer extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

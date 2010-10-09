@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage LockClient
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class LockClient extends AsyncServer {
 
 	public $sessions = array();     // Active sessions
@@ -25,7 +26,7 @@ class LockClient extends AsyncServer {
 			'servers' => '127.0.0.1',
 			// default port
 			'port'    => 833,
-			// FIXME: add description
+			// @todo add description
 			'prefix'  => '',
 		);
 	}

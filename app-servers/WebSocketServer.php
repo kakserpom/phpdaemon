@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage WebSocketServer
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class WebSocketServer extends AsyncServer {
 
 	public $sessions = array();

@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage MongoNode
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class MongoNode extends AppInstance {
 	
 	public $db; // MongoClient

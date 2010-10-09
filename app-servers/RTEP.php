@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage RTEP
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class RTEP extends AsyncServer {
 
 	public $sessions = array();     // Active sessions
@@ -262,7 +263,7 @@ class RTEPSession extends SocketSession {
 	}
 
 	/**
-	 * FIXME descriptio missing
+	 * @todo description missing
 	 */
 	public function stdin($buf) {
 		$this->buf .= $buf;

@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage FileReader
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class FileReader extends AppInstance {
 
 	/**

@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class WebSocketRoute
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description WebSocketRoute class.
-/**************************************************************************/
-
+/**
+ * Web socket route
+ * 
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class WebSocketRoute {
 	
 	public $client; // Remote client

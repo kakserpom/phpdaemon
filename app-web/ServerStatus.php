@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage ServerStatus
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class ServerStatus extends AppInstance {
 
 	/**

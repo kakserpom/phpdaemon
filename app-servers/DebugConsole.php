@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage DebugConsole
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class DebugConsole extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

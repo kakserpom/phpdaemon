@@ -7,7 +7,7 @@
  * @subpackage AsteriskDriver
  * 
  * @version 1.0.1
- * @author Dmitry Ponomarev <ponomarev.base@gmail.com>
+ * @author Ponomarev Dmitry <ponomarev.base@gmail.com>
  */
 
 class AsteriskDriver extends AsyncServer {

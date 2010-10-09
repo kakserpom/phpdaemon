@@ -5,9 +5,9 @@
  *
  * @package Core
  * @subpackage Config
- * @author kak.serpom.po.yaitsam@gmail.com
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class Daemon_ConfigParser {
 
 	const T_ALL = 1;
@@ -243,7 +243,7 @@ class Daemon_ConfigParser {
 	}
 	
 	/**
-	 * FIXME description?
+	 * @todo description?
 	 */
 	public function purgeScope($scope) {
 	 $cfg = $this;

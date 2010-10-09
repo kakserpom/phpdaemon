@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage FlashPolicy
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class FlashPolicy extends AsyncServer {
 
 	public $sessions = array();  // Active sessions

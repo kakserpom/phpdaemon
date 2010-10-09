@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage InteractivePHP
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class InteractivePHP extends AppInstance {
 
 	public $db;

@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class HTTPRequest
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description HTTP request class.
-/**************************************************************************/
-
+/**
+ * HTTP request
+ * 
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class HTTPRequest extends Request {
 
 	/**
@@ -59,7 +57,7 @@ class HTTPRequest extends Request {
 		505 => 'HTTP Version Not Supported',
 	);
 
-	// FIXME phpdoc needed
+	// @todo phpdoc needed
 
 	public $answerlen = 0;
 	public $contentLength;
@@ -71,12 +69,12 @@ class HTTPRequest extends Request {
 	public $mpartoffset = 0;
 	public $mpartcondisp = FALSE;
 	public $headers = array('STATUS' => '200 OK');
-	public $headers_sent = FALSE; // FIXME make private
+	public $headers_sent = FALSE; // @todo make private
 	private $boundary = FALSE;
 		
 	/**
 	 * Preparing before init
-	 * FIXME protected?
+	 * @todo protected?
 	 * @param object Source request
 	 * @return void
 	 */
@@ -103,7 +101,7 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Called by call() to check if ready
-	 * FIXME protected?
+	 * @todo protected?
 	 * @return void
 	 */
 	public function preCall() {
@@ -126,7 +124,7 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Parses GET-query string and other request's headers
-	 * FIXME private?  
+	 * @todo private?  
 	 * @return void
 	 */
 	public function parseParams() {
@@ -312,7 +310,7 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Outputs data with headers (split by \r\n\r\n)
-	 * FIXME description missed (what is the difference between this and out()) ?
+	 * @todo description missed (what is the difference between this and out()) ?
 	 * @param string String to out
 	 * @return boolean Success.
 	 */
@@ -467,7 +465,7 @@ class HTTPRequest extends Request {
 	}
 	
 	/**
-	 * FIXME description missing
+	 * @todo description missing
 	 */
 	public function parseSize($value) {
 		$l = strtolower(substr($value, -1));
@@ -679,7 +677,7 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Read request body from file
-	 * FIXME from what file? Need extended description
+	 * @todo from what file? Need extended description
 	 * @return void
 	 */
 	public function readBodyFile() {
@@ -721,7 +719,7 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Called in preg_replace_callback in parse_str
-	 * FIXME private?
+	 * @todo private?
 	 * @param array Match
 	 * @return string Replacement.
 	 */
@@ -730,8 +728,8 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * FIXME description missing
-	 * FIXME protected?
+	 * @todo description missing
+	 * @todo protected?
 	 */
 	public function postFinishHandler() {
 		if (!$this->headers_sent) {

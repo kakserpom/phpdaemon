@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Core class.
-/**************************************************************************/
-
+/**
+ * Daemon "namespace"
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class Daemon {
 
 	const SUPPORT_RUNKIT_SANDBOX         = 0;	

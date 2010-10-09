@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Debug
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Debug static functions.
-/**************************************************************************/
-
+/**
+ * Debug static functions
+ * 
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class Debug {
 
 	/**

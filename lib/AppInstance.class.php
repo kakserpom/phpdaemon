@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class AppInstance
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description AppInstance class.
-/**************************************************************************/
-
+/**
+ * Application instance
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class AppInstance {
 
 	public $status = 0;        // runtime status
@@ -65,7 +63,7 @@ class AppInstance {
 
  	/**
 	 * Process default config
-	 * FIXME move it to Daemon_Config class
+	 * @todo move it to Daemon_Config class
 	 * @param array {"setting": "value"}
 	 * @return void
 	 */
@@ -96,7 +94,7 @@ class AppInstance {
 	
 	/**
 	 * Called when the worker is ready to go
-	 * FIXME -> protected?
+	 * @todo -> protected?
 	 * @return void
 	 */
 	public function onReady() { }
@@ -109,15 +107,15 @@ class AppInstance {
  
 	/**
 	 * Called when worker is going to update configuration
-	 * FIXME call it only when application section config is changed
-	 * FIXME rename to onConfigChanged()
+	 * @todo call it only when application section config is changed
+	 * @todo rename to onConfigChanged()
 	 * @return void
 	 */
 	public function update() {}
  
 	/**
 	 * Called when application instance is going to shutdown
-	 * FIXME protected?
+	 * @todo protected?
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
@@ -126,7 +124,7 @@ class AppInstance {
  
 	/**
 	 * Create Request
-	 * FIXME more description needed
+	 * @todo more description needed
 	 * @param object Request
 	 * @param object Upstream application instance
 	 * @return object Request
@@ -137,7 +135,7 @@ class AppInstance {
  
 	/**
 	 * Handles the output from downstream requests
-	 * FIXME more description
+	 * @todo more description
 	 * @param object Request
 	 * @param string The output
 	 * @return void
@@ -174,7 +172,7 @@ class AppInstance {
 	/**
 	 * Handle the request
 	 * @param object Parent request
-	 * @param object Upstream application  FIXME is upstream really needed?
+	 * @param object Upstream application  @todo is upstream really needed?
 	 * @return object Request
 	 */
 	public function handleRequest($parent, $upstream) {
@@ -193,7 +191,7 @@ class AppInstance {
  
 	/**
 	 * Pushes request to the queue
-	 * FIXME log warning message and then sometime remove it
+	 * @todo log warning message and then sometime remove it
 	 * @param object Request
 	 * @return object Request
 	 * @deprecated
@@ -204,7 +202,7 @@ class AppInstance {
  
 	/**
 	 * Handle the worker status
-	 * @param int Status code FIXME use constants in method
+	 * @param int Status code @todo use constants in method
 	 * @return boolean Result
 	 */
 	public function handleStatus($ret) {

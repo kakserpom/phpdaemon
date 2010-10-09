@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Terminal
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Terminal class.
-/**************************************************************************/
-
+/**
+ * Terminal
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com> 
+ */
 class Terminal {
 
 	/**

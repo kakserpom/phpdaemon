@@ -3,8 +3,9 @@
 /**
  * @package Applications
  * @subpackage PostgreSQLClient
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class PostgreSQLClient extends AsyncServer {
 
 	public $sessions = array(); // Active sessions
@@ -23,7 +24,7 @@ class PostgreSQLClient extends AsyncServer {
 			'server' => 'pg://root@127.0.0.1',
 			// default port
 			'port'   => 5432,
-			// FIXME: add description
+			// @todo add description
 			'protologging' => 0,
 			// disabled by default
 			'enable' => 0
@@ -342,7 +343,7 @@ class PostgreSQLClientSession extends SocketSession {
 	 * @return boolean Success
 	 */
 	public function ping($callback = NULL) {
-		//FIXME ???
+		// @todo ???????
 		//return $this->command(, '', $callback);
 	}
 
@@ -445,7 +446,7 @@ class PostgreSQLClientSession extends SocketSession {
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, TRUE);
 				}
-			} // FIXME move to constant values
+			} // @todo move to constant values
 			elseif ($authType === 2) {
 				// KerberosV5
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: KerberosV5.');

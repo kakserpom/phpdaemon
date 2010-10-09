@@ -3,8 +3,9 @@
 /**
  * @package Examples
  * @subpackage Sandbox
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class ExampleSandbox extends AppInstance {
 
 	public $counter = 0;

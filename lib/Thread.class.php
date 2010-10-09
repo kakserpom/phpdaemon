@@ -1,14 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Thread
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Thread class
-/**************************************************************************/
-
+/**
+ * Thread
+ *
+ * @package Core
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 abstract class Thread {
 
 	/**
@@ -18,19 +16,19 @@ abstract class Thread {
 	public $pid;
 
 	/**
-	 * FIXME: Add a description
+	 * @todo Add a description
 	 * @var boolean
 	 */
 	public $shutdown = FALSE;
 
 	/**
-	 * FIXME: Add a description
+	 * @todo Add a description
 	 * @var boolean
 	 */
 	public $terminated = FALSE;
 
 	/**
-	 * FIXME: Add a description
+	 * @todo Add a description
 	 * @var array
 	 */
 	public $collections = array();
@@ -128,7 +126,7 @@ abstract class Thread {
 	protected function run() { }
 
 	/**
-	 * FIXME: Add a description
+	 * @todo Add a description
 	 * @var boolean
 	 */
 	public $delayedSigReg = FALSE;
@@ -368,7 +366,7 @@ abstract class Thread {
 }
 
 if (!function_exists('pcntl_sigtimedwait')) {
-	// FIXME: $signals or Thread::$signals?
+	// @todo $signals or Thread::$signals?
 	function pcntl_sigtimedwait($signals, $siginfo, $sec, $nano) {
 		pcntl_signal_dispatch();
 

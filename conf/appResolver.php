@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Default application resolver
+ *
+ * @package Core
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ */
 class MyAppResolver extends AppResolver {
 	
 	/**

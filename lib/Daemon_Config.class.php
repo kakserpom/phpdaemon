@@ -5,9 +5,9 @@
  *
  * @package Core
  * @subpackage Config
- * @author kak.serpom.po.yaitsam@gmail.com
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class Daemon_Config implements ArrayAccess {
 
 	// Worker graceful restarting:
@@ -61,7 +61,7 @@ class Daemon_Config implements ArrayAccess {
 	
 	public static $lastRevision = 0;
 	
-	// FIXME phpdoc missed
+	// @todo phpdoc missed
 	
 	public function __construct() {
 		static $sizes = array('maxmemoryusage');

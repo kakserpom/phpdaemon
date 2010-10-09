@@ -3,8 +3,9 @@
 /**
  * @package Examples
  * @subpackage AsyncProcess
+ *
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-
 class ExampleAsyncProcess extends AppInstance {
 
 	/**
