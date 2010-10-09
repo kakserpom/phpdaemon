@@ -8,18 +8,21 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-interface Interface_Daemon_ConfigSection extends ArrayAccess, Countable {}
+class Daemon_ConfigSection implements ArrayAccess, Countable {
 
-class Daemon_ConfigSection implements Interface_Daemon_ConfigSection {
 	public $source;
 	public $revision;
 
-	public function count()
-	{
-	 $c = 0;
-	 foreach ($this as $prop) {++$c;}
-	 return $c;
+	public function count() {
+		$c = 0;
+
+		foreach ($this as $prop) {
+			++$c;
+		}
+
+		return $c;
 	}
+
 	public function getRealOffsetName($offset) {
 		return str_replace('-', '', strtolower($offset));
 	}
