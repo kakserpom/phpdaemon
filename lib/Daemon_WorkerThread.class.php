@@ -29,55 +29,10 @@ class Daemon_WorkerThread extends Thread {
 	public $eventBase;
 	public $timeoutEvent;
 	public $status = 0;
-	public $delayedSigReg = TRUE;
-	public $sigEvents = array();
 	public $breakMainLoop = FALSE;
 	public $reloadReady = FALSE;
-
-	/**
-	 * Register signals.
-	 * @return void
-	 */
-	public function registerSignals()
-	{
-		foreach (self::$signals as $no => $name) {
-			if (
-				($name === 'SIGKILL') 
-				|| ($name == 'SIGSTOP')
-			) {
-				continue;
-			}
-			
-			$ev = event_new();
-			if (
-				!event_set(
-					$ev,
-					$no,
-					EV_SIGNAL | EV_PERSIST,
-					array($this,'eventSighandler'),
-					array($no)
-				)
-			) {
-				throw new Exception('Cannot event_set for '.$name.' signal');
-			}
-			
-			event_base_set($ev, $this->eventBase);
-			event_add($ev);
-			$this->sigEvents[$no] = $ev;
-		}
-	}
-
-	/**
-	 * Called when a signal caught through libevent.
-	 * @param integer Signal's number.
-	 * @param integer Events.
-	 * @param mixed Argument.
-	 * @return void
-	 */
-	public function eventSighandler($fd, $events, $arg) {
-	  $this->sighandler($arg[0]);
-	}
-
+	public $delayedSigReg = TRUE;
+	
 	/**
 	 * Runtime of Worker process.
 	 * @return void
@@ -99,7 +54,7 @@ class Daemon_WorkerThread extends Thread {
 	
 		$this->setStatus(6);
 		$this->eventBase = event_base_new();
-		$this->registerSignals();
+		$this->registerEventSignals();
 
 		Daemon::$appResolver->preload();
 	

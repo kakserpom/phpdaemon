@@ -11,21 +11,25 @@
 
 class Daemon_MasterThread extends Thread {
 
+	public $delayedSigReg = TRUE;
+	public $breakMainLoop = FALSE;
+	
 	/**
 	 * Runtime of Master process
 	 * @return void
 	 */
 	protected function run() {
-		proc_nice(Daemon::$config->masterpriority->value);
+		Daemon::$master = $this;
+		
+		$this->prepareSystemEnv();
+		
 		gc_enable();
-		register_shutdown_function(array($this,'onShutdown'));
+		
+		$this->eventBase = event_base_new();
+		$this->registerEventSignals();
+
 		$this->collections = array('workers' => new ThreadCollection);
-
-		$this->setproctitle(
-			Daemon::$runName . ': master process' 
-			. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
-		);
-
+		
 		Daemon::$appResolver = require Daemon::$config->path->value;
 		Daemon::$appResolver->preload(true); 
 
@@ -34,14 +38,10 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->maxworkers->value
 		));
 
-		$mpmLast = $autoReloadLast = time();
-		$c = 1;
+		$this->cfgReloadTimedEvent = new Daemon_TimedEvent(function() {
+			$self = Daemon::$master;
 
-		while (true) {
-			pcntl_signal_dispatch();
-			$this->sigwait(1,0);
 			clearstatcache();
-      
 			if (
 				isset(Daemon::$config->configfile) 
 				&& (Daemon::$config->autoreload->value > 0)
@@ -57,62 +57,88 @@ class Daemon_MasterThread extends Thread {
 					$this->sighup();
 				}
 			}
-
-			$time = time();
 			
-			if ($time > $mpmLast+Daemon::$config->mpmdelay->value) {
-				$mpmLast = $time;
-				++$c;
+			$self->cfgReloadTimedEvent->timeout();
+		}, pow(10,6) * 1);
+		
+		$this->MPMTimedEvent = new Daemon_TimedEvent(function() {
+			$self = Daemon::$master;
+
+			static $c = 0;
+			
+			++$c;
+			
+			if ($c > 0xFFFFF) {
+				$c = 0;
+			}
 				
-				if ($c > 0xFFFFF) {
-					$c = 0;
-				}
+			if (($c % 10 == 0)) {
+				$self->collections['workers']->removeTerminated(true);
+				gc_collect_cycles();
+			} else {
+				$self->collections['workers']->removeTerminated();
+			}
+			
+			if (
+				isset(Daemon::$config->mpm->value) 
+				&& is_callable(Daemon::$config->mpm->value)
+			) {
+				call_user_func(Daemon::$config->mpm->value);
+			} else {
+				// default MPM
+				$state = Daemon::getStateOfWorkers($self);
 				
-				if (($c % 10 == 0)) {
-					$this->collections['workers']->removeTerminated(true);
-					gc_collect_cycles();
-				} else {
-					$this->collections['workers']->removeTerminated();
-				}
-				
-				if (
-					isset(Daemon::$config->mpm->value) 
-					&& is_callable(Daemon::$config->mpm->value)
-				) {
-					call_user_func(Daemon::$config->mpm->value);
-				} else {
-					// default MPM
-					$state = Daemon::getStateOfWorkers($this);
+				if ($state) {
+					$n = max(
+						min(
+							Daemon::$config->minspareworkers->value - $state['idle'], 
+							Daemon::$config->maxworkers->value - $state['alive']
+						),
+						Daemon::$config->minworkers->value - $state['alive']
+					);
+
+					if ($n > 0) {
+						Daemon::log('Spawning ' . $n . ' worker(s).');
+						$self->spawnWorkers($n);
+					}
+
+					$n = min(
+						$state['idle'] - Daemon::$config->maxspareworkers->value,
+						$state['alive'] - Daemon::$config->minworkers->value
+					);
 					
-					if ($state) {
-						$n = max(
-							min(
-								Daemon::$config->minspareworkers->value - $state['idle'], 
-								Daemon::$config->maxworkers->value - $state['alive']
-							),
-							Daemon::$config->minworkers->value - $state['alive']
-						);
-
-						if ($n > 0) {
-							Daemon::log('Spawning ' . $n . ' worker(s).');
-							$this->spawnWorkers($n);
-						}
-
-						$n = min(
-							$state['idle'] - Daemon::$config->maxspareworkers->value,
-							$state['alive'] - Daemon::$config->minworkers->value
-						);
-						
-						if ($n > 0) {
-							Daemon::log('Stopping ' . $n . ' worker(s).');
-							$this->stopWorkers($n);
-						}
+					if ($n > 0) {
+						Daemon::log('Stopping ' . $n . ' worker(s).');
+						$self->stopWorkers($n);
 					}
 				}
 			}
+			
+			
+			$self->MPMTimedEvent->timeout();
+		}, pow(10,6) * Daemon::$config->mpmdelay->value);
+		
+		
+
+		while (!$this->breakMainLoop) {
+			event_base_loop($this->eventBase);
 		}
 	}
-
+	/**
+	 * Setup settings on start.
+	 * @return void
+	 */
+	public function prepareSystemEnv() {
+	
+		register_shutdown_function(array($this,'onShutdown'));
+		
+		proc_nice(Daemon::$config->masterpriority->value);
+		
+		$this->setproctitle(
+			Daemon::$runName . ': master process' 
+			. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
+		);
+	}
 	/**
 	 * FIXME description missed
 	 */	

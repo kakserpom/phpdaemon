@@ -16,7 +16,7 @@ class Daemon_TimedEvent{
 	public function __construct($cb,$timeout = NULL) {
 		$this->ev = event_new();
 		event_set($this->ev, STDIN, EV_TIMEOUT, $cb, array());
-		event_base_set($this->ev, Daemon::$worker->eventBase);
+		event_base_set($this->ev, Daemon::$worker !== NULL?Daemon::$worker->eventBase:Daemon::$master->eventBase);
 		if ($timeout !== NULL) {$this->timeout($timeout);}
 	}
 	public function timeout($timeout = NULL)

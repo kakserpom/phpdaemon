@@ -46,6 +46,7 @@ class Daemon {
 	private static $support = array();
 	
 	public static $worker;
+	public static $master;
 	public static $appResolver;
 	public static $appInstances = array();
 	public static $sockCounter = 0;

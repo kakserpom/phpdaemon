@@ -39,7 +39,9 @@ abstract class Thread {
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
 		18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
 	);
-
+	
+	public $sigEvents = array();
+	
 	public static $signals = array(
 		SIGHUP    => 'SIGHUP',
 		SIGINT    => 'SIGINT',
@@ -74,6 +76,51 @@ abstract class Thread {
 		SIGUSR2   => 'SIGUSR2',
 	);
 	
+	
+	/**
+	 * Register signals.
+	 * @return void
+	 */
+	public function registerEventSignals()
+	{
+		foreach (self::$signals as $no => $name) {
+			if (
+				($name === 'SIGKILL') 
+				|| ($name == 'SIGSTOP')
+			) {
+				continue;
+			}
+			
+			$ev = event_new();
+			if (
+				!event_set(
+					$ev,
+					$no,
+					EV_SIGNAL | EV_PERSIST,
+					array($this,'eventSighandler'),
+					array($no)
+				)
+			) {
+				throw new Exception('Cannot event_set for '.$name.' signal');
+			}
+			
+			event_base_set($ev, $this->eventBase);
+			event_add($ev);
+			$this->sigEvents[$no] = $ev;
+		}
+	}
+
+	/**
+	 * Called when a signal caught through libevent.
+	 * @param integer Signal's number.
+	 * @param integer Events.
+	 * @param mixed Argument.
+	 * @return void
+	 */
+	public function eventSighandler($fd, $events, $arg) {
+	  $this->sighandler($arg[0]);
+	}
+
 	/**
 	 * Run thread process
 	 * @return void
