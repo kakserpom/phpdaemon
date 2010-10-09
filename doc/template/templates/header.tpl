@@ -47,7 +47,7 @@
       {section name=packagelist loop=$packageindex}
         <a href="{$subdir}{$packageindex[packagelist].link}">{$packageindex[packagelist].title}</a><br />
       {/section}
-      <br /><br />
+      <br />
 {if $tutorials}
 		<b>Tutorials/Manuals:</b><br />
 		{if $tutorials.pkg}

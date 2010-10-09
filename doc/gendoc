@@ -4,7 +4,6 @@ rm -rf output/*
 
 phpdoc                                                 \
 	-d ../                                         \
-	-s on                                          \
 	-i 'doc/*,applications/*'                      \
 	-dn 'Core'                                     \
 	-ue on                                         \
