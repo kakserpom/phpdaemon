@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage SocksServer
+ */
+
 class SocksServer extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

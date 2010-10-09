@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage CGI
+ */
+
 class CGI extends AppInstance {
 
 	public $binPath = 'php-cgi';   // Default bin-path

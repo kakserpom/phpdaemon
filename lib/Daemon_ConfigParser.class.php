@@ -1,13 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon_ConfigParse
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Config parser class.
-/**************************************************************************/
+/**
+ * Config parser
+ *
+ * @package Core
+ * @subpackage Config
+ * @author kak.serpom.po.yaitsam@gmail.com
+ */
 
 class Daemon_ConfigParser {
 

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage WebSocketServer
+ */
+
 class WebSocketServer extends AsyncServer {
 
 	public $sessions = array();

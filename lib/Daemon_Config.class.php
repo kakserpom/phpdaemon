@@ -1,13 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon_Config
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Config class.
-/**************************************************************************/
+/**
+ * Config class
+ *
+ * @package Core
+ * @subpackage Config
+ * @author kak.serpom.po.yaitsam@gmail.com
+ */
 
 class Daemon_Config implements ArrayAccess {
 

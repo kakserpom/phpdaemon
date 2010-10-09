@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage ServerStatus
+ */
+
 class ServerStatus extends AppInstance {
 
 	/**

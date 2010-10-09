@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Applications
+ * @subpackage LockClient
+ */
+
 class LockClient extends AsyncServer {
 
 	public $sessions = array();     // Active sessions

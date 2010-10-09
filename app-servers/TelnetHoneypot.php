@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage TelnetHoneypot
+ */
+
 class TelnetHoneypot extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage DebugConsole
+ */
+
 class DebugConsole extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

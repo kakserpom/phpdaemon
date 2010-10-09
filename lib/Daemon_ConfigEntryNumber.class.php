@@ -1,13 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon_ConfigEntryNumber
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Config entry class.
-/**************************************************************************/
+/**
+ * Number config entry
+ *
+ * @package Core
+ * @subpackage Config
+ * @author kak.serpom.po.yaitsam@gmail.com
+ */
 
 class Daemon_ConfigEntryNumber extends Daemon_ConfigEntry {
 

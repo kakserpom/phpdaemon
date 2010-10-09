@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage RTEP
+ */
+
 class RTEP extends AsyncServer {
 
 	public $sessions = array();     // Active sessions

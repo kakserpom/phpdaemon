@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Examples
+ * @subpackage WebSocket
+ */
+
 class ExampleWebSocket extends AppInstance {
 
 	/**

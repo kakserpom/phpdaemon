@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Examples
+ * @subpackage Base
+ */
+
 class Example extends AppInstance {
 
 	public $counter = 0;

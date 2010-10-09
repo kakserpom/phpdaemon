@@ -1,15 +1,15 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon_Config
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Config class.
-/**************************************************************************/
+/**
+ * Config section
+ *
+ * @package Core
+ * @subpackage Config
+ * @author kak.serpom.po.yaitsam@gmail.com
+ */
 
 interface Interface_Daemon_ConfigSection extends ArrayAccess, Countable {}
+
 class Daemon_ConfigSection implements Interface_Daemon_ConfigSection {
 	public $source;
 	public $revision;

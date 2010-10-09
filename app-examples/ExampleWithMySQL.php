@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Examples
+ * @subpackage MySQL
+ */
+
 class ExampleWithMySQL extends AppInstance {
 
 	/**

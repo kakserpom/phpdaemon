@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Examples
+ * @subpackage PostgreSQL
+ */
+
 class ExampleWithPostgreSQL extends AppInstance {
 
 	/**

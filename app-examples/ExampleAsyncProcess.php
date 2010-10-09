@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Examples
+ * @subpackage AsyncProcess
+ */
+
 class ExampleAsyncProcess extends AppInstance {
 
 	/**

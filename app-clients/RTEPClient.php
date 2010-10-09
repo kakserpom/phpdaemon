@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Applications
+ * @subpackage RTEPClient
+ */
+
 class RTEPClient extends AppInstance {
 
 	public $client;

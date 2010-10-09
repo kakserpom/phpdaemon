@@ -1,10 +1,15 @@
 <?php
+
 /**
  * Driver for Asterisk Call Manager/1.1
  *
+ * @package Applications
+ * @subpackage AsteriskDriver
+ * 
  * @version 1.0.1
  * @author Dmitry Ponomarev <ponomarev.base@gmail.com>
  */
+
 class AsteriskDriver extends AsyncServer {
 	
 	const CONN_STATE_START					= 0;

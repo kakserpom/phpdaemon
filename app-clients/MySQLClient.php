@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage MySQLClient
+ */
+
 class MySQLClient extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

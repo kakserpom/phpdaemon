@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage MongoClient
+ */
+
 class MongoClient extends AsyncServer {
 
 	public $sessions    = array(); // Active sessions

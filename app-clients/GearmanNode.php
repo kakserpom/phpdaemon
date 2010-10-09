@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Gearman Node
+ *
+ * @package Applications
+ * @subpackage GearmanNode
+ */
+
 class GearmanNode extends AppInstance {
 
 	public $client;

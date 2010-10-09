@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage HTTP
+ */
+
 class HTTP extends AsyncServer {
 
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer

@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Examples
+ * @subpackage AsyncStream
+ */
+
 class ExampleAsyncStream extends AppInstance {
 
 	/**

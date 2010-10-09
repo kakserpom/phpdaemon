@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Applications
+ * @subpackage FileReader
+ */
+
 class FileReader extends AppInstance {
 
 	/**

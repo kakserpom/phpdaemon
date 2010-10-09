@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Applications
+ * @subpackage PostgreSQLClient
+ */
+
 class PostgreSQLClient extends AsyncServer {
 
 	public $sessions = array(); // Active sessions

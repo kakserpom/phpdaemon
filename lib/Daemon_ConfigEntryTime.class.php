@@ -1,13 +1,12 @@
 <?php
 
-/**************************************************************************/
-/* phpDaemon
-/* Web: http://github.com/kakserpom/phpdaemon
-/* ===========================
-/* @class Daemon_ConfigEntryTime
-/* @author kak.serpom.po.yaitsam@gmail.com
-/* @description Config entry class.
-/**************************************************************************/
+/**
+ * Time config entry
+ *
+ * @package Core
+ * @subpackage Config
+ * @author kak.serpom.po.yaitsam@gmail.com
+ */
 
 class Daemon_ConfigEntryTime extends Daemon_ConfigEntry {
 

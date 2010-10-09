@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @package Examples
+ * @subpackage Sandbox
+ */
+
 class ExampleSandbox extends AppInstance {
 
 	public $counter = 0;

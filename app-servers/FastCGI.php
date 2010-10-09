@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage FastCGI
+ */
+
 class FastCGI extends AsyncServer {
 
 	protected $initialLowMark  = 8;         // initial value of the minimal amout of bytes in buffer

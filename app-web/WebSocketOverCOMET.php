@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage WebSocketOverCOMET
+ */
+
 class WebSocketOverCOMET extends AsyncServer {
 
 	const IPCPacketType_C2S = 0x01;

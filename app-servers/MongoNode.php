@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage MongoNode
+ */
+
 class MongoNode extends AppInstance {
 	
 	public $db; // MongoClient

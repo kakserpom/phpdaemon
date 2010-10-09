@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage FlashPolicy
+ */
+
 class FlashPolicy extends AsyncServer {
 
 	public $sessions = array();  // Active sessions

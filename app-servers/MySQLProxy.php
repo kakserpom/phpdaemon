@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage MySQLProxy
+ */
+
 class MySQLProxy extends AsyncServer {
 
 	public $sessions = array();

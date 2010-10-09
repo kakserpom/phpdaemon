@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @package Applications
+ * @subpackage MemcacheClient
+ */
+
 class MemcacheClient extends AsyncServer {
 
 	// FIXME $sessions is checked onShutdown in asyncServer ('tis NOT great)
