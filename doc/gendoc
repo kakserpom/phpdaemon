@@ -4,7 +4,8 @@ rm -rf output/*
 
 phpdoc                                                 \
 	-d ../                                         \
-	-i 'doc,applications'                          \
+	-s on                                          \
+	-i 'doc/*,applications/*'                      \
 	-dn 'Core'                                     \
 	-ue on                                         \
 	-o HTML:Smarty:PHPDaemon                       \
