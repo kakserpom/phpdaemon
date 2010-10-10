@@ -1,3 +1,10 @@
+* {
+	margin: 0px;
+	padding: 0px;
+	font-family: "Lucida Sans", "Segoe UI", "Trebuchet MS", tahoma, sans-serif;
+	font-size: 10pt;
+}
+
 .php {
 	padding: 1em;
 }
@@ -7,63 +14,59 @@
 	font-weight: normal; 
 }
 
+ul {
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+}
+
+ul ul {
+	margin-left: 1em;
+}
+
 body {
-  color:              #000000;
-  background-color:   #ffffff;
-  background-repeat:  repeat-y;
-  font-family:        "Lucida Sans", "Segoe UI", "Trebuchet MS", tahoma, sans-serif;
-  font-size:          10pt;
-  margin:             0;
-  padding:            0;
+	color:              black;
+	background-color:   white;
+	background-repeat:  repeat-y;
 }
 
-a
-{
-  color:              #000099;
-  background-color:   transparent;
-  text-decoration:    none;
+a {
+	color:              #000099;
+	background-color:   transparent;
+	text-decoration:    none;
 }
 
-a:hover
-{
-  text-decoration:    underline;
+a:hover {
+	text-decoration:    underline;
 }
 
-a.menu
-{
-  color:              #ffffff;
-  background-color:   transparent;
+a.menu {
+	color:              #ffffff;
+	background-color:   transparent;
 }
 
-td
-{
-  font-size:          10pt;
+td {
+	padding: 0.2em;
 }
 
-td.header_top
-{
-  color:              #ffffff;
-  background-color:   #9999cc;
+dd {
+	margin-left: 1em;
+}
+
+td.header_top {
   font-size:          16pt;
   font-weight:        bold;
-  text-align:         right;
-  padding:            10px;
+  padding:            0.5em;
 }
 
-td.header_line
-{
-  color:              #ffffff;
-  background-color:   #333366;
+td.header_menu {
+	background-color:   silver;
+	padding:            0.2em;
+	padding-right:      5px;
 }
 
-td.header_menu
-{
-  color:              #ffffff;
-  background-color:   #666699;
-  font-size:          8pt;
-  text-align:         right;
-  padding:            2px;
-  padding-right:      5px;
+td.header_menu a {
+	color: black;
 }
 
 td.menu
@@ -106,9 +109,9 @@ div.tags
   padding-left:       15px;
 }
 
-div.function
-{
-  padding-left:       15px;
+div.function {
+	margin-top:	1em;
+	padding-left:       15px;
 }
 
 div.top
@@ -141,10 +144,6 @@ span.smalllinenumber
   font-size:          8pt;
 }
 
-ul {
-	margin-left:		0px;
-	padding-left:		8px;
-}
 /* Syntax highlighting */
 
 .src-code { background-color: #f5f5f5; border: 1px solid #ccc9a4; padding: 0 0 0 1em; margin : 0px;

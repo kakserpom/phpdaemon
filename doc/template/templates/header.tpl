@@ -7,9 +7,8 @@
 
 <table border="0" cellspacing="0" cellpadding="0" height="48" width="100%">
   <tr>
-    <td class="header_top">{$package}</td>
+    <td class="header_top">PHPDaemon {$package}</td>
   </tr>
-  <tr><td class="header_line"><img src="{$subdir}media/empty.png" width="1" height="1" border="0" alt=""  /></td></tr>
   <tr>
     <td class="header_menu">
         {assign var="packagehaselements" value=false}
@@ -25,7 +24,6 @@
   	    [ <a href="{$subdir}elementindex.html" class="menu">all elements</a> ]
     </td>
   </tr>
-  <tr><td class="header_line"><img src="{$subdir}media/empty.png" width="1" height="1" border="0" alt=""  /></td></tr>
 </table>
 
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
@@ -42,6 +40,7 @@
 	<div id="todolist">
 			<p><a href="{$subdir}{$todolink}">Todo List</a></p>
 	</div>
+	<br />
 {/if}
       <b>Packages:</b><br />
       {section name=packagelist loop=$packageindex}

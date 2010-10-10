@@ -5,7 +5,7 @@ global variable <a href="{$globals[glob].id}">{$globals[glob].global_name}</a> =
 {else}
   <hr />
 	<a name="{$globals[glob].global_link}"></a>
-	<h4><i>{$globals[glob].global_type}</i> {$globals[glob].global_name} <span class="smalllinenumber">[line {if $globals[glob].slink}{$globals[glob].slink}{else}{$globals[glob].line_number}{/if}]</span></h4>
+	<h4><i>{$globals[glob].global_type}</i> {$globals[glob].global_name}</h4>
 	<div class="tags">
   {if $globals[glob].sdesc != ""}
 	{include file="docblock.tpl" sdesc=$globals[glob].sdesc desc=$globals[glob].desc tags=$globals[glob].tags}
@@ -26,15 +26,8 @@ global variable <a href="{$globals[glob].id}">{$globals[glob].global_name}</a> =
 	  </td>
 	</tr>
 	{/if}
-{* original    {if $globals[glob].global_conflicts != ""
-    <tr>
-      <td><b>Conflicts:</b>&nbsp;&nbsp;</td>
-      <td>{$globals[glob].global_conflicts</td>
-    </tr>
-    {/if *}
   </table>
-	</div><br /><br />
-	<div class="top">[ <a href="#top">Top</a> ]</div><br /><br />
+	</div><br />
 {/if}
 {/section}
 {/if}

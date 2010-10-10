@@ -196,10 +196,8 @@
 <a name="class_details"></a>
 <h3>Class Details</h3>
 <div class="tags">
-[line {if $class_slink}{$class_slink}{else}{$line_number}{/if}]<br />
 {include file="docblock.tpl" type="class" sdesc=$sdesc desc=$desc}
-</div><br /><br />
-<div class="top">[ <a href="#top">Top</a> ]</div><br />
+</div><br />
 
 {if $vars && count($vars) > 0}
 <hr />

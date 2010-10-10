@@ -3,6 +3,7 @@
 <h1>Todo List</h1>
 
 {foreach from=$todos key=todopackage item=todo}
+<br />
 <h2>{$todopackage}</h2>
 
 <ul>

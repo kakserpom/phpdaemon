@@ -5,7 +5,7 @@ define constant <a href="{$defines[def].id}">{$defines[def].define_name}</a> = {
 {else}
   <hr />
 	<a name="{$defines[def].define_link}"></a>
-	<h3>{$defines[def].define_name} <span class="smalllinenumber">[line {if $defines[def].slink}{$defines[def].slink}{else}{$defines[def].line_number}{/if}]</span></h3>
+	<h3>{$defines[def].define_name}</h3>
 	<div class="tags">
     <table width="90%" border="0" cellspacing="0" cellpadding="1"><tr><td class="code_border">
     <table width="100%" border="0" cellspacing="0" cellpadding="2"><tr><td class="code">
@@ -26,7 +26,6 @@ define constant <a href="{$defines[def].id}">{$defines[def].define_name}</a> = {
 		<b>Conflicts:</b> {$defines[def].define_conflicts<br /><br />
     {/if *}
 	</div>
-	<div class="top">[ <a href="#top">Top</a> ]</div><br /><br />
 {/if}
 {/section}
 {/if}
