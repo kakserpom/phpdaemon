@@ -100,8 +100,6 @@ class AppResolver {
 					Daemon::log('appInstantiate(' . $app . ') failed. Class not exists.');
 					return FALSE;
 		}
-	
-		Daemon::$appInstances[$app][$name] = $appInstance;
 
 		return $appInstance;
 	}

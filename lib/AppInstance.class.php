@@ -23,6 +23,8 @@ class AppInstance {
 	 */
 	public function __construct($name = '') {
 		$this->name = $name;
+		Daemon::$appInstances[get_class($this)][$this->name] = $this;
+				
 		$fullname = get_class($this) . ($this->name !== '' ? '-' . $this->name : '');
 		
 		if (!isset(Daemon::$config->{$fullname})) {
