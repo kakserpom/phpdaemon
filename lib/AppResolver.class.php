@@ -51,7 +51,7 @@ class AppResolver {
 			return $this->appInstantiate($appName,$name);
 		}
 
-		return Daemon::$appInstances[$appName][$name !== NULL?$name : array_rand(Daemon::$appInstances[$appName])];
+		return Daemon::$appInstances[$appName][$name !== ''?$name : array_rand(Daemon::$appInstances[$appName])];
 	}
 
 	/**
