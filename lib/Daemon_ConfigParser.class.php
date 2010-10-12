@@ -156,10 +156,10 @@ class Daemon_ConfigParser {
 							} else {
 								$l = strtolower($elements[$k]);
 
-								if ($l == 'true') {
+								if (($l == 'true') || ($l == 'on')) {
 									$elements[$k] = true;
 								}
-								elseif ($l == 'false') {
+								elseif (($l == 'false') || ($l == 'off')) {
 									$elements[$k] = false;
 								}
 								elseif ($l == 'null') {
