@@ -57,9 +57,12 @@ class AppResolver {
 	/**
 	 * Gets path to application's PHP-file.	
 	 * @param string Application name
+	 * @param string Instance name
 	 * @return string Path.
 	 */
-	public function getAppPath($app) {
+	public function getAppPath($app,$name) {
+		$fn = $app.($name !== ''?'-'.$name:'');
+		if (isset(Daemon::$config->{$fn}->path->value)) {return Daemon::$config->{$fn}->path->value;}
 		$files = glob(sprintf(Daemon::$config->appfilepath->value,$app), GLOB_BRACE);
 		return isset($files[0]) ? $files[0] : false;
  	}
@@ -79,13 +82,13 @@ class AppResolver {
 			$appInstance = new $app($name);
 		}
 		else {
-			$p = $this->getAppPath($app);
+			$p = $this->getAppPath($app,$name);
 
 			if (
 				!$p 
 				|| !is_file($p)
 			) {
-				Daemon::log('appInstantiate(' . $app . ') failed: application doesn\'t exist.');
+				Daemon::log('appInstantiate(' . $app . ') failed: application doesn\'t exist'.($p?' ('.$p.')':'').'.');
 				return FALSE;
 			}
 
