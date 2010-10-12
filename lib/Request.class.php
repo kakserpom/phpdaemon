@@ -44,7 +44,7 @@ class Request {
 		$this->idAppQueue = ++$this->appInstance->idAppQueue;
 		$this->appInstance->queue[$this->idAppQueue] = $this;
 		
-		$this->queueId = ($parent !== NULL)?$parent->queueId:(++Daemon::$worker->reqCounter);
+		$this->queueId = isset($parent->queueId)?$parent->queueId:(++Daemon::$worker->reqCounter);
 		Daemon::$worker->queue[$this->queueId] = $this;
 		
 		$this->preinit($parent);

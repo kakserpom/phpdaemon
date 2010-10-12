@@ -21,7 +21,7 @@ class FlashPolicy extends AsyncServer {
 			// listen to
 			'listen'     => 'tcp://0.0.0.0',
 			// listen port
-			'listenport' => 8818,
+			'listenport' => 843,
 			// crossdomain file path
 			'file'       => Daemon::$dir . '/conf/crossdomain.xml',
 			// disabled by default
