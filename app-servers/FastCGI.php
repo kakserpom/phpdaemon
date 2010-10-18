@@ -112,7 +112,7 @@ class FastCGI extends AsyncServer {
 	 * @return boolean If true then we can accept new connections, else we can't.
 	 */
 	public function checkAccept() {
-		if (Daemon::$worker->reload) {
+		if (Daemon::$process->reload) {
 			return FALSE;
 		}
 		
@@ -132,7 +132,7 @@ class FastCGI extends AsyncServer {
 			Daemon::log('[DEBUG] requestOut(' . $request->attrs->id . ',[...' . $outlen . '...])');
 		}
 
-		if (!isset(Daemon::$worker->pool[$request->attrs->connId])) {
+		if (!isset(Daemon::$process->pool[$request->attrs->connId])) {
 			if (
 				$this->config->logrecordsmiss->value
 				|| $this->config->logrecords->value
@@ -145,7 +145,7 @@ class FastCGI extends AsyncServer {
 
 		for ($o = 0; $o < $outlen;) {
 			$c = min($this->config->chunksize->value, $outlen - $o);
-			Daemon::$worker->writePoolState[$request->attrs->connId] = TRUE;
+			Daemon::$process->writePoolState[$request->attrs->connId] = TRUE;
 
 			$w = event_buffer_write($this->buf[$request->attrs->connId],
 				"\x01"                                                        // protocol version
@@ -173,14 +173,14 @@ class FastCGI extends AsyncServer {
 		$connId = $req->attrs->connId;
 
 		if ($this->config->logevents->value) {
-			Daemon::$worker->log('endRequest(' . implode(',', func_get_args()) . '): connId = ' . $connId . '.');
+			Daemon::$process->log('endRequest(' . implode(',', func_get_args()) . '): connId = ' . $connId . '.');
 		};
 
 		$c = pack('NC', $appStatus, $protoStatus) // app status, protocol status
 			. "\x00\x00\x00";
 
 		if (!isset($this->buf[$connId])) {return;}
-		Daemon::$worker->writePoolState[$connId] = TRUE;
+		Daemon::$process->writePoolState[$connId] = TRUE;
 		$w = event_buffer_write($this->buf[$connId],
 			"\x01"                                     // protocol version
 			. "\x03"                                   // record type (END_REQUEST)
@@ -268,7 +268,7 @@ class FastCGI extends AsyncServer {
 		}
 
 		if ($type == self::FCGI_BEGIN_REQUEST) {
-			++Daemon::$worker->reqCounter;
+			++Daemon::$process->reqCounter;
 			$rr = unpack('nrole/Cflags',$c);
 
 			$req = new stdClass();
@@ -293,15 +293,15 @@ class FastCGI extends AsyncServer {
 			$req->queueId = $rid;
 
 			if ($this->config->logqueue->value) {
-				Daemon::$worker->log('new request queued.');
+				Daemon::$process->log('new request queued.');
 			}
 
-			Daemon::$worker->queue[$rid] = $req;
+			Daemon::$process->queue[$rid] = $req;
 
 			$this->poolQueue[$connId][$req->attrs->id] = $req;
 		}
-		elseif (isset(Daemon::$worker->queue[$rid])) {
-			$req = Daemon::$worker->queue[$rid];
+		elseif (isset(Daemon::$process->queue[$rid])) {
+			$req = Daemon::$process->queue[$rid];
 		} else {
 			Daemon::log('Unexpected FastCGI-record #' . $r['type'] . ' (' . $r['ttype'] . '). Request ID: ' . $rid . '.');
 			return;
@@ -318,7 +318,7 @@ class FastCGI extends AsyncServer {
 
 				if ($req instanceof stdClass) {
 					$this->endRequest($req, 0, 0);
-					unset(Daemon::$worker->queue[$rid]);
+					unset(Daemon::$process->queue[$rid]);
 				} else {
 					if (
 						$this->config->sendfile->value
@@ -337,7 +337,7 @@ class FastCGI extends AsyncServer {
 						$req->header('X-Sendfile: ' . $fn);
 					}
 
-					Daemon::$worker->queue[$rid] = $req;
+					Daemon::$process->queue[$rid] = $req;
 				}
 			} else {
 				$p = 0;
@@ -394,7 +394,7 @@ class FastCGI extends AsyncServer {
 				}
 			}
 
-			Daemon::$worker->timeLastReq = time();
+			Daemon::$process->timeLastReq = time();
 		}
 	}
 	

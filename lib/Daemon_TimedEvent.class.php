@@ -15,7 +15,7 @@ class Daemon_TimedEvent{
 		$this->ev = event_new();
 		event_set($this->ev, STDIN, EV_TIMEOUT, $cb, array());
 		// @todo get the worker from constructor
-		event_base_set($this->ev, Daemon::$worker !== NULL?Daemon::$worker->eventBase:Daemon::$master->eventBase);
+		event_base_set($this->ev, Daemon::$process->eventBase);
 		if ($timeout !== NULL) {$this->timeout($timeout);}
 	}
 	public function timeout($timeout = NULL)

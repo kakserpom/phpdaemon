@@ -57,7 +57,7 @@ class AsyncServer extends AppInstance {
 	*/
 	public function enableSocketEvents() {
 		foreach ($this->socketEvents as $ev) {
-			event_base_set($ev, Daemon::$worker->eventBase);
+			event_base_set($ev, Daemon::$process->eventBase);
 			event_add($ev);
 		}
 	}
@@ -330,7 +330,7 @@ class AsyncServer extends AppInstance {
 	 * @return boolean If true then we can accept new connections, else we can't
 	 */
 	public function checkAccept() {
-		if (Daemon::$worker->reload) {
+		if (Daemon::$process->reload) {
 			return FALSE;
 		}
 		
@@ -344,7 +344,7 @@ class AsyncServer extends AppInstance {
 	 */
 	public function closeConnection($connId) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log('closeConnection(' . $connId . ').');
+			Daemon::$process->log('closeConnection(' . $connId . ').');
 		}
 		
 		if (!isset($this->buf[$connId])) {
@@ -361,18 +361,18 @@ class AsyncServer extends AppInstance {
 		event_buffer_free($this->buf[$connId]);
 
 		if (Daemon::$useSockets) {
-			socket_close(Daemon::$worker->pool[$connId]);
+			socket_close(Daemon::$process->pool[$connId]);
 		} else {
-			fclose(Daemon::$worker->pool[$connId]);
+			fclose(Daemon::$process->pool[$connId]);
 		}
 		
-		unset(Daemon::$worker->pool[$connId]);
-		unset(Daemon::$worker->poolApp[$connId]);
-		unset(Daemon::$worker->readPoolState[$connId]);
+		unset(Daemon::$process->pool[$connId]);
+		unset(Daemon::$process->poolApp[$connId]);
+		unset(Daemon::$process->readPoolState[$connId]);
 		unset($this->buf[$connId]);
 		unset($this->poolQueue[$connId]);
 		unset($this->poolState[$connId]);
-		unset(Daemon::$worker->poolState[$connId]);
+		unset(Daemon::$process->poolState[$connId]);
 	}
 	
 	/**
@@ -383,7 +383,7 @@ class AsyncServer extends AppInstance {
 	 */
 	public function connectTo($host, $port = 0) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $host . ':' . $port . ') invoked.');
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $host . ':' . $port . ') invoked.');
 		}
 
 		if (stripos($host, 'unix:') === 0) {
@@ -430,10 +430,10 @@ class AsyncServer extends AppInstance {
 			}
 		}
 		
-		$connId = ++Daemon::$worker->connCounter;
+		$connId = ++Daemon::$process->connCounter;
 		
-		Daemon::$worker->pool[$connId] = $conn;
-		Daemon::$worker->poolApp[$connId] = $this;
+		Daemon::$process->pool[$connId] = $conn;
+		Daemon::$process->poolApp[$connId] = $this;
 		
 		$this->poolQueue[$connId] = array();
 		$this->poolState[$connId] = array();
@@ -441,25 +441,25 @@ class AsyncServer extends AppInstance {
 		if ($this->directReads) {
 			$ev = event_new();
 
-			if (!event_set($ev, Daemon::$worker->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), $connId)) {
+			if (!event_set($ev, Daemon::$process->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), $connId)) {
 				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on accepted socket #' . $connId);
 
 				return;
 			}
 
-			event_base_set($ev, Daemon::$worker->eventBase);
+			event_base_set($ev, Daemon::$process->eventBase);
 			event_add($ev);
 			$this->readEvents[$connId] = $ev;
 		}
 
 		$buf = event_buffer_new(
-			Daemon::$worker->pool[$connId],$this->directReads ? NULL : array($this, 'onReadEvent'),
+			Daemon::$process->pool[$connId],$this->directReads ? NULL : array($this, 'onReadEvent'),
 			array($this, 'onWriteEvent'),
 			array($this, 'onFailureEvent'),
 			array($connId)
 		);
 		
-		if (!event_buffer_base_set($buf,Daemon::$worker->eventBase)) {
+		if (!event_buffer_base_set($buf,Daemon::$process->eventBase)) {
 			throw new Exception('Couldn\'t set base of buffer.');
 		}
 		
@@ -483,7 +483,7 @@ class AsyncServer extends AppInstance {
 		$sockId = $arg[0];
 
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
 		}
 		
 		if ($this->checkAccept()) {
@@ -516,7 +516,7 @@ class AsyncServer extends AppInstance {
 			stream_set_blocking($conn, 0);
 		}
 		
-		if (!$this->onAccept(Daemon::$worker->connCounter + 1, $addr)) {
+		if (!$this->onAccept(Daemon::$process->connCounter + 1, $addr)) {
 			Daemon::log('Connection is not allowed (' . $addr . ')');
 
 			if (Daemon::$useSockets) {
@@ -528,10 +528,10 @@ class AsyncServer extends AppInstance {
 			return;
 		}
 		
-		$connId = ++Daemon::$worker->connCounter;
+		$connId = ++Daemon::$process->connCounter;
 		
-		Daemon::$worker->pool[$connId] = $conn;
-		Daemon::$worker->poolApp[$connId] = $this;
+		Daemon::$process->pool[$connId] = $conn;
+		Daemon::$process->poolApp[$connId] = $this;
 		
 		$this->poolQueue[$connId] = array();
 		$this->poolState[$connId] = array();
@@ -539,26 +539,26 @@ class AsyncServer extends AppInstance {
 		if ($this->directReads) {
 			$ev = event_new();
 
-			if (!event_set($ev, Daemon::$worker->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), $connId)) {
+			if (!event_set($ev, Daemon::$process->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), $connId)) {
 				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on accepted socket #' . $connId);
 				return;
 			}
 
-			event_base_set($ev, Daemon::$worker->eventBase);
+			event_base_set($ev, Daemon::$process->eventBase);
 			event_add($ev);
 			
 			$this->readEvents[$connId] = $ev;
 		}
 
 		$buf = event_buffer_new(
-			Daemon::$worker->pool[$connId],
+			Daemon::$process->pool[$connId],
 			$this->directReads ? NULL : array($this, 'onReadEvent'),
 			array($this, 'onWriteEvent'),
 			array($this, 'onFailureEvent'),
 			array($connId)
 		);
 		
-		if (!event_buffer_base_set($buf, Daemon::$worker->eventBase)) {
+		if (!event_buffer_base_set($buf, Daemon::$process->eventBase)) {
 			throw new Exception('Couldn\'t set base of buffer.');
 		}
 		
@@ -585,7 +585,7 @@ class AsyncServer extends AppInstance {
 	 * @return boolean Success
 	 */
 	public function write($connId, $s) {
-		Daemon::$worker->writePoolState[$connId] = TRUE; 
+		Daemon::$process->writePoolState[$connId] = TRUE; 
 
 		if (!isset($this->buf[$connId])) {
 			if (isset($this->sessions[$connId])) {
@@ -605,14 +605,14 @@ class AsyncServer extends AppInstance {
 	 */
 	public function finishConnection($connId) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
 		}
 		
 		if (!isset($this->poolState[$connId])) {
 			return FALSE;
 		}
 		
-		if (!isset(Daemon::$worker->writePoolState[$connId])) {
+		if (!isset(Daemon::$process->writePoolState[$connId])) {
 			$this->closeConnection($connId);
 		} else {
 			$this->poolState[$connId] = FALSE;
@@ -628,15 +628,15 @@ class AsyncServer extends AppInstance {
 	 * @return void
 	 */
 	public function onReadEvent($stream, $arg) {
-		$connId = is_int($arg) ? array_search($stream, Daemon::$worker->pool, TRUE) : $arg[0];
+		$connId = is_int($arg) ? array_search($stream, Daemon::$process->pool, TRUE) : $arg[0];
 
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked. ' . Debug::dump(Daemon::$worker->pool[$connId]));
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked. ' . Debug::dump(Daemon::$process->pool[$connId]));
 		}
 
 		if ($this->queuedReads) {
-			Daemon::$worker->readPoolState[$connId] = TRUE;
-			Daemon::$worker->readPoolEvent->timeout();
+			Daemon::$process->readPoolState[$connId] = TRUE;
+			Daemon::$process->readPoolEvent->timeout();
 		}
 		
 		$success = FALSE;
@@ -661,10 +661,10 @@ class AsyncServer extends AppInstance {
 	 */
 	public function onWriteEvent($stream, $arg) {
 		$connId = $arg[0];
-		unset(Daemon::$worker->writePoolState[$connId]);
+		unset(Daemon::$process->writePoolState[$connId]);
 		
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
+			Daemon::$process->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
 		}
 
 		if ($this->poolState[$connId] === FALSE) {
@@ -672,7 +672,7 @@ class AsyncServer extends AppInstance {
 		}
 		
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') finished.');
+			Daemon::$process->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') finished.');
 		}
 
 		if (isset($this->sessions[$connId])) {
@@ -701,13 +701,13 @@ class AsyncServer extends AppInstance {
 			$connId = $stream;
 		}
 		elseif ($this->directReads) {
-			$connId = array_search($stream, Daemon::$worker->pool, TRUE);
+			$connId = array_search($stream, Daemon::$process->pool, TRUE);
 		} else {
 			$connId = array_search($stream, $this->buf, TRUE);
 		}
 		
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
+			Daemon::$process->log('event ' . get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked.');
 		}
 
 		$this->abortRequestsByConnection($connId);
@@ -723,7 +723,7 @@ class AsyncServer extends AppInstance {
 			$sess->onFinish();
 		}
 		
-		event_base_loopexit(Daemon::$worker->eventBase);
+		event_base_loopexit(Daemon::$process->eventBase);
 	}
 	
 	/**
@@ -756,10 +756,10 @@ class AsyncServer extends AppInstance {
 		
 		if (isset($this->readEvents[$connId])) {
 			if (Daemon::$useSockets) {
-				$read = socket_read(Daemon::$worker->pool[$connId], $n);
+				$read = socket_read(Daemon::$process->pool[$connId], $n);
 
 				if ($read === FALSE) {
-					$no = socket_last_error(Daemon::$worker->pool[$connId]);
+					$no = socket_last_error(Daemon::$process->pool[$connId]);
 
 					if ($no !== 11) {
 						Daemon::log(get_class($this) . '::' . __METHOD__ . ': connId = ' . $connId . '. Socket error. (' . $no . '): ' . socket_strerror($no));
@@ -767,7 +767,7 @@ class AsyncServer extends AppInstance {
 					}
 				}
 			} else {
-				$read = fread(Daemon::$worker->pool[$connId], $n);
+				$read = fread(Daemon::$process->pool[$connId], $n);
 			}
 		} else {
 			$read = event_buffer_read($this->buf[$connId], $n);
@@ -782,7 +782,7 @@ class AsyncServer extends AppInstance {
 				Daemon::log('read(' . $connId . ',' . $n . ') interrupted.');
 			}
 
-			unset(Daemon::$worker->readPoolState[$connId]);
+			unset(Daemon::$process->readPoolState[$connId]);
 
 			return FALSE;
 		}

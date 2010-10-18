@@ -56,7 +56,7 @@ class WebSocketServer extends AsyncServer {
 	public function inheritFromRequest($req, $appInstance) {
 		$connId = $req->attrs->connId;
 		
-		unset(Daemon::$worker->queue[$connId . '-' . $req->attrs->id]);
+		unset(Daemon::$process->queue[$connId . '-' . $req->attrs->id]);
 		
 		$this->buf[$connId] = $appInstance->buf[$connId];
 		
@@ -71,7 +71,7 @@ class WebSocketServer extends AsyncServer {
 			array($connId)
 		);
 		
-		unset(Daemon::$worker->readPoolState[$connId]);
+		unset(Daemon::$process->readPoolState[$connId]);
 		
 		$this->poolState[$connId] = array();
 		

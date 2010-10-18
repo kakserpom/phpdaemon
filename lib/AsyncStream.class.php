@@ -150,7 +150,7 @@ class AsyncStream {
 				throw new Exception('creating read buffer failed');
 			}
 
-			if (!event_buffer_base_set($this->readBuf, Daemon::$worker->eventBase)) {
+			if (!event_buffer_base_set($this->readBuf, Daemon::$process->eventBase)) {
 				throw new Exception('wrong base');
 			}
 
@@ -195,7 +195,7 @@ class AsyncStream {
 				throw new Exception('creating write buffer failed');
 			}
 
-			if (!event_buffer_base_set($this->writeBuf, Daemon::$worker->eventBase)) {
+			if (!event_buffer_base_set($this->writeBuf, Daemon::$process->eventBase)) {
 				throw new Exception('wrong base');
 			}
 
@@ -502,7 +502,7 @@ class AsyncStream {
 			call_user_func($this->onReadFailure, $this);
 		}
 	
-		event_base_loopexit(Daemon::$worker->eventBase);
+		event_base_loopexit(Daemon::$process->eventBase);
 	
 		$this->closeRead();
 	}
@@ -516,7 +516,7 @@ class AsyncStream {
 			call_user_func($this->onWriteFailure, $this);
 		}
 	
-		event_base_loopexit(Daemon::$worker->eventBase);
+		event_base_loopexit(Daemon::$process->eventBase);
 		$this->closeWrite();
 	}
 }

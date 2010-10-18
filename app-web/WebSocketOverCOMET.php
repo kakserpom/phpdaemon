@@ -60,7 +60,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	 */
 	public function onReady() {
 		if ($this->config->enable->value) {   
-			$this->ipcId = sprintf('%x', crc32(Daemon::$worker->pid . '-' . microtime(TRUE)));
+			$this->ipcId = sprintf('%x', crc32(Daemon::$process->pid . '-' . microtime(TRUE)));
 			$this->bindSockets('unix:' . sprintf($this->config->ipcpath->value, $this->ipcId), 0, FALSE);
 			$this->enableSocketEvents();
 		}

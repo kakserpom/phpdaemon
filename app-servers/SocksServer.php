@@ -251,7 +251,7 @@ class SocksSession extends SocketSession {
 
 		if (
 			Daemon::$useSockets 
-			&& socket_getsockname(Daemon::$worker->pool[$this->connId], $address, $port)
+			&& socket_getsockname(Daemon::$process->pool[$this->connId], $address, $port)
 		) {
 			$reply .=
 				(strpos($address, ':') === FALSE ? "\x01" : "\x04") // IPv4/IPv6

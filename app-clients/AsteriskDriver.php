@@ -589,7 +589,7 @@ class AsteriskDriverSession extends SocketSession {
 	 * @return Returns the unique identifier, as a string. 
 	 */
 	protected function uniqid() {
-		return uniqid(Daemon::$worker->pid, true);
+		return uniqid(Daemon::$process->pid, true);
 	}
 	
 	/**

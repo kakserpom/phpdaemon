@@ -74,7 +74,7 @@ class HTTP extends AsyncServer {
 	 * @return boolean If true then we can accept new connections, else we can't.
 	 */
 	public function checkAccept() {
-		if (Daemon::$worker->reload) {
+		if (Daemon::$process->reload) {
 			return FALSE;
 		}
 		
@@ -104,11 +104,11 @@ class HTTP extends AsyncServer {
 	public function requestOut($r, $s) {
 		$l = strlen($s);
 
-		if (!isset(Daemon::$worker->pool[$r->attrs->connId])) {
+		if (!isset(Daemon::$process->pool[$r->attrs->connId])) {
 			return FALSE;
 		}
 
-		Daemon::$worker->writePoolState[$r->attrs->connId] = TRUE;
+		Daemon::$process->writePoolState[$r->attrs->connId] = TRUE;
 
 		$w = event_buffer_write($this->buf[$r->attrs->connId], $s);
 
@@ -125,14 +125,14 @@ class HTTP extends AsyncServer {
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::$worker->log('endRequest(' . implode(',', func_get_args()) . ').');
+			Daemon::$process->log('endRequest(' . implode(',', func_get_args()) . ').');
 		};
 
 		if ($protoStatus === -1) {
 			$this->closeConnection($req->attrs->connId);
 		} else {
 			if ($req->attrs->chunked) {
-				Daemon::$worker->writePoolState[$req->attrs->connId] = TRUE;
+				Daemon::$process->writePoolState[$req->attrs->connId] = TRUE;
 
 				if (isset($this->buf[$req->attrs->connId])) {
 					event_buffer_write($this->buf[$req->attrs->connId], "0\r\n\r\n");
@@ -173,7 +173,7 @@ class HTTP extends AsyncServer {
 					($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) 
 					&& $FP->policyData
 				) {
-					Daemon::$worker->writePoolState[$connId] = TRUE;
+					Daemon::$process->writePoolState[$connId] = TRUE;
 					event_buffer_write($this->buf[$connId], $FP->policyData . "\x00");
 				}
 
@@ -184,7 +184,7 @@ class HTTP extends AsyncServer {
 
 			++$this->poolState[$connId]['n'];
 
-			$rid = ++Daemon::$worker->reqCounter;
+			$rid = ++Daemon::$process->reqCounter;
 			$this->poolState[$connId]['state'] = 1;
 
 			$req = new stdClass();
@@ -208,17 +208,17 @@ class HTTP extends AsyncServer {
 			$req->queueId = $rid;
 
 			if ($this->config->logqueue->value) {
-				Daemon::$worker->log('new request queued.');
+				Daemon::$process->log('new request queued.');
 			}
 
-			Daemon::$worker->queue[$rid] = $req;
+			Daemon::$process->queue[$rid] = $req;
 
 			$this->poolQueue[$connId][$req->attrs->id] = $req;
 		} else {
 			$rid = $this->poolQueue[$connId][$this->poolState[$connId]['n']]->queueId;
 
-			if (isset(Daemon::$worker->queue[$rid])) {
-				$req = Daemon::$worker->queue[$rid];
+			if (isset(Daemon::$process->queue[$rid])) {
+				$req = Daemon::$process->queue[$rid];
 			} else {
 				Daemon::log('Unexpected input. Request ID: ' . $rid . '.');
 				return;
@@ -233,7 +233,7 @@ class HTTP extends AsyncServer {
 					($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) 
 					&& $FP->policyData
 				) {
-					Daemon::$worker->writePoolState[$req->attrs->connId] = TRUE;
+					Daemon::$process->writePoolState[$req->attrs->connId] = TRUE;
 					event_buffer_write($this->buf[$req->attrs->connId], $FP->policyData . "\x00");
 				}
 
@@ -291,7 +291,7 @@ class HTTP extends AsyncServer {
 
 				if ($req instanceof stdClass) {
 					$this->endRequest($req, 0, 0);
-					unset(Daemon::$worker->queue[$rid]);
+					unset(Daemon::$process->queue[$rid]);
 				} else {
 					if (
 						$this->config->sendfile->value
@@ -352,7 +352,7 @@ class HTTP extends AsyncServer {
 				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;
 			}
 
-			Daemon::$worker->timeLastReq = time();
+			Daemon::$process->timeLastReq = time();
 		}
 	}
 	

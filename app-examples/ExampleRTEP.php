@@ -32,7 +32,7 @@ class ExampleRTEP extends AppInstance {
 
 			$this->RTEPClient->client->addEventCallback('testEvent', 
 				function($event) {
-					Daemon::$worker->log('Caught event ' . $event['name'] . '.');
+					Daemon::$process->log('Caught event ' . $event['name'] . '.');
 				}
 			);
 		}

@@ -48,7 +48,7 @@ class AppInstance {
 
 		$this->init();
 
-		if (Daemon::$worker) {
+		if (Daemon::$process) {
 			$this->onReady();
 			$this->ready = TRUE;
 		}
@@ -185,7 +185,7 @@ class AppInstance {
 		}
 
 		if (Daemon::$config->logqueue->value) {
-			Daemon::$worker->log('request added to ' . get_class($this) . '->queue.');
+			Daemon::$process->log('request added to ' . get_class($this) . '->queue.');
 		}
 
 		return $req;

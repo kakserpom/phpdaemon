@@ -63,7 +63,7 @@ class AsyncProcess extends AsyncStream {
 	 * @return void
 	 */
 	public function __construct($cmd = NULL) {
-		$this->base = Daemon::$worker->eventBase;
+		$this->base = Daemon::$process->eventBase;
 		$this->env = $_ENV;
 		$this->cmd = $cmd;
 	}

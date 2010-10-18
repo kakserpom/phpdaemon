@@ -44,8 +44,8 @@ class Request {
 		$this->idAppQueue = ++$this->appInstance->idAppQueue;
 		$this->appInstance->queue[$this->idAppQueue] = $this;
 		
-		$this->queueId = isset($parent->queueId)?$parent->queueId:(++Daemon::$worker->reqCounter);
-		Daemon::$worker->queue[$this->queueId] = $this;
+		$this->queueId = isset($parent->queueId)?$parent->queueId:(++Daemon::$process->reqCounter);
+		Daemon::$process->queue[$this->queueId] = $this;
 		
 		$this->preinit($parent);
 		$this->onWakeup();
@@ -56,7 +56,7 @@ class Request {
 		event_set($this->ev, STDIN, EV_TIMEOUT
 		, array('Request','eventCall')
 		, array($this->queueId));
-		event_base_set($this->ev, Daemon::$worker->eventBase);
+		event_base_set($this->ev, Daemon::$process->eventBase);
 		event_add($this->ev,100);
 	}
 
@@ -66,39 +66,39 @@ class Request {
 	public static function eventCall($fd, $flags, $arg) {
 		$k = $arg[0];
 
-		if (!isset(Daemon::$worker->queue[$k])) {
+		if (!isset(Daemon::$process->queue[$k])) {
 			Daemon::log('Bad event call.');
 			return;
 		}
 
-		$r = Daemon::$worker->queue[$k];
+		$r = Daemon::$process->queue[$k];
 		
 		if ($r->state === Request::STATE_SLEEPING) {
 			$r->state = Request::STATE_ALIVE;
 		}
 		
 		if (Daemon::$config->logqueue->value) {
-			Daemon::$worker->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() invoked.');
+			Daemon::$process->log('event ' . get_class($r) . '::call() invoked.');
 		}
 
 		$ret = $r->call();
 	
 		if (Daemon::$config->logqueue->value) {
-			Daemon::$worker->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
+			Daemon::$process->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
 		}
 
 		if ($ret === Request::STATE_FINISHED) {
-			unset(Daemon::$worker->queue[$k]);
+			unset(Daemon::$process->queue[$k]);
 
 			if (isset($r->idAppQueue)) {
 				if (Daemon::$config->logqueue->value) {
-					Daemon::$worker->log('request removed from ' . get_class($r->appInstance) . '->queue.');
+					Daemon::$process->log('request removed from ' . get_class($r->appInstance) . '->queue.');
 				}
 
 				unset($r->appInstance->queue[$r->idAppQueue]);
 			} else {
 				if (Daemon::$config->logqueue->value) {
-					Daemon::$worker->log('request can\'t be removed from AppInstance->queue.');
+					Daemon::$process->log('request can\'t be removed from AppInstance->queue.');
 				}
 			}
 		}
@@ -316,7 +316,7 @@ class Request {
 	 */
 	protected function onWakeup() {
 		if (!Daemon::$compatMode) {
-			Daemon::$worker->setStatus(2);
+			Daemon::$process->setStatus(2);
 		}
 
 		ob_flush();
@@ -335,7 +335,7 @@ class Request {
 		ob_flush();
 
 		if (!Daemon::$compatMode) {
-			Daemon::$worker->setStatus(1);
+			Daemon::$process->setStatus(1);
 		}
 
 		Daemon::$req = NULL;
@@ -411,8 +411,8 @@ class Request {
 
 		if (
 			(Daemon::$config->autogc->value > 0) 
-			&& (Daemon::$worker->reqCounter > 0) 
-			&& (Daemon::$worker->reqCounter % Daemon::$config->autogc->value === 0)
+			&& (Daemon::$process->reqCounter > 0) 
+			&& (Daemon::$process->reqCounter % Daemon::$config->autogc->value === 0)
 		) {
 			gc_collect_cycles();
 		}

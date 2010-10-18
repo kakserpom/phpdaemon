@@ -80,7 +80,7 @@ Hello world!
 <br />Counter of requests to this Application Instance: <b><?php echo ++$this->appInstance->counter; ?></b>
 <br />Memory usage: <?php $mem = memory_get_usage(); echo ($mem / 1024 / 1024); ?> MB. (<?php echo $mem; ?>)
 <br />Memory real usage: <?php $mem = memory_get_usage(TRUE); echo ($mem / 1024 / 1024); ?> MB. (<?php echo $mem; ?>)
-<br />Pool size: <?php echo sizeof(Daemon::$worker->pool); ?>.
+<br />Pool size: <?php echo sizeof(Daemon::$process->pool); ?>.
 <br />My PID: <?php echo getmypid(); ?>.
 <?php
 $user = posix_getpwuid(posix_getuid());

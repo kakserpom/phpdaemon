@@ -36,7 +36,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function run() {
-		Daemon::$worker = $this;
+		Daemon::$process = $this;
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
 		$this->setStatus(4);
@@ -73,7 +73,7 @@ class Daemon_WorkerThread extends Thread {
 		 * @return void
 		 */
 		$this->readPoolEvent = new Daemon_TimedEvent(function() {
-			$self = Daemon::$worker;
+			$self = Daemon::$process;
 			
 			foreach ($self->readPoolState as $connId => $state) {
 				if (Daemon::$config->logevents->value) {
@@ -93,7 +93,7 @@ class Daemon_WorkerThread extends Thread {
 		}, pow(10,6) * 0.005);
 		
 		$this->checkStateTimedEvent = new Daemon_TimedEvent(function() {
-			$self = Daemon::$worker;
+			$self = Daemon::$process;
 			
 			if ($self->checkState() !== TRUE) {
 				$self->closeSockets();
@@ -541,7 +541,7 @@ class Daemon_WorkerThread extends Thread {
 		unset($this->checkStateTimedEvent);
 		
 		$this->checkReloadReady = new Daemon_TimedEvent(function() 	{
-			$self = Daemon::$worker;
+			$self = Daemon::$process;
 				
 			$self->reloadReady = $self->appInstancesReloadReady();
 					

@@ -17,7 +17,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function run() {
-		Daemon::$master = $this;
+		Daemon::$process = $this;
 		
 		$this->prepareSystemEnv();
 		
@@ -37,7 +37,7 @@ class Daemon_MasterThread extends Thread {
 		));
 
 		$this->cfgReloadTimedEvent = new Daemon_TimedEvent(function() {
-			$self = Daemon::$master;
+			$self = Daemon::$process;
 
 			clearstatcache();
 			if (
@@ -60,7 +60,7 @@ class Daemon_MasterThread extends Thread {
 		}, pow(10,6) * 1);
 		
 		$this->MPMTimedEvent = new Daemon_TimedEvent(function() {
-			$self = Daemon::$master;
+			$self = Daemon::$process;
 
 			static $c = 0;
 			
