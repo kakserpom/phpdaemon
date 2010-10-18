@@ -30,6 +30,7 @@ class Daemon_WorkerThread extends Thread {
 	public $breakMainLoop = FALSE;
 	public $reloadReady = FALSE;
 	public $delayedSigReg = TRUE;
+	public $instancesCount = array();
 	
 	/**
 	 * Runtime of Worker process.
@@ -109,7 +110,6 @@ class Daemon_WorkerThread extends Thread {
 			event_base_loop($this->eventBase);
 		}
 	}
-	
 	/**
 	 * Overrides native PHP functions.
 	 * @return void

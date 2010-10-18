@@ -89,6 +89,11 @@ class Daemon_Config implements ArrayAccess {
 
 	public function loadFile($path) {
 		$parser = new Daemon_ConfigParser($path,$this);
+		if (!$parser->errorneus) {
+			if (Daemon::$process instanceof Daemon_MasterThread) {
+				Daemon::$process->updatedWorkers();
+			}
+		}
 		return !$parser->errorneus;
 	}
 

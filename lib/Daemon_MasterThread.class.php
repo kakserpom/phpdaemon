@@ -11,6 +11,8 @@ class Daemon_MasterThread extends Thread {
 
 	public $delayedSigReg = TRUE;
 	public $breakMainLoop = FALSE;
+	public $reload = FALSE;
+	public $connCounter = 0;
 	
 	/**
 	 * Runtime of Master process
@@ -26,7 +28,7 @@ class Daemon_MasterThread extends Thread {
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 
-		$this->collections = array('workers' => new ThreadCollection);
+		$this->workers = new ThreadCollection;
 		
 		Daemon::$appResolver = require Daemon::$config->path->value;
 		Daemon::$appResolver->preload(true); 
@@ -71,10 +73,10 @@ class Daemon_MasterThread extends Thread {
 			}
 				
 			if (($c % 10 == 0)) {
-				$self->collections['workers']->removeTerminated(true);
+				$self->workers->removeTerminated(true);
 				gc_collect_cycles();
 			} else {
-				$self->collections['workers']->removeTerminated();
+				$self->workers->removeTerminated();
 			}
 			
 			if (
@@ -122,6 +124,41 @@ class Daemon_MasterThread extends Thread {
 			event_base_loop($this->eventBase);
 		}
 	}
+	public function updatedWorkers() {
+	
+		$perWorker = 1;
+		$instancesCount = array();
+		foreach (Daemon::$config as $name => $section)
+		{
+		 if (
+					(!$section instanceof Daemon_ConfigSection)
+			|| !isset($section->limitinstances)) {
+			
+				continue;
+			}
+			$instancesCount[$name] = 0;
+		}
+		foreach ($this->workers->threads as $worker) {
+			foreach ($worker->instancesCount as $k => $v) {
+				if (!isset($instancesCount[$k])) {
+					unset($worker->instancesCount[$k]);
+					continue;
+				}
+				$instancesCount[$k] += $v;
+			}
+		}
+		foreach ($instancesCount as $name => $num) {
+			$v = Daemon::$config->{$name}->limitinstances->value - $num;
+			foreach ($this->workers->threads as $worker) {
+					if ($v <= 0) {break;}
+					if ((isset($worker->instancesCount[$name])) && ($worker->instancesCount[$name] < $perWorker) || !isset($worker->connection))	{
+						continue;
+					}
+					$worker->connection->sendPacket(array('op' => 'spawnInstance', 'appfullname' => $name));
+					--$v;
+			}
+		}
+	}
 	/**
 	 * Setup settings on start.
 	 * @return void
@@ -141,12 +178,12 @@ class Daemon_MasterThread extends Thread {
 	 * @todo description missed
 	 */	
 	public function reloadWorker($spawnId) {
-		if (isset($this->collections['workers']->threads[$spawnId])) {
-			if (!$this->collections['workers']->threads[$spawnId]->reloaded) {
+		if (isset($this->workers->threads[$spawnId])) {
+			if (!$this->workers->threads[$spawnId]->reloaded) {
 				Daemon::log('Spawning worker-replacer for reloaded worker #' . $spawnId . '.');
 			
 				$this->spawnWorkers();
-				$this->collections['workers']->threads[$spawnId]->reloaded = true;
+				$this->workers->threads[$spawnId]->reloaded = true;
 			}
 		}
 	}
@@ -161,7 +198,7 @@ class Daemon_MasterThread extends Thread {
 	
 		for ($i = 0; $i < $n; ++$i) {
 			$thread = new Daemon_WorkerThread;
-			$this->collections['workers']->push($thread);
+			$this->workers->push($thread);
 
 			if (-1 === $thread->start()) {
 				Daemon::log('could not start worker');
@@ -180,7 +217,7 @@ class Daemon_MasterThread extends Thread {
 		$n = (int) $n;
 		$i = 0;
 
-		foreach ($this->collections['workers']->threads as &$w) {
+		foreach ($this->workers->threads as &$w) {
 			if ($i >= $n) {
 				break;
 			}
@@ -256,7 +293,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::log('Master caught SIGINT.');
 		}
 	
-		$this->collections['workers']->signal(SIGINT);
+		$this->workers->signal(SIGINT);
 		$this->shutdown(SIGINT);
 	}
 	
@@ -270,7 +307,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::log('Master caught SIGTERM.');
 		}
 	
-		$this->collections['workers']->signal(SIGTERM);
+		$this->workers->signal(SIGTERM);
 		$this->shutdown(SIGTERM);
 	}
 	
@@ -284,7 +321,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::log('Master caught SIGQUIT.');
 		}
 
-		$this->collections['workers']->signal(SIGQUIT);
+		$this->workers->signal(SIGQUIT);
 		$this->shutdown(SIGQUIT);
 	}
 
@@ -302,7 +339,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::loadConfig(Daemon::$config->configfile->value);
 		}
 
-		$this->collections['workers']->signal(SIGHUP);
+		$this->workers->signal(SIGHUP);
 	}
 
 	/**
@@ -316,7 +353,7 @@ class Daemon_MasterThread extends Thread {
 		}
 
 		Daemon::openLogs();
-		$this->collections['workers']->signal(SIGUSR1);
+		$this->workers->signal(SIGUSR1);
 	}
 
 	/**
@@ -329,7 +366,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::log('Master caught SIGUSR2 (graceful restart all workers).');
 		}
 
-		$this->collections['workers']->signal(SIGUSR2);
+		$this->workers->signal(SIGUSR2);
 	}
 
 	/**

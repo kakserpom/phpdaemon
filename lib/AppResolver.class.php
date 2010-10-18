@@ -21,6 +21,7 @@ class AppResolver {
 			if (!$section instanceof Daemon_ConfigSection)	{
 				continue;
 			}
+			if (isset($section->limitinstances)) {continue;}
 			if (
 					(isset($section->enable) && $section->enable->value)
 					||
