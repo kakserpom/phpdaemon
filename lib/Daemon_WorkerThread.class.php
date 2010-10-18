@@ -11,7 +11,7 @@ class Daemon_WorkerThread extends Thread {
 
 	public $update = FALSE;
 	public $reload = FALSE;
-	private $reloadTime = 0;
+	public $reloadTime = 0;
 	private $reloadDelay = 2;
 	public $reloaded = FALSE;
 	public $pool = array();

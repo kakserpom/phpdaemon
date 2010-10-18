@@ -48,7 +48,7 @@ class AppInstance {
 
 		$this->init();
 
-		if (Daemon::$process) {
+		if (Daemon::$process instanceof Daemon_WorkerThread) {
 			$this->onReady();
 			$this->ready = TRUE;
 		}
