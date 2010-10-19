@@ -392,7 +392,7 @@ class AsteriskDriverSession extends SocketSession {
 		}
 
 		if (stripos($this->authtype, 'md5') !== false) {
-			$this->challenge(function($session, $challenge) {
+			$this->challenge(function(SocketSession $session, $challenge) {
 				$packet = "Action: Login\r\n";
 				$packet .= "AuthType: MD5\r\n";
 				$packet .= "Username: " . $session->username . "\r\n";
