@@ -88,6 +88,12 @@ class Request {
 		}
 
 		if ($ret === Request::STATE_FINISHED) {
+		
+			if (is_resource($r->ev)) {
+				event_del($r->ev);
+				event_free($r->ev);
+			}
+			
 			unset(Daemon::$process->queue[$k]);
 
 			if (isset($r->idAppQueue)) {
@@ -435,8 +441,10 @@ class Request {
 	public function postFinishHandler() { }
 	
 	public function __destruct() {
-		event_del($this->ev);
-		event_free($this->ev);
+		if (is_resource($this->ev)) {
+			event_del($this->ev);
+			event_free($this->ev);
+		}
 	}
 }
 
