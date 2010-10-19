@@ -13,6 +13,7 @@ class Daemon_MasterThread extends Thread {
 	public $breakMainLoop = FALSE;
 	public $reload = FALSE;
 	public $connCounter = 0;
+	public $fileWatcher;
 	
 	/**
 	 * Runtime of Master process
@@ -28,9 +29,11 @@ class Daemon_MasterThread extends Thread {
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 
+		$this->fileWatcher = new FileWatcher;
 		$this->workers = new ThreadCollection;
 		
 		Daemon::$appResolver = require Daemon::$config->path->value;
+		Daemon::$appResolver->getInstanceByAppName('DaemonManager');
 		Daemon::$appResolver->preload(true); 
 
 		$this->spawnWorkers(min(
@@ -38,29 +41,12 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->maxworkers->value
 		));
 
-		$this->cfgReloadTimedEvent = new Daemon_TimedEvent(function() {
+		$this->fileWatcherTimedEvent = new Daemon_TimedEvent(function() {
 			$self = Daemon::$process;
-
-			clearstatcache();
-			if (
-				isset(Daemon::$config->configfile) 
-				&& (Daemon::$config->autoreload->value > 0)
-			) {
-				$mt = filemtime(Daemon::$config->configfile->value);
-
-				if (!isset($cfgmtime)) {
-					$cfgmtime = $mt;
-				}
-
-				if ($cfgmtime < $mt) {
-					$cfgmtime = filemtime(Daemon::$config->configfile->value);
-					$this->sighup();
-				}
-			}
-			
-			$self->cfgReloadTimedEvent->timeout();
+			$self->fileWatcher->watch();
+			$self->fileWatcherTimedEvent->timeout();
 		}, pow(10,6) * 1);
-		
+				
 		$this->MPMTimedEvent = new Daemon_TimedEvent(function() {
 			$self = Daemon::$process;
 

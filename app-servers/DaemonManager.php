@@ -20,8 +20,6 @@ class DaemonManager extends AsyncServer {
 			// listen to
 			'mastersocket'     => 'unix:/tmp/phpDaemon-master.sock',
 			'mastersocketport' => 0,
-			// disabled by default
-			'enable'     => 0
 		);
 	}
 
@@ -88,12 +86,17 @@ class DaemonManagerMasterSession extends SocketSession {
 	
 	public function onPacket($p) {
 	
-	 if ($p['op'] == 'start')
+	 if ($p['op'] === 'start')
 	 {
 	  $this->spawnid = $p['spawnid'];
 	  Daemon::$process->workers->threads[$this->spawnid]->connection = $this;
 	  Daemon::$process->updatedWorkers();
-	 }		
+	 }
+	 elseif ($p['op'] == 'addIncludedFiles') {
+		foreach ($p['files'] as $file) {
+			Daemon::$process->fileWatcher->addWatch($file,$this->spawnid);
+		}
+	 }
 	}
 	public function onFinish()
 	{
@@ -136,13 +139,16 @@ class DaemonManagerWorkerSession extends SocketSession {
 	
 	}
 	public function onPacket($p) {
-		if ($p['op'] == 'spawnInstance') {
+		if ($p['op'] === 'spawnInstance') {
 			$fullname = $p['appfullname'];
 			if (strpos($fullname,'-') === false) {
 				$fullname .= '-';
 			}
 			list($app, $name) = explode('-', $fullname, 2);
 			Daemon::$appResolver->appInstantiate($app,$name);
+		}
+		elseif ($p['op'] === 'importFile') {
+			runkit_import($p['path'], RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
 		}
 	}
 	public function sendPacket($p) {

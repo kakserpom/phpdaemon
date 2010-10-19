@@ -25,8 +25,10 @@ class Daemon_ConfigEntry {
 	}
 
 	public function setValue($value) {
+		$old = $this->value;
 		$this->value = $value;
 		$this->humanValue = $this->PlainToHuman($value);
+		$this->onUpdate($old);
 	}
 
 	public function setValueType($type) {
@@ -50,7 +52,9 @@ class Daemon_ConfigEntry {
 
 	public function setHumanValue($value) {
 		$this->humanValue = $value;
+		$old = $this->value;
 		$this->value = $this->HumanToPlain($value);
+		$this->onUpdate($old);
 	}
 
 	public function HumanToPlain($value) {
@@ -59,6 +63,9 @@ class Daemon_ConfigEntry {
 
 	public function PlainToHuman($value) {
 		return $value;
+	}
+	
+	public function onUpdate($old) {
 	}
 
 }

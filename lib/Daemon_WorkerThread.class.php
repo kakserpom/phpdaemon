@@ -31,6 +31,7 @@ class Daemon_WorkerThread extends Thread {
 	public $reloadReady = FALSE;
 	public $delayedSigReg = TRUE;
 	public $instancesCount = array();
+	public $connection;
 	
 	/**
 	 * Runtime of Worker process.
@@ -105,6 +106,26 @@ class Daemon_WorkerThread extends Thread {
 			
 			$self->checkStateTimedEvent->timeout();
 		}, pow(10,6) * 1);
+		
+		if (Daemon::$config->autoreload->value > 0) {
+			$this->watchIncludedFilesTimedEvent = new Daemon_TimedEvent(function() {
+				$self = Daemon::$process;
+					
+				static $n = 0;
+			
+				$inc = array_unique(array_map('realpath',get_included_files()));
+				$s = sizeof($inc);
+				if ($s > $n) {
+					$slice = array_slice($inc,$n);
+					if ($c = Daemon::$appResolver->getInstanceByAppName('DaemonManager')->getConnection()) {
+						$c->sendPacket(array('op' => 'addIncludedFiles', 'files' => $slice));
+					}
+					$n = $s;
+				}
+				$self->watchIncludedFilesTimedEvent->timeout();
+			}, pow(10,6) * Daemon::$config->autoreload->value);
+		}
+			
 
 		while (!$this->breakMainLoop) {
 			event_base_loop($this->eventBase);
@@ -314,62 +335,6 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 	}
-	
-	/**
-	 * Looks up at changes of the last modification date of all included files.
-	 * @return boolean - The whether we should go to reload.
-	 */
-	private function reloadCheck() {
-		static $hash = array();
-	
-		$this->autoReloadLast = time();
-		$inc = get_included_files();
-
-		foreach ($inc as &$path) {
-			$mt = filemtime($path);
-	
-			if (
-				isset($hash[$path]) 
-				&& ($mt > $hash[$path])
-			) {
-				return TRUE;
-			}
-	
-			$hash[$path] = $mt;
-		}
-
-		return FALSE;
-	}
-
-	/**
-	 * Looks up at changes of the last modification date of all included files. Re-imports modified files.
-	 * @return void
-	 */
-	private function reimport() {
-		static $hash = array();
-	
-		$this->autoReloadLast = time();
-		$inc = get_included_files();
-	
-		foreach ($inc as &$path) {
-			$mt = filemtime($path);
-		
-			if (
-				isset($hash[$path]) 
-				&& ($mt > $hash[$path])
-			) {
-				if (Daemon::lintFile($path)) {
-					runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
-				} else {
-					Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);
-				}
-			}
-	
-			$hash[$path] = $mt;
-		}
-	
-		return FALSE;
-	}
 
 	/**
 	 * @todo description?
@@ -380,20 +345,6 @@ class Daemon_WorkerThread extends Thread {
 		if ($this->terminated) {
 			return FALSE;
 		} 
-
-		if (
-			(Daemon::$config->autoreload->value > 0) 
-			&& ($time > $this->autoReloadLast + Daemon::$config->autoreload->value)
-		) {
-			if (Daemon::$config->autoreimport->value) {
-				$this->reimport();
-			} else {
-				if ($this->reloadCheck()) {
-					$this->reload = TRUE;
-					$this->setStatus($this->currentStatus);
-				}
-			}
-		}
 		
 		if ($this->status > 0) {
 			return $this->status;

@@ -77,6 +77,9 @@ class Daemon_Config implements ArrayAccess {
 			}
 			elseif (in_array($name, $numbers)) {
 				$entry = new Daemon_ConfigEntryNumber;
+			} 
+			elseif ($name === 'configfile') {
+				$entry = new Daemon_ConfigEntryConfigFile;
 			} else {
 				$entry = new Daemon_ConfigEntry;
 			}
