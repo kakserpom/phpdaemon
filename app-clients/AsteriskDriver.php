@@ -65,7 +65,7 @@ class AsteriskDriver extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			Daemon::log(__CLASS__ . ' up.');
+			Daemon::log('[' . Daemon::$process->pid . '] ' . __CLASS__ . ' up.');
 		}
 	}
 
@@ -298,7 +298,7 @@ class AsteriskDriverSession extends SocketSession {
 							} else {
 								if ($packet['message'] == 'authentication accepted') {
 									$this->cstate = AsteriskDriver::CONN_STATE_HANDSHAKED_OK;
-									Daemon::log(__CLASS__.': Authentication ok. Connected to '.$this->addr);
+									Daemon::log('[' . Daemon::$process->pid . '] ' . __METHOD__.': Authentication ok. Connected to '.$this->addr);
 									if (is_callable($this->onConnected)) {
 										call_user_func($this->onConnected, $this, true);
 									}
@@ -306,7 +306,7 @@ class AsteriskDriverSession extends SocketSession {
 							}
 						} else {
 							$this->cstate = AsteriskDriver::CONN_STATE_HANDSHAKED_ERROR;
-							Daemon::log(__CLASS__.': Authentication failed. Connection to '.$this->addr.' failed.');
+							Daemon::log('[' . Daemon::$process->pid . '] ' . __METHOD__.': Authentication failed. Connection to '.$this->addr.' failed.');
 							if (is_callable($this->onConnected)) {
 								call_user_func($this->onConnected, $this, false);
 							}
