@@ -59,7 +59,12 @@ class Request {
 		event_base_set($this->ev, Daemon::$process->eventBase);
 		event_add($this->ev,100);
 	}
-
+	/**
+	 * Called when request iterated.
+	 * @return integer Status.
+	 */
+	public function run() {}
+	
 	/**
 	 * @todo description is missing
 	 */
