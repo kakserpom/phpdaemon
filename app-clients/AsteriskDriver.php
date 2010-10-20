@@ -1,7 +1,6 @@
 <?php
-
 /**
- * Driver for Asterisk Call Manager/1.1
+ * Asterisk Call Manager/1.1
  *
  * @package Applications
  * @subpackage AsteriskDriver
@@ -9,7 +8,6 @@
  * @version 1.0.1
  * @author Ponomarev Dmitry <ponomarev.base@gmail.com>
  */
-
 class AsteriskDriver extends AsyncServer {
 	
 	const CONN_STATE_START					= 0;
@@ -483,7 +481,7 @@ class AsteriskDriverSession extends SocketSession {
 	 * @return void
 	 */
 	public function getConfig($filename, $callback) {
-		$this->command("Action: GetConfig\r\nFilename: {$filename}\r\n", $callback);
+		$this->command("Action: GetConfig\r\nFilename: " . trim($filename) . "\r\n", $callback);
 	}
 
 	/**
@@ -500,7 +498,42 @@ class AsteriskDriverSession extends SocketSession {
 	 * @return void
 	 */
 	public function getConfigJSON($filename, $callback) {
-		$this->command("Action: GetConfigJSON\r\nFilename: {$filename}\r\n", $callback);
+		$this->command("Action: GetConfigJSON\r\nFilename: " . trim($filename) . "\r\n", $callback);
+	}
+	
+	/**
+	  * Action: Setvar
+	  * Synopsis: Set Channel Variable
+	  * Privilege: call,all
+	  * Description: Set a global or local channel variable.
+	  * Variables: (Names marked with * are required)
+      * Channel: Channel to set variable for
+      *  *Variable: Variable name
+      *  *Value: Value
+      */
+	public function setVar($channel, $variable, $value, $callback) {
+		$cmd = "Action: SetVar\r\n";
+		if($channel) {
+			$cmd .= "Channel: " . trim($channel) . "\r\n";
+		}
+		if(isset($variable, $value)) {
+			$cmd .= "Variable: " . trim($variable) . "\r\n";
+			$cmd .= "Value: " . trim($value) . "\r\n";
+			$this->command($cmd, $callback);
+		}
+	}
+	
+	/**
+	 * Action: CoreShowChannels
+	 * Synopsis: List currently active channels
+	 * Privilege: system,reporting,all
+	 * Description: List currently defined channels and some information
+     *        about them.
+	 * Variables:
+	 *        ActionID: Optional Action id for message matching.
+	 */
+	public function coreShowChannels($callback) {
+		$this->command("Action: CoreShowChannels\r\n", $callback, array('event' => 'coreshowchannelscomplete', 'eventlist' => 'complete'));
 	}
 
 	/**
@@ -617,6 +650,9 @@ class AsteriskDriverSession extends SocketSession {
 		}
 
 		$action_id = $this->uniqid();
+		if(!is_callable($callback, true)) {
+			$callback = false;
+		}
 		$this->callbacks[$action_id] = $callback;
 
 		if ($assertion !== null) {
@@ -662,4 +698,5 @@ class AsteriskDriverSession extends SocketSession {
 }
 
 class AsteriskDriverSessionFinished extends Exception {}
+
 
