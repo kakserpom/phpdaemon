@@ -10,18 +10,18 @@
  */
 class AsteriskDriver extends AsyncServer {
 	
-	const CONN_STATE_START					= 0;
-	const CONN_STATE_GOT_INITIAL_PACKET			= 0.1;
-	const CONN_STATE_AUTH					= 1;
-	const CONN_STATE_LOGIN_PACKET_SENT			= 1.1;
-	const CONN_STATE_CHALLENGE_PACKET_SENT			= 1.2;
-	const CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE	= 1.3;
-	const CONN_STATE_HANDSHAKED_OK				= 2.1;
-	const CONN_STATE_HANDSHAKED_ERROR			= 2.2;
+	const CONN_STATE_START                                  = 0;
+	const CONN_STATE_GOT_INITIAL_PACKET                     = 0.1;
+	const CONN_STATE_AUTH                                   = 1;
+	const CONN_STATE_LOGIN_PACKET_SENT                      = 1.1;
+	const CONN_STATE_CHALLENGE_PACKET_SENT                  = 1.2;
+	const CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE      = 1.3;
+	const CONN_STATE_HANDSHAKED_OK                          = 2.1;
+	const CONN_STATE_HANDSHAKED_ERROR                       = 2.2;
 	
-	const INPUT_STATE_START		= 0;
-	const INPUT_STATE_END_OF_PACKET	= 1;
-	const INPUT_STATE_PROCESSING	= 2;
+	const INPUT_STATE_START         = 0;
+	const INPUT_STATE_END_OF_PACKET = 1;
+	const INPUT_STATE_PROCESSING    = 2;
 
 	/**
 	 * Active sessions.
