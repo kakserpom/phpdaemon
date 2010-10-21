@@ -22,6 +22,7 @@ class Daemon_Config implements ArrayAccess {
 	public $path           = './conf/appResolver.php';
 	public $ipcwstate      = '/var/run/phpdaemon-wstate.ipc';
 	public $appfilepath    = '{app-*,applications}/%s.php';
+	public $autoload   	 	= NULL;
 			
 	// Master-related
 	public $mpmdelay        = '1s';
