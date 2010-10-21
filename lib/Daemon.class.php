@@ -271,11 +271,11 @@ class Daemon {
 
 			Daemon::$logpointer = fopen(Daemon::$config->logstorage->value, 'a+');
 
-			if (isset(Daemon::$config->group)) {
+			if (isset(Daemon::$config->group->value)) {
 				chgrp(Daemon::$config->logstorage->value, Daemon::$config->group->value);
 			}
 
-			if (isset(Daemon::$config->user)) {
+			if (isset(Daemon::$config->user->value)) {
 				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value);
 			}
 		}
