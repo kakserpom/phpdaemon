@@ -140,6 +140,12 @@ class Daemon_MasterThread extends Thread {
 					if ((isset($worker->instancesCount[$name])) && ($worker->instancesCount[$name] < $perWorker) || !isset($worker->connection))	{
 						continue;
 					}
+					if (!isset($worker->instancesCount[$name])) {
+						$worker->instancesCount[$name] = 1;
+					}
+					else {
+						++$worker->instancesCount[$name];
+					}
 					$worker->connection->sendPacket(array('op' => 'spawnInstance', 'appfullname' => $name));
 					--$v;
 			}
