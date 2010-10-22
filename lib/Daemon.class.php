@@ -287,6 +287,7 @@ class Daemon {
 	 */
 	public static function getStateOfWorkers($master = NULL) {
 		static $bufsize = 1024;
+
 		$offset = 0;
 
 		$stat = array(
@@ -306,6 +307,7 @@ class Daemon {
 
 			for ($i = 0; $i < $bufsize; ++$i) {
 				$code = ord($buf[$i]);
+
 				if ($code >= 100) {
 					 // reloaded (shutdown)
 					$code -= 100;
@@ -368,11 +370,12 @@ class Daemon {
 	 * @return int Resource ID.
 	 */
 	public static function shmop_open($path, $size, $name, $create = TRUE) {
-		if ($create) {
-			if (!touch($path)) {
-				Daemon::log('Couldn\'t touch IPC file \'' . $path . '\'.');
-				exit(0);
-			}
+		if (
+			$create
+			&& !touch($path)
+		) {
+			Daemon::log('Couldn\'t touch IPC file \'' . $path . '\'.');
+			exit(0);
 		}
 
 		if (($key = ftok($path,'t')) === FALSE) {
