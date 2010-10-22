@@ -37,7 +37,7 @@ class Daemon_ConfigParser {
 		$cfg->revision = ++Daemon_Config::$lastRevision;
 		$cfg->data = file_get_contents($file);
 		
-		if (substr($cfg->data,0,2) == '#!') 	{
+		if (substr($cfg->data,0,2) === '#!') 	{
 			if (!is_executable($file)) {
 				$this->raiseError('Shebang (#!) detected in the first line, but file hasn\'t +x mode.');
 				return;
@@ -50,7 +50,7 @@ class Daemon_ConfigParser {
 		$cfg->state[] = array(self::T_ALL, $cfg->result);
 		$cfg->tokens = array(
 			self::T_COMMENT => function($cfg, $c) {
-				if ($c == "\n") {
+				if ($c === "\n") {
 					array_pop($cfg->state);
 				}
 			},
@@ -61,12 +61,12 @@ class Daemon_ConfigParser {
 				for (;$cfg->p < $cfg->len;++$cfg->p) {
 					$c = $cfg->getCurrentChar();
 
-					if ($c == $q) {
+					if ($c === $q) {
 						++$cfg->p;
 						break;
 					}
-					elseif ($c == '\\') {
-						if ($cfg->getNextChar() == $q) {
+					elseif ($c === '\\') {
+						if ($cfg->getNextChar() === $q) {
 							$str .= $q;
 							++$cfg->p;
 						}
@@ -83,10 +83,10 @@ class Daemon_ConfigParser {
 			},
 			self::T_ALL => function($cfg, $c) {
 				if (ctype_space($c)) { }
-				elseif ($c == '#') {
+				elseif ($c === '#') {
 					$cfg->state[] = array(Daemon_ConfigParser::T_COMMENT);
 				}
-				elseif ($c == '}') {
+				elseif ($c === '}') {
 					if (sizeof($cfg->state) > 1) {
 						$cfg->purgeScope($cfg->getCurrentScope());
 						array_pop($cfg->state);
@@ -110,8 +110,8 @@ class Daemon_ConfigParser {
 							}
 						}
 						elseif (
-							($c == '"') 
-							|| ($c == '\'')
+							($c === '"') 
+							|| ($c === '\'')
 						) {
 							if ($elTypes[$i] != NULL)	 {
 								$cfg->raiseError('Unexpected T_STRING.');
@@ -120,7 +120,7 @@ class Daemon_ConfigParser {
 							$string = call_user_func($cfg->tokens[Daemon_ConfigParser::T_STRING], $cfg, $c);
 							--$cfg->p;
 
-							if ($elTypes[$i] == NULL)	 {
+							if ($elTypes[$i] === NULL)	 {
 								$elements[$i] = $string;
 								$elTypes[$i] = Daemon_ConfigParser::T_STRING;
 							}
@@ -133,7 +133,7 @@ class Daemon_ConfigParser {
 							$tokenType = Daemon_ConfigParser::T_BLOCK;
 							break;
 						} else {
-							if ($elTypes[$i] == Daemon_ConfigParser::T_STRING)	 {
+							if ($elTypes[$i] === Daemon_ConfigParser::T_STRING)	 {
 								$cfg->raiseError('Unexpected T_CVALUE.');
 							} else {
 								if (!isset($elements[$i])) {
@@ -147,7 +147,7 @@ class Daemon_ConfigParser {
 					}
 
 					foreach ($elTypes as $k => $v) {
-						if (Daemon_ConfigParser::T_CVALUE == $v) {
+						if (Daemon_ConfigParser::T_CVALUE === $v) {
 							if (ctype_digit($elements[$k])) {
 								$elements[$k] = (int) $elements[$k];
 							}
@@ -156,23 +156,23 @@ class Daemon_ConfigParser {
 							} else {
 								$l = strtolower($elements[$k]);
 
-								if (($l == 'true') || ($l == 'on')) {
+								if (($l === 'true') || ($l === 'on')) {
 									$elements[$k] = true;
 								}
-								elseif (($l == 'false') || ($l == 'off')) {
+								elseif (($l === 'false') || ($l === 'off')) {
 									$elements[$k] = false;
 								}
-								elseif ($l == 'null') {
+								elseif ($l === 'null') {
 									$elements[$k] = null;
 								}
 							}
 						}
 					}
 
-					if ($tokenType == 0) {
+					if ($tokenType === 0) {
 						$cfg->raiseError('Expected \';\' or \'{\''); 
 					}
-					elseif ($tokenType == Daemon_ConfigParser::T_VAR) {
+					elseif ($tokenType === Daemon_ConfigParser::T_VAR) {
 						$name = str_replace('-', '', strtolower($elements[0]));
 						$scope = $cfg->getCurrentScope();
 						
@@ -192,7 +192,7 @@ class Daemon_ConfigParser {
 						} elseif (isset($scope->{$name})) {
 							if ($scope->{$name}->source != 'cmdline')	{
 								if (
-									($elTypes[1] == Daemon_ConfigParser::T_CVALUE) 
+									($elTypes[1] === Daemon_ConfigParser::T_CVALUE) 
 									&& is_string($elements[1])
 								) {
 									$scope->{$name}->setHumanValue($elements[1]);
@@ -215,7 +215,7 @@ class Daemon_ConfigParser {
 						}
 						else {$cfg->raiseError('Unrecognized parameter \''.$name.'\'');}
 					}
-					elseif ($tokenType == Daemon_ConfigParser::T_BLOCK) {
+					elseif ($tokenType === Daemon_ConfigParser::T_BLOCK) {
 						$scope = $cfg->getCurrentScope();
 						$sectionName = implode('-', $elements);
 						if (!isset($scope->{$sectionName})) {
@@ -258,7 +258,7 @@ class Daemon_ConfigParser {
 			elseif ($obj instanceof Daemon_ConfigSection) {
 				
 				if ($obj->source === 'config' && ($obj->revision < $cfg->revision))	{
-					if (count($obj) === 0) {
+					if (sizeof($obj) === 0) {
 						unset($scope->{$name});
 					}
 					elseif (isset($obj->enable)) {
@@ -286,7 +286,7 @@ class Daemon_ConfigParser {
 	 * @return void
 	 */
 	public function raiseError($msg, $level = 'emerg') {
-		if ($level == 'emerg') {
+		if ($level === 'emerg') {
 			$this->errorneus = true;
 		}
 
@@ -308,7 +308,7 @@ class Daemon_ConfigParser {
 	public function getCurrentChar() {
 		$c = substr($this->data, $this->p, 1);
 
-		if ($c == "\n") {
+		if ($c === "\n") {
 			++$this->line;
 			$this->col = 1;
 		} else {
