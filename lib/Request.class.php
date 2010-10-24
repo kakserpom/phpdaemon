@@ -10,17 +10,18 @@
 class Request {
 
 	const INTERRUPT = 3; // alias of STATE_SLEEPING
-	const DONE = 0; // alias of STATE_FINISHED
+	const DONE      = 0; // alias of STATE_FINISHED
 
 	const STATE_FINISHED = 0;
-	const STATE_ALIVE = 1;
-	const STATE_RUNNING = 2;
+	const STATE_ALIVE    = 1;
+	const STATE_RUNNING  = 2;
 	const STATE_SLEEPING = 3;
+
 	public $idAppQueue;
 	public $queueId;
 	public $appInstance;
 	public $aborted = FALSE;
-	public $state = 1; // 0 - finished, 1 - alive, 2 - running, 3 - sleeping
+	public $state = self::STATE_ALIVE;
 	public $codepoint;
 	public $sendfp;
 	public $attrs;
@@ -53,12 +54,16 @@ class Request {
 		$this->onSleep();
 		
 		$this->ev = event_new();
-		event_set($this->ev, STDIN, EV_TIMEOUT
-		, array('Request','eventCall')
-		, array($this->queueId));
+
+		event_set(
+			$this->ev, STDIN, EV_TIMEOUT, 
+			array('Request', 'eventCall'), 
+			array($this->queueId)
+		);
 		event_base_set($this->ev, Daemon::$process->eventBase);
-		event_add($this->ev,100);
+		event_add($this->ev, 100);
 	}
+
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
@@ -92,8 +97,7 @@ class Request {
 			Daemon::$process->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
 		}
 
-		if ($ret === Request::STATE_FINISHED) {
-		
+		if ($ret === Request::STATE_FINISHED) {		
 			if (is_resource($r->ev)) {
 				event_del($r->ev);
 				event_free($r->ev);
@@ -436,7 +440,7 @@ class Request {
 
 		if ($status !== -1) {
 			$this->postFinishHandler();
-			// $status: 0 - FCGI_REQUEST_COMPLETE, 1 - FCGI_CANT_MPX_CONN, 2 - FCGI_OVERLOADED, 3 - FCGI_UNKNOWN_ROLE
+			// $status: 0 - FCGI_REQUEST_COMPLETE, 1 - FCGI_CANT_MPX_CONN, 2 - FCGI_OVERLOADED, 3 - FCGI_UNKNOWN_ROLE  @todo what is -1 ? where is the constant for it?
 			$appStatus = 0;
 			$this->upstream->endRequest($this, $appStatus, $status);
 
