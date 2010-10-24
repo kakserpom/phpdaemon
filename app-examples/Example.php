@@ -9,6 +9,15 @@
 class Example extends AppInstance {
 
 	public $counter = 0;
+	
+		public $enableRPC = true;
+	
+	public function hello($arg0) {
+	
+		$this->log('Hello '.$arg0.'!');
+	
+	}
+
 
 	/**
 	 * Setting default config options
@@ -64,6 +73,8 @@ class ExampleRequest extends HTTPRequest {
 		$stime = microtime(TRUE);
 		$this->header('Content-Type: text/html; charset=utf-8');
 
+		$this->appInstance->broadcastCall('hello',array('world'));
+		
 		$this->registerShutdownFunction(function() {
 ?></html><?php
 		});

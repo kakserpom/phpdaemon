@@ -97,6 +97,7 @@ class IPCManager extends AsyncServer {
 }
 
 class IPCManagerMasterSession extends SocketSession {
+
 	public $spawnid;
 
 	/**
@@ -109,37 +110,34 @@ class IPCManagerMasterSession extends SocketSession {
 	
 	public function onPacket($p) {
 	
-	 if ($p['op'] === 'start')
-	 {
-	 Daemon::log(posix_getpid().' caught start '.$p['spawnid']);
-	  $this->spawnid = $p['spawnid'];
-	  Daemon::$process->workers->threads[$this->spawnid]->connection = $this;
-	  Daemon::$process->updatedWorkers();
-	 }
-	 elseif ($p['op'] === 'broadcastCall') {
-	 	$p['op'] = 'call';
-		foreach (Daemon::$process->workers->threads as $worker) {
-			if (isset($worker->connection) && $worker->connection) {
+		if ($p['op'] === 'start') {
+			$this->spawnid = $p['spawnid'];
+			Daemon::$process->workers->threads[$this->spawnid]->connection = $this;
+			Daemon::$process->updatedWorkers();
+		}
+		elseif ($p['op'] === 'broadcastCall') {
+			$p['op'] = 'call';
+			foreach (Daemon::$process->workers->threads as $worker) {
+				if (isset($worker->connection) && $worker->connection) {
 					$worker->connection->sendPacket($p);
 				}
+			}
 		}
-	 }
-	 elseif ($p['op'] === 'addIncludedFiles') {
-		foreach ($p['files'] as $file) {
-			Daemon::$process->fileWatcher->addWatch($file,$this->spawnid);
+		elseif ($p['op'] === 'addIncludedFiles') {
+			foreach ($p['files'] as $file) {
+				Daemon::$process->fileWatcher->addWatch($file,$this->spawnid);
+			}
 		}
-	 }
 	}
-	public function onFinish()
-	{
-	 unset(Daemon::$process->workers->threads[$this->spawnid]->connection);
-	 unset($this->appInstance->sessions[$this->connId]);
-	 Daemon::$process->updatedWorkers();
+	
+	public function onFinish() {
+		unset(Daemon::$process->workers->threads[$this->spawnid]->connection);
+		unset($this->appInstance->sessions[$this->connId]);
+		Daemon::$process->updatedWorkers();
 	}
+	
 	public function sendPacket($p) {
-		
 		$this->writeln(json_encode($p));
-		
 	}
 
 	/**
@@ -192,10 +190,12 @@ class IPCManagerWorkerSession extends SocketSession {
 			}, 5);
 		}
 		elseif ($p['op'] === 'call') {
+				
 			if (strpos($p['appfullname'],'-') === false) {
 				$p['appfullname'] .= '-';
 			}
 			list($app, $name) = explode('-', $p['appfullname'], 2);
+			
 			if ($app = Daemon::$appResolver->getInstanceByAppName($app,$name)) {
 				$app->RPCall($p['method'],$p['args']);
 			}

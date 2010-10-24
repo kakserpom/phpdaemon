@@ -71,7 +71,7 @@ class AppInstance {
 	 * @return mixed Result
 	 */
 	public function RPCall($method, $args) {
-		if ($this->enableRPC && is_callable($this, $method)) {
+		if ($this->enableRPC && is_callable(array($this, $method))) {
 			return call_user_func_array(array($this, $method), $args);
 		}
 	}

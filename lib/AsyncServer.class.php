@@ -636,7 +636,7 @@ class AsyncServer extends AppInstance {
 
 		if ($this->queuedReads) {
 			Daemon::$process->readPoolState[$connId] = TRUE;
-			Daemon::$process->readPoolEvent->timeout();
+			Daemon_TimedEvent::setTimeout('readPoolEvent');
 		}
 		
 		$success = FALSE;

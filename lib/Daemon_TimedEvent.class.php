@@ -9,6 +9,7 @@
  */
 class Daemon_TimedEvent{
 	
+	public $id;
 	public $ev;
 	public $lastTimeout;
 	public $finished = false;
@@ -25,6 +26,7 @@ class Daemon_TimedEvent{
 				++$id;
 			}
 		}
+		$this->id = $id;
 		$this->cb = $cb;
 		$this->ev = event_new();
 		event_set($this->ev, STDIN, EV_TIMEOUT, array('Daemon_TimedEvent', 'eventCall'), array($id));
@@ -47,7 +49,18 @@ class Daemon_TimedEvent{
 		}
 	}
 	public static function add($cb, $timeout = null, $id = null) {
-	 return new self($cb, $timeout, $id);
+		$obj = new self($cb, $timeout, $id);
+		return $obj->id;
+	}
+	public static function setTimeout($id,$timeout = NULL) {
+		if (isset(Daemon::$process->timeouts[$id])) {
+			Daemon::$process->timeouts[$id]->timeout($timeout);
+			return true;
+		}
+		return false;
+	}
+	public static function remove($id) {
+		unset(Daemon::$process->timeouts[$id]);
 	}
 	public function timeout($timeout = null)	{
 	 if ($timeout !== null) {
@@ -59,7 +72,7 @@ class Daemon_TimedEvent{
 		$this->finished = true;
 	}
 	public function __destruct() {
-	 event_del($this->ev);
-	 event_free($this->ev);
+		event_del($this->ev);
+		event_free($this->ev);
 	}
 }

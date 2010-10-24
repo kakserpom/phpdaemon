@@ -10,15 +10,23 @@ class ExampleBroadcastCall extends AppInstance {
 	
 	public $enableRPC = true;
 	
-	public function hello($arg0) {
+	public function hello($pid) {
 	
-		$this->log('Hello '.$arg0.'!');
+		Daemon::$process->log('I got hello from '.$pid.'!');
 	
 	}
 	
 	public function onReady() {
+		 
+		$appInstance = $this;
 		
-		$this->broadcastCall('hello',array('world'));
+		Daemon_TimedEvent::add(function($event) use ($appInstance) {
+			
+			$appInstance->broadcastCall('hello',array(Daemon::$process->pid));
+			
+			$event->finish();
+			
+		}, pow(10,6) * 2);
 		
 	}
 }
