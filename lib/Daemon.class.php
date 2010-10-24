@@ -181,17 +181,17 @@ class Daemon {
 			Daemon::$config[$k] = $args[$k];
 		}
 
+		if (!Daemon::$config->loadCmdLineArgs($args)) {
+			$error = TRUE;
+		}
+
 		if (
 			isset(Daemon::$config->configfile->value) 
 			&& !Daemon::loadConfig(Daemon::$config->configfile->value)
 		) {
 			$error = TRUE;
 		}
-
-		if (!Daemon::$config->loadCmdLineArgs($args)) {
-			$error = TRUE;
-		}
-
+		
 		if (!isset(Daemon::$config->path->value)) {
 			exit('\'path\' is not defined');
 		}

@@ -33,7 +33,7 @@ class Daemon_MasterThread extends Thread {
 		$this->workers = new ThreadCollection;
 		
 		Daemon::$appResolver = require Daemon::$config->path->value;
-		Daemon::$appResolver->getInstanceByAppName('DaemonManager');
+		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		Daemon::$appResolver->preload(true); 
 
 		$this->spawnWorkers(min(
@@ -41,13 +41,14 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->maxworkers->value
 		));
 
-		$this->fileWatcherTimedEvent = new Daemon_TimedEvent(function() {
-			$self = Daemon::$process;
-			$self->fileWatcher->watch();
-			$self->fileWatcherTimedEvent->timeout();
-		}, pow(10,6) * 1);
+		Daemon_TimedEvent::add(function($event) {
+			
+			Daemon::$process->fileWatcher->watch();
+			$event->timeout();
+			
+		}, pow(10,6) * 1, 'fileWatcherTimedEvent');
 				
-		$this->MPMTimedEvent = new Daemon_TimedEvent(function() {
+		Daemon_TimedEvent::add(function($event) {
 			$self = Daemon::$process;
 
 			static $c = 0;
@@ -101,8 +102,8 @@ class Daemon_MasterThread extends Thread {
 			}
 			
 			
-			$self->MPMTimedEvent->timeout();
-		}, pow(10,6) * Daemon::$config->mpmdelay->value);
+			$event->timeout();
+		}, pow(10,6) * Daemon::$config->mpmdelay->value, 'MPMTimedEvent');
 		
 		
 

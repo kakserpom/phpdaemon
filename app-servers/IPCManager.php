@@ -2,11 +2,11 @@
 
 /**
  * @package Applications
- * @subpackage DaemonManager
+ * @subpackage IPCManager
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class DaemonManager extends AsyncServer {
+class IPCManager extends AsyncServer {
 
 	public $sessions = array();  // Active sessions
 
@@ -37,6 +37,7 @@ class DaemonManager extends AsyncServer {
 			$this->enableSocketEvents();
 		}
 	}
+	
 	/**
 	 * Called when the worker is ready to go
 	 * @todo -> protected?
@@ -58,9 +59,31 @@ class DaemonManager extends AsyncServer {
 			return;
 		}
 		
-		return $this->sessions[$connId] = new DaemonManagerWorkerSession($connId, $this);
+		return $this->sessions[$connId] = new IPCManagerWorkerSession($connId, $this);
 
   }
+  
+  public function sendPacket($packet) {
+		if ($c = $this->getConnection()) {
+			$c->sendPacket($packet);
+		}
+  }
+  
+  
+  public function broadcastCall($appInstance, $method, $args = array(), $cb = NULL) {
+		if ($c = $this->getConnection()) {
+			
+			$c->sendPacket(array(
+					'op' => 'broadcastCall',
+					'appfullname' => $appInstance,
+					'method' => $method,
+					'args' => $args
+			));
+		}
+  }
+  
+		
+		
 	/**
 	 * Called when new connection is accepted
 	 * @param integer Connection's ID
@@ -68,12 +91,12 @@ class DaemonManager extends AsyncServer {
 	 * @return void
 	 */
 	protected function onAccepted($connId, $addr) {
-		$this->sessions[$connId] = new DaemonManagerMasterSession($connId, $this);
+		$this->sessions[$connId] = new IPCManagerMasterSession($connId, $this);
 	}
 	
 }
 
-class DaemonManagerMasterSession extends SocketSession {
+class IPCManagerMasterSession extends SocketSession {
 	public $spawnid;
 
 	/**
@@ -88,11 +111,20 @@ class DaemonManagerMasterSession extends SocketSession {
 	
 	 if ($p['op'] === 'start')
 	 {
+	 Daemon::log(posix_getpid().' caught start '.$p['spawnid']);
 	  $this->spawnid = $p['spawnid'];
 	  Daemon::$process->workers->threads[$this->spawnid]->connection = $this;
 	  Daemon::$process->updatedWorkers();
 	 }
-	 elseif ($p['op'] == 'addIncludedFiles') {
+	 elseif ($p['op'] === 'broadcastCall') {
+	 	$p['op'] = 'call';
+		foreach (Daemon::$process->workers->threads as $worker) {
+			if (isset($worker->connection) && $worker->connection) {
+					$worker->connection->sendPacket($p);
+				}
+		}
+	 }
+	 elseif ($p['op'] === 'addIncludedFiles') {
 		foreach ($p['files'] as $file) {
 			Daemon::$process->fileWatcher->addWatch($file,$this->spawnid);
 		}
@@ -123,7 +155,7 @@ class DaemonManagerMasterSession extends SocketSession {
 		}
 	}
 }
-class DaemonManagerWorkerSession extends SocketSession {
+class IPCManagerWorkerSession extends SocketSession {
 
 	/**
 	 * Called when the session constructed
@@ -131,6 +163,7 @@ class DaemonManagerWorkerSession extends SocketSession {
 	 */
 	public function init() {
 		
+		//Daemon::log(Debug::backtrace());
 		$this->sendPacket(array(
 			'op' => 'start',
 			'pid' => Daemon::$process->pid,
@@ -148,7 +181,24 @@ class DaemonManagerWorkerSession extends SocketSession {
 			Daemon::$appResolver->appInstantiate($app,$name);
 		}
 		elseif ($p['op'] === 'importFile') {
-			runkit_import($p['path'], RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
+
+			$path = $p['path'];
+			Daemon_TimedEvent::add(function($event) use ($path) {
+				$self = Daemon::$process;
+			
+				runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
+				
+				$event->finish();
+			}, 5);
+		}
+		elseif ($p['op'] === 'call') {
+			if (strpos($p['appfullname'],'-') === false) {
+				$p['appfullname'] .= '-';
+			}
+			list($app, $name) = explode('-', $p['appfullname'], 2);
+			if ($app = Daemon::$appResolver->getInstanceByAppName($app,$name)) {
+				$app->RPCall($p['method'],$p['args']);
+			}
 		}
 	}
 	public function sendPacket($p) {

@@ -56,6 +56,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 
+		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		Daemon::$appResolver->preload();
 	
 		foreach (Daemon::$appInstances as $app) {
@@ -74,7 +75,7 @@ class Daemon_WorkerThread extends Thread {
 		 * @description Invokes the AppInstance->readConn() method for every updated connection in pool. readConn() reads new data from the buffer.
 		 * @return void
 		 */
-		$this->readPoolEvent = new Daemon_TimedEvent(function() {
+		$this->readPoolEvent = Daemon_TimedEvent::add(function($event) {
 			$self = Daemon::$process;
 			
 			foreach ($self->readPoolState as $connId => $state) {
@@ -90,11 +91,11 @@ class Daemon_WorkerThread extends Thread {
 			}
 			
 			if (sizeof($self->readPoolState) > 0) {
-				$self->readPoolEvent->timeout();
+				$event->timeout();
 			}
-		}, pow(10,6) * 0.005);
+		}, pow(10,6) * 0.005, 'readPoolEvent');
 		
-		$this->checkStateTimedEvent = new Daemon_TimedEvent(function() {
+		Daemon_TimedEvent::add(function($event) {
 			$self = Daemon::$process;
 			
 			if ($self->checkState() !== TRUE) {
@@ -104,11 +105,11 @@ class Daemon_WorkerThread extends Thread {
 				return;
 			}
 			
-			$self->checkStateTimedEvent->timeout();
-		}, pow(10,6) * 1);
+			$event->timeout();
+		}, pow(10,6) * 1,	'checkStateTimedEvent');
 		
 		if (Daemon::$config->autoreload->value > 0) {
-			$this->watchIncludedFilesTimedEvent = new Daemon_TimedEvent(function() {
+			Daemon_TimedEvent::add(function($event) {
 				$self = Daemon::$process;
 					
 				static $n = 0;
@@ -117,13 +118,11 @@ class Daemon_WorkerThread extends Thread {
 				$s = sizeof($inc);
 				if ($s > $n) {
 					$slice = array_slice($inc,$n);
-					if ($c = Daemon::$appResolver->getInstanceByAppName('DaemonManager')->getConnection()) {
-						$c->sendPacket(array('op' => 'addIncludedFiles', 'files' => $slice));
-					}
+					Daemon::$process->IPCManager->sendPacket(array('op' => 'addIncludedFiles', 'files' => $slice));
 					$n = $s;
 				}
-				$self->watchIncludedFilesTimedEvent->timeout();
-			}, pow(10,6) * Daemon::$config->autoreload->value);
+				$event->timeout();
+			}, pow(10,6) * Daemon::$config->autoreload->value, 'watchIncludedFilesTimedEvent');
 		}
 			
 
@@ -489,9 +488,9 @@ class Daemon_WorkerThread extends Thread {
 		
 		$n = 0;
 		
-		unset($this->checkStateTimedEvent);
+		unset($this->timeouts['checkStateTimedEvent']);
 		
-		$this->checkReloadReady = new Daemon_TimedEvent(function() 	{
+		Daemon_TimedEvent::add(function($event) 	{
 			$self = Daemon::$process;
 				
 			$self->reloadReady = $self->appInstancesReloadReady();
@@ -500,8 +499,8 @@ class Daemon_WorkerThread extends Thread {
 				$self->reloadReady = $self->reloadReady && (microtime(TRUE) > $self->reloadTime);
 			}
 				
-			$self->checkReloadReady->timeout();
-		}, pow(10,6));
+			$event->timeout();
+		}, pow(10,6), 'checkReloadReady');
 		
 		while (!$this->reloadReady) {
 			event_base_loop($this->eventBase);

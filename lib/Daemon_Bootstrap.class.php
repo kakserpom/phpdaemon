@@ -93,11 +93,11 @@ class Daemon_Bootstrap {
 			Daemon::$config->configfile->setHumanValue($args['configfile']);
 		}
 
-		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
+		if (!Daemon::$config->loadCmdLineArgs($args)) {
 			$error = TRUE;
 		}
-
-		if (!Daemon::$config->loadCmdLineArgs($args)) {
+		
+		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
 			$error = TRUE;
 		}
 
@@ -236,7 +236,7 @@ class Daemon_Bootstrap {
 			&& isset(Daemon::$config->maxworkers->value)
 		) {
 			if (Daemon::$config->minworkers->value > Daemon::$config->maxworkers->value) {
-				Daemon::$config->maxworkers->value = Daemon::$config->minworkers->value;
+				Daemon::$config->minworkers->value = Daemon::$config->maxworkers->value;
 			}
 		}
 		

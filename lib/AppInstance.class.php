@@ -62,6 +62,38 @@ class AppInstance {
 	protected function getConfigDefaults() {
 		return false;
 	}
+	
+	/**
+	 * Function handles incoming Remote Procedure Calls
+	 * You can override it
+	 * @param string Method name.
+	 * @param array Arguments.
+	 * @return mixed Result
+	 */
+	public function RPCall($method, $args) {
+		if ($this->enableRPC && is_callable($this, $method)) {
+			return call_user_func_array(array($this, $method), $args);
+		}
+	}
+	
+	
+	/**
+	 * Send broadcast call.
+	 * You can override it
+	 * @param string Method name.
+	 * @param array Arguments.
+	 * @param mixed Callback.
+	 * @return boolean Success.
+	 */
+	public function broadcastCall($method, $args = array(), $cb = NULL) {
+		return Daemon::$process->IPCManager->broadcastCall(
+					get_class($this) . ($this->name !== '' ? '-' . $this->name : ''),
+					$method,
+					$args,
+					$cb
+		);
+	}
+	
 
  	/**
 	 * Process default config

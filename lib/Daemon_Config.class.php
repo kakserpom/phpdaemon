@@ -67,7 +67,7 @@ class Daemon_Config implements ArrayAccess {
 	public function __construct() {
 		static $sizes = array('maxmemoryusage');
 		static $times = array('maxidle', 'autoreload', 'mpmdelay');
-		static $numbers = array('maxrequests', 'autogc');
+		static $numbers = array('maxrequests', 'autogc','minworkers','maxworkers','minspareworkers','maxspareworkers','masterpriority');
 
 		foreach ($this as $name => $value) {
 			if (in_array($name, $sizes)) {
