@@ -108,7 +108,7 @@ class Daemon {
 
 		Daemon::$initservervar = $_SERVER;
 		Daemon::$masters = new ThreadCollection;
-		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate->value, Daemon::$shm_wstate_size, 'wstate');
+		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->pidfile->value, Daemon::$shm_wstate_size, 'wstate');
 		Daemon::openLogs();
 	}
 	

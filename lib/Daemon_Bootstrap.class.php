@@ -258,7 +258,7 @@ class Daemon_Bootstrap {
 			) {
 				echo 'Uptime: ' . Daemon::date_period_text(filemtime(Daemon::$config->pidfile->value), time()) . "\n";
 
-				Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->ipcwstate->value, 0, 'wstate', FALSE);
+				Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->pidfile->value, 0, 'wstate', FALSE);
 
 				$stat = Daemon::getStateOfWorkers();
 
