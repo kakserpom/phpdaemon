@@ -18,7 +18,7 @@ class IPCManager extends AsyncServer {
 	protected function getConfigDefaults() {
 		return array(
 			// listen to
-			'mastersocket'     => 'unix:/tmp/phpDaemon-master.sock',
+			'mastersocket'     => 'unix:/tmp/phpDaemon-master-%x.sock',
 			'mastersocketport' => 0,
 		);
 	}
@@ -31,7 +31,7 @@ class IPCManager extends AsyncServer {
 		if (Daemon::$process instanceof Daemon_MasterThread)
 		{
 			$this->bindSockets(
-				$this->config->mastersocket->value,
+				sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value)),
 				$this->config->mastersocketport->value
 			);
 			$this->enableSocketEvents();
@@ -54,7 +54,7 @@ class IPCManager extends AsyncServer {
   {
 		if (sizeof($this->sessions)) {return current($this->sessions);}
 		
-		$connId = $this->connectTo($this->config->mastersocket->value, $this->config->mastersocketport->value);
+		$connId = $this->connectTo(sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value)), $this->config->mastersocketport->value);
 		if (!$connId) {
 			return;
 		}

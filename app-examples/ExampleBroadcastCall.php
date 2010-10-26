@@ -23,7 +23,7 @@ class ExampleBroadcastCall extends AppInstance {
 		Daemon_TimedEvent::add(function($event) use ($appInstance) {
 			
 			$appInstance->broadcastCall('hello',array(Daemon::$process->pid));
-			
+
 			$event->finish();
 			
 		}, pow(10,6) * 2);
