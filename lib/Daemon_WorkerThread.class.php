@@ -136,6 +136,8 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function overrideNativeFuncs() {
 		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
+			
+			
 			runkit_function_rename('header', 'header_native');
 
 			function header() { 
@@ -146,6 +148,30 @@ class Daemon_WorkerThread extends Thread {
 					return call_user_func_array(array(Daemon::$req, 'header'), func_get_args());
 				}
 			}
+			
+			runkit_function_rename('is_uploaded_file', 'is_uploaded_file_native');
+
+			function is_uploaded_file() { 
+				if (
+					Daemon::$req
+					&& Daemon::$req instanceof HTTPRequest
+				) {
+					return call_user_func_array(array(Daemon::$req, 'isUploadedFile'), func_get_args());
+				}
+			}
+			
+			
+			runkit_function_rename('move_uploaded_file', 'move_uploaded_file_native');
+
+			function move_uploaded_file() { 
+				if (
+					Daemon::$req
+					&& Daemon::$req instanceof HTTPRequest
+				) {
+					return call_user_func_array(array(Daemon::$req, 'moveUploadedFile'), func_get_args());
+				}
+			}			
+
 
 			runkit_function_rename('headers_sent', 'headers_sent_native');
 

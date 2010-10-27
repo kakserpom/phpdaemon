@@ -7,7 +7,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com> 
  */
-class Daemon_TimedEvent{
+class Daemon_TimedEvent {
 	
 	public $id;
 	public $ev;

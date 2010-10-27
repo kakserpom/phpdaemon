@@ -675,9 +675,41 @@ class HTTPRequest extends Request {
 		} while ($continue);
 	}
 
+			
 	/**
-	 * Read request body from file
-	 * @todo from what file? Need extended description
+	 * Tells whether the file was uploaded via HTTP POST
+	 * @param string The filename being checked.
+	 * @return void
+	 */
+		public function isUploadedFile($filename) {
+			if (strpos($filename,ini_get('upload_tmp_dir').'/') !== 0) {
+				return false;
+			}
+			foreach ($this->attrs->files as $file) {
+				if ($file['tmp_name'] === $filename) {
+					goto found;
+				}
+			}
+			return false;
+			found:
+			return file_exists($file['tmp_name']);
+	 }
+		
+	/**
+	 *  Moves an uploaded file to a new location
+	 * @param string The filename of the uploaded file.
+	 * @param string The destination of the moved file.
+	 * @return void
+	 */
+		public function moveUploadedFile($filename,$dest) {
+			if (!$this->isUploadedFile($filename)) {
+			 return false;
+			}
+			return rename($filename,$dest);
+	 }
+		
+	/**
+	 * Read request body from the file given in REQUEST_BODY_FILE parameter.
 	 * @return void
 	 */
 	public function readBodyFile() {
