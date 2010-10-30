@@ -524,8 +524,12 @@ class Daemon_WorkerThread extends Thread {
 			if ($self->reload === TRUE) {
 				$self->reloadReady = $self->reloadReady && (microtime(TRUE) > $self->reloadTime);
 			}
-				
-			$event->timeout();
+			if (!$self->reloadReady) {
+				$event->timeout();
+			}
+			else	{
+				event_base_loopexit($self->eventBase);
+			}
 		}, pow(10,6), 'checkReloadReady');
 		
 		while (!$this->reloadReady) {
