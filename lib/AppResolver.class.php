@@ -47,12 +47,12 @@ class AppResolver {
 	 * @param string Application name.	 
 	 * @return object AppInstance.
 	 */
-	public function getInstanceByAppName($appName,$name =	'') {
+	public function getInstanceByAppName($appName, $name = '') {
 		if (!isset(Daemon::$appInstances[$appName][$name])) {
-			return $this->appInstantiate($appName,$name);
+			return $this->appInstantiate($appName, $name);
 		}
 
-		return Daemon::$appInstances[$appName][$name !== ''?$name : array_rand(Daemon::$appInstances[$appName])];
+		return Daemon::$appInstances[$appName][$name !== '' ? $name : array_rand(Daemon::$appInstances[$appName])];
 	}
 
 	/**
@@ -61,10 +61,15 @@ class AppResolver {
 	 * @param string Instance name
 	 * @return string Path.
 	 */
-	public function getAppPath($app,$name) {
-		$fn = $app.($name !== ''?'-'.$name:'');
-		if (isset(Daemon::$config->{$fn}->path->value)) {return Daemon::$config->{$fn}->path->value;}
-		$files = glob(sprintf(Daemon::$config->appfilepath->value,$app), GLOB_BRACE);
+	public function getAppPath($app, $name) {
+		$fn = $app . ($name !== '' ? '-' . $name : '');
+
+		if (isset(Daemon::$config->{$fn}->path->value)) {
+			return Daemon::$config->{$fn}->path->value;
+		}
+
+		$files = glob(sprintf(Daemon::$config->appfilepath->value, $app), GLOB_BRACE);
+
 		return isset($files[0]) ? $files[0] : false;
  	}
 
@@ -79,10 +84,10 @@ class AppResolver {
 			Daemon::$appInstances[$app] = array();
 		}
 
-		if (class_exists($app)) {
+		// be carefull, class_exists is case insensitive
+		if (in_array($app, get_declared_classes())) {
 			$appInstance = new $app($name);
-		}
-		else {
+		} else {
 			$p = $this->getAppPath($app,$name);
 
 			if (
@@ -95,15 +100,20 @@ class AppResolver {
 
 			$appInstance = include $p;
 		}
-		if (!is_object($appInstance)) {
-			if (class_exists($app)) {
-				$appInstance = new $app($name);
-			}
+
+		if (
+			!is_object($appInstance)
+			&& in_array($app, get_declared_classes())
+		) {
+			$appInstance = new $app($name);
 		}
+
 		if (!is_object($appInstance)) {
-					Daemon::log('appInstantiate(' . $app . ') failed. Class not exists.');
-					return FALSE;
+			Daemon::log('appInstantiate(' . $app . ') failed. Class not exists.');
+			return FALSE;
 		}
+
+		Daemon::$appInstances[$app][$name] = $appInstance;
 
 		return $appInstance;
 	}
