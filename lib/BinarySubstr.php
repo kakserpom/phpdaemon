@@ -10,7 +10,7 @@
 
 // @todo move to some class
 
-if (ini_get('mbstring.func_overload') >= 2) {
+if (ini_get('mbstring.func_overload') & 2) {
 	function binarySubstr($s, $p, $l = 0xFFFFFFF) {
 		return substr($s, $p, $l, 'ASCII');
 	}
