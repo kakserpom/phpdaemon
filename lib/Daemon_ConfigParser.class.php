@@ -69,6 +69,8 @@ class Daemon_ConfigParser {
 						if ($cfg->getNextChar() === $q) {
 							$str .= $q;
 							++$cfg->p;
+						} else {
+							$str .= $c;
 						}
 					} else {
 						$str .= $c;
@@ -103,7 +105,7 @@ class Daemon_ConfigParser {
 					for (;$cfg->p < $cfg->len; ++$cfg->p) {
 						$c = $cfg->getCurrentChar();
 
-						if (ctype_space($c)) {
+						if (ctype_space($c) || $c === '=') {
 							if ($elTypes[$i] !== NULL)	{
 								++$i;
 								$elTypes[$i] = NULL;

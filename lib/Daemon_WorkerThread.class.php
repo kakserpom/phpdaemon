@@ -14,7 +14,18 @@ class Daemon_WorkerThread extends Thread {
 	public $reloadTime = 0;
 	private $reloadDelay = 2;
 	public $reloaded = FALSE;
+
+	
+	/**	
+	 * Worker's connnections (FDs) pool 
+	 * @var string	
+	 */	
 	public $pool = array();
+
+	/**	
+	 * Map connnection id to application which created this connection
+	 * @var string	
+	 */	
 	public $poolApp = array();
 	public $connCounter = 0;
 	public $reqCounter = 0;
