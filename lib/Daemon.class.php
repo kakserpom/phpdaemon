@@ -74,7 +74,7 @@ class Daemon {
 
 		// currently re-using listener ports across multiple processes is available
 		// only in BSD flavour operating systems via SO_REUSEPORT socket option
-		Daemon::$reusePort = preg_match("~BSD~i", php_uname('s')) !== FALSE;
+		Daemon::$reusePort = (boolean) preg_match("~BSD~i", php_uname('s'));
 		
 		if (Daemon::$reusePort)
 		if (!defined("SO_REUSEPORT"))
