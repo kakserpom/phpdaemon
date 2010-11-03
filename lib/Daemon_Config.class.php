@@ -111,41 +111,11 @@ class Daemon_Config implements ArrayAccess {
 	public function offsetGet($offset) {
 		$offset = $this->getRealOffsetName($offset);
 
-		if (substr($offset, 0, 4) == 'mod-') {
-			$e = explode('-', $offset, 3);
-			$k = $e[1];
-
-			if (!isset($this->{$k})) {
-				$this->{$k} = new DaemonConfigSection;
-			}
-
-			if ($this->{$k} instanceof Daemon_ConfigSection) {
-					$this->{$k}->{$e[2]} = $value;
-			}
-
-			return;
-		}
-
 		return isset($this->{$offset}) ? $this->{$offset}->value : NULL;
 	}
 	
 	public function offsetSet($offset,$value) {
 		$offset = $this->getRealOffsetName($offset);
-
-		if (substr($offset, 0, 4) == 'mod-') {
-			$e = explode('-', $offset, 3);
-			$k = $e[1];
-			
-			if (!isset($this->{$k})) {
-				$this->{$k} = new DaemonConfigSection;
-			}
-
-			if ($this->{$k} instanceof Daemon_ConfigSection) {
-					$this->{$k}->{$e[2]} = $value;
-			}
-
-			return;
-		}
 
 		$this->{$offset} = $value;
 	}
