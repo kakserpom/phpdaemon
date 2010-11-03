@@ -56,7 +56,7 @@ class Daemon_MasterThread extends Thread {
 			++$c;
 			
 			if ($c > 0xFFFFF) {
-				$c = 0;
+				$c = 1;
 			}
 				
 			if (($c % 10 == 0)) {
