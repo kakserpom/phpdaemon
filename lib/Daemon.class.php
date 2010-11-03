@@ -56,6 +56,7 @@ class Daemon {
 	public static $shm_wstate;
 	private static $shm_wstate_size = 5120;
 	public static $useSockets;
+	public static $reusePort;
 	public static $compatMode = FALSE;
 	public static $runName = 'phpdaemon';
 	public static $config;
@@ -70,6 +71,14 @@ class Daemon {
 		Daemon::$config = new Daemon_Config;
 
 		Daemon::$useSockets = version_compare(PHP_VERSION, '5.3.1', '>=');
+
+		// currently re-using listener ports across multiple processes is available
+		// only in BSD flavour operating systems via SO_REUSEPORT socket option
+		Daemon::$reusePort = preg_match("~BSD~i", php_uname('s')) !== FALSE;
+		
+		if (Daemon::$reusePort)
+		if (!defined("SO_REUSEPORT"))
+		    define("SO_REUSEPORT", 0x200);	// FIXME: this is a BSD-only hack
 	}
 
 	/**

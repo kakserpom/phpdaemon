@@ -86,8 +86,8 @@ class FlashPolicySession extends SocketSession {
 		}
 		elseif (
 			(strlen($this->buf) > 64) 
-			|| (strpos($this->buf, "\xff\xf4\xff\xfd\x06") !== FALSE) 
-			|| (strpos($this->buf, "\xff\xec") !== FALSE)
+			|| (strpos($this->buf, "\xff\xf4\xff\xfd\x06") !== FALSE)  // telnet ^C code
+			|| (strpos($this->buf, "\xff\xec") !== FALSE)		// telnet EOF code
 		) {
 			$this->finish();
 		}

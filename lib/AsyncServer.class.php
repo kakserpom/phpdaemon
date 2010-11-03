@@ -163,15 +163,9 @@ class AsyncServer extends AppInstance {
 						continue;
 					}
 
-					if ($reuse) {
-						if (!@socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
-							$errno = socket_last_error();
-							Daemon::log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+					// SO_REUSEADDR is meaningless in AF_UNIX context
 
-							continue;
-						}
-					}
-
+					
 					if (!@socket_bind($sock, $path)) {
 						$errno = socket_last_error();
 						Daemon::log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
@@ -257,6 +251,14 @@ class AsyncServer extends AppInstance {
 						if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
 							$errno = socket_last_error();
 							Daemon::log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+
+							continue;
+						}
+
+						if (Daemon::$reusePort)
+						if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
+							$errno = socket_last_error();
+							Daemon::log(get_class($this) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
 							continue;
 						}
@@ -539,7 +541,7 @@ class AsyncServer extends AppInstance {
 		if ($this->directReads) {
 			$ev = event_new();
 
-			if (!event_set($ev, Daemon::$process->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), $connId)) {
+			if (!event_set($ev, Daemon::$process->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), array($connId))) {
 				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on accepted socket #' . $connId);
 				return;
 			}
@@ -761,7 +763,7 @@ class AsyncServer extends AppInstance {
 				if ($read === FALSE) {
 					$no = socket_last_error(Daemon::$process->pool[$connId]);
 
-					if ($no !== 11) {
+					if ($no !== 11) {  // Resource temporarily unavailable
 						Daemon::log(get_class($this) . '::' . __METHOD__ . ': connId = ' . $connId . '. Socket error. (' . $no . '): ' . socket_strerror($no));
 						$this->onFailureEvent($connId, array());
 					}
