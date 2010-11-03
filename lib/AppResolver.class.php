@@ -56,6 +56,35 @@ class AppResolver {
 	}
 
 	/**
+	 * Check if instance of application was enabled during preload.
+	 * @param string Application name.	 
+	 * @return bool
+	 */
+	public function checkAppEnabled($appName, $name = '') {
+		if (!isset(Daemon::$appInstances[$appName])) {
+			return false;
+		}
+
+		if (!empty($name) && !isset(Daemon::$appInstances[$appName][$name])) {
+			return false;
+		}
+
+		$fullname = $this->getAppFullname($appName, $name);
+
+		return !isset(Daemon::$config->{$fullname}->enabled) ? false : !!Daemon::$config->{$fullname}->enabled->value;
+	}
+
+	/**
+	 * Resolve full name of application by its class and name
+	 * @param string Application class.	 
+	 * @param string Application name.
+	 * @return string 
+	 */
+	public function getAppFullname($appName, $name = '') {
+		return $appName . ($name !== '' ? '-' . $name : '');
+	}
+
+	/**
 	 * Gets path to application's PHP-file.	
 	 * @param string Application name
 	 * @param string Instance name

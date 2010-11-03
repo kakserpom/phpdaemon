@@ -40,6 +40,8 @@ class HTTP extends AsyncServer {
 			'chunksize' => new Daemon_ConfigEntrySize('8k'),
 			// disabled by default
 			'enable'     => 0
+
+//			'responder' => default app
 		);
 	}
 
@@ -168,6 +170,8 @@ class HTTP extends AsyncServer {
 		}
 
 		if ($this->poolState[$connId]['state'] === 0) {
+
+			if (Daemon::$appResolver->checkAppEnabled('FlashPolicy'))
 			if (strpos($buf, '<policy-file-request/>') !== FALSE) {
 				if (
 					($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) 
@@ -228,6 +232,7 @@ class HTTP extends AsyncServer {
 		if ($this->poolState[$connId]['state'] === 1) {
 			$req->attrs->inbuf .= $buf;
 
+			if (Daemon::$appResolver->checkAppEnabled('FlashPolicy'))
 			if (strpos($req->attrs->inbuf, '<policy-file-request/>') !== FALSE) {
 				if (
 					($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) 
