@@ -443,7 +443,7 @@ class AsyncServer extends AppInstance {
 		if ($this->directReads) {
 			$ev = event_new();
 
-			if (!event_set($ev, Daemon::$process->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), $connId)) {
+			if (!event_set($ev, Daemon::$process->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), array($connId))) {
 				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on accepted socket #' . $connId);
 
 				return;
@@ -630,7 +630,7 @@ class AsyncServer extends AppInstance {
 	 * @return void
 	 */
 	public function onReadEvent($stream, $arg) {
-		$connId = is_int($arg) ? array_search($stream, Daemon::$process->pool, TRUE) : $arg[0];
+		$connId = is_array($arg) ? $arg[0] : array_search($stream, Daemon::$process->pool, TRUE);
 
 		if (Daemon::$config->logevents->value) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $connId . ') invoked. ' . Debug::dump(Daemon::$process->pool[$connId]));
