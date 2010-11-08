@@ -162,8 +162,12 @@ class AppResolver {
 		else {
 			$appName = $defaultApp;
 		}
+		if (strpos($appName,'-') === false) {
+			$appName .= '-';
+		}
+		list($app, $name) = explode('-', $appName, 2);
 
-		$appInstance = $this->getInstanceByAppName($appName);
+		$appInstance = $this->getInstanceByAppName($app,$name);
 
 		if (!$appInstance) {
 			return $req;

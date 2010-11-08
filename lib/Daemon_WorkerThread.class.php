@@ -217,6 +217,8 @@ class Daemon_WorkerThread extends Thread {
 				}
 			}
 		
+			register_shutdown_function(array($this,'shutdown'));
+
 			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
 
 			function register_shutdown_function($cb) {
@@ -326,7 +328,6 @@ class Daemon_WorkerThread extends Thread {
 				Daemon::log('Couldn\'t change directory to \'' . Daemon::$config->cwd->value . '.');
 			}
 		}
-		register_shutdown_function(array($this,'shutdown'));
 	}
 	
 	/**
