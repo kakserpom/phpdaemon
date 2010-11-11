@@ -71,7 +71,7 @@ class AppResolver {
 
 		$fullname = $this->getAppFullname($appName, $name);
 
-		return !isset(Daemon::$config->{$fullname}->enabled) ? false : !!Daemon::$config->{$fullname}->enabled->value;
+		return !isset(Daemon::$config->{$fullname}->enable) ? false : !!Daemon::$config->{$fullname}->enable->value;
 	}
 
 	/**

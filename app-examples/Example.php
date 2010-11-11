@@ -64,6 +64,9 @@ class ExampleRequest extends HTTPRequest {
 		$stime = microtime(TRUE);
 		$this->header('Content-Type: text/html; charset=utf-8');
 		
+		var_dump(is_uploaded_file(
+			$_FILES['myfile']['tmp_name']
+		));
 		$this->registerShutdownFunction(function() {
 ?></html><?php
 		});

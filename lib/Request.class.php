@@ -296,9 +296,11 @@ class Request {
 	 * @return void
 	 */
 	public function wakeup() {
-		$this->state = Request::STATE_ALIVE;
-		event_del($this->ev);
-		event_add($this->ev, 1);
+		if (is_resource($this->ev)) {
+			$this->state = Request::STATE_ALIVE;
+			event_del($this->ev);
+			event_add($this->ev, 1);
+		}
 	}
 	
 	/**
@@ -449,11 +451,14 @@ class Request {
 
 	public function postFinishHandler() { }
 	
+	public function onDestruct() {}
+	
 	public function __destruct() {
 		if (is_resource($this->ev)) {
 			event_del($this->ev);
 			event_free($this->ev);
 		}
+		$this->onDestruct();
 	}
 }
 
