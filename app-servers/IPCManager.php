@@ -123,6 +123,15 @@ class IPCManagerMasterSession extends SocketSession {
 				}
 			}
 		}
+		elseif ($p['op'] === 'singleCall') {
+			$p['op'] = 'call';
+			foreach (Daemon::$process->workers->threads as $worker) {
+				if (isset($worker->connection) && $worker->connection) {
+					$worker->connection->sendPacket($p);
+					break;
+				}
+			}
+		}
 		elseif ($p['op'] === 'addIncludedFiles') {
 			foreach ($p['files'] as $file) {
 				Daemon::$process->fileWatcher->addWatch($file,$this->spawnid);

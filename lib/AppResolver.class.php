@@ -142,8 +142,6 @@ class AppResolver {
 			return FALSE;
 		}
 
-		Daemon::$appInstances[$app][$name] = $appInstance;
-
 		return $appInstance;
 	}
 

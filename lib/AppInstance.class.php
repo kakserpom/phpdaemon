@@ -26,6 +26,8 @@ class AppInstance {
 				
 		$fullname = get_class($this) . ($this->name !== '' ? '-' . $this->name : '');
 		
+		Daemon::$appInstances[get_class($this)][$this->name] = $this;
+		
 		if (!isset(Daemon::$config->{$fullname})) {
 			Daemon::$config->{$fullname} = new Daemon_ConfigSection;
 		} else {
