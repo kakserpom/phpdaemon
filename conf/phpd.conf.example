@@ -11,6 +11,8 @@ max-requests	1m;
 max-idle	0;
 
 FastCGI {
+	privileged;
+
 	## your config
 }
 
