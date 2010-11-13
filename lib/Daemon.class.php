@@ -418,7 +418,15 @@ class Daemon {
 	 * @param string message.
 	 * @return string message
 	 */
-	public static function log($msg) {
+	public static function log() {
+		$args = func_get_args();
+		if (sizeof($args) == 1) {
+			$msg = is_scalar($args[0])?$args[0]:Debug::dump($msg);
+		}
+		else {
+			$msg = Debug::dump($args);
+		}
+	
 		$mt = explode(' ', microtime());
 
 		if (
