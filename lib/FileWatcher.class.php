@@ -90,6 +90,12 @@ class FileWatcher {
 		 	static $hash = array();
 	
 			foreach (array_keys($this->files) as $path) {
+				if (!file_exists($path)) {
+					// file can be deleted
+					unset($this->files[$path]);
+					continue;
+				}
+
 				$mt = filemtime($path);
 		
 				if (
