@@ -89,10 +89,7 @@ class HTTPRequest extends Request {
 		
 		$this->attrs = $req->attrs;
 
-		if (
-			isset($this->upstream->expose->value) 
-			&& $this->upstream->expose->value
-		) {
+		if ($this->upstream->config->expose->value) {
 			$this->header('X-Powered-By: phpDaemon/' . Daemon::$version);
 		}
 
@@ -192,7 +189,6 @@ class HTTPRequest extends Request {
 
 			if (
 				isset($this->attrs->server['REQUEST_BODY_FILE']) 
-				&& isset($this->upstream->config->autoreadbodyfile->value)
 				&& $this->upstream->config->autoreadbodyfile->value
 			) {
 				$this->readBodyFile();
