@@ -779,8 +779,12 @@ class HTTPRequest extends Request {
 			}
 		}
 		if (isset($this->attrs->session)) {
-			session_commit();
+			$this->sessionCommit();
 		}
+	}
+	
+	public function sessionCommit() {
+		session_commit();
 	}
 
 }
