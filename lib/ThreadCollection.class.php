@@ -69,7 +69,7 @@ class ThreadCollection {
 	/**
 	 * Remove terminated threads from the collection
 	 * @param boolean Whether to check the threads using signal
-	 * @return integer Removed threads count
+	 * @return integer Rest threads count
 	 */
 	public function removeTerminated($check = FALSE) {
 		$n = 0;
@@ -83,7 +83,8 @@ class ThreadCollection {
 				)
 			) {
 				unset($this->threads[$k]);
-				$n++;
+			} else {
+				++$n;
 			}
 		}
 
