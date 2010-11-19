@@ -237,7 +237,6 @@ class MySQLClientSession extends SocketSession {
 	public $context;                    // Property holds a reference to user's object.
 	public $insertId;                   // Equals with INSERT_ID().
 	public $affectedRows;               // Number of affected rows.
-	public $finished = FALSE;           // Is this session finished?
 	
 	/**
 	 * Executes the given callback when/if the connection is handshaked

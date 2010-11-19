@@ -368,7 +368,6 @@ class MemcacheClient extends AsyncServer {
 
 class MemcacheSession extends SocketSession {
 
-	public $addr;
 	public $onResponse = array();  // stack of onResponse callbacks
 	public $state = 0;             // current state of the connection
 	public $result;                // current result
@@ -377,7 +376,6 @@ class MemcacheSession extends SocketSession {
 	public $valueSize = 0;         // size of received part of the value
 	public $error;                 // error message
 	public $key;                   // current incoming key
-	public $finished = FALSE;      // is this session finished?
 
 	/**
 	 * Called when new data received

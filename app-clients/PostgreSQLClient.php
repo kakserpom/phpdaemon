@@ -124,7 +124,6 @@ class PostgreSQLClientSession extends SocketSession {
 	public $ready         = FALSE;
 	public $parameters    = array();   // Runtime parameters from server
 	public $backendKey;
-	public $finished      = FALSE;     // Is this session finished?
 
 	/**
 	 * Called when the connection is ready to accept new data

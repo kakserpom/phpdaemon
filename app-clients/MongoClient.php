@@ -1020,7 +1020,6 @@ class MongoClientSession extends SocketSession {
 	public $password;          // Password
 	public $dbname;            // Database name
 	public $busy = FALSE;      // Is this session busy?
-	public $finished = FALSE;  // Is this session finished?
 
 	/**
 	 * Called when new data received

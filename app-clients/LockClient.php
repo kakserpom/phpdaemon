@@ -154,9 +154,6 @@ class LockClient extends AsyncServer {
 
 class LockClientSession extends SocketSession {
 
-	public $addr;               // Address
-	public $finished = FALSE;   // Is this session finished?
-
 	/**
 	 * Called when new data received
 	 * @param string New data
