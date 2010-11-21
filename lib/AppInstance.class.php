@@ -49,14 +49,12 @@ class AppInstance {
 
 		$this->init();
 
-		/** IMO this is not as necessary, because of implicit readyness raise loop in the Daemon_WorkerThread
-		// the only conflict would be if some application require at init time something initialized in the other application onReady time. anyway this is sick, so fuck the issue
-
 		if (Daemon::$process instanceof Daemon_WorkerThread) {
-			$this->onReady();
-			$this->ready = TRUE;
+			if (!$this->ready) {
+				$this->ready = true;
+				$this->onReady();
+			}
 		}
-		*/
 	}
 
 	/**
@@ -187,6 +185,15 @@ class AppInstance {
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) { }
  
+	/**
+	 * Log something
+	 * @param string - Message.
+	 * @return void
+	 */
+	public function log($message) {
+		Daemon::log(get_class($this) . ': ' . $message);
+	}
+	
 	/** 
 	 * Shutdown the application instance
 	 * @param boolean Graceful?

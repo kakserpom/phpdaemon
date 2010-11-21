@@ -332,6 +332,7 @@ class Daemon_WorkerThread extends Thread {
 	
 	/**
 	 * Log something
+	 * @param string - Message.
 	 * @return void
 	 */
 	public function log($message) {
