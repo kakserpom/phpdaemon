@@ -11,6 +11,7 @@ class SocketSession {
 
 	public $buf = '';
 	public $connId;
+	public $EOL = "\n";
 
 	// @todo make private and add new method ->getApplication()
 	public $appInstance;
@@ -47,14 +48,15 @@ class SocketSession {
 	 * @return string Line. Returns false when failed to get a line
 	 */
 	public function gets() {
-		$p = strpos($this->buf, "\n");
+		$p = strpos($this->buf, $this->EOL);
 
 		if ($p === FALSE) {
 			return FALSE;
 		}
 
-		$r = binarySubstr($this->buf, 0, $p + 1);
-		$this->buf = binarySubstr($this->buf, $p + 1);
+		$sEOL = strlen($this->EOL);
+		$r = binarySubstr($this->buf, 0, $p + $sEOL);
+		$this->buf = binarySubstr($this->buf, $p + $sEOL);
 
 		return $r;
 	}
@@ -114,7 +116,7 @@ class SocketSession {
 	 * @return boolean Success.
 	 */
 	public function writeln($s) {
-		return $this->appInstance->write($this->connId, $s . "\n");
+		return $this->appInstance->write($this->connId, $s . $this->EOL);
 	}
 
 	/**
