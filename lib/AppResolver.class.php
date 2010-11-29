@@ -33,11 +33,12 @@ class AppResolver {
 				if (strpos($fullname,'-') === false) {
 					$fullname .= '-';
 				}
-				list($app, $name) = explode('-', $fullname, 2);
-				if (isset(Daemon::$appInstances[$app][$name])) {
+				list($appName, $instance) = explode('-', $fullname, 2);
+				$appNameLower = strtolower($appName);
+				if (isset(Daemon::$appInstances[$appNameLower][$instance])) {
 					continue;
 				}
-				$this->appInstantiate($app,$name);
+				$this->appInstantiate($appName, $instance);
 			}
 		}
 	}
@@ -47,12 +48,12 @@ class AppResolver {
 	 * @param string Application name.	 
 	 * @return object AppInstance.
 	 */
-	public function getInstanceByAppName($appName, $name = '') {
-		if (!isset(Daemon::$appInstances[$appName][$name])) {
-			return $this->appInstantiate($appName, $name);
+	public function getInstanceByAppName($appName, $instance = '') {
+		$appNameLower = strtolower($appName);
+		if (!isset(Daemon::$appInstances[$appNameLower][$instance])) {
+			return $this->appInstantiate($appName, $instance);
 		}
-
-		return Daemon::$appInstances[$appName][$name !== '' ? $name : array_rand(Daemon::$appInstances[$appName])];
+		return Daemon::$appInstances[$appNameLower][$instance];
 	}
 
 	/**
@@ -60,16 +61,17 @@ class AppResolver {
 	 * @param string Application name.	 
 	 * @return bool
 	 */
-	public function checkAppEnabled($appName, $name = '') {
-		if (!isset(Daemon::$appInstances[$appName])) {
+	public function checkAppEnabled($appName, $instance = '') {
+		$appNameLower = strtolower($appName);
+		if (!isset(Daemon::$appInstances[$appNameLower])) {
 			return false;
 		}
 
-		if (!empty($name) && !isset(Daemon::$appInstances[$appName][$name])) {
+		if (!empty($instance) && !isset(Daemon::$appInstances[$appNameLower][$instance])) {
 			return false;
 		}
 
-		$fullname = $this->getAppFullname($appName, $name);
+		$fullname = $this->getAppFullname($appName, $instance);
 
 		return !isset(Daemon::$config->{$fullname}->enable) ? false : !!Daemon::$config->{$fullname}->enable->value;
 	}
@@ -80,8 +82,8 @@ class AppResolver {
 	 * @param string Application name.
 	 * @return string 
 	 */
-	public function getAppFullname($appName, $name = '') {
-		return $appName . ($name !== '' ? '-' . $name : '');
+	public function getAppFullname($appName, $instance = '') {
+		return $appName . ($instance !== '' ? '-' . $instance : '');
 	}
 
 	/**
@@ -90,8 +92,8 @@ class AppResolver {
 	 * @param string Instance name
 	 * @return string Path.
 	 */
-	public function getAppPath($app, $name) {
-		$fn = $app . ($name !== '' ? '-' . $name : '');
+	public function getAppPath($app, $instance) {
+		$fn = $this->getAppFullName($app, $instance);
 
 		if (isset(Daemon::$config->{$fn}->path->value)) {
 			return Daemon::$config->{$fn}->path->value;
@@ -108,24 +110,19 @@ class AppResolver {
 	 * @param string Name of instance
 	 * @return object AppInstance.
 	 */
-	public function appInstantiate($app,$name) {
-		if (!isset(Daemon::$appInstances[$app])) {
-			Daemon::$appInstances[$app] = array();
-		}
-
-		class_exists($app);
-		// be carefull, class_exists is case insensitive		
-		if (in_array($app, get_declared_classes())) {
-			$appInstance = new $app($name);
+	public function appInstantiate($appName, $instance) {
+		$appNameLower = strtolower($appName);
+		if (class_exists($appName)) {
+			$appInstance = new $appName($instance);
 		} else {
-			$p = $this->getAppPath($app,$name);
+			$p = $this->getAppPath($appName, $instance);
 
 			if (
 				!$p 
 				|| !is_file($p)
 			) {
-				Daemon::log('appInstantiate(' . $app . ') failed: application doesn\'t exist'.($p?' ('.$p.')':'').'.');
-				return FALSE;
+				Daemon::log('appInstantiate(' . $appName . ') failed: application doesn\'t exist'.($p?' ('.$p.')':'').'.');
+				return false;
 			}
 
 			$appInstance = include $p;
@@ -133,14 +130,14 @@ class AppResolver {
 
 		if (
 			!is_object($appInstance)
-			&& in_array($app, get_declared_classes())
+			&& class_exists($appName)
 		) {
-			$appInstance = new $app($name);
+			$appInstance = new $appName($instance);
 		}
 
 		if (!is_object($appInstance)) {
 			Daemon::log('appInstantiate(' . $app . ') failed. Class not exists.');
-			return FALSE;
+			return false;
 		}
 
 		return $appInstance;
@@ -164,15 +161,15 @@ class AppResolver {
 		if (strpos($appName,'-') === false) {
 			$appName .= '-';
 		}
-		list($app, $name) = explode('-', $appName, 2);
+		list($app, $instance) = explode('-', $appName, 2);
 
-		$appInstance = $this->getInstanceByAppName($app,$name);
+		$appInstance = $this->getInstanceByAppName($app, $instance);
 
 		if (!$appInstance) {
 			return $req;
 		}
 
-		return $appInstance->handleRequest($req,$upstream);
+		return $appInstance->handleRequest($req, $upstream);
 	}
 
 	/**
