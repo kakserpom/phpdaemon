@@ -248,9 +248,9 @@ class Daemon_WorkerThread extends Thread {
 				$crc = crc32($arg . "\x00" . $body);
 
 				if (isset($cache[$crc])) {
-					++$cache[$crc]->hits;
+					++$cache[$crc][1];
 	
-					return $cache[$crc];
+					return $cache[$crc][0];
 				}
 				
 				if (sizeof($cache) >= $maxCacheSize) {
@@ -258,7 +258,8 @@ class Daemon_WorkerThread extends Thread {
 					array_pop($cache);
 				}
 	
-				return $cache[$crc] = new DestructibleLambda(create_function_native($arg, $body));
+				$cache[$crc] = array($cb = eval('return function('.$arg.'){'.$body.'};'), 0);
+				return $cb;
 			}
 		}
 	}
