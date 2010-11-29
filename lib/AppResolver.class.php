@@ -113,7 +113,8 @@ class AppResolver {
 			Daemon::$appInstances[$app] = array();
 		}
 
-		// be carefull, class_exists is case insensitive
+		class_exists($app);
+		// be carefull, class_exists is case insensitive		
 		if (in_array($app, get_declared_classes())) {
 			$appInstance = new $app($name);
 		} else {
