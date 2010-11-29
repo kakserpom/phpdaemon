@@ -1,13 +1,13 @@
 <?php
 
 /**
- * Destructable lambda function class
+ * Destructible lambda function class
  *
  * @package Core
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class DestructableLambda {
+class DestructibleLambda {
 
 	/**
 	 * Identifier

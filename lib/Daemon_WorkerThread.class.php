@@ -258,7 +258,7 @@ class Daemon_WorkerThread extends Thread {
 					array_pop($cache);
 				}
 	
-				return $cache[$crc] = new DestructableLambda(create_function_native($arg, $body));
+				return $cache[$crc] = new DestructibleLambda(create_function_native($arg, $body));
 			}
 		}
 	}
