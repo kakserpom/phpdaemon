@@ -156,6 +156,7 @@ class WebSocketSession extends SocketSession {
 	public $handshaked = FALSE;
 	public $upstream;
 	public $server = array();
+	public $cookie = array();
 	public $firstline = FALSE;
 	public $writeReady = TRUE;
 	public $callbacks = array();
@@ -397,6 +398,10 @@ class WebSocketSession extends SocketSession {
 					) {
 						$this->finish();
 						return;
+					}
+
+					if (isset($this->server['HTTP_COOKIE'])) {
+						HTTPRequest::parse_str(strtr($this->server['HTTP_COOKIE'], HTTPRequest::$hvaltr), $this->cookie);
 					}
 
 					if (!$this->secprotocol = (
