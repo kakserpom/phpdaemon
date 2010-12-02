@@ -193,6 +193,10 @@ class Daemon_ConfigParser {
 							$cfg->raiseError('Variable started with \'mod-\'. This style is deprecated. You should replace it with block.');
 						} elseif (isset($scope->{$name})) {
 							if ($scope->{$name}->source != 'cmdline')	{
+								if (!isset($elements[1])) {
+									$elements[1] = true;
+									$elTypes[1] = Daemon_ConfigParser::T_CVALUE;
+								}
 								if (
 									($elTypes[1] === Daemon_ConfigParser::T_CVALUE) 
 									&& is_string($elements[1])
