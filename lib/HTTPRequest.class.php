@@ -134,7 +134,7 @@ class HTTPRequest extends Request {
 		}
 
 		if (isset($this->attrs->server['QUERY_STRING'])) {
-			$this->parse_str($this->attrs->server['QUERY_STRING'], $this->attrs->get);
+			HTTPRequest::parse_str($this->attrs->server['QUERY_STRING'], $this->attrs->get);
 		}
 
 		if (
@@ -153,7 +153,7 @@ class HTTPRequest extends Request {
 		}
 
 		if (isset($this->attrs->server['HTTP_COOKIE'])) {
-			$this->parse_str(strtr($this->attrs->server['HTTP_COOKIE'], HTTPRequest::$hvaltr), $this->attrs->cookie);
+			HTTPRequest::parse_str(strtr($this->attrs->server['HTTP_COOKIE'], HTTPRequest::$hvaltr), $this->attrs->cookie);
 		}
 
 		if (isset($this->attrs->server['HTTP_AUTHORIZATION'])) {
@@ -185,7 +185,7 @@ class HTTPRequest extends Request {
 			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
 		) {
 			if ($this->boundary === false) {
-				$this->parse_str($this->attrs->stdinbuf, $this->attrs->post);
+				HTTPRequest::parse_str($this->attrs->stdinbuf, $this->attrs->post);
 			}
 
 			if (
@@ -738,25 +738,21 @@ class HTTPRequest extends Request {
 	 * @param array Reference to the resulting array.
 	 * @return void
 	 */
-	public function parse_str($s, &$array) {
+	public static function parse_str($s, &$array) {
+		static $cb;
+		if ($cb === NULL) {
+			$cb = function ($m) {
+				return urlencode(html_entity_decode('&#' . hexdec($m[1]) . ';', ENT_NOQUOTES, 'utf-8'));
+			};
+		}
 		if (
 			(stripos($s,'%u') !== false) 
 			&& preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)
 		) {
-			$s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i', array($this, 'parse_str_callback'), $s);
+			$s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i', $cb, $s);
 		}
 
 		parse_str($s, $array);
-	}
-
-	/**
-	 * Called in preg_replace_callback in parse_str
-	 * @todo private?
-	 * @param array Match
-	 * @return string Replacement.
-	 */
-	public function parse_str_callback($m) {
-		return urlencode(html_entity_decode('&#' . hexdec($m[1]) . ';', ENT_NOQUOTES, 'utf-8'));
 	}
 
 	/**
