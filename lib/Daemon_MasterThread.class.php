@@ -154,6 +154,17 @@ class Daemon_MasterThread extends Thread {
 			}
 		}
 	}
+	
+	/**
+	 * Log something
+	 * @param string - Message.
+	 * @return void
+	 */
+	public function log($message) {
+		Daemon::log('#' . $this->pid . ' ' . $message);
+	}
+
+
 	/**
 	 * Setup settings on start.
 	 * @return void
