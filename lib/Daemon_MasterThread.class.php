@@ -42,13 +42,6 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
 		));
-
-		Daemon_TimedEvent::add(function($event) {
-			
-			Daemon::$process->fileWatcher->watch();
-			$event->timeout();
-			
-		}, pow(10,6) * 1, 'fileWatcherTimedEvent');
 				
 		Daemon_TimedEvent::add(function($event) {
 			$self = Daemon::$process;
@@ -161,7 +154,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function log($message) {
-		Daemon::log('#' . $this->pid . ' ' . $message);
+		Daemon::log('M#' . $this->pid . ' ' . $message);
 	}
 
 

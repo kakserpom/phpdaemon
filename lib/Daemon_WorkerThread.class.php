@@ -43,6 +43,7 @@ class Daemon_WorkerThread extends Thread {
 	public $delayedSigReg = TRUE;
 	public $instancesCount = array();
 	public $connection;
+	public $fileWatcher;
 	
 	/**
 	 * Runtime of Worker process.
@@ -66,6 +67,8 @@ class Daemon_WorkerThread extends Thread {
 		$this->setStatus(6);
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
+		
+		$this->fileWatcher = new FileWatcher;		
 
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		Daemon::$appResolver->preload();
@@ -79,8 +82,8 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 
-		$this->setStatus(1);
-
+		$this->setStatus(1);		
+		
 		/**
 		 * @closure readPoolEvent
 		 * @description Invokes the AppInstance->readConn() method for every updated connection in pool. readConn() reads new data from the buffer.
@@ -337,7 +340,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function log($message) {
-		Daemon::log('#' . $this->pid . ' ' . $message);
+		Daemon::log('W#' . $this->pid . ' ' . $message);
 	}
 	
 	/**

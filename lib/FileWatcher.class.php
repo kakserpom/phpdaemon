@@ -16,6 +16,17 @@ class FileWatcher {
 			$this->inotify = inotify_init();
 			stream_set_blocking($this->inotify, 0);
 		}
+		
+		Daemon_TimedEvent::add(function($event) {
+			
+			Daemon::$process->fileWatcher->watch();
+			if (sizeof(Daemon::$process->fileWatcher->files) > 0) {
+				$event->timeout();
+			}
+			
+		}, pow(10,6) * 1, 'fileWatcherTimedEvent');
+		
+		
 	}
 	public function addWatch($path, $subscriber, $flags = NULL) {
 		$path = realpath($path);
@@ -26,6 +37,7 @@ class FileWatcher {
 			}
 		}
 		$this->files[$path][] = $subscriber;
+		Daemon_TimedEvent::setTimeout('fileWatcherTimedEvent');
 		return true;
 	}
 	public function rmWatch($path, $subscriber) {
