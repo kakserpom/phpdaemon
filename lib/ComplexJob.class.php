@@ -30,8 +30,11 @@ class ComplexJob {
 		}
 	}
 	
-	public function addJob($jobname, $cb) {
-		$this->jobs[$jobname] = $cb;
+	public function addJob($name, $cb) {
+		$this->jobs[$name] = $cb;
+		if ($this->state === self::STATE_RUNNING) {
+			$cb($name, $this);
+		}
 	}
 	
 	public function cleanup() {
@@ -47,8 +50,8 @@ class ComplexJob {
 	public function __invoke($name = null, $cb = null) {
 		if (func_num_args() === 0) {
 			$this->state = self::STATE_RUNNING;
-			foreach ($this->jobs as $name => $job) {
-				$job ($name, $this);
+			foreach ($this->jobs as $name => $cb) {
+				$cb($name, $this);
 			}
 			return;
 		}
