@@ -65,7 +65,7 @@ class FileWatcher {
 			return;
 		}
 		foreach ($this->files[$path] as $k => $subscriber) {
-			if (is_callable($subscriber)) {
+			if (is_callable($subscriber) || is_array($subscriber)) {
 				call_user_func($subscriber, $path);
 				continue;
 			}

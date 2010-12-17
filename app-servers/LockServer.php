@@ -40,10 +40,14 @@ class LockServer extends AsyncServer {
 
 			$this->allowedClients = explode(',',$this->config->allowedclients->value);
 
-			$this->bindSockets(
-				$this->config->listen->value,
-				$this->config->listenport->value
-			);
+			if (Daemon::$process instanceof Daemon_MasterThread)
+			{
+				$this->bindSockets(
+					$this->config->listen->value,
+					$this->config->listenport->value
+				);
+				$this->enableSocketEvents();
+			}
 		}
 	}
 
