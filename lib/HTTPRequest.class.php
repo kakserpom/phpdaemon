@@ -343,7 +343,7 @@ class HTTPRequest extends Request {
 	 * Called when the request wakes up
 	 * @return void
 	 */
-	protected function onWakeup() {
+	public function onWakeup() {
 		parent::onWakeup();
 	
 		$_GET     = &$this->attrs->get;
@@ -353,6 +353,23 @@ class HTTPRequest extends Request {
 		$_SESSION = &$this->attrs->session;
 		$_FILES   = &$this->attrs->files;
 		$_SERVER  = &$this->attrs->server;
+	}
+	
+		
+	/**
+	 * Called when the request starts sleep
+	 * @return void
+	 */
+	public function onSleep() {
+		parent::onSleep();
+	
+		unset($_GET);
+		unset($_POST);
+		unset($_COOKIE);
+		unset($_REQUEST);
+		unset($_SESSION);
+		unset($_FILES);
+		unset($_SERVER);
 	}
 
 	/**

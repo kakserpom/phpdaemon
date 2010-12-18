@@ -328,10 +328,9 @@ class Request {
 
 	/**
 	 * Called when the request wakes up
-	 * @todo protected?
 	 * @return void
 	 */
-	protected function onWakeup() {
+	public function onWakeup() {
 		if (!Daemon::$compatMode) {
 			Daemon::$process->setStatus(2);
 		}
@@ -345,7 +344,6 @@ class Request {
 
 	/**
 	 * Called when the request starts sleep
-	 * @todo protected?
 	 * @return void
 	 */
 	public function onSleep() {
