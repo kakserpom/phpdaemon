@@ -209,6 +209,7 @@ class Request {
 	/**
 	 * Get string value from the given variable
 	 * @param Reference of variable.
+	 * @param array Optional. Possible values.
 	 * @return string Value.
 	 */
 	public function getString(&$var, $values = null) {
@@ -216,7 +217,27 @@ class Request {
 			$var = '';
 		}
 		if ($values !== null) {
-			return in_array($var, $values) ? $var : $values[0];
+			return in_array($var, $values, true) ? $var : $values[0];
+		}
+
+		return $var;
+	}
+	
+		/**
+	 * Get string value from the given variable
+	 * @param Reference of variable.
+	 * @param array Optional. Possible values.
+	 * @return string Value.
+	 */
+	public function getInteger(&$var, $values = null) {
+		if (is_string($var) && ctype_digit($var)) {
+			$var = (int) $var;
+		}
+		if (!is_int($var)) {
+			return 0;
+		}
+		if ($values !== null) {
+			return in_array($var, $values, true) ? $var : $values[0];
 		}
 
 		return $var;
