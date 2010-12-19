@@ -29,7 +29,7 @@ class MongoClient extends AsyncServer {
 	const OP_KILL_CURSORS = 2007;
 
 	/**/
-	public $dtags_enabled = FALSE; // enables tags for distibution
+	public $dtags_enabled = false; // enables tags for distibution
 	public $cache;                 // object of MemcacheClient
 
 	/**
@@ -67,7 +67,7 @@ class MongoClient extends AsyncServer {
 	public function selectDB($name) {
 		$this->dbname = $name;
 
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -100,7 +100,7 @@ class MongoClient extends AsyncServer {
 	 * @return integer Request ID
 	 * @throws MongoClientSessionFinished
 	 */
-	public function request($key, $opcode, $data, $reply = FALSE) {
+	public function request($key, $opcode, $data, $reply = false) {
 		if (
 			(is_object($key) 
 			&& ($key instanceof MongoClientSession))
@@ -119,7 +119,7 @@ class MongoClient extends AsyncServer {
 		$sess->write($p = pack('VVVV', strlen($data)+16, ++$this->lastReqId, 0, $opcode) . $data);
 		
 		if ($reply) {
-			$sess->busy = TRUE;
+			$sess->busy = true;
 		}
 		
 		return $this->lastReqId;
@@ -158,7 +158,7 @@ class MongoClient extends AsyncServer {
 			$p['where'] = array();
 		}
 		
-		if (strpos($p['col'], '.') === FALSE) {
+		if (strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 	
@@ -179,7 +179,7 @@ class MongoClient extends AsyncServer {
 		}
 	
 		$o = array();
-		$s = FALSE;
+		$s = false;
 
 		foreach ($p as $k => $v) {
 			if (
@@ -189,7 +189,7 @@ class MongoClient extends AsyncServer {
 				|| ($k === 'snapshot')
 			) {
 				if (!$s) {
-					$s = TRUE;
+					$s = true;
 				}
 			
 				if ($k === 'sort') {
@@ -220,9 +220,9 @@ class MongoClient extends AsyncServer {
 				. pack('VV', $p['offset'], $p['limit'])
 				. $bson
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '')
-			, TRUE);
+			, true);
 
-		$this->requests[$reqId] = array($p['col'], $callback, FALSE, isset($p['parse_oplog']), isset($p['tailable']));
+		$this->requests[$reqId] = array($p['col'], $callback, false, isset($p['parse_oplog']), isset($p['tailable']));
 	}
 
 	/**
@@ -259,7 +259,7 @@ class MongoClient extends AsyncServer {
 			$p['where'] = array();
 		}
 		
-		if (strpos($p['col'], '.') === FALSE) {
+		if (strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 		
@@ -280,7 +280,7 @@ class MongoClient extends AsyncServer {
 		}
 		
 		$o = array();
-		$s = FALSE;
+		$s = false;
 		
 		foreach ($p as $k => $v) {
 			if (
@@ -290,7 +290,7 @@ class MongoClient extends AsyncServer {
 				|| ($k === 'snapshot')
 			) {
 				if (!$s) {
-					$s = TRUE;
+					$s = true;
 				}
 		
 				if ($k === 'sort') {
@@ -315,9 +315,9 @@ class MongoClient extends AsyncServer {
 				. pack('VV', $p['offset'], -1)
 				. bson_encode($o)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '')
-			, TRUE);
+			, true);
 
-		$this->requests[$reqId] = array($p['col'], $callback, TRUE);
+		$this->requests[$reqId] = array($p['col'], $callback, true);
 	}
 
 	/**
@@ -344,7 +344,7 @@ class MongoClient extends AsyncServer {
 			$p['where'] = array();
 		}
 		
-		if (strpos($p['col'], '.') === FALSE) {
+		if (strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 		
@@ -372,8 +372,8 @@ class MongoClient extends AsyncServer {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, TRUE);
-		$this->requests[$reqId] = array($p['col'], $callback, TRUE);
+		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$this->requests[$reqId] = array($p['col'], $callback, true);
 	}
 
 	/**
@@ -401,8 +401,8 @@ class MongoClient extends AsyncServer {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, TRUE);
-		$this->requests[$reqId] = array($p['dbname'], $callback, TRUE);
+		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$this->requests[$reqId] = array($p['dbname'], $callback, true);
 	}
 
 	/**
@@ -424,8 +424,8 @@ class MongoClient extends AsyncServer {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, TRUE);
-		$this->requests[$reqId] = array($p['dbname'], $callback, TRUE);
+		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$this->requests[$reqId] = array($p['dbname'], $callback, true);
 	}
 
 	/**
@@ -443,8 +443,8 @@ class MongoClient extends AsyncServer {
 			. pack('VV', 0, -1)
 			. bson_encode(array('getlasterror' => 1));
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, TRUE);
-		$this->requests[$reqId] = array($db, $callback, TRUE);
+		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$this->requests[$reqId] = array($db, $callback, true);
 	}
 
 	/**
@@ -479,7 +479,7 @@ class MongoClient extends AsyncServer {
 			$p['max'] = array();
 		}
 		
-		if (strpos($p['col'], '.') === FALSE) {
+		if (strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 		
@@ -513,8 +513,8 @@ class MongoClient extends AsyncServer {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, TRUE);
-		$this->requests[$reqId] = array($p['col'], $callback, TRUE);
+		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$this->requests[$reqId] = array($p['col'], $callback, true);
 	}
 
 	/**
@@ -551,8 +551,8 @@ class MongoClient extends AsyncServer {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 	
-		$reqId = $this->request($key, self::OP_QUERY, $packet, TRUE);
-		$this->requests[$reqId] = array($p['db'], $callback, TRUE);
+		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$this->requests[$reqId] = array($p['db'], $callback, true);
 	}
 
 	/**
@@ -579,7 +579,7 @@ class MongoClient extends AsyncServer {
 			$p['key'] = '';
 		}
 		
-		if (strpos($p['col'], '.') === FALSE) {
+		if (strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 		
@@ -596,8 +596,8 @@ class MongoClient extends AsyncServer {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, TRUE);
-		$this->requests[$reqId] = array($p['col'], $callback, TRUE);
+		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$this->requests[$reqId] = array($p['col'], $callback, true);
 	}
 
 	/**
@@ -628,7 +628,7 @@ class MongoClient extends AsyncServer {
 			$p['reduce'] = new MongoCode($p['reduce']);
 		}
 		
-		if (strpos($p['col'], '.') === FALSE) {
+		if (strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname.'.'.$p['col'];
 		}
 		
@@ -665,8 +665,8 @@ class MongoClient extends AsyncServer {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, TRUE);
-		$this->requests[$reqId] = array($p['col'], $callback, FALSE);
+		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$this->requests[$reqId] = array($p['col'], $callback, false);
 	}
 
 	/**
@@ -687,17 +687,17 @@ class MongoClient extends AsyncServer {
 		}
 		elseif ($ret === 3) {
 			// graceful worker shutdown for restart
-			$r = $this->shutdown(TRUE);
+			$r = $this->shutdown(true);
 		}
 		elseif ($ret === 5) {
 			// shutdown worker
 			$r = $this->shutdown();
 		} else {
-			$r = TRUE;
+			$r = true;
 		}
 
 		if ($r === NULL) {
-			$r = TRUE;
+			$r = true;
 		}
 
 		return $r;
@@ -713,7 +713,7 @@ class MongoClient extends AsyncServer {
 	 * @return void
 	 */
 	public function update($col, $cond, $data, $flags = 0, $cb = NULL, $key = '') {
-		if (strpos($col, '.') === FALSE) {
+		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 		
@@ -762,7 +762,7 @@ class MongoClient extends AsyncServer {
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function upsert($col, $cond, $data, $multi = FALSE, $cb = NULL, $key = '') {
+	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $key = '') {
 		return $this->update($col, $cond, $data, $multi ? 3 : 1, $cb, $key);
 	}
 
@@ -774,7 +774,7 @@ class MongoClient extends AsyncServer {
 	 * @return void
 	 */
 	public function insert($col, $doc = array(), $cb = NULL,  $key = '') {
-		if (strpos($col, '.') === FALSE) {
+		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 		
@@ -817,7 +817,7 @@ class MongoClient extends AsyncServer {
 	 * @return void
 	 */
 	public function insertMulti($col, $docs = array(), $cb = NULL, $key = '') {
-		if (strpos($col, '.') === FALSE) {
+		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 		
@@ -856,7 +856,7 @@ class MongoClient extends AsyncServer {
 	 * @return void
 	 */
 	public function remove($col, $cond = array(), $cb = NULL, $key = '') {
-		if (strpos($col, '.') === FALSE) {
+		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 		
@@ -885,7 +885,7 @@ class MongoClient extends AsyncServer {
 	 * @return void
 	 */
 	public function getMore($col, $id, $number, $key = '') {
-		if (strpos($col, '.') === FALSE) {
+		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 
@@ -895,6 +895,7 @@ class MongoClient extends AsyncServer {
 			. pack('V', $number)
 			. $id
 		);
+		$this->requests[$reqId] = array($id);
 	}
 
 	/**
@@ -903,7 +904,7 @@ class MongoClient extends AsyncServer {
 	 * @return object MongoClientCollection
 	 */
 	public function getCollection($col) {
-		if (strpos($col, '.') === FALSE) {
+		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 		
@@ -999,8 +1000,8 @@ class MongoClient extends AsyncServer {
 	public function getConnectionByKey($key) {
 		if (
 			($this->dtags_enabled) 
-			&& (($sp = strpos($name, '[')) !== FALSE) 
-			&& (($ep = strpos($name, ']')) !== FALSE) 
+			&& (($sp = strpos($name, '[')) !== false) 
+			&& (($ep = strpos($name, ']')) !== false) 
 			&& ($ep > $sp)
 		) {
 			$key = substr($key, $sp+1, $ep-$sp-1);
@@ -1019,7 +1020,7 @@ class MongoClientSession extends SocketSession {
 	public $user;              // Username
 	public $password;          // Password
 	public $dbname;            // Database name
-	public $busy = FALSE;      // Is this session busy?
+	public $busy = false;      // Is this session busy?
 
 	/**
 	 * Called when new data received
@@ -1048,6 +1049,7 @@ class MongoClientSession extends SocketSession {
 		
 		if ($h['opCode'] === MongoClient::OP_REPLY) {
 			$r = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', binarySubstr($this->buf, 16, 20));
+					//Daemon::log(array($r,$h));
 			$r['cursorId'] = binarySubstr($this->buf, 20, 8);
 			$id = (int) $h['responseTo'];
 			$flagBits = str_pad(strrev(decbin($r['flag'])), 8, '0', STR_PAD_LEFT);
@@ -1055,7 +1057,7 @@ class MongoClientSession extends SocketSession {
 
 			if (
 				isset($this->appInstance->requests[$id][2]) 
-				&& ($this->appInstance->requests[$id][2] === FALSE) 
+				&& ($this->appInstance->requests[$id][2] === false) 
 				&& !isset($this->appInstance->cursors[$cur])
 			) {
 				$this->appInstance->cursors[$cur] = new MongoClientCursor($cur, $this->appInstance->requests[$id][0], $this);
@@ -1069,7 +1071,8 @@ class MongoClientSession extends SocketSession {
 					isset($this->appInstance->requests[$id][4]) 
 					&& $this->appInstance->requests[$id][4];
 			}
-
+			//Daemon::log(array(Debug::exportBytes($cur),get_Class($this->appInstance->cursors[$cur])));
+			
 			if (
 				isset($this->appInstance->cursors[$cur]) 
 				&& (
@@ -1077,24 +1080,24 @@ class MongoClientSession extends SocketSession {
 					|| (binarySubstr($cur, 0, 1) === 'r')
 				)
 			) {
+
 				if ($this->appInstance->cursors[$cur]->tailable) {
 					if ($this->appInstance->cursors[$cur]->finished = ($flagBits[0] == '1')) {
 						$this->appInstance->cursors[$cur]->destroy();
 					}
 				} else {
-					$this->appInstance->cursors[$cur]->finished = TRUE;
+					$this->appInstance->cursors[$cur]->finished = true;
 				}
 			}
 			
-			$p = 36;
-			
+			$p = 36;			
 			while ($p < $plen) {
 				$dl = unpack('Vlen', binarySubstr($this->buf, $p, 4));
 				$doc = bson_decode(binarySubstr($this->buf, $p, $dl['len']));
 
 				if (
 					isset($this->appInstance->cursors[$cur]) 
-					&& $this->appInstance->cursors[$cur]->parseOplog 
+					&& @$this->appInstance->cursors[$cur]->parseOplog 
 					&& isset($doc['ts'])
 				) {
 					$tsdata = unpack('Vsec/Vinc', binarySubstr($this->buf, $p + 1 + 4 + 3, 8));
@@ -1105,7 +1108,7 @@ class MongoClientSession extends SocketSession {
 				$p += $dl['len'];
 			}
 			
-			$this->busy = FALSE;
+			$this->busy = false;
 			
 			if (
 				isset($this->appInstance->requests[$id][2]) 
@@ -1113,7 +1116,7 @@ class MongoClientSession extends SocketSession {
 			) {
 				call_user_func(
 					$this->appInstance->requests[$id][1], 
-					isset($this->appInstance->cursors[$cur]->items[0]) ? $this->appInstance->cursors[$cur]->items[0] : FALSE
+					isset($this->appInstance->cursors[$cur]->items[0]) ? $this->appInstance->cursors[$cur]->items[0] : false
 				);
 
 				if (isset($this->appInstance->cursors[$cur])) {
@@ -1141,7 +1144,7 @@ class MongoClientSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-		$this->finished = TRUE;
+		$this->finished = true;
 
 		unset($this->servConn[$this->url][$this->connId]);
 		unset($this->appInstance->sessions[$this->connId]);
@@ -1197,11 +1200,9 @@ class MongoClientCollection {
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function count($callback, $where = array(), $key = '') {
-		return $this->appInstance->count(array(
-			'col' => $this->name,
-			'where' => $where
-		), $callback, $key);
+	public function count($callback, $p = array(), $key = '') {
+		$p['col'] = $this->name;
+		return $this->appInstance->count($p, $callback, $key);
 	}
 
 	/**
@@ -1272,7 +1273,7 @@ class MongoClientCollection {
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function upsert($cond, $data, $multi = FALSE, $cb = NULL, $key = '') {
+	public function upsert($cond, $data, $multi = false, $cb = NULL, $key = '') {
 		return $this->appInstance->upsert($this->name, $cond, $data, $multi, $cb, $key);
 	}
 
@@ -1296,10 +1297,10 @@ class MongoClientCursor {
 	public $items = array();    // Array of objects
 	public $item;               // Current object
 	public $session;            // Network session
-	public $finished = FALSE;   // Is this cursor finished?
-	public $failure = FALSE;    // Is this query failured?
-	public $await = FALSE;      // awaitCapable?
-	public $destroyed = FALSE;  // Is this cursor destroyed?
+	public $finished = false;   // Is this cursor finished?
+	public $failure = false;    // Is this query failured?
+	public $await = false;      // awaitCapable?
+	public $destroyed = false;  // Is this cursor destroyed?
 
 	/**
 	 * Constructor
@@ -1321,12 +1322,12 @@ class MongoClientCursor {
 	 * @return void
 	 */
 	public function getMore($number = 0) {
-		//if ($this->tailable && $this->await) {return TRUE;}
+		//if ($this->tailable && $this->await) {return true;}
 		if (binarySubstr($this->id, 0, 1) === 'c') {
 			$this->appInstance->getMore($this->col, binarySubstr($this->id, 1), $number, $this->session);
 		}
 
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -1334,10 +1335,10 @@ class MongoClientCursor {
 	 * @return boolean Success
 	 */
 	public function destroy() {
-		$this->destroyed = TRUE;
+		$this->destroyed = true;
 		unset($this->appInstance->cursors[$this->id]);
 	
-		return TRUE;
+		return true;
 	}
 
 	/**
