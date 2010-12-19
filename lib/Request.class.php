@@ -211,9 +211,12 @@ class Request {
 	 * @param Reference of variable.
 	 * @return string Value.
 	 */
-	public function getString(&$var) {
+	public function getString(&$var, $values = null) {
 		if (!is_string($var)) {
-			return '';
+			$var = '';
+		}
+		if ($values !== null) {
+			return in_array($var, $values) ? $var : $values[0];
 		}
 
 		return $var;
