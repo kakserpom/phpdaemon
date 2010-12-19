@@ -224,7 +224,7 @@ class Request {
 	}
 	
 		/**
-	 * Get string value from the given variable
+	 * Get integer value from the given variable
 	 * @param Reference of variable.
 	 * @param array Optional. Possible values.
 	 * @return string Value.
