@@ -60,4 +60,3 @@ class DeferredEvent {
 		$this->addListener($cb, $params);
 	}
 }
-

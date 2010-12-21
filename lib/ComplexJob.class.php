@@ -21,6 +21,10 @@ class ComplexJob {
 		
 	public function setResult($jobname, $result = null) {
 		$this->results[$jobname] = $result;
+		$this->checkIfAllReady();
+	}
+	
+	public function checkIfAllReady() {
 		if (sizeof($this->results) >= sizeof($this->jobs)) {
 			$this->jobs = array();
 			$this->state = self::STATE_DONE;
@@ -53,10 +57,10 @@ class ComplexJob {
 			foreach ($this->jobs as $name => $cb) {
 				$cb($name, $this);
 			}
+			$this->checkIfAllReady();
 			return;
 		}
 		$this->addJob($name, $cb);
 	}
 	
 }
-
