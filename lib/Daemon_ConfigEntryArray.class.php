@@ -11,6 +11,9 @@
 class Daemon_ConfigEntryArray extends Daemon_ConfigEntry {
 
 	public function HumanToPlain($value) {
+		if (is_array($value)) {
+			return $value;
+		}
 		$value = preg_replace_callback('~(".*?")|(\'.*?\')|(\s*,\s*)~s', function ($m) {
 			if (!empty($m[3])) {
 				return "\x00";
