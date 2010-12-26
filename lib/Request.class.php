@@ -223,6 +223,23 @@ class Request {
 		return $var;
 	}
 	
+	/**
+	 * Get array value from the given variable
+	 * @param Reference of variable.
+	 * @param array Optional. Filter callback.
+	 * @return string Value.
+	 */
+	public function getArray(&$var, $filter = null) {
+		if (!is_array($var)) {
+			 return array();
+		}
+		if ($filter !== null) {
+			return array_filter($filter, $var);
+		}
+
+		return $var;
+	}
+	
 		/**
 	 * Get integer value from the given variable
 	 * @param Reference of variable.
