@@ -202,7 +202,7 @@ class HTTPRequest extends Request {
 				
 				$prefix = 'file.';
 				$prefixlen = strlen($prefix);
-				foreach ($this->attrs->request as $k => $v) {
+				foreach ($this->attrs->post as $k => $v) {
 					if (strncmp($k, $prefix, $prefixlen) === 0) {
 						$e = explode('.', substr($k, $prefixlen));
 						if (!isset($this->attrs->files[$e[0]])) {
