@@ -10,8 +10,9 @@ class HTTP extends AsyncServer {
 
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
-	protected $queuedReads = TRUE;
+	protected $queuedReads = true;
 	public $WS;
+	private $variablesOrder;
 	
 	/**
 	 * Setting default config options
@@ -52,6 +53,15 @@ class HTTP extends AsyncServer {
 	public function init() {
 		if ($this->config->enable->value) {
 			Daemon::log(__CLASS__ . ' up.');
+			
+			if (
+				($order = ini_get('request_order')) 
+				|| ($order = ini_get('variables_order'))
+			) {
+				$this->variablesOrder = $order;
+			} else {
+				$this->variablesOrder = null;
+			}
 
 			$this->bindSockets(
 				$this->config->listen->value,
@@ -77,7 +87,7 @@ class HTTP extends AsyncServer {
 	 */
 	public function checkAccept() {
 		if (Daemon::$process->reload) {
-			return FALSE;
+			return false;
 		}
 		
 		return Daemon::$config->maxconcurrentrequestsperworker->value >= sizeof($this->queue);
@@ -107,17 +117,17 @@ class HTTP extends AsyncServer {
 		$l = strlen($s);
 
 		if (!isset(Daemon::$process->pool[$r->attrs->connId])) {
-			return FALSE;
+			return false;
 		}
 
-		Daemon::$process->writePoolState[$r->attrs->connId] = TRUE;
+		Daemon::$process->writePoolState[$r->attrs->connId] = true;
 
 		$w = event_buffer_write($this->buf[$r->attrs->connId], $s);
 
-		if ($w === FALSE) {
+		if ($w === false) {
 			$r->abort();
 
-			return FALSE;
+			return false;
 		}
 	}
 
@@ -134,7 +144,7 @@ class HTTP extends AsyncServer {
 			$this->closeConnection($req->attrs->connId);
 		} else {
 			if ($req->attrs->chunked) {
-				Daemon::$process->writePoolState[$req->attrs->connId] = TRUE;
+				Daemon::$process->writePoolState[$req->attrs->connId] = true;
 
 				if (isset($this->buf[$req->attrs->connId])) {
 					event_buffer_write($this->buf[$req->attrs->connId], "0\r\n\r\n");
@@ -172,12 +182,12 @@ class HTTP extends AsyncServer {
 		if ($this->poolState[$connId]['state'] === 0) {
 
 			if (Daemon::$appResolver->checkAppEnabled('FlashPolicy'))
-			if (strpos($buf, '<policy-file-request/>') !== FALSE) {
+			if (strpos($buf, '<policy-file-request/>') !== false) {
 				if (
 					($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) 
 					&& $FP->policyData
 				) {
-					Daemon::$process->writePoolState[$connId] = TRUE;
+					Daemon::$process->writePoolState[$connId] = true;
 					event_buffer_write($this->buf[$connId], $FP->policyData . "\x00");
 				}
 
@@ -199,15 +209,15 @@ class HTTP extends AsyncServer {
 			$req->attrs->cookie = array();
 			$req->attrs->server = array();
 			$req->attrs->files = array();
-			$req->attrs->session = NULL;
+			$req->attrs->session = null;
 			$req->attrs->connId = $connId;
 			$req->attrs->id = $this->poolState[$connId]['n'];
-			$req->attrs->params_done = FALSE;
-			$req->attrs->stdin_done = FALSE;
+			$req->attrs->params_done = false;
+			$req->attrs->stdin_done = false;
 			$req->attrs->stdinbuf = '';
 			$req->attrs->stdinlen = 0;
 			$req->attrs->inbuf = '';
-			$req->attrs->chunked = FALSE;
+			$req->attrs->chunked = false;
 			
 			$req->queueId = $rid;
 
@@ -233,12 +243,12 @@ class HTTP extends AsyncServer {
 			$req->attrs->inbuf .= $buf;
 
 			if (Daemon::$appResolver->checkAppEnabled('FlashPolicy'))
-			if (strpos($req->attrs->inbuf, '<policy-file-request/>') !== FALSE) {
+			if (strpos($req->attrs->inbuf, '<policy-file-request/>') !== false) {
 				if (
 					($FP = Daemon::$appResolver->getInstanceByAppName('FlashPolicy')) 
 					&& $FP->policyData
 				) {
-					Daemon::$process->writePoolState[$req->attrs->connId] = TRUE;
+					Daemon::$process->writePoolState[$req->attrs->connId] = true;
 					event_buffer_write($this->buf[$req->attrs->connId], $FP->policyData . "\x00");
 				}
 
@@ -249,7 +259,7 @@ class HTTP extends AsyncServer {
 
 			$buf = '';
 
-			if (($p = strpos($req->attrs->inbuf, "\r\n\r\n")) !== FALSE) {
+			if (($p = strpos($req->attrs->inbuf, "\r\n\r\n")) !== false) {
 				$headers = binarySubstr($req->attrs->inbuf, 0, $p);
 				$h = explode("\r\n", $headers);
 				$req->attrs->inbuf = binarySubstr($req->attrs->inbuf, $p + 4);
@@ -260,7 +270,7 @@ class HTTP extends AsyncServer {
 				$req->attrs->server['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
 				$req->attrs->server['DOCUMENT_URI'] = $u['path'];
 				$req->attrs->server['PHP_SELF'] = $u['path'];
-				$req->attrs->server['QUERY_STRING'] = isset($u['query']) ? $u['query'] : NULL;
+				$req->attrs->server['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
 				$req->attrs->server['SCRIPT_NAME'] = $req->attrs->server['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
 				$req->attrs->server['SERVER_PROTOCOL'] = $e[2];
 
@@ -277,7 +287,7 @@ class HTTP extends AsyncServer {
 					}
 				}
 
-				$req->attrs->params_done = TRUE;
+				$req->attrs->params_done = true;
 
 				if (
 					isset($req->attrs->server['HTTP_CONNECTION']) 
@@ -291,7 +301,7 @@ class HTTP extends AsyncServer {
 						return;
 					}
 				} else {
-					$req = Daemon::$appResolver->getRequest($req, $this, isset($this->config->responder->value) ? $this->config->responder->value : NULL);
+					$req = Daemon::$appResolver->getRequest($req, $this, isset($this->config->responder->value) ? $this->config->responder->value : null);
 				}
 
 				if ($req instanceof stdClass) {
@@ -336,12 +346,11 @@ class HTTP extends AsyncServer {
 			$req->attrs->stdin_done 
 			&& $req->attrs->params_done
 		) {
-			if (
-				($order = ini_get('request_order')) 
-				|| ($order = ini_get('variables_order'))
-			) {
-				for ($i = 0, $s = strlen($order); $i < $s; ++$i) {
-					$char = $order[$i];
+			if ($this->variablesOrder === null) {
+				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;
+			} else {
+				for ($i = 0, $s = strlen($this->variablesOrder); $i < $s; ++$i) {
+					$char = $this->variablesOrder[$i];
 
 					if ($char == 'G') {
 						$req->attrs->request += $req->attrs->get;
@@ -353,8 +362,6 @@ class HTTP extends AsyncServer {
 						$req->attrs->request += $req->attrs->cookie;
 					}
 				}
-			} else {
-				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;
 			}
 
 			Daemon::$process->timeLastReq = time();

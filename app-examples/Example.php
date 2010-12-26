@@ -63,7 +63,7 @@ class ExampleRequest extends HTTPRequest {
 	public function run() {
 		$stime = microtime(TRUE);
 		$this->header('Content-Type: text/html; charset=utf-8');
-
+		$this->setcookie('testcookie', '1');
 		$this->registerShutdownFunction(function() {
 ?></html><?php
 		});
@@ -122,6 +122,7 @@ if ($displaystate) {
 		'_GET' => $_GET,
 		'_POST' => $_POST,
 		'_COOKIE' => $_COOKIE,
+		'_REQUEST' => $_REQUEST,
 		'_FILES' => $_FILES,
 		'_SERVER' => $_SERVER,
 	));
