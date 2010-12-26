@@ -193,6 +193,7 @@ class HTTPRequest extends Request {
 					$URLprefix = $this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'];
 					$l = strlen($URLprefix);
 					foreach (array('PHP_SELF', 'REQUEST_URI', 'SCRIPT_NAME', 'DOCUMENT_URI') as $k) {
+						if (!isset($this->attrs->server[$k])) {continue;}
 						if (strncmp($this->attrs->server[$k], $URLprefix, $l) === 0) {
 							$this->attrs->server[$k] = substr($this->attrs->server[$k], $l-1);
 						}
@@ -201,25 +202,25 @@ class HTTPRequest extends Request {
 				
 				$prefix = 'file.';
 				$prefixlen = strlen($prefix);
-				foreach ($req->attrs->request as $k => $v) {
+				foreach ($this->attrs->request as $k => $v) {
 					if (strncmp($k, $prefix, $prefixlen) === 0) {
 						$e = explode('.', substr($k, $prefixlen));
-						if (!isset($req->attrs->files[$e[0]])) {
-							$req->attrs->files[$e[0]] = array('error' => UPLOAD_ERR_OK);
+						if (!isset($this->attrs->files[$e[0]])) {
+							$this->attrs->files[$e[0]] = array('error' => UPLOAD_ERR_OK);
 						}
-						$req->attrs->files[$e[0]][$e[1]] = $v;
+						$this->attrs->files[$e[0]][$e[1]] = $v;
 					}
 				}
-				foreach ($req->attrs->files as $k => $file) {
+				foreach ($this->attrs->files as $k => $file) {
 					if (!isset($file['tmp_name'])
 						|| !isset($file['name'])
 						|| !ctype_digit(basename($file['tmp_name']))
 						|| pathinfo($file['tmp_name'], PATHINFO_DIRNAME) !== ini_get('upload_tmp_dir'))
 					{
-						unset($req->attrs->files[$k]);
+						unset($this->attrs->files[$k]);
 						continue;
 					}
-					$req->attrs->files[$k]['fp'] = fopen($file['tmp_name'], 'c+');
+					$this->attrs->files[$k]['fp'] = fopen($file['tmp_name'], 'c+');
 				}
 			}
 
