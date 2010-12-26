@@ -123,6 +123,13 @@ class IPCManagerMasterSession extends SocketSession {
 				}
 			}
 		}
+		elseif ($p['op'] === 'directCall') {
+			$p['op'] = 'call';
+			if (!isset(Daemon::$process->workers->threads[$p['spawnid']]->connection)) {
+				return;
+			}
+			Daemon::$process->workers->threads[$p['spawnid']]->connection->sendPacket($p);
+		}
 		elseif ($p['op'] === 'singleCall') {
 			$p['op'] = 'call';
 			foreach (Daemon::$process->workers->threads as $worker) {
