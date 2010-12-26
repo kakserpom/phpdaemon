@@ -234,7 +234,7 @@ class Request {
 			 return array();
 		}
 		if ($filter !== null) {
-			return array_filter($filter, $var);
+			return array_filter($var, $filter);
 		}
 
 		return $var;
