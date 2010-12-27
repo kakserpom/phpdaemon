@@ -106,6 +106,10 @@ class Daemon_Bootstrap {
 			$error = TRUE;
 		}
 		
+		if (!Daemon::$useSockets) {
+			Daemon::log('Cannot use socket extension, using stream_* instead. Non-critical error, but the performance compromised.');
+		}
+		
 		if (isset(Daemon::$config->locale->value) && Daemon::$config->locale->value !== '') {
 			setlocale(LC_ALL,explode(',', Daemon::$config->locale->value));
 		}
