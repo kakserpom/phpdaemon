@@ -115,7 +115,11 @@ class AppResolver {
 		if (class_exists($appName)) {
 			$appInstance = new $appName($instance);
 		} else {
-			$p = $this->getAppPath($appName, $instance);
+			if ($appName !== '') {
+				$p = $this->getAppPath($appName, $instance);
+			} else {
+				$p = false;
+			}
 
 			if (
 				!$p 
