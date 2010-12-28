@@ -119,7 +119,9 @@ class AppInstance {
 				} else {
 					$this->config->{$k} = $v;
 				}
-			} else {
+			} elseif ($v instanceof Daemon_ConfigSection) {
+			// @todo
+			}	else {
 				$current = $this->config->{$k};
 			  if (is_scalar($v))	{
 					$this->config->{$k} = new Daemon_ConfigEntry($v);
