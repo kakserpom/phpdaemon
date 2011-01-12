@@ -24,7 +24,7 @@ class FileWatcher {
 				$event->timeout();
 			}
 			
-		}, pow(10,6) * 1, 'fileWatcherTimedEvent');
+		}, 10e6 * 1, 'fileWatcherTimedEvent');
 		
 		
 	}
