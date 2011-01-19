@@ -107,7 +107,7 @@ class Daemon_WorkerThread extends Thread {
 			if (sizeof($self->readPoolState) > 0) {
 				$event->timeout();
 			}
-		}, 10e6 * 0.005, 'readPoolEvent');
+		}, 1e6 * 0.005, 'readPoolEvent');
 		
 		Daemon_TimedEvent::add(function($event) {
 			$self = Daemon::$process;
@@ -120,7 +120,7 @@ class Daemon_WorkerThread extends Thread {
 			}
 			
 			$event->timeout();
-		}, 10e6 * 1,	'checkStateTimedEvent');
+		}, 1e6 * 1,	'checkStateTimedEvent');
 		
 		if (Daemon::$config->autoreload->value > 0) {
 			Daemon_TimedEvent::add(function($event) {
@@ -136,7 +136,7 @@ class Daemon_WorkerThread extends Thread {
 					$n = $s;
 				}
 				$event->timeout();
-			}, 10e6 * Daemon::$config->autoreload->value, 'watchIncludedFilesTimedEvent');
+			}, 1e6 * Daemon::$config->autoreload->value, 'watchIncludedFilesTimedEvent');
 		}
 			
 
@@ -547,7 +547,7 @@ class Daemon_WorkerThread extends Thread {
 			else	{
 				event_base_loopexit($self->eventBase);
 			}
-		}, 10e6, 'checkReloadReady');
+		}, 1e6, 'checkReloadReady');
 		
 		while (!$this->reloadReady) {
 			event_base_loop($this->eventBase);

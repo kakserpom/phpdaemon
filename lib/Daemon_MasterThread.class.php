@@ -98,7 +98,7 @@ class Daemon_MasterThread extends Thread {
 			
 			
 			$event->timeout();
-		}, 10e6 * Daemon::$config->mpmdelay->value, 'MPMTimedEvent');
+		}, 1e6 * Daemon::$config->mpmdelay->value, 'MPMTimedEvent');
 		
 		
 
