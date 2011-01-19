@@ -351,7 +351,7 @@ class WebSocketSession extends SocketSession {
 		}
 		
 		if ($spaces > 0) {
-			$result = (int) floor($digits / $spaces);
+			$result = (float) floor($digits / $spaces);
 		} else {
 			$result = (float) $digits;
 		}

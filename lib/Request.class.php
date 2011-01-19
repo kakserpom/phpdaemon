@@ -47,12 +47,6 @@ class Request {
 		
 		$this->queueId = isset($parent->queueId)?$parent->queueId:(++Daemon::$process->reqCounter);
 		Daemon::$process->queue[$this->queueId] = $this;
-		
-		$this->preinit($parent);
-		$this->onWakeup();
-		$this->init();
-		$this->onSleep();
-		
 		$this->ev = event_new();
 
 		event_set(
@@ -61,7 +55,12 @@ class Request {
 			array($this->queueId)
 		);
 		event_base_set($this->ev, Daemon::$process->eventBase);
-		event_add($this->ev, 100);
+		event_add($this->ev, 1);
+				
+		$this->preinit($parent);
+		$this->onWakeup();
+		$this->init();
+		$this->onSleep();
 	}
 
 	/**
@@ -315,6 +314,10 @@ class Request {
 
 		if (!$set) {
 			throw new RequestSleepException;
+		}
+		else {
+			event_del($this->ev);
+			event_add($this->ev, $this->sleepTime);
 		}
 
 		$this->state = Request::STATE_SLEEPING;
