@@ -13,6 +13,8 @@ class ComplexJob {
 	public $results = array();
 	public $state;
 	public $jobs = array();
+	public $resultsNum = 0;
+	public $jobsNum = 0;
 
 	public function __construct($cb) {
 		$this->state = self::STATE_WAITING;
@@ -21,11 +23,12 @@ class ComplexJob {
 		
 	public function setResult($jobname, $result = null) {
 		$this->results[$jobname] = $result;
+		++$this->resultsNum;
 		$this->checkIfAllReady();
 	}
 	
 	public function checkIfAllReady() {
-		if (sizeof($this->results) >= sizeof($this->jobs)) {
+		if ($this->resultsNum >= $this->jobsNum) {
 			$this->jobs = array();
 			$this->state = self::STATE_DONE;
 			while ($cb = array_pop($this->listeners)) {
@@ -36,6 +39,7 @@ class ComplexJob {
 	
 	public function addJob($name, $cb) {
 		$this->jobs[$name] = $cb;
+		++$this->jobsNum;
 		if ($this->state === self::STATE_RUNNING) {
 			$cb($name, $this);
 		}
