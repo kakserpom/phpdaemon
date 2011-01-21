@@ -537,6 +537,26 @@ class AsteriskDriverSession extends SocketSession {
 	}
 
 	/**
+	 * Action: Status
+	 * Synopsis: Lists channel status
+	 * Privilege: system,call,reporting,all
+	 * Description: Lists channel status along with requested channel vars.
+	 * Variables: (Names marked with * are required)
+		*Channel: Name of the channel to query for status
+		Variables: Comma ',' separated list of variables to include
+		ActionID: Optional ID for this transaction
+	 * Will return the status information of each channel along with the
+	 * value for the specified channel variables.
+	 */
+	public function status($callback, $channel = null) {
+		$cmd = "Action: Status\r\n";
+		if($channel !== null) {
+			$cmd .= "Channel: " . trim($channel) . "\r\n";
+		}
+		$this->command($cmd, $callback, array('event' => 'statuscomplete'));
+	}
+
+	/**
 	 * Action: Redirect
 	 * Synopsis: Redirect (transfer) a call
 	 * Privilege: call,all
