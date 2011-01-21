@@ -109,7 +109,7 @@ class AppInstance {
 	 * @param array {"setting": "value"}
 	 * @return void
 	 */
-	private function processDefaultConfig($settings = array()) {
+	public function processDefaultConfig($settings = array()) {
 		foreach ($settings as $k => $v) {
 			$k = strtolower(str_replace('-', '', $k));
 
