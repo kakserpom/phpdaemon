@@ -63,10 +63,10 @@ class LockClient extends AsyncServer {
 	/**
 	 * Runs a job
 	 * @param string Name of job
+	 * @param bool wait. If true - will wait in queue for lock.
 	 * @param callback onRun. Job's runtime.
 	 * @param callback onSuccess. Called when job successfully done.
 	 * @param callback onFailure. Called when job failed.
-	 * @param integer Weight
 	 * @return void
 	 */
 	public function job($name, $wait, $onRun, $onSuccess = NULL, $onFailure = NULL) {
