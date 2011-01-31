@@ -410,6 +410,23 @@ class AsyncServer extends AppInstance {
 				
 				stream_set_blocking($conn, 0);
 			}
+		} 
+		elseif (stripos($host, 'raw:') === 0) {
+			// Raw-socket
+			$e = explode(':', $host, 2);
+
+			if (Daemon::$useSockets) {
+				$conn = socket_create(AF_INET, SOCK_RAW, 1);
+
+				if (!$conn) {
+					return false;
+				}
+				
+				socket_set_nonblock($conn);
+				@socket_connect($conn, $e[1], 0);
+			} else {
+				return false;
+			}
 		} else {
 			// TCP
 			if (Daemon::$useSockets) {

@@ -20,7 +20,11 @@ class ComplexJob {
 		$this->state = self::STATE_WAITING;
 		$this->addListener($cb);
 	}
-		
+
+	public function __call($name, $args) {
+		return call_user_func_array($this->{$name}, $args);
+	}
+
 	public function setResult($jobname, $result = null) {
 		$this->results[$jobname] = $result;
 		++$this->resultsNum;

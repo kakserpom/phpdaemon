@@ -111,7 +111,7 @@ class FastCGI extends AsyncServer {
 		if (Daemon::$process->reload) {
 			return false;
 		}
-		
+
 		return Daemon::$config->maxconcurrentrequestsperworker->value >= sizeof($this->queue);
 	}
 	
