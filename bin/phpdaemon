@@ -31,7 +31,7 @@ spl_autoload_register(function($classname) use ($dir) {
 		class_exists('Daemon', false) 
 		&& isset(Daemon::$config->autoload->value)
 	) {	
-		$files = glob(sprintf(Daemon::$config->autoload->value, $classname), GLOB_BRACE);
+		$files = glob(sprintf(Daemon::$config->autoload->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
 		if (isset($files[0])) {
 			require $files[0];
 			return;
