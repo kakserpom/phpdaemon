@@ -19,13 +19,13 @@ class ExampleComplexJob extends AppInstance {
               array (
                     'job' => 'bar',
                     'success' => false,
-                    'line' => 76,
+                    'line' => 63,
               ),
               'foo' =>
               array (
                     'job' => 'foo',
                     'success' => true,
-                    'line' => 93,
+                    'line' => 84,
                     'arg' =>
                     array (
                       'param' => 'value',
@@ -35,7 +35,7 @@ class ExampleComplexJob extends AppInstance {
               array (
                     'job' => 'baz',
                     'success' => false,
-                    'line' => 101,
+                    'line' => 94,
               ),
             )*/
             Daemon::log($job->results);
