@@ -160,7 +160,7 @@ class LockServerSession extends SocketSession {
 
 		while (($l = $this->gets()) !== FALSE) {
 			$l = rtrim($l, "\r\n");
-			$e = explode(' ', $l);
+			$e = explode(' ', $l, 2);
 
 			if ($e[0] === 'acquire') {
 				$this->writeln($this->acquireLock($e[1]) . ' ' . $e[1]);
