@@ -45,7 +45,6 @@ class ExampleComplexJob extends AppInstance {
               ),
             )*/
             Daemon::log($job->results);
-            unset($job);
         });
 
         // Adding listener
