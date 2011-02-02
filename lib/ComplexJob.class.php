@@ -16,9 +16,11 @@ class ComplexJob {
 	public $resultsNum = 0;
 	public $jobsNum = 0;
 
-	public function __construct($cb) {
+	public function __construct($cb = null) {
 		$this->state = self::STATE_WAITING;
-		$this->addListener($cb);
+		if($cb !== null) {
+			$this->addListener($cb);
+		}
 	}
 
 	public function __call($name, $args) {

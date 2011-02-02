@@ -9,11 +9,17 @@
  */
 class ExampleComplexJob extends AppInstance {
 
+	/**
+	 * Called when the worker is ready to go
+	 * 
+	 * @return void
+	 */
     public function onReady() {
 
         // Adding listener
         // ComplexJob - STATE_WAITING
         $job = new ComplexJob(function($job) {
+        	// ComplexJob - STATE_DONE
             /*array (
               'bar' =>
               array (
@@ -44,7 +50,7 @@ class ExampleComplexJob extends AppInstance {
         // Adding listener
         // ComplexJob - STATE_WAITING
         $job->addListener(function($job) {
-
+			// ComplexJob - STATE_DONE
         });
 
         // Incapsulate some property in job
