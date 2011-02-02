@@ -73,6 +73,7 @@ class FastCGI extends AsyncServer {
 			'send-file-onlybycommand' => 0,
 			'keepalive'               => new Daemon_ConfigEntryTime('0s'),
 			'chunksize'               => new Daemon_ConfigEntrySize('8k'),
+			'defaultcharset'					=> 'utf-8',
 			// disabled by default
 			'enable'                  => 0
 		);

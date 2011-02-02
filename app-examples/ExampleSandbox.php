@@ -54,7 +54,7 @@ class ExampleSandboxRequest extends HTTPRequest {
 	 */
 	public function run() {
 		$stime = microtime(TRUE);
-		$this->header('Content-Type: text/html; charset=utf-8');
+		$this->header('Content-Type: text/html');
  
 		$sandbox = new Runkit_Sandbox(array(
 			'safe_mode'        => TRUE,

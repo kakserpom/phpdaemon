@@ -39,6 +39,9 @@ class HTTP extends AsyncServer {
 			// @todo add description strings
 			'keepalive' => new Daemon_ConfigEntryTime('0s'),
 			'chunksize' => new Daemon_ConfigEntrySize('8k'),
+			
+			'defaultcharset' => 'utf-8',
+			
 			// disabled by default
 			'enable'     => 0
 
