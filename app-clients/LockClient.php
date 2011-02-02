@@ -182,7 +182,7 @@ class LockClientSession extends SocketSession {
 				}
 			}
 			if($this->appInstance->config->protologging->value) {
-				Daemon::log('Lock server --> Lock client: ' . Debug::exportBytes(implode(' ', $e)) . "\n");
+				Daemon::log('Lock client <-- Lock server: ' . Debug::exportBytes(implode(' ', $e)) . "\n");
 			}
 		}
 	}
