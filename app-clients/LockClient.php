@@ -28,6 +28,7 @@ class LockClient extends AsyncServer {
 			'port'    => 833,
 			// @todo add description
 			'prefix'  => '',
+			'protologging' 	 => true
 		);
 	}
 
@@ -179,6 +180,9 @@ class LockClientSession extends SocketSession {
 				if (isset($this->appInstance->jobs[$e[1]][2])) {
 					call_user_func($this->appInstance->jobs[$e[1]][2], $e[0], $e[1], $this->appInstance);
 				}
+			}
+			if($this->appInstance->config->protologging->value) {
+				Daemon::log('Lock server --> Lock client: ' . Debug::exportBytes(implode(' ', $e)) . "\n");
 			}
 		}
 	}

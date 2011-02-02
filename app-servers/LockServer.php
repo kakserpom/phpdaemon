@@ -26,7 +26,8 @@ class LockServer extends AsyncServer {
 			// allowed clients ip list
 			'allowedclients' => '127.0.0.1',
 			// disabled by default
-			'enable'         => 0
+			'enable'         => 0,
+			'protologging'   => true
 		);
 	}
 
@@ -178,6 +179,9 @@ class LockServerSession extends SocketSession {
 			}
 			elseif ($e[0] !== '') {
 				$this->writeln('PROTOCOL_ERROR');
+			}
+			if($this->appInstance->config->protologging->value) {
+				Daemon::log('Lock client --> Lock server: ' . Debug::exportBytes(implode(' ', $e)) . "\n");
 			}
 		}
 
