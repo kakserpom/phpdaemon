@@ -1,0 +1,21 @@
+## Config file
+
+user www-data;
+group www-data;
+
+max-workers	1;
+min-workers	1;
+start-workers	1;
+
+max-requests	1m;
+max-idle	0;
+
+FastCGI {
+	privileged;
+
+	# you can redefine default settings for FastCGI
+}
+
+# other applications...
+
+include conf.d/*.conf;
