@@ -58,16 +58,6 @@ class AsteriskDriver extends AsyncServer {
 	}
 
 	/**
-	 * Constructor.
-	 * @return void
-	 */
-	public function init() {
-		if ($this->config->enable->value) {
-			Daemon::$process->log(__CLASS__ . ' up.');
-		}
-	}
-
-	/**
 	 * Establishes connection.
 	 * @param string $addr Optional address.
 	 * @return AsteriskDriverSession Session object.
