@@ -37,8 +37,6 @@ class LockServer extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			Daemon::log(__CLASS__ . ' up.');
-
 			$this->allowedClients = explode(',',$this->config->allowedclients->value);
 
 			if (Daemon::$process instanceof Daemon_MasterThread)

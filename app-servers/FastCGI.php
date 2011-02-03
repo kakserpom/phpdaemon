@@ -85,8 +85,6 @@ class FastCGI extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable) {
-			Daemon::log(__CLASS__ . ' up.');
-
 			if (
 				($order = ini_get('request_order')) 
 				|| ($order = ini_get('variables_order'))

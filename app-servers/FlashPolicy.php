@@ -35,8 +35,6 @@ class FlashPolicy extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			Daemon::log(__CLASS__ . ' up.');
-
 			$this->bindSockets(
 				$this->config->listen->value,
 				$this->config->listenport->value

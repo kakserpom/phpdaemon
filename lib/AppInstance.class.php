@@ -25,6 +25,7 @@ class AppInstance {
 		$this->name = $name;
 		
 		$appName = get_class($this);
+		Daemon::$process->log($appName . ($name ? "-{$name}" : '') . ' up.');
 		$appNameLower = strtolower($appName);
 		$fullname = Daemon::$appResolver->getAppFullName($appName, $this->name);
 		if (!isset(Daemon::$appInstances[$appNameLower])) {
