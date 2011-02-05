@@ -11,6 +11,7 @@ class MongoClient extends AsyncServer {
 	public $sessions    = array(); // Active sessions
 	public $servers     = array(); // Array of servers
 	public $servConn    = array(); // Active connections
+	public $servConnFree = array(); // Free connections
 	public $requests    = array(); // Pending requests
 	public $cursors     = array(); // Active cursors
 	public $lastReqId   = 0;       // ID of the last request
@@ -29,7 +30,6 @@ class MongoClient extends AsyncServer {
 	const OP_KILL_CURSORS = 2007;
 
 	/**/
-	public $dtags_enabled = false; // enables tags for distibution
 	public $cache;                 // object of MemcacheClient
 
 	/**
@@ -42,7 +42,9 @@ class MongoClient extends AsyncServer {
 			// default server list
 			'servers' => 'mongo://127.0.0.1',
 			// default port
-			'port'    => 27017
+			'port'    => 27017,
+			
+			'maxconnectionsperserver' => 32,
 		);
 	}
 
@@ -120,6 +122,7 @@ class MongoClient extends AsyncServer {
 		
 		if ($reply) {
 			$sess->busy = true;
+			unset($this->servConnFree[$sess->url][$connId]);
 		}
 		
 		return $this->lastReqId;
@@ -931,16 +934,17 @@ class MongoClient extends AsyncServer {
 	 */
 	public function getConnection($url) {
 		if (isset($this->servConn[$url])) {
-			foreach ($this->servConn[$url] as &$c) {
-				if (
-					isset($this->sessions[$c]) 
-					&& !$this->sessions[$c]->busy
-				) {
+			while (($c = array_pop($this->servConnFree[$url])) !== null) {
+				if (isset($this->sessions[$c])) {
 					return $c;
 				}
 			}
+			if (sizeof($this->servConn[$url]) >= $this->config->maxconnectionsperserver->value) {
+				return $this->servConn[$url][array_rand($this->servConn[$url])];
+			}
 		} else {
 			$this->servConn[$url] = array();
+			$this->servConnFree[$url] = array();
 		}
 		
 		$u = parse_url($url);
@@ -966,6 +970,7 @@ class MongoClient extends AsyncServer {
 		}
 		
 		$this->servConn[$url][$connId] = $connId;
+		$this->servConnFree[$url][$connId] = $connId;
 
 		if ($session->user !== NULL) {
 			$this->getNonce(array(
@@ -998,15 +1003,6 @@ class MongoClient extends AsyncServer {
 	 * @return integer Connection's ID.
 	 */
 	public function getConnectionByKey($key) {
-		if (
-			($this->dtags_enabled) 
-			&& (($sp = strpos($name, '[')) !== false) 
-			&& (($ep = strpos($name, ']')) !== false) 
-			&& ($ep > $sp)
-		) {
-			$key = substr($key, $sp+1, $ep-$sp-1);
-		}
-		
 		srand(crc32($key));
 		$url = array_rand($this->servers);
 		srand();  
@@ -1109,6 +1105,7 @@ class MongoClientSession extends SocketSession {
 			}
 			
 			$this->busy = false;
+			$this->servConnFree[$this->url][$this->connId] = $this->connId;
 			
 			if (
 				isset($this->appInstance->requests[$id][2]) 
@@ -1147,6 +1144,7 @@ class MongoClientSession extends SocketSession {
 		$this->finished = true;
 
 		unset($this->servConn[$this->url][$this->connId]);
+		unset($this->servConnFree[$this->url][$this->connId]);
 		unset($this->appInstance->sessions[$this->connId]);
 	}
 	
