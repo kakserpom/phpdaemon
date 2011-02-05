@@ -33,8 +33,6 @@ class MongoNode extends AppInstance {
 	public function init() {
 		if ($this->config->enable->value) {
 			$this->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
-			Daemon::log(__CLASS__ . ' up.');
-			
 			$this->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
 			$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
 			$this->RTEPClient = Daemon::$appResolver->getInstanceByAppName('RTEPClient');

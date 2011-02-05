@@ -36,8 +36,6 @@ class GearmanNode extends AppInstance {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			Daemon::log(__CLASS__ . ' up.');
-   
 			$this->client = new GearmanClient;
 
 			$this->worker = new GearmanWorker;

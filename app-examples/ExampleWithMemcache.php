@@ -2,11 +2,11 @@
 
 /**
  * @package Examples
- * @subpackage MongoDB
+ * @subpackage Memcache
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class ExampleWithMongoDB extends AppInstance {
+class ExampleWithMemcache extends AppInstance {
 
 	/**
 	 * Called when the worker is ready to go.
@@ -14,7 +14,7 @@ class ExampleWithMongoDB extends AppInstance {
 	 */
 
 	public function onReady() {
-		$this->mongo = Daemon::$appResolver->getInstanceByAppName('MongoClient');
+		$this->memcache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
 	}
 	
 	/**
@@ -24,12 +24,12 @@ class ExampleWithMongoDB extends AppInstance {
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		return new ExampleWithMongoDBRequest($this, $upstream, $req);
+		return new ExampleWithMemcacheRequest($this, $upstream, $req);
 	}
 	
 }
 
-class ExampleWithMongoDBRequest extends HTTPRequest {
+class ExampleWithMemcacheRequest extends HTTPRequest {
 
 	public $stime;
 	public $queryResult;
@@ -43,16 +43,10 @@ class ExampleWithMongoDBRequest extends HTTPRequest {
 	public function init() {
 		$req = $this;
 		$this->stime = microtime(true);
-		$test = $this->appInstance->mongo->{'foo.test'};
-		$test->insert(array('microtime' => microtime(true)));
-		$test->find(function($cursor) use ($req) {
-			$req->queryResult = $cursor->items;
+		$this->appInstance->memcache->stats(function($m) use ($req) {
+			$req->queryResult = $m->result;
 			$req->wakeup(); // wake up the request immediately
-			$cursor->destroy();
-		}, array(
-			'limit' => -10,
-			'sort' => array('$natural' => -1)
-		));
+		});
 	}
 
 	/**
@@ -69,7 +63,7 @@ class ExampleWithMongoDBRequest extends HTTPRequest {
 		} 
 		
 		try {
-			$this->header('Content-Type: text/html; charset=utf-8');
+			$this->header('Content-Type: text/html');
 		} catch (Exception $e) {}
 
 			?>
@@ -77,7 +71,7 @@ class ExampleWithMongoDBRequest extends HTTPRequest {
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Example with MongoDB</title>
+<title>Example with Memcache</title>
 </head>
 <body>
 <?php

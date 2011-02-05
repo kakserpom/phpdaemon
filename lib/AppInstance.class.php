@@ -25,6 +25,7 @@ class AppInstance {
 		$this->name = $name;
 		
 		$appName = get_class($this);
+		Daemon::$process->log($appName . ($name ? "-{$name}" : '') . ' instantiated.');
 		$appNameLower = strtolower($appName);
 		$fullname = Daemon::$appResolver->getAppFullName($appName, $this->name);
 		if (!isset(Daemon::$appInstances[$appNameLower])) {
@@ -46,6 +47,9 @@ class AppInstance {
 		}
 
 		$this->config = Daemon::$config->{$fullname};
+		if(isset($this->config->enable->value) && $this->config->enable->value) {
+			Daemon::$process->log($appName . ($name ? "-{$name}" : '') . ' up.');
+		}
 
 		$defaults = $this->getConfigDefaults();
 		if ($defaults) {

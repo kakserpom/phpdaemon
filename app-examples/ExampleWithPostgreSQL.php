@@ -73,7 +73,7 @@ class ExampleWithPostgreSQLRequest extends HTTPRequest {
 		}
 
 		try {
-			$this->header('Content-Type: text/html; charset=utf-8');
+			$this->header('Content-Type: text/html');
 		} catch (Exception $e) {}
 
 		?>

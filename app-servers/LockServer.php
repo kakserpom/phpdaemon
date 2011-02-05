@@ -26,7 +26,8 @@ class LockServer extends AsyncServer {
 			// allowed clients ip list
 			'allowedclients' => '127.0.0.1',
 			// disabled by default
-			'enable'         => 0
+			'enable'         => 0,
+			'protologging'   => true
 		);
 	}
 
@@ -36,8 +37,6 @@ class LockServer extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			Daemon::log(__CLASS__ . ' up.');
-
 			$this->allowedClients = explode(',',$this->config->allowedclients->value);
 
 			if (Daemon::$process instanceof Daemon_MasterThread)
@@ -159,7 +158,7 @@ class LockServerSession extends SocketSession {
 
 		while (($l = $this->gets()) !== FALSE) {
 			$l = rtrim($l, "\r\n");
-			$e = explode(' ', $l);
+			$e = explode(' ', $l, 2);
 
 			if ($e[0] === 'acquire') {
 				$this->writeln($this->acquireLock($e[1]) . ' ' . $e[1]);
@@ -178,6 +177,9 @@ class LockServerSession extends SocketSession {
 			}
 			elseif ($e[0] !== '') {
 				$this->writeln('PROTOCOL_ERROR');
+			}
+			if($this->appInstance->config->protologging->value) {
+				Daemon::log('Lock client --> Lock server: ' . Debug::exportBytes(implode(' ', $e)) . "\n");
 			}
 		}
 

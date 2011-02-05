@@ -39,6 +39,9 @@ class HTTP extends AsyncServer {
 			// @todo add description strings
 			'keepalive' => new Daemon_ConfigEntryTime('0s'),
 			'chunksize' => new Daemon_ConfigEntrySize('8k'),
+			
+			'defaultcharset' => 'utf-8',
+			
 			// disabled by default
 			'enable'     => 0
 
@@ -52,8 +55,6 @@ class HTTP extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			Daemon::log(__CLASS__ . ' up.');
-			
 			if (
 				($order = ini_get('request_order')) 
 				|| ($order = ini_get('variables_order'))

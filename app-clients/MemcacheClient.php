@@ -27,7 +27,8 @@ class MemcacheClient extends AsyncServer {
 			// default port
 			'port'    => 11211,
 			// @todo add description
-			'prefix'  => ''
+			'prefix'  => '',
+			'maxconnectionsperserver' => 32,
 		);
 	}
 
@@ -98,6 +99,7 @@ class MemcacheClient extends AsyncServer {
 
 		if ($onResponse !== NULL) {
 			$sess->onResponse[] = $onResponse;
+			unset($this->servConnFree[$sess->addr][$connId]);
 		}
 
 		$flags = 0;
@@ -254,22 +256,19 @@ class MemcacheClient extends AsyncServer {
 	 */
 	public function getConnection($addr) {
 		if (isset($this->servConn[$addr])) {
-			foreach ($this->servConn[$addr] as $k => &$c) {
-				if (!isset($this->sessions[$c])) {
-					unset($this->servConn[$addr][$k]);
-					continue;
-				}
-
-				if (
-					(!$this->sessions[$c]->finished) 
-					&& (!sizeof($this->sessions[$c]->onResponse))
-				) {
+			while (($c = array_pop($this->servConnFree[$addr])) !== null) {
+				if (isset($this->sessions[$c])) {
 					return $c;
 				}
 			}
+			if (sizeof($this->servConn[$addr]) >= $this->config->maxconnectionsperserver->value) {
+				return $this->servConn[$addr][array_rand($this->servConn[$addr])];
+			}
 		} else {
 			$this->servConn[$addr] = array();
+			$this->servConnFree[$addr] = array();
 		}
+		
 
 		$e = explode(':', $addr);
 
@@ -278,6 +277,7 @@ class MemcacheClient extends AsyncServer {
 		$this->sessions[$connId] = new MemcacheSession($connId, $this);
 		$this->sessions[$connId]->addr = $addr;
 		$this->servConn[$addr][$connId] = $connId;
+		$this->servConnFree[$addr][$connId] = $connId;
 
 		return $connId;
 	}
@@ -376,6 +376,7 @@ class MemcacheSession extends SocketSession {
 	public $valueSize = 0;         // size of received part of the value
 	public $error;                 // error message
 	public $key;                   // current incoming key
+	public $addr;									// address of server
 
 	/**
 	 * Called when new data received
@@ -420,6 +421,9 @@ class MemcacheSession extends SocketSession {
 					}
 
 					$f = array_shift($this->onResponse);
+					if ((!$this->finished) && (!sizeof($this->onResponse))) {
+						$this->appInstance->servConnFree[$this->addr][$this->connId] = $this->connId;
+					}
 
 					if ($f) {
 						call_user_func($f, $this);
@@ -463,6 +467,7 @@ class MemcacheSession extends SocketSession {
 		$this->finished = TRUE;
 
 		unset($this->appInstance->servConn[$this->addr][$this->connId]);
+		unset($this->appInstance->servConnFree[$this->addr][$this->connId]);
 		unset($this->appInstance->sessions[$this->connId]);
 	}
 	

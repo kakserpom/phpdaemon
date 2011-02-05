@@ -13,7 +13,9 @@ max-idle	0;
 FastCGI {
 	privileged;
 
-	## your config
+	# you can redefine default settings for FastCGI
 }
+
+# other applications...
 
 include conf.d/*.conf;

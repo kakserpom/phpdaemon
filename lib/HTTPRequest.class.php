@@ -491,6 +491,20 @@ class HTTPRequest extends Request {
 
 		$k = strtr(strtoupper($e[0]), HTTPRequest::$htr);
 		
+		if ($k === 'CONTENT_TYPE') {
+			HTTPRequest::parse_str(strtr(strtolower($e[1]), HTTPRequest::$hvaltr), $ctype);
+			if (!isset($ctype['charset'])) {
+				$ctype['charset'] = $this->upstream->config->defaultcharset->value;
+				
+				$s = $e[0].': ';
+				$i = 0;
+				foreach ($ctype as $k => $v) {
+					$s .= ($i > 0 ? '; ' : '') . $k.  ($v !== '' ? '=' . $v : '');
+					++$i;
+				}
+			}
+		}
+		
 		if ($k === 'SET_COOKIE') {
 			$k .= '_'.++$this->cookieNum;
 		}

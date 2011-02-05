@@ -40,8 +40,6 @@ class SocksServer extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			Daemon::log(__CLASS__ . ' up.');
-
 			if ($this->config->allowedclients->value !== '') {
 					$this->allowedClients = explode(',', $this->config->allowedclients->value);
 			}
