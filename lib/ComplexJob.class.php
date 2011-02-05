@@ -42,11 +42,15 @@ class ComplexJob {
 	}
 	
 	public function addJob($name, $cb) {
+		if (isset($this->jobs[$name])) {
+			return false;
+		}
 		$this->jobs[$name] = $cb;
 		++$this->jobsNum;
 		if ($this->state === self::STATE_RUNNING) {
 			$cb($name, $this);
 		}
+		return true;
 	}
 	
 	public function cleanup() {
