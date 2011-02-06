@@ -28,7 +28,7 @@ class LockClient extends AsyncServer {
 			'port'    => 833,
 			// @todo add description
 			'prefix'  => '',
-			'protologging' 	 => true
+			'protologging' 	 => 0
 		);
 	}
 
