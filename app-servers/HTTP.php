@@ -168,11 +168,6 @@ class HTTP extends AsyncServer {
 	 * @return void
 	 */
 	public function readConn($connId) {
-		static $roles = array(
-			1 => 'FCGI_RESPONDER',
-			2 => 'FCGI_AUTHORIZER',
-			3 => 'FCGI_FILTER',
-		);
 
 		$buf = $this->read($connId, $this->readPacketSize);
 

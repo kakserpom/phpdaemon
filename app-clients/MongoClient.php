@@ -122,7 +122,7 @@ class MongoClient extends AsyncServer {
 		
 		if ($reply) {
 			$sess->busy = true;
-			unset($this->servConnFree[$sess->url][$connId]);
+			unset($this->servConnFree[$sess->url][$sess->connId]);
 		}
 		
 		return $this->lastReqId;
