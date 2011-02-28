@@ -122,7 +122,7 @@ class MongoClient extends AsyncServer {
 		
 		if ($reply) {
 			$sess->busy = true;
-			unset($this->servConnFree[$sess->url][$connId]);
+			unset($this->servConnFree[$sess->url][$sess->connId]);
 		}
 		
 		return $this->lastReqId;
@@ -940,7 +940,8 @@ class MongoClient extends AsyncServer {
 				}
 			}
 			if (sizeof($this->servConn[$url]) >= $this->config->maxconnectionsperserver->value) {
-				return $this->servConn[$url][array_rand($this->servConn[$url])];
+			 $c = $this->servConn[$url][array_rand($this->servConn[$url])];;
+			 return $c;
 			}
 		} else {
 			$this->servConn[$url] = array();
@@ -993,7 +994,6 @@ class MongoClient extends AsyncServer {
 				}, $session
 			);
 		}
-
 		return $connId;
 	}
 
@@ -1105,7 +1105,7 @@ class MongoClientSession extends SocketSession {
 			}
 			
 			$this->busy = false;
-			$this->servConnFree[$this->url][$this->connId] = $this->connId;
+			$this->appInstance->servConnFree[$this->url][$this->connId] = $this->connId;
 			
 			if (
 				isset($this->appInstance->requests[$id][2]) 
@@ -1143,8 +1143,8 @@ class MongoClientSession extends SocketSession {
 	public function onFinish() {
 		$this->finished = true;
 
-		unset($this->servConn[$this->url][$this->connId]);
-		unset($this->servConnFree[$this->url][$this->connId]);
+		unset($this->appInstance->servConn[$this->url][$this->connId]);
+		unset($this->appInstance->servConnFree[$this->url][$this->connId]);
 		unset($this->appInstance->sessions[$this->connId]);
 	}
 	
