@@ -792,7 +792,7 @@ class HTTPRequest extends Request {
 		}
 
 		while (!feof($fp)) {
-			$this->stdin($this->fread($fp, 4096));
+			$this->stdin(fread($fp, 4096));
 		}
 
 		fclose($fp);
