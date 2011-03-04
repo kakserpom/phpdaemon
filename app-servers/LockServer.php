@@ -27,7 +27,7 @@ class LockServer extends AsyncServer {
 			'allowedclients' => '127.0.0.1',
 			// disabled by default
 			'enable'         => 0,
-			'protologging'   => true
+			'protologging'   => false,
 		);
 	}
 
