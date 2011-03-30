@@ -18,8 +18,8 @@ class Daemon_Config implements ArrayAccess {
 	// Main Pathes
 	public $pidfile        = '/var/run/phpd.pid';
 	public $defaultpidfile = '/var/run/phpd.pid';
-	public $configfile     = '/etc/phpd/phpd.conf;./conf/phpd.conf';
-	public $path           = './conf/AppResolver.php';
+	public $configfile     = '/etc/phpdaemon/phpd.conf;/etc/phpd/phpd.conf;./conf/phpd.conf';
+	public $path           = 'AppResolver.php';
 	public $appfilepath    = '{app-*,applications}/%s.php';
 	public $autoload   	 	= NULL;
 			

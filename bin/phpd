@@ -26,8 +26,7 @@ spl_autoload_register(function($classname) {
 
 	$path = 'lib/' . implode('/', $parts) . '.class.php';
 	
-	if (is_file($path)) {
-		require $path;
+	if (!@include($path)) {
 		return;
 	}
 	

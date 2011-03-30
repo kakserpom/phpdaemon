@@ -60,7 +60,7 @@ class Daemon {
 	 * @return void
 	 */
 	public static function initSettings() {
-		Daemon::$version = file_get_contents('VERSION');
+		Daemon::$version = file_get_contents('VERSION', true);
 
 		Daemon::$config = new Daemon_Config;
 
