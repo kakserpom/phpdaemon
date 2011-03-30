@@ -11,6 +11,8 @@
 
 error_reporting(E_ALL);
 
+chdir(dirname(dirname(__FILE__)));
+
 ini_set('include_path', get_include_path() 
 	. ':' . dirname(dirname(__FILE__))
 	. ':' . dirname(dirname(__FILE__)).'/conf'
@@ -26,15 +28,15 @@ spl_autoload_register(function($classname) {
 
 	$path = 'lib/' . implode('/', $parts) . '.class.php';
 	
-	if (!@include($path)) {
+	if (@include($path)) {
 		return;
 	}
 	
 	if (
 		class_exists('Daemon', false) 
 		&& isset(Daemon::$config->autoload->value)
-	) {	
-		$files = glob(sprintf(Daemon::$config->autoload->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
+	) {
+		$files = glob($g = sprintf(Daemon::$config->autoload->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
 		if (isset($files[0])) {
 			require $files[0];
 			return;
