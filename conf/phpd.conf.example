@@ -1,11 +1,11 @@
 ## Config file
 
-user www-data;
-group www-data;
+user nobody;
+group nobody;
 
-max-workers	1;
-min-workers	1;
-start-workers	1;
+max-workers	20;
+min-workers	20;
+start-workers	20;
 
 max-requests	1m;
 max-idle	0;
