@@ -11,7 +11,11 @@
 
 error_reporting(E_ALL);
 
-chdir(dirname(dirname(__FILE__)));
+foreach (array('/usr/share/phpdaemon', dirname(dirname(__FILE__))) as $d) {
+	if (@chdir($d)) {
+		break;
+	}
+}
 
 ini_set('include_path', get_include_path() 
 	. ':' . dirname(dirname(__FILE__))
