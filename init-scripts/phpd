@@ -7,6 +7,8 @@
 # processname: phpd
 # pidfile:     /var/run/phpd.pid
 
+. /etc/init.d/functions
+
 phpd="/usr/sbin/phpd"
 prog=$(basename $phpd)
 
