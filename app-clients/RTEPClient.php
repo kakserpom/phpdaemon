@@ -30,7 +30,7 @@ class RTEPClient extends AppInstance {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			require_once Daemon::$dir . '/lib/asyncRTEPclient.class.php';
+			require_once 'lib/asyncRTEPclient.class.php';
 
 			$this->client = new AsyncRTEPclient;
 			$this->client->addServer($this->config->addr->value);

@@ -23,7 +23,7 @@ class FlashPolicy extends AsyncServer {
 			// listen port
 			'listenport' => 843,
 			// crossdomain file path
-			'file'       => Daemon::$dir . '/conf/crossdomain.xml',
+			'file'       => 'crossdomain.xml',
 			// disabled by default
 			'enable'     => 0
 		);
@@ -49,7 +49,7 @@ class FlashPolicy extends AsyncServer {
 	 * @return void
 	 */
 	public function update() {
-		$this->policyData = file_get_contents($this->config->file->value);
+		$this->policyData = file_get_contents($this->config->file->value, true);
 	}
 
 	/**

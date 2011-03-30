@@ -14,12 +14,6 @@ class Daemon {
 	const SUPPORT_RUNKIT_INTERNAL_MODIFY = 2;
 
 	/**
-	 * PHPDaemon root directory
-	 * @var string
-	 */
-	public static $dir;
-	
-	/**
 	 * PHPDaemon version
 	 * @var string
 	 */
@@ -66,7 +60,7 @@ class Daemon {
 	 * @return void
 	 */
 	public static function initSettings() {
-		Daemon::$version = file_get_contents(Daemon::$dir . '/VERSION');
+		Daemon::$version = file_get_contents('VERSION');
 
 		Daemon::$config = new Daemon_Config;
 
