@@ -140,7 +140,7 @@ class AppResolver {
 		}
 
 		if (!is_object($appInstance)) {
-			Daemon::log('appInstantiate(' . $app . ') failed. Class not exists.');
+			Daemon::log('appInstantiate(' . $appName . ') failed. Class not exists.');
 			return false;
 		}
 
