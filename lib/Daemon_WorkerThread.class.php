@@ -264,7 +264,56 @@ class Daemon_WorkerThread extends Thread {
 				$cache[$crc] = array($cb = eval('return function('.$arg.'){'.$body.'};'), 0);
 				return $cb;
 			}
-		}
+
+                        runkit_function_rename('session_start', 'session_start_native');
+                        runkit_function_rename('session_commit', 'session_commit_native');
+
+                        function session_commit() {
+                            $data = serialize($_SESSION);
+                            $session_name = ini_get('session.name');
+                            $session_path = ini_get('session.save_path');
+                            $session_id = $_COOKIE[$session_name];
+                            if ($session_id) {
+                                $session_file = $session_path . DIRECTORY_SEPARATOR
+                                    . 'sess_' . escapeshellarg($session_id);
+                                file_put_contents($session_file, $data);
+                            }
+                        }
+
+                        function session_start() {
+                            $session_name = ini_get('session.name');
+                            $session_path = ini_get('session.save_path');
+                            $session_id = @$_COOKIE[$session_name];
+                            if ($session_id) {
+                                $session_file = $session_path . DIRECTORY_SEPARATOR
+                                    . 'sess_' . escapeshellarg($session_id);
+
+                                if (!file_exists($session_file)) {
+                                    setcookie($session_name, null);
+                                } else {
+                                    $GLOBALS['_SESSION'] = unserialize(file_get_contents($session_file));
+                                }
+                            } else {
+                                $session_id = uniqid();
+                                Daemon::log('started session: '.$session_id);
+//                                header('Set-cookie: '.
+//                                        $session_name.'='.$session_id '; ' .
+//                                        'expires='.date('r', time()+ini_get('session.cookie_lifetime')) . '; '.
+//                                        'path='.ini_get('session.cookie_path').'; ' .
+//                                        'domain='.ini_get('session.cookie_domain')
+//                                    );
+                                setcookie($session_name, $session_id,
+                                        time()+ini_get('session.cookie_lifetime'),
+                                        ini_get('session.cookie_path'),
+                                        ini_get('session.cookie_domain'),
+                                        ini_get('session.secure'),
+                                        ini_get('session.httponly'));
+                            }
+
+                            register_shutdown_function('session_commit');
+                            return true;
+                        }
+                }
 	}
 	
 	/**

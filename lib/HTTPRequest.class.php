@@ -478,7 +478,7 @@ class HTTPRequest extends Request {
 			throw new RequestHeadersAlreadySent();
 			return false;
 		}
-
+                Daemon::log('header sent: '.$s);
 		$e = explode(':', $s, 2);
 
 		if (!isset($e[1])) {
