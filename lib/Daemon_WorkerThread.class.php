@@ -311,6 +311,7 @@ class Daemon_WorkerThread extends Thread {
                             }
 
                             register_shutdown_function('session_commit');
+                            
                             return true;
                         }
                 }
