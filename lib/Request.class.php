@@ -279,7 +279,7 @@ class Request {
 	 */
 	public function unregisterShutdownFunction($callback) {
 		if (($k = array_search($callback, $this->shutdownFuncs)) !== FALSE) {
-			$this->shutdownFuncs[] = $callback;
+			unset($this->shutdownFuncs[$k]);
 		}
 	}
 
