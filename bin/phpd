@@ -30,10 +30,12 @@ spl_autoload_register(function($classname) {
 		array_shift($parts);
 	}
 
-	$path = 'lib/' . implode('/', $parts) . '.class.php';
+	$pathes = array('lib/' . implode('/', $parts) . '.php', 'lib/' . implode('/', $parts) . '.class.php');
 	
-	if (@include($path)) {
-		return;
+	foreach ($pathes as $path) {
+		if (@include($path)) {
+			return;
+		}
 	}
 	
 	if (
