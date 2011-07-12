@@ -2,7 +2,7 @@
 
 /**
  * HTTP request
- * 
+ *
  * @package Core
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
@@ -62,17 +62,19 @@ class HTTPRequest extends Request {
 	public $answerlen = 0;
 	public $contentLength;
 	private $cookieNUm = 0;
-	
+
 	public static $hvaltr = array(';' => '&', ' ' => '');
 	public static $htr = array('-' => '_');
-	
+
 	public $mpartstate = 0;
 	public $mpartoffset = 0;
 	public $mpartcondisp = false;
 	public $headers = array('STATUS' => '200 OK');
 	public $headers_sent = false; // @todo make private
+	private $headers_sent_file;
+	private $headers_sent_line;
 	private $boundary = false;
-		
+
 	/**
 	 * Preparing before init
 	 * @todo protected?
@@ -87,7 +89,7 @@ class HTTPRequest extends Request {
 			$req->attrs->params_done = true;
 			$req->attrs->chunked = false;
 		}
-		
+
 		$this->attrs = $req->attrs;
 
 		if ($this->upstream->config->expose->value) {
@@ -104,14 +106,14 @@ class HTTPRequest extends Request {
 	 */
 	public function preCall() {
 		if (
-			!$this->attrs->params_done 
+			!$this->attrs->params_done
 			|| !$this->attrs->stdin_done
 		) {
 			$this->state = Request::STATE_SLEEPING;
 		} else {
 			if (isset($this->appInstance->passphrase)) {
 				if (
-					!isset($this->attrs->server['PASSPHRASE']) 
+					!isset($this->attrs->server['PASSPHRASE'])
 					|| ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
 				) {
 					$this->finish();
@@ -122,12 +124,12 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Parses GET-query string and other request's headers
-	 * @todo private?  
+	 * @todo private?
 	 * @return void
 	 */
 	public function parseParams() {
 		if (
-			isset($this->attrs->server['CONTENT_TYPE']) 
+			isset($this->attrs->server['CONTENT_TYPE'])
 			&& !isset($this->attrs->server['HTTP_CONTENT_TYPE'])
 		) {
 			$this->attrs->server['HTTP_CONTENT_TYPE'] = $this->attrs->server['CONTENT_TYPE'];
@@ -138,14 +140,14 @@ class HTTPRequest extends Request {
 		}
 
 		if (
-			isset($this->attrs->server['REQUEST_METHOD']) 
-			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST') 
+			isset($this->attrs->server['REQUEST_METHOD'])
+			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
 			&& isset($this->attrs->server['HTTP_CONTENT_TYPE'])
 		) {
 			parse_str(strtr($this->attrs->server['HTTP_CONTENT_TYPE'], HTTPRequest::$hvaltr), $contype);
 
 			if (
-				isset($contype['multipart/form-data']) 
+				isset($contype['multipart/form-data'])
 				&& (isset($contype['boundary']))
 			) {
 				$this->boundary = $contype['boundary'];
@@ -160,7 +162,7 @@ class HTTPRequest extends Request {
 			$e = explode(' ', $this->attrs->server['HTTP_AUTHORIZATION'], 2);
 
 			if (
-				($e[0] == 'Basic') 
+				($e[0] == 'Basic')
 				&& isset($e[1])
 			) {
 				$e[1] = base64_decode($e[1]);
@@ -181,13 +183,13 @@ class HTTPRequest extends Request {
 	 */
 	public function postPrepare() {
 		if (
-			isset($this->attrs->server['REQUEST_METHOD']) 
+			isset($this->attrs->server['REQUEST_METHOD'])
 			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
 		) {
 			if ($this->boundary === false) {
 				HTTPRequest::parse_str($this->attrs->stdinbuf, $this->attrs->post);
 			}
-			
+
 			if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] == 'nginx') {
 				if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'])) {
 					$URLprefix = $this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'];
@@ -199,7 +201,7 @@ class HTTPRequest extends Request {
 						}
 					}
 				}
-				
+
 				$prefix = 'file.';
 				$prefixlen = strlen($prefix);
 				foreach ($this->attrs->post as $k => $v) {
@@ -225,7 +227,7 @@ class HTTPRequest extends Request {
 			}
 
 			if (
-				isset($this->attrs->server['REQUEST_BODY_FILE']) 
+				isset($this->attrs->server['REQUEST_BODY_FILE'])
 				&& $this->upstream->config->autoreadbodyfile->value
 			) {
 				$this->readBodyFile();
@@ -245,7 +247,7 @@ class HTTPRequest extends Request {
 		}
 
 		if (
-			!isset($this->attrs->server['HTTP_CONTENT_LENGTH']) 
+			!isset($this->attrs->server['HTTP_CONTENT_LENGTH'])
 			|| ($this->attrs->server['HTTP_CONTENT_LENGTH'] <= $this->attrs->stdinlen)
 		) {
 			$this->attrs->stdin_done = true;
@@ -290,11 +292,13 @@ class HTTPRequest extends Request {
 			}
 
 			$h .= "\r\n";
+			$this->headers_sent_file = __FILE__;
+			$this->headers_sent_line = __LINE__;
 			$this->headers_sent = true;
 
 			if (!Daemon::$compatMode) {
 				if (
-					!$this->attrs->chunked 
+					!$this->attrs->chunked
 					&& !$this->sendfp
 				) {
 					return $this->upstream->requestOut($this, $h . $s);
@@ -374,14 +378,14 @@ class HTTPRequest extends Request {
 		$this->header('Transfer-Encoding: chunked');
 		$this->attrs->chunked = true;
 	}
-	
+
 	/**
 	 * Called when the request wakes up
 	 * @return void
 	 */
 	public function onWakeup() {
 		parent::onWakeup();
-	
+
 		$_GET     = &$this->attrs->get;
 		$_POST    = &$this->attrs->post;
 		$_COOKIE  = &$this->attrs->cookie;
@@ -390,15 +394,15 @@ class HTTPRequest extends Request {
 		$_FILES   = &$this->attrs->files;
 		$_SERVER  = &$this->attrs->server;
 	}
-	
-		
+
+
 	/**
 	 * Called when the request starts sleep
 	 * @return void
 	 */
 	public function onSleep() {
 		parent::onSleep();
-	
+
 		unset($_GET);
 		unset($_POST);
 		unset($_COOKIE);
@@ -428,7 +432,9 @@ class HTTPRequest extends Request {
 	 * Analog of standard PHP function headers_sent
 	 * @return boolean Success
 	 */
-	public function headers_sent() {
+	public function headers_sent(&$file, &$line) {
+		$file = $this->headers_sent_file;
+		$line = $this->headers_sent_line;
 		return $this->headers_sent;
 	}
 
@@ -453,12 +459,12 @@ class HTTPRequest extends Request {
 	 */
 	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
 		$this->header(
-			'Set-Cookie: ' . $name . '=' . rawurlencode($value) 
-			. (empty($domain) ? '' : '; Domain=' . $domain) 
-			. (empty($maxage) ? '' : '; Max-Age='.$maxage) 
-			. (empty($path) ? '' : '; Path='.$path) 
-			. (!$secure ? '' : '; Secure') 
-			. (!$HTTPOnly ? '' : '; HttpOnly'), false); 
+			'Set-Cookie: ' . $name . '=' . rawurlencode($value)
+			. (empty($domain) ? '' : '; Domain=' . $domain)
+			. (empty($maxage) ? '' : '; Max-Age='.$maxage)
+			. (empty($path) ? '' : '; Path='.$path)
+			. (!$secure ? '' : '; Secure')
+			. (!$HTTPOnly ? '' : '; HttpOnly'), false);
 	}
 
 	/**
@@ -490,12 +496,12 @@ class HTTPRequest extends Request {
 		}
 
 		$k = strtr(strtoupper($e[0]), HTTPRequest::$htr);
-		
+
 		if ($k === 'CONTENT_TYPE') {
 			HTTPRequest::parse_str(strtr(strtolower($e[1]), HTTPRequest::$hvaltr), $ctype);
 			if (!isset($ctype['charset'])) {
 				$ctype['charset'] = $this->upstream->config->defaultcharset->value;
-				
+
 				$s = $e[0].': ';
 				$i = 0;
 				foreach ($ctype as $k => $v) {
@@ -504,12 +510,12 @@ class HTTPRequest extends Request {
 				}
 			}
 		}
-		
+
 		if ($k === 'SET_COOKIE') {
 			$k .= '_'.++$this->cookieNum;
 		}
 		elseif (
-			!$replace 
+			!$replace
 			&& isset($this->headers[$k])
 		) {
 			return false;
@@ -530,7 +536,7 @@ class HTTPRequest extends Request {
 
 		return true;
 	}
-	
+
 	/**
 	 * @todo description missing
 	 */
@@ -554,7 +560,7 @@ class HTTPRequest extends Request {
 		}
 		return (int) $value;
 	}
-	
+
 	/**
 	 * Parse request body
 	 * @return void
@@ -596,7 +602,7 @@ class HTTPRequest extends Request {
 						}
 
 						if (
-							($e[0] == 'CONTENT_DISPOSITION') 
+							($e[0] == 'CONTENT_DISPOSITION')
 							&& isset($e[1])
 						) {
 							parse_str(strtr($e[1], HTTPRequest::$hvaltr), $this->mpartcondisp);
@@ -645,11 +651,11 @@ class HTTPRequest extends Request {
 							}
 						}
 						elseif (
-							($e[0] == 'CONTENT_TYPE') 
+							($e[0] == 'CONTENT_TYPE')
 							&& isset($e[1])
 						) {
 							if (
-								isset($this->mpartcondisp['name']) 
+								isset($this->mpartcondisp['name'])
 								&& isset($this->mpartcondisp['filename'])
 							) {
 								$this->attrs->files[$this->mpartcondisp['name']]['type'] = $e[1];
@@ -665,7 +671,7 @@ class HTTPRequest extends Request {
 				}
 			}
 			elseif (
-				($this->mpartstate === 2) 
+				($this->mpartstate === 2)
 				|| ($this->mpartstate === 3)
 			) {
 				 // process the body
@@ -674,13 +680,13 @@ class HTTPRequest extends Request {
 					|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== false)
 				) {
 					if (
-						($this->mpartstate === 2) 
+						($this->mpartstate === 2)
 						&& isset($this->mpartcondisp['name'])
 					) {
 						$this->attrs->post[$this->mpartcondisp['name']] .= binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset);
 					}
 					elseif (
-						($this->mpartstate === 3) 
+						($this->mpartstate === 3)
 						&& isset($this->mpartcondisp['filename'])
 					) {
 						if ($this->attrs->files[$this->mpartcondisp['name']]['fp']) {
@@ -706,13 +712,13 @@ class HTTPRequest extends Request {
 
 					if ($p !== false) {
 						if (
-							($this->mpartstate === 2) 
+							($this->mpartstate === 2)
 							&& isset($this->mpartcondisp['name'])
 						) {
 							$this->attrs->post[$this->mpartcondisp['name']] .= binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
 						}
 						elseif (
-							($this->mpartstate === 3) 
+							($this->mpartstate === 3)
 							&& isset($this->mpartcondisp['filename'])
 						) {
 							if ($this->attrs->files[$this->mpartcondisp['name']]['fp']) {
@@ -726,7 +732,7 @@ class HTTPRequest extends Request {
 							}
 
 							if (
-								isset($this->attrs->post['MAX_FILE_SIZE']) 
+								isset($this->attrs->post['MAX_FILE_SIZE'])
 								&& ($this->attrs->post['MAX_FILE_SIZE'] < $this->attrs->files[$this->mpartcondisp['name']]['size'])
 							) {
 								$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_FORM_SIZE;
@@ -742,7 +748,7 @@ class HTTPRequest extends Request {
 		} while ($continue);
 	}
 
-			
+
 	/**
 	 * Tells whether the file was uploaded via HTTP POST
 	 * @param string The filename being checked.
@@ -761,7 +767,7 @@ class HTTPRequest extends Request {
 			found:
 			return file_exists($file['tmp_name']);
 	 }
-		
+
 	/**
 	 *  Moves an uploaded file to a new location
 	 * @param string The filename of the uploaded file.
@@ -774,7 +780,7 @@ class HTTPRequest extends Request {
 			}
 			return rename($filename,$dest);
 	 }
-		
+
 	/**
 	 * Read request body from the file given in REQUEST_BODY_FILE parameter.
 	 * @return void
@@ -813,7 +819,7 @@ class HTTPRequest extends Request {
 			};
 		}
 		if (
-			(stripos($s,'%u') !== false) 
+			(stripos($s,'%u') !== false)
 			&& preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)
 		) {
 			$s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i', $cb, $s);
@@ -838,7 +844,7 @@ class HTTPRequest extends Request {
 		if (isset($this->attrs->files)) {
 			foreach ($this->attrs->files as &$f) {
 				if (
-					($f['error'] === UPLOAD_ERR_OK) 
+					($f['error'] === UPLOAD_ERR_OK)
 					&& file_exists($f['tmp_name'])
 				) {
 					unlink($f['tmp_name']);
@@ -849,7 +855,7 @@ class HTTPRequest extends Request {
 			$this->sessionCommit();
 		}
 	}
-	
+
 	public function sessionCommit() {
 		session_commit();
 	}
