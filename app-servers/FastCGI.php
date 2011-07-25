@@ -121,6 +121,7 @@ class FastCGI extends AsyncServer {
 	 * @return void
 	 */
 	public function requestOut($request, $output) {
+		
 		$outlen = strlen($output);
 
 		if ($this->config->logrecords->value) {
@@ -137,20 +138,72 @@ class FastCGI extends AsyncServer {
 
 			return false;
 		}
+		
+		/* 
+		* Iterate over every character in the string, 
+		* escaping with a slash or encoding to UTF-8 where necessary 
+		*/ 
+		// string bytes counter 
+		$d = 0; 
+		for ($c = 0; $c < $outlen; ++$c) { 
+		  
+		  $ord_var_c = ord($output{$d}); 
+		  
+		  switch (true) { 
+			  case (($ord_var_c >= 0x20) && ($ord_var_c <= 0x7F)): 
+				  // characters U-00000000 - U-0000007F (same as ASCII) 
+				  $d++; 
+				  break; 
+			  
+			  case (($ord_var_c & 0xE0) == 0xC0): 
+				  // characters U-00000080 - U-000007FF, mask 110XXXXX 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=2; 
+				  break; 
 
-		for ($o = 0; $o < $outlen;) {
-			$c = min($this->config->chunksize->value, $outlen - $o);
+			  case (($ord_var_c & 0xF0) == 0xE0): 
+				  // characters U-00000800 - U-0000FFFF, mask 1110XXXX 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=3; 
+				  break; 
+
+			  case (($ord_var_c & 0xF8) == 0xF0): 
+				  // characters U-00010000 - U-001FFFFF, mask 11110XXX 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=4; 
+				  break; 
+
+			  case (($ord_var_c & 0xFC) == 0xF8): 
+				  // characters U-00200000 - U-03FFFFFF, mask 111110XX 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=5; 
+				  break; 
+
+			  case (($ord_var_c & 0xFE) == 0xFC): 
+				  // characters U-04000000 - U-7FFFFFFF, mask 1111110X 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=6; 
+				  break; 
+			  default: 
+				$d++;    
+		  } 
+		} 
+
+		for ($o = 0; $o < $d;) {
+			$c = min($this->config->chunksize->value, $d - $o);
+
+			
 			Daemon::$process->writePoolState[$request->attrs->connId] = true;
 
 			$w = event_buffer_write($this->buf[$request->attrs->connId],
-				"\x01"                                                        // protocol version
-				. "\x06"                                                      // record type (STDOUT)
-				. pack('nn', $request->attrs->id, $c)                         // id, content length
-				. "\x00"                                                      // padding length
-				. "\x00"                                                      // reserved 
-				. ($c === $outlen ? $output : binarySubstr($output, $o, $c))  // content
+				  "\x01"                                                    	    // protocol version
+				. "\x06"                                                      	// record type (STDOUT)
+				. pack('nn', $request->attrs->id, $c)           		// id, content length
+				. "\x00"                                                      	// padding length
+				. "\x00"                                                   	    // reserved 
+				. ($c === $d ? $output : binarySubstr($output, $o, $c))  // content
 			);
-
+			
 			if ($w === false) {
 				$request->abort();
 				return false;
