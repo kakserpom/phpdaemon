@@ -560,7 +560,7 @@ class MongoClient extends AsyncServer {
 
 	/**
 	 * Returns distinct values of the property
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col)
+	 * @param array Hash of properties (offset,  limit,  opts,  key,  col, where)
 	 * @param mixed Callback called when response received
 	 * @param string Optional. Distribution key
 	 * @return void
@@ -592,6 +592,10 @@ class MongoClient extends AsyncServer {
 			'distinct' => $e[1], 
 			'key' => $p['key'], 
 		);
+		
+		if (isset($p['where'])) {
+			$query['query'] = $p['where'];
+		}
 
 		$packet = pack('V', $p['opts'])
 			. $e[0] . '.$cmd' . "\x00"
