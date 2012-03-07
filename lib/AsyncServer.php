@@ -329,9 +329,12 @@ class AsyncServer extends AppInstance {
 	
 	/**
 	 * Called when remote host is trying to establish the connection
+	 * @param resource Descriptor
+	 * @param integer Events
+	 * @param mixed Attached variable
 	 * @return boolean If true then we can accept new connections, else we can't
 	 */
-	public function checkAccept() {
+	public function checkAccept($stream, $events, $arg) {
 		if (Daemon::$process->reload) {
 			return FALSE;
 		}
@@ -505,7 +508,7 @@ class AsyncServer extends AppInstance {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
 		}
 		
-		if ($this->checkAccept()) {
+		if ($this->checkAccept($stream, $events, $arg)) {
 			event_add($this->socketEvents[$sockId]);
 		}
 		
