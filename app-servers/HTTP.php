@@ -261,7 +261,7 @@ class HTTP extends AsyncServer {
 				$req->attrs->inbuf = binarySubstr($req->attrs->inbuf, $p + 4);
 				$e = explode(' ', $h[0], 2);
 				$ee = explode('?', $e[1], 2);
-				$u = parse_url($e[0]);
+				$u = parse_url($ee[0]);
 				if (isset($ee[1])) {
 					$u['query'] = $ee[1];
 				}
