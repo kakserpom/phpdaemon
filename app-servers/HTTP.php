@@ -161,6 +161,10 @@ class HTTP extends AsyncServer {
 			}
 		}
 	}
+	public function badRequest($req) {
+		$this->write($req->attrs->connId, '<html><head><title>400 Bad Request</title></head><body bgcolor="white"><center><h1>400 Bad Request</h1></center></body></html>');
+		$this->finishConnection($req->attrs->connId);
+	}
 
 	/**
 	 * Reads data from the connection's buffer.
@@ -257,34 +261,37 @@ class HTTP extends AsyncServer {
 
 			if (($p = strpos($req->attrs->inbuf, "\r\n\r\n")) !== false) {
 				$headers = binarySubstr($req->attrs->inbuf, 0, $p);
-				$h = explode("\r\n", $headers);
+				$headersArray = explode("\r\n", $headers);
 				$req->attrs->inbuf = binarySubstr($req->attrs->inbuf, $p + 4);
-				$e = explode(' ', $h[0], 2);
-				$ee = explode('?', $e[1], 2);
-				$u = parse_url($ee[0]);
-				if (isset($ee[1])) {
-					$u['query'] = $ee[1];
+				$command = explode(' ', $headersArray[0]);
+				$u = isset($command[1])?parse_url($command[1]):false;
+				if ($u === false) {
+					$this->badRequest($req);
+					return;
 				}
-
-				$req->attrs->server['REQUEST_METHOD'] = $e[0];
+				
+				$req->attrs->server['REQUEST_METHOD'] = $command[0];
 				$req->attrs->server['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
 				$req->attrs->server['DOCUMENT_URI'] = $u['path'];
 				$req->attrs->server['PHP_SELF'] = $u['path'];
 				$req->attrs->server['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
 				$req->attrs->server['SCRIPT_NAME'] = $req->attrs->server['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
-				$req->attrs->server['SERVER_PROTOCOL'] = $e[2];
+				$req->attrs->server['SERVER_PROTOCOL'] = $command[2];
 
 				list(
 					$req->attrs->server['REMOTE_ADDR'],
 					$req->attrs->server['REMOTE_PORT']
 				) = explode(':', $this->poolState[$connId]['addr']);
 
-				for ($i = 1, $n = sizeof($h); $i < $n; ++$i) {
-					$e = explode(': ', $h[$i]);
+				for ($i = 1, $n = sizeof($headersArray); $i < $n; ++$i) {
+					$e = explode(': ', $headersArray[$i]);
 
 					if (isset($e[1])) {
 						$req->attrs->server['HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr))] = $e[1];
 					}
+				}
+				if (isset($u['host'])) {
+					$req->attrs->server['HTTP_HOST'] = $u['host'];	
 				}
 
 				$req->attrs->params_done = true;
