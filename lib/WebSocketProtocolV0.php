@@ -121,7 +121,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 		return pack('N', $result);
 	}
 
-    protected function _dataEncode($data, $type)
+    public function encodeFrame($data, $type)
     {
 		// Binary
 		if (($type & self::BINARY) === self::BINARY)
@@ -156,13 +156,12 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 		}
     }
 
-    protected function _dataDecode($data)
+    public function onRead()
     {
 		$decodedData = '' ;
-
-		while (($buflen = strlen($data)) >= 2)
+		while (($buflen = strlen($this->session->buf)) >= 2)
 		{
-			$frametype = ord(binarySubstr($data, 0, 1)) ;
+			$frametype = ord(binarySubstr($this->session->buf, 0, 1)) ;
 
 			if (($frametype & 0x80) === 0x80)
 			{
@@ -170,7 +169,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 				$i = 0 ;
 
 				do {
-					$b = ord(binarySubstr($data, ++$i, 1)) ;
+					$b = ord(binarySubstr($this->session->buf, ++$i, 1)) ;
 					$n = $b & 0x7F ;
 					$len *= 0x80 ;
 					$len += $n ;
@@ -189,13 +188,13 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 					return FALSE ;
 				} 
 					
-				$decodedData .= binarySubstr($data, 2, $len) ;
-				$data = binarySubstr($data, 2 + $len) ;
-//				$this->onFrame($decodedData, $frametype);
+				$decodedData .= binarySubstr($this->session->buf, 2, $len) ;
+				$this->session->buf = binarySubstr($this->session->buf, 2 + $len) ;
+				$this->onFrame($decodedData, $frametype);
 			}
 			else
 			{
-				if (($p = strpos($data, "\xFF")) !== FALSE)
+				if (($p = strpos($this->session->buf, "\xFF")) !== FALSE)
 				{
 					if ($this->session->appInstance->config->maxallowedpacket->value <= $p - 1)
 					{
@@ -204,9 +203,9 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 						return FALSE ;
 					}
 						
-					$decodedData .= binarySubstr($data, 1, $p - 1) ;
-					$data = binarySubstr($data, $p + 1) ;
-//					$this->onFrame($decodedData, $frametype);
+					$decodedData .= binarySubstr($this->session->buf, 1, $p - 1) ;
+					$this->session->buf = binarySubstr($this->session->buf, $p + 1) ;
+					$this->onFrame($decodedData, $frametype);
 				}
 				else
 				{

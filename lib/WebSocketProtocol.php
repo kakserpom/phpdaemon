@@ -4,7 +4,7 @@
  * Websocket protocol abstract class
  */
 
-abstract class WebSocketProtocol
+class WebSocketProtocol
 {
 	public $description ;
 	protected $session ;
@@ -14,12 +14,12 @@ abstract class WebSocketProtocol
 		
 	public function __construct($session)
 	{
-		$this->session = $session ;
+		$this->session = $session;
 	}
 
 	public function getFrameType($type)
 	{
-	    $frametype = @constant(get_class($this) .'::' . $type) ;
+	    $frametype = @constant($a = get_class($this) .'::' . $type) ;
 	    
 	    if ($frametype === NULL)
 	    {
@@ -36,13 +36,11 @@ abstract class WebSocketProtocol
 
 	public function sendFrame($data, $type)
 	{
-	    $this->session->write($this->_dataEncode($data, $type)) ;
+	    $this->session->write($this->encodeFrame($data, $type)) ;
 	}
 
-	public function recvFrame($data, $type)
-	{
-        $this->session->onFrame($this->_dataDecode($data), $type) ;
-	    $this->session->buf = "" ;
+	public function onRead() {
+	 	$this->session->buf = "" ;
 	}
 	
     /**
@@ -56,21 +54,4 @@ abstract class WebSocketProtocol
 		return FALSE ;
     }
 
-	/**
-	 * Data encoding
-	 */
-
-    protected function _dataEncode($decodedData, $type = NULL)
-    {
-        return NULL ;
-    }
-
-	/**
-	 * Data decoding
-	 */
-
-    protected function _dataDecode($encodedData)
-    {
-       return NULL ;
-    }
 }

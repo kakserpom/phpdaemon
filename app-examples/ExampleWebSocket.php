@@ -33,7 +33,7 @@ class ExampleWebSocketSession extends WebSocketRoute {
 	 */
 	public function onFrame($data, $type) {
 		if ($data === 'ping') {
-			$this->client->sendFrame('pong', WebSocketSERVER::STRING,
+			$this->client->sendFrame('pong', 'STRING',
 				function($client) {
 					Daemon::log('ExampleWebSocket: \'pong\' received by client.');
 				}
