@@ -83,27 +83,39 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 	 * @see http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10#page-16
 	 */
 
-    protected function encodeFrame($data, $type = 'STRING')
-    {
-        $frames = array() ;
+    protected function encodeFrame($data, $type = 'STRING') {
+		$fin = 1;
+		$rsv1 = 0;
+		$rsv2 = 0;
+		$rsv3 = 0;
+		if (in_array($type, array('STRING', 'BINARY')) && in_array('deflate-frame', $this->session->extensions)) {
+			$data = gzcompress($data);
+			$rsv1 = 1;
+		}
+		return $this->encodeFragment($data, $type, $fin, $rsv1, $rsv2, $rsv3);
+    }
+
+	protected function encodeFragment($data, $type, $fin = 1, $rsv1 = 0, $rsv2 = 0, $rsv3 = 0) {
         $mask =	chr(rand(0, 0xFF)) .
  						chr(rand(0, 0xFF)) . 
 						chr(rand(0, 0xFF)) . 
 						chr(rand(0, 0xFF)) ;
-		$packet = chr(bindec($a = '1000'.str_pad(decbin($this->getFrameType($type)), 4, '0', STR_PAD_LEFT)));
+		$packet = chr(bindec($fin . $rsv1 . $rsv2 . $rsv3 . str_pad(decbin($this->getFrameType($type)), 4, '0', STR_PAD_LEFT)));
         $dataLength = strlen($data);
+		$isMasked = false;
+		$isMaskedInt = $isMasked ? 128 : 0;
         if ($dataLength <= 125)
         {
-            $packet .= chr($dataLength + 128);
+            $packet .= chr($dataLength + $isMaskedInt);
         }
         elseif ($dataLength <= 65535)
         {
-            $packet .=	chr(254) . // 126 + 128
+            $packet .=	chr(126 + $isMaskedInt) . // 126 + 128
             			chr($dataLength >> 8) .
             			chr($dataLength & 0xFF);
         }
         else {
-            $packet .=	chr(255) . // 127 + 128
+            $packet .=	chr(127 + $isMaskedInt) . // 127 + 128
              			chr($dataLength >> 56) .
            				chr($dataLength >> 48) .
             			chr($dataLength >> 40) .
@@ -113,11 +125,13 @@ class WebSocketProtocolV13 extends WebSocketProtocol
                			chr($dataLength >>  8) .
              			chr($dataLength & 0xFF);
         }
-        
-        $packet .=	$mask .
- 					$this->mask($data, $mask);
+        if ($isMasked) { 
+        	$packet .=	$mask . $this->mask($data, $mask);
+		} else {
+ 			$packet .= $data;
+		}
 		return $packet;
-    }
+	}
 	public function mask ($data, $mask) {
    		for ($i = 0, $l = strlen($data), $ml = strlen($mask); $i < $l; $i++) {
 	     	$data[$i] = $data[$i] ^ $mask[$i % $ml] ;
@@ -182,10 +196,15 @@ class WebSocketProtocolV13 extends WebSocketProtocol
     public function onRead()
     {
 		$encodedData = &$this->session->buf;
+		$data = '';
 		while (($buflen = strlen($encodedData)) >= 1) {
 			$p = 0; // offset
 			$first = ord(binarySubstr($encodedData, $p++, 1)); // first byte integer (fin, opcode)
-			$opcode = (int) bindec(substr(decbin($first), 4, 4));
+			$firstBits = decbin($first);
+			$rsv1 = (bool) $firstBits[1];
+			$rsv2 = (bool) $firstBits[2];
+			$rsv3 = (bool) $firstBits[3];
+			$opcode = (int) bindec(substr($firstBits, 4, 4));
 			if ($opcode === 0x8) { // CLOSE
         		$this->session->finish();
             	return;
@@ -193,9 +212,6 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 			$opcodeName = $this->opcodes[$opcode];
 			$second = ord(binarySubstr($encodedData, $p++, 1)); // second byte integer (masked, payload length)
 			$fin =	(bool) ($first >> 7);
-			if (!$fin) {
-				return; // not enough data yet
-			}
         	$isMasked   = (bool) ($second >> 7);
         	$dataLength = $second & 0x7f;
           	if ($dataLength === 0x7e) { // 2 bytes-length
@@ -235,7 +251,16 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 				$data = $this->mask($data, $mask);
 			}
 			$encodedData = binarySubstr($encodedData, $p);
-			$this->session->onFrame($data, $opcodeName);
+			//Daemon::log(Debug::dump(array('ext' => $this->session->extensions, 'rsv1' => $rsv1, 'data' => Debug::exportBytes($data))));
+			if ($rsv1 && in_array('deflate-frame', $this->session->extensions)) { // deflate frame
+				$data = gzuncompress($data, $this->session->appInstance->config->maxallowedpacket->value);
+			}
+			if (!$fin) {
+				$this->session->framebuf .= $data;
+			} else {
+				$this->session->onFrame($this->session->framebuf . $data, $opcodeName);
+				$this->session->framebuf = '';
+			}
 		}
     }
 }

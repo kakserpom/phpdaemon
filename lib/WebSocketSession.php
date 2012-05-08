@@ -10,6 +10,9 @@ class WebSocketSession extends SocketSession {
 	public $firstline = FALSE;
 	public $writeReady = TRUE;
 	public $callbacks = array();
+	public $extensions = array();
+	public $framebuf = '';
+	public $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
 
 	public $protocol; // Related WebSocket protocol
 
@@ -267,6 +270,11 @@ class WebSocketSession extends SocketSession {
 
 				if ($l === "\r\n")
 				{
+					if (isset($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS'])) {
+						$str = strtolower($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS']);
+						$str = preg_replace($this->extensionsCleanRegex, '', $str);
+						$this->extensions = explode(', ', $str);
+					}
 					if (
 							!isset($this->server['HTTP_CONNECTION']) 
 						|| (!preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->server['HTTP_CONNECTION']))  // "Upgrade" is not always alone (ie. "Connection: Keep-alive, Upgrade")
