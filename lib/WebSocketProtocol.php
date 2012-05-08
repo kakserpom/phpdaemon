@@ -19,6 +19,9 @@ class WebSocketProtocol
 
 	public function getFrameType($type)
 	{
+		if ($type === NULL) {
+			$type = 'STRING';
+		}
 	    $frametype = @constant($a = get_class($this) .'::' . $type) ;
 	    
 	    if ($frametype === NULL)
