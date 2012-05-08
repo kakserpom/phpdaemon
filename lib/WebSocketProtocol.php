@@ -19,6 +19,9 @@ class WebSocketProtocol
 
 	public function getFrameType($type)
 	{
+		if (is_int($type)) {
+			return $type;
+		}
 		if ($type === NULL) {
 			$type = 'STRING';
 		}

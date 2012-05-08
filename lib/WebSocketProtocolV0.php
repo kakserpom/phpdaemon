@@ -124,6 +124,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
     public function encodeFrame($data, $type)
     {
 		// Binary
+		$type = $this->getFrameType($type);
 		if (($type & self::BINARY) === self::BINARY)
 		{
 			$n = strlen($data);
@@ -158,7 +159,6 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 
     public function onRead()
     {
-		$decodedData = '' ;
 		while (($buflen = strlen($this->session->buf)) >= 2)
 		{
 			$frametype = ord(binarySubstr($this->session->buf, 0, 1)) ;
@@ -188,9 +188,9 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 					return FALSE ;
 				} 
 					
-				$decodedData .= binarySubstr($this->session->buf, 2, $len) ;
+				$decodedData = binarySubstr($this->session->buf, 2, $len) ;
 				$this->session->buf = binarySubstr($this->session->buf, 2 + $len) ;
-				$this->onFrame($decodedData, $frametype);
+				$this->session->onFrame($decodedData, 'BINARY');
 			}
 			else
 			{
@@ -203,21 +203,15 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 						return FALSE ;
 					}
 						
-					$decodedData .= binarySubstr($this->session->buf, 1, $p - 1) ;
+					$decodedData = binarySubstr($this->session->buf, 1, $p - 1) ;
 					$this->session->buf = binarySubstr($this->session->buf, $p + 1) ;
-					$this->onFrame($decodedData, $frametype);
+					$this->session->onFrame($decodedData, 'STRING');
 				}
 				else
 				{
-					// not enough data yet
-					if ($this->session->appInstance->config->maxallowedpacket->value <= strlen($data))
-					{
-						// Too big packet
-						$this->session->finish() ;
-						return FALSE ;
-					}
-
-					return $decodedData ;
+					// not enough data yet					
+					return;
+	
 				}
 			}
 		}
