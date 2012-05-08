@@ -6,8 +6,8 @@
 
 class WebSocketProtocol
 {
-	public $description ;
-	protected $session ;
+	public $description;
+	public $session;
 
 	const STRING = NULL;
 	const BINARY = NULL;

@@ -25,7 +25,7 @@ ini_set('include_path', get_include_path()
 
 spl_autoload_register(function($classname) {
 	$parts = explode('\\', $classname);
-	if (sizeof($parts) > 1) {
+	if (sizeof($parts) > 1 && ('PHPDaemon' == $parts[0])) {
 		// namespaces support (remove first "PHPDaemon\" part)
 		array_shift($parts);
 	}
