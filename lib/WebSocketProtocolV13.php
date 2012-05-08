@@ -14,6 +14,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 	const PING = 0x9;
 	const PONG = 0xA ;
 	public $opcodes;
+	public $outgoingCompression = 0;
 		
 	public function __construct($session)
 	{
@@ -88,8 +89,8 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 		$rsv1 = 0;
 		$rsv2 = 0;
 		$rsv3 = 0;
-		if (in_array($type, array('STRING', 'BINARY')) && in_array('deflate-frame', $this->session->extensions)) {
-			$data = gzcompress($data);
+		if (in_array($type, array('STRING', 'BINARY')) && ($this->outgoingCompression > 0) && in_array('deflate-frame', $this->session->extensions)) {
+			$data = gzcompress($data, $this->outgoingCompression);
 			$rsv1 = 1;
 		}
 		return $this->encodeFragment($data, $type, $fin, $rsv1, $rsv2, $rsv3);
