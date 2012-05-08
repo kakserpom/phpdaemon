@@ -67,6 +67,8 @@ class WebSocketSession extends SocketSession {
 		}
 		
 		unset($this->upstream);
+		unset($this->protocol->session);
+		unset($this->protocol);
 		unset($this->appInstance->sessions[$this->connId]);
 	}
 	

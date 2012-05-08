@@ -212,6 +212,12 @@ class WebSocketProtocolV13 extends WebSocketProtocol
             	$dataLength = $this->bytes2int(binarySubstr($encodedData, $p, 4));
             	$p += 4;
             }
+			if ($this->session->appInstance->config->maxallowedpacket->value <= $dataLength) {
+				// Too big packet
+				$this->session->finish();
+				return;
+			}
+
 			if ($isMasked) {
 				if ($buflen < $p + 4) {
 					return; // not enough data yet
@@ -222,6 +228,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 			if ($buflen < $p + $dataLength) {
 				return; // not enough data yet
 			}
+			
 			$data = binarySubstr($encodedData, $p, $dataLength);
 			$p += $dataLength;
 			if ($isMasked) {
