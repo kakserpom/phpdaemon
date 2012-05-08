@@ -36,7 +36,7 @@ class WebSocketServer extends AsyncServer
 			// listen to
 			'listen'     => 'tcp://0.0.0.0',
 			// listen port
-			'listenport' => 55556,
+			'listenport' => 8047,
 			// max allowed packet size
 			'maxallowedpacket' => new Daemon_ConfigEntrySize('16k'),
 			// disabled by default
