@@ -267,7 +267,7 @@ class WebSocketSession extends SocketSession {
 				{
 					if (
 							!isset($this->server['HTTP_CONNECTION']) 
-						|| (!preg_match('/upgrade/i', $this->server['HTTP_CONNECTION']))  // "Upgrade" is not always alone (ie. "Connection: Keep-alive, Upgrade")
+						|| (!preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->server['HTTP_CONNECTION']))  // "Upgrade" is not always alone (ie. "Connection: Keep-alive, Upgrade")
 						||	!isset($this->server['HTTP_UPGRADE']) 
 						|| (strtolower($this->server['HTTP_UPGRADE']) !== 'websocket')    // Lowercase compare important
 					) {

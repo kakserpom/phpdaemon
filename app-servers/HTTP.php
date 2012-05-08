@@ -298,9 +298,9 @@ class HTTP extends AsyncServer {
 
 				if (
 					isset($req->attrs->server['HTTP_CONNECTION']) 
-					&& ($req->attrs->server['HTTP_CONNECTION'] === 'Upgrade')
-					&& isset($req->attrs->server['HTTP_UPGRADE']) 
-					&& ($req->attrs->server['HTTP_UPGRADE'] === 'WebSocket')
+					&& preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $req->attrs->server['HTTP_CONNECTION'])
+					&& isset($req->attrs->server['HTTP_UPGRADE'])
+					&& (strtolower($req->attrs->server['HTTP_UPGRADE']) === 'websocket')
 				) {
 					if ($this->WS) {
 						$this->WS->inheritFromRequest($req, $this);
