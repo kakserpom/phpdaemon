@@ -47,7 +47,7 @@ class RedisClient extends AsyncServer {
 	}
 
 	/**
-	 * Adds memcached server
+	 * Adds Redis server
 	 * @param string Server's host
 	 * @param string Server's port
 	 * @param integer Weight
@@ -220,9 +220,14 @@ class RedisSession extends SocketSession {
 				$l = rtrim($l, "\r\n");
 				$char = $l[0];
 				if ($char == ':') { // inline
-					$this->resultLength = 1;
-					$this->resultSize = 1;
-					$this->result = array((int) binarySubstr($char, 1));
+					if ($this->result !== null) {
+						++$this->resultSize;
+						$this->result[] = (int) binarySubstr($char, 1);
+					} else {
+						$this->resultLength = 1;
+						$this->resultSize = 1;
+						$this->result = array((int) binarySubstr($char, 1));
+					}
 					goto start;
 				}
 				elseif (($char == '+') || ($char == '-')) { // inline

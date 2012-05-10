@@ -33,6 +33,10 @@ class ComplexJob {
 		$this->checkIfAllReady();
 	}
 	
+	public function getResult($jobname) {
+		return isset($this->results[$jobname]) ? $this->results[$jobname] : null;
+	}
+	
 	public function checkIfAllReady() {
 		if ($this->resultsNum >= $this->jobsNum) {
 			$this->jobs = array();
@@ -67,11 +71,14 @@ class ComplexJob {
 	
 	public function __invoke($name = null, $cb = null) {
 		if (func_num_args() === 0) {
-			$this->state = self::STATE_RUNNING;
-			foreach ($this->jobs as $name => $cb) {
-				$cb($name, $this);
+			if ($this->state === self::STATE_WAITING) {
+				$this->state = self::STATE_RUNNING;
+				foreach ($this->jobs as $name => $cb) {
+					$cb($name, $this);
+					$this->jobs[$name] = null;
+				}
+				$this->checkIfAllReady();
 			}
-			$this->checkIfAllReady();
 			return;
 		}
 		$this->addJob($name, $cb);
