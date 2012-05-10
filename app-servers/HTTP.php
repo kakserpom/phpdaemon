@@ -271,6 +271,8 @@ class HTTP extends AsyncServer {
 				}
 				
 				$req->attrs->server['REQUEST_METHOD'] = $command[0];
+				$req->attrs->server['REQUEST_TIME'] = time();
+				$req->attrs->server['REQUEST_TIME_FLOAT'] = microtime(true);
 				$req->attrs->server['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
 				$req->attrs->server['DOCUMENT_URI'] = $u['path'];
 				$req->attrs->server['PHP_SELF'] = $u['path'];

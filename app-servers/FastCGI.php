@@ -360,6 +360,12 @@ class FastCGI extends AsyncServer {
 		}
 		elseif ($type === self::FCGI_PARAMS) {
 			if ($c === '') {
+				if (!isset($req->attrs->server['REQUEST_TIME'])) {
+					$req->attrs->server['REQUEST_TIME'] = time();
+				}
+				if (!isset($req->attrs->server['REQUEST_TIME_FLOAT'])) {
+					$req->attrs->server['REQUEST_TIME_FLOAT'] = microtime(true);	
+				}
 				$req->attrs->params_done = true;
 
 				$req = Daemon::$appResolver->getRequest($req, $this);

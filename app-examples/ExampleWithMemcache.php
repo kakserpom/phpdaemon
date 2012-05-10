@@ -31,22 +31,33 @@ class ExampleWithMemcache extends AppInstance {
 
 class ExampleWithMemcacheRequest extends HTTPRequest {
 
-	public $stime;
-	public $queryResult;
-	public $sql;
-	public $runstate = 0;
+	public $job;
 
 	/**
 	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
+		
 		$req = $this;
-		$this->stime = microtime(true);
-		$this->appInstance->memcache->stats(function($m) use ($req) {
-			$req->queryResult = $m->result;
+		
+		$job = $this->job = new ComplexJob(function() use ($req) { // called when job is done
+
 			$req->wakeup(); // wake up the request immediately
+
 		});
+			
+		$job('testquery', function($name, $job) use ($req) { // registering job named 'testquery'
+		
+			$req->appInstance->memcache->stats(function($memcache) use ($name, $job) {
+				$job->setResult($name, $memcache->result); 
+			});
+			
+		});
+		
+		$job(); // let the fun begin
+		
+		$this->sleep(5, true); // setting timeout
 	}
 
 	/**
@@ -54,20 +65,8 @@ class ExampleWithMemcacheRequest extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {
-		if (
-			!$this->queryResult 
-			&& ($this->runstate++ === 0)
-		) {
-			// sleep for 5 seconds or until wakeup
-			$this->sleep(5);
-		} 
-		
-		try {
-			$this->header('Content-Type: text/html');
-		} catch (Exception $e) {}
-
-			?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+		try {$this->header('Content-Type: text/html');} catch (Exception $e) {}
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -75,14 +74,14 @@ class ExampleWithMemcacheRequest extends HTTPRequest {
 </head>
 <body>
 <?php
-if ($this->queryResult) {
+if ($r = $this->job->getResult('testquery')) {
 	echo '<h1>It works! Be happy! ;-)</h1>Result of query: <pre>';
-	var_dump($this->queryResult);
+	var_dump($r);
 	echo '</pre>';
 } else {
 	echo '<h1>Something went wrong! We have no result.</h1>';
 }
-echo '<br />Request (http) took: '.round(microtime(TRUE)-$this->stime,6);
+echo '<br />Request (http) took: '.round(microtime(TRUE) - $this->attrs->server['REQUEST_TIME_FLOAT'],6);
 ?>
 </body>
 </html>

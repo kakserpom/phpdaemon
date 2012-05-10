@@ -31,10 +31,8 @@ class ExampleWithRedis extends AppInstance {
 
 class ExampleWithRedisRequest extends HTTPRequest {
 
-	public $stime;
-	public $queryResult;
+	public $job;
 	public $sql;
-	public $runstate = 0;
 
 	/**
 	 * Constructor.
@@ -42,7 +40,6 @@ class ExampleWithRedisRequest extends HTTPRequest {
 	 */
 	public function init() {
 		$req = $this;
-		$this->stime = microtime(true);
 		
 		$job = $this->job = new ComplexJob(function() use ($req) { // called when job is done
 
@@ -88,7 +85,7 @@ if ($r = $this->job->getResult('testquery')) {
 } else {
 	echo '<h1>Something went wrong! We have no result.</h1>';
 }
-echo '<br />Request (http) took: '.round(microtime(TRUE)-$this->stime,6);
+echo '<br />Request (http) took: '.round(microtime(TRUE) - $this->attrs->server['REQUEST_TIME_FLOAT'],6);
 ?>
 </body>
 </html>
