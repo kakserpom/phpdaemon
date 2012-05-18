@@ -677,40 +677,6 @@ class MongoClient extends AsyncServer {
 	}
 
 	/**
-	 * Called when worker is going to update configuration
-	 * @return void
-	 */
-	public function updateWorker() { }
-
-	/**
-	 * Handles the worker's status.	
-	 * @param int Status code.
-	 * @return boolean Result.
-	 */
-	public function handleStatus($ret) {
-		if ($ret === 2) {
-			// script update
-			$r = $this->updateWorker();
-		}
-		elseif ($ret === 3) {
-			// graceful worker shutdown for restart
-			$r = $this->shutdown(true);
-		}
-		elseif ($ret === 5) {
-			// shutdown worker
-			$r = $this->shutdown();
-		} else {
-			$r = true;
-		}
-
-		if ($r === NULL) {
-			$r = true;
-		}
-
-		return $r;
-	}
-
-	/**
 	 * Updates one object in collection
 	 * @param string Collection's name
 	 * @param array Conditions

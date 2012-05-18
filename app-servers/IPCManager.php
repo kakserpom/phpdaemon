@@ -70,7 +70,7 @@ class IPCManager extends AsyncServer {
   }
   
   
-  public function broadcastCall($appInstance, $method, $args = array(), $cb = NULL) {
+  public function sendBroadcastCall($appInstance, $method, $args = array(), $cb = null) {
 		if ($c = $this->getConnection()) {
 			
 			$c->sendPacket(array(

@@ -86,7 +86,7 @@ class HTTP extends AsyncServer {
 	 * Called when remote host is trying to establish the connection.
 	 * @return boolean If true then we can accept new connections, else we can't.
 	 */
-	public function checkAccept() {
+	public function checkAccept($stream, $events, $arg) {
 		if (Daemon::$process->reload) {
 			return false;
 		}

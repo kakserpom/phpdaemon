@@ -17,7 +17,7 @@ class MySQLProxy extends AsyncServer {
 	 */
 	protected function getConfigDefaults() {
 		return array(
-			// @todo add description
+			// real mysql address
 			'upserver'     => '127.0.0.1:3306',
 			// listen to
 			'listen'       => 'tcp://0.0.0.0',

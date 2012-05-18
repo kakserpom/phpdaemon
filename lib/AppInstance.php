@@ -90,7 +90,7 @@ class AppInstance {
 	
 	
 	/**
-	 * Send broadcast call.
+	 * Send broadcast RPC.
 	 * You can override it
 	 * @param string Method name.
 	 * @param array Arguments.
@@ -98,7 +98,7 @@ class AppInstance {
 	 * @return boolean Success.
 	 */
 	public function broadcastCall($method, $args = array(), $cb = NULL) {
-		return Daemon::$process->IPCManager->broadcastCall(
+		return Daemon::$process->IPCManager->sendBroadcastCall(
 					get_class($this) . ($this->name !== '' ? '-' . $this->name : ''),
 					$method,
 					$args,
@@ -156,10 +156,9 @@ class AppInstance {
 	/**
 	 * Called when worker is going to update configuration
 	 * @todo call it only when application section config is changed
-	 * @todo rename to onConfigChanged()
 	 * @return void
 	 */
-	public function update() {}
+	public function onConfigUpdated() {}
  
 	/**
 	 * Called when application instance is going to shutdown
@@ -265,7 +264,7 @@ class AppInstance {
 	public function handleStatus($ret) {
 		if ($ret === 2) {
 			// script update
-			$r = $this->update();
+			$r = $this->onConfigUpdated();
 		}
 		elseif ($ret === 3) {
 			 // graceful worker shutdown for restart

@@ -40,7 +40,7 @@ class FlashPolicy extends AsyncServer {
 				$this->config->listenport->value
 			);
 			
-			$this->update();
+			$this->onConfigUpdated();
 		}
 	}
 
@@ -48,7 +48,7 @@ class FlashPolicy extends AsyncServer {
 	 * Called when worker is going to update configuration.
 	 * @return void
 	 */
-	public function update() {
+	public function onConfigUpdated() {
 		$this->policyData = file_get_contents($this->config->file->value, true);
 	}
 

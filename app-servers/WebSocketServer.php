@@ -51,9 +51,7 @@ class WebSocketServer extends AsyncServer
 	 * @return void
 	 */
 
-	public function init()
-	{
-		$this->update();
+	public function init() {
 		
 		if ($this->config->enable->value)
 		{

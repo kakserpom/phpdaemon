@@ -68,7 +68,7 @@ class ExampleAsyncStreamRequest extends HTTPRequest {
 	 */
 	public function run() {
 		if (!$this->stream->eof()) {
-			$this->sleep();
+			$this->sleep(0.1);
 		}
 	}
 	

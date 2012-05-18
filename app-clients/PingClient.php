@@ -78,10 +78,7 @@ class PingClientSession extends SocketSession {
 	 * @param string New data
 	 * @return void
 	 */
-	public function stdin($buf) {
-
-		Daemon::log(Debug::exportBytes($buf));
-		
+	public function stdin($buf) {		
 		while ($c = array_pop($this->callbacks)) {
 		 list ($cb, $st) = $c;
 		 $cb(microtime(true) - $st);
