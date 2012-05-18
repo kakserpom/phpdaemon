@@ -16,9 +16,9 @@ class Example extends AppInstance {
 	 * Uncomment and return array with your default options
 	 * @return array|false
 	 */
-	//protected function getConfigDefaults() {
-	//	return false;
-	//}
+	protected function getConfigDefaults() {
+		return false;
+	}
 
 	/**
 	 * Constructor.
@@ -61,7 +61,6 @@ class ExampleRequest extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {
-		$stime = microtime(TRUE);
 		$this->header('Content-Type: text/html');
 		$this->setcookie('testcookie', '1');
 		$this->registerShutdownFunction(function() {
@@ -127,7 +126,7 @@ if ($displaystate) {
 		'_SERVER' => $_SERVER,
 	));
 ?></pre>
-<br />Request took: <?php printf('%f', round(microtime(TRUE) - $stime, 6)); ?>
+<br />Request took: <?php printf('%f', round(microtime(TRUE) - $_SERVER['REQUEST_TIME_FLOAT'], 6)); ?>
 </body><?php
 	}
 	
