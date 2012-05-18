@@ -211,7 +211,7 @@ class Request {
 	 * @param array Optional. Possible values.
 	 * @return string Value.
 	 */
-	public function getString(&$var, $values = null) {
+	public static function getString(&$var, $values = null) {
 		if (!is_string($var)) {
 			$var = '';
 		}
@@ -228,7 +228,7 @@ class Request {
 	 * @param array Optional. Filter callback.
 	 * @return string Value.
 	 */
-	public function getArray(&$var, $filter = null) {
+	public static function getArray(&$var, $filter = null) {
 		if (!is_array($var)) {
 			 return array();
 		}
@@ -245,7 +245,7 @@ class Request {
 	 * @param array Optional. Possible values.
 	 * @return string Value.
 	 */
-	public function getInteger(&$var, $values = null) {
+	public static function getInteger(&$var, $values = null) {
 		if (is_string($var) && ctype_digit($var)) {
 			$var = (int) $var;
 		}
