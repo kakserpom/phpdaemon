@@ -364,13 +364,13 @@ class AsyncServer extends AppInstance {
 		}
 
 		event_buffer_free($this->buf[$connId]);
-
-		if (Daemon::$useSockets) {
-			socket_close(Daemon::$process->pool[$connId]);
-		} else {
-			fclose(Daemon::$process->pool[$connId]);
+		if (isset(Daemon::$process->pool[$connId])) {
+			if (Daemon::$useSockets) {
+				socket_close(Daemon::$process->pool[$connId]);
+			} else {
+				fclose(Daemon::$process->pool[$connId]);
+			}
 		}
-		
 		unset(Daemon::$process->pool[$connId]);
 		unset(Daemon::$process->poolApp[$connId]);
 		unset(Daemon::$process->readPoolState[$connId]);

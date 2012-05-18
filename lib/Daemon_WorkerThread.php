@@ -128,10 +128,10 @@ class Daemon_WorkerThread extends Thread {
 
 				static $n = 0;
 
-				$inc = array_unique(array_map('realpath',get_included_files()));
+				$inc = array_unique(array_map('realpath', get_included_files()));
 				$s = sizeof($inc);
 				if ($s > $n) {
-					$slice = array_slice($inc,$n);
+					$slice = array_slice($inc, $n);
 					Daemon::$process->IPCManager->sendPacket(array('op' => 'addIncludedFiles', 'files' => $slice));
 					$n = $s;
 				}

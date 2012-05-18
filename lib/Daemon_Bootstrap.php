@@ -118,8 +118,7 @@ class Daemon_Bootstrap {
 			Daemon::$config->autoreimport->value
 			&& !is_callable('runkit_import')
 		) {
-			Daemon::log('runkit extension not found. You should install it or disable --auto-reimport.');
-			$error = TRUE;
+			Daemon::log('runkit extension not found. You should install it or disable --auto-reimport. Non-critical error.');
 		}
 		
 		if (!is_callable('posix_kill')) {

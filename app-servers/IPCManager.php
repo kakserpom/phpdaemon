@@ -141,7 +141,7 @@ class IPCManagerMasterSession extends SocketSession {
 		}
 		elseif ($p['op'] === 'addIncludedFiles') {
 			foreach ($p['files'] as $file) {
-				Daemon::$process->fileWatcher->addWatch($file,$this->spawnid);
+				Daemon::$process->fileWatcher->addWatch($file, $this->spawnid);
 			}
 		}
 	}
@@ -165,7 +165,7 @@ class IPCManagerMasterSession extends SocketSession {
 		$this->buf .= $buf;
 		
 		while (($l = $this->gets()) !== FALSE) {
-			$this->onPacket(json_decode($l,TRUE));
+			$this->onPacket(json_decode($l, TRUE));
 		}
 	}
 }
@@ -200,7 +200,11 @@ class IPCManagerWorkerSession extends SocketSession {
 			Daemon_TimedEvent::add(function($event) use ($path) {
 				$self = Daemon::$process;
 			
-				runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
+				if (is_callable('runkit_import')) {
+					runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
+				} else {
+					$this->appInstance->log('Cannot import \''.$path.'\': runkit_import is not callable.');
+				}
 				
 				$event->finish();
 			}, 5);
