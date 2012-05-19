@@ -199,8 +199,8 @@ class IPCManagerWorkerSession extends SocketSession {
 			$path = $p['path'];
 			Daemon_TimedEvent::add(function($event) use ($path) {
 				$self = Daemon::$process;
-			
-				if (is_callable('runkit_import')) {
+				
+				if (Daemon::supported(Daemon::SUPPORT_RUNKIT_IMPORT)) {
 					runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
 				} else {
 					$this->appInstance->log('Cannot import \''.$path.'\': runkit_import is not callable.');

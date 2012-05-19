@@ -12,6 +12,7 @@ class Daemon {
 	const SUPPORT_RUNKIT_SANDBOX         = 0;	
 	const SUPPORT_RUNKIT_MODIFY          = 1;
 	const SUPPORT_RUNKIT_INTERNAL_MODIFY = 2;
+	const SUPPORT_RUNKIT_IMPORT 		 = 3;
 
 	/**
 	 * PHPDaemon version
@@ -131,18 +132,22 @@ class Daemon {
 	 */
 	private static function checkSupports() {
 		if (is_callable('runkit_lint_file')) {
-			self::$support[self::SUPPORT_RUNKIT_SANDBOX] = 1;
+			self::$support[self::SUPPORT_RUNKIT_SANDBOX] = true;
 		}
 
 		if (is_callable('runkit_function_add')) {
-			self::$support[self::SUPPORT_RUNKIT_MODIFY] = 1;
+			self::$support[self::SUPPORT_RUNKIT_MODIFY] = true;
+		}
+		
+		if (is_callable('runkit_import')) {
+			self::$support[self::SUPPORT_RUNKIT_IMPORT] = true;
 		}
 		
 		if (
 			self::supported(self::SUPPORT_RUNKIT_MODIFY)
 			&& ini_get('runkit.internal_override')
 		) {		
-			self::$support[self::SUPPORT_RUNKIT_INTERNAL_MODIFY] = 1;
+			self::$support[self::SUPPORT_RUNKIT_INTERNAL_MODIFY] = true;
 		}
 	}
 

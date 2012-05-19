@@ -15,22 +15,12 @@ class Daemon_WorkerThread extends Thread {
 	private $reloadDelay = 2;
 	public $reloaded = FALSE;
 
-
-	/**
-	 * Worker's connnections (FDs) pool
-	 * @var string
-	 */
-	public $pool = array();
-
 	/**
 	 * Map connnection id to application which created this connection
 	 * @var string
 	 */
-	public $poolApp = array();
-	public $connCounter = 0;
-	public $reqCounter = 0;
 	public $queue = array();
-	public $timeLastReq = 0;
+	public $timeLastActivity = 0;
 	public $readPoolState = array();
 	public $writePoolState = array();
 	private $autoReloadLast = 0;
@@ -138,7 +128,6 @@ class Daemon_WorkerThread extends Thread {
 				$event->timeout();
 			}, 1e6 * Daemon::$config->autoreload->value, 'watchIncludedFilesTimedEvent');
 		}
-
 
 		while (!$this->breakMainLoop) {
 			event_base_loop($this->eventBase);
@@ -348,21 +337,22 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function closeSockets() {
-		foreach (Daemon::$socketEvents as $k => $ev) {
+		for (;sizeof(Daemon::$socketEvents);) {
+			if (!$ev = array_pop(Daemon::$socketEvents)) {
+				continue;
+			}
 			event_del($ev);
 			event_free($ev);
-
-			unset($this->socketEvents[$k]);
 		}
-
-		foreach (Daemon::$sockets as $k => &$s) {
-			if (Daemon::$useSockets) {
-				socket_close($s[0]);
-			} else {
-				fclose($s[0]);
+		for (;sizeof(Daemon::$sockets);) {
+			if (!$sock = array_pop(Daemon::$sockets)) {
+				continue;
 			}
-
-			unset(Daemon::$sockets[$k]);
+			if (Daemon::$useSockets) {
+				socket_close($sock);
+			} else {
+				fclose($sock);
+			}
 		}
 	}
 
@@ -393,18 +383,6 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		if (
-			Daemon::$config->maxrequests->value
-			&& ($this->reqCounter >= Daemon::$config->maxrequests->value)
-		) {
-			$this->log('\'maxrequests\' exceed. Graceful shutdown.');
-
-			$this->reload = TRUE;
-			$this->reloadTime = $time + $this->reloadDelay;
-			$this->setStatus($this->currentStatus);
-			$this->status = 3;
-		}
-
-		if (
 			(Daemon::$config->maxmemoryusage->value > 0)
 			&& (memory_get_usage(TRUE) > Daemon::$config->maxmemoryusage->value)
 		) {
@@ -418,8 +396,8 @@ class Daemon_WorkerThread extends Thread {
 
 		if (
 			Daemon::$config->maxidle->value
-			&& $this->timeLastReq
-			&& ($time - $this->timeLastReq > Daemon::$config->maxidle->value)
+			&& $this->timeLastActivity
+			&& ($time - $this->timeLastActivity > Daemon::$config->maxidle->value)
 		) {
 			$this->log('\'maxworkeridle\' exceed. Graceful shutdown.');
 

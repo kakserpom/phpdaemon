@@ -11,7 +11,6 @@
 class Daemon_Config implements ArrayAccess {
 
 	// Worker graceful restarting:
-	public $maxrequests    = '1k';
 	public $maxmemoryusage = '0b';
 	public $maxidle        = '0s';
 			

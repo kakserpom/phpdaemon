@@ -8,7 +8,7 @@
  */
 class DebugConsole extends AsyncServer {
 
-	public $sessions = array(); // Active sessions
+	public $pool;
 
 	/**
 	 * Setting default config options
@@ -34,10 +34,19 @@ class DebugConsole extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			$this->bindSockets(
-				$this->config->listen->value,
-				$this->config->listenport->value
-			);
+			$this->pool = new ConnectionPool('DebugConsoleConnection', $this->config->listen->value, $this->config->listenport->value);
+			$this->pool->appInstance = $this;
+		}
+	}
+	
+	/**
+	 * Called when the worker is ready to go
+	 * @todo -> protected?
+	 * @return void
+	 */
+	public function onReady() {
+		if (isset($this->pool)) {
+			$this->pool->enable();
 		}
 	}
 
@@ -53,7 +62,7 @@ class DebugConsole extends AsyncServer {
 	
 }
 
-class DebugConsoleSession extends SocketSession {
+class DebugConsoleConnection extends Connection {
 
 	/**
 	 * Are we authorized?
@@ -101,8 +110,7 @@ Please enter the password or type "exit": ');
 				$this->write('Wrong password. Please, try again: ');
 			}
 		} else {
-			$this->writeln('You are authorized
-');
+			$this->writeln('You are authorized.');
 			$this->auth = true;
 		}
 	}

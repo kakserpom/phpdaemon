@@ -6,9 +6,9 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class FlashPolicy extends AsyncServer {
+class FlashPolicy extends AppInstance {
 
-	public $sessions = array();  // Active sessions
+	public $pool;				 // ConnectionPool
 	public $policyData;          // Cached policy-file.
 
 	/**
@@ -35,13 +35,18 @@ class FlashPolicy extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			$this->bindSockets(
-				$this->config->listen->value,
-				$this->config->listenport->value
-			);
-			
+			$this->pool = new ConnectionPool('FlashPolicyConnection', $this->config->listen->value,	$this->config->listenport->value);
 			$this->onConfigUpdated();
 		}
+	}
+	
+	/**
+	 * Called when the worker is ready to go
+	 * @todo -> protected?
+	 * @return void
+	 */
+	public function onReady() {
+		$this->pool->enable();
 	}
 
 	/**
@@ -51,30 +56,19 @@ class FlashPolicy extends AsyncServer {
 	public function onConfigUpdated() {
 		$this->policyData = file_get_contents($this->config->file->value, true);
 	}
-
-	/**
-	 * Called when new connection is accepted
-	 * @param integer Connection's ID
-	 * @param string Address of the connected peer
-	 * @return void
-	 */
-	protected function onAccepted($connId, $addr) {
-		$this->sessions[$connId] = new FlashPolicySession($connId, $this);
-	}
 	
 }
 
-class FlashPolicySession extends SocketSession {
-
+class FlashPolicyConnection extends Connection {
+	protected $initialLowMark = 23; // length of '<policy-file-request/>\x00'
+	protected $initialHighMark = 23;
 	/**
 	 * Called when new data received.
 	 * @param string New data.
 	 * @return void
 	 */
 	public function stdin($buf) {
-		$this->buf .= $buf;
-		if (strpos($this->buf, '<policy-file-request/>') !== FALSE) {
-			
+		if ($buf === "<policy-file-request/>\x00") {
 			if ($this->appInstance->policyData) {
 				$this->write($this->appInstance->policyData . "\x00");
 			} else {
@@ -82,11 +76,7 @@ class FlashPolicySession extends SocketSession {
 			}
 			$this->finish();
 		}
-		elseif (
-			(strlen($this->buf) > 64) 
-			|| (strpos($this->buf, "\xff\xf4\xff\xfd\x06") !== FALSE)  // telnet ^C code
-			|| (strpos($this->buf, "\xff\xec") !== FALSE)		// telnet EOF code
-		) {
+		else {
 			$this->finish();
 		}
 	}
