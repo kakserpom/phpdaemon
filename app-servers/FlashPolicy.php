@@ -46,7 +46,9 @@ class FlashPolicy extends AppInstance {
 	 * @return void
 	 */
 	public function onReady() {
-		$this->pool->enable();
+		if (isset($this->pool)) {
+			$this->pool->enable();
+		}
 	}
 
 	/**

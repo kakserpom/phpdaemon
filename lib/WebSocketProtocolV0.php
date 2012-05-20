@@ -10,16 +10,16 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 	const STRING = 0x00;
 	const BINARY = 0x80;
 		
-    public function __construct($session)
+    public function __construct($connection)
     {
-        parent::__construct($session) ;
+        parent::__construct($connection) ;
         
 		$this->description = "Deprecated websocket protocol (IETF drafts 'hixie-76' or 'hybi-00')" ;
     }
 
     public function onHandshake()
     {
-        if (!isset($this->session->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->session->server['HTTP_SEC_WEBSOCKET_KEY2']))
+        if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY2']))
         {
             return FALSE ;
         }
@@ -37,27 +37,27 @@ class WebSocketProtocolV0 extends WebSocketProtocol
     {
         if ($this->onHandshake())
         {
-			$final_key = $this->_computeFinalKey($this->session->server['HTTP_SEC_WEBSOCKET_KEY1'], $this->session->server['HTTP_SEC_WEBSOCKET_KEY2'], $data) ;
+			$final_key = $this->_computeFinalKey($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1'], $this->connection->server['HTTP_SEC_WEBSOCKET_KEY2'], $data) ;
 
 			if (!$final_key)
 			{
 				return FALSE ;
 			}
 
-            if (!isset($this->session->server['HTTP_SEC_WEBSOCKET_ORIGIN']))
+            if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN']))
             {
-                $this->session->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '' ;
+                $this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '' ;
             }
 
             $reply = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
                 . "Upgrade: WebSocket\r\n"
                 . "Connection: Upgrade\r\n"
-                . "Sec-WebSocket-Origin: " . $this->session->server['HTTP_ORIGIN'] . "\r\n"
-                . "Sec-WebSocket-Location: ws://" . $this->session->server['HTTP_HOST'] . $this->session->server['REQUEST_URI'] . "\r\n" ;
+                . "Sec-WebSocket-Origin: " . $this->connection->server['HTTP_ORIGIN'] . "\r\n"
+                . "Sec-WebSocket-Location: ws://" . $this->connection->server['HTTP_HOST'] . $this->connection->server['REQUEST_URI'] . "\r\n" ;
 
-            if (isset($this->session->server['HTTP_SEC_WEBSOCKET_PROTOCOL']))
+            if (isset($this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL']))
             {
-                $reply .= "Sec-WebSocket-Protocol: " . $this->session->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n" ;
+                $reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n" ;
             }
 
             $reply .= "\r\n" ;
@@ -81,7 +81,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 	{
 		if (strlen($data) < 8)
 		{
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->session->clientAddr . '"') ;
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->connection->clientAddr . '"') ;
 			return FALSE ;
 		}
 
@@ -159,9 +159,9 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 
     public function onRead()
     {
-		while (($buflen = strlen($this->session->buf)) >= 2)
+		while (($buflen = strlen($this->connection->buf)) >= 2)
 		{
-			$frametype = ord(binarySubstr($this->session->buf, 0, 1)) ;
+			$frametype = ord(binarySubstr($this->connection->buf, 0, 1)) ;
 
 			if (($frametype & 0x80) === 0x80)
 			{
@@ -169,16 +169,16 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 				$i = 0 ;
 
 				do {
-					$b = ord(binarySubstr($this->session->buf, ++$i, 1)) ;
+					$b = ord(binarySubstr($this->connection->buf, ++$i, 1)) ;
 					$n = $b & 0x7F ;
 					$len *= 0x80 ;
 					$len += $n ;
 				} while ($b > 0x80) ;
 
-				if ($this->session->appInstance->config->maxallowedpacket->value <= $len)
+				if ($this->connection->pool->appInstance->config->maxallowedpacket->value <= $len)
 				{
 					// Too big packet
-					$this->session->finish() ;
+					$this->connection->finish() ;
 					return FALSE ;
 				}
 
@@ -188,24 +188,24 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 					return FALSE ;
 				} 
 					
-				$decodedData = binarySubstr($this->session->buf, 2, $len) ;
-				$this->session->buf = binarySubstr($this->session->buf, 2 + $len) ;
-				$this->session->onFrame($decodedData, 'BINARY');
+				$decodedData = binarySubstr($this->connection->buf, 2, $len) ;
+				$this->connection->buf = binarySubstr($this->connection->buf, 2 + $len) ;
+				$this->connection->onFrame($decodedData, 'BINARY');
 			}
 			else
 			{
-				if (($p = strpos($this->session->buf, "\xFF")) !== FALSE)
+				if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE)
 				{
-					if ($this->session->appInstance->config->maxallowedpacket->value <= $p - 1)
+					if ($this->connection->pool->appInstance->config->maxallowedpacket->value <= $p - 1)
 					{
 						// Too big packet
-						$this->session->finish() ;
+						$this->connection->finish() ;
 						return FALSE ;
 					}
 						
-					$decodedData = binarySubstr($this->session->buf, 1, $p - 1) ;
-					$this->session->buf = binarySubstr($this->session->buf, $p + 1) ;
-					$this->session->onFrame($decodedData, 'STRING');
+					$decodedData = binarySubstr($this->connection->buf, 1, $p - 1) ;
+					$this->connection->buf = binarySubstr($this->connection->buf, $p + 1) ;
+					$this->connection->onFrame($decodedData, 'STRING');
 				}
 				else
 				{
@@ -216,10 +216,10 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 			}
 		}
 
-		if ($this->session->appInstance->config->maxallowedpacket->value <= strlen($decodedData))
+		if ($this->connection->pool->appInstance->config->maxallowedpacket->value <= strlen($decodedData))
 		{
 			// Too big packet
-			$this->session->finish() ;
+			$this->connection->finish() ;
 			return FALSE ;
 		}
 

@@ -24,6 +24,7 @@ class Connection {
 	private $queuedReading = false;
 	public $directInput = false; // do not use prebuffering of incoming data
 	public $readEvent;
+	public $priority;
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $initialHighMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
 	/**
@@ -38,6 +39,9 @@ class Connection {
 		$this->pool = $pool;
 		$this->addr = $addr;
 		
+		if ($resource === null) {
+			return;
+		}
 		if ($this->directInput) {
 			$ev = event_new();
 			if (!event_set($ev, $resource, EV_READ | EV_PERSIST, array($this, 'onReadEvent'))) {
@@ -45,6 +49,7 @@ class Connection {
 				return;
 			}
 			event_base_set($ev, Daemon::$process->eventBase);
+			if ($this->priority !== null) {event_buffer_priority_set($buf, $this->priority);}
 			event_add($ev);
 			$this->readEvent = $ev;
 		}
@@ -58,7 +63,7 @@ class Connection {
 		if (!event_buffer_base_set($buf, Daemon::$process->eventBase)) {
 			throw new Exception('Couldn\'t set base of buffer.');
 		}
-		event_buffer_priority_set($buf, 10);
+		if ($this->priority !== null) {event_buffer_priority_set($buf, $this->priority);}
 		event_buffer_watermark_set($buf, EV_READ, $this->initialLowMark, $this->initialHighMark);
 		event_buffer_enable($buf, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
 		$this->buffer = $buf;

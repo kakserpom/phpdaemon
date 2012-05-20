@@ -16,9 +16,9 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 	public $opcodes;
 	public $outgoingCompression = 0;
 		
-	public function __construct($session)
+	public function __construct($connection)
 	{
-	    parent::__construct($session) ;
+	    parent::__construct($connection) ;
 		$this->opcodes = array(
 			0 => 'CONTINUATION',
 			0x1 => 'STRING',
@@ -27,12 +27,12 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 			0x9 => 'PING',
 			0xA => 'PONG',													
 		);
-		$this->description = "Websocket protocol version " . $this->session->server['HTTP_SEC_WEBSOCKET_VERSION'];
+		$this->description = "Websocket protocol version " . $this->connection->server['HTTP_SEC_WEBSOCKET_VERSION'];
 	}
 
 	public function onHandshake()
 	{
-        if (!isset($this->session->server['HTTP_SEC_WEBSOCKET_KEY']) || !isset($this->session->server['HTTP_SEC_WEBSOCKET_VERSION']) || ($this->session->server['HTTP_SEC_WEBSOCKET_VERSION'] != 13))
+        if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY']) || !isset($this->connection->server['HTTP_SEC_WEBSOCKET_VERSION']) || ($this->connection->server['HTTP_SEC_WEBSOCKET_VERSION'] != 13))
         {
             return FALSE ;
         }
@@ -50,24 +50,24 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 	{
         if ($this->onHandshake())
 		{
-	    	if (isset($this->session->server['HTTP_ORIGIN'])) {
-				$this->session->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = $this->session->server['HTTP_ORIGIN'];
+	    	if (isset($this->connection->server['HTTP_ORIGIN'])) {
+				$this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = $this->connection->server['HTTP_ORIGIN'];
 			}
-            if (!isset($this->session->server['HTTP_SEC_WEBSOCKET_ORIGIN']))
+            if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN']))
 			{
-                $this->session->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '' ;
+                $this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '' ;
             }
             $reply = "HTTP/1.1 101 Switching Protocols\r\n"
                 . "Upgrade: WebSocket\r\n"
-                . "Connection: Upgrade\r\n"
+                . "connection: Upgrade\r\n"
                 . "Date: ".date('r')."\r\n"
-                . "Sec-WebSocket-Origin: " . $this->session->server['HTTP_SEC_WEBSOCKET_ORIGIN'] . "\r\n"
-                . "Sec-WebSocket-Location: ws://" . $this->session->server['HTTP_HOST'] . $this->session->server['REQUEST_URI'] . "\r\n"
-                . "Sec-WebSocket-Accept: " . base64_encode(sha1(trim($this->session->server['HTTP_SEC_WEBSOCKET_KEY']) . "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", true)) . "\r\n" ;
+                . "Sec-WebSocket-Origin: " . $this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'] . "\r\n"
+                . "Sec-WebSocket-Location: ws://" . $this->connection->server['HTTP_HOST'] . $this->connection->server['REQUEST_URI'] . "\r\n"
+                . "Sec-WebSocket-Accept: " . base64_encode(sha1(trim($this->connection->server['HTTP_SEC_WEBSOCKET_KEY']) . "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", true)) . "\r\n" ;
 
-            if (isset($this->session->server['HTTP_SEC_WEBSOCKET_PROTOCOL']))
+            if (isset($this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL']))
 			{
-                $reply .= "Sec-WebSocket-Protocol: " . $this->session->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n" ;
+                $reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n" ;
             }
 
             $reply .= "\r\n" ;
@@ -89,7 +89,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 		$rsv1 = 0;
 		$rsv2 = 0;
 		$rsv3 = 0;
-		if (in_array($type, array('STRING', 'BINARY')) && ($this->outgoingCompression > 0) && in_array('deflate-frame', $this->session->extensions)) {
+		if (in_array($type, array('STRING', 'BINARY')) && ($this->outgoingCompression > 0) && in_array('deflate-frame', $this->connection->extensions)) {
 			$data = gzcompress($data, $this->outgoingCompression);
 			$rsv1 = 1;
 		}
@@ -196,7 +196,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 
     public function onRead()
     {
-		$encodedData = &$this->session->buf;
+		$encodedData = &$this->connection->buf;
 		$data = '';
 		while (($buflen = strlen($encodedData)) >= 1) {
 			$p = 0; // offset
@@ -207,7 +207,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 			$rsv3 = (bool) $firstBits[3];
 			$opcode = (int) bindec(substr($firstBits, 4, 4));
 			if ($opcode === 0x8) { // CLOSE
-        		$this->session->finish();
+        		$this->connection->finish();
             	return;
 			}
 			$opcodeName = $this->opcodes[$opcode];
@@ -229,9 +229,9 @@ class WebSocketProtocolV13 extends WebSocketProtocol
             	$dataLength = $this->bytes2int(binarySubstr($encodedData, $p, 4));
             	$p += 4;
             }
-			if ($this->session->appInstance->config->maxallowedpacket->value <= $dataLength) {
+			if ($this->connection->pool->appInstance->config->maxallowedpacket->value <= $dataLength) {
 				// Too big packet
-				$this->session->finish();
+				$this->connection->finish();
 				return;
 			}
 
@@ -252,15 +252,15 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 				$data = $this->mask($data, $mask);
 			}
 			$encodedData = binarySubstr($encodedData, $p);
-			//Daemon::log(Debug::dump(array('ext' => $this->session->extensions, 'rsv1' => $rsv1, 'data' => Debug::exportBytes($data))));
-			if ($rsv1 && in_array('deflate-frame', $this->session->extensions)) { // deflate frame
-				$data = gzuncompress($data, $this->session->appInstance->config->maxallowedpacket->value);
+			//Daemon::log(Debug::dump(array('ext' => $this->connection->extensions, 'rsv1' => $rsv1, 'data' => Debug::exportBytes($data))));
+			if ($rsv1 && in_array('deflate-frame', $this->connection->extensions)) { // deflate frame
+				$data = gzuncompress($data, $this->connection->pool->appInstance->config->maxallowedpacket->value);
 			}
 			if (!$fin) {
-				$this->session->framebuf .= $data;
+				$this->connection->framebuf .= $data;
 			} else {
-				$this->session->onFrame($this->session->framebuf . $data, $opcodeName);
-				$this->session->framebuf = '';
+				$this->connection->onFrame($this->connection->framebuf . $data, $opcodeName);
+				$this->connection->framebuf = '';
 			}
 		}
     }

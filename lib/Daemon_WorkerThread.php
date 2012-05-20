@@ -349,9 +349,9 @@ class Daemon_WorkerThread extends Thread {
 				continue;
 			}
 			if (Daemon::$useSockets) {
-				socket_close($sock);
+				socket_close($sock[0]);
 			} else {
-				fclose($sock);
+				fclose($sock[0]);
 			}
 		}
 	}
