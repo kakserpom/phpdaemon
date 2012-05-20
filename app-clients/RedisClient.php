@@ -6,10 +6,9 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class RedisClient extends AsyncServer {
-
-	// @todo $sessions is checked onShutdown in asyncServer ('tis NOT great)
-	public $sessions = array();      // Active sessions
+class RedisClient extends AppInstance {
+	
+	public $pool;
 	private $servers = array();      // Array of servers 
 	public $dtags_enabled = FALSE;   // Enables tags for distribution
 	public $servConn = array();      // Active connections
@@ -26,8 +25,6 @@ class RedisClient extends AsyncServer {
 			'servers' => '127.0.0.1',
 			// default port
 			'port'    => 6379,
-			// @todo add description
-			'prefix'  => '',
 			'maxconnectionsperserver' => 32,
 		);
 	}
@@ -37,7 +34,7 @@ class RedisClient extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		$this->prefix = $this->config->prefix->value;
+		$this->pool = new ConnectionPool('RedisClientConnection');
 		$servers = explode(',', $this->config->servers->value);
 
 		foreach ($servers as $s) {
@@ -101,10 +98,7 @@ class RedisClient extends AsyncServer {
 
 		$e = explode(':', $addr);
 
-		$connId = $this->connectTo($e[0], $e[1]);
-
-		$this->sessions[$connId] = new RedisSession($connId, $this);
-		$this->sessions[$connId]->addr = $addr;
+		$connId = $this->pool->connectTo($e[0], $e[1], 'RedisClientConnection');
 		$this->servConn[$addr][$connId] = $connId;
 		$this->servConnFree[$addr][$connId] = $connId;
 
@@ -148,11 +142,16 @@ class RedisClient extends AsyncServer {
 		}
 
 		$connId = $this->getConnection($k);
-		$sess = $this->sessions[$connId];
-
-		$sess->onResponse[] = $onResponse;
-
-		$sess->write($s);
+		if (!$connId) {
+			return false;
+		}
+		$conn = $this->pool->getConnection($connId);
+		if (!$conn) {
+			return false;
+		}
+		$conn->onResponse[] = $onResponse;
+		$conn->write($s);
+		return true;
 	}
 
 	/**
@@ -164,23 +163,25 @@ class RedisClient extends AsyncServer {
 	 */
 	public function requestByKey($k, $s, $onResponse) {
 		$connId = $this->getConnectionByKey($k);
-
-		$sess = $this->sessions[$connId];
-
-		if ($onResponse !== NULL) {
-			$sess->onResponse[] = $onResponse;
+		if (!$connId) {
+			return false;
 		}
-
-		$sess->write($s);
+		$conn = $this->pool->getConnection($connId);
+		if (!$conn) {
+			return false;
+		}
+		$conn->onResponse[] = $onResponse;
+		$conn->write($s);
+		return true;
 	}
 	
 }
 
-class RedisSession extends SocketSession {
+class RedisClientConnection extends Connection {
 
 	public $onResponse = array();  // stack of onResponse callbacks
 	public $state = 0;             // current state of the connection
-	public $result = null;      // current result (array)
+	public $result = null;      	// current result (array)
 	public $resultLength = 0;
 	public $resultSize = 0;			// number of received array items in result
 	public $value = '';
@@ -188,7 +189,7 @@ class RedisSession extends SocketSession {
 	public $valueSize = 0;         // size of received part of the value
 	public $error;                 // error message
 	public $key;                   // current incoming key
-	public $addr;									// address of server
+	public $EOL = "\r\n";
 
 	/**
 	 * Called when new data received
@@ -197,12 +198,11 @@ class RedisSession extends SocketSession {
 	*/
 	public function stdin($buf) {
 		$this->buf .= $buf;
-
 		start:
 		if (($this->result !== null) && ($this->resultSize >= $this->resultLength)) {
 			$f = array_shift($this->onResponse);
 			if ((!$this->finished) && (!sizeof($this->onResponse))) {
-				$this->appInstance->servConnFree[$this->addr][$this->connId] = $this->connId;
+				$this->pool->appInstance->servConnFree[$this->addr][$this->connId] = $this->connId;
 			}
 
 			if ($f) {
@@ -217,7 +217,6 @@ class RedisSession extends SocketSession {
 		
 		if ($this->state === 0) { // outside of packet
 			while (($l = $this->gets()) !== FALSE) {
-				$l = rtrim($l, "\r\n");
 				$char = $l[0];
 				if ($char == ':') { // inline
 					if ($this->result !== null) {
@@ -284,11 +283,8 @@ class RedisSession extends SocketSession {
 	 * @return void
 	 */
 	public function onFinish() {
-		$this->finished = TRUE;
-
-		unset($this->appInstance->servConn[$this->addr][$this->connId]);
-		unset($this->appInstance->servConnFree[$this->addr][$this->connId]);
-		unset($this->appInstance->sessions[$this->connId]);
+		unset($this->pool->appInstance->servConn[$this->addr][$this->connId]);
+		unset($this->pool->appInstance->servConnFree[$this->addr][$this->connId]);
 	}
 	
 }

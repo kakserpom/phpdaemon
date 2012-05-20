@@ -2,7 +2,7 @@
 
 /**
  * Socket session
- * 
+ * @deprecated
  * @package Core
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>

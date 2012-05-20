@@ -47,7 +47,7 @@ class ExampleWithRedisRequest extends HTTPRequest {
 
 		});
 		
-		$this->appInstance->redis->rpush('mylist', microtime(true)); // just pushing something
+		$this->appInstance->redis->lpush('mylist', microtime(true)); // just pushing something
 		
 		$job('testquery', function($name, $job) use ($req) { // registering job named 'testquery'
 		
@@ -60,7 +60,7 @@ class ExampleWithRedisRequest extends HTTPRequest {
 		
 		$job(); // let the fun begin
 		
-		$this->sleep(5, true); // setting timeout
+		$this->sleep(10, true); // setting timeout
 	}
 
 	/**

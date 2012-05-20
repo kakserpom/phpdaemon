@@ -100,13 +100,12 @@ Please enter the password or type "exit": ');
 	 * @return boolean
 	 */
 	private function checkPassword($pass = '') {
-		if ($pass != $this->appInstance->config->passphrase->value) {
+		if ($pass != $this->pool->appInstance->config->passphrase->value) {
 			--$this->authTries;
 			
 			if (0 === $this->authTries) {
 				$this->disconnect();
 			} else {
-				sleep(2);
 				$this->write('Wrong password. Please, try again: ');
 			}
 		} else {

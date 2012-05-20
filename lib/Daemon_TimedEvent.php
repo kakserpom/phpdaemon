@@ -45,7 +45,7 @@ class Daemon_TimedEvent {
 		$obj = Daemon::$process->timeouts[$id];
 		call_user_func($obj->cb,$obj);
 		if ($obj->finished) {
-		 unset(Daemon::$process->timeouts[$id]);
+			unset(Daemon::$process->timeouts[$id]);
 		}
 	}
 	public static function add($cb, $timeout = null, $id = null) {

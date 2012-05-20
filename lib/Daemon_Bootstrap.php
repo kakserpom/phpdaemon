@@ -380,6 +380,7 @@ class Daemon_Bootstrap {
 			
 			echo "\n";
 		}
+		
 	}
 
 	private static function printUsage() {
@@ -389,7 +390,7 @@ class Daemon_Bootstrap {
 	private static function printHelp() {
 		$term = new Terminal();
 
-		echo 'phpDaemon ' . Daemon::$version . ". Made in Russia. http://phpdaemon.net\n";
+		echo 'phpDaemon ' . Daemon::$version . ". http://phpdaemon.net\n";
 
 		self::printUsage();
 

@@ -18,6 +18,7 @@ class ConnectionPool {
 	public $allowedClients  = NULL;
 	public $socketEvents    = array();
 	public $connectionClass;
+	public $list = array();
 	
 	public function __construct($class = 'Connection', $listen = null, $listenport = null) {
 		$this->connectionClass = $class;
@@ -68,12 +69,13 @@ class ConnectionPool {
 	 * @return void
 	 */
 	public function disable() { 
-		return; // bug hotfix
-		foreach ($this->socketEvents as $k => $ev) {
+		//return; // possible critical bug
+		for (;sizeof($this->socketEvents);) {
+			if (!is_resource($ev = array_pop($this->socketEvents))) {
+				continue;
+			}
 			event_del($ev);
 			event_free($ev);
-
-			unset($this->socketEvents[$k]);
 		}
 	}
 
@@ -82,12 +84,12 @@ class ConnectionPool {
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
-		$this->disableSocketEvents(); 
+		$this->disable(); 
 		
-		if (isset($this->sessions)) {
+		if (isset($this->list)) {
 			$result = TRUE;
 	
-			foreach ($this->sessions as $k => $sess) {
+			foreach ($this->list as $k => $sess) {
 				if (!is_object($sess)) {
 					unset($this->sessions[$k]); 
 					continue;
@@ -112,7 +114,6 @@ class ConnectionPool {
 	 * @return void
 	 */
 	public function bind($addrs = array(), $listenport = 0, $reuse = TRUE) {
-		Daemon::log(Debug::dump(func_get_args($addrs)));
 		if (is_string($addrs)) {
 			$addrs = explode(',', $addrs);
 		}
@@ -291,16 +292,6 @@ class ConnectionPool {
 		}
 	}
 	
-	/**
-	 * Set the size of data to read at each reading
-	 * @param integer Size
-	 * @return object This
-	 */
-	public function setReadPacketSize($n) {
-		$this->readPacketSize = $n;
-
-		return $this;
-	}
 	
 	/**
 	 * Called when remote host is trying to establish the connection
@@ -340,115 +331,25 @@ class ConnectionPool {
 	 * Establish a connection with remote peer
 	 * @param string Destination Host/IP/UNIX-socket
 	 * @param integer Optional. Destination port
+	 * @param string Optional. Connection class name.
 	 * @return integer Connection's ID. Boolean false when failed.
 	 */
-	public function connectTo($host, $port = 0) {
-		if (Daemon::$config->logevents->value) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $host . ':' . $port . ') invoked.');
+	public function connectTo($host, $port = 0, $class = null) {
+		if ($class === null) {
+			$class = $this->connectionClass;
 		}
-
-		if (stripos($host, 'unix:') === 0) {
-			// Unix-socket
-			$e = explode(':', $host, 2);
-
-			if (Daemon::$useSockets) {
-				$conn = socket_create(AF_UNIX, SOCK_STREAM, 0);
-
-				if (!$conn) {
-					return FALSE;
-				}
-				
-				socket_set_nonblock($conn);
-				@socket_connect($conn, $e[1], 0);
-			} else {
-				$conn = @stream_socket_client('unix://' . $e[1]);
-
-				if (!$conn) {
-					return FALSE;
-				}
-				
-				stream_set_blocking($conn, 0);
-			}
-		} 
-		elseif (stripos($host, 'raw:') === 0) {
-			// Raw-socket
-			$e = explode(':', $host, 2);
-
-			if (Daemon::$useSockets) {
-				$conn = socket_create(AF_INET, SOCK_RAW, 1);
-
-				if (!$conn) {
-					return false;
-				}
-				
-				socket_set_nonblock($conn);
-				@socket_connect($conn, $e[1], 0);
-			} else {
-				return false;
-			}
-		} else {
-			// TCP
-			if (Daemon::$useSockets) {
-				$conn = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-
-				if (!$conn) {
-					return FALSE;
-				}
-				
-				socket_set_nonblock($conn);
-				@socket_connect($conn, $host, $port);
-			} else {
-				$conn = @stream_socket_client(($host === '') ? '' : $host . ':' . $port);
-
-				if (!$conn) {
-					return FALSE;
-				}
-				
-				stream_set_blocking($conn, 0);
-			}
-		}
-		
 		$connId = ++Daemon::$process->connCounter;
-		
-		Daemon::$process->pool[$connId] = $conn;
-		Daemon::$process->poolApp[$connId] = $this;
-		
-		$this->poolQueue[$connId] = array();
-		$this->poolState[$connId] = array();
-
-		if ($this->directReads) {
-			$ev = event_new();
-
-			if (!event_set($ev, Daemon::$process->pool[$connId], EV_READ | EV_PERSIST, array($this, 'onReadEvent'), array($connId))) {
-				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on accepted socket #' . $connId);
-
-				return;
-			}
-
-			event_base_set($ev, Daemon::$process->eventBase);
-			event_add($ev);
-			$this->readEvents[$connId] = $ev;
-		}
-
-		$buf = event_buffer_new(
-			Daemon::$process->pool[$connId],$this->directReads ? NULL : array($this, 'onReadEvent'),
-			array($this, 'onWriteEvent'),
-			array($this, 'onFailureEvent'),
-			array($connId)
-		);
-		
-		if (!event_buffer_base_set($buf,Daemon::$process->eventBase)) {
-			throw new Exception('Couldn\'t set base of buffer.');
-		}
-		
-		event_buffer_priority_set($buf, 10);
-		event_buffer_watermark_set($buf, EV_READ, $this->initialLowMark, $this->initialHighMark);
-		event_buffer_enable($buf,$this->directReads ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
-
-		$this->buf[$connId] = $buf;
-
+		$conn = $this->list[$connId] = new $class($connId, null, null,  $this);
+		$conn->connectTo($host, $port);
 		return $connId;
 	}
+	
+	public function getConnection($connId) {
+		if (!isset($this->list[$connId])) {
+			return false;
+		}
+		return $this->list[$connId];
+ 	}
 
 	/**
 	 * Called when new connections is waiting for accept
@@ -509,7 +410,7 @@ class ConnectionPool {
 		$connId = ++Daemon::$process->connCounter;
 		
 		$class = $this->connectionClass;
-		$this->storage[$connId] = new $class($connId, $resource, $addr,  $this);
+		$this->list[$connId] = new $class($connId, $resource, $addr,  $this);
 	}
 
 	/**
@@ -538,5 +439,6 @@ class ConnectionPool {
 
 		return (ip2long ($IP) & ~((1 << (32 - $e[1])) - 1)) === ip2long($e[0]);
 	}
+	
 	
 }

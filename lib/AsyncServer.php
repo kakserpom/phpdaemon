@@ -4,7 +4,7 @@
  * Asynchronous server
  *
  * @package Core
- *
+ * @deprecated
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class AsyncServer extends AppInstance {

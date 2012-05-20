@@ -22,6 +22,7 @@ class Daemon_WorkerThread extends Thread {
 	public $queue = array();
 	public $timeLastActivity = 0;
 	public $readPoolState = array();
+	public $queuedCallbacks = array();
 	public $writePoolState = array();
 	private $autoReloadLast = 0;
 	private $currentStatus = 0;
@@ -76,6 +77,7 @@ class Daemon_WorkerThread extends Thread {
 
 		/**
 		 * @closure readPoolEvent
+		 * @deprecated
 		 * @description Invokes the AppInstance->readConn() method for every updated connection in pool. readConn() reads new data from the buffer.
 		 * @return void
 		 */
@@ -93,8 +95,16 @@ class Daemon_WorkerThread extends Thread {
 					$self->log('event readConn(' . $connId . ') finished.');
 				}
 			}
-
-			if (sizeof($self->readPoolState) > 0) {
+			
+			foreach ($self->queuedCallbacks as $id => $cb) {
+				if (call_user_func($cb)) {
+					unset($self->queuedCallbacks[$id]);
+				}
+			}
+			if (sizeof($self->queuedCallbacks) > 0) {
+				$event->timeout();
+			}
+			elseif (sizeof($self->readPoolState) > 0) {
 				$event->timeout();
 			}
 		}, 1e6 * 0.005, 'readPoolEvent');
@@ -338,7 +348,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function closeSockets() {
 		for (;sizeof(Daemon::$socketEvents);) {
-			if (!$ev = array_pop(Daemon::$socketEvents)) {
+			if (!is_resource($ev = array_pop(Daemon::$socketEvents))) {
 				continue;
 			}
 			event_del($ev);

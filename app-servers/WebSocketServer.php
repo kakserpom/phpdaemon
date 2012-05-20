@@ -58,7 +58,7 @@ class WebSocketServer extends AppInstance
 		unset(Daemon::$process->readPoolState[$connId]);
 		
 		$conn = new WebSocketConnection($connId, null, $req->attrs->server['REMOTE_ADDR'], $this->pool);
-		$this->pool->storage[$connId] = $conn;
+		$this->pool->list[$connId] = $conn;
 		$conn->buffer = $buf;
 		$set = event_buffer_set_callback(
 			$buf, 

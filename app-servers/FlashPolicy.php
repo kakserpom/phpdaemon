@@ -50,6 +50,13 @@ class FlashPolicy extends AppInstance {
 			$this->pool->enable();
 		}
 	}
+	/**
+	 * Called when application instance is going to shutdown
+	 * @return boolean Ready to shutdown?
+	 */
+	public function onShutdown() {
+		return $this->pool->onShutdown();
+	}
 
 	/**
 	 * Called when worker is going to update configuration.

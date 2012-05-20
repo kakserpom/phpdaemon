@@ -24,52 +24,114 @@ class Connection {
 	private $queuedReading = false;
 	public $directInput = false; // do not use prebuffering of incoming data
 	public $readEvent;
-	public $priority;
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $initialHighMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
+	public $priority;
+	public $inited = false;
+	
 	/**
 	 * SocketSession constructor
 	 * @param integer Connection's ID
 	 * @param object AppInstance
 	 * @return void
 	 */
-	public function __construct($connId, $resource, $addr, $pool = null) {
+	public function __construct($connId, $res, $addr, $pool = null) {
 		$this->connId = $connId;
-		$this->resource = $resource;
 		$this->pool = $pool;
 		$this->addr = $addr;
 		
-		if ($resource === null) {
+		if ($res === null) {
 			return;
 		}
+		$this->setResource($res);
+		
+	}
+	
+	/**
+	 * Set the size of data to read at each reading
+	 * @param integer Size
+	 * @return object This
+	 */
+	public function setReadPacketSize($n) {
+		$this->readPacketSize = $n;
+		return $this;
+	}
+	
+	public function setResource($res) {
+		$this->resource = $res;
 		if ($this->directInput) {
 			$ev = event_new();
-			if (!event_set($ev, $resource, EV_READ | EV_PERSIST, array($this, 'onReadEvent'))) {
+			if (!event_set($ev, $this->resource, EV_READ | EV_PERSIST, array($this, 'onReadEvent'))) {
 				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on accepted socket #' . $connId);
 				return;
 			}
 			event_base_set($ev, Daemon::$process->eventBase);
-			if ($this->priority !== null) {event_buffer_priority_set($buf, $this->priority);}
+			if ($this->priority !== null) {event_priority_set($ev, $this->priority);}
 			event_add($ev);
 			$this->readEvent = $ev;
 		}
-		$buf = event_buffer_new(
-			$resource,
-			$this->directInput ? NULL : array($this, 'onReadEvent'),
-			array($this, 'onWriteEvent'),
-			array($this, 'onFailureEvent'),
-			array($connId)
-		);
-		if (!event_buffer_base_set($buf, Daemon::$process->eventBase)) {
-			throw new Exception('Couldn\'t set base of buffer.');
-		}
-		if ($this->priority !== null) {event_buffer_priority_set($buf, $this->priority);}
-		event_buffer_watermark_set($buf, EV_READ, $this->initialLowMark, $this->initialHighMark);
-		event_buffer_enable($buf, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
-		$this->buffer = $buf;
-		$this->init();
+		$this->buffer = event_buffer_new($this->resource,	$this->directInput ? NULL : array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onFailureEvent'));
+		event_buffer_base_set($this->buffer, Daemon::$process->eventBase);
+		if ($this->priority !== null) {event_buffer_priority_set($this->buffer, $this->priority);}
+		event_buffer_watermark_set($this->buffer, EV_READ, $this->initialLowMark, $this->initialHighMark);
+		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
 	}
+	
+	public function connectTo($host, $port = 0) {
+		if (stripos($host, 'unix:') === 0) {
+			// Unix-socket
+			$e = explode(':', $host, 2);
 
+			if (Daemon::$useSockets) {
+				$res = socket_create(AF_UNIX, SOCK_STREAM, 0);
+
+				if (!$conn) {
+					return FALSE;
+				}
+				socket_set_nonblock($res);
+				@socket_connect($res, $e[1], 0);
+			} else {
+				$conn = @stream_socket_client('unix://' . $e[1]);
+
+				if (!$res) {
+					return FALSE;
+				}
+				stream_set_blocking($res, 0);
+			}
+		} 
+		elseif (stripos($host, 'raw:') === 0) {
+			// Raw-socket
+			$e = explode(':', $host, 2);
+			if (Daemon::$useSockets) {
+				$res = socket_create(AF_INET, SOCK_RAW, 1);
+				if (!$res) {
+					return false;
+				}
+				socket_set_nonblock($res);
+				@socket_connect($res, $e[1], 0);
+			} else {
+				return false;
+			}
+		} else {
+			// TCP
+			if (Daemon::$useSockets) {
+				$res = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				if (!$res) {
+					return FALSE;
+				}
+				socket_set_nonblock($res);
+				@socket_connect($res, $host, $port);
+			} else {
+				$res = @stream_socket_client(($host === '') ? '' : $host . ':' . $port);
+				if (!$res) {
+					return FALSE;
+				}
+				stream_set_blocking($res, 0);
+			}
+		}
+		$this->setResource($res);
+		return true;
+	}
 	/**
 	 * Called when the session constructed
 	 * @todo +on & -> protected?
@@ -125,7 +187,7 @@ class Connection {
 		}
 
 		$this->readLocked = false;
-		$this->appInstance->onReadEvent(null, array($this->connId));
+		$this->onReadEvent(null);
 	}
 
 	/**
@@ -181,6 +243,7 @@ class Connection {
 			return;
 		}
 		$this->finished = true;
+		unset($this->pool->list[$this->connId]);
 		$this->onFinish();
 		if (!$this->sending) {
 			$this->close();
@@ -194,7 +257,6 @@ class Connection {
 	 * @return void
 	 */
 	public function onFinish() {
-		unset($this->pool->storage[$this->connId]);
 	}
 
 	/**
@@ -213,7 +275,7 @@ class Connection {
 	 * @return void
 	 */
 	public function close() {
-		unset($this->pool->storage[$this->connId]);
+		unset($this->pool->list[$this->connId]);
 		if (!isset($this->buffer)) {
 			return;
 		}
@@ -235,29 +297,34 @@ class Connection {
 	/**
 	 * Called when the connection has got new data
 	 * @param resource Descriptor
-	 * @param mixed Attacted variable
+	 * @param mixed Optional. Attached variable
 	 * @return void
 	 */
-	public function onReadEvent($stream, $arg) {
-		if ($this->queuedReading) {
-			$this->reading = true;
-			Daemon_TimedEvent::setTimeout('readPoolEvent');
-		}
+	public function onReadEvent($stream, $arg = null) {
 		if ($this->readLocked) {
 			return;
 		}
+		$this->reading = !$this->onRead();
+		if ($this->queuedReading && $this->reading) {
+			Daemon::$process->queuedCallbacks[] = array($this, 'onRead');
+			Daemon_TimedEvent::setTimeout('readPoolEvent');
+		}
+	}
+	
+	public function onRead() {
 		while (($buf = $this->read($this->readPacketSize)) !== false) {
 			$this->stdin($buf);
 		}
+		return true;
 	}
 	
 	/**
 	 * Called when the connection is ready to accept new data
 	 * @param resource Descriptor
-	 * @param mixed Attacted variable
+	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onWriteEvent($stream, $arg) {
+	public function onWriteEvent($stream, $arg = null) {
 		$this->sending = false;
 		if ($this->finished) {
 			$this->close();
@@ -268,15 +335,16 @@ class Connection {
 	/**
 	 * Called when the connection failed
 	 * @param resource Descriptor
-	 * @param mixed Attacted variable
+	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onFailureEvent($stream, $arg) {
+	public function onFailureEvent($stream, $arg = null) {
 		$this->close();
 		if ($this->finished) {
 			return;
 		}
 		$this->finished = true;
+		unset($this->pool->list[$this->connId]);
 		$this->onFinish();
 		
 		event_base_loopexit(Daemon::$process->eventBase);
@@ -300,8 +368,8 @@ class Connection {
 					$no = socket_last_error($this->resource);
 
 					if ($no !== 11) {  // Resource temporarily unavailable
-						Daemon::log(get_class($this) . '::' . __METHOD__ . ': connId = ' . $connId . '. Socket error. (' . $no . '): ' . socket_strerror($no));
-						$this->onFailureEvent($connId, array());
+						Daemon::log(get_class($this) . '::' . __METHOD__ . ': connId = ' . $this->connId . '. Socket error. (' . $no . '): ' . socket_strerror($no));
+						$this->onFailureEvent($this->connId);
 					}
 				}
 			} else {
