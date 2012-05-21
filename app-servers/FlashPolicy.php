@@ -35,7 +35,11 @@ class FlashPolicy extends AppInstance {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			$this->pool = new ConnectionPool('FlashPolicyConnection', $this->config->listen->value,	$this->config->listenport->value);
+			$this->pool = new ConnectionPool(array(
+					'connectionClass' => 'FlashPolicyConnection',
+					'listen' => $this->config->listen->value,
+					'listenport' => $this->config->listenport->value
+			));
 			$this->onConfigUpdated();
 		}
 	}

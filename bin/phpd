@@ -33,7 +33,8 @@ spl_autoload_register(function($classname) {
 	$pathes = array('lib/' . implode('/', $parts) . '.php', 'lib/' . implode('/', $parts) . '.class.php');
 	
 	foreach ($pathes as $path) {
-		if (@include($path)) {
+		if (file_exists($path)) {
+			require $path;
 			return;
 		}
 	}
@@ -42,7 +43,7 @@ spl_autoload_register(function($classname) {
 		class_exists('Daemon', false) 
 		&& isset(Daemon::$config->autoload->value)
 	) {
-		$files = glob($g = sprintf(Daemon::$config->autoload->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
+		$files = glob(sprintf(Daemon::$config->autoload->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
 		if (isset($files[0])) {
 			require $files[0];
 			return;

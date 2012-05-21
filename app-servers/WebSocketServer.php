@@ -35,7 +35,11 @@ class WebSocketServer extends AppInstance
 
 	public function init() {
 		if ($this->config->enable->value) {
-			$this->pool = new ConnectionPool('WebSocketConnection', $this->config->listen->value, $this->config->listenport->value);
+			$this->pool = new ConnectionPool(array(
+					'connectionClass' => 'WebSocketConnection',
+					'listen' => $this->config->listen->value,
+					'listenport' => $this->config->listenport->value,
+			));
 			$this->pool->appInstance = $this;
 		}
 	}

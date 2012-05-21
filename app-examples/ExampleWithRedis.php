@@ -14,7 +14,7 @@ class ExampleWithRedis extends AppInstance {
 	 */
 
 	public function onReady() {
-		$this->redis = Daemon::$appResolver->getInstanceByAppName('RedisClient');
+		$this->redis = new RedisClient();
 	}
 	
 	/**
@@ -60,7 +60,7 @@ class ExampleWithRedisRequest extends HTTPRequest {
 		
 		$job(); // let the fun begin
 		
-		$this->sleep(10, true); // setting timeout
+		$this->sleep(1, true); // setting timeout
 	}
 
 	/**

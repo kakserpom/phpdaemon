@@ -81,7 +81,7 @@ class Connection {
 		if (stripos($host, 'unix:') === 0) {
 			// Unix-socket
 			$e = explode(':', $host, 2);
-
+			$this->addr = $host;
 			if (Daemon::$useSockets) {
 				$res = socket_create(AF_UNIX, SOCK_STREAM, 0);
 
@@ -102,6 +102,7 @@ class Connection {
 		elseif (stripos($host, 'raw:') === 0) {
 			// Raw-socket
 			$e = explode(':', $host, 2);
+			$this->addr = $host;
 			if (Daemon::$useSockets) {
 				$res = socket_create(AF_INET, SOCK_RAW, 1);
 				if (!$res) {
@@ -114,6 +115,7 @@ class Connection {
 			}
 		} else {
 			// TCP
+			$this->addr = $host . ':' . $port;
 			if (Daemon::$useSockets) {
 				$res = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 				if (!$res) {
@@ -275,7 +277,6 @@ class Connection {
 	 * @return void
 	 */
 	public function close() {
-		unset($this->pool->list[$this->connId]);
 		if (!isset($this->buffer)) {
 			return;
 		}
@@ -285,6 +286,7 @@ class Connection {
 			$this->readEvent = null;
 		}
 		event_buffer_free($this->buffer);
+		$this->buffer = null;
 		if (isset($this->resource)) {
 			if (Daemon::$useSockets) {
 				socket_close($this->resource);

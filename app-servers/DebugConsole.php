@@ -34,7 +34,11 @@ class DebugConsole extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			$this->pool = new ConnectionPool('DebugConsoleConnection', $this->config->listen->value, $this->config->listenport->value);
+			$this->pool = new ConnectionPool(array(
+					'connectionClass' => 'DebugConsoleConnection',
+					'listen' => $this->config->listen->value,
+					'listenport' => $this->config->listenport->value
+			));
 			$this->pool->appInstance = $this;
 		}
 	}

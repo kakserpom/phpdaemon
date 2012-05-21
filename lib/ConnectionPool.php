@@ -20,10 +20,14 @@ class ConnectionPool {
 	public $connectionClass;
 	public $list = array();
 	
-	public function __construct($class = 'Connection', $listen = null, $listenport = null) {
-		$this->connectionClass = $class;
-		if ($listen !== null) {
-			$this->bind($listen, $listenport);
+	public function __construct($params = array()) {
+		foreach ($params as $k => $v) {
+			if ($k === 'connectionClass') {
+				$this->connectionClass = $v;
+			}
+			elseif ($k === 'listen') {
+				$this->bind($v, isset($params['listenport']) ? $params['listenport'] : null);
+			}
 		}
 	}
 	
@@ -69,7 +73,7 @@ class ConnectionPool {
 	 * @return void
 	 */
 	public function disable() { 
-		//return; // possible critical bug
+		return; // possible critical bug
 		for (;sizeof($this->socketEvents);) {
 			if (!is_resource($ev = array_pop($this->socketEvents))) {
 				continue;
@@ -344,7 +348,7 @@ class ConnectionPool {
 		return $connId;
 	}
 	
-	public function getConnection($connId) {
+	public function getConnectionById($connId) {
 		if (!isset($this->list[$connId])) {
 			return false;
 		}
@@ -415,7 +419,7 @@ class ConnectionPool {
 
 	/**
 	 * Checks if the CIDR-mask matches the IP
-	 * @param string CIDR-mas
+	 * @param string CIDR-mask
 	 * @param string IP
 	 * @return boolean Result
 	 */
