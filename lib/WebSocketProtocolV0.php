@@ -196,7 +196,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 			{
 				if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE)
 				{
-					if ($this->connection->pool->appInstance->config->maxallowedpacket->value <= $p - 1)
+					if ($this->connection->pool->maxAllowedPacket <= $p - 1)
 					{
 						// Too big packet
 						$this->connection->finish() ;

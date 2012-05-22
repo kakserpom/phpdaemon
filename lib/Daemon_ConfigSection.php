@@ -22,6 +22,17 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 
 		return $c;
 	}
+	
+	public function toArray() {
+		$arr = array();
+		foreach ($this as $k => $entry) {
+			if (!$entry instanceof Daemon_ConfigEntry)	{
+				continue;
+			}
+			$arr[$k] = $entry->value;
+		}
+		return $arr;
+	}
 
 	public function getRealOffsetName($offset) {
 		return str_replace('-', '', strtolower($offset));

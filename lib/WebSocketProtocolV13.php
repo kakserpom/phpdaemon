@@ -229,7 +229,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
             	$dataLength = $this->bytes2int(binarySubstr($encodedData, $p, 4));
             	$p += 4;
             }
-			if ($this->connection->pool->appInstance->config->maxallowedpacket->value <= $dataLength) {
+			if ($this->connection->pool->maxAllowedPacket <= $dataLength) {
 				// Too big packet
 				$this->connection->finish();
 				return;
@@ -254,7 +254,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 			$encodedData = binarySubstr($encodedData, $p);
 			//Daemon::log(Debug::dump(array('ext' => $this->connection->extensions, 'rsv1' => $rsv1, 'data' => Debug::exportBytes($data))));
 			if ($rsv1 && in_array('deflate-frame', $this->connection->extensions)) { // deflate frame
-				$data = gzuncompress($data, $this->connection->pool->appInstance->config->maxallowedpacket->value);
+				$data = gzuncompress($data, $this->connection->pool->maxAllowedPacket);
 			}
 			if (!$fin) {
 				$this->connection->framebuf .= $data;

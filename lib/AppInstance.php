@@ -25,9 +25,9 @@ class AppInstance {
 		$this->name = $name;
 		
 		$appName = get_class($this);
-		Daemon::$process->log($appName . ($name ? "-{$name}" : '') . ' instantiated.');
 		$appNameLower = strtolower($appName);
 		$fullname = Daemon::$appResolver->getAppFullName($appName, $this->name);
+		//Daemon::$process->log($fullname . ' instantiated.');
 		if (!isset(Daemon::$appInstances[$appNameLower])) {
 			Daemon::$appInstances[$appNameLower] = array();
 		}
@@ -47,7 +47,7 @@ class AppInstance {
 		}
 
 		$this->config = Daemon::$config->{$fullname};
-		if(isset($this->config->enable->value) && $this->config->enable->value) {
+		if ($this->isEnabled()) {
 			Daemon::$process->log($appName . ($name ? "-{$name}" : '') . ' up.');
 		}
 
@@ -65,7 +65,14 @@ class AppInstance {
 			}
 		}
 	}
-
+	
+	public static function getInstance($name) {
+		return Daemon::$appResolver->getInstanceByAppName(get_called_class(), $name);
+	}
+	
+	public function isEnabled() {
+		return isset($this->config->enable->value) && $this->config->enable->value;
+	}
 	/**
 	 * Function to get default config options from application
 	 * Override to set your own

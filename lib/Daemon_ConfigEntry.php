@@ -56,7 +56,6 @@ class Daemon_ConfigEntry {
 		$this->value = $this->HumanToPlain($value);
 		$this->onUpdate($old);
 	}
-
 	public function HumanToPlain($value) {
 		return $value;
 	}

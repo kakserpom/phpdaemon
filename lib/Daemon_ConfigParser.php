@@ -224,6 +224,7 @@ class Daemon_ConfigParser {
 					elseif ($tokenType === Daemon_ConfigParser::T_BLOCK) {
 						$scope = $cfg->getCurrentScope();
 						$sectionName = implode('-', $elements);
+						$sectionName = strtr($sectionName, '-. ', ':::');
 						if (!isset($scope->{$sectionName})) {
 							$scope->{$sectionName} = new Daemon_ConfigSection;
 						}

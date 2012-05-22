@@ -14,7 +14,7 @@ class ExampleWithRedis extends AppInstance {
 	 */
 
 	public function onReady() {
-		$this->redis = new RedisClient();
+		$this->redis = RedisClient::getInstance();
 	}
 	
 	/**

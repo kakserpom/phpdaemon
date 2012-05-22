@@ -77,7 +77,7 @@ class HTTP extends AsyncServer {
 	*/
 	public function onReady() {
 		if ($this->config->enable->value) {
-			$this->WS = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
+			$this->WS = WebSocketServer::getInstance();
 			$this->enableSocketEvents();
 		}
 	}

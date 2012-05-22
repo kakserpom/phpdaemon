@@ -21,20 +21,22 @@ class AppResolver {
 			if (!$section instanceof Daemon_ConfigSection)	{
 				continue;
 			}
-			if (isset($section->limitinstances)) {continue;}
+			if (isset($section->limitinstances)) {
+				continue;
+			}
 			if (
 					(isset($section->enable) && $section->enable->value)
 					||
 					(!isset($section->enable) && !isset($section->disable))
 			) {
-				if ($privileged && (!isset($section->privileged) || !$section->privileged->value)) {
+				if (strpos($fullname,':') === false) {
+					$fullname .= ':';
+				}
+				list($appName, $instance) = explode(':', $fullname, 2);
+				$appNameLower = strtolower($appName);
+				if ($appNameLower !== 'pool' && $privileged && (!isset($section->privileged) || !$section->privileged->value)) {
 					continue;
 				}
-				if (strpos($fullname,'-') === false) {
-					$fullname .= '-';
-				}
-				list($appName, $instance) = explode('-', $fullname, 2);
-				$appNameLower = strtolower($appName);
 				if (isset(Daemon::$appInstances[$appNameLower][$instance])) {
 					continue;
 				}
@@ -83,26 +85,8 @@ class AppResolver {
 	 * @return string 
 	 */
 	public function getAppFullname($appName, $instance = '') {
-		return $appName . ($instance !== '' ? '-' . $instance : '');
+		return $appName . ($instance !== '' ? ':' . $instance : '');
 	}
-
-	/**
-	 * Gets path to application's PHP-file.	
-	 * @param string Application name
-	 * @param string Instance name
-	 * @return string Path.
-	 */
-	public function getAppPath($app, $instance) {
-		$fn = $this->getAppFullName($app, $instance);
-
-		if (isset(Daemon::$config->{$fn}->path->value)) {
-			return Daemon::$config->{$fn}->path->value;
-		}
-
-		$files = glob(sprintf(Daemon::$config->appfilepath->value, $app), GLOB_BRACE);
-
-		return isset($files[0]) ? $files[0] : false;
- 	}
 
 	/**
 	 * Run new application instance	
@@ -112,34 +96,9 @@ class AppResolver {
 	 */
 	public function appInstantiate($appName, $instance) {
 		$appNameLower = strtolower($appName);
-		if (class_exists($appName)) {
+		if (class_exists($appName) && is_subclass_of($appName, 'AppInstance')) {
 			$appInstance = new $appName($instance);
 		} else {
-			if ($appName !== '') {
-				$p = $this->getAppPath($appName, $instance);
-			} else {
-				$p = false;
-			}
-
-			if (
-				!$p 
-				|| !is_file($p)
-			) {
-				Daemon::log('appInstantiate(' . $appName . ') failed: application doesn\'t exist'.($p?' ('.$p.')':'').'.');
-				return false;
-			}
-
-			$appInstance = include $p;
-		}
-
-		if (
-			!is_object($appInstance)
-			&& class_exists($appName)
-		) {
-			$appInstance = new $appName($instance);
-		}
-
-		if (!is_object($appInstance)) {
 			Daemon::log('appInstantiate(' . $appName . ') failed. Class not exists.');
 			return false;
 		}

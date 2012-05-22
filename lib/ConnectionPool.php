@@ -19,15 +19,45 @@ class ConnectionPool {
 	public $socketEvents    = array();
 	public $connectionClass;
 	public $list = array();
+	public $listen;
+	public $defaultPort;
+	public $name;
+	public static $instances = array();
 	
 	public function __construct($params = array()) {
 		foreach ($params as $k => $v) {
-			if ($k === 'connectionClass') {
+			$k = strtolower($k);
+			if ($k === 'connectionclass') {
 				$this->connectionClass = $v;
 			}
 			elseif ($k === 'listen') {
-				$this->bind($v, isset($params['listenport']) ? $params['listenport'] : null);
 			}
+			elseif ($k === 'name') {
+				$this->name = $v;
+			}
+			elseif ($k == 'listen') {
+				$this->listen = $v;
+			}
+			elseif ($k == 'defaultPort') {
+				$this->defaultPort = $v;
+			}
+		}
+		if (isset($this->listen)) {
+			$this->bind($this->listen, $this->defaultPort);
+		}
+	}
+	
+	public static function getInstance($arg = 'default') {
+		$class = get_called_class();
+		if (is_string($arg)) {
+			if (isset(static::$instances[$arg])) {
+				return static::$instances[$arg];
+			}
+			$k = 'Pool:' . $class . ':' . $arg;
+			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: null;
+			return static::$instances[$arg] = new $class($config  ? $config->toArray() : null, $config);	
+		} else {
+			return new $class($arg);
 		}
 	}
 	
@@ -145,7 +175,7 @@ class ConnectionPool {
 				}
 
 				if (pathinfo($path, PATHINFO_EXTENSION) !== 'sock') {
-					Daemon::log('Unix-socket \'' . $path . '\' must has \'.sock\' extension.');
+					Daemon::$process->log('Unix-socket \'' . $path . '\' must has \'.sock\' extension.');
 					continue;
 				}
 				
@@ -158,7 +188,7 @@ class ConnectionPool {
 
 					if (!$sock) {
 						$errno = socket_last_error();
-						Daemon::log(get_class($this) . ': Couldn\'t create UNIX-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+						Daemon::$process->log(get_class($this) . ': Couldn\'t create UNIX-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
 						continue;
 					}
@@ -167,20 +197,20 @@ class ConnectionPool {
 
 					if (!@socket_bind($sock, $path)) {
 						$errno = socket_last_error();
-						Daemon::log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+						Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
 						continue;
 					}
 		
 					if (!socket_listen($sock, SOMAXCONN)) {
 						$errno = socket_last_error();
-						Daemon::log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
+						Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
 					}
 
 					socket_set_nonblock($sock);
 				} else {
 					if (!$sock = @stream_socket_server('unix://' . $path, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN)) {
-						Daemon::log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . $errstr . ').');
+						Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . $errstr . ').');
 
 						continue;
 					}
@@ -241,7 +271,7 @@ class ConnectionPool {
 
 					if (!$sock) {
 						$errno = socket_last_error();
-						Daemon::log(get_class($this) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+						Daemon::$process->log(get_class($this) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
 						continue;
 					}
@@ -249,14 +279,14 @@ class ConnectionPool {
 					if ($reuse) {
 						if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
 							$errno = socket_last_error();
-							Daemon::log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+							Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
 							continue;
 						}
 
 						if (Daemon::$reusePort && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
 							$errno = socket_last_error();
-							Daemon::log(get_class($this) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+							Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
 							continue;
 						}
@@ -264,14 +294,14 @@ class ConnectionPool {
 
 					if (!@socket_bind($sock, $hp[0], $hp[1])) {
 						$errno = socket_last_error();
-						Daemon::log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+						Daemon::$process->log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
 						continue;
 					}
 
 					if (!socket_listen($sock, SOMAXCONN)) {
 						$errno = socket_last_error();
-						Daemon::log(get_class($this) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
+						Daemon::$process->log(get_class($this) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
 
 						continue;
 					}
@@ -279,7 +309,7 @@ class ConnectionPool {
 					socket_set_nonblock($sock);
 				} else {
 					if (!$sock = @stream_socket_server($addr, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN)) {
-						Daemon::log(get_class($this) . ': Couldn\'t bind address \'' . $addr . '\' (' . $errno . ' - ' . $errstr . ')');
+						Daemon::$process->log(get_class($this) . ': Couldn\'t bind address \'' . $addr . '\' (' . $errno . ' - ' . $errstr . ')');
 
 						continue;
 					}
@@ -289,7 +319,7 @@ class ConnectionPool {
 			}
 		
 			if (!is_resource($sock)) {
-				Daemon::log(get_class($this) . ': Couldn\'t add errorneus socket with address \'' . $addr . '\'.');
+				Daemon::$process->log(get_class($this) . ': Couldn\'t add errorneus socket with address \'' . $addr . '\'.');
 			} else {
 				$this->addSocket($sock, $type, $addr);
 			}

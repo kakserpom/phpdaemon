@@ -47,6 +47,9 @@ class Connection {
 		
 	}
 	
+	public function onInheritanceFromRequest($req) {
+	}
+	
 	/**
 	 * Set the size of data to read at each reading
 	 * @param integer Size
@@ -72,7 +75,9 @@ class Connection {
 		}
 		$this->buffer = event_buffer_new($this->resource,	$this->directInput ? NULL : array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onFailureEvent'));
 		event_buffer_base_set($this->buffer, Daemon::$process->eventBase);
-		if ($this->priority !== null) {event_buffer_priority_set($this->buffer, $this->priority);}
+		if (($this->priority !== null) && is_callable('event_buffer_priority_set')) {
+			event_buffer_priority_set($this->buffer, $this->priority);
+		}
 		event_buffer_watermark_set($this->buffer, EV_READ, $this->initialLowMark, $this->initialHighMark);
 		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
 	}
@@ -205,6 +210,9 @@ class Connection {
 	 * @return boolean Success.
 	 */
 	public function write($s) {
+		if (!$this->buffer) {
+			return false;
+		}
  		$this->sending = true;
 		return event_buffer_write($this->buffer, $s);		
 	}
@@ -245,7 +253,9 @@ class Connection {
 			return;
 		}
 		$this->finished = true;
-		unset($this->pool->list[$this->connId]);
+		if ($this->pool) {
+			unset($this->pool->list[$this->connId]);
+		}
 		$this->onFinish();
 		if (!$this->sending) {
 			$this->close();
@@ -346,7 +356,9 @@ class Connection {
 			return;
 		}
 		$this->finished = true;
-		unset($this->pool->list[$this->connId]);
+		if ($this->pool) {
+			unset($this->pool->list[$this->connId]);
+		}
 		$this->onFinish();
 		
 		event_base_loopexit(Daemon::$process->eventBase);
