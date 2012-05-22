@@ -8,26 +8,17 @@
  */
 class FlashPolicy extends NetworkServer {
 
-	public $pool;				 // ConnectionPool
 	public $policyData;          // Cached policy-file.
-	public $file = 'crossdomain.xml';
+	public $file = 'crossdomain.xml'; // File path
 	public $listen = 'tcp://0.0.0.0';
 	public $defaultPort = 843;
-	public $connectionClass = 'FlashPolicyConnection';
-
-	/**
-	 * Constructor.
-	 * @return void
-	 */
-	public function init() {
-		$this->onConfigUpdated();
-	}
 	
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void
 	 */
 	public function onConfigUpdated() {
+		parent::onConfigUpdated();
 		$this->policyData = file_get_contents($this->file, true);
 	}
 	

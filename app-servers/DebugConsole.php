@@ -1,73 +1,26 @@
 <?php
 
 /**
- * @package Applications
- * @subpackage DebugConsole
+ * @package NetworkServers
+ * @subpackage DebungConsole
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class DebugConsole extends AsyncServer {
-
-	public $pool;
-
-	/**
-	 * Setting default config options
-	 * Overriden from AppInstance::getConfigDefaults
-	 * @return array|false
-	 */
-	protected function getConfigDefaults() {
-		return array(
-			// listen to
-			'listen'     => 'tcp://0.0.0.0',
-			// listen port
-			'listenport' => 8818,
-			// password to login
-			'passphrase' => 'secret',
-			// disabled by default
-			'enable'     => 0
-		);
-	}
-
+class DebugConsole extends NetworkServer {
+	public $listen = 'tcp://0.0.0.0';
+	public $defaultPort = 8818;
+	public $passphrase = 'secret';
+	
 	/**
 	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
-		if ($this->config->enable->value) {
-			$this->pool = new ConnectionPool(array(
-					'connectionClass' => 'DebugConsoleConnection',
-					'listen' => $this->config->listen->value,
-					'listenport' => $this->config->listenport->value
-			));
-			$this->pool->appInstance = $this;
-		}
+		Daemon::log('CAUTION: Danger! DebugConsole is up. Potential security breach.');
 	}
-	
-	/**
-	 * Called when the worker is ready to go
-	 * @todo -> protected?
-	 * @return void
-	 */
-	public function onReady() {
-		if (isset($this->pool)) {
-			$this->pool->enable();
-		}
-	}
-
-	/**
-	 * Called when new connection is accepted
-	 * @param integer Connection's ID
-	 * @param string Address of the connected peer
-	 * @return void
-	 */
-	protected function onAccepted($connId, $addr) {
-		$this->sessions[$connId] = new DebugConsoleSession($connId, $this);
-	}
-	
 }
 
 class DebugConsoleConnection extends Connection {
-
 	/**
 	 * Are we authorized?
 	 * @var boolean
@@ -104,7 +57,7 @@ Please enter the password or type "exit": ');
 	 * @return boolean
 	 */
 	private function checkPassword($pass = '') {
-		if ($pass != $this->pool->appInstance->config->passphrase->value) {
+		if ($pass != $this->pool->passphrase) {
 			--$this->authTries;
 			
 			if (0 === $this->authTries) {
@@ -184,5 +137,4 @@ Type "help" to get the list of allowed commands.');
 			$this->finish();
 		}
 	}
-	
 }

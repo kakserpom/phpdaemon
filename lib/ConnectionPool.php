@@ -22,15 +22,27 @@ class ConnectionPool {
 	public $listen;
 	public $defaultPort;
 	public $name;
+	public $config;
 	public static $instances = array();
 	
-	public function __construct($params = array()) {
+	public function __construct($params = array(), $config = null) {
+		$this->onConfigUpdated();
+		if ($params) {
+			$this->applyParams($params);
+		}
+		if ($this->connectionClass === null) {
+			$this->connectionClass = get_class($this) . 'Connection';
+		}
+		if (isset($this->listen)) {
+			$this->bind($this->listen, $this->defaultPort);
+		}
+	}
+	
+	public function applyParams($params) {
 		foreach ($params as $k => $v) {
 			$k = strtolower($k);
 			if ($k === 'connectionclass') {
 				$this->connectionClass = $v;
-			}
-			elseif ($k === 'listen') {
 			}
 			elseif ($k === 'name') {
 				$this->name = $v;
@@ -38,26 +50,72 @@ class ConnectionPool {
 			elseif ($k == 'listen') {
 				$this->listen = $v;
 			}
-			elseif ($k == 'defaultPort') {
+			elseif ($k == 'defaultport') {
 				$this->defaultPort = $v;
 			}
 		}
-		if (isset($this->listen)) {
-			$this->bind($this->listen, $this->defaultPort);
+	}
+	
+	/**
+	 * Called when worker is going to update configuration.
+	 * @return void
+	 */
+	public function onConfigUpdated() {
+		if ($this->config) {
+			$params = $this->config->toArray();
+			$this->applyParams($params);
 		}
 	}
 	
-	public static function getInstance($arg = 'default') {
+	public static function getInstance($arg = '') {
+		if ($arg === '') {
+			$arg = 'default';
+		}
 		$class = get_called_class();
 		if (is_string($arg)) {
-			if (isset(static::$instances[$arg])) {
-				return static::$instances[$arg];
+			$key = $class . ':' . $arg;
+			if (isset(self::$instances[$key])) {
+				return self::$instances[$key];
 			}
 			$k = 'Pool:' . $class . ':' . $arg;
 			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: null;
-			return static::$instances[$arg] = new $class($config  ? $config->toArray() : null, $config);	
+			return self::$instances[$key] = new $class($config  ? $config->toArray() : null, $config);	
 		} else {
 			return new $class($arg);
+		}
+	}
+	
+	
+ 	/**
+	 * Process default config
+	 * @todo move it to Daemon_Config class
+	 * @param array {"setting": "value"}
+	 * @return void
+	 */
+	public function processDefaultConfig($settings = array()) {
+		foreach ($settings as $k => $v) {
+			$k = strtolower(str_replace('-', '', $k));
+
+			if (!isset($this->config->{$k})) {
+			  if (is_scalar($v))	{
+					$this->config->{$k} = new Daemon_ConfigEntry($v);
+				} else {
+					$this->config->{$k} = $v;
+				}
+			} elseif ($v instanceof Daemon_ConfigSection) {
+			// @todo
+			}	else {
+				$current = $this->config->{$k};
+			  if (is_scalar($v))	{
+					$this->config->{$k} = new Daemon_ConfigEntry($v);
+				} else {
+					$this->config->{$k} = $v;
+				}
+				
+				$this->config->{$k}->setHumanValue($current->value);
+				$this->config->{$k}->source = $current->source;
+				$this->config->{$k}->revision = $current->revision;
+			}
 		}
 	}
 	
@@ -473,6 +531,4 @@ class ConnectionPool {
 
 		return (ip2long ($IP) & ~((1 << (32 - $e[1])) - 1)) === ip2long($e[0]);
 	}
-	
-	
 }
