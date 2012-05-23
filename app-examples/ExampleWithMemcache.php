@@ -14,7 +14,7 @@ class ExampleWithMemcache extends AppInstance {
 	 */
 
 	public function onReady() {
-		$this->memcache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
+		$this->memcache = MemcacheClient::getInstance();
 	}
 	
 	/**

@@ -13,7 +13,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	const IPCPacketType_POLL = 0x03;
 
 	public $IpcTransSessions = array();
-	public $wss;
+	public $WS;
 	public $ipcId;
 
 	/**
@@ -36,7 +36,7 @@ class WebSocketOverCOMET extends AsyncServer {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			$this->wss = Daemon::$appResolver->getInstanceByAppName('WebSocketServer');
+			$this->WS = WebSocketServer::getInstance();
 		}
 	}
 
@@ -298,7 +298,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 
 				$appName = self::getString($_REQUEST['_route']);
 
-				if (!isset($this->appInstance->wss->routes[$appName])) {
+				if (!isset($this->appInstance->WS->routes[$appName])) {
 					if (
 						isset(Daemon::$config->logerrors->value) 
 						&& Daemon::$config->logerrors->value
@@ -309,7 +309,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 					return;
 				}
 
-				if (!$this->downstream = call_user_func($this->appInstance->wss->routes[$appName], $this)) {
+				if (!$this->downstream = call_user_func($this->appInstance->WS->routes[$appName], $this)) {
 					return;
 				}
 			}
@@ -323,7 +323,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 				$this->inited = TRUE;
 				$appName = self::getString($_REQUEST['_route']);
 
-				if (!isset($this->appInstance->wss->routes[$appName])) {
+				if (!isset($this->appInstance->WS->routes[$appName])) {
 					if (
 						isset(Daemon::$config->logerrors) 
 						&& Daemon::$config->logerrors
@@ -336,7 +336,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 					return;
 				}
 
-				if (!$this->downstream = call_user_func($this->appInstance->wss->routes[$appName], $this)) {
+				if (!$this->downstream = call_user_func($this->appInstance->WS->routes[$appName], $this)) {
 					echo json_encode(array('error' => 403));
 					return;
 				}

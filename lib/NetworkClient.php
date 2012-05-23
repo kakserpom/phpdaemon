@@ -16,6 +16,7 @@ class NetworkClient extends ConnectionPool {
 	public $defaultServers = '127.0.0.1'; 
 	public $defaultPort = 1;
 	public $maxConnPerServ = 32;
+	public $acquireOnGet = false;
 
 	public function __construct($params = array()) {
 		parent::__construct();
@@ -56,29 +57,71 @@ class NetworkClient extends ConnectionPool {
 	 * @param string Address
 	 * @return object Connection
 	 */
-	public function getConnection($addr) {
+	public function getConnection($addr = null) {
+		if (isset($this->server)) {
+			$addr = $this->server;
+		}
 		if (isset($this->servConn[$addr])) {
-			while (($c = array_pop($this->servConnFree[$addr])) !== null) {
-				if (isset($this->sessions[$c])) {
-					return $c;
+			if ($this->acquireOnGet) {
+				while (($c = array_pop($this->servConnFree[$addr])) !== null) {
+					if (isset($this->list[$c])) {
+						return $this->list[$c];
+					}
+				}
+			} else {
+				if ($c = end($this->servConn[$addr])) {
+					if (isset($this->list[$c])) {
+						return $this->list[$c];
+					}
 				}
 			}
 			if (sizeof($this->servConn[$addr]) >= $this->maxConnPerServ) {
-				return $this->servConn[$addr][array_rand($this->servConn[$addr])];
+				return $this->getConnectionById($this->servConn[$addr][array_rand($this->servConn[$addr])]);
 			}
 		} else {
 			$this->servConn[$addr] = array();
 			$this->servConnFree[$addr] = array();
 		}
 		
+		if (strpos($addr, '://') !== false) { // URL
+			$u = parse_url($addr);
 
-		$e = explode(':', $addr);
+			if (!isset($u['port'])) {
+				$u['port'] = $this->defaultPort;
+			}
 
-		$connId = $this->connectTo($e[0], isset($e[1]) ? $e[1] : null);
+			$connId = $this->connectTo($u['host'], $u['port']);
+
+			if (!$connId) {
+				return false;
+			}
+			$conn = $this->getConnectionById($connId);
+			
+			if (isset($u['user'])) {
+				$conn->user = $u['user'];
+			}
+
+			if (isset($u['pass'])) {
+				$conn->password = $u['pass'];
+			}
+
+			if (isset($u['path'])) {
+				$conn->dbname = ltrim($u['path'], '/');
+			}
+			
+		} else { // not URL
+			$e = explode(':', $addr);
+			$connId = $this->connectTo($e[0], isset($e[1]) ? $e[1] : null);
+			if (!$connId) {
+				return false;
+			}
+			$conn = $this->getConnectionById($connId);
+		}
+
 		$this->servConn[$addr][$connId] = $connId;
 		$this->servConnFree[$addr][$connId] = $connId;
 
-		return $connId;
+		return $conn;
 	}
 
 	/**
@@ -117,16 +160,15 @@ class NetworkClient extends ConnectionPool {
 			$k = array_rand($this->servers);
 		}
 
-		$connId = $this->getConnection($k);
-		if (!$connId) {
-			return false;
-		}
-		$conn = $this->getConnectionById($connId);
+		$conn = $this->getConnection($k);
 		if (!$conn) {
 			return false;
 		}
-		$conn->onResponse[] = $onResponse;
-		$conn->write($s);
+		if ($onResponse !== NULL) {
+			$conn->onResponse[] = $onResponse;
+			$conn->checkFree();
+		}
+;		$conn->write($s);
 		return true;
 	}
 
@@ -138,15 +180,14 @@ class NetworkClient extends ConnectionPool {
 	 * @return boolean Success
 	 */
 	public function requestByKey($k, $s, $onResponse) {
-		$connId = $this->getConnectionByKey($k);
-		if (!$connId) {
-			return false;
-		}
-		$conn = $this->getConnectionById($connId);
+		$conn = $this->getConnectionByKey($k);
 		if (!$conn) {
 			return false;
 		}
-		$conn->onResponse[] = $onResponse;
+		if ($onResponse !== NULL) {
+			$conn->onResponse[] = $onResponse;
+			$conn->checkFree();
+		}
 		$conn->write($s);
 		return true;
 	}

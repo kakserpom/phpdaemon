@@ -1,15 +1,12 @@
 <?php
 
 /**
- * @package Applications
+ * @package Network clients
  * @subpackage MySQLClient
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class MySQLClient extends AsyncServer {
-
-	public $sessions = array(); // Active sessions
-	public $servConn = array(); // Active connections
+class MySQLClient extends NetworkClient {
 
 	const CLIENT_LONG_PASSWORD     = 1;       // new more secure passwords
 	const CLIENT_FOUND_ROWS        = 2;       // Found instead of affected rows
@@ -101,30 +98,10 @@ class MySQLClient extends AsyncServer {
 	const TIMESTAMP_FLAG          = 0x400;
 	const SET_FLAG                = 0x800;
 
-	/**
-	 * Setting default config options
-	 * Overriden from AppInstance::getConfigDefaults
-	 * @return array|false
-	 */
-	protected function getConfigDefaults() {
-		return array(
-			// default server
-			'server'       => 'mysql://root@127.0.0.1',
-			// default port
-			'port'         => 3306,
-			// @todo add description
-			'protologging' => 0
-		);
-	}
-
-	/**
-	 * Constructor
-	 * @return void
-	 */
-	public function init() {
-
-	}
-
+	public $acquireOnGet = true;
+	public $server = 'mysql://root@127.0.0.1';
+	public $defaultPort = 3306;
+	
 	/**
 	 * Escapes the special symbols with trailing backslash
 	 * @return string
@@ -160,65 +137,9 @@ class MySQLClient extends AsyncServer {
 
 		return strtr($string, $sqlescape);
 	}
-
-	/**
-	 * Establish connection
-	 * @param string Optional. Address.
-	 * @return integer Connection's ID
-	 */
-	public function getConnection($addr = NULL)
-	{
-		if (empty($addr)) {
-			$addr = $this->config->server->value;
-		}
-		
-		if (isset($this->servConn[$addr])) {
-			foreach ($this->servConn[$addr] as &$c) {
-				if (
-					isset($this->sessions[$c]) 
-					&& !sizeof($this->sessions[$c]->callbacks)
-				) {
-					return $this->sessions[$c];
-				}
-			}
-		} else {
-			$this->servConn[$addr] = array();
-		}
-		
-		$u = parse_url($addr);
-		
-		if (!isset($u['port'])) {
-			$u['port'] = $this->config->port->value;
-		}
-		
-		$connId = $this->connectTo($u['host'], $u['port']);
-
-		if (!$connId) {
-			return;
-		}
-		
-		$this->sessions[$connId] = new MySQLClientSession($connId, $this);
-		$this->sessions[$connId]->url = $addr;
-
-		if (isset($u['user'])) {
-			$this->sessions[$connId]->user = $u['user'];
-		}
-		
-		if (isset($u['pass'])) {
-			$this->sessions[$connId]->password = $u['pass'];
-		}
-		
-		if (isset($u['path'])) {
-			$this->sessions[$connId]->dbname = ltrim($u['path'], '/');
-		}
-		
-		$this->servConn[$addr][$connId] = $connId;
-
-		return $this->sessions[$connId];
-	}
 }
 
-class MySQLClientSession extends SocketSession {
+class MySQLClientConnection extends NetworkClientConnection {
 
 	public $url;                        // Connection's URL.
 	public $seq           = 0;          // Pointer of packet sequence.
@@ -229,10 +150,16 @@ class MySQLClientSession extends SocketSession {
 	public $user          = 'root';     // Username
 	public $password      = '';         // Password
 	public $cstate        = 0;          // Connection's state. 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
+	const STATE_GOT_INIT = 1;
+	const STATE_AUTH_SENT = 2;
+	const STATE_AUTH_ERR = 3;
+	const STATE_HANDSHAKED = 4;
 	public $instate       = 0;          // State of pointer of incoming data. 0 - Result Set Header Packet, 1 - Field Packet, 2 - Row Packet
+	const INSTATE_HEADER = 0;
+	const INSTATE_FIELD = 1;
+	const INSTATE_ROW = 2;
 	public $resultRows    = array();    // Resulting rows.
 	public $resultFields  = array();    // Resulting fields
-	public $callbacks     = array();    // Stack of callbacks.
 	public $onConnected   = NULL;       // Callback. Called when connection's handshaked.
 	public $context;                    // Property holds a reference to user's object.
 	public $insertId;                   // Equals with INSERT_ID().
@@ -247,10 +174,10 @@ class MySQLClientSession extends SocketSession {
 	{
 		$this->onConnected = $callback;
 
-		if ($this->cstate == 3) {
+		if ($this->cstate == self::STATE_AUTH_ERR) {
 			call_user_func($callback, $this, FALSE);
 		}
-		elseif ($this->cstate === 4) {
+		elseif ($this->cstate === self::STATE_HANDSHAKED) {
 			call_user_func($callback, $this, TRUE);
 		}
 	}
@@ -322,17 +249,8 @@ class MySQLClientSession extends SocketSession {
 	 * @param string Data
 	 * @return boolean Success
 	 */
-	public function sendPacket($packet) {
-		$header = $this->int2bytes(3, strlen($packet)) . chr($this->seq++); 
-
-		$this->write($header);
-		$this->write($packet);
-
-		if ($this->appInstance->config->protologging->value) {
-			Daemon::log('Client --> Server: ' . Debug::exportBytes($header . $packet) . "\n\n");
-		}
-
-		return TRUE;
+	public function sendPacket($packet) { 
+		return $this->write($this->int2bytes(3, strlen($packet)) . chr($this->seq++) . $packet);;
 	}
 
 	/**
@@ -413,8 +331,8 @@ class MySQLClientSession extends SocketSession {
 		$l = $this->parseEncodedBinary($s, $p);
 
 		if (
-			($l === NULL) 
-			|| ($l === FALSE)
+			($l === null) 
+			|| ($l === false)
 		) {
 			return $l;
 		}
@@ -432,7 +350,7 @@ class MySQLClientSession extends SocketSession {
 	 * @return string Result
 	 */
 	public function getAuthToken($scramble, $password) {
-		return sha1($scramble . sha1($hash1 = sha1($password, TRUE), TRUE), TRUE) ^ $hash1;
+		return sha1($scramble . sha1($hash1 = sha1($password, true), true), true) ^ $hash1;
 	}
 
 	/**
@@ -442,12 +360,12 @@ class MySQLClientSession extends SocketSession {
 	 * @return string Result
 	 */
 	public function auth() {
-		if ($this->cstate !== 1) {
+		if ($this->cstate !== self::STATE_GOT_INIT) {
 			return;
 		}
 		
-		++$this->cstate;
-		$this->callbacks[] = $this->onConnected;
+		$this->cstate = self::STATE_AUTH_SENT;
+		$this->onResponse[] = $this->onConnected;
 		
 		$this->clientFlags =
 			MySQLClient::CLIENT_LONG_PASSWORD | 
@@ -500,14 +418,14 @@ class MySQLClientSession extends SocketSession {
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {
 		if ($this->finished) {
-			throw new MySQLClientSessionFinished;
+			throw new MySQLClientConnectionFinished;
 		}
 		
-		if ($this->cstate !== 4) {
-			return FALSE;
+		if ($this->cstate !== self::STATE_HANDSHAKED) {
+			return false;
 		}
 		
-		$this->callbacks[] = $callback;
+		$this->onResponse[] = $callback;
 		$this->seq = 0;
 		$this->sendPacket(chr($cmd).$q);
 		
@@ -522,7 +440,7 @@ class MySQLClientSession extends SocketSession {
 	public function selectDB($name) {
 		$this->dbname = $name;
 
-		if ($this->cstate !== 1) {
+		if ($this->cstate !== self::STATE_GOT_INIT) {
 			return $this->query('USE `' . $name . '`');
 		}
 		
@@ -535,12 +453,8 @@ class MySQLClientSession extends SocketSession {
 	 * @return void
 	 */
 	public function stdin($buf) {
+		//Daemon::log('Server --> Client: ' . Debug::exportBytes($buf) . "\n\n");
 		$this->buf .= $buf;
-
-		if ($this->appInstance->config->protologging->value) {
-			Daemon::log('Server --> Client: ' . Debug::exportBytes($buf) . "\n\n");
-		}
-		
 		start:
 		
 		$this->buflen = strlen($this->buf);
@@ -548,16 +462,15 @@ class MySQLClientSession extends SocketSession {
 		if (($packet = $this->getPacketHeader()) === FALSE) {
 			return;
 		}
-		
 		$this->seq = $packet[1] + 1;
 
-		if ($this->cstate === 0) {
+		if ($this->cstate === self::STATE_ROOT) {
 			if ($this->buflen < 4 + $packet[0]) {
 				// not whole packet yet
 				return;
 			} 
 
-			$this->cstate = 1;
+			$this->cstate = self::STATE_GOT_INIT;
 			$p = 4;
 
 			$this->protover = ord(binarySubstr($this->buf, $p++, 1));
@@ -617,8 +530,8 @@ class MySQLClientSession extends SocketSession {
 			}
 			elseif ($fieldCount === 0x00) {
 				// OK Packet Empty
-				if ($this->cstate === 2) {
-					$this->cstate = 4;
+				if ($this->cstate === self::STATE_AUTH_SENT) {
+					$this->cstate = self::STATE_HANDSHAKED;
 			
 					if ($this->dbname !== '') {
 						$this->query('USE `' . $this->dbname . '`');
@@ -643,22 +556,23 @@ class MySQLClientSession extends SocketSession {
 				$this->onResultDone();
 			}
 			elseif ($fieldCount === 0xFE) { 
-				// EOF Packet
-				++$this->instate;
-		
-				if ($this->instate === 3) {
+				// EOF Packet		
+				if ($this->instate === self::INSTATE_ROW) {
 					$this->onResultDone();
+				}
+				else {
+					++$this->instate;
 				}
 			} else {
 				// Data packet
 				--$p;
 		
-				if ($this->instate === 0) {
+				if ($this->instate === self::INSTATE_HEADER) {
 					// Result Set Header Packet
 					$extra = $this->parseEncodedBinary($this->buf, $p);
-					++$this->instate;
+					$this->instate = self::INSTATE_FIELD;
 				}
-				elseif ($this->instate === 1) {
+				elseif ($this->instate === self::INSTATE_FIELD) {
 					// Field Packet
 					$field = array(
 						'catalog'    => $this->parseEncodedString($this->buf, $p),
@@ -691,7 +605,7 @@ class MySQLClientSession extends SocketSession {
 
 					$this->resultFields[] = $field;
 				}
-				elseif ($this->instate === 2) {
+				elseif ($this->instate === self::INSTATE_ROW) {
 					// Row Packet
 					$row = array();
 
@@ -714,8 +628,8 @@ class MySQLClientSession extends SocketSession {
 	 * @return void
 	 */
 	public function onResultDone() {
-		$this->instate = 0;
-		$callback = array_shift($this->callbacks);
+		$this->instate = self::INSTATE_HEADER;
+		$callback = array_shift($this->onResponse);
 
 		if (
 			$callback 
@@ -723,13 +637,9 @@ class MySQLClientSession extends SocketSession {
 		) {
 			call_user_func($callback, $this, TRUE);
 		}
-		
+		$this->checkFree();
 		$this->resultRows = array();
 		$this->resultFields = array();
-		
-		if ($this->appInstance->config->protologging->value) {
-			Daemon::log(__METHOD__);
-		}
 	}
 
 	/**
@@ -737,8 +647,8 @@ class MySQLClientSession extends SocketSession {
 	 * @return void
 	 */
 	public function onError() {
-		$this->instate = 0;
-		$callback = array_shift($this->callbacks);
+		$this->instate = self::INSTATE_HEADER;
+		$callback = array_shift($this->onResponse);
 
 		if (
 			$callback 
@@ -746,30 +656,18 @@ class MySQLClientSession extends SocketSession {
 		) {
 			call_user_func($callback, $this, FALSE);
 		}
-		
+		$this->checkFree();
 		$this->resultRows = array();
 		$this->resultFields = array();
 
-		if ($this->cstate === 2) {
+		if ($this->cstate === self::STATE_AUTH_SENT) {
 			// in case of auth error
-			$this->cstate = 3;
+			$this->cstate = self::STATE_AUTH_ERR;
 			$this->finish();
 		}
 	
 		Daemon::log(__METHOD__ . ' #' . $this->errno . ': ' . $this->errmsg);
 	}
-
-	/**
-	 * Called when session finishes
-	 * @return void
-	 */
-	public function onFinish() {
-		$this->finished = TRUE;
-
-		unset($this->appInstance->servConn[$this->url][$this->connId]);
-		unset($this->appInstance->sessions[$this->connId]);
-	}
-
 }
 
-class MySQLClientSessionFinished extends Exception {}
+class MySQLClientConnectionFinished extends Exception {}

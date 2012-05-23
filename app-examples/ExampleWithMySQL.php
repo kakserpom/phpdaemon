@@ -16,7 +16,7 @@ class ExampleWithMySQL extends AppInstance {
 	 */
 
 	public function onReady() {
-		$this->sql = Daemon::$appResolver->getInstanceByAppName('MySQLClient');
+		$this->sql = MySQLClient::getInstance();
 	}
 	
 	/**

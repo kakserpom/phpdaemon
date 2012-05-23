@@ -28,6 +28,8 @@ class Connection {
 	protected $initialHighMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
 	public $priority;
 	public $inited = false;
+	public $state = 0;             // current state of the connection (protocol level)
+	const STATE_ROOT = 0;
 	
 	/**
 	 * SocketSession constructor
