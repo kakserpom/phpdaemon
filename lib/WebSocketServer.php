@@ -10,7 +10,6 @@ class WebSocketServer extends NetworkServer
 	public $listen = 'tcp://0.0.0.0';
 	public $defaultPort = 8047;
 	public $maxAllowedPacket = 16384;
-	public $connectionClass = 'WebSocketConnection';
 
 	/**
 	 * Adds a route if it doesn't exist already.

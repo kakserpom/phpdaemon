@@ -7,7 +7,6 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class RedisClient extends NetworkClient {
-	public $connectionClass = 'RedisClientConnection';
 	public $defaultPort = 6379;
 
 	public function __call($name, $args) {

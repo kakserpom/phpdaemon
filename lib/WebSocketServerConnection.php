@@ -1,5 +1,5 @@
 <?php
-class WebSocketConnection extends Connection {
+class WebSocketServerConnection extends Connection {
 	
 	public $secprotocol;
 	public $resultKey;
