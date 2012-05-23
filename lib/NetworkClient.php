@@ -13,31 +13,34 @@ class NetworkClient extends ConnectionPool {
 	public $dtags_enabled = false;   // Enables tags for distribution
 	public $servConn = array();      // Active connections
 	public $prefix = '';             // Prefix for all keys
-	public $defaultServers = '127.0.0.1'; 
-	public $defaultPort = 1;
 	public $maxConnPerServ = 32;
 	public $acquireOnGet = false;
-
-	public function __construct($params = array()) {
-		parent::__construct();
-		if (!isset($params['servers'])) {
-			$params['servers'] = $this->defaultServers;
-		}
-		if (isset($params['prefix'])) {
-			$this->prefix = $params['prefix'];
-		}
-		if (isset($params['maxConnPerServ'])) {
-			$this->maxConnPerServ = $params['maxConnPerServ'];
-		}
+	public $noSAF = false;
 	
-		$servers = explode(',', $params['servers']);
-
-		foreach ($servers as $s) {
-			$e = explode(':', trim($s));
-			$this->addServer($e[0], isset($e[1]) ? $e[1] : NULL);
-		}
+	/**
+	 * Setting default config options
+	 * Overriden from ConnectionPool::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// @todo add description strings
+			'expose'                => 1,
+			'servers'               =>  '127.0.0.1',
+			'maxconnperserv'		=> 32
+		);
 	}
 
+	public function applyConfig() {
+		parent::applyConfig();
+		if (isset($this->config->servers)) {
+			$servers = array_map('trim',explode(',', $this->config->servers->value));
+			foreach ($servers as $s) {
+				$e = explode(':', trim($s));
+				$this->addServer($e[0], isset($e[1]) ? $e[1] : NULL);
+			}
+		}
+	}
 	/**
 	 * Adds server
 	 * @param string Server's host
@@ -47,7 +50,7 @@ class NetworkClient extends ConnectionPool {
 	 */
 	public function addServer($host, $port = NULL, $weight = NULL) {
 		if ($port === NULL) {
-			$port = $this->defaultPort;
+			$port = $this->config->defaultport->value;
 		}
 		$this->servers[$host . ':' . $port] = $weight;
 	}
@@ -58,8 +61,8 @@ class NetworkClient extends ConnectionPool {
 	 * @return object Connection
 	 */
 	public function getConnection($addr = null) {
-		if (isset($this->server)) {
-			$addr = $this->server;
+		if ($addr == null) {
+			$addr = $this->config->server->value;
 		}
 		if (isset($this->servConn[$addr])) {
 			if ($this->acquireOnGet) {
@@ -87,7 +90,7 @@ class NetworkClient extends ConnectionPool {
 			$u = parse_url($addr);
 
 			if (!isset($u['port'])) {
-				$u['port'] = $this->defaultPort;
+				$u['port'] = $this->config->defaultport->value;
 			}
 
 			$connId = $this->connectTo($u['host'], $u['port']);
@@ -167,6 +170,8 @@ class NetworkClient extends ConnectionPool {
 		if ($onResponse !== NULL) {
 			$conn->onResponse[] = $onResponse;
 			$conn->checkFree();
+		} elseif ($this->noSAF) {
+			$conn->onResponse[] = null;
 		}
 ;		$conn->write($s);
 		return true;
@@ -187,14 +192,10 @@ class NetworkClient extends ConnectionPool {
 		if ($onResponse !== NULL) {
 			$conn->onResponse[] = $onResponse;
 			$conn->checkFree();
+		} elseif ($this->noSAF) {
+			$conn->onResponse[] = null;
 		}
 		$conn->write($s);
 		return true;
 	}
-	
-	/**
-	 * Called when worker is going to update configuration.
-	 * @return void
-	 */
-	public function onConfigUpdated() {}
 }

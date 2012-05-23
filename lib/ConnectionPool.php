@@ -19,41 +19,24 @@ class ConnectionPool {
 	public $socketEvents    = array();
 	public $connectionClass;
 	public $list = array();
-	public $listen;
-	public $defaultPort;
 	public $name;
 	public $config;
 	public static $instances = array();
 	
-	public function __construct($params = array(), $config = null) {
+	public function __construct($config = array()) {
+		$this->config = $config;
 		$this->onConfigUpdated();
-		if ($params) {
-			$this->applyParams($params);
-		}
 		if ($this->connectionClass === null) {
 			$this->connectionClass = get_class($this) . 'Connection';
 		}
 		if (isset($this->listen)) {
 			$this->bind($this->listen, $this->defaultPort);
 		}
+		
+		$this->init();
 	}
 	
-	public function applyParams($params) {
-		foreach ($params as $k => $v) {
-			$k = strtolower($k);
-			if ($k === 'connectionclass') {
-				$this->connectionClass = $v;
-			}
-			elseif ($k === 'name') {
-				$this->name = $v;
-			}
-			elseif ($k == 'listen') {
-				$this->listen = $v;
-			}
-			elseif ($k == 'defaultport') {
-				$this->defaultPort = $v;
-			}
-		}
+	public function init() {
 	}
 	
 	/**
@@ -61,10 +44,39 @@ class ConnectionPool {
 	 * @return void
 	 */
 	public function onConfigUpdated() {
-		if ($this->config) {
-			$params = $this->config->toArray();
-			$this->applyParams($params);
+		if ($defaults = $this->getConfigDefaults()) {
+			$this->processDefaultConfig($defaults);
 		}
+		if ($this->config === null) {
+			return;
+		}
+		$this->applyConfig();
+	}
+	
+	public function applyConfig() {
+		foreach ($this->config as $k => $v) {
+			if (is_object($v) && $v instanceof Daemon_ConfigEntry) {
+				$v = $v->value;
+			}
+			$k = strtolower($k);
+			if ($k === 'connectionclass') {
+				$this->connectionClass = $v;
+			}
+			elseif ($k === 'name') {
+				$this->name = $v;
+			}
+			elseif ($k === 'allowedclients') {
+				$this->allowedClients = $v;
+			}
+		}		
+	}
+	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return false;
 	}
 	
 	public static function getInstance($arg = '') {
@@ -78,10 +90,12 @@ class ConnectionPool {
 				return self::$instances[$key];
 			}
 			$k = 'Pool:' . $class . ':' . $arg;
-			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: null;
-			return self::$instances[$key] = new $class($config  ? $config->toArray() : null, $config);	
+			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: new Daemon_ConfigSection;
+			$obj = self::$instances[$key] = new $class($config);
+			$obj->name = $arg;
+			return $obj;
 		} else {
-			return new $class($arg);
+			return new $class(new Daemon_ConfigSection($arg));
 		}
 	}
 	
@@ -400,7 +414,7 @@ class ConnectionPool {
 			return TRUE;
 		}
 		
-		return $this->netMatch($this->allowedClients,substr($addr, 0, $p));
+		return $this->netMatch($this->allowedClients, substr($addr, 0, $p));
 	}
 	
 	/**

@@ -96,7 +96,29 @@ class Daemon_Config implements ArrayAccess {
 				Daemon::$process->updatedWorkers();
 			}
 		}
+		$this->onLoad();
 		return !$parser->errorneus;
+	}
+	
+	public function onLoad() {
+		if (
+			isset($this->minspareworkers->value) 
+			&& isset($this->maxspareworkers->value)
+		) {
+			if ($this->minspareworkers->value > $this->maxspareworkers->value) {
+				Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
+				$this->minspareworkers->value = $this->maxspareworkers->value;
+			}
+		}
+		
+		if (
+			isset($this->minworkers->value) 
+			&& isset($this->maxworkers->value)
+		) {
+			if ($this->minworkers->value > $this->maxworkers->value) {
+				$this->minworkers->value = $this->maxworkers->value;
+			}
+		}
 	}
 
 	public function getRealOffsetName($offset) {
@@ -150,9 +172,9 @@ class Daemon_Config implements ArrayAccess {
 					$v = NULL;
 				}
 			}
-			if (isset(Daemon::$config->{$k})) {
-				Daemon::$config->{$k}->setHumanValue($v);
-				Daemon::$config->{$k}->source = 'cmdline';
+			if (isset($this->{$k})) {
+				$this->{$k}->setHumanValue($v);
+				$this->{$k}->source = 'cmdline';
 				
 			}
 			else {

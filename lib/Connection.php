@@ -84,6 +84,10 @@ class Connection {
 		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
 	}
 	
+	public function setWatermark($low, $high) {
+		event_buffer_watermark_set($this->buffer, EV_READ, $low, $high);
+	}
+	
 	public function connectTo($host, $port = 0) {
 		if (stripos($host, 'unix:') === 0) {
 			// Unix-socket

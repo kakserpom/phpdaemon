@@ -12,6 +12,12 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 
 	public $source;
 	public $revision;
+	
+	public function __construct($arr = array()) {
+		foreach ($arr as $k => $v) {
+			$this->{$k} = $v;
+		}
+	}
 
 	public function count() {
 		$c = 0;
@@ -42,7 +48,7 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 		return $this->offsetGet($offset) !== NULL;
 	}
 
-	public function offsetGet($offset) {;
+	public function offsetGet($offset) {
 		return $this->{$this->getRealOffsetName($offset)}->value;
 	}
 

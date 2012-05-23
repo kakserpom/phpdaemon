@@ -33,7 +33,7 @@ class ExampleWithPostgreSQLRequest extends HTTPRequest {
 	 */
 	public function init() {
 		$this->stime = microtime(TRUE);
-		$sqlclient = Daemon::$appResolver->getInstanceByAppName('PostgreSQLClient');
+		$sqlclient = PostgreSQLClient::getInstance();
 
 		if (
 			$sqlclient 

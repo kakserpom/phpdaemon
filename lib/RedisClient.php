@@ -7,7 +7,21 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class RedisClient extends NetworkClient {
-	public $defaultPort = 6379;
+	public $noSAF = true;
+	/**
+	 * Setting default config options
+	 * Overriden from NetworkClient::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// @todo add description strings
+			'servers'               =>  '127.0.0.1',
+			'defaultport'			=> 6379,
+			'maxconnperserv'		=> 32,
+		);
+	}
+
 
 	public function __call($name, $args) {
 		$onResponse = (

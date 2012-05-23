@@ -46,6 +46,7 @@ class Pool extends AppInstance {
 	 */
 	public function onConfigUpdated() {
 		if ($this->pool) {
+			$this->pool->config = $this->config;
 			return $this->pool->onConfigUpdated();
 		}
 	}

@@ -7,7 +7,19 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class MemcacheClient extends NetworkClient {
-	public $defaultPort = 11211;
+	/**
+	 * Setting default config options
+	 * Overriden from NetworkClient::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// @todo add description strings
+			'servers'               =>  '127.0.0.1',
+			'defaultport'			=> 11211,
+			'maxconnperserv'		=> 32
+		);
+	}
 
 	/**
 	 * Gets the key

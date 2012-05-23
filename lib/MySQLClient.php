@@ -97,10 +97,21 @@ class MySQLClient extends NetworkClient {
 	const AUTO_INCREMENT_FLAG     = 0x200;
 	const TIMESTAMP_FLAG          = 0x400;
 	const SET_FLAG                = 0x800;
-
-	public $acquireOnGet = true;
-	public $server = 'mysql://root@127.0.0.1';
-	public $defaultPort = 3306;
+	
+	/**
+	 * Setting default config options
+	 * Overriden from NetworkClient::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// @todo add description strings
+			'server'               =>  'mysql://root@127.0.0.1',
+			'defaultport'			=> 3306,
+			'maxconnperserv'		=> 32,
+		);
+	}
+	
 	
 	/**
 	 * Escapes the special symbols with trailing backslash

@@ -118,7 +118,7 @@ class WebSocketServerConnection extends Connection {
 			call_user_func(array_shift($this->callbacks), $this);
 		}
 		
-		if (is_callable(array($this->upstream, 'onWrite')))	{
+		if ($this->upstream && is_callable(array($this->upstream, 'onWrite')))	{
 			$this->upstream->onWrite();
 		}
 	}
