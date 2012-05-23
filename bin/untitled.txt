@@ -1,4 +1,0 @@
-			MIGRATION GUIDE (to 0.6)
-
-Common changes:
-	- AsyncServer class is softly deprecated. It still works but you should rewrite your code.
