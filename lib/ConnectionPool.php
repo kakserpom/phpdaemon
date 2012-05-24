@@ -39,6 +39,15 @@ class ConnectionPool {
 	public function init() {
 	}
 	
+	
+	/**
+	 * Called when the worker is ready to go.
+	 * @return void
+	*/
+	public function onReady() {
+	}
+	
+	
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void
@@ -423,6 +432,14 @@ class ConnectionPool {
 		return $this->netMatch($this->allowedClients, substr($addr, 0, $p));
 	}
 	
+	public function removeConnection($connId) {
+		$conn = $this->getConnectionById($connId);
+		if (!$conn) {
+			return false;
+		}
+		$conn->onFinish();
+		unset($this->list[$connId]);
+	}
 	/**
 	 * Called when remote host is trying to establish the connection
 	 * @param resource Descriptor

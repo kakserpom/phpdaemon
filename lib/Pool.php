@@ -36,6 +36,7 @@ class Pool extends AppInstance {
 	 */
 	public function onReady() {
 		if ($this->pool) {
+			$this->pool->onReady();
 			$this->pool->enable();
 		}
 	}

@@ -14,21 +14,24 @@ class NetworkServer extends ConnectionPool {
 	 * @return void
 	 */
 
-	public function inheritFromRequest($req, $appInstance) {
+	public function inheritFromRequest($req, $pool) {
 		
 		$connId = $req->attrs->connId;
-		unset(Daemon::$process->queue[$connId . '-' . $req->attrs->id]);
-		$buf = $appInstance->buf[$connId];
-		unset($appInstance->buf[$connId]);
-		unset($appInstance->poolState[$connId]);		
-		unset(Daemon::$process->readPoolState[$connId]);
-		
+		unset(Daemon::$process->queue[$req->queueId]);
+		$oldConn = $pool->getConnectionById($connId);
+		if (!$oldConn) {
+			return false;
+		}
 		$class = $this->connectionClass;
 		$conn = new $class($connId, null, $req->attrs->server['REMOTE_ADDR'], $this);
 		$this->list[$connId] = $conn;
-		$conn->buffer = $buf;
+		$conn->buffer = $oldConn->buffer;
+		$conn->resource = $oldConn->resource;
+		unset($oldConn->buffer);
+		unset($oldConn->resource);
+		$pool->removeConnection($connId);
 		$set = event_buffer_set_callback(
-			$buf, 
+			$conn->buffer, 
 			array($conn, 'onReadEvent'),
 			array($conn, 'onWriteEvent'),
 			array($conn, 'onFailureEvent')

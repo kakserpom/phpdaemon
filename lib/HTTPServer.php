@@ -9,7 +9,7 @@
 class HTTPServer extends NetworkServer {
 
 	public $variablesOrder;
-	public $WS; // WebSocketServer instance
+	public $WS; // WebSocketServer
 
 	/**
 	 * Setting default config options
@@ -64,9 +64,7 @@ class HTTPServer extends NetworkServer {
 	 * @return void
 	*/
 	public function onReady() {
-		if ($this->config->enable->value) {
-			$this->WS = WebSocketServer::getInstance();
-		}
+		$this->WS = WebSocketServer::getInstance();
 	}
 	
 	/**
@@ -242,8 +240,11 @@ class HTTPServerConnection extends Connection {
 					&& isset($req->attrs->server['HTTP_UPGRADE'])
 					&& (strtolower($req->attrs->server['HTTP_UPGRADE']) === 'websocket')
 				) {
-					if ($this->WS) {
-						$this->WS->inheritFromRequest($req, $this);
+					if ($this->pool->WS) {
+						$this->pool->WS->inheritFromRequest($req, $this->pool);
+						return;
+					} else {
+						$this->finish();
 						return;
 					}
 				} else {
@@ -251,7 +252,7 @@ class HTTPServerConnection extends Connection {
 				}
 
 				if ($req instanceof stdClass) {
-					$this->endRequest($req, 0, 0);
+					$this->pool->endRequest($req, 0, 0);
 					unset(Daemon::$process->queue[$rid]);
 				} else {
 					if ($this->pool->config->sendfile->value && (!$this->pool->config->sendfileonlybycommand->value	|| isset($req->attrs->server['USE_SENDFILE'])) 

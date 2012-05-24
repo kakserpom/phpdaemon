@@ -2,11 +2,11 @@
 
 /**
  * @package NetworkServers
- * @subpackage FlashPolicy
+ * @subpackage FlashPolicyServer
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class FlashPolicy extends NetworkServer {
+class FlashPolicyServer extends NetworkServer {
 
 	public $policyData;          // Cached policy-file.
 	/**
@@ -33,7 +33,7 @@ class FlashPolicy extends NetworkServer {
 	
 }
 
-class FlashPolicyConnection extends Connection {
+class FlashPolicyServerConnection extends Connection {
 	protected $initialLowMark = 23; // length of "<policy-file-request/>\x00"
 	protected $initialHighMark = 23;
 	/**
