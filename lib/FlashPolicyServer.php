@@ -9,17 +9,26 @@
 class FlashPolicy extends NetworkServer {
 
 	public $policyData;          // Cached policy-file.
-	public $file = 'crossdomain.xml'; // File path
-	public $listen = 'tcp://0.0.0.0';
-	public $defaultPort = 843;
-	
+	/**
+	 * Setting default config options
+	 * Overriden from ConnectionPool::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// @todo add description strings
+			'file'                  =>  'crossdomain.xml',
+			'listen'				=> '127.0.0.1',
+			'listen-port'           => 843,
+		);
+	}
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void
 	 */
 	public function onConfigUpdated() {
 		parent::onConfigUpdated();
-		$this->policyData = file_get_contents($this->file, true);
+		$this->policyData = file_get_contents($this->config->file->value, true);
 	}
 	
 }

@@ -238,19 +238,12 @@ class WebSocketServerConnection extends Connection {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 		if (!$this->handshaked)	{
-			if (Daemon::$appResolver->checkAppEnabled('FlashPolicy')) {
-				if (strpos($this->buf, "<policy-file-request/>\x00") !== FALSE) {
-					if (
-						($FP = FlashPolicy::getInstance()) 
-						&& $FP->policyData
-					) {
-						$this->write($FP->policyData . "\x00");
-					}
-
-					$this->finish();
-
-					return;
+			if (strpos($this->buf, "<policy-file-request/>\x00") !== FALSE) {
+				if (($FP = FlashPolicyServer::getInstance()) && $FP->policyData) {
+					$this->write($FP->policyData . "\x00");
 				}
+				$this->finish();
+				return;
 			}
 
 			$i = 0;

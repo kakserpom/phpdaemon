@@ -7,12 +7,18 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class TelnetHoneypot extends NetworkServer {
-
-	public $policyData;          // Cached policy-file.
-	public $file = 'crossdomain.xml';
-	public $listen = 'tcp://0.0.0.0';
-	public $defaultPort = 23;
-	public $connectionClass = 'TelnetHoneypotConnection';
+	/**
+	 * Setting default config options
+	 * Overriden from ConnectionPool::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// @todo add description strings
+			'listen'                  =>  '0.0.0.0',
+			'listen-port'             => 23,
+		);
+	}
 }
 
 class TelnetHoneypotConnection extends Connection {

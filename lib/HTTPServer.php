@@ -149,7 +149,6 @@ class HTTPServerConnection extends Connection {
 
 		if ($this->state === self::STATE_ROOT) {
 
-			if (Daemon::$appResolver->checkAppEnabled('FlashPolicy'))
 			if (strpos($buf, "<policy-file-request/>\x00") !== false) {
 				if (
 					($FP = FlashPolicyServer::getInstance()) 
