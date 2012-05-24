@@ -21,7 +21,6 @@ class Connection {
 	public $addr;
 	private $sending = false;
 	private $reading = false;
-	private $queuedReading = false;
 	public $directInput = false; // do not use prebuffering of incoming data
 	public $readEvent;
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
@@ -84,8 +83,11 @@ class Connection {
 		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
 	}
 	
-	public function setWatermark($low, $high) {
+	public function setReadWatermark($low, $high) {
 		event_buffer_watermark_set($this->buffer, EV_READ, $low, $high);
+	}
+	public function setWriteWatermark($low, $high) {
+		event_buffer_watermark_set($this->buffer, EV_WRITE, $low, $high);
 	}
 	
 	public function connectTo($host, $port = 0) {
@@ -323,10 +325,6 @@ class Connection {
 			return;
 		}
 		$this->reading = !$this->onRead();
-		if ($this->queuedReading && $this->reading) {
-			Daemon::$process->queuedCallbacks[] = array($this, 'onRead');
-			Daemon_TimedEvent::setTimeout('readPoolEvent');
-		}
 	}
 	
 	public function onRead() {

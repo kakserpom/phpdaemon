@@ -29,8 +29,8 @@ class ConnectionPool {
 		if ($this->connectionClass === null) {
 			$this->connectionClass = get_class($this) . 'Connection';
 		}
-		if (isset($this->listen)) {
-			$this->bind($this->listen, $this->defaultPort);
+		if (isset($this->config->listen)) {
+			$this->bind($this->config->listen->value, $this->config->listenport->value);
 		}
 		
 		$this->init();
@@ -67,6 +67,9 @@ class ConnectionPool {
 			}
 			elseif ($k === 'allowedclients') {
 				$this->allowedClients = $v;
+			}
+			elseif ($k === 'maxallowedpacket') {
+				$this->maxAllowedPacket = $v;
 			}
 		}		
 	}
@@ -407,11 +410,14 @@ class ConnectionPool {
 	 */
 	public function onAccept($connId, $addr) {
 		if ($this->allowedClients === NULL) {
-			return TRUE;
+			return true;
+		}
+		if ($addr === 'unix') { // Local UNIX-socket connection
+			return true;
 		}
 		
 		if (($p = strrpos($addr, ':')) === FALSE) {
-			return TRUE;
+			return true;
 		}
 		
 		return $this->netMatch($this->allowedClients, substr($addr, 0, $p));
@@ -466,7 +472,7 @@ class ConnectionPool {
 	 */
 	public function onAcceptEvent($stream, $events, $arg) {
 		$sockId = $arg[0];
-
+		$type = $arg[1];
 		if (Daemon::$config->logevents->value) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
 		}
@@ -484,8 +490,8 @@ class ConnectionPool {
 			
 			socket_set_nonblock($resource);
 			
-			if (Daemon::$sockets[$sockId][1] === self::TYPE_SOCKET) {
-				$addr = '';
+			if ($type === self::TYPE_SOCKET) {
+				$addr = 'unix';
 			} else {
 				socket_getpeername($resource, $host, $port);
 				

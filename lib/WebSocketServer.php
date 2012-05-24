@@ -7,10 +7,23 @@ class WebSocketServer extends NetworkServer
 	const BINARY = 'BINARY';
 	const STRING = 'STRING';
 	
-	public $listen = 'tcp://0.0.0.0';
-	public $defaultPort = 8047;
-	public $maxAllowedPacket = 16384;
+	public $maxAllowedPacket;
 
+	/**
+	 * Setting default config options
+	 * Overriden from ConnectionPool::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// @todo add description strings
+			'expose'                  => 1,
+			'listen'                  =>  '0.0.0.0',
+			'listen-port'             => 8047,
+			'max-allowed-packet'  	  => new Daemon_ConfigEntrySize('16k'),
+		);
+	}
+	
 	/**
 	 * Adds a route if it doesn't exist already.
 	 * @param string Route name.

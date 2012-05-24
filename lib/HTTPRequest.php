@@ -304,7 +304,7 @@ class HTTPRequest extends Request {
 					return $this->upstream->requestOut($this, $h . $s);
 				}
 
-				$this->upstream->requestOut($this,$h);
+				$this->upstream->requestOut($this, $h);
 			}
 		}
 
