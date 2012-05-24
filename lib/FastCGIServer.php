@@ -130,6 +130,7 @@ class FastCGIServer extends NetworkServer {
 			}
 			$o += $c;
 		}
+		return true;
 	}
 
 	/**

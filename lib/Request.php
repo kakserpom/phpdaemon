@@ -80,44 +80,30 @@ class Request {
 			return;
 		}
  
-		$r = Daemon::$process->queue[$k];
+		$req = Daemon::$process->queue[$k];
 		
-		if ($r->state === Request::STATE_SLEEPING) {
-			$r->state = Request::STATE_ALIVE;
+		if ($req->state === Request::STATE_SLEEPING) {
+			$req->state = Request::STATE_ALIVE;
 		}
-		
-		if (Daemon::$config->logqueue->value) {
-			Daemon::$process->log('event ' . get_class($r) . '::call() invoked.');
-		}
- 
-		$ret = $r->call();
 	
-		if (Daemon::$config->logqueue->value) {
-			Daemon::$process->log('event runQueue(): (' . $k . ') -> ' . get_class($r) . '::call() returned ' . $ret . '.');
-		}
+		$ret = $req->call();
+	
  
 		if ($ret === Request::STATE_FINISHED) {		
-			if (is_resource($r->ev)) {
-				event_del($r->ev);
-				event_free($r->ev);
+			if (is_resource($req->ev)) {
+				event_del($req->ev);
+				event_free($req->ev);
 			}
 			
 			unset(Daemon::$process->queue[$k]);
  
-			if (isset($r->idAppQueue)) {
-				if (Daemon::$config->logqueue->value) {
-					Daemon::$process->log('request removed from ' . get_class($r->appInstance) . '->queue.');
-				}
- 
-				unset($r->appInstance->queue[$r->idAppQueue]);
-			} else {
-				if (Daemon::$config->logqueue->value) {
-					Daemon::$process->log('request can\'t be removed from AppInstance->queue.');
-				}
+			if (isset($req->idAppQueue)) { 
+				unset($req->appInstance->queue[$req->idAppQueue]);
 			}
+
 		}
 		elseif ($ret === REQUEST::STATE_SLEEPING) {
-			event_add($r->ev, $r->sleepTime);
+			event_add($req->ev, $req->sleepTime);
 		}
 	}
 	
