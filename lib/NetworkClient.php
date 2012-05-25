@@ -9,9 +9,10 @@
  */
 class NetworkClient extends ConnectionPool {
 	
-	private $servers = array();      // Array of servers 
+	public $servers = array();      // Array of servers 
 	public $dtags_enabled = false;   // Enables tags for distribution
 	public $servConn = array();      // Active connections
+	public $servConnFree = array();
 	public $prefix = '';             // Prefix for all keys
 	public $maxConnPerServ = 32;
 	public $acquireOnGet = false;
@@ -36,8 +37,12 @@ class NetworkClient extends ConnectionPool {
 		if (isset($this->config->servers)) {
 			$servers = array_map('trim',explode(',', $this->config->servers->value));
 			foreach ($servers as $s) {
-				$e = explode(':', trim($s));
-				$this->addServer($e[0], isset($e[1]) ? $e[1] : NULL);
+				if (strpos($s, '://') !== false) {
+					$this->addServer($s);
+				} else {
+					$e = explode(':', trim($s));
+					$this->addServer($e[0], isset($e[1]) ? $e[1] : NULL);
+				}
 			}
 		}
 	}

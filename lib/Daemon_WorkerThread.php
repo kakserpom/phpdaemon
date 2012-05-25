@@ -21,9 +21,6 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public $queue = array();
 	public $timeLastActivity = 0;
-	public $readPoolState = array();
-	public $queuedCallbacks = array();
-	public $writePoolState = array();
 	private $autoReloadLast = 0;
 	private $currentStatus = 0;
 	public $eventBase;
@@ -74,40 +71,6 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		$this->setStatus(1);
-
-		/**
-		 * @closure readPoolEvent
-		 * @deprecated
-		 * @description Invokes the AppInstance->readConn() method for every updated connection in pool. readConn() reads new data from the buffer.
-		 * @return void
-		 */
-		$this->readPoolEvent = Daemon_TimedEvent::add(function($event) {
-			$self = Daemon::$process;
-
-			foreach ($self->readPoolState as $connId => $state) {
-				if (Daemon::$config->logevents->value) {
-					$self->log('event readConn(' . $connId . ') invoked.');
-				}
-
-				$self->poolApp[$connId]->readConn($connId);
-
-				if (Daemon::$config->logevents->value) {
-					$self->log('event readConn(' . $connId . ') finished.');
-				}
-			}
-			
-			foreach ($self->queuedCallbacks as $id => $cb) {
-				if (call_user_func($cb)) {
-					unset($self->queuedCallbacks[$id]);
-				}
-			}
-			if (sizeof($self->queuedCallbacks) > 0) {
-				$event->timeout();
-			}
-			elseif (sizeof($self->readPoolState) > 0) {
-				$event->timeout();
-			}
-		}, 1e6 * 0.005, 'readPoolEvent');
 
 		Daemon_TimedEvent::add(function($event) {
 			$self = Daemon::$process;

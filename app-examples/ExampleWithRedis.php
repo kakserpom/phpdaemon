@@ -7,15 +7,6 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class ExampleWithRedis extends AppInstance {
-
-	/**
-	 * Called when the worker is ready to go.
-	 * @return void
-	 */
-
-	public function onReady() {
-		$this->redis = RedisClient::getInstance();
-	}
 	
 	/**
 	 * Creates Request.
@@ -32,7 +23,6 @@ class ExampleWithRedis extends AppInstance {
 class ExampleWithRedisRequest extends HTTPRequest {
 
 	public $job;
-	public $sql;
 
 	/**
 	 * Constructor.
@@ -47,13 +37,14 @@ class ExampleWithRedisRequest extends HTTPRequest {
 
 		});
 		
-		$this->appInstance->redis->lpush('mylist', microtime(true)); // just pushing something
+		$redis = RedisClient::getInstance();
+		$redis->lpush('mylist', microtime(true)); // just pushing something
 		
-		$job('testquery', function($name, $job) use ($req) { // registering job named 'testquery'
+		$job('testquery', function($name, $job) use ($redis) { // registering job named 'testquery'
 		
-			$req->appInstance->redis->lrange('mylist', 0, 10, function($redis) use ($name, $job) { // calling lrange Redis command
+			$redis->lrange('mylist', 0, 10, function($redis) use ($name, $job) { // calling lrange Redis command
 				
-				$job->setResult($name, $redis->result); 
+				$job->setResult($name, $redis->result);  // setting job result
 				
 			});
 		});

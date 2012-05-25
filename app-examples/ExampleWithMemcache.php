@@ -6,17 +6,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class ExampleWithMemcache extends AppInstance {
-
-	/**
-	 * Called when the worker is ready to go.
-	 * @return void
-	 */
-
-	public function onReady() {
-		$this->memcache = MemcacheClient::getInstance();
-	}
-	
+class ExampleWithMemcache extends AppInstance {	
 	/**
 	 * Creates Request.
 	 * @param object Request.
@@ -46,11 +36,14 @@ class ExampleWithMemcacheRequest extends HTTPRequest {
 			$req->wakeup(); // wake up the request immediately
 
 		});
+		$memcache = MemcacheClient::getInstance();
 			
-		$job('testquery', function($name, $job) use ($req) { // registering job named 'testquery'
+		$job('testquery', function($name, $job) use ($memcache) { // registering job named 'testquery'
 		
-			$req->appInstance->memcache->stats(function($memcache) use ($name, $job) {
-				$job->setResult($name, $memcache->result); 
+			$memcache->stats(function($memcache) use ($name, $job) { // calling 'stats'
+				
+				$job->setResult($name, $memcache->result); // setting job result
+				
 			});
 			
 		});
