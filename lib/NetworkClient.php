@@ -173,10 +173,10 @@ class NetworkClient extends ConnectionPool {
 			return false;
 		}
 		if ($onResponse !== NULL) {
-			$conn->onResponse[] = $onResponse;
-			$conn->checkFree();
+			$conn->onResponse->push($onResponse);
+			$conn->setFree(false);
 		} elseif ($this->noSAF) {
-			$conn->onResponse[] = null;
+			$conn->onResponse->push(null);
 		}
 ;		$conn->write($s);
 		return true;
@@ -195,10 +195,10 @@ class NetworkClient extends ConnectionPool {
 			return false;
 		}
 		if ($onResponse !== NULL) {
-			$conn->onResponse[] = $onResponse;
-			$conn->checkFree();
+			$conn->onResponse->push($onResponse);
+			$conn->setFree(false);
 		} elseif ($this->noSAF) {
-			$conn->onResponse[] = null;
+			$conn->onResponse->push(null);
 		}
 		$conn->write($s);
 		return true;

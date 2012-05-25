@@ -20,6 +20,8 @@ class MemcacheClient extends NetworkClient {
 			'maxconnperserv'		=> 32
 		);
 	}
+	
+	public function checkFree() {}
 
 	/**
 	 * Gets the key
@@ -60,7 +62,7 @@ class MemcacheClient extends NetworkClient {
 		}
 
 		if ($onResponse !== NULL) {
-			$conn->onResponse[] = $onResponse;
+			$conn->onResponse->push($onResponse);
 			$conn->checkFree();
 		}
 
@@ -95,7 +97,7 @@ class MemcacheClient extends NetworkClient {
 		}
 
 		if ($onResponse !== NULL) {
-			$conn->onResponse[] = $onResponse;
+			$conn->onResponse->push($onResponse);
 			$conn->checkFree();
 		}
 
@@ -127,7 +129,7 @@ class MemcacheClient extends NetworkClient {
 			return false;
 		}
 
-		$conn->onResponse[] = $onResponse;
+		$conn->onResponse->push($onResponse);
 		$conn->checkFree();
 
 		$conn->write('delete ' . $this->prefix . $key . ' ' . $time . "\r\n");
@@ -149,8 +151,8 @@ class MemcacheClient extends NetworkClient {
 		}
 
 		if ($onResponse !== NULL) {
-			$conn->onResponse[] = $onResponse;
-			$conn->checkFree();
+			$conn->onResponse->push($onResponse);
+			$conn->setFree(false);
 		}
 
 		$flags = 0;
@@ -177,8 +179,8 @@ class MemcacheClient extends NetworkClient {
 		}
 
 		if ($onResponse !== NULL) {
-			$conn->onResponse[] = $onResponse;
-			$conn->checkFree();
+			$conn->onResponse->push($onResponse);
+			$conn->setFree(false);
 		}
 
 		$flags = 0;
@@ -205,8 +207,8 @@ class MemcacheClient extends NetworkClient {
 		}
 
 		if ($onResponse !== NULL) {
-			$conn->onResponse[] = $onResponse;
-			$conn->checkFree();
+			$conn->onResponse->push($onResponse);
+			$conn->setFree(false);
 		}
 
 		$flags = 0;
@@ -280,7 +282,7 @@ class MemcacheClientConnection extends NetworkClientConnection {
 						$this->error = isset($e[1]) ? $e[1] : NULL;
 					}
 
-					$f = array_shift($this->onResponse);
+					$f = $this->onResponse->shift();
 					$this->checkFree();
 
 					if ($f) {

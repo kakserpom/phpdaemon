@@ -92,7 +92,7 @@ class MongoClientConnection extends NetworkClientConnection {
 				$p += $dl['len'];
 			}
 			
-			$this->checkFree();
+			$this->setFree(true);
 			
 			if (
 				isset($this->pool->requests[$id][2]) 

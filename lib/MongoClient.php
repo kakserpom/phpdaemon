@@ -110,7 +110,7 @@ class MongoClient extends NetworkClient {
 		$conn->write($p = pack('VVVV', strlen($data)+16, ++$this->lastReqId, 0, $opcode) . $data);
 		
 		if ($reply) {
-			$conn->checkFree();
+			$conn->setFree(false);
 		}
 		
 		return $this->lastReqId;

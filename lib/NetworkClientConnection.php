@@ -10,16 +10,26 @@
 class NetworkClientConnection extends Connection {
 	public $busy = false;
 	
-	public $onResponse = array();  // stack of onResponse callbacks
+	public $onResponse;  // stack of onResponse callbacks
+
+
+	public function __construct($connId, $res, $addr, $pool = null) {
+		parent::__construct($connId, $res, $addr, $pool);
+		$this->onResponse = new SplStack();
+	}
 	
-	public function checkFree() {
-		if ((sizeof($this->onResponse) > 0) || $this->finished) {
-			$this->busy = false;
+	public function setFree($isFree = true) {
+		$this->busy = !$isFree;
+		if ($this->busy) {
 			unset($this->pool->servConnFree[$this->addr][$this->connId]);
-		} else {
-			$this->busy = true;
+		}
+		else {
 			$this->pool->servConnFree[$this->addr][$this->connId] = $this->connId;
 		}
+	}
+
+	public function checkFree() {
+		$this->setFree($this->onResponse && $this->onResponse->isEmpty() && !$this->finished);
 	}
 	/**
 	 * Called when session finishes
@@ -27,7 +37,7 @@ class NetworkClientConnection extends Connection {
 	 */
 	public function onFinish() {
 		parent::onFinish();
-		$this->onResponse = array();
+		unset($this->onResponse);
 		$this->checkFree();
 	}
 
