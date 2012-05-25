@@ -247,6 +247,9 @@ class Daemon_Bootstrap {
 			if ($error === FALSE) {
 				Daemon_Bootstrap::start();
 			}
+			else {
+				exit(6);
+			}
 		}
 		elseif (
 			$runmode == 'status' 
@@ -424,7 +427,7 @@ class Daemon_Bootstrap {
 			&& posix_kill(Daemon_Bootstrap::$pid, SIGTTIN)
 		) {
 			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Daemon_Bootstrap::$pid . ')');
-			exit;
+			exit(6);
 		}
 
 		Daemon::init();
