@@ -81,6 +81,11 @@ class Connection {
 		}
 		event_buffer_watermark_set($this->buffer, EV_READ, $this->initialLowMark, $this->initialHighMark);
 		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
+		
+		if (!$this->inited) {
+			$this->inited = true;
+			$this->init();
+		}
 	}
 	
 	public function setReadWatermark($low, $high) {
