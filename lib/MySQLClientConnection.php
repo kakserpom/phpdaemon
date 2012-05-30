@@ -18,12 +18,12 @@ class MySQLClientConnection extends NetworkClientConnection {
 	const INSTATE_HEADER = 0;
 	const INSTATE_FIELD = 1;
 	const INSTATE_ROW = 2;
-	public $resultRows    = array();    // Resulting rows.
+	public $resultRows    = array();    // Resulting rows
 	public $resultFields  = array();    // Resulting fields
-	public $onConnected   = NULL;       // Callback. Called when connection's handshaked.
-	public $context;                    // Property holds a reference to user's object.
-	public $insertId;                   // Equals with INSERT_ID().
-	public $affectedRows;               // Number of affected rows.
+	public $onConnected   = NULL;       // Callback. Called when connection's handshaked
+	public $context;                    // Property holds a reference to user's object
+	public $insertId;                   // INSERT_ID()
+	public $affectedRows;               // Affected rows number
 	
 	/**
 	 * Executes the given callback when/if the connection is handshaked

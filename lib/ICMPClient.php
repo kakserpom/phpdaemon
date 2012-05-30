@@ -35,7 +35,7 @@ class ICMPClientConnection extends NetworkClientConnection {
 		$packet = pack('ccnnn', strlen($data), 0, 0, Daemon::$process->pid,	$this->seq) . $data;
 		$packet = substr_replace($packet, self::checksum($packet), 2, 2);
 		$this->write($packet);
-		$this->onResponse[] = array($cb, microtime(true));
+		$this->onResponse->push(array($cb, microtime(true)));
 	}
 		
 	public static function checksum($data) {
@@ -57,10 +57,11 @@ class ICMPClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function stdin($buf) {		
-		while ($c = array_pop($this->onResponse)) {
-			list ($cb, $st) = $c;
+		$el = $this->onResponse->pop();
+		if ($el) {
+			list ($cb, $st) = $el;
 			$cb(microtime(true) - $st);
 		}
-		
+		$this->finish();
 	}
 }

@@ -29,7 +29,7 @@ class NetworkClientConnection extends Connection {
 	}
 
 	public function checkFree() {
-		$this->setFree($this->onResponse && $this->onResponse->isEmpty() && !$this->finished);
+		$this->setFree(!$this->finished && $this->onResponse && $this->onResponse->isEmpty());
 	}
 	/**
 	 * Called when session finishes

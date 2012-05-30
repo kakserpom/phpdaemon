@@ -7,7 +7,7 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class RedisClient extends NetworkClient {
-	public $noSAF = true;
+	public $noSAF = true; // Send-And-Forget queries are not present in the protocol
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -49,7 +49,7 @@ class RedisClientConnection extends NetworkClientConnection {
 	public $valueSize = 0;         // size of received part of the value
 	public $error;                 // error message
 	public $key;                   // current incoming key
-	public $EOL = "\r\n";
+	public $EOL = "\r\n";			// EOL for gets() and writeln()
 	const STATE_BINARY = 1;
 
 	/**
@@ -61,8 +61,8 @@ class RedisClientConnection extends NetworkClientConnection {
 		$this->buf .= $buf;
 		start:
 		if (($this->result !== null) && ($this->resultSize >= $this->resultLength)) {
-			$f = array_shift($this->onResponse);
-			if ((!$this->finished) && (!sizeof($this->onResponse))) {
+			$f = $this->onResponse->shift();
+			if (!$this->finished && $this->onResponse->isEmpty()) {
 				$this->pool->servConnFree[$this->addr][$this->connId] = $this->connId;
 			}
 
@@ -72,15 +72,15 @@ class RedisClientConnection extends NetworkClientConnection {
 			
 			$this->resultSize = 0;
 			$this->resultLength = 0;
-			$this->result = NULL;
+			$this->result = null;
 			$this->error = false;
 		}
 		
 		if ($this->state === self::STATE_ROOT) { // outside of packet
-			while (($l = $this->gets()) !== FALSE) {
+			while (($l = $this->gets()) !== false) {
 				$l = binarySubstr($l, 0, -2); // rtrim \r\n
 				$char = $l[0];
-				if ($char == ':') { // inline
+				if ($char == ':') { // inline integer
 					if ($this->result !== null) {
 						++$this->resultSize;
 						$this->result[] = (int) binarySubstr($l, 1);
@@ -91,7 +91,7 @@ class RedisClientConnection extends NetworkClientConnection {
 					}
 					goto start;
 				}
-				elseif (($char == '+') || ($char == '-')) { // inline
+				elseif (($char == '+') || ($char == '-')) { // inline string
 					$this->resultLength = 1;
 					$this->resultSize = 1;
 					$this->error = ($char == '-');
@@ -106,13 +106,13 @@ class RedisClientConnection extends NetworkClientConnection {
 				}
 				elseif ($char == '$') { // defines size of the data block
 					$this->valueLength = (int) substr($l, 1);
-					$this->state = self::STATE_BINARY; // data block
-					break; // stop line-by-line reading
+					$this->state = self::STATE_BINARY; // binary data block
+					break; // stop reading line-by-line
 				}
 			}
 		}
 
-		if ($this->state === self::STATE_BINARY) { // inside of binary string
+		if ($this->state === self::STATE_BINARY) { // inside of binary data block
 			if ($this->valueSize < $this->valueLength) {
 				$n = $this->valueLength - $this->valueSize;
 				$buflen = strlen($this->buf);
@@ -128,7 +128,7 @@ class RedisClientConnection extends NetworkClientConnection {
 
 				$this->valueSize += $n;
 
-				if ($this->valueSize >= $this->valueLength) {
+				if ($this->valueSize >= $this->valueLength) { // we have the value
 					$this->state = self::STATE_ROOT;
 					++$this->resultSize;
 					$this->result[] = $this->value;

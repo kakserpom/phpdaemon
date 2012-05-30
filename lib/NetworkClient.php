@@ -54,7 +54,7 @@ class NetworkClient extends ConnectionPool {
 	 * @return void
 	 */
 	public function addServer($host, $port = NULL, $weight = NULL) {
-		if ($port === NULL) {
+		if (($port === NULL) && isset($this->config->defaultport->value)) {
 			$port = $this->config->defaultport->value;
 		}
 		$this->servers[$host . ':' . $port] = $weight;
