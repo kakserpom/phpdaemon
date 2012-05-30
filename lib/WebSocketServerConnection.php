@@ -60,18 +60,10 @@ class WebSocketServerConnection extends Connection {
 	 * @return void
 	 */
 
-	public function onFinish()
-	{
-		if (Daemon::$config->logevents->value)
-		{
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked');
-		}
-		
-		if (isset($this->upstream))
-		{
+	public function onFinish() {
+		if (isset($this->upstream)) {
 			$this->upstream->onFinish();
 		}
-		
 		unset($this->upstream);
 		unset($this->protocol->session);
 		unset($this->protocol);
@@ -84,21 +76,12 @@ class WebSocketServerConnection extends Connection {
 	 * @return boolean Success.
 	 */
 
-	public function onFrame($data, $type)
-	{
-		if (Daemon::$config->logevents->value)
-		{
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked');
+	public function onFrame($data, $type) {
+		if (!isset($this->upstream)) {
+			return false;
 		}
-		
-		if (!isset($this->upstream))
-		{
-			return FALSE;
-		}
-
 		$this->upstream->onFrame($data, $type);
-
-		return TRUE;
+		return true;
 	}
 	
 	/**

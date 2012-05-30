@@ -616,7 +616,7 @@ class Daemon_WorkerThread extends Thread {
 	public function sigttin() { }
 
 	/**
-	 * Handler of the SIGXSFZ ignal in worker process.
+	 * Handler of the SIGXSFZ signal in worker process.
 	 * @return void
 	 */
 	public function sigxfsz() {
