@@ -8,6 +8,7 @@
  */
 class RedisClient extends NetworkClient {
 	public $noSAF = true; // Send-And-Forget queries are not present in the protocol
+	public $subscribeCb = array();
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -24,18 +25,43 @@ class RedisClient extends NetworkClient {
 
 
 	public function __call($name, $args) {
-		$onResponse = (
-			($e = end($args)) &&
+		$onResponse = array();		
+		while (true) {
+			if (($e = end($args)) &&
 			(is_array($e) || is_object($e)) &&
-			is_callable($e)
-		) ? array_pop($args) : null;		
+			is_callable($e)) {
+				$onResponse[] = array_pop($args);
+			} else {
+				break;
+			}
+		}
 		reset($args);
-		array_unshift($args, strtoupper($name));
-		$r = '*' . sizeof($args) . "\r\n";
+		$name = strtoupper($name);
+		array_unshift($args, $name);
+		$s = sizeof($args);
+		$r = '*' . $s . "\r\n";
 		foreach ($args as $arg) {
 			$r .= '$' . strlen($arg) . "\r\n" . $arg . "\r\n";
 		}
 		$this->requestByServer($server = null, $r, $onResponse);
+		if (($name === 'SUBSCRIBE') || ($name === 'PSUBSCRIBE')) {
+			for ($i = 1; $i < $s; ++$i) {
+				$arg = $args[$i];
+				if (!isset($this->subscribeCb[$arg])) {
+					$this->subscribeCb[$arg] = $onResponse;
+				} else {
+					$this->subscribeCb[$arg] = array_merge($this->subscribeCb[$arg], $onResponse);
+				}
+			}
+		}
+		if (($name === 'UNSUBSCRIBE') || ($name === 'PUNSUBSCRIBE')) {
+			for ($i = 1; $i < $s; ++$i) {
+				$arg = $args[$i];
+				if (isset($this->subscribeCb[$arg])) {
+					$this->subscribeCb[$arg] = $onResponse;
+				}
+			}
+		}
 	}	
 }
 
@@ -67,7 +93,9 @@ class RedisClientConnection extends NetworkClientConnection {
 			}
 
 			if ($f) {
-				call_user_func($f, $this);
+				foreach ($f as $cb ) {
+					call_user_func($cb, $this);
+				}
 			}
 			
 			$this->resultSize = 0;

@@ -7,7 +7,7 @@ Main features and possibilites:
 
  * Powerful WebSocket and HTTP servers.
  * True FastCGI for PHP.
- * Many bundled async. clients like MySQL, Memcache, MongoDB, etc.
+ * Many bundled async. clients like MySQL, Memcache, MongoDB, Redis, ICMP, etc.
  * Many useful built-in applications like FlashPolicy server, SocksServer, CGI-server, etc...
  * Interactive debug console.
  * Dynamic spawning workers.

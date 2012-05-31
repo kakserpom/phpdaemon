@@ -21,6 +21,7 @@ class Connection {
 	public $addr;
 	private $sending = false;
 	private $reading = false;
+	public $connected = false;
 	public $directInput = false; // do not use prebuffering of incoming data
 	public $readEvent;
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
@@ -340,6 +341,14 @@ class Connection {
 	}
 	
 	/**
+	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * @return void
+	 */
+	public function onConnect() {
+		
+	}
+	
+	/**
 	 * Called when the connection is ready to accept new data
 	 * @param resource Descriptor
 	 * @param mixed Attached variable
@@ -347,6 +356,10 @@ class Connection {
 	 */
 	public function onWriteEvent($stream, $arg = null) {
 		$this->sending = false;
+		if (!$this->connected) {
+			$this->connected = true;
+			$this->onConnect();
+		}
 		if ($this->finished) {
 			$this->close();
 		}

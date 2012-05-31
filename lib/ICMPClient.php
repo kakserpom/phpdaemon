@@ -56,7 +56,8 @@ class ICMPClientConnection extends NetworkClientConnection {
 	 * @param string New data
 	 * @return void
 	 */
-	public function stdin($buf) {		
+	public function stdin($buf) {
+		// TODO: implement sequential packet exchange, incoming packet check
 		$el = $this->onResponse->pop();
 		if ($el) {
 			list ($cb, $st) = $el;

@@ -9,6 +9,18 @@
 class ExampleWithRedis extends AppInstance {
 	
 	/**
+	 * Called when the worker is ready to go.
+	 * @return void
+	 */
+	public function onReady() {
+		$redis = RedisClient::getInstance();
+		/*$redis->subscribe('testchannel', function($redis) {
+			Daemon::log(Debug::dump($redis->result));
+			
+		});*/
+	}
+	
+	/**
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
