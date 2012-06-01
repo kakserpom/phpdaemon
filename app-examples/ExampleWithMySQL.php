@@ -50,7 +50,7 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 
 		});
 		
-		$job('testquery', function($name, $job) use ($req) { // registering job named 'testquery'
+		$job('showvar', function($name, $job) use ($req) { // registering job named 'showvar'
 		
 			if ($sql = $req->appInstance->sql->getConnection()) {
 				$sql->onConnected(function($sql, $success) use ($name, $job) {
@@ -60,6 +60,13 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 					}
 
 					$sql->query('SHOW VARIABLES', function($sql, $success) use ($job, $name) {
+											
+						$job('showdbs', function($name, $job) use ($sql) { // registering job named 'showdbs'
+							$sql->query('SHOW DATABASES', function($sql, $success) use ($job, $name) {
+								$job->setResult($name, $sql->resultRows);
+							});
+						});
+								
 						$job->setResult($name, $sql->resultRows);
 					});
 					
@@ -88,10 +95,15 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 </head>
 <body>
 <?php
-if ($r = $this->job->getResult('testquery')) {
+if ($r = $this->job->getResult('showvar')) {
 	echo '<h1>It works! Be happy! ;-)</h1>Result of SHOW VARIABLES: <pre>';
-	var_dump($r);
+	var_dump(array_slice($r, 0, 5));
 	echo '</pre>';
+
+	echo '<br />Result of SHOW DATABASES: <pre>';
+	var_dump($this->job->getResult('showdbs'));
+	echo '</pre>';
+
 } else {
 	echo '<h1>Something went wrong! We have no result.</h1>';
 }
