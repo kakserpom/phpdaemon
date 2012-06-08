@@ -84,7 +84,6 @@ class ConnectionPool {
 	}
 	/**
 	 * Setting default config options
-	 * Overriden from AppInstance::getConfigDefaults
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
@@ -92,8 +91,8 @@ class ConnectionPool {
 	}
 	
 	public static function getInstance($arg = '') {
-		if ($arg === '') {
-			$arg = 'default';
+		if ($arg === 'default') {
+			$arg = '';
 		}
 		$class = get_called_class();
 		if (is_string($arg)) {
@@ -101,8 +100,9 @@ class ConnectionPool {
 			if (isset(self::$instances[$key])) {
 				return self::$instances[$key];
 			}
-			$k = 'Pool:' . $class . ':' . $arg;
-			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: new Daemon_ConfigSection;
+			$k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '' );
+			
+			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: new Daemon_ConfigSection;			
 			$obj = self::$instances[$key] = new $class($config);
 			$obj->name = $arg;
 			return $obj;

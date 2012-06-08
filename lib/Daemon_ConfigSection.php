@@ -15,7 +15,13 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 	
 	public function __construct($arr = array()) {
 		foreach ($arr as $k => $v) {
-			$this->{$k} = $v;
+			if (!is_object($v)) {
+				$e = new Daemon_ConfigEntry;
+				$e->setHumanValue($v);
+				$this->{$k} = $e;
+			} else {
+				$this->{$k} = $v;
+			}
 		}
 	}
 

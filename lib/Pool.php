@@ -25,7 +25,7 @@ class Pool extends AppInstance {
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			list ($class, $name) = explode(':', $this->name . ':default');
+			list ($class, $name) = explode(':', $this->name . ':');
 			$this->pool = call_user_func(array($class, 'getInstance'), $name);
 		}
 	}

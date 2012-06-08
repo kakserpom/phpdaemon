@@ -172,9 +172,9 @@ class Daemon_Config implements ArrayAccess {
 					$v = NULL;
 				}
 			}
-			if (isset($this->{$k})) {
-				$this->{$k}->setHumanValue($v);
-				$this->{$k}->source = 'cmdline';
+			if (isset(Daemon::$config->{$k})) {
+				Daemon::$config->{$k}->setHumanValue($v);
+				Daemon::$config->{$k}->source = 'cmdline';
 				
 			}
 			else {

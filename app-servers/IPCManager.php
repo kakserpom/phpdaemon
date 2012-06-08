@@ -188,10 +188,11 @@ class IPCManagerWorkerSession extends SocketSession {
 	public function onPacket($p) {
 		if ($p['op'] === 'spawnInstance') {
 			$fullname = $p['appfullname'];
-			if (strpos($fullname,'-') === false) {
-				$fullname .= '-';
+			$fullname = str_replace('-', ':', $fullname);
+			if (strpos($fullname,':') === false) {
+				$fullname .= ':';
 			}
-			list($app, $name) = explode('-', $fullname, 2);
+			list($app, $name) = explode(':', $fullname, 2);
 			Daemon::$appResolver->appInstantiate($app,$name);
 		}
 		elseif ($p['op'] === 'importFile') {
