@@ -64,8 +64,8 @@ class WebSocketServerConnection extends Connection {
 		if (isset($this->upstream)) {
 			$this->upstream->onFinish();
 		}
-		unset($this->upstream);
-		unset($this->protocol->session);
+		$this->upstream = null;
+		unset($this->protocol->connection);
 		unset($this->protocol);
 	}
 	
@@ -158,7 +158,7 @@ class WebSocketServerConnection extends Connection {
 	}
 	
 	/**
-	 * Event of SocketSession (AsyncServer). Called when the worker is going to shutdown.
+	 * Called when the worker is going to shutdown.
 	 * @return boolean Ready to shutdown ?
 	 */
 

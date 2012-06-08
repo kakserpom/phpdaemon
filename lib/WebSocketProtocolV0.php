@@ -81,7 +81,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 	{
 		if (strlen($data) < 8)
 		{
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->connection->clientAddr . '"') ;
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->connection->addr . '"') ;
 			return FALSE ;
 		}
 
