@@ -71,8 +71,8 @@ class MemcacheClient extends NetworkClient {
 		$conn->write('set ' . $this->prefix . $key . ' ' . $flags . ' ' . $exp . ' ' 
 			. strlen($value) . ($onResponse === NULL ? ' noreply' : '') . "\r\n"
 		);
-		$sess->write($value);
-		$sess->write("\r\n");
+		$conn->write($value);
+		$conn->write("\r\n");
 	}
 
 	/**

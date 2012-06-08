@@ -175,7 +175,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 					$len += $n ;
 				} while ($b > 0x80) ;
 
-				if ($this->connection->pool->appInstance->config->maxallowedpacket->value <= $len)
+				if ($this->connection->pool->config->maxallowedpacket->value <= $len)
 				{
 					// Too big packet
 					$this->connection->finish() ;
@@ -216,7 +216,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 			}
 		}
 
-		if ($this->connection->pool->appInstance->config->maxallowedpacket->value <= strlen($decodedData))
+		if ($this->connection->pool->config->maxallowedpacket->value <= strlen($decodedData))
 		{
 			// Too big packet
 			$this->connection->finish() ;
