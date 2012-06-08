@@ -888,22 +888,34 @@ class MongoClient extends NetworkClient {
 	/**
 	 * Establishes connection
 	 * @param string URL
+	 * @param callback. Optional.
 	 * @return integer Connection's ID.
 	 */
-	public function getConnection($url = null) {
+	public function getConnection($url = null, $cb = null) {
+		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
+			$cb = $url;
+			$url = null; 
+		}
+		$connId = false;
 		if (isset($this->servConn[$url])) {
 			while (($c = array_pop($this->servConnFree[$url])) !== null) {
 				if (isset($this->list[$c])) {
-					return $c;
+					$connId = $c;
+					break;
 				}
 			}
 			if (sizeof($this->servConn[$url]) >= $this->config->maxconnperserv->value) {
-			 $c = $this->servConn[$url][array_rand($this->servConn[$url])];
-			 return $c;
+			 	$connId = $this->servConn[$url][array_rand($this->servConn[$url])];
 			}
 		} else {
 			$this->servConn[$url] = array();
 			$this->servConnFree[$url] = array();
+		}
+		if ($connId && ($conn = $this->getConnectionById($connId))) {
+			if ($cb !== null) {
+				$conn->onConnected($cb);
+			}
+			return $connId;
 		}
 		
 		$u = parse_url($url);
@@ -952,6 +964,7 @@ class MongoClient extends NetworkClient {
 				}, $conn
 			);
 		}
+		$conn->onConnected($cb);
 		return $connId;
 	}
 

@@ -11,11 +11,36 @@ class NetworkClientConnection extends Connection {
 	public $busy = false;
 	
 	public $onResponse;  // stack of onResponse callbacks
-
+	
+	public $onConnected = null;
 
 	public function __construct($connId, $res, $addr, $pool = null) {
 		parent::__construct($connId, $res, $addr, $pool);
 		$this->onResponse = new SplStack();
+	}	
+	
+	/**
+	 * Executes the given callback when/if the connection is handshaked
+	 * Callback
+	 * @return void
+	 */
+	public function onConnected($cb) {
+		if ($this->connected) {
+			call_user_func($cb, $this);
+		} else {
+			$this->onConnected = $cb;
+		}
+	}
+	
+	/**
+	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * @return void
+	 */
+	public function onConnect() {
+		if ($this->onConnected) {
+			call_user_func($this->onConnected, $this);
+			$this->onConnected = null;
+		}
 	}
 	
 	public function setFree($isFree = true) {

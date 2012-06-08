@@ -19,8 +19,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	const INSTATE_FIELD = 1;
 	const INSTATE_ROW = 2;
 	public $resultRows    = array();    // Resulting rows
-	public $resultFields  = array();    // Resulting fields
-	public $onConnected   = NULL;       // Callback. Called when connection's handshaked
+	public $resultFields  = array();    // Resulting fieldsd
 	public $context;                    // Property holds a reference to user's object
 	public $insertId;                   // INSERT_ID()
 	public $affectedRows;               // Affected rows number
@@ -30,16 +29,23 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * Callback
 	 * @return void
 	 */
-	public function onConnected($callback) 
-	{
-		$this->onConnected = $callback;
-
+	public function onConnected($cb) {
 		if ($this->cstate == self::STATE_AUTH_ERR) {
-			call_user_func($callback, $this, FALSE);
+			call_user_func($cb, $this, FALSE);
 		}
 		elseif ($this->cstate === self::STATE_HANDSHAKED) {
-			call_user_func($callback, $this, TRUE);
+			call_user_func($cb, $this, TRUE);
 		}
+		else {
+			$this->onConnected = $cb;
+		}
+	}
+	
+	/**
+	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * @return void
+	 */
+	public function onConnect() {
 	}
 	
 	/**
@@ -226,6 +232,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 		
 		$this->cstate = self::STATE_AUTH_SENT;
 		$this->onResponse->push($this->onConnected);
+		$this->onConnected = null;
 		
 		$this->clientFlags =
 			MySQLClient::CLIENT_LONG_PASSWORD | 

@@ -52,27 +52,21 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 		
 		$job('showvar', function($name, $job) use ($req) { // registering job named 'showvar'
 		
-			if ($sql = $req->appInstance->sql->getConnection()) {
-				$sql->onConnected(function($sql, $success) use ($name, $job) {
-				
-					if (!$success) {
-						return $job->setResult($name, null);
-					}
+			$req->appInstance->sql->getConnection(function($sql, $success) use ($name, $job) {
+				if (!$success) {
+					return $job->setResult($name, null);
+				}
 
-					$sql->query('SHOW VARIABLES', function($sql, $success) use ($job, $name) {
-											
-						$job('showdbs', function($name, $job) use ($sql) { // registering job named 'showdbs'
-							$sql->query('SHOW DATABASES', function($sql, $success) use ($job, $name) {
-								$job->setResult($name, $sql->resultRows);
-							});
-						});
-								
-						$job->setResult($name, $sql->resultRows);
-					});
+				$sql->query('SHOW VARIABLES', function($sql, $success) use ($job, $name) {
 					
+					$job('showdbs', function($name, $job) use ($sql) { // registering job named 'showdbs'
+						$sql->query('SHOW DATABASES', function($sql, $success) use ($job, $name) {
+							$job->setResult($name, $sql->resultRows);
+						});
+					});				
+					$job->setResult($name, $sql->resultRows);
 				});
-			}
-
+			});
 		});
 		
 		$job(); // let the fun begin

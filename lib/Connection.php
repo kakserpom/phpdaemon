@@ -28,7 +28,7 @@ class Connection {
 	protected $initialHighMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
 	public $priority;
 	public $inited = false;
-	public $state = 0;             // current state of the connection (protocol level)
+	public $state = 0;             // current state of the connection (application protocol level)
 	const STATE_ROOT = 0;
 	
 	/**
@@ -345,7 +345,6 @@ class Connection {
 	 * @return void
 	 */
 	public function onConnect() {
-		
 	}
 	
 	/**

@@ -63,28 +63,41 @@ class NetworkClient extends ConnectionPool {
 	/**
 	 * Returns available connection from the pool
 	 * @param string Address
+	 * @param callback onConnected
 	 * @return object Connection
 	 */
-	public function getConnection($addr = null) {
+	public function getConnection($addr = null, $cb = null) {
+		if (!is_string($addr) && $addr !== null && $cb === null) { // if called getConnection(function....)
+			$cb = $addr;
+			$addr = null; 
+		}
 		if ($addr == null) {
 			$addr = $this->config->server->value;
 		}
+		$conn = false;
 		if (isset($this->servConn[$addr])) {
 			if ($this->acquireOnGet) {
 				while (($c = array_pop($this->servConnFree[$addr])) !== null) {
 					if (isset($this->list[$c])) {
-						return $this->list[$c];
+						$conn = $this->list[$c];
+						break;
 					}
 				}
 			} else {
 				if ($c = end($this->servConn[$addr])) {
 					if (isset($this->list[$c])) {
-						return $this->list[$c];
+						$conn = $this->list[$c];
 					}
 				}
 			}
 			if (sizeof($this->servConn[$addr]) >= $this->maxConnPerServ) {
-				return $this->getConnectionById($this->servConn[$addr][array_rand($this->servConn[$addr])]);
+				$conn = $this->getConnectionById($this->servConn[$addr][array_rand($this->servConn[$addr])]);
+			}
+			if ($conn) {
+				if ($cb !== null) {
+					$conn->onConnected($cb);
+				}
+				return $conn;
 			}
 		} else {
 			$this->servConn[$addr] = array();
@@ -124,6 +137,9 @@ class NetworkClient extends ConnectionPool {
 				return false;
 			}
 			$conn = $this->getConnectionById($connId);
+		}
+		if ($cb !== null) {
+			$conn->onConnected($cb);
 		}
 
 		$this->servConn[$addr][$connId] = $connId;
