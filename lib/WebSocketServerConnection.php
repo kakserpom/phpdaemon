@@ -13,6 +13,8 @@ class WebSocketServerConnection extends Connection {
 	public $extensions = array();
 	public $framebuf = '';
 	public $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
+	const STATE_HANDSHAKING = 1;
+	const STATE_HANDSHAKED = 2;
 
 	public $protocol; // Related WebSocket protocol
 
@@ -220,7 +222,7 @@ class WebSocketServerConnection extends Connection {
 
 	public function stdin($buf) {
 		$this->buf .= $buf;
-		if (!$this->handshaked)	{
+		if ($this->state === self::STATE_ROOT)	{
 			if (strpos($this->buf, "<policy-file-request/>\x00") !== FALSE) {
 				if (($FP = FlashPolicyServer::getInstance()) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
@@ -239,6 +241,7 @@ class WebSocketServerConnection extends Connection {
 				}
 
 				if ($l === "\r\n") {
+					$this->state = self::STATE_HANDSHAKING;
 					if (isset($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS'])) {
 						$str = strtolower($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS']);
 						$str = preg_replace($this->extensionsCleanRegex, '', $str);
@@ -290,7 +293,7 @@ class WebSocketServerConnection extends Connection {
 
 				if (!$this->firstline)
 				{
-					$this->firstline = TRUE;     
+					$this->firstline = true;     
 					$e = explode(' ', $l);
 					$u = parse_url(isset($e[1]) ? $e[1] : '');
 
@@ -314,8 +317,9 @@ class WebSocketServerConnection extends Connection {
 					}
 				}
 			}
+			$this->state = self::STATE_HANDSHAKED;
 		}
-		if ($this->handshaked)
+		if ($this->state === self::STATE_HANDSHAKED)
 		{
 	        if (!isset($this->protocol))
     	    {
