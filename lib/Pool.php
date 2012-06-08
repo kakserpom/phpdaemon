@@ -27,7 +27,7 @@ class Pool extends AppInstance {
 		if ($this->isEnabled()) {
 			list ($class, $name) = explode(':', $this->name . ':');
 			if (!class_exists($class)) {
-				Daemon::log($class. ' class not exists.')
+				Daemon::log($class. ' class not exists.');
 				return;
 			}
 			$this->pool = call_user_func(array($class, 'getInstance'), $name);
