@@ -194,8 +194,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 	 * @see http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10#page-16
 	 */
 
-    public function onRead()
-    {
+    public function onRead() {
 		$encodedData = &$this->connection->buf;
 		$data = '';
 		while (($buflen = strlen($encodedData)) >= 1) {

@@ -215,7 +215,7 @@ class WebSocketServerConnection extends Connection {
 	}
 	
 	/**
-	 * Event of SocketSession (AsyncServer). Called when new data received.
+	 * Called when new data received.
 	 * @param string New received data.
 	 * @return void
 	 */
@@ -264,10 +264,10 @@ class WebSocketServerConnection extends Connection {
 					// Protocol discovery, based on HTTP headers...
 					// ----------------------------------------------------------
 					if (isset($this->server['HTTP_SEC_WEBSOCKET_VERSION'])) { // HYBI
-						if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '8') { // Version 8 (FF7, Chrome14)
+/*						if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '8') { // Version 8 (FF7, Chrome14)
 							$this->protocol = new WebSocketProtocolV8($this) ;
 						}
-						elseif ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '13') { // newest protocol
+						else*/if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '13') { // newest protocol
 							$this->protocol = new WebSocketProtocolV13($this);
 						}
 						else
