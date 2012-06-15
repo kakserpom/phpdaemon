@@ -195,6 +195,9 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 	 */
 
     public function onRead() {
+		if (!isset($this->connection)) {
+			return;
+		}
 		$encodedData = &$this->connection->buf;
 		$data = '';
 		while (($buflen = strlen($encodedData)) >= 1) {

@@ -120,7 +120,7 @@ class WebSocketServerConnection extends Connection {
 
 		if (!isset($this->pool->routes[$routeName])) {
 			if (Daemon::$config->logerrors->value) {
-				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : undefined route "' . $route . '" for client "' . $this->addr . '"');
+				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : undefined route "' . $routeName . '" for client "' . $this->addr . '"');
 			}
 
 			return FALSE;
@@ -224,7 +224,8 @@ class WebSocketServerConnection extends Connection {
 		$this->buf .= $buf;
 		if ($this->state === self::STATE_ROOT)	{
 			if (strpos($this->buf, "<policy-file-request/>\x00") !== FALSE) {
-				if (($FP = FlashPolicyServer::getInstance()) && $FP->policyData) {
+				$FP = FlashPolicyServer::getInstance();
+				if ($FP && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();
@@ -264,10 +265,10 @@ class WebSocketServerConnection extends Connection {
 					// Protocol discovery, based on HTTP headers...
 					// ----------------------------------------------------------
 					if (isset($this->server['HTTP_SEC_WEBSOCKET_VERSION'])) { // HYBI
-/*						if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '8') { // Version 8 (FF7, Chrome14)
-							$this->protocol = new WebSocketProtocolV8($this) ;
+						if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '8') { // Version 8 (FF7, Chrome14)
+							$this->protocol = new WebSocketProtocolV13($this) ;
 						}
-						else*/if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '13') { // newest protocol
+						elseif ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '13') { // newest protocol
 							$this->protocol = new WebSocketProtocolV13($this);
 						}
 						else

@@ -157,8 +157,10 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 		}
     }
 
-    public function onRead()
-    {
+    public function onRead() {
+		if (!isset($this->connection)) {
+			return;
+		}
 		while (($buflen = strlen($this->connection->buf)) >= 2)
 		{
 			$frametype = ord(binarySubstr($this->connection->buf, 0, 1)) ;

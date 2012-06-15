@@ -17,7 +17,7 @@ class Debug {
 	 */
 	public static function exportBytes($str, $all = FALSE) {
 		return preg_replace_callback(
-			'~' . ($all ? '.' : '[^A-Za-z\d\.\{\}$:;\-_/\\\\]') . '~s',
+			'~' . ($all ? '.' : '[^A-Za-z\d\.\{\}$<>:;\-_/\\\\]') . '~s',
 			function($m) use ($all) {
 				if (!$all) {
 					if ($m[0] == "\r") {
