@@ -30,14 +30,16 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 		$this->description = "Websocket protocol version " . $this->connection->server['HTTP_SEC_WEBSOCKET_VERSION'];
 	}
 
-	public function onHandshake()
-	{
-        if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY']) || !isset($this->connection->server['HTTP_SEC_WEBSOCKET_VERSION']) || ($this->connection->server['HTTP_SEC_WEBSOCKET_VERSION'] != 13))
-        {
-            return FALSE ;
+	public function onHandshake(){
+        if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY'])	|| !isset($this->connection->server['HTTP_SEC_WEBSOCKET_VERSION'])) {
+			return false;
+		}
+		if ($this->connection->server['HTTP_SEC_WEBSOCKET_VERSION'] != '13' && $this->connection->server['HTTP_SEC_WEBSOCKET_VERSION'] != '8')
+		) {
+            return false;
         }
 
-		return TRUE ;
+		return true;
 	}
 
     /**
