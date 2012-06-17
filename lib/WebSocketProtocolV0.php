@@ -19,8 +19,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 
     public function onHandshake()
     {
-        if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY2']))
-        {
+        if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
             return FALSE ;
         }
 
@@ -37,6 +36,9 @@ class WebSocketProtocolV0 extends WebSocketProtocol
     {
         if ($this->onHandshake())
         {
+			if (strlen($data) < 8) {
+				return 0; // not enough data yet;
+			}
 			$final_key = $this->_computeFinalKey($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1'], $this->connection->server['HTTP_SEC_WEBSOCKET_KEY2'], $data) ;
 
 			if (!$final_key)

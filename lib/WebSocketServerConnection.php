@@ -279,20 +279,17 @@ class WebSocketServerConnection extends Connection {
 							return;
 						}
 					}
+					elseif (!isset($this->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
+						$this->protocol = new WebSocketProtocolVE($this);
+					}
 					else {	// Defaulting to HIXIE (Safari5 and many non-browser clients...)
 						$this->protocol = new WebSocketProtocolV0($this) ;
 					}
 					// ----------------------------------------------------------
 					// End of protocol discovery
 					// ----------------------------------------------------------
-
-					if (!$this->handshake($this->buf)) {
-						return;
-					}
-					break;
-				}
-
-				if (!$this->firstline)
+				} 
+				elseif (!$this->firstline)
 				{
 					$this->firstline = true;     
 					$e = explode(' ', $l);
@@ -318,6 +315,16 @@ class WebSocketServerConnection extends Connection {
 					}
 				}
 			}
+		}
+		if ($this->state === self::STATE_HANDSHAKING) {
+			$r = $this->handshake($this->buf);
+			if ($r === false) {
+				$this->finish();
+				return;
+			} elseif ($r === 0) {
+				return;
+			}
+			$this->buf = '';
 			$this->state = self::STATE_HANDSHAKED;
 		}
 		if ($this->state === self::STATE_HANDSHAKED)
