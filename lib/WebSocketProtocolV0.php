@@ -210,18 +210,16 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 				}
 				else
 				{
+					if ($this->connection->pool->maxAllowedPacket <= $buflen - 1)
+					{
+						// Too big packet
+						$this->connection->finish() ;
+						return FALSE ;
+					}
 					// not enough data yet					
 					return;
-	
 				}
 			}
-		}
-
-		if ($this->connection->pool->maxAllowedPacket <= strlen($decodedData))
-		{
-			// Too big packet
-			$this->connection->finish() ;
-			return FALSE ;
 		}
     }
 }
