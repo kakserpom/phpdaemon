@@ -178,7 +178,6 @@ class WebSocketServerConnection extends Connection {
 	 */
 
 	public function handshake($data) {
-		$this->handshaked = true;
 
 		if (!$this->onHandshake()) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot handshake session for client "' . $this->addr . '"') ;
@@ -194,6 +193,10 @@ class WebSocketServerConnection extends Connection {
 
 		// Handshaking...
 		$handshake = $this->protocol->getHandshakeReply($data);
+		
+		if ($handshake === 0) { // not enough data yet
+			return 0;
+		}
 
 		if (!$handshake) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"') ;
@@ -210,7 +213,7 @@ class WebSocketServerConnection extends Connection {
 			$this->finish();
 			return false;
 		}
-
+		$this->handshaked = true;
 		return true;
 	}
 	
@@ -317,11 +320,7 @@ class WebSocketServerConnection extends Connection {
 			}
 		}
 		if ($this->state === self::STATE_HANDSHAKING) {
-			$r = $this->handshake($this->buf);
-			if ($r === false) {
-				$this->finish();
-				return;
-			} elseif ($r === 0) {
+			if (!$this->handshake($this->buf)) {
 				return;
 			}
 			$this->buf = '';

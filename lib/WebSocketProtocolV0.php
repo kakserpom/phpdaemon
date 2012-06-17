@@ -62,8 +62,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
                 $reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n" ;
             }
 
-            $reply .= "\r\n" ;
-			$reply .= $final_key ;
+            $reply .= "\r\n" . $final_key ;
 
             return $reply ;
         }
