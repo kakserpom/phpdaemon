@@ -78,8 +78,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 	 * @return string Result
 	 */
 
-	protected function _computeFinalKey($key1, $key2, $data)
-	{
+	protected function _computeFinalKey($key1, $key2, $data) {
 		if (strlen($data) < 8)
 		{
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->connection->addr . '"') ;
@@ -97,8 +96,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 	 * @return string Result
 	 */
 
-	protected function _computeKey($key)
-	{
+	protected function _computeKey($key) {
 		$spaces = 0;
 		$digits = '';
 	
@@ -225,7 +223,5 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 			$this->connection->finish() ;
 			return FALSE ;
 		}
-
-		return $decodedData ;
     }
 }

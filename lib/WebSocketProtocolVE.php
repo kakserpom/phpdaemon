@@ -118,7 +118,6 @@ class WebSocketProtocolVE extends WebSocketProtocol
         if (!isset($this->connection)) {
             return FALSE;
         }
-        if (isset($this->connection->buf))
         while (($buflen = strlen($this->connection->buf)) >= 2) {
 			$frametype = ord(binarySubstr($this->connection->buf, 0, 1)); 
             if (($frametype & 0x80) === 0x80) {
@@ -166,23 +165,15 @@ class WebSocketProtocolVE extends WebSocketProtocol
                     $this->connection->onFrame($decodedData, $frametype);
                     
                 }
-                else
-                {
-                    Daemon::log("Else 216");
-                   /* if ($this->connection->pool->maxAllowedPacket <= strlen($this->connection->buf))
+                else {
+                    if ($this->connection->pool->maxAllowedPacket <= strlen($this->connection->buf))
                     {
                         // Too big packet
                         $this->connection->finish() ;
                         return FALSE ;
                     }
-                    */
-                     return FALSE ;
                 }
             }
         }
-
-
-
-        return $decodedData ;
     }
 }
