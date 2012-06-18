@@ -164,7 +164,6 @@ class ConnectionPool {
 			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on binded socket: ' . Debug::dump($sock));
 			return;
 		}
-		event_base_set($ev, Daemon::$process->eventBase);
 		$k = Daemon::$sockCounter++;
 		Daemon::$sockets[$k] = array($sock, $type, $addr);
 		Daemon::$socketEvents[$k] = $ev;
@@ -177,6 +176,7 @@ class ConnectionPool {
 	*/
 	public function enable() {
 		foreach ($this->socketEvents as $ev) {
+			event_base_set($ev, Daemon::$process->eventBase);
 			event_add($ev);
 		}
 	}

@@ -314,7 +314,7 @@ class Daemon_WorkerThread extends Thread {
 			if (!is_resource($ev = array_pop(Daemon::$socketEvents))) {
 				continue;
 			}
-			event_del($ev);
+			@event_del($ev); // bogus notice
 			event_free($ev);
 		}
 		for (;sizeof(Daemon::$sockets);) {
