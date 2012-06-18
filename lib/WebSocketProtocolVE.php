@@ -3,24 +3,15 @@
 /**
  * Websocket protocol hixie-76
  * @see    http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76
+ * @description Deprecated websocket protocol (IETF drafts 'hixie-76' or 'hybi-00')
  */
 
-class WebSocketProtocolVE extends WebSocketProtocol
-{
+class WebSocketProtocolVE extends WebSocketProtocol {
     const STRING = 0x00;
     const BINARY = 0x80;
-        
-    public function __construct($connection)
-    {
-        parent::__construct($connection) ;
-        
-        $this->description = "Deprecated websocket protocol (IETF drafts 'hixie-76' or 'hybi-00')" ;
-    }
-
-    public function onHandshake()
-    {
-       
-        return TRUE ;
+ 
+    public function onHandshake() {
+        return true;
     }
 
     /**
@@ -115,10 +106,7 @@ class WebSocketProtocolVE extends WebSocketProtocol
     }
 
     public function onRead() {
-        if (!isset($this->connection)) {
-            return FALSE;
-        }
-        while (($buflen = strlen($this->connection->buf)) >= 2) {
+		while ($this->connection && (($buflen = strlen($this->connection->buf)) >= 2)) {
 			$frametype = ord(binarySubstr($this->connection->buf, 0, 1)); 
             if (($frametype & 0x80) === 0x80) {
                 $len = 0 ;
@@ -149,10 +137,8 @@ class WebSocketProtocolVE extends WebSocketProtocol
                   
                 $this->connection->onFrame($decodedData, $frametype);
             }
-            else
-            {
-                if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE)
-                {
+            else {
+            	if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE) {
                     if ($this->connection->pool->maxAllowedPacket <= $p - 1)
                     {
                         // Too big packet

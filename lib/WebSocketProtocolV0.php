@@ -9,21 +9,13 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 {
 	const STRING = 0x00;
 	const BINARY = 0x80;
-		
-    public function __construct($connection)
-    {
-        parent::__construct($connection) ;
-        
-		$this->description = "Deprecated websocket protocol (IETF drafts 'hixie-76' or 'hybi-00')" ;
-    }
 
     public function onHandshake()
     {
         if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
-            return FALSE ;
+            return false;
         }
-
-        return TRUE ;
+        return true;
     }
 
     /**
@@ -157,34 +149,26 @@ class WebSocketProtocolV0 extends WebSocketProtocol
     }
 
     public function onRead() {
-		if (!isset($this->connection)) {
-			return;
-		}
-		while (($buflen = strlen($this->connection->buf)) >= 2)
-		{
+		while ($this->connection && (($buflen = strlen($this->connection->buf)) >= 1)) {
 			$frametype = ord(binarySubstr($this->connection->buf, 0, 1)) ;
-
-			if (($frametype & 0x80) === 0x80)
-			{
+			if (($frametype & 0x80) === 0x80) {
 				$len = 0 ;
 				$i = 0 ;
 
 				do {
-					$b = ord(binarySubstr($this->connection->buf, ++$i, 1)) ;
+					$b = ord(binarySubstr($this->connection->buf, ++$i, 1));
 					$n = $b & 0x7F ;
 					$len *= 0x80 ;
 					$len += $n ;
 				} while ($b > 0x80) ;
 
-				if ($this->connection->pool->maxAllowedPacket <= $len)
-				{
+				if ($this->connection->pool->maxAllowedPacket <= $len) {
 					// Too big packet
-					$this->connection->finish() ;
+					$this->connection->finish();
 					return FALSE ;
 				}
 
-				if ($buflen < $len + 2)
-				{
+				if ($buflen < $len + 2)	{
 					// not enough data yet
 					return FALSE ;
 				} 
@@ -193,12 +177,9 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 				$this->connection->buf = binarySubstr($this->connection->buf, 2 + $len) ;
 				$this->connection->onFrame($decodedData, 'BINARY');
 			}
-			else
-			{
-				if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE)
-				{
-					if ($this->connection->pool->maxAllowedPacket <= $p - 1)
-					{
+			else {
+				if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE) {
+					if ($this->connection->pool->maxAllowedPacket <= $p - 1) {
 						// Too big packet
 						$this->connection->finish() ;
 						return FALSE ;
@@ -208,10 +189,8 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 					$this->connection->buf = binarySubstr($this->connection->buf, $p + 1) ;
 					$this->connection->onFrame($decodedData, 'STRING');
 				}
-				else
-				{
-					if ($this->connection->pool->maxAllowedPacket <= $buflen - 1)
-					{
+				else {
+					if ($this->connection->pool->maxAllowedPacket <= $buflen - 1) {
 						// Too big packet
 						$this->connection->finish() ;
 						return FALSE ;

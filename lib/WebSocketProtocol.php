@@ -11,9 +11,8 @@ class WebSocketProtocol
 
 	const STRING = NULL;
 	const BINARY = NULL;
-		
-	public function __construct($connection)
-	{
+	
+	public function __construct($connection) {
 		$this->connection = $connection;
 	}
 

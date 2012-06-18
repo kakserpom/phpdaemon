@@ -58,7 +58,7 @@ class WebSocketServerConnection extends Connection {
 	}
 
 	/**
-	 * Event of SocketSession (asyncServer).
+	 * Event of Connection.
 	 * @return void
 	 */
 
@@ -67,8 +67,8 @@ class WebSocketServerConnection extends Connection {
 			$this->upstream->onFinish();
 		}
 		$this->upstream = null;
-		unset($this->protocol->connection);
-		unset($this->protocol);
+		$this->protocol->connection = null;
+		$this->protocol = null;
 	}
 	
 	/**

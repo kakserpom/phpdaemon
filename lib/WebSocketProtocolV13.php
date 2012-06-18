@@ -16,9 +16,8 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 	public $opcodes;
 	public $outgoingCompression = 0;
 		
-	public function __construct($connection)
-	{
-	    parent::__construct($connection) ;
+	public function __construct($connection) {
+		$this->connection = $connection;
 		$this->opcodes = array(
 			0 => 'CONTINUATION',
 			0x1 => 'STRING',
@@ -27,7 +26,6 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 			0x9 => 'PING',
 			0xA => 'PONG',													
 		);
-		$this->description = "Websocket protocol version " . $this->connection->server['HTTP_SEC_WEBSOCKET_VERSION'];
 	}
 
 	public function onHandshake(){
@@ -196,14 +194,10 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 	 */
 
     public function onRead() {
-		if (!isset($this->connection)) {
-			return;
-		}
-		$encodedData = &$this->connection->buf;
 		$data = '';
-		while (($buflen = strlen($encodedData)) >= 1) {
+		while ($this->connection && (($buflen = strlen($this->connection->buf)) >= 1)) {
 			$p = 0; // offset
-			$first = ord(binarySubstr($encodedData, $p++, 1)); // first byte integer (fin, opcode)
+			$first = ord(binarySubstr($this->connection->buf, $p++, 1)); // first byte integer (fin, opcode)
 			$firstBits = decbin($first);
 			$rsv1 = (bool) $firstBits[1];
 			$rsv2 = (bool) $firstBits[2];
@@ -214,7 +208,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
             	return;
 			}
 			$opcodeName = $this->opcodes[$opcode];
-			$second = ord(binarySubstr($encodedData, $p++, 1)); // second byte integer (masked, payload length)
+			$second = ord(binarySubstr($this->connection->buf, $p++, 1)); // second byte integer (masked, payload length)
 			$fin =	(bool) ($first >> 7);
         	$isMasked   = (bool) ($second >> 7);
         	$dataLength = $second & 0x7f;
@@ -222,14 +216,14 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 				if ($buflen < $p + 2) {
 					return; // not enough data yet
 				}
-				$dataLength = $this->bytes2int(binarySubstr($encodedData, $p, 2), false);
+				$dataLength = $this->bytes2int(binarySubstr($this->connection->buf, $p, 2), false);
 				$p += 2;
 			}
 			elseif ($dataLength === 0x7f) { // 4 bytes-length
 				if ($buflen < $p + 4) {
 					return; // not enough data yet
 				}
-            	$dataLength = $this->bytes2int(binarySubstr($encodedData, $p, 4));
+            	$dataLength = $this->bytes2int(binarySubstr($this->connection->buf, $p, 4));
             	$p += 4;
             }
 			if ($this->connection->pool->maxAllowedPacket <= $dataLength) {
@@ -242,19 +236,19 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 				if ($buflen < $p + 4) {
 					return; // not enough data yet
 				}
-				$mask = binarySubstr($encodedData, $p, 4);
+				$mask = binarySubstr($this->connection->buf, $p, 4);
 				$p += 4;
 			}
 			if ($buflen < $p + $dataLength) {
 				return; // not enough data yet
 			}
 			
-			$data = binarySubstr($encodedData, $p, $dataLength);
+			$data = binarySubstr($this->connection->buf, $p, $dataLength);
 			$p += $dataLength;
 			if ($isMasked) {
 				$data = $this->mask($data, $mask);
 			}
-			$encodedData = binarySubstr($encodedData, $p);
+			$this->connection->buf = binarySubstr($this->connection->buf, $p);
 			//Daemon::log(Debug::dump(array('ext' => $this->connection->extensions, 'rsv1' => $rsv1, 'data' => Debug::exportBytes($data))));
 			if ($rsv1 && in_array('deflate-frame', $this->connection->extensions)) { // deflate frame
 				$data = gzuncompress($data, $this->connection->pool->maxAllowedPacket);
@@ -263,7 +257,9 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 				$this->connection->framebuf .= $data;
 			} else {
 				$this->connection->onFrame($this->connection->framebuf . $data, $opcodeName);
-				$this->connection->framebuf = '';
+				if ($this->connection) {
+					$this->connection->framebuf = '';
+				}
 			}
 		}
     }

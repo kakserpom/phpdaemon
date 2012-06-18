@@ -116,6 +116,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * @return boolean Success
 	 */
 	public function sendPacket($packet) { 
+		//Daemon::log('Client --> Server: ' . Debug::exportBytes($packet) . "\n\n");
 		return $this->write($this->int2bytes(3, strlen($packet)) . chr($this->seq++) . $packet);;
 	}
 
@@ -498,10 +499,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 		$this->instate = self::INSTATE_HEADER;
 		$callback = $this->onResponse->shift();
 
-		if (
-			$callback 
-			&& is_callable($callback)
-		) {
+		if ($callback && is_callable($callback)) {
 			call_user_func($callback, $this, TRUE);
 		}
 		$this->checkFree();

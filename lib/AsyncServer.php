@@ -44,10 +44,9 @@ class AsyncServer extends AppInstance {
 			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on binded socket: ' . Debug::dump($sock));
 			return;
 		}
-
+		event_base_set($ev, Daemon::$process->eventBase);
 		$k = Daemon::$sockCounter++;
 		Daemon::$sockets[$k] = array($sock, $type, $addr);
-
 		$this->socketEvents[$k] = $ev;
 	}
 	
@@ -57,7 +56,6 @@ class AsyncServer extends AppInstance {
 	*/
 	public function enableSocketEvents() {
 		foreach ($this->socketEvents as $ev) {
-			event_base_set($ev, Daemon::$process->eventBase);
 			event_add($ev);
 		}
 	}
