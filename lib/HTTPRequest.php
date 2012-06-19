@@ -757,18 +757,20 @@ class HTTPRequest extends Request {
 	 * @param string The filename being checked.
 	 * @return void
 	 */
-		public function isUploadedFile($filename) {
-			if (strpos($filename,ini_get('upload_tmp_dir').'/') !== 0) {
-				return false;
-			}
-			foreach ($this->attrs->files as $file) {
-				if ($file['tmp_name'] === $filename) {
-					goto found;
-				}
-			}
+	public function isUploadedFile($path) {
+		$filename = realpath($filename);
+		if (!$path) {
 			return false;
-			found:
-			return file_exists($file['tmp_name']);
+		}
+		if (strpos($path, ini_get('upload_tmp_dir') . '/') !== 0) {
+			return false;
+		}
+		foreach ($this->attrs->files as $file) {
+			if ($file['tmp_name'] === $path) {
+				return true;
+			}
+		}
+		return false;
 	 }
 
 	/**
