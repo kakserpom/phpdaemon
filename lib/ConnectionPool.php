@@ -416,7 +416,7 @@ class ConnectionPool {
 	 * @param string Address
 	 * @return boolean Accept/Drop the connection
 	 */
-	public function onAccept($connId, $addr) {
+	public function onAccept($id, $addr) {
 		if ($this->allowedClients === NULL) {
 			return true;
 		}
@@ -431,13 +431,13 @@ class ConnectionPool {
 		return $this->netMatch($this->allowedClients, substr($addr, 0, $p));
 	}
 	
-	public function removeConnection($connId) {
-		$conn = $this->getConnectionById($connId);
+	public function removeConnection($id) {
+		$conn = $this->getConnectionById($id);
 		if (!$conn) {
 			return false;
 		}
 		$conn->onFinish();
-		unset($this->list[$connId]);
+		unset($this->list[$id]);
 	}
 	/**
 	 * Called when remote host is trying to establish the connection
@@ -466,17 +466,17 @@ class ConnectionPool {
 		if ($class === null) {
 			$class = $this->connectionClass;
 		}
-		$connId = ++Daemon::$process->connCounter;
-		$conn = $this->list[$connId] = new $class($connId, null, null,  $this);
+		$id = ++Daemon::$process->connCounter;
+		$conn = $this->list[$id] = new $class(null, $id, $this);
 		$conn->connectTo($host, $port);
-		return $connId;
+		return $id;
 	}
 	
-	public function getConnectionById($connId) {
-		if (!isset($this->list[$connId])) {
+	public function getConnectionById($id) {
+		if (!isset($this->list[$id])) {
 			return false;
 		}
-		return $this->list[$connId];
+		return $this->list[$id];
  	}
 
 	/**
@@ -498,47 +498,49 @@ class ConnectionPool {
 		}
 		
 		if (Daemon::$useSockets) {
-			$resource = @socket_accept($stream);
+			$fd = @socket_accept($stream);
 
-			if (!$resource) {
+			if (!$fd) {
 				return;
 			}
 			
-			socket_set_nonblock($resource);
+			socket_set_nonblock($fd);
 			
 			if ($type === self::TYPE_SOCKET) {
 				$addr = 'unix';
 			} else {
-				socket_getpeername($resource, $host, $port);
+				socket_getpeername($fd, $host, $port);
 				
 				$addr = ($host === '') ? '' : $host . ':' . $port;
 			}
 		} else {
-			$resource = @stream_socket_accept($stream, 0, $addr);
+			$fd = @stream_socket_accept($stream, 0, $addr);
 
-			if (!$resource) {
+			if (!$fd) {
 				return;
 			}
 			
-			stream_set_blocking($resource, 0);
+			stream_set_blocking($fd, 0);
 		}
 		
 		if (!$this->onAccept(Daemon::$process->connCounter + 1, $addr)) {
 			Daemon::log('Connection is not allowed (' . $addr . ')');
 
 			if (Daemon::$useSockets) {
-				socket_close($resource);
+				socket_close($fd);
 			} else {
-				fclose($resource);
+				fclose($fd);
 			}
 			
 			return;
 		}
 		
-		$connId = ++Daemon::$process->connCounter;
+		$id = ++Daemon::$process->connCounter;
 		
 		$class = $this->connectionClass;
-		$this->list[$connId] = new $class($connId, $resource, $addr,  $this);
+ 		$conn = new $class($fd, $id, $this);
+		$conn->addr = $addr;
+		$this->list[$id] = $conn;
 	}
 
 	/**

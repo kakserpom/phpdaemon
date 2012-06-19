@@ -174,7 +174,7 @@ class HTTPServerConnection extends Connection {
 			$req->attrs->server = array();
 			$req->attrs->files = array();
 			$req->attrs->session = null;
-			$req->attrs->connId = $this->connId;
+			$req->attrs->connId = $this->id;
 			$req->attrs->id = $rid;
 			$req->attrs->params_done = false;
 			$req->attrs->stdin_done = false;

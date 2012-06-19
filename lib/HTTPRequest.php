@@ -779,11 +779,11 @@ class HTTPRequest extends Request {
 	 * @param string The destination of the moved file.
 	 * @return void
 	 */
-		public function moveUploadedFile($filename,$dest) {
-			if (!$this->isUploadedFile($filename)) {
-			 return false;
-			}
-			return rename($filename,$dest);
+	public function moveUploadedFile($filename,$dest) {
+		if (!$this->isUploadedFile($filename)) {
+			return false;
+		}
+		return rename($filename, $dest);
 	 }
 
 	/**
