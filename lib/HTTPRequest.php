@@ -74,6 +74,11 @@ class HTTPRequest extends Request {
 	private $headers_sent_file;
 	private $headers_sent_line;
 	private $boundary = false;
+	
+	const MPSTATE_SEEKBOUNDARY = 0;
+	const MPSTATE_HEADERS = 1;
+	const MPSTATE_BODY = 2;
+	const MPSTATE_UPLOAD = 3;
 
 	/**
 	 * Preparing before init
@@ -245,7 +250,6 @@ class HTTPRequest extends Request {
 			$this->attrs->stdinbuf .= $c;
 			$this->attrs->stdinlen += strlen($c);
 		}
-
 		if (
 			!isset($this->attrs->server['HTTP_CONTENT_LENGTH'])
 			|| ($this->attrs->server['HTTP_CONTENT_LENGTH'] <= $this->attrs->stdinlen)
@@ -253,7 +257,6 @@ class HTTPRequest extends Request {
 			$this->attrs->stdin_done = true;
 			$this->postPrepare();
 		}
-
 		$this->parseStdin();
 	}
 
@@ -573,16 +576,16 @@ class HTTPRequest extends Request {
 
 			$continue = false;
 
-			if ($this->mpartstate === 0) {
+			if ($this->mpartstate === self::MPSTATE_SEEKBOUNDARY) {
 				// seek to the nearest boundary
 				if (($p = strpos($this->attrs->stdinbuf, $ndl = '--' . $this->boundary . "\r\n", $this->mpartoffset)) !== false) {
 					// we have found the nearest boundary at position $p
 					$this->mpartoffset = $p + strlen($ndl);
-					$this->mpartstate = 1;
+					$this->mpartstate = self::MPSTATE_HEADERS;
 					$continue = true;
 				}
 			}
-			elseif ($this->mpartstate === 1) {
+			elseif ($this->mpartstate === self::MPSTATE_HEADERS) {
 				// parse the part's headers
 				$this->mpartcondisp = false;
 
@@ -645,7 +648,7 @@ class HTTPRequest extends Request {
 									}
 								}
 
-								$this->mpartstate = 3;
+								$this->mpartstate = self::MPSTATE_UPLOAD;
 							} else {
 								$this->attrs->post[$this->mpartcondisp['name']] = '';
 							}
@@ -663,16 +666,16 @@ class HTTPRequest extends Request {
 						}
 					}
 
-					if ($this->mpartstate === 1) {
-						$this->mpartstate = 2;
+					if ($this->mpartstate === self::MPSTATE_HEADERS) {
+						$this->mpartstate = self::MPSTATE_BODY;
 					}
 
 					$continue = true;
 				}
 			}
 			elseif (
-				($this->mpartstate === 2)
-				|| ($this->mpartstate === 3)
+				($this->mpartstate === self::MPSTATE_BODY)
+				|| ($this->mpartstate === self::MPSTATE_UPLOAD)
 			) {
 				 // process the body
 				if (
@@ -680,13 +683,13 @@ class HTTPRequest extends Request {
 					|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== false)
 				) {
 					if (
-						($this->mpartstate === 2)
+						($this->mpartstate === self::MPSTATE_BODY)
 						&& isset($this->mpartcondisp['name'])
 					) {
 						$this->attrs->post[$this->mpartcondisp['name']] .= binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset);
 					}
 					elseif (
-						($this->mpartstate === 3)
+						($this->mpartstate === self::MPSTATE_UPLOAD)
 						&& isset($this->mpartcondisp['filename'])
 					) {
 						if ($this->attrs->files[$this->mpartcondisp['name']]['fp']) {
@@ -697,7 +700,7 @@ class HTTPRequest extends Request {
 					}
 
 					if ($ndl === "\r\n--" . $this->boundary . "--\r\n") {
-						$this->mpartoffset = $p+strlen($ndl);
+						$this->mpartoffset = $p + strlen($ndl);
 						$this->mpartstate = 0; // we done at all
 					} else {
 						$this->mpartoffset = $p;
@@ -712,13 +715,13 @@ class HTTPRequest extends Request {
 
 					if ($p !== false) {
 						if (
-							($this->mpartstate === 2)
+							($this->mpartstate === self::MPSTATE_BODY)
 							&& isset($this->mpartcondisp['name'])
 						) {
 							$this->attrs->post[$this->mpartcondisp['name']] .= binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
 						}
 						elseif (
-							($this->mpartstate === 3)
+							($this->mpartstate === self::MPSTATE_UPLOAD)
 							&& isset($this->mpartcondisp['filename'])
 						) {
 							if ($this->attrs->files[$this->mpartcondisp['name']]['fp']) {

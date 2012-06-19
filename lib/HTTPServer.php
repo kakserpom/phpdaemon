@@ -146,6 +146,9 @@ class HTTPServerConnection extends Connection {
 		$buf = $this->read($this->readPacketSize);
 
 		if ($this->state === self::STATE_ROOT) {
+			if (strlen($buf) === 0) {
+				return;
+			}
 
 			if (strpos($buf, "<policy-file-request/>\x00") !== false) {
 				if (
@@ -262,7 +265,7 @@ class HTTPServerConnection extends Connection {
 						$req->sendfp = fopen($fn, 'wb');
 						$req->header('X-Sendfile: ' . $fn);
 					}
-					$req->stdin($req->attrs->inbuf);
+					$buf = $req->attrs->inbuf;
 					$req->attrs->inbuf = '';
 					$this->state = self::STATE_CONTENT;
 				}
@@ -273,8 +276,11 @@ class HTTPServerConnection extends Connection {
 		}
 		if ($this->state === self::STATE_CONTENT) {
 			$req->stdin($buf);
+			$buf = '';
 			if ($req->attrs->stdin_done) {
 				$this->state = self::STATE_ROOT;
+			} else {
+				return;
 			}
 		}
 
