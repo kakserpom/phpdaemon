@@ -20,8 +20,6 @@ class MemcacheClient extends NetworkClient {
 			'maxconnperserv'		=> 32
 		);
 	}
-	
-	public function checkFree() {}
 
 	/**
 	 * Gets the key
