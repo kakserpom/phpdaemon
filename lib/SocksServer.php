@@ -10,7 +10,6 @@ class SocksServer extends NetworkServer {
 	
 	/**
 	 * Setting default config options
-	 * Overriden from AppInstance::getConfigDefaults
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
@@ -276,7 +275,7 @@ class SocksServerSlaveConnection extends Connection {
 	}
 
 	/**
-	 * Event of SocketSession (asyncServer).
+	 * Event of Connection
 	 * @return void
 	 */
 	public function onFinish() {
