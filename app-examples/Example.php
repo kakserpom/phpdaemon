@@ -56,7 +56,7 @@ class Example extends AppInstance {
 
 class ExampleRequest extends HTTPRequest {
 
-	public function init123() {
+	public function init() {
 		$this->file = File::open('/etc/passwd')->setOnRead(function() {
 			while (($buf = $this->read($this->readPacketSize)) !== false) {
 				Daemon::log(Debug::dump($buf));

@@ -471,7 +471,7 @@ class Daemon_WorkerThread extends Thread {
 
 		$n = 0;
 
-		unset($this->timeouts['checkStateTimedEvent']);
+		unset(Timer::$list['checkStateTimedEvent']);
 
 		Daemon_TimedEvent::add(function($event) 	{
 			$self = Daemon::$process;
