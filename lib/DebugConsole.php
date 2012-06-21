@@ -6,10 +6,22 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class DebugConsole extends NetworkServer {
-	public $listen = 'tcp://0.0.0.0';
-	public $defaultPort = 8818;
-	public $passphrase = 'secret';
+class DebugConsole extends NetworkServer {	
+	/**
+	 * Setting default config options
+	 * Overriden from AppInstance::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return array(
+			// listen to
+			'listen'     => 'tcp://127.0.0.1'
+			// listen port
+			'listenport' => 8818,
+			
+			'passphrase' => 'secret'
+		);
+	}
 	
 	/**
 	 * Constructor.
@@ -57,7 +69,7 @@ Please enter the password or type "exit": ');
 	 * @return boolean
 	 */
 	private function checkPassword($pass = '') {
-		if ($pass != $this->pool->passphrase) {
+		if ($pass != $this->pool->config->passphrase->value) {
 			--$this->authTries;
 			
 			if (0 === $this->authTries) {
