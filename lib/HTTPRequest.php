@@ -304,10 +304,13 @@ class HTTPRequest extends Request {
 					!$this->attrs->chunked
 					&& !$this->sendfp
 				) {
-					return $this->upstream->requestOut($this, $h . $s);
+					if (!isset($this->conn)) {
+							return false;
+					}
+					return $this->conn->requestOut($this, $h . $s);
 				}
 
-				$this->upstream->requestOut($this, $h);
+				$this->conn->requestOut($this, $h);
 			}
 		}
 
@@ -322,7 +325,7 @@ class HTTPRequest extends Request {
 				if ($this->sendfp) {
 					fwrite($this->sendfp, $chunk);
 				} else {
-					$this->upstream->requestOut($this, $chunk);
+					$this->conn->requestOut($this, $chunk);
 				}
 
 				$o += $c;
@@ -338,7 +341,7 @@ class HTTPRequest extends Request {
 				return true;
 			}
 
-			return $this->upstream->requestOut($this, $s);
+			return $this->conn->requestOut($this, $s);
 		}
 	}
 

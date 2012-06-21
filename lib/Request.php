@@ -16,8 +16,8 @@ class Request {
 	const STATE_ALIVE    = 1;
 	const STATE_RUNNING  = 2;
 	const STATE_SLEEPING = 3;
+	public $conn;
  
-	public $idAppQueue;
 	public $queueId;
 	public $appInstance;
 	public $aborted = FALSE;
@@ -30,6 +30,7 @@ class Request {
 	public $upstream;
 	public $ev;
 	public $sleepTime = 1000;
+	public $priority = null;
  
 	/**
 	 * Constructor
@@ -40,21 +41,19 @@ class Request {
 	 */
 	public function __construct($appInstance, $upstream, $parent = NULL) {
 		$this->appInstance = $appInstance;
-		$this->upstream = $upstream;
- 
-		$this->idAppQueue = ++$this->appInstance->idAppQueue;
-		$this->appInstance->queue[$this->idAppQueue] = $this;
-		
+		$this->upstream = $upstream;		
 		$this->queueId = isset($parent->queueId)?$parent->queueId:(++Daemon::$process->reqCounter);
-		Daemon::$process->queue[$this->queueId] = $this;
 		$this->ev = event_new();
  
 		event_set(
 			$this->ev, STDIN, EV_TIMEOUT, 
-			array('Request', 'eventCall'), 
+			array($this, 'eventCall'), 
 			array($this->queueId)
 		);
 		event_base_set($this->ev, Daemon::$process->eventBase);
+		if ($this->priority !== null) {
+			event_priority_set($this->ev, $this->priority);
+		}
 		event_add($this->ev, 1);
 				
 		$this->preinit($parent);
@@ -72,15 +71,9 @@ class Request {
 	/**
 	 * @todo description is missing
 	 */
-	public static function eventCall($fd, $flags, $arg) {
+	public function eventCall($fd, $flags, $arg) {
 		$k = $arg[0];
- 
-		if (!isset(Daemon::$process->queue[$k])) {
-			Daemon::log('Bad event call.');
-			return;
-		}
- 
-		$req = Daemon::$process->queue[$k];
+		$req = $this;
 		
 		if ($req->state === Request::STATE_SLEEPING) {
 			$req->state = Request::STATE_ALIVE;
@@ -94,17 +87,19 @@ class Request {
 				event_del($req->ev);
 				event_free($req->ev);
 			}
-			
-			unset(Daemon::$process->queue[$k]);
- 
-			if (isset($req->idAppQueue)) { 
-				unset($req->appInstance->queue[$req->idAppQueue]);
-			}
 
 		}
 		elseif ($ret === REQUEST::STATE_SLEEPING) {
 			event_add($req->ev, $req->sleepTime);
 		}
+	}
+	
+	public function setPriority($p) {
+		$this->priority = $p;
+		if ($this->ev !== null) {
+			event_priority_set($this->ev, $p);
+		}
+		
 	}
 	
 	/**
@@ -412,7 +407,7 @@ class Request {
 				!isset($this->upstream->keepalive->value) 
 				|| !$this->upstream->keepalive->value
 			) {
-				$this->upstream->closeConnection($this->attrs->connId);
+				$this->conn->endRequest();
 			}
 		} else {
 			$this->finish(-1);
@@ -472,7 +467,9 @@ class Request {
 			$this->postFinishHandler();
 			// $status: 0 - FCGI_REQUEST_COMPLETE, 1 - FCGI_CANT_MPX_CONN, 2 - FCGI_OVERLOADED, 3 - FCGI_UNKNOWN_ROLE  @todo what is -1 ? where is the constant for it?
 			$appStatus = 0;
-			$this->upstream->endRequest($this, $appStatus, $status);
+			if (isset($this->conn)) {
+				$this->conn->endRequest($this, $appStatus, $status);
+			}
  
 		}
 	}
@@ -482,10 +479,6 @@ class Request {
 	public function onDestruct() {}
 	
 	public function __destruct() {
-		if (is_resource($this->ev)) {
-			event_del($this->ev);
-			event_free($this->ev);
-		}
 		$this->onDestruct();
 	}
 }

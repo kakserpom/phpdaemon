@@ -26,9 +26,9 @@ class NetworkServer extends ConnectionPool {
 		$conn = new $class($connId, null, $req->attrs->server['REMOTE_ADDR'], $this);
 		$this->list[$connId] = $conn;
 		$conn->buffer = $oldConn->buffer;
-		$conn->resource = $oldConn->resource;
+		$conn->fd = $oldConn->fd;
 		unset($oldConn->buffer);
-		unset($oldConn->resource);
+		unset($oldConn->fd);
 		$pool->removeConnection($connId);
 		$set = event_buffer_set_callback(
 			$conn->buffer, 

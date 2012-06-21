@@ -12,7 +12,6 @@ class AppInstance {
 	public $status = 0;        // runtime status
 	public $passphrase;        // optional passphrase
 	public $reqCounter = 0;    // counter of requests
-	public $queue = array();   // queue of requests
 	public $ready = FALSE;     // ready to start?
 	public $name;              // name of instance
 	public $config;
@@ -217,18 +216,6 @@ class AppInstance {
 	 * @return void
 	 */
 	public function shutdown($graceful = false) {
-		if (Daemon::$config->logevents->value) {
-			Daemon::log(__METHOD__ . ' invoked. Size of the queue: ' . sizeof($this->queue) . '.');
-		}
-
-		foreach ($this->queue as &$r) {
-			if ($r instanceof stdClass) {
-				continue;
-			}
-			
-			$r->finish();
-		}
-
 		return $this->onShutdown();
 	}
  

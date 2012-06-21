@@ -24,8 +24,8 @@ abstract class IOStream {
 	public $connected = false;
 	public $directInput = false; // do not use prebuffering of incoming data
 	public $readEvent;
-	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
-	protected $initialHighMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
+	protected $lowMark  = 1;         // initial value of the minimal amout of bytes in buffer
+	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
 	public $priority;
 	public $inited = false;
 	public $state = 0;             // stream state of the connection (application protocol level)
@@ -61,6 +61,15 @@ abstract class IOStream {
 		return $this;
 	}
 	
+	public function setOnRead($cb) {
+		$this->onRead = Closure::bind($cb, $this);
+		return $this;
+	}
+	public function setOnWrite($cb) {
+		$this->onWrite = Closure::bind($cb, $this);
+		return $this;
+	}
+	
 	public function setFd($fd) {
 		$this->fd = $fd;
 		if ($this->directInput) {
@@ -70,16 +79,18 @@ abstract class IOStream {
 				return;
 			}
 			event_base_set($ev, Daemon::$process->eventBase);
-			if ($this->priority !== null) {event_priority_set($ev, $this->priority);}
+			if ($this->priority !== null) {
+				event_priority_set($ev, $this->priority);
+			}
 			event_add($ev);
 			$this->readEvent = $ev;
 		}
 		$this->buffer = event_buffer_new($this->fd,	$this->directInput ? NULL : array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onFailureEvent'));
 		event_buffer_base_set($this->buffer, Daemon::$process->eventBase);
-		if (($this->priority !== null) && is_callable('event_buffer_priority_set')) {
+		if ($this->priority !== null) {
 			event_buffer_priority_set($this->buffer, $this->priority);
 		}
-		event_buffer_watermark_set($this->buffer, EV_READ, $this->initialLowMark, $this->initialHighMark);
+		event_buffer_watermark_set($this->buffer, EV_READ, $this->lowMark, $this->highMark);
 		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
 		
 		if (!$this->inited) {
@@ -88,11 +99,26 @@ abstract class IOStream {
 		}
 	}
 	
-	public function setReadWatermark($low, $high) {
-		event_buffer_watermark_set($this->buffer, EV_READ, $low, $high);
+	public function setPriority($p) {
+		$this->priority = $p;
+
+		if ($this->buffer !== null) {
+			event_buffer_priority_set($this->buffer, $p);
+		}
+		if ($this->readEvent !== null) {
+			event_priority_set($this->readEvent, $p);
+		}
+		
 	}
-	public function setWriteWatermark($low, $high) {
-		event_buffer_watermark_set($this->buffer, EV_WRITE, $low, $high);
+	
+	public function setWatermark($low = null, $high = null) {
+		if ($low != null) {
+			$this->lowMark = $low;
+		}
+		if ($high != null) {
+		 	$this->highMark = $high;
+		}
+		event_buffer_watermark_set($this->buffer, EV_READ, $this->lowMark, $this->highMark);
 	}
 	
 	/**
@@ -168,6 +194,9 @@ abstract class IOStream {
 	public function write($s) {
 		if (!$this->buffer) {
 			return false;
+		}
+		if (!strlen($s)) {
+			return true;
 		}
  		$this->sending = true;
 		return event_buffer_write($this->buffer, $s);		
@@ -269,10 +298,17 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onReadEvent($stream, $arg = null) {
+		if ($this instanceof File) {
+			Daemon::log(__METHOD__);
+		}
 		if ($this->readLocked) {
 			return;
 		}
-		$this->reading = !$this->onRead();
+		if (isset($this->onRead)) {
+			$this->reading = !call_user_func($this->onRead);
+		} else {
+			$this->reading = !$this->onRead();
+		}
 	}
 	
 	public function onRead() {
@@ -304,7 +340,11 @@ abstract class IOStream {
 		if ($this->finished) {
 			$this->close();
 		}
-		$this->onWrite();
+		if (isset($this->onWrite)) {
+			call_user_func($this->onWrite);
+		} else {
+			$this->onWrite();
+		}
 	}
 	
 	/**

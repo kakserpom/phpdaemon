@@ -19,7 +19,6 @@ class Daemon_WorkerThread extends Thread {
 	 * Map connnection id to application which created this connection
 	 * @var string
 	 */
-	public $queue = array();
 	public $timeLastActivity = 0;
 	private $autoReloadLast = 0;
 	private $currentStatus = 0;
@@ -468,16 +467,6 @@ class Daemon_WorkerThread extends Thread {
 
 		if (Daemon::$config->logevents->value) {
 			$this->log('reloadReady = ' . Debug::dump($this->reloadReady));
-		}
-
-		foreach ($this->queue as $r) {
-			if ($r instanceof stdClass) {
-				continue;
-			}
-
-			if ($r->running) {
-				$r->finish(-2);
-			}
 		}
 
 		$n = 0;
