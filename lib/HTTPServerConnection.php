@@ -60,6 +60,7 @@ class HTTPServerConnection extends Connection {
 			$req->attrs->inbuf = '';
 			$req->attrs->chunked = false;
 			$req->queueId = $rid;
+			$req->conn = $this;
 
 			$this->req = $req;
 
@@ -191,19 +192,7 @@ class HTTPServerConnection extends Connection {
 	 * @return boolean Success.
 	 */
 	public function requestOut($req, $s) {
-		
-		$conn = $this;
-
-		if (!$conn) {
-			return false;
-		}
-		
-		
-		$l = strlen($s);
-
-		$w = $conn->write($s);
-
-		if ($w === false) {
+		if ($this->write($s) === false) {
 			$req->abort();
 			return false;
 		}
@@ -215,12 +204,11 @@ class HTTPServerConnection extends Connection {
 	 * @return boolean Succcess.
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
-		$conn = $this;
 		if ($protoStatus === -1) {
-			$conn->close();
+			$this->close();
 		} else {
 			if ($req->attrs->chunked) {
-				$conn->write("0\r\n\r\n");
+				$this->write("0\r\n\r\n");
 			}
 
 			if (
@@ -228,9 +216,12 @@ class HTTPServerConnection extends Connection {
 				|| (!isset($req->attrs->server['HTTP_CONNECTION'])) 
 				|| ($req->attrs->server['HTTP_CONNECTION'] !== 'keep-alive')
 			) {
-				$conn->finish();
+				$this->finish();
 			}
 		}
+		$this->freeRequest($req);
+	}
+	public function freeRequest($req) {
 		unset($this->req);
 	}
 	public function badRequest($req) {

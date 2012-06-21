@@ -10,6 +10,8 @@ class FastCGIServerConnection extends Connection {
 	protected $lowMark  = 8;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
 
+	protected $requests = array();
+
 	const FCGI_BEGIN_REQUEST     = 1;
 	const FCGI_ABORT_REQUEST     = 2;
 	const FCGI_END_REQUEST       = 3;
@@ -84,11 +86,12 @@ class FastCGIServerConnection extends Connection {
 			$this->content = ($this->header['conlen'] === 0) ? '' : $this->read($this->header['conlen']);
 
 			if ($this->content === false) {
+				$this->setWatermark($this->header['conlen']);
 				return;
 			}
 
 			if ($this->header['padlen'] > 0) {
-				$this->setWatermark($this->header['padlen'], 0xFFFFFF);
+				$this->setWatermark($this->header['padlen']);
 			}
 
 			$this->state = self::STATE_PADDING;
@@ -101,14 +104,14 @@ class FastCGIServerConnection extends Connection {
 				return;
 			}
 		}
-
+		$this->setWatermark(8);
 		$this->state = self::STATE_ROOT;
 
-		/*
-			Daemon::log('[DEBUG] FastCGI-record #' . $r['type'] . ' (' . $r['ttype'] . '). Request ID: ' . $rid 
-				. '. Content length: ' . $r['conlen'] . ' (' . strlen($c) . ') Padding length: ' . $r['padlen'] 
-				. ' (' . strlen($pad) . ')');
-		*/
+		
+		/*	Daemon::log('[DEBUG] FastCGI-record #' . $this->header['type'] . ' (' . $this->header['ttype'] . '). Request ID: ' . $rid 
+				. '. Content length: ' . $this->header['conlen'] . ' (' . strlen($this->content) . ') Padding length: ' . $this->header['padlen'] 
+				. ' (' . strlen($pad) . ')');*/
+		
 
 		if ($type == self::FCGI_BEGIN_REQUEST) {
 			++Daemon::$process->reqCounter;
@@ -134,6 +137,7 @@ class FastCGIServerConnection extends Connection {
 			$req->attrs->chunked     = false;
 			$req->attrs->noHttpVer   = true;
 			$req->queueId = $rid;
+			$req->conn = $this;
 			$this->requests[$rid] = $req;
 		}
 		elseif (isset($this->requests[$rid])) {
@@ -157,6 +161,7 @@ class FastCGIServerConnection extends Connection {
 				$req->attrs->params_done = true;
 
 				$req = Daemon::$appResolver->getRequest($req, $this->pool);
+				$req->conn = $this;
 
 				if ($req instanceof stdClass) {
 					$this->endRequest($req, 0, 0);
@@ -241,5 +246,110 @@ class FastCGIServerConnection extends Connection {
 		goto start;
 	}
 	
+	/**
+	 * Handles the output from downstream requests.
+	 * @param object Request.
+	 * @param string The output.
+	 * @return void
+	 */
+	public function requestOut($req, $output) {		
+		$outlen = strlen($output);
+		
+		/* 
+		* Iterate over every character in the string, 
+		* escaping with a slash or encoding to UTF-8 where necessary 
+		*/ 
+		// string bytes counter 
+		$d = 0; 
+		for ($c = 0; $c < $outlen; ++$c) { 
+		  
+		  $ord_var_c = ord($output{$d}); 
+		  
+		  switch (true) { 
+			  case (($ord_var_c >= 0x20) && ($ord_var_c <= 0x7F)): 
+				  // characters U-00000000 - U-0000007F (same as ASCII) 
+				  $d++; 
+				  break; 
+			  
+			  case (($ord_var_c & 0xE0) == 0xC0): 
+				  // characters U-00000080 - U-000007FF, mask 110XXXXX 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=2; 
+				  break; 
+
+			  case (($ord_var_c & 0xF0) == 0xE0): 
+				  // characters U-00000800 - U-0000FFFF, mask 1110XXXX 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=3; 
+				  break; 
+
+			  case (($ord_var_c & 0xF8) == 0xF0): 
+				  // characters U-00010000 - U-001FFFFF, mask 11110XXX 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=4; 
+				  break; 
+
+			  case (($ord_var_c & 0xFC) == 0xF8): 
+				  // characters U-00200000 - U-03FFFFFF, mask 111110XX 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=5; 
+				  break; 
+
+			  case (($ord_var_c & 0xFE) == 0xFC): 
+				  // characters U-04000000 - U-7FFFFFFF, mask 1111110X 
+				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
+				  $d+=6; 
+				  break; 
+			  default: 
+				$d++;    
+		  } 
+		} 
+
+		for ($o = 0; $o < $d;) {
+			$c = min($this->pool->config->chunksize->value, $d - $o);
+			$w = $this->write(
+				  "\x01"												// protocol version
+				. "\x06"												// record type (STDOUT)
+				. pack('nn', $req->attrs->id, $c)					// id, content length
+				. "\x00" 												// padding length
+				. "\x00"												// reserved 
+				. ($c === $d ? $output : binarySubstr($output, $o, $c)) // content
+			);
+			if ($w === false) {
+				$req->abort();
+				return false;
+			}
+			$o += $c;
+		}
+		return true;
+	}
+	public function freeRequest($req) {
+		unset($this->requests[$req->attrs->id]);
+	}
+	/**
+	 * Handles the output from downstream requests.
+	 * @return void
+	 */
+	public function endRequest($req, $appStatus, $protoStatus) {
+		$c = pack('NC', $appStatus, $protoStatus) // app status, protocol status
+			. "\x00\x00\x00";
+
+
+		$this->write(
+			"\x01"                                     // protocol version
+			. "\x03"                                   // record type (END_REQUEST)
+			. pack('nn', $req->attrs->id, strlen($c))  // id, content length
+			. "\x00"                                   // padding length
+			. "\x00"                                   // reserved
+			. $c                                       // content
+		); 
+
+		if ($protoStatus === -1) {
+			$this->close();
+		}
+		elseif (!$this->pool->config->keepalive->value) {
+			$this->finish();
+		}
+	}	
 }
 

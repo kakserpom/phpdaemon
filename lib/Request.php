@@ -83,17 +83,22 @@ class Request {
 	
  
 		if ($ret === Request::STATE_FINISHED) {		
-			if (is_resource($req->ev)) {
-				event_del($req->ev);
-				event_free($req->ev);
-			}
+			$this->free();
 
 		}
 		elseif ($ret === REQUEST::STATE_SLEEPING) {
 			event_add($req->ev, $req->sleepTime);
 		}
 	}
-	
+	public function free() {
+		if (is_resource($this->ev)) {
+			event_del($this->ev);
+			event_free($this->ev);
+		}
+		if (isset($this->conn)) {
+			$this->conn->freeRequest($this);
+		}
+	}
 	public function setPriority($p) {
 		$this->priority = $p;
 		if ($this->ev !== null) {
@@ -360,7 +365,9 @@ class Request {
 			Daemon::$process->setStatus(2);
 		}
  
-		ob_flush();
+		if (!Daemon::$obInStack) { // preventing recursion
+			ob_flush();
+		}
  
 		$this->running = TRUE;
  
@@ -372,7 +379,9 @@ class Request {
 	 * @return void
 	 */
 	public function onSleep() {
-		ob_flush();
+		if (!Daemon::$obInStack) { // preventing recursion
+			ob_flush();
+		}
  
 		if (!Daemon::$compatMode) {
 			Daemon::$process->setStatus(1);
@@ -407,7 +416,7 @@ class Request {
 				!isset($this->upstream->keepalive->value) 
 				|| !$this->upstream->keepalive->value
 			) {
-				$this->conn->endRequest();
+				$this->conn->endRequest($this);
 			}
 		} else {
 			$this->finish(-1);

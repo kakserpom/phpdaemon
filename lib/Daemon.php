@@ -56,6 +56,7 @@ class Daemon {
 	public static $runName = 'phpdaemon';
 	public static $config;
 
+	public static $obInStack = false; // whether if the current execution stack contains ob-filter
 	/**
 	 * Loads default setting.
 	 * @return void
@@ -82,6 +83,8 @@ class Daemon {
 	 * @return string - buffer
 	 */
 	public static function outputFilter($s) {
+		static $n = 0; // recursion counter
+		
 		if ($s === '') {
 			return '';
 		}
@@ -90,7 +93,11 @@ class Daemon {
 			Daemon::$config->obfilterauto->value
 			&& (Daemon::$req !== NULL)
 		) {
-			Daemon::$req->out($s,FALSE);
+			++$n;
+			Daemon::$obInStack = true;
+			Daemon::$req->out($s, false);
+			--$n;
+			Daemon::$obInStack = $n > 0;
 		} else {
 			Daemon::log('Unexcepted output (len. ' . strlen($s) . '): \'' . $s . '\'');
 		}
