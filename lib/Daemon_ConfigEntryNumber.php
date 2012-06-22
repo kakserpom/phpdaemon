@@ -11,6 +11,9 @@
 class Daemon_ConfigEntryNumber extends Daemon_ConfigEntry {
 
 	public function HumanToPlain($value) {
+		if ($value === null) {
+			return null;
+		}
 	 	$l = substr($value, -1);
 
 		if (

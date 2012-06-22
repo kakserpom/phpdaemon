@@ -335,6 +335,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	private function update() {
+		FS::updateConfig();
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {
 				$appInstance->handleStatus(2);
