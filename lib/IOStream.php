@@ -17,6 +17,7 @@ abstract class IOStream {
 	public $buffer;
 	public $fd;
 	public $finished = false;
+	public $ready = false;
 	public $readLocked = false;
 	public $addr;
 	private $sending = false;
@@ -319,10 +320,10 @@ abstract class IOStream {
 	}
 	
 	/**
-	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * Called when the stream is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
 	 */
-	public function onConnect() {
+	public function onReady() {
 	}
 	
 	/**
@@ -333,9 +334,9 @@ abstract class IOStream {
 	 */
 	public function onWriteEvent($stream, $arg = null) {
 		$this->sending = false;
-		if (!$this->connected) {
-			$this->connected = true;
-			$this->onConnect();
+		if (!$this->ready) {
+			$this->ready = true;
+			$this->onReady();
 		}
 		if ($this->finished) {
 			$this->close();
@@ -373,5 +374,9 @@ abstract class IOStream {
 	 * @return string Readed data
 	 */
 	public function read($n) {
+	}
+	
+	public function __destruct() {
+		$this->close();
 	}
 }

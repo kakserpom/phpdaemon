@@ -15,8 +15,9 @@ class Timer {
 	public $finished = false; // Is the timer finished?
 	public $cb; // callback
 	public static $list = array(); // list of timers
+	public $priority;
 	
-	public function __construct($cb, $timeout = null, $id = null) {
+	public function __construct($cb, $timeout = null, $id = null, $priority = null) {
 		if ($id === null) {
 			end(Timer::$list);
 			$id = key(Timer::$list);
@@ -31,11 +32,18 @@ class Timer {
 		$this->cb = $cb;
 		$this->ev = event_new();
 		event_set($this->ev, STDIN, EV_TIMEOUT, array('Timer', 'eventCall'), array($id));
+		if ($priority !== null) {
+			$this->setPriority($priority);
+		}
 		event_base_set($this->ev, Daemon::$process->eventBase);
 		if ($timeout !== null) {
 			$this->timeout($timeout);
 		}
 		Timer::$list[$id] = $this;
+	}
+	public function setPriority($priority) {
+		$this->priority = $priority;
+		event_priority_set($this->ev, $this->priority);
 	}
 	public static function eventCall($fd, $flags ,$args) {
 		$id = $args[0];
@@ -49,8 +57,8 @@ class Timer {
 			unset(Timer::$list[$id]);
 		}
 	}
-	public static function add($cb, $timeout = null, $id = null) {
-		$obj = new self($cb, $timeout, $id);
+	public static function add($cb, $timeout = null, $id = null, $priority = null) {
+		$obj = new self($cb, $timeout, $id, $priority);
 		return $obj->id;
 	}
 	public static function setTimeout($id,$timeout = NULL) {

@@ -42,7 +42,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->maxworkers->value
 		));
 				
-		Daemon_TimedEvent::add(function($event) {
+		Timer::add(function($event) {
 			$self = Daemon::$process;
 
 			static $c = 0;
@@ -97,7 +97,7 @@ class Daemon_MasterThread extends Thread {
 			
 			
 			$event->timeout();
-		}, 1e6 * Daemon::$config->mpmdelay->value, 'MPMTimedEvent');
+		}, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
 		
 		
 

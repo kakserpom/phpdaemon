@@ -7,42 +7,87 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-//@todo aio_* support
 class File extends IOStream {
-	public $directInput = true;
 	public $priority = 10; // low priority
-	public static function open($path, $mode = 'rb') {
-		$fd = fopen($path, $mode);
-		if (!$fd) {
+	public $pos = 0;
+	public $pieceSize = 4095;
+	public $stat;
+		
+	public static function convertOpenMode($mode) {
+		$plus = strpos($mode, '+') !== false;
+		$sync = strpos($mode, 's') !== false;
+		$type = strtr($mode, array('b' => '', '+' => '', 's' => ''));
+		$types = array(
+			'r' =>  $plus ? EIO_O_RDWR : EIO_O_RDONLY,
+			'w' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT | EIO_O_TRUNC,
+			'a' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT | EIO_O_APPEND,
+			'x' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_EXCL | EIO_O_CREAT,
+			'c' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT,
+		);
+		$m = $types[$type];
+		if ($sync) {
+			$m |= EIO_O_FSYNC;
+		}
+	}
+
+	
+	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
+		if ($this->stat) {
+			call_user_func($cb, $this, $this->stat);
+		} else {
+			eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
+				$stat['st_size'] = filesize($file->path); // TEMP DIRTY HACK! DUE TO BUG IN PECL-EIO
+				$file->stat = $stat;
+				call_user_func($cb, $file, $stat);
+			}, $this);		
+		}
+	}
+	
+	public function clearStatCache() {
+		$this->fstat = null;
+		$this->lstat = null;
+		$this->stat = null;
+	}
+	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!$cb && !$this->onRead) {
 			return false;
 		}
-		stream_set_blocking($fd, 0);
-		return new File($fd);
+		$this->pos += $length;
+		$file = $this;
+		eio_read(
+			$this->fd,
+			$length,
+			$offset !== null ? $offset : $this->pos,
+			$pri,
+			$cb ? $cb: $this->onRead,
+			$this
+		);
+		return true;
+	}
+
+	public function readAll($cb = null, $pri = EIO_PRI_DEFAULT) {
+		$this->stat(function ($file, $stat) use ($cb, $pri) {
+			if (!$stat) {
+				$cb($file, false);
+				return;
+			}
+			$pos = 0;
+			$handler = function ($file, $data) use ($cb, &$handler, $stat, &$pos, $pri) {
+				$file->buf .= $data;
+				$pos += $this->pieceSize;
+				if ($pos >= $stat['st_size']) {
+					call_user_func($cb, $file, $file->buf);
+					$file->buf = '';
+					return;
+				}
+				eio_read($this->fd, $stat['st_size'] - $pos, $file->pos, $pri, $handler, $this);
+			};
+			eio_read($this->fd, min($this->pieceSize, $stat['st_size']), 0, $pri, $handler, $this);
+		});
 	}
 	
 	public function setFd($fd) {
 		$this->fd = $fd;
-		if ($this->directInput) {
-			$ev = event_new();
-			if (!event_set($ev, $this->fd, EV_READ | EV_PERSIST, array($this, 'onReadEvent'))) {
-				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on '.Daemon::dump($fd));
-				return;
-			}
-			event_base_set($ev, Daemon::$process->eventBase);
-			if ($this->priority !== null) {
-				event_priority_set($ev, $this->priority);
-			}
-			event_add($ev);
-			$this->readEvent = $ev;
-		}
-		$this->buffer = event_buffer_new($this->fd,	$this->directInput ? NULL : array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onFailureEvent'));
-		event_buffer_base_set($this->buffer, Daemon::$process->eventBase);
-		if ($this->priority !== null) {
-			event_buffer_priority_set($this->buffer, $this->priority);
-		}
-		event_buffer_watermark_set($this->buffer, EV_READ, $this->lowMark, $this->highMark);
-		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
-		
 		if (!$this->inited) {
 			$this->inited = true;
 			$this->init();
@@ -50,9 +95,16 @@ class File extends IOStream {
 	}
 	
 	public function seek($p) {
+		if (EIO::$supported) {
+			$this->pos = $p;
+			return true;
+		}
 		fseek($this->fd, $p);
 	}
 	public function tell() {
+		if (EIO::$supported) {
+			return $this->pos;
+		}
 		return ftell($this->fd);
 	}
 	/**
@@ -60,13 +112,12 @@ class File extends IOStream {
 	 * @param integer Max. number of bytes to read
 	 * @return string Readed data
 	 */
-	public function read($n) {
+	/*public function read($n) {
 		if (isset($this->readEvent)) {
 			if (!isset($this->fd)) {
 				return false;
 			}
 			$read = fread($this->fd, $n);
-			Daemon::log(Debug::dump($read));
 		} else {
 			if (!isset($this->buffer)) {
 				return false;
@@ -82,9 +133,17 @@ class File extends IOStream {
 			return false;
 		}
 		return $read;
-	}
+	}*/
 	
+	public function close() {
+		$this->closeFd();
+	}
 	public function closeFd() {
+		if (FS::$supported) {
+			eio_close($this->fd);
+			$this->fd = null;
+			return;
+		}
 		fclose($this->fd);
 	}
 	

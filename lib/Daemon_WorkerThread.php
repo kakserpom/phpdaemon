@@ -54,6 +54,8 @@ class Daemon_WorkerThread extends Thread {
 		$this->setStatus(6);
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
+		
+		FS::init();
 
 		$this->fileWatcher = new FileWatcher;
 
@@ -71,7 +73,7 @@ class Daemon_WorkerThread extends Thread {
 
 		$this->setStatus(1);
 
-		Daemon_TimedEvent::add(function($event) {
+		Timer::add(function($event) {
 			$self = Daemon::$process;
 
 			if ($self->checkState() !== TRUE) {
@@ -82,10 +84,10 @@ class Daemon_WorkerThread extends Thread {
 			}
 
 			$event->timeout();
-		}, 1e6 * 1,	'checkStateTimedEvent');
+		}, 1e6 * 1,	'checkState');
 
 		if (Daemon::$config->autoreload->value > 0) {
-			Daemon_TimedEvent::add(function($event) {
+			Timer::add(function($event) {
 				$self = Daemon::$process;
 
 				static $n = 0;
@@ -98,7 +100,7 @@ class Daemon_WorkerThread extends Thread {
 					$n = $s;
 				}
 				$event->timeout();
-			}, 1e6 * Daemon::$config->autoreload->value, 'watchIncludedFilesTimedEvent');
+			}, 1e6 * Daemon::$config->autoreload->value, 'watchIncludedFiles');
 		}
 
 		while (!$this->breakMainLoop) {
@@ -471,9 +473,9 @@ class Daemon_WorkerThread extends Thread {
 
 		$n = 0;
 
-		unset(Timer::$list['checkStateTimedEvent']);
+		unset(Timer::$list['checkState']);
 
-		Daemon_TimedEvent::add(function($event) 	{
+		Timer::add(function($event) 	{
 			$self = Daemon::$process;
 
 			$self->reloadReady = $self->appInstancesReloadReady();
