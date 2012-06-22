@@ -51,14 +51,30 @@ class FS {
 		if (self::$supported) {
 			return eio_stat($path, $pri, $cb, $this);
 		}
-		call_user_func($this, stat($path));
+		call_user_func($this, null, stat($path));
 	}
 	
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (self::$supported) {
 			return eio_lstat($path, $pri, $cb, $this);
 		}
-		call_user_func($this, lstat($path));
+		call_user_func($this, null, lstat($path));
+	}
+	
+	public static function sync($cb, $pri = EIO_PRI_DEFAULT) {
+		if (!self::$supported) {
+			call_user_func($cb, false);
+			return;
+		}
+ 		eio_sync($pri, $cb);
+	}
+	
+	public static function sendfile($out, $in, $offset, $length, $cb, $pri = EIO_PRI_DEFAULT) {
+		if (!self::$supported) {
+			call_user_func($cb, false);
+			return;
+		}
+ 		eio_sendfile($out, $in, $offset, $length, $pri, $cb);
 	}
 		
 	public static function open($path, $mode, $cb, $pri = EIO_PRI_DEFAULT) {

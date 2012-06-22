@@ -24,6 +24,9 @@ class ExampleFsRequest extends HTTPRequest {
 		$req = $this;
 		$this->sleep(1, true);
 		FS::open('/etc/filesystems','r', function ($file) use ($req) {
+			/*FS::sendfile($req->conn->fd, $file->fd, 0, 100, function($file, $result) {
+				Daemon::log($result);
+			});*/
 			$file->readAll(function($file, $data) use ($req) {
 				$req->fileData = $data;
 				$req->wakeup();
@@ -37,7 +40,7 @@ class ExampleFsRequest extends HTTPRequest {
 	 */
 	public function run() {
 		$this->header('Content-Type: text/plain');
-		echo "Content of /etc/filesystems:\n". $this->fileData;
+		echo "Contents of /etc/filesystems:\n". $this->fileData;
 	}
 	
 }

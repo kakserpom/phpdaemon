@@ -16,46 +16,32 @@ class Timer {
 	public $cb; // callback
 	public static $list = array(); // list of timers
 	public $priority;
+	static $counter = 0;
 	
 	public function __construct($cb, $timeout = null, $id = null, $priority = null) {
 		if ($id === null) {
-			end(Timer::$list);
-			$id = key(Timer::$list);
-			if ($id === null) {
-				$id = 1;
-			}
-			else {
-				++$id;
-			}
+			$id = ++self::$counter;
 		}
 		$this->id = $id;
 		$this->cb = $cb;
-		$this->ev = event_new();
-		event_set($this->ev, STDIN, EV_TIMEOUT, array('Timer', 'eventCall'), array($id));
+		$this->ev = event_timer_new();
+		$timer = $this;
+		event_timer_set($this->ev, array($this, 'eventCall'));
+		event_base_set($this->ev, Daemon::$process->eventBase);
 		if ($priority !== null) {
 			$this->setPriority($priority);
 		}
-		event_base_set($this->ev, Daemon::$process->eventBase);
 		if ($timeout !== null) {
 			$this->timeout($timeout);
 		}
 		Timer::$list[$id] = $this;
 	}
+	public function eventCall($fd, $flags, $arg) {
+		call_user_func($this->cb, $this);		
+	}
 	public function setPriority($priority) {
 		$this->priority = $priority;
 		event_priority_set($this->ev, $this->priority);
-	}
-	public static function eventCall($fd, $flags ,$args) {
-		$id = $args[0];
-		if (!isset(Timer::$list[$id])) {
-			Daemon::log(__METHOD__.': bad event call.');
-			return;
-		}
-		$obj = Timer::$list[$id];
-		call_user_func($obj->cb,$obj);
-		if ($obj->finished) {
-			unset(Timer::$list[$id]);
-		}
 	}
 	public static function add($cb, $timeout = null, $id = null, $priority = null) {
 		$obj = new self($cb, $timeout, $id, $priority);
@@ -69,19 +55,28 @@ class Timer {
 		return false;
 	}
 	public static function remove($id) {
+		if (isset(Timer::$list[$id])) {
+			Timer::$list[$id]->free();
+		}
 		unset(Timer::$list[$id]);
 	}
 	public function timeout($timeout = null)	{
 	 if ($timeout !== null) {
 		$this->lastTimeout = $timeout;
 	}
-	 event_add($this->ev, $this->lastTimeout);
+	 event_timer_add($this->ev, $this->lastTimeout);
 	}
 	public function finish()	{
 		$this->finished = true;
+		$this->free();
 	}
 	public function __destruct() {
-		event_del($this->ev);
-		event_free($this->ev);
+		$this->free();
+	}
+	public function free() {
+		if (is_resource($this->ev)) {
+			event_timer_del($this->ev);
+			event_free($this->ev);
+		}
 	}
 }
