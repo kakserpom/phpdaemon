@@ -1,4 +1,4 @@
-<?php
+t<?php
 
 /**
  * FS
@@ -48,27 +48,83 @@ class FS {
 	}
 	
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
-		if (self::$supported) {
-			return eio_stat($path, $pri, $cb, $this);
+		if (!self::$supported) {
+			call_user_func($this, $path, stat($path));
 		}
-		call_user_func($this, null, stat($path));
+		return eio_stat($path, $pri, $cb, $path);
+	}
+	
+	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		if (!self::$supported) {
+			call_user_func($this, $path, false);
+			return;
+		}
+		eio_statvfs($path, $pri, $cb, $path);
 	}
 	
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
-		if (self::$supported) {
-			return eio_lstat($path, $pri, $cb, $this);
+		if (!self::$supported) {
+			call_user_func($this, $path, lstat($path));
+			return;
 		}
-		call_user_func($this, null, lstat($path));
+		return eio_lstat($path, $pri, $cb, $path);
 	}
 	
-	public static function sync($cb, $pri = EIO_PRI_DEFAULT) {
+	public static function sync($cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
-			call_user_func($cb, false);
+			if ($cb) {
+				call_user_func($cb, false);
+			}
 			return;
 		}
  		eio_sync($pri, $cb);
 	}
 	
+	public static function syncfs($cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!self::$supported) {
+			if ($cb) {
+				call_user_func($cb, false);
+			}
+			return;
+		}
+ 		eio_syncfs($pri, $cb);
+	}
+	
+	public function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$r = touch($path, $mtime, $atime);
+			if ($cb) {
+				call_user_func($cb, $r);
+			}
+			return;
+		}
+		eio_utime($path, $atime, $mtime, $pri, $cb, $path);
+	}
+	
+	public function rmdir($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$r = rmdir($path);
+			if ($cb) {
+				call_user_func($cb, $path, $r);
+			}
+			return;
+		}
+		eio_rmdir($path, $pri, $cb, $path);
+	}
+	
+	
+	public function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$fp = fopen($path, 'r+');
+			$r = $fp && ftruncate($fp, $offset);
+			if ($cb) {
+				call_user_func($cb, $path, $r);
+			}
+			return;
+		}
+		eio_truncate($path, $offset, $pri, $cb, $path);
+	}
+
 	public static function sendfile($out, $in, $offset, $length, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, false);
@@ -76,19 +132,40 @@ class FS {
 		}
  		eio_sendfile($out, $in, $offset, $length, $pri, $cb);
 	}
+	
+	public function chown($path, $uid, $gid = -1, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$r = chown($path, $uid);
+			if ($gid !== -1) {
+				$r = $r && chgrp($path, $gid);
+			}
+			call_user_func($cb, $path, $r);
+			return;
+		}
+		eio_chown($path, $uid, $gid, $pri, $cb, $path);
+	}
 		
 	public static function open($path, $mode, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (self::$supported) {
 			global $res;
-			$res = eio_open($path, File::convertOpenMode($mode) , NULL,
-			  $pri, function ($arg, $fd) use ($cb, $path) {
+			$mode = File::convertOpenMode($mode);
+			$res = eio_open($path, $mode , NULL,
+			  $pri, function ($arg, $fd) use ($cb, $path, $mode) {
 				if (!$fd) {
 					call_user_func($cb, false);
 					return;
 				}
 				$file = new File($fd);
+				$file->append = ($mode | EIO_O_APPEND) === $mode;
 				$file->path = $path;
-				call_user_func($cb, $file);
+				if ($file->append) {
+					$file->stat(function($file, $stat) use ($cb) {
+						$file->pos = $stat['st_size'];
+						call_user_func($cb, $file);
+					}):
+				} else {
+					call_user_func($cb, $file);
+				}
 			}, NULL);
 			return;
 		}

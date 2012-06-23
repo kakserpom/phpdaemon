@@ -37,7 +37,7 @@ class Timer {
 		Timer::$list[$id] = $this;
 	}
 	public function eventCall($fd, $flags, $arg) {
-		call_user_func($this->cb, $this);		
+		call_user_func($this->cb, $this);
 	}
 	public function setPriority($priority) {
 		$this->priority = $priority;
@@ -58,7 +58,6 @@ class Timer {
 		if (isset(Timer::$list[$id])) {
 			Timer::$list[$id]->free();
 		}
-		unset(Timer::$list[$id]);
 	}
 	public function timeout($timeout = null)	{
 	 if ($timeout !== null) {
@@ -66,14 +65,14 @@ class Timer {
 	}
 	 event_timer_add($this->ev, $this->lastTimeout);
 	}
-	public function finish()	{
-		$this->finished = true;
+	public function finish(){
 		$this->free();
 	}
 	public function __destruct() {
 		$this->free();
 	}
 	public function free() {
+		unset(Timer::$list[$this->id]);
 		if (is_resource($this->ev)) {
 			event_timer_del($this->ev);
 			event_free($this->ev);

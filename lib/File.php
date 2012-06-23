@@ -28,25 +28,85 @@ class File extends IOStream {
 		if ($sync) {
 			$m |= EIO_O_FSYNC;
 		}
+		return $m;
 	}
 
 	
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($cb, $this, fstat($this->fd));
+		}
 		if ($this->stat) {
 			call_user_func($cb, $this, $this->stat);
 		} else {
 			eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
-				$stat['st_size'] = filesize($file->path); // TEMP DIRTY HACK! DUE TO BUG IN PECL-EIO
+				if (!isset($stat['st_size'])) { // DIRTY HACK! DUE TO BUG IN PECL-EIO
+					Daemon::log('eio: stat() performance compromised. Consider upgrading pecl-eio');
+					$stat['st_size'] = filesize($file->path);
+				}
 				$file->stat = $stat;
 				call_user_func($cb, $file, $stat);
 			}, $this);		
 		}
 	}
 	
+	public function statvfs($cb, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($cb, $this, false);
+		}
+		if ($this->statvfs) {
+			call_user_func($cb, $this, $this->statvfs);
+		} else {
+			eio_fstatvfs($this->fd, $pri, function ($file, $stat) use ($cb) {
+				$file->statvfs = $stat;
+				call_user_func($cb, $file, $stat);
+			}, $this);		
+		}
+	}
+
+	public function sync($cb, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($cb, $this, true);
+			return;
+		}
+		eio_fsync($this->fd, $pri, $cb, $this);
+	}
+	
+	public function datasync($cb, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($cb, $this, true);
+			return;
+		}
+		eio_fdatasync($this->fd, $pri, $cb, $this);
+	}
+
+	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$r = chown($path, $uid);
+			if ($gid !== -1) {
+				$r = $r && chgrp($path, $gid);
+			}
+			call_user_func($cb, $this, $r);
+			return;
+		}
+		eio_fchown($this->fd, $uid, $gid, $pri, $cb, $this);
+	}
+	
+	public function touch($mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$r = touch($this->path, $mtime, $atime);
+			if ($cb) {
+				call_user_func($cb, $this, $r);
+			}
+			return;
+		}
+		eio_futime($this->fd, $atime, $mtime, $pri, $cb, $this);
+	}
+	
+
 	public function clearStatCache() {
-		$this->fstat = null;
-		$this->lstat = null;
 		$this->stat = null;
+		$this->statvfs = null;
 	}
 	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$cb && !$this->onRead) {
