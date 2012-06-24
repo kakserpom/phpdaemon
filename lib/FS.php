@@ -1,4 +1,4 @@
-t<?php
+<?php
 
 /**
  * FS
@@ -11,8 +11,18 @@ class FS {
 	public static $supported;
 	public static $ev;
 	public static $fd;
+	public static $modeTypes = array(
+  		0140000 => 's',
+  		0120000 => 'l',
+ 		0100000 => 'f',
+ 		0060000 => 'b',
+ 		0040000 => 'd',
+ 		0020000 => 'c',
+ 		0010000 => 'p',
+ 	);
 	public static function init() {
 		if (!self::$supported = is_callable('eio_poll')) {
+			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}
 		
@@ -22,7 +32,7 @@ class FS {
 		self::$fd = eio_get_event_stream();
 		event_set(self::$ev, self::$fd, EV_READ | EV_PERSIST, function ($fd, $events, $arg) {
 			if (eio_nreqs()) {
-		        eio_poll();
+		        @eio_poll(); // ignore bogus warnings
 		    }
 		});
 		event_base_set(self::$ev, Daemon::$process->eventBase);
@@ -47,11 +57,29 @@ class FS {
 		}
 	}
 	
+	public static function sanitizePath($path) {
+		$path = str_replace("\x00", '', $path);
+		$path = str_replace("../", '', $path);
+		return $path;
+	}
+	
+	public static function statPrepare($stat) {
+		if ($stat === -1 || !$stat) {
+			return -1;
+		}
+		$stat['type'] = FS::$modeTypes[$stat['st_mode'] & 0170000];
+		if (!isset($stat['st_size'])) { // DIRTY HACK! DUE TO BUG IN PECL-EIO
+			Daemon::log('eio: stat() performance compromised. Consider upgrading pecl-eio via svn.');
+			$stat['st_size'] = filesize($file->path);
+		}
+		return $stat;
+		
+	}
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
-			call_user_func($this, $path, stat($path));
+			call_user_func($this, $path, FS::statPrepare(stat($path)));
 		}
-		return eio_stat($path, $pri, $cb, $path);
+		return eio_stat($path, $pri, function($path, $stat) use ($cb) {call_user_func($cb, $path, FS::statPrepare($stat));}, $path);
 	}
 	
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -59,15 +87,23 @@ class FS {
 			call_user_func($this, $path, false);
 			return;
 		}
-		eio_statvfs($path, $pri, $cb, $path);
+		return eio_statvfs($path, $pri, $cb, $path);
 	}
 	
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
-			call_user_func($this, $path, lstat($path));
+			call_user_func($this, $path, FS::statPrepare(lstat($path)));
 			return;
 		}
-		return eio_lstat($path, $pri, $cb, $path);
+		return eio_lstat($path, $pri, function($path, $stat) use ($cb) {call_user_func($cb, $path, FS::statPrepare($stat));}, $path);
+	}
+	
+	public static function realpath($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		if (!self::$supported) {
+			call_user_func($this, $path, realpath($path));
+			return;
+		}
+		return eio_realpath($path, $pri, $cb, $path);
 	}
 	
 	public static function sync($cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -77,7 +113,7 @@ class FS {
 			}
 			return;
 		}
- 		eio_sync($pri, $cb);
+ 		return eio_sync($pri, $cb);
 	}
 	
 	public static function syncfs($cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -87,7 +123,7 @@ class FS {
 			}
 			return;
 		}
- 		eio_syncfs($pri, $cb);
+ 		return eio_syncfs($pri, $cb);
 	}
 	
 	public function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -98,10 +134,10 @@ class FS {
 			}
 			return;
 		}
-		eio_utime($path, $atime, $mtime, $pri, $cb, $path);
+		return eio_utime($path, $atime, $mtime, $pri, $cb, $path);
 	}
 	
-	public function rmdir($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+	public function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$r = rmdir($path);
 			if ($cb) {
@@ -109,7 +145,29 @@ class FS {
 			}
 			return;
 		}
-		eio_rmdir($path, $pri, $cb, $path);
+		return eio_rmdir($path, $pri, $cb, $path);
+	}
+	
+	public function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$r = mkdir($path, $mode);
+			if ($cb) {
+				call_user_func($cb, $path, $r);
+			}
+			return;
+		}
+		return eio_mkdir($path, $mode, $pri, $cb, $path);
+	}
+	
+	public function readdir($path, $cb = null, $flags,  $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$r = glob($path);
+			if ($cb) {
+				call_user_func($cb, $path, $r);
+			}
+			return;
+		}
+		return eio_readdir($path, $flags, $pri, $cb, $path);
 	}
 	
 	
@@ -122,7 +180,7 @@ class FS {
 			}
 			return;
 		}
-		eio_truncate($path, $offset, $pri, $cb, $path);
+		return eio_truncate($path, $offset, $pri, $cb, $path);
 	}
 
 	public static function sendfile($out, $in, $offset, $length, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -130,7 +188,7 @@ class FS {
 			call_user_func($cb, false);
 			return;
 		}
- 		eio_sendfile($out, $in, $offset, $length, $pri, $cb);
+ 		return eio_sendfile($out, $in, $offset, $length, $pri, $cb);
 	}
 	
 	public function chown($path, $uid, $gid = -1, $pri = EIO_PRI_DEFAULT) {
@@ -142,31 +200,58 @@ class FS {
 			call_user_func($cb, $path, $r);
 			return;
 		}
-		eio_chown($path, $uid, $gid, $pri, $cb, $path);
+		return eio_chown($path, $uid, $gid, $pri, $cb, $path);
 	}
-		
-	public static function open($path, $mode, $cb, $pri = EIO_PRI_DEFAULT) {
+	
+	public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($cb, $path, readfile($path));
+			return;
+		}
+		FS::open($path, 'r', function ($file) use ($cb, $pri) {
+			if (!$file) {
+				call_user_func($cb, $path, false);
+			}
+			$file->readAll($cb, $pri);
+		}, null, $pri);
+	}
+	
+	public static function readfileChunked($path, $cb, $chunkcb, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($chunkcb, $path, $r = readfile($path));
+			call_user_func($cb, $r !== false);
+			return;
+		}
+		FS::open($path, 'r', function ($file) use ($cb, $chunkcb, $pri) {
+			if (!$file) {
+				call_user_func($cb, $path, false);
+			}
+			$file->readAllChunked($cb, $chunkcb, $pri);
+		}, null, $pri);
+	}
+	
+	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
 		if (self::$supported) {
 			global $res;
-			$mode = File::convertOpenMode($mode);
-			$res = eio_open($path, $mode , NULL,
-			  $pri, function ($arg, $fd) use ($cb, $path, $mode) {
+			$flags = File::convertFlags($flags);
+			$res = eio_open($path, $flags , $mode,
+			  $pri, function ($arg, $fd) use ($cb, $path, $flags) {
 				if (!$fd) {
 					call_user_func($cb, false);
 					return;
 				}
 				$file = new File($fd);
-				$file->append = ($mode | EIO_O_APPEND) === $mode;
+				$file->append = ($flags | EIO_O_APPEND) === $flags;
 				$file->path = $path;
 				if ($file->append) {
 					$file->stat(function($file, $stat) use ($cb) {
 						$file->pos = $stat['st_size'];
 						call_user_func($cb, $file);
-					}):
+					});
 				} else {
 					call_user_func($cb, $file);
 				}
-			}, NULL);
+			}, null);
 			return;
 		}
 		$fd = fopen($path, $mode);

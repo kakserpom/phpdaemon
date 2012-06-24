@@ -22,6 +22,9 @@ class ComplexJob {
 			$this->addListener($cb);
 		}
 	}
+	public function hasCompleted() {
+		return $this->state === self::STATE_DONE;
+	}
 
 	public function __call($name, $args) {
 		return call_user_func_array($this->{$name}, $args);

@@ -10,10 +10,10 @@
 class File extends IOStream {
 	public $priority = 10; // low priority
 	public $pos = 0;
-	public $pieceSize = 4095;
+	public $chunkSize = 4096;
 	public $stat;
-		
-	public static function convertOpenMode($mode) {
+
+	public static function convertFlags($mode) {
 		$plus = strpos($mode, '+') !== false;
 		$sync = strpos($mode, 's') !== false;
 		$type = strtr($mode, array('b' => '', '+' => '', 's' => ''));
@@ -31,19 +31,28 @@ class File extends IOStream {
 		return $m;
 	}
 
+
+	public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			$fp = fopen($this->path, 'r+');
+			$r = $fp && ftruncate($fp, $offset);
+			if ($cb) {
+				call_user_func($cb, $this, $r);
+			}
+			return;
+		}
+		eio_ftruncate($this->fd, $offset, $pri, $cb, $this);
+	}
 	
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
-			call_user_func($cb, $this, fstat($this->fd));
+			call_user_func($cb, $this, FS::statPrepare(fstat($this->fd)));
 		}
 		if ($this->stat) {
 			call_user_func($cb, $this, $this->stat);
 		} else {
 			eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
-				if (!isset($stat['st_size'])) { // DIRTY HACK! DUE TO BUG IN PECL-EIO
-					Daemon::log('eio: stat() performance compromised. Consider upgrading pecl-eio');
-					$stat['st_size'] = filesize($file->path);
-				}
+				$stat = FS::statPrepare($stat);
 				$file->stat = $stat;
 				call_user_func($cb, $file, $stat);
 			}, $this);		
@@ -108,7 +117,25 @@ class File extends IOStream {
 		$this->stat = null;
 		$this->statvfs = null;
 	}
+	
 	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!$cb && !$this->onRead) {
+			return false;
+		}
+		$this->pos += $length;
+		$file = $this;
+		eio_read(
+			$this->fd,
+			$length,
+			$offset !== null ? $offset : $this->pos,
+			$pri,
+			$cb ? $cb: $this->onRead,
+			$this
+		);
+		return true;
+	}
+	
+	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$cb && !$this->onRead) {
 			return false;
 		}
@@ -128,22 +155,52 @@ class File extends IOStream {
 	public function readAll($cb = null, $pri = EIO_PRI_DEFAULT) {
 		$this->stat(function ($file, $stat) use ($cb, $pri) {
 			if (!$stat) {
-				$cb($file, false);
+				call_user_func($cb, $file, false);
 				return;
 			}
-			$pos = 0;
-			$handler = function ($file, $data) use ($cb, &$handler, $stat, &$pos, $pri) {
-				$file->buf .= $data;
-				$pos += $this->pieceSize;
-				if ($pos >= $stat['st_size']) {
-					call_user_func($cb, $file, $file->buf);
-					$file->buf = '';
+			$offset = 0;
+			$buf = '';
+			$size = $stat['st_size'];
+			$handler = function ($file, $data) use ($cb, &$handler, $stat, &$offset, $pri, &$buf) {
+				$buf .= $data;
+				$offset += strlen($data);
+				$len = min($this->chunkSize, $size - $offset);
+				if ($offset >= $size) {
+					call_user_func($cb, $file, $buf);
 					return;
 				}
-				eio_read($this->fd, $stat['st_size'] - $pos, $file->pos, $pri, $handler, $this);
+				eio_read($this->fd, $len, $offset, $pri, $handler, $this);
 			};
-			eio_read($this->fd, min($this->pieceSize, $stat['st_size']), 0, $pri, $handler, $this);
-		});
+			eio_read($this->fd, min($this->chunkSize, $size), 0, $pri, $handler, $this);
+		}, $pri);
+	}
+	
+	public function readAllChunked($cb = null, $chunkcb = null, $pri = EIO_PRI_DEFAULT) {
+		$this->stat(function ($file, $stat) use ($cb, $chunkcb, $pri) {
+			if (!$stat) {
+				call_user_func($cb, $file, false);
+				return;
+			}
+			$offset = 0;
+			$size = $stat['st_size'];
+			$handler = function ($file, $data) use ($cb, $chunkcb, &$handler, $size, &$offset, $pri) {
+				call_user_func($chunkcb, $file, $data);
+				$offset += strlen($data);
+				$len = min($this->chunkSize, $size - $offset);
+				if ($offset >= $stat['st_size']) {
+					call_user_func($cb, $file, true);
+					return;
+				}
+				eio_read($this->fd, $len, $offset, $pri, $handler, $this);
+			};
+			eio_read($this->fd, min($this->chunkSize, $size), $offset, $pri, $handler, $this);
+		}, $pri);
+	}
+	public function __toString() {
+		return $this->path;
+	}
+	public function setChunkSize($n) {
+		$this->chunkSize = $n;
 	}
 	
 	public function setFd($fd) {

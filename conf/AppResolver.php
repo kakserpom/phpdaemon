@@ -24,7 +24,7 @@ class MyAppResolver extends AppResolver {
 
 		if (is_dir('/home/web/domains/' . basename($host))) {
 			preg_match('~^/(.*)$~', $req->attrs->server['DOCUMENT_URI'], $m);
-			$req->attrs->server['FR_URL'] = 'file:///home/web/domains/'.$host.'/'.$m[1];
+			$req->attrs->server['FR_PATH'] = '/home/web/domains/'.$host.'/'.$m[1];
 			$req->attrs->server['FR_AUTOINDEX'] = TRUE;
 			return 'FileReader';
 		} */

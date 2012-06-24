@@ -60,11 +60,11 @@ class ExampleComplexJob extends AppInstance {
         $job('foo', $this->foo(array('param' => 'value')));
 
         // Adding with 1 sec delay
-        Daemon_TimedEvent::add(function($event) use ($job) {
+        Timer::add(function($event) use ($job) {
 
             // Adding async job bar
             $job('bar', function($jobname, $job) {
-                Daemon_TimedEvent::add(function($event) use($jobname, $job) {
+                Timer::add(function($event) use($jobname, $job) {
                     // Job done
                     $job->setResult($jobname, array('job' => 'bar', 'success' => false, 'line' => __LINE__));
                     $event->finish();
@@ -85,7 +85,7 @@ class ExampleComplexJob extends AppInstance {
 
     final public function foo($arg) {
         return function($jobname, $job) use ($arg) {
-            Daemon_TimedEvent::add(function($event) use($jobname, $job, $arg) {
+            Timer::add(function($event) use($jobname, $job, $arg) {
                 // Job done
                 $job->setResult($jobname, array('job' => 'foo', 'success' => true, 'line' => __LINE__, 'arg' => $arg));
                 $event->finish();
@@ -95,7 +95,7 @@ class ExampleComplexJob extends AppInstance {
 
     final public function baz() {
         return function($jobname, $job) {
-            Daemon_TimedEvent::add(function($event) use($jobname, $job) {
+            Timer::add(function($event) use($jobname, $job) {
                 // Job done
                 $job->setResult($jobname, array('job' => 'baz', 'success' => false, 'line' => __LINE__));
                 $event->finish();
