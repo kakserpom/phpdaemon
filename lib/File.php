@@ -224,33 +224,6 @@ class File extends IOStream {
 		}
 		return ftell($this->fd);
 	}
-	/**
-	 * Read data from the connection's buffer
-	 * @param integer Max. number of bytes to read
-	 * @return string Readed data
-	 */
-	/*public function read($n) {
-		if (isset($this->readEvent)) {
-			if (!isset($this->fd)) {
-				return false;
-			}
-			$read = fread($this->fd, $n);
-		} else {
-			if (!isset($this->buffer)) {
-				return false;
-			}
-			$read = event_buffer_read($this->buffer, $n);
-		}
-		if (
-			($read === '') 
-			|| ($read === null) 
-			|| ($read === false)
-		) {
-			$this->reading = false;
-			return false;
-		}
-		return $read;
-	}*/
 	
 	public function close() {
 		$this->closeFd();
