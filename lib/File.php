@@ -9,9 +9,9 @@
  */
 class File extends IOStream {
 	public $priority = 10; // low priority
-	public $pos = 0;
 	public $chunkSize = 4096;
 	public $stat;
+	public $offset;
 
 	public static function convertFlags($mode) {
 		$plus = strpos($mode, '+') !== false;
@@ -88,7 +88,18 @@ class File extends IOStream {
 		}
 		eio_fdatasync($this->fd, $pri, $cb, $this);
 	}
-
+	
+	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			if ($offset !== null) {
+				fseek($data, $offset);
+			}
+			call_user_func($cb, $this, fwrite($this->fd, $data));
+			return;
+		}
+		eio_write($this->fd, $data, null, $offset, $pri, $cb, $this);
+	}
+	
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$r = chown($path, $uid);
@@ -119,34 +130,52 @@ class File extends IOStream {
 	}
 	
 	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
-		if (!$cb && !$this->onRead) {
-			return false;
+		if (!FS::$supported) {
+			call_user_func($cb, $this, false);
+			return;
 		}
-		$this->pos += $length;
+		$this->offset += $length;
 		$file = $this;
 		eio_read(
 			$this->fd,
 			$length,
-			$offset !== null ? $offset : $this->pos,
+			$offset !== null ? $offset : $this->offset,
 			$pri,
 			$cb ? $cb: $this->onRead,
 			$this
 		);
 		return true;
 	}
-	
-	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
-		if (!$cb && !$this->onRead) {
-			return false;
+
+	public function sendfile($outfd, $length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($cb, $this, false);
+			return;
 		}
-		$this->pos += $length;
-		$file = $this;
-		eio_read(
+		eio_sendfile(
+			$outf,
 			$this->fd,
 			$length,
 			$offset !== null ? $offset : $this->pos,
 			$pri,
-			$cb ? $cb: $this->onRead,
+			$cb,
+			$this
+		);
+		return true;
+	}
+
+	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($cb, $this, false);
+			return;
+		}
+		$this->offset += $length;
+		eio_readahead(
+			$this->fd,
+			$length,
+			$offset !== null ? $offset : $this->pos,
+			$pri,
+			$cb,
 			$this
 		);
 		return true;
@@ -211,12 +240,11 @@ class File extends IOStream {
 		}
 	}
 	
-	public function seek($p) {
-		if (EIO::$supported) {
-			$this->pos = $p;
-			return true;
+	public function seek($offset, $cb, $pri) {
+		if (!EIO::$supported) {
+			fseek($this->fd, $offset);
 		}
-		fseek($this->fd, $p);
+		eio_seek($this->fd, $offset, $pri, $cb, $this);
 	}
 	public function tell() {
 		if (EIO::$supported) {

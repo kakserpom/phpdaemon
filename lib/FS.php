@@ -21,7 +21,7 @@ class FS {
  		0010000 => 'p',
  	);
 	public static function init() {
-		if (!self::$supported = is_callable('eio_poll')) {
+		if (!self::$supported = extension_loaded('eio')) {
 			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}
@@ -80,6 +80,13 @@ class FS {
 			call_user_func($this, $path, FS::statPrepare(stat($path)));
 		}
 		return eio_stat($path, $pri, function($path, $stat) use ($cb) {call_user_func($cb, $path, FS::statPrepare($stat));}, $path);
+	}
+	
+	public static function unlink($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		if (!self::$supported) {
+			call_user_func($this, $path, unlink($path));
+		}
+		return unlink($path, $pri, $cb, $path);
 	}
 	
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -183,12 +190,18 @@ class FS {
 		return eio_truncate($path, $offset, $pri, $cb, $path);
 	}
 
-	public static function sendfile($out, $in, $offset, $length, $cb, $pri = EIO_PRI_DEFAULT) {
+	public static function sendfile($outfd, $path, $offset, $length, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, false);
 			return;
 		}
- 		return eio_sendfile($out, $in, $offset, $length, $pri, $cb);
+		FS::open($path, 'r', function ($file) use ($cb, $pri, $outfd) {
+			if (!$file) {
+				call_user_func($cb, $path, false);
+				return;
+			}
+			$file->sendfile($outfd, $offset, $length, $cb, $pri);
+		}, $pri);
 	}
 	
 	public function chown($path, $uid, $gid = -1, $pri = EIO_PRI_DEFAULT) {
@@ -228,6 +241,10 @@ class FS {
 			}
 			$file->readAllChunked($cb, $chunkcb, $pri);
 		}, null, $pri);
+	}
+	
+	public static function tempnam($dir, $prefix) {
+		return tempnam($dir, $prefix);
 	}
 	
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {

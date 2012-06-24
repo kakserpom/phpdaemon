@@ -11,6 +11,8 @@ class FastCGIServerConnection extends Connection {
 	protected $highMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
 
 	protected $requests = array();
+	
+	public $sendfileCap = false;
 
 	const FCGI_BEGIN_REQUEST     = 1;
 	const FCGI_ABORT_REQUEST     = 2;

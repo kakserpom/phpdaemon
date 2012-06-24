@@ -114,18 +114,9 @@ class FileReaderRequest extends HTTPRequest {
 	public function file($path) {
 		$req = $this;
 		$job = $this->job;
-		$this->header('Content-Type: ' . MIME::get($path));
 		$job('readfile', function ($name, $job) use ($req, $path) {
-			FS::readfileChunked($path,
-				function($file, $success) use ($job) { // finished
-					$job->setResult('readfile');
-				},
-				function($file, $chunk) use ($req) { // readed chunk
-					$req->out($chunk);
-				}
-			);
-			
-		});		
+			$req->sendfile($path, function($file, $success) use ($job) {$job->setResult('readfile');});
+		});
 	}
 	public function autoindex($dir) {
 	$this->onWakeup();

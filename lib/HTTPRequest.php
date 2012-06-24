@@ -58,7 +58,7 @@ class HTTPRequest extends Request {
 	);
 
 	// @todo phpdoc needed
-
+	public $oldFashionUploadFP = false;
 	public $answerlen = 0;
 	public $contentLength;
 	private $cookieNUm = 0;
@@ -103,7 +103,21 @@ class HTTPRequest extends Request {
 
 		$this->parseParams();
 	}
-
+	
+	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		$this->header('Content-Type: ' . MIME::get($path));
+		if ($this->upstream->sendfileCap) {
+			FS::sendfile($this->fd, $path, $cb, $pri);
+			return;
+		}
+		$req = $this;
+		FS::readfileChunked($path, $cb,
+			function($file, $chunk) use ($req) { // readed chunk
+				$req->out($chunk);
+			}
+		);
+	}
+	
 	/**
 	 * Called by call() to check if ready
 	 * @todo protected?
@@ -218,7 +232,7 @@ class HTTPRequest extends Request {
 						$this->attrs->files[$e[0]][$e[1]] = $v;
 					}
 				}
-				foreach ($this->attrs->files as $k => $file) {
+				foreach ($this->attrs->files as $k => &$file) {
 					if (!isset($file['tmp_name'])
 						|| !isset($file['name'])
 						|| !ctype_digit(basename($file['tmp_name']))
@@ -227,7 +241,17 @@ class HTTPRequest extends Request {
 						unset($this->attrs->files[$k]);
 						continue;
 					}
-					$this->attrs->files[$k]['fp'] = fopen($file['tmp_name'], 'c+');
+					if ($this->oldFashionUploadFP) {
+						$file['fp'] = fopen($file['tmp_name'], 'c+');
+					} else {
+						FS::open($file['tmp_name'], 'c+', function ($fp) use (&$file) {
+							if (!$fp) {
+								return;
+							}
+							$file['fp'] = $fp;
+						});
+					}
+					unset($file);
 				}
 			}
 
@@ -323,7 +347,7 @@ class HTTPRequest extends Request {
 					. "\r\n";
 
 				if ($this->sendfp) {
-					fwrite($this->sendfp, $chunk);
+					$this->sendfp->write($chunk);
 				} else {
 					$this->conn->requestOut($this, $chunk);
 				}
@@ -332,7 +356,7 @@ class HTTPRequest extends Request {
 			}
 		} else {
 			if ($this->sendfp) {
-				fwrite($this->sendfp, $s);
+				$this->sendfp->write($s);
 				return true;
 			}
 
@@ -594,7 +618,7 @@ class HTTPRequest extends Request {
 
 				if (($p = strpos($this->attrs->stdinbuf, "\r\n\r\n", $this->mpartoffset)) !== false) {
 					// we got all of the headers
-					$h = explode("\r\n", binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset));
+					$h = explode("\r\n", binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset));
 					$this->mpartoffset = $p + 4;
 					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
 					$this->mpartoffset = 0;
@@ -620,9 +644,8 @@ class HTTPRequest extends Request {
 							if (!isset($this->mpartcondisp['name'])) {
 								break;
 							}
-
 							$this->mpartcondisp['name'] = trim($this->mpartcondisp['name'], '"');
-
+							$name = $this->mpartcondisp['name'];
 							if (isset($this->mpartcondisp['filename'])) {
 								$this->mpartcondisp['filename'] = trim($this->mpartcondisp['filename'], '"');
 
@@ -630,26 +653,32 @@ class HTTPRequest extends Request {
 									break;
 								}
 
-								$this->attrs->files[$this->mpartcondisp['name']] = array(
+								$this->attrs->files[$name] = array(
 									'name'     => $this->mpartcondisp['filename'],
 									'type'     => '',
 									'tmp_name' => '',
 									'error'    => UPLOAD_ERR_OK,
 									'size'     => 0,
 								);
-
+								$el = &$this->attrs->files[$name];
 								$tmpdir = ini_get('upload_tmp_dir');
-
 								if ($tmpdir === false) {
-									$this->attrs->files[$this->mpartcondisp['name']]['fp'] = false;
-									$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_NO_TMP_DIR;
+									$el['fp'] = false;
+									$el['error'] = UPLOAD_ERR_NO_TMP_DIR;
 								} else {
-									$this->attrs->files[$this->mpartcondisp['name']]['fp'] = @fopen($this->attrs->files[$this->mpartcondisp['name']]['tmp_name'] = tempnam($tmpdir, 'php'), 'w');
-
-									if (!$this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-										$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_CANT_WRITE;
+									$el['tmp_name'] = FS::tempnam($tmpdir, 'php');
+									if ($this->oldFashionUploadFP) {
+										$el['fp'] = fopen($el['tmp_name'], 'c+');
+									} else {
+										FS::open($el['tmp_name'], 'c+', function ($fp) use (&$el) {
+											if (!$fp) {
+												$el['error'] = UPLOAD_ERR_CANT_WRITE;
+											}
+											$el['fp'] = $fp;
+										});
 									}
 								}
+								unset($el);
 
 								$this->mpartstate = self::MPSTATE_UPLOAD;
 							} else {
@@ -695,11 +724,16 @@ class HTTPRequest extends Request {
 						($this->mpartstate === self::MPSTATE_UPLOAD)
 						&& isset($this->mpartcondisp['filename'])
 					) {
-						if ($this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-							fwrite($this->attrs->files[$this->mpartcondisp['name']]['fp'], binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset));
+						if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
+							$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset);
+							if ($this->oldFashionUploadFP) {
+								fwrite($fp, $chunk);
+							} else {
+								$fp->write($chunk);
+							}
 						}
 
-						$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p-$this->mpartoffset;
+						$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
 					}
 
 					if ($ndl === "\r\n--" . $this->boundary . "--\r\n") {
@@ -797,20 +831,14 @@ class HTTPRequest extends Request {
 		if (!isset($this->attrs->server['REQUEST_BODY_FILE'])) {
 			return false;
 		}
-
-		$fp = fopen($this->attrs->server['REQUEST_BODY_FILE'], 'rb');
-
-		if (!$fp) {
-			Daemon::log('Couldn\'t open request-body file \'' . $this->attrs->server['REQUEST_BODY_FILE'] . '\' (REQUEST_BODY_FILE).');
-			return false;
-		}
-
-		while (!feof($fp)) {
-			$this->stdin(fread($fp, 4096));
-		}
-
-		fclose($fp);
-		$this->attrs->stdin_done = true;
+		FS::readfileChunked($this->attrs->server['REQUEST_BODY_FILE'],
+			function ($file, $success) use ($req) {
+				$req->attrs->stdin_done = true;
+			},
+			function($file, $chunk) use ($req) { // readed chunk
+				$req->stdin($chunk);
+			}
+		);
 	}
 
 	/**
@@ -844,18 +872,14 @@ class HTTPRequest extends Request {
 		if (!$this->headers_sent) {
 			$this->out('');
 		}
-
-		if ($this->sendfp) {
-			fclose($this->sendfp);
-		}
-
+		unset($this->sendfp);
 		if (isset($this->attrs->files)) {
 			foreach ($this->attrs->files as &$f) {
 				if (
 					($f['error'] === UPLOAD_ERR_OK)
 					&& file_exists($f['tmp_name'])
 				) {
-					unlink($f['tmp_name']);
+					FS::unlink($f['tmp_name']);
 				}
 			}
 		}

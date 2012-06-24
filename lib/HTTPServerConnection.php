@@ -13,6 +13,8 @@ class HTTPServerConnection extends Connection {
 	
 	const STATE_HEADERS = 1;
 	const STATE_CONTENT = 2;
+	
+	public $sendfileCap = true;
 
 	/**
 	 * Called when new data received.
@@ -130,6 +132,7 @@ class HTTPServerConnection extends Connection {
 				} else {
 					$req = Daemon::$appResolver->getRequest($req, $this->pool, isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null);
 					$req->conn = $this;
+					$this->req = $req;
 				}
 
 				if ($req instanceof stdClass) {
@@ -138,8 +141,8 @@ class HTTPServerConnection extends Connection {
 					if ($this->pool->config->sendfile->value && (!$this->pool->config->sendfileonlybycommand->value	|| isset($req->attrs->server['USE_SENDFILE'])) 
 						&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
 					) {
-						$fn = tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value);
-						$req->sendfp = fopen($fn, 'wb');
+						$fn = FS::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value);
+						$req->sendfp = FS::open($fn, 'wb');
 						$req->header('X-Sendfile: ' . $fn);
 					}
 					$buf = $req->attrs->inbuf;
@@ -184,7 +187,7 @@ class HTTPServerConnection extends Connection {
 			goto start;
 		}
 	}
-	
+
 	/**
 	 * Handles the output from downstream requests.
 	 * @param object Request.
