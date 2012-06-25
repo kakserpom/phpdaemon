@@ -66,6 +66,7 @@ class Daemon_Bootstrap {
 	 */
 	public static function init() {
 		Daemon::initSettings();
+		FS::init();
 		Daemon::$runName = basename($_SERVER['argv'][0]);
 
 		$error = FALSE;

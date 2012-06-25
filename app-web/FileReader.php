@@ -115,7 +115,9 @@ class FileReaderRequest extends HTTPRequest {
 		$req = $this;
 		$job = $this->job;
 		$job('readfile', function ($name, $job) use ($req, $path) {
-			$req->sendfile($path, function($file, $success) use ($job) {$job->setResult('readfile');});
+			$req->sendfile($path, function($file, $success) use ($job) {
+				$job->setResult('readfile');
+			});
 		});
 	}
 	public function autoindex($dir) {

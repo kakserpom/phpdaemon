@@ -61,7 +61,7 @@ class HTTPRequest extends Request {
 	public $oldFashionUploadFP = false;
 	public $answerlen = 0;
 	public $contentLength;
-	private $cookieNUm = 0;
+	private $cookieNum = 0;
 
 	public static $hvaltr = array(';' => '&', ' ' => '');
 	public static $htr = array('-' => '_');
@@ -106,13 +106,20 @@ class HTTPRequest extends Request {
 	
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$this->header('Content-Type: ' . MIME::get($path));
-		if ($this->upstream->sendfileCap) {
-			FS::sendfile($this->fd, $path, $cb, $pri);
+		if ($this->conn->sendfileCap) {
+			$req = $this;
+			$this->ensureSentHeaders();
+			FS::sendfile($this->conn->fd, $path, $cb, 0, null, $pri);
 			return;
 		}
 		$req = $this;
 		FS::readfileChunked($path, $cb,
 			function($file, $chunk) use ($req) { // readed chunk
+				static $first = true;
+				if ($first) {
+					$req->header('Content-Length: ' . $file->stat['st_size']);
+					$first = false;
+				}
 				$req->out($chunk);
 			}
 		);
@@ -284,23 +291,7 @@ class HTTPRequest extends Request {
 		$this->parseStdin();
 	}
 
-	/**
-	 * Output some data
-	 * @param string String to out
-	 * @return boolean Success
-	 */
-	public function out($s, $flush = true) {
-		if ($flush) {
-			ob_flush();
-		}
-
-		if ($this->aborted) {
-			return false;
-		}
-
-		$l = strlen($s);
-		$this->answerlen += $l;
-
+	public function ensureSentHeaders() {
 		if (!$this->headers_sent) {
 			if (isset($this->headers['STATUS'])) {
 				$h = (isset($this->attrs->noHttpVer) && ($this->attrs->noHttpVer) ? 'Status: ' : $this->attrs->server['SERVER_PROTOCOL']) . ' ' . $this->headers['STATUS'] . "\r\n";
@@ -322,22 +313,34 @@ class HTTPRequest extends Request {
 			$this->headers_sent_file = __FILE__;
 			$this->headers_sent_line = __LINE__;
 			$this->headers_sent = true;
-
-			if (!Daemon::$compatMode) {
-				if (
-					!$this->attrs->chunked
-					&& !$this->sendfp
-				) {
-					if (!isset($this->conn)) {
-							return false;
-					}
-					return $this->conn->requestOut($this, $h . $s);
-				}
-
-				$this->conn->requestOut($this, $h);
-			}
+			$this->conn->requestOut($this, $h);
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Output some data
+	 * @param string String to out
+	 * @return boolean Success
+	 */
+	public function out($s, $flush = true) {
+		if ($flush) {
+			ob_flush();
 		}
 
+		if ($this->aborted) {
+			return false;
+		}
+		if (!isset($this->conn)) {
+				return false;
+		}
+		
+		$l = strlen($s);
+		$this->answerlen += $l;
+
+		$this->ensureSentHeaders();
+		
 		if ($this->attrs->chunked) {
 			for ($o = 0; $o < $l;) {
 				$c = min($this->upstream->config->chunksize->value, $l - $o);

@@ -97,7 +97,7 @@ class HTTPServerConnection extends Connection {
 				$req->attrs->server['PHP_SELF'] = $u['path'];
 				$req->attrs->server['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
 				$req->attrs->server['SCRIPT_NAME'] = $req->attrs->server['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
-				$req->attrs->server['SERVER_PROTOCOL'] = $command[2];
+				$req->attrs->server['SERVER_PROTOCOL'] = isset($command[2]) ? $command[2] : 'HTTP/1.1';
 
 				list(
 					$req->attrs->server['REMOTE_ADDR'],
@@ -228,8 +228,8 @@ class HTTPServerConnection extends Connection {
 		unset($this->req);
 	}
 	public function badRequest($req) {
-		$conn->write('<html><head><title>400 Bad Request</title></head><body bgcolor="white"><center><h1>400 Bad Request</h1></center></body></html>');
-		$conn->finish();
+		$this->write('400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor="white"><center><h1>400 Bad Request</h1></center></body></html>');
+		$this->finish();
 	}
 }
 

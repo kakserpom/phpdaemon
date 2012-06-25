@@ -274,24 +274,28 @@ class Daemon {
 	}
 
 	/**
-	 * Open log descriptors.
+	 * Open logs.
 	 * @return void
 	 */
 	public static function openLogs() {
+		Daemon::$logpointer = fopen(Daemon::$config->logstorage->value, 'a');
+		return;
 		if (Daemon::$config->logging->value) {
-			if (Daemon::$logpointer) {
-				fclose(Daemon::$logpointer);
-				Daemon::$logpointer = FALSE;
-			}
+			FS::open(Daemon::$config->logstorage->value, 'a', function ($file) {
+				Daemon::$logpointer = $file;
+				if (!$file) {
+					return;
+				}
+				if (isset(Daemon::$config->group->value)) {
+					chgrp(Daemon::$config->logstorage->value, Daemon::$config->group->value); // @TODO: rewrite to async I/O
+				}
 
-			Daemon::$logpointer = fopen(Daemon::$config->logstorage->value, 'a+');
-
-			if (isset(Daemon::$config->group->value)) {
-				chgrp(Daemon::$config->logstorage->value, Daemon::$config->group->value);
-			}
-
-			if (isset(Daemon::$config->user->value)) {
-				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value);
+				if (isset(Daemon::$config->user->value)) {
+					chown(Daemon::$config->logstorage->value, Daemon::$config->user->value); // @TODO: rewrite to async I/O
+				}	
+			});
+			if (Daemon::$logpointer === null) { // block on first call
+				FS::waitAllEvents();
 			}
 		}
 	}
@@ -300,11 +304,11 @@ class Daemon {
 	 * Get state of workers.
 	 * @return array - information.
 	 */
+	// @TODO: get rid of magic numbers in status (use constants)
 	public static function getStateOfWorkers($master = NULL) {
 		static $bufsize = 1024;
-
 		$offset = 0;
-
+		
 		$stat = array(
 			'idle'     => 0,
 			'busy'     => 0,
@@ -443,7 +447,9 @@ class Daemon {
 		}
 
 		if (Daemon::$logpointer) {
-			fwrite(Daemon::$logpointer, '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] ' . $msg . "\n");
+			$msg = '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] ' . $msg . "\n";
+			fwrite(Daemon::$logpointer, $msg);
+			//Daemon::$logpointer->write($msg);
 		}
 	}
 

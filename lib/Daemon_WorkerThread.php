@@ -55,7 +55,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 		
-		FS::init();
+		FS::initEvent();
 
 		$this->fileWatcher = new FileWatcher;
 
@@ -495,9 +495,9 @@ class Daemon_WorkerThread extends Thread {
 		while (!$this->reloadReady) {
 			event_base_loop($this->eventBase);
 		}
-
-		posix_kill(posix_getppid(), SIGCHLD);
-		exit(0);
+		//FS::waitAllEvents(); // ensure that all I/O events completed before suicide
+		posix_kill(posix_getppid(), SIGCHLD); // praying to Master
+		exit(0); // R.I.P.
 	}
 
 	/**

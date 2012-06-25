@@ -28,6 +28,7 @@ class Daemon_MasterThread extends Thread {
 		
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
+		//FS::initEvent();
 
 		$this->fileWatcher = new FileWatcher;
 		$this->workers = new ThreadCollection;
@@ -112,7 +113,7 @@ class Daemon_MasterThread extends Thread {
 		foreach (Daemon::$config as $name => $section)
 		{
 		 if (
-					(!$section instanceof Daemon_ConfigSection)
+			(!$section instanceof Daemon_ConfigSection)
 			|| !isset($section->limitinstances)) {
 			
 				continue;

@@ -147,21 +147,32 @@ class File extends IOStream {
 		return true;
 	}
 
-	public function sendfile($outfd, $length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+	public function sendfile($outfd, $cb, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			call_user_func($cb, $this, false);
 			return;
 		}
-		eio_sendfile(
-			$outf,
-			$this->fd,
-			$length,
-			$offset !== null ? $offset : $this->pos,
-			$pri,
-			$cb,
-			$this
-		);
-		return true;
+		static $chunkSize = 1024;
+		$handler = function ($file, $sent) use ($outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
+			if ($sent === -1) {
+				$sent = 0;
+			}
+			$offset += $sent;
+			$length -= $sent;
+			if ($length <= 0) {
+				call_user_func($cb, $file, true);
+				return;
+			}
+			eio_sendfile($outfd, $this->fd, $offset, min($chunkSize, $length), $pri, $handler, $this);
+		};
+		if ($length !== null) {
+			$handler($this, -1);
+			return;
+		}
+		$this->stat(function ($file, $stat) use ($handler, &$length) {
+			$length = $stat['st_size'];
+			$handler($file, -1);
+		}, $pri);
 	}
 
 	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -216,7 +227,7 @@ class File extends IOStream {
 				call_user_func($chunkcb, $file, $data);
 				$offset += strlen($data);
 				$len = min($this->chunkSize, $size - $offset);
-				if ($offset >= $stat['st_size']) {
+				if ($offset >= $size) {
 					call_user_func($cb, $file, true);
 					return;
 				}

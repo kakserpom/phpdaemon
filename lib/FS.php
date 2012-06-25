@@ -25,18 +25,32 @@ class FS {
 			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}
-		
+	}
+	public static function initEvent() {
+		if (!self::$supported) {
+			return;
+		}
 		self::updateConfig();
-		
 		self::$ev = event_new();
 		self::$fd = eio_get_event_stream();
 		event_set(self::$ev, self::$fd, EV_READ | EV_PERSIST, function ($fd, $events, $arg) {
 			if (eio_nreqs()) {
-		        @eio_poll(); // ignore bogus warnings
+	        	eio_poll();
 		    }
 		});
 		event_base_set(self::$ev, Daemon::$process->eventBase);
 		event_add(self::$ev);
+	}
+	
+	public static function waitAllEvents() {
+		if (!self::$supported) {
+			return;
+		}
+		Daemon::log('blocked');
+		while ($n = eio_nreqs()) {
+		    eio_poll();
+		}
+		Daemon::log('unblocked');
 	}
 	
 	public static function updateConfig() {
@@ -133,7 +147,7 @@ class FS {
  		return eio_syncfs($pri, $cb);
 	}
 	
-	public function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+	public static function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$r = touch($path, $mtime, $atime);
 			if ($cb) {
@@ -144,7 +158,7 @@ class FS {
 		return eio_utime($path, $atime, $mtime, $pri, $cb, $path);
 	}
 	
-	public function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
+	public static function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$r = rmdir($path);
 			if ($cb) {
@@ -155,7 +169,7 @@ class FS {
 		return eio_rmdir($path, $pri, $cb, $path);
 	}
 	
-	public function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT) {
+	public static function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$r = mkdir($path, $mode);
 			if ($cb) {
@@ -166,7 +180,7 @@ class FS {
 		return eio_mkdir($path, $mode, $pri, $cb, $path);
 	}
 	
-	public function readdir($path, $cb = null, $flags,  $pri = EIO_PRI_DEFAULT) {
+	public static function readdir($path, $cb = null, $flags,  $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$r = glob($path);
 			if ($cb) {
@@ -178,7 +192,7 @@ class FS {
 	}
 	
 	
-	public function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
+	public static function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$fp = fopen($path, 'r+');
 			$r = $fp && ftruncate($fp, $offset);
@@ -190,21 +204,22 @@ class FS {
 		return eio_truncate($path, $offset, $pri, $cb, $path);
 	}
 
-	public static function sendfile($outfd, $path, $offset, $length, $cb, $pri = EIO_PRI_DEFAULT) {
+	public static function sendfile($outfd, $path, $cb, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, false);
 			return;
 		}
-		FS::open($path, 'r', function ($file) use ($cb, $pri, $outfd) {
+		FS::open($path, 'r', function ($file) use ($cb, $pri, $outfd, $offset, $length) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
 			}
-			$file->sendfile($outfd, $offset, $length, $cb, $pri);
+			$file->sendfile($outfd, $cb, $offset, $length, $pri);
+
 		}, $pri);
 	}
 	
-	public function chown($path, $uid, $gid = -1, $pri = EIO_PRI_DEFAULT) {
+	public static function chown($path, $uid, $gid = -1, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$r = chown($path, $uid);
 			if ($gid !== -1) {
@@ -274,6 +289,7 @@ class FS {
 		$fd = fopen($path, $mode);
 		if (!$fd) {
 			call_user_func($cb, false);
+			return;
 		}
 		stream_set_blocking($fd, 0);
 		$file = new File($fd);
