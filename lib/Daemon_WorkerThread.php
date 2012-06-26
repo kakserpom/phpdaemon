@@ -56,6 +56,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->registerEventSignals();
 		
 		FS::initEvent();
+		Daemon::openLogs();
 
 		$this->fileWatcher = new FileWatcher;
 

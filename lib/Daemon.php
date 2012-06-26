@@ -31,6 +31,8 @@ class Daemon {
 	 * @var resource
 	 */
 	private static $logpointer;
+
+	private static $logpointerAsync;
 	
 	/**	
 	 * Supported things array	
@@ -278,25 +280,25 @@ class Daemon {
 	 * @return void
 	 */
 	public static function openLogs() {
-		Daemon::$logpointer = fopen(Daemon::$config->logstorage->value, 'a');
-		return;
 		if (Daemon::$config->logging->value) {
-			FS::open(Daemon::$config->logstorage->value, 'a', function ($file) {
-				Daemon::$logpointer = $file;
-				if (!$file) {
-					return;
-				}
-				if (isset(Daemon::$config->group->value)) {
-					chgrp(Daemon::$config->logstorage->value, Daemon::$config->group->value); // @TODO: rewrite to async I/O
-				}
-
-				if (isset(Daemon::$config->user->value)) {
-					chown(Daemon::$config->logstorage->value, Daemon::$config->user->value); // @TODO: rewrite to async I/O
-				}	
-			});
-			if (Daemon::$logpointer === null) { // block on first call
-				FS::waitAllEvents();
+			Daemon::$logpointer = fopen(Daemon::$config->logstorage->value, 'a');
+			if (isset(Daemon::$config->group->value)) {
+				chgrp(Daemon::$config->logstorage->value, Daemon::$config->group->value); // @TODO: rewrite to async I/O
 			}
+			if (isset(Daemon::$config->user->value)) {
+				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value); // @TODO: rewrite to async I/O
+			}
+			if (Daemon::$process instanceof Daemon_WorkerThread) {
+				FS::open(Daemon::$config->logstorage->value, 'a', function ($file) {
+					Daemon::$logpointerAsync = $file;
+					if (!$file) {
+						return;
+					}
+				});
+			}
+		} else {
+			Daemon::$logpointer = null;
+			Daemon::$logpointerAsync = null;
 		}
 	}
 
@@ -445,11 +447,12 @@ class Daemon {
 		) {
 			fwrite(STDERR, '[PHPD] ' . $msg . "\n");
 		}
-
-		if (Daemon::$logpointer) {
-			$msg = '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] ' . $msg . "\n";
+		
+		$msg = '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] ' . $msg . "\n";
+		if (Daemon::$logpointerAsync) {
+			Daemon::$logpointerAsync->write($msg);
+		} elseif (Daemon::$logpointer) {
 			fwrite(Daemon::$logpointer, $msg);
-			//Daemon::$logpointer->write($msg);
 		}
 	}
 
