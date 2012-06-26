@@ -163,7 +163,7 @@ class File extends IOStream {
 				call_user_func($cb, $file, true);
 				return;
 			}
-			eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $this);
+			eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $file);
 		};
 		if ($length !== null) {
 			$handler($this, -1);
