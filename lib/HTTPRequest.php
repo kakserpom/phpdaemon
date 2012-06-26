@@ -109,7 +109,7 @@ class HTTPRequest extends Request {
 		try {
 			$this->header('Content-Type: ' . MIME::get($path));
 		} catch (RequestHeadersAlreadySent $e) {}
-		if ($this->conn->sendfileCap && false) {
+		if ($this->conn->sendfileCap) {
 			$req = $this;
 			$this->ensureSentHeaders();
 			FS::sendfile($this->conn->fd, $path, $cb, 0, null, $pri);
