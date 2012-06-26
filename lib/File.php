@@ -163,7 +163,7 @@ class File extends IOStream {
 				call_user_func($cb, $file, true);
 				return;
 			}
-			eio_sendfile($outfd, $this->fd, $offset, min($chunkSize, $length), $pri, $handler, $this);
+			eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $this);
 		};
 		if ($length !== null) {
 			$handler($this, -1);
@@ -254,8 +254,9 @@ class File extends IOStream {
 	public function seek($offset, $cb, $pri) {
 		if (!EIO::$supported) {
 			fseek($this->fd, $offset);
+			return;
 		}
-		eio_seek($this->fd, $offset, $pri, $cb, $this);
+		return eio_seek($this->fd, $offset, $pri, $cb, $this);
 	}
 	public function tell() {
 		if (EIO::$supported) {
@@ -269,9 +270,9 @@ class File extends IOStream {
 	}
 	public function closeFd() {
 		if (FS::$supported) {
-			eio_close($this->fd);
+			$r = eio_close($this->fd);
 			$this->fd = null;
-			return;
+			return $r;
 		}
 		fclose($this->fd);
 	}
