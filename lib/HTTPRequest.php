@@ -74,6 +74,7 @@ class HTTPRequest extends Request {
 	private $headers_sent_file;
 	private $headers_sent_line;
 	private $boundary = false;
+	public $sendfp;
 	
 	const MPSTATE_SEEKBOUNDARY = 0;
 	const MPSTATE_HEADERS = 1;
@@ -875,7 +876,7 @@ class HTTPRequest extends Request {
 		if (!$this->headers_sent) {
 			$this->out('');
 		}
-		unset($this->sendfp);
+		$this->sendfp = null;
 		if (isset($this->attrs->files)) {
 			foreach ($this->attrs->files as &$f) {
 				if (

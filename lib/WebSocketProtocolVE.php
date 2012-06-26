@@ -31,7 +31,9 @@ class WebSocketProtocolVE extends WebSocketProtocol {
                 . "Connection: Upgrade\r\n"
                 . "Sec-WebSocket-Origin: " . $this->connection->server['HTTP_ORIGIN'] . "\r\n"
                 . "Sec-WebSocket-Location: ws://" . $this->connection->server['HTTP_HOST'] . $this->connection->server['REQUEST_URI'] . "\r\n";
-
+			if ($this->connection->pool->config->expose->value) {
+				$reply .= 'X-Powered-By: phpDaemon/' . Daemon::$version . "\r\n";
+			}
             if (isset($this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'])) {
                 $reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n";
             }

@@ -62,15 +62,17 @@ class WebSocketProtocolV13 extends WebSocketProtocol
                 . "Date: ".date('r')."\r\n"
                 . "Sec-WebSocket-Origin: " . $this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'] . "\r\n"
                 . "Sec-WebSocket-Location: ws://" . $this->connection->server['HTTP_HOST'] . $this->connection->server['REQUEST_URI'] . "\r\n"
-                . "Sec-WebSocket-Accept: " . base64_encode(sha1(trim($this->connection->server['HTTP_SEC_WEBSOCKET_KEY']) . "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", true)) . "\r\n" ;
+                . "Sec-WebSocket-Accept: " . base64_encode(sha1(trim($this->connection->server['HTTP_SEC_WEBSOCKET_KEY']) . "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", true)) . "\r\n";
 
-            if (isset($this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL']))
-			{
-                $reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n" ;
+            if (isset($this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'])) {
+                $reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n";
             }
 
-            $reply .= "\r\n" ;
+			if ($this->connection->pool->config->expose->value) {
+				$reply .= 'X-Powered-By: phpDaemon/' . Daemon::$version . "\r\n";
+			}
 
+            $reply .= "\r\n";
             return $reply ;
         }
 
