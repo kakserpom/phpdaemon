@@ -365,10 +365,6 @@ class Request {
 			Daemon::$process->setStatus(2);
 		}
  
-		if (!Daemon::$obInStack) { // preventing recursion
-			ob_flush();
-		}
- 
 		$this->running = TRUE;
  
 		Daemon::$req = $this;

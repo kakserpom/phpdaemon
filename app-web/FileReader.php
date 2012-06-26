@@ -107,8 +107,10 @@ class FileReaderRequest extends HTTPRequest {
 		$job();	
 	}
 	public function fileNotFound() {
-		$this->header('404 Not Found');
-		$this->header('Content-Type: text/html');
+		try {
+			$this->header('404 Not Found');
+			$this->header('Content-Type: text/html');
+		} catch (RequestHeadersAlreadySent $e ) {}
 		$this->out('File not found.');
 	}
 	public function file($path) {

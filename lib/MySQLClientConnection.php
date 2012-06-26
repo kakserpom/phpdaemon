@@ -23,6 +23,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $context;                    // Property holds a reference to user's object
 	public $insertId;                   // INSERT_ID()
 	public $affectedRows;               // Affected rows number
+	public $protover = 0;
 	
 	/**
 	 * Executes the given callback when/if the connection is handshaked
@@ -321,7 +322,6 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function stdin($buf) {
-		//Daemon::log('Server --> Client: ' . Debug::exportBytes($buf) . "\n\n");
 		$this->buf .= $buf;
 		start:
 		
@@ -331,17 +331,23 @@ class MySQLClientConnection extends NetworkClientConnection {
 			return;
 		}
 		$this->seq = $packet[1] + 1;
-
+		if ($this->buflen < 4 + $packet[0]) {
+			// not whole packet yet
+			return;
+		}
+		$p = 4;
 		if ($this->cstate === self::STATE_ROOT) {
-			if ($this->buflen < 4 + $packet[0]) {
-				// not whole packet yet
-				return;
-			} 
-
 			$this->cstate = self::STATE_GOT_INIT;
 			$p = 4;
 
 			$this->protover = ord(binarySubstr($this->buf, $p++, 1));
+			if ($this->protover === 0xFF) { // error
+				$fieldCount = $this->protover;
+				$this->protover = 0;
+				$this->onResponse->push($this->onConnected);
+				$this->onConnected = null;
+				goto field;
+			}
 			$this->serverver = '';
 
 			while ($p < $this->buflen) {
@@ -374,16 +380,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 	
 			$this->auth();
 		} else {
-			if ($this->buflen < 4 + $packet[0]) {
-				// not whole packet yet
-				return;
-			}
-
-			$p = 4;
-
-			$fieldCount = ord(binarySubstr($this->buf, $p, 1));
-			$p += 1;
-	
+			$fieldCount = ord(binarySubstr($this->buf, $p++, 1));
+			field:
 			if ($fieldCount === 0xFF) {
 				// Error packet
 				$u = unpack('v', binarySubstr($this->buf, $p, 2));
@@ -513,8 +511,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 */
 	public function onError() {
 		$this->instate = self::INSTATE_HEADER;
-		$callback = $this->onResponse->shift();
-
+		$callback = $this->onResponse->count() ? $this->onResponse->shift() : null;
 		if (
 			$callback 
 			&& is_callable($callback)
@@ -525,7 +522,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 		$this->resultRows = array();
 		$this->resultFields = array();
 
-		if ($this->cstate === self::STATE_AUTH_SENT) {
+		if (($this->cstate === self::STATE_AUTH_SENT) || ($this->cstate == self::STATE_GOT_INIT)) {
 			// in case of auth error
 			$this->cstate = self::STATE_AUTH_ERR;
 			$this->finish();

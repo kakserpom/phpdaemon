@@ -54,7 +54,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->setStatus(6);
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
-		
+
 		FS::initEvent();
 		Daemon::openLogs();
 

@@ -46,11 +46,9 @@ class FS {
 		if (!self::$supported) {
 			return;
 		}
-		Daemon::log('blocked');
 		while ($n = eio_nreqs()) {
 		    eio_poll();
 		}
-		Daemon::log('unblocked');
 	}
 	
 	public static function updateConfig() {
@@ -264,9 +262,8 @@ class FS {
 	
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
 		if (self::$supported) {
-			global $res;
 			$flags = File::convertFlags($flags);
-			$res = eio_open($path, $flags , $mode,
+			return eio_open($path, $flags , $mode,
 			  $pri, function ($arg, $fd) use ($cb, $path, $flags) {
 				if (!$fd) {
 					call_user_func($cb, false);
@@ -284,7 +281,6 @@ class FS {
 					call_user_func($cb, $file);
 				}
 			}, null);
-			return;
 		}
 		$fd = fopen($path, $mode);
 		if (!$fd) {

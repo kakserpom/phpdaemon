@@ -163,6 +163,9 @@ class File extends IOStream {
 				call_user_func($cb, $file, true);
 				return;
 			}
+			if (!is_resource($outfd)) {
+				throw new Exception;
+			}
 			eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $file);
 		};
 		if ($length !== null) {
@@ -275,31 +278,5 @@ class File extends IOStream {
 			return $r;
 		}
 		fclose($this->fd);
-	}
-	
-	public function eof() {
-		if (
-			!$this->EOF && (
-				($this->readFD === FALSE) 
-				|| feof($this->readFD)
-			)
-		) {
-			$this->onEofEvent();
-		}
-		elseif (!$this->EOF) {
-			$this->onReadEvent();
-		}
-
-		return $this->EOF;
-	}
-
-	public function onEofEvent() {
-		$this->EOF = true;
-	
-		if ($this->onEOF !== NULL) {
-			call_user_func($this->onEOF, $this);
-		}
-	
-		$this->close();
 	}
 }

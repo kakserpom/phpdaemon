@@ -106,19 +106,23 @@ class HTTPRequest extends Request {
 	}
 	
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
-		$this->header('Content-Type: ' . MIME::get($path));
-		if ($this->conn->sendfileCap) {
+		try {
+			$this->header('Content-Type: ' . MIME::get($path));
+		} catch (RequestHeadersAlreadySent $e) {}
+		if ($this->conn->sendfileCap && false) {
 			$req = $this;
 			$this->ensureSentHeaders();
 			FS::sendfile($this->conn->fd, $path, $cb, 0, null, $pri);
 			return;
 		}
 		$req = $this;
+		$first = true;
 		FS::readfileChunked($path, $cb,
-			function($file, $chunk) use ($req) { // readed chunk
-				static $first = true;
+			function($file, $chunk) use ($req, &$first) { // readed chunk
 				if ($first) {
-					$req->header('Content-Length: ' . $file->stat['st_size']);
+					try {
+						$req->header('Content-Length: ' . $file->stat['st_size']);
+					} catch (RequestHeadersAlreadySent $e) {}
 					$first = false;
 				}
 				$req->out($chunk);
@@ -327,7 +331,9 @@ class HTTPRequest extends Request {
 	 */
 	public function out($s, $flush = true) {
 		if ($flush) {
-			ob_flush();
+			if (!Daemon::$obInStack) { // preventing recursion
+				ob_flush();
+			}
 		}
 
 		if ($this->aborted) {
@@ -419,7 +425,9 @@ class HTTPRequest extends Request {
 	 */
 	public function onWakeup() {
 		parent::onWakeup();
-
+		if (!Daemon::$obInStack) { // preventing recursion
+			ob_flush();
+		}
 		$_GET     = &$this->attrs->get;
 		$_POST    = &$this->attrs->post;
 		$_COOKIE  = &$this->attrs->cookie;
