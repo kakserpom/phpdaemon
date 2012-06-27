@@ -26,15 +26,14 @@ class FS {
 			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}
+		eio_init();
 		self::$fdCache = new CappedCacheStorageHits(128);
-		if (is_callable('eio_init')) {
-			eio_init();
-		}
 	}
 	public static function initEvent() {
 		if (!self::$supported) {
 			return;
 		}
+		eio_init();
 		self::updateConfig();
 		self::$ev = event_new();
 		self::$fd = eio_get_event_stream();
@@ -267,21 +266,24 @@ class FS {
 	
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
 		if (self::$supported) {
-			$fdCacheKey = $path . "--" . $flags;
+			$fdCacheKey = $path . "\x00" . $flags;
 			$flags = File::convertFlags($flags);
-			if ($file = FS::$fdCache->getValue($fdCacheKey)) { // cache hit
+			$noncache = strpos($mode, '!') !== false;
+			if (!$noncache && ($file = FS::$fdCache->getValue($fdCacheKey))) { // cache hit
 				call_user_func($cb, $file);
 				return;
 			}
 			return eio_open($path, $flags , $mode,
-			  $pri, function ($arg, $fd) use ($cb, $path, $flags, $fdCacheKey) {
+			  $pri, function ($arg, $fd) use ($cb, $path, $flags, $fdCacheKey, $noncache) {
 				if (!$fd) {
 					call_user_func($cb, false);
 					return;
 				}
 				$file = new File($fd);
-				$file->fdCacheKey = $fdCacheKey;
-				FS::$fdCache->put($fdCacheKey, $file);
+				if (!$noncache) {
+					$file->fdCacheKey = $fdCacheKey;
+					FS::$fdCache->put($fdCacheKey, $file);
+				}
 				$file->append = ($flags | EIO_O_APPEND) === $flags;
 				$file->path = $path;
 				if ($file->append) {
@@ -299,7 +301,6 @@ class FS {
 			call_user_func($cb, false);
 			return;
 		}
-		stream_set_blocking($fd, 0);
 		$file = new File($fd);
 		$file->path = $path;
 		call_user_func($cb, $file);

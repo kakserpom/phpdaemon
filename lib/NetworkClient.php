@@ -121,13 +121,16 @@ class NetworkClient extends ConnectionPool {
 			if (isset($u['user'])) {
 				$conn->user = $u['user'];
 			}
+			
+			$conn->host = $u['host'];
+			$conn->port = $u['port'];
 
 			if (isset($u['pass'])) {
 				$conn->password = $u['pass'];
 			}
 
 			if (isset($u['path'])) {
-				$conn->dbname = ltrim($u['path'], '/');
+				$conn->path = ltrim($u['path'], '/');
 			}
 			
 		} else { // not URL

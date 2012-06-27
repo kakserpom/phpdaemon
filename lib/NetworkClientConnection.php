@@ -36,7 +36,7 @@ class NetworkClientConnection extends Connection {
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
 	 */
-	public function onConnect() {
+	public function onReady() {
 		if ($this->onConnected) {
 			call_user_func($this->onConnected, $this);
 			$this->onConnected = null;

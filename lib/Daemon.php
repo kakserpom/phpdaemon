@@ -30,9 +30,9 @@ class Daemon {
 	 * Log file resource
 	 * @var resource
 	 */
-	private static $logpointer;
+	public static $logpointer;
 
-	private static $logpointerAsync;
+	public static $logpointerAsync;
 	
 	/**	
 	 * Supported things array	
@@ -289,7 +289,7 @@ class Daemon {
 				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value); // @TODO: rewrite to async I/O
 			}
 			if (Daemon::$process instanceof Daemon_WorkerThread) {
-				FS::open(Daemon::$config->logstorage->value, 'a', function ($file) {
+				FS::open(Daemon::$config->logstorage->value, 'a!', function ($file) {
 					Daemon::$logpointerAsync = $file;
 					if (!$file) {
 						return;

@@ -38,6 +38,12 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	protected function run() {
 		Daemon::$process = $this;
+		if (Daemon::$logpointerAsync) {
+			Daemon::log('remove old logpointerAsync.');
+			$oldfd = Daemon::$logpointerAsync->fd;
+			Daemon::$logpointerAsync->fd = null;
+			Daemon::$logpointerAsync = null;
+		}
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
 		$this->setStatus(4);
@@ -55,6 +61,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 
+		FS::init(); // re-init
 		FS::initEvent();
 		Daemon::openLogs();
 

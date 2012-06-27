@@ -28,7 +28,7 @@ class Daemon_MasterThread extends Thread {
 		
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
-		//FS::initEvent();
+		FS::initEvent();
 
 		$this->fileWatcher = new FileWatcher;
 		$this->workers = new ThreadCollection;
@@ -193,6 +193,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return boolean - success
 	 */
 	public function spawnWorkers($n = 1) {
+		eio_event_loop();
 		$n = (int) $n;
 	
 		for ($i = 0; $i < $n; ++$i) {

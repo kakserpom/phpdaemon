@@ -17,7 +17,7 @@ class File extends IOStream {
 	public static function convertFlags($mode) {
 		$plus = strpos($mode, '+') !== false;
 		$sync = strpos($mode, 's') !== false;
-		$type = strtr($mode, array('b' => '', '+' => '', 's' => ''));
+		$type = strtr($mode, array('b' => '', '+' => '', 's' => '', '!' => ''));
 		$types = array(
 			'r' =>  $plus ? EIO_O_RDWR : EIO_O_RDONLY,
 			'w' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT | EIO_O_TRUNC,
@@ -273,7 +273,13 @@ class File extends IOStream {
 		$this->closeFd();
 	}
 	public function closeFd() {
-		FS::$fdCache->invalidate($this->fdCacheKey);
+		if ($this->fdCacheKey !== null) {
+			FS::$fdCache->invalidate($this->fdCacheKey);
+		}
+		if ($this->fd === null) {
+			return;
+		}
+		Daemon::$process->log('closeFd called');
 		if (FS::$supported) {
 			$r = eio_close($this->fd);
 			$this->fd = null;

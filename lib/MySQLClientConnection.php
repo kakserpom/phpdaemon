@@ -6,7 +6,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $clientFlags   = 239237;     // Flags of this MySQL client.
 	public $maxPacketSize = 0x1000000;  // Maximum packet size.
 	public $charsetNumber = 0x08;       // Charset number.
-	public $dbname        = '';         // Default database name.
+	public $path        = ''; 	        // Default database name.
 	public $user          = 'root';     // Username
 	public $password      = '';         // Password
 	public $cstate        = 0;          // Connection's state. 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
@@ -254,7 +254,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 			. ($this->password === '' ? "\x00" : $this->buildLenEncodedBinary(
 				$this->getAuthToken($this->scramble, $this->password)
 			))
-			. ($this->dbname !== '' ? $this->dbname . "\x00" : '')
+			. ($this->path !== '' ? $this->path . "\x00" : '')
 		);
 	}
 
@@ -307,7 +307,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * @return boolean Success
 	 */
 	public function selectDB($name) {
-		$this->dbname = $name;
+		$this->path = $name;
 
 		if ($this->cstate !== self::STATE_GOT_INIT) {
 			return $this->query('USE `' . $name . '`');
@@ -399,8 +399,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 				if ($this->cstate === self::STATE_AUTH_SENT) {
 					$this->cstate = self::STATE_HANDSHAKED;
 			
-					if ($this->dbname !== '') {
-						$this->query('USE `' . $this->dbname . '`');
+					if ($this->path !== '') {
+						$this->query('USE `' . $this->path . '`');
 					}
 				}
 		
