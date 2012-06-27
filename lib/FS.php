@@ -20,10 +20,15 @@ class FS {
  		0020000 => 'c',
  		0010000 => 'p',
  	);
+	public static $fdCache;
 	public static function init() {
 		if (!self::$supported = extension_loaded('eio')) {
 			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
+		}
+		self::$fdCache = new CappedCacheStorageHits(128);
+		if (is_callable('eio_init')) {
+			eio_init();
 		}
 	}
 	public static function initEvent() {
@@ -262,14 +267,21 @@ class FS {
 	
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
 		if (self::$supported) {
+			$fdCacheKey = $path . "--" . $flags;
 			$flags = File::convertFlags($flags);
+			if ($file = FS::$fdCache->getValue($fdCacheKey)) { // cache hit
+				call_user_func($cb, $file);
+				return;
+			}
 			return eio_open($path, $flags , $mode,
-			  $pri, function ($arg, $fd) use ($cb, $path, $flags) {
+			  $pri, function ($arg, $fd) use ($cb, $path, $flags, $fdCacheKey) {
 				if (!$fd) {
 					call_user_func($cb, false);
 					return;
 				}
 				$file = new File($fd);
+				$file->fdCacheKey = $fdCacheKey;
+				FS::$fdCache->put($fdCacheKey, $file);
 				$file->append = ($flags | EIO_O_APPEND) === $flags;
 				$file->path = $path;
 				if ($file->append) {

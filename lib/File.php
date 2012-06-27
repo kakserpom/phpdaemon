@@ -12,6 +12,7 @@ class File extends IOStream {
 	public $chunkSize = 4096;
 	public $stat;
 	public $offset;
+	public $fdCacheKey;
 
 	public static function convertFlags($mode) {
 		$plus = strpos($mode, '+') !== false;
@@ -164,7 +165,7 @@ class File extends IOStream {
 				return;
 			}
 			if (!is_resource($outfd)) {
-				throw new Exception;
+				return;
 			}
 			eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $file);
 		};
@@ -272,6 +273,7 @@ class File extends IOStream {
 		$this->closeFd();
 	}
 	public function closeFd() {
+		FS::$fdCache->invalidate($this->fdCacheKey);
 		if (FS::$supported) {
 			$r = eio_close($this->fd);
 			$this->fd = null;

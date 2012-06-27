@@ -454,7 +454,7 @@ class Daemon_Bootstrap {
 			$i = 0;
 
 			while ($r = posix_kill(Daemon_Bootstrap::$pid, SIGTTIN)) {
-				usleep(500000);
+				usleep(10000);
 				++$i;
 			}
 		}
