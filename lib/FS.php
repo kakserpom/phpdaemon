@@ -79,14 +79,14 @@ class FS {
 	}
 	
 	public static function statPrepare($stat) {
+		if ($stat === -1 || !$stat) {
+			return -1;
+		}
 		foreach ($stat as $k => $v) {
 			if (strpos($k, 'st_') === 0) {
 				$stat[substr($k, 3)] = $v;
 				unset($stat[$k]);
 			}
-		}
-		if ($stat === -1 || !$stat) {
-			return -1;
 		}
 		$stat['type'] = FS::$modeTypes[$stat['mode'] & 0170000];
 		return $stat;
