@@ -39,7 +39,6 @@ class Daemon_WorkerThread extends Thread {
 	protected function run() {
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
-			Daemon::log('remove old logpointerAsync.');
 			$oldfd = Daemon::$logpointerAsync->fd;
 			Daemon::$logpointerAsync->fd = null;
 			Daemon::$logpointerAsync = null;
