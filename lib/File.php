@@ -14,10 +14,13 @@ class File extends IOStream {
 	public $offset;
 	public $fdCacheKey;
 
-	public static function convertFlags($mode) {
+	public static function convertFlags($mode, $text = false) {
 		$plus = strpos($mode, '+') !== false;
 		$sync = strpos($mode, 's') !== false;
 		$type = strtr($mode, array('b' => '', '+' => '', 's' => '', '!' => ''));
+		if ($text) {
+			return $type;
+		}
 		$types = array(
 			'r' =>  $plus ? EIO_O_RDWR : EIO_O_RDONLY,
 			'w' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT | EIO_O_TRUNC,
@@ -79,7 +82,7 @@ class File extends IOStream {
 			call_user_func($cb, $this, true);
 			return;
 		}
-		eio_fsync($this->fd, $pri, $cb, $this);
+		return eio_fsync($this->fd, $pri, $cb, $this);
 	}
 	
 	public function datasync($cb, $pri = EIO_PRI_DEFAULT) {
@@ -87,7 +90,7 @@ class File extends IOStream {
 			call_user_func($cb, $this, true);
 			return;
 		}
-		eio_fdatasync($this->fd, $pri, $cb, $this);
+		return eio_fdatasync($this->fd, $pri, $cb, $this);
 	}
 	
 	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
@@ -95,10 +98,13 @@ class File extends IOStream {
 			if ($offset !== null) {
 				fseek($data, $offset);
 			}
-			call_user_func($cb, $this, fwrite($this->fd, $data));
+			$r = fwrite($this->fd, $data);
+			if ($cb) {
+				call_user_func($cb, $this, $r);
+			}
 			return;
 		}
-		eio_write($this->fd, $data, null, $offset, $pri, $cb, $this);
+		return eio_write($this->fd, $data, null, $offset, $pri, $cb, $this);
 	}
 	
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -107,10 +113,12 @@ class File extends IOStream {
 			if ($gid !== -1) {
 				$r = $r && chgrp($path, $gid);
 			}
-			call_user_func($cb, $this, $r);
+			if ($cb) {
+				call_user_func($cb, $this, $r);
+			}
 			return;
 		}
-		eio_fchown($this->fd, $uid, $gid, $pri, $cb, $this);
+		return eio_fchown($this->fd, $uid, $gid, $pri, $cb, $this);
 	}
 	
 	public function touch($mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -174,7 +182,7 @@ class File extends IOStream {
 			return;
 		}
 		$this->stat(function ($file, $stat) use ($handler, &$length) {
-			$length = $stat['st_size'];
+			$length = $stat['size'];
 			$handler($file, -1);
 		}, $pri);
 	}
@@ -204,7 +212,7 @@ class File extends IOStream {
 			}
 			$offset = 0;
 			$buf = '';
-			$size = $stat['st_size'];
+			$size = $stat['size'];
 			$handler = function ($file, $data) use ($cb, &$handler, $stat, &$offset, $pri, &$buf) {
 				$buf .= $data;
 				$offset += strlen($data);
@@ -226,7 +234,7 @@ class File extends IOStream {
 				return;
 			}
 			$offset = 0;
-			$size = $stat['st_size'];
+			$size = $stat['size'];
 			$handler = function ($file, $data) use ($cb, $chunkcb, &$handler, $size, &$offset, $pri) {
 				call_user_func($chunkcb, $file, $data);
 				$offset += strlen($data);

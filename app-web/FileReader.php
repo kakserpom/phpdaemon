@@ -123,7 +123,8 @@ class FileReaderRequest extends HTTPRequest {
 		});
 	}
 	public function autoindex($dir) {
-	$this->onWakeup();
+		$this->onWakeup();
+		Daemon::$req = $this;
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"> 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 
@@ -145,7 +146,7 @@ div.foot { font: 90% monospace; color: #787878; padding-top: 4px;}
 </style> 
 </head> 
 <body> 
-<pre class="header"Welcome!</pre><h2>Index of /</h2> 
+<pre class="header">Welcome!</pre><h2>Index of /</h2> 
 <div class="list"> 
 <table summary="Directory Listing" cellpadding="0" cellspacing="0"> 
 <thead>
@@ -172,8 +173,6 @@ div.foot { font: 90% monospace; color: #787878; padding-top: 4px;}
 </div> <?php if ($this->upstream->config->expose->value) {?><div class="foot">phpDaemon/<?php echo Daemon::$version; ?></div><?php } ?>
 </body> 
 </html><?php
-		sleep:
-		$this->onSleep();
 	}
 	/**
 	 * Called when the request aborted.

@@ -365,7 +365,7 @@ class Request {
 			Daemon::$process->setStatus(2);
 		}
  
-		$this->running = TRUE;
+		$this->running = true;
  
 		Daemon::$req = $this;
 	}
@@ -374,11 +374,7 @@ class Request {
 	 * Called when the request starts sleep
 	 * @return void
 	 */
-	public function onSleep() {
-		if (!Daemon::$obInStack) { // preventing recursion
-			ob_flush();
-		}
- 
+	public function onSleep() { 
 		if (!Daemon::$compatMode) {
 			Daemon::$process->setStatus(1);
 		}

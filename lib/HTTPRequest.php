@@ -426,7 +426,7 @@ class HTTPRequest extends Request {
 	public function onWakeup() {
 		parent::onWakeup();
 		if (!Daemon::$obInStack) { // preventing recursion
-			ob_flush();
+			@ob_flush();
 		}
 		$_GET     = &$this->attrs->get;
 		$_POST    = &$this->attrs->post;
@@ -444,6 +444,10 @@ class HTTPRequest extends Request {
 	 */
 	public function onSleep() {
 		parent::onSleep();
+		
+		if (!Daemon::$obInStack) { // preventing recursion
+			@ob_flush();
+		}
 
 		unset($_GET);
 		unset($_POST);
