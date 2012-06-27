@@ -26,8 +26,6 @@ class FS {
 			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}
-		eio_init();
-		self::$fdCache = new CappedCacheStorageHits(128);
 	}
 	public static function initEvent() {
 		if (!self::$supported) {
@@ -35,6 +33,7 @@ class FS {
 		}
 		eio_init();
 		self::updateConfig();
+		self::$fdCache = new CappedCacheStorageHits(128);
 		self::$ev = event_new();
 		self::$fd = eio_get_event_stream();
 		event_set(self::$ev, self::$fd, EV_READ | EV_PERSIST, function ($fd, $events, $arg) {
