@@ -288,7 +288,7 @@ class Daemon {
 			if (isset(Daemon::$config->user->value)) {
 				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value); // @TODO: rewrite to async I/O
 			}
-			if (Daemon::$process instanceof Daemon_WorkerThread && FS::$supported && 0) {
+			if (Daemon::$process instanceof Daemon_WorkerThread && FS::$supported) {
 				FS::open(Daemon::$config->logstorage->value, 'a!', function ($file) {
 					Daemon::$logpointerAsync = $file;
 					if (!$file) {
