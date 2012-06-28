@@ -104,7 +104,6 @@ class File extends IOStream {
 			}
 			return;
 		}
-		Daemon::log('write fd = '.$this->fd.' '.Debug::dump(Debug::backtrace()));
 		return eio_write($this->fd, $data, null, $offset, $pri, $cb, $this);
 	}
 	

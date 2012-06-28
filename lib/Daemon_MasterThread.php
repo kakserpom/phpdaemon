@@ -19,7 +19,7 @@ class Daemon_MasterThread extends Thread {
 	 * Runtime of Master process
 	 * @return void
 	 */
-	protected function run() {
+	public function run() {
 		Daemon::$process = $this;
 		
 		$this->prepareSystemEnv();

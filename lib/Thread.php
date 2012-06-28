@@ -125,7 +125,7 @@ abstract class Thread {
 	 * Run thread process
 	 * @return void
 	 */
-	protected function run() { }
+	public function run() { }
 
 	/**
 	 * @todo Add a description
@@ -164,14 +164,8 @@ abstract class Thread {
 			throw new Exception('Could not fork');
 		} 
 		elseif ($pid == 0) {
-			$this->pid = posix_getpid();
-
-			if (!$this->delayedSigReg) {
-				$this->registerSignals();
-			}
-
-			$this->run();
-			$this->shutdown();
+			$thread = $this;
+			throw new ClearStackException('', 0, $thread);
 		}
 
 		$this->pid = $pid;

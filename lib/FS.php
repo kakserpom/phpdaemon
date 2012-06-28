@@ -270,12 +270,13 @@ class FS {
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
 		if (self::$supported) {
 			$fdCacheKey = $path . "\x00" . $flags;
+			$noncache = strpos($flags, '!') !== false;
 			$flags = File::convertFlags($flags);
-			$noncache = strpos($mode, '!') !== false;
 			if (!$noncache && ($item = FS::$fdCache->get($fdCacheKey))) { // cache hit
 				$file = $item->getValue();
-				if ($file === null) { // miss
+				if ($file === null) { // operation in progress
 					$item->addListener($cb);
+										Daemon::log('add listener (miss) '.$path);
 				} else { // hit
 					call_user_func($cb, $file);
 				}
@@ -285,7 +286,7 @@ class FS {
 				$item->addListener($cb);
 			}
 			return eio_open($path, $flags , $mode,
-			  $pri, function ($arg, $fd) use ($path, $flags, $fdCacheKey, $noncache) {
+			  $pri, function ($arg, $fd) use ($cb, $path, $flags, $fdCacheKey, $noncache) {
 				if (!$fd) {
 					if ($noncache) {
 						call_user_func($cb, false);

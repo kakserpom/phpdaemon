@@ -10,7 +10,7 @@
 abstract class CappedCacheStorage {	
 	public $sorter;
 	public $maxCacheSize = 64;
-	public $capWindow = 1;
+	public $capWindow = 5;
 	public $cache = array();
 	
 	public function __construct() {}
@@ -18,8 +18,13 @@ abstract class CappedCacheStorage {
 	public function hash($key) {
 		return crc32($key);
 	}
-	public function put($key, $value) {
+	public function put($key, $value, $ttl = null) {
 		$k = $this->hash($key);
+		if (isset($this->cache[$k])) {
+			$item = $this->cache[$k];
+			$item->setValue($value);
+			return $item;
+		}
 		$item = new CacheItem($value);
 		$this->cache[$k] = $item;
 		$s = sizeof($this->cache);

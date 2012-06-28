@@ -36,7 +36,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Runtime of Worker process.
 	 * @return void
 	 */
-	protected function run() {
+	public function run() {
 		FS::init();
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
