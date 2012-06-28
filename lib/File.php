@@ -104,6 +104,7 @@ class File extends IOStream {
 			}
 			return;
 		}
+		Daemon::log('write fd = '.$this->fd.' '.Debug::dump(Debug::backtrace()));
 		return eio_write($this->fd, $data, null, $offset, $pri, $cb, $this);
 	}
 	
@@ -287,7 +288,7 @@ class File extends IOStream {
 		if ($this->fd === null) {
 			return;
 		}
-		Daemon::$process->log('closeFd called');
+
 		if (FS::$supported) {
 			$r = eio_close($this->fd);
 			$this->fd = null;

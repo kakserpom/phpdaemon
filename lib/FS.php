@@ -20,20 +20,21 @@ class FS {
  		0020000 => 'c',
  		0010000 => 'p',
  	);
+ 	public $badFDttl = 5;
 	public static $fdCache;
 	public static function init() {
 		if (!self::$supported = extension_loaded('eio')) {
 			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}
+		self::$fdCache = new CappedCacheStorageHits(128);
+		eio_init();
 	}
 	public static function initEvent() {
 		if (!self::$supported) {
 			return;
 		}
-		eio_init();
 		self::updateConfig();
-		self::$fdCache = new CappedCacheStorageHits(128);
 		self::$ev = event_new();
 		self::$fd = eio_get_event_stream();
 		event_set(self::$ev, self::$fd, EV_READ | EV_PERSIST, function ($fd, $events, $arg) {
@@ -271,30 +272,48 @@ class FS {
 			$fdCacheKey = $path . "\x00" . $flags;
 			$flags = File::convertFlags($flags);
 			$noncache = strpos($mode, '!') !== false;
-			if (!$noncache && ($file = FS::$fdCache->getValue($fdCacheKey))) { // cache hit
-				call_user_func($cb, $file);
+			if (!$noncache && ($item = FS::$fdCache->get($fdCacheKey))) { // cache hit
+				$file = $item->getValue();
+				if ($file === null) { // miss
+					$item->addListener($cb);
+				} else { // hit
+					call_user_func($cb, $file);
+				}
 				return;
+			} elseif (!$noncache) {
+				$item = FS::$fdCache->put($fdCacheKey, null);
+				$item->addListener($cb);
 			}
 			return eio_open($path, $flags , $mode,
-			  $pri, function ($arg, $fd) use ($cb, $path, $flags, $fdCacheKey, $noncache) {
+			  $pri, function ($arg, $fd) use ($path, $flags, $fdCacheKey, $noncache) {
 				if (!$fd) {
-					call_user_func($cb, false);
+					if ($noncache) {
+						call_user_func($cb, false);
+					} else {
+						FS::$fdCache->put($fdCacheKey, false, self::$badFDttl);
+					}
 					return;
 				}
 				$file = new File($fd);
-				if (!$noncache) {
-					$file->fdCacheKey = $fdCacheKey;
-					FS::$fdCache->put($fdCacheKey, $file);
-				}
 				$file->append = ($flags | EIO_O_APPEND) === $flags;
 				$file->path = $path;
 				if ($file->append) {
-					$file->stat(function($file, $stat) use ($cb) {
+					$file->stat(function($file, $stat) use ($cb, $noncache, $fdCacheKey) {
 						$file->pos = $stat['size'];
-						call_user_func($cb, $file);
+						if (!$noncache) {
+							$file->fdCacheKey = $fdCacheKey;
+							FS::$fdCache->put($fdCacheKey, $file);
+						} else {
+							call_user_func($cb, $file);
+						}
 					});
 				} else {
-					call_user_func($cb, $file);
+					if (!$noncache) {
+						$file->fdCacheKey = $fdCacheKey;
+						FS::$fdCache->put($fdCacheKey, $file);
+					} else {
+						call_user_func($cb, $file);
+					}
 				}
 			}, null);
 		}

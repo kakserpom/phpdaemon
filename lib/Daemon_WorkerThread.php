@@ -37,6 +37,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function run() {
+		FS::init();
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
 			$oldfd = Daemon::$logpointerAsync->fd;
