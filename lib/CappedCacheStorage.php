@@ -33,7 +33,6 @@ abstract class CappedCacheStorage {
 	}
 	
 	public function invalidate($key) {
-		Daemon::log('invalidate('.$key.')');
 		$k = $this->hash($key);
 		unset($this->cache[$k]);
 	}
