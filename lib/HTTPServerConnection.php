@@ -14,7 +14,7 @@ class HTTPServerConnection extends Connection {
 	const STATE_HEADERS = 1;
 	const STATE_CONTENT = 2;
 	
-	public $sendfileCap = true;
+	public $sendfileCap = true; // we can use sendfile() with this kind of connection
 
 	/**
 	 * Called when new data received.

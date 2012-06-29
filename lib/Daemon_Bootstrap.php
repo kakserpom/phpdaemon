@@ -110,6 +110,10 @@ class Daemon_Bootstrap {
 		if (!Daemon::$useSockets) {
 			Daemon::log('Cannot use socket extension, using stream_* instead. Non-critical error, but the performance compromised.');
 		}
+
+		if (extension_loaded('apc') && ini_get('apc.enabled')) {
+			Daemon::log('Detected pecl-apc extension enabled. Please do not use it with phpdaemon to avoid possible fatal error \'Base lambda function for closure not found\' (php bug#52144). Usage of bytecode caching (APC/eAccelerator/xcache/...) in case of phpdaemon makes no sense at all \'cause PHPDaemon includes files just in time itself.');
+		}
 		
 		if (isset(Daemon::$config->locale->value) && Daemon::$config->locale->value !== '') {
 			setlocale(LC_ALL,explode(',', Daemon::$config->locale->value));
