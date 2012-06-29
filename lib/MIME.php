@@ -5,7 +5,6 @@
  */
 class MIME {
 	
-	
 	private static $fileTypes = array(
 		'txt'  => 'text/plain',
 		'htm'  => 'text/html',
@@ -68,23 +67,8 @@ class MIME {
 	 */
 	public static function get($path) {
 		$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-
 		if (isset(self::$fileTypes[$ext])) {
 			return self::$fileTypes[$ext];
-		}
-		elseif (function_exists('finfo_open')) {
-			if (!is_readable($path)) {
-				return 'application/octet-stream';
-			}
-
-			$finfo = finfo_open(FILEINFO_MIME);
-			$mimetype = finfo_file($finfo, $path);
-
-			finfo_close($finfo);
-
-			return $mimetype;
-		} else {
-			return 'application/octet-stream';
 		}
 	}
 }
