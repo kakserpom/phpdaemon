@@ -106,16 +106,17 @@ class HTTPRequest extends Request {
 	}
 	
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		$req = $this;
 		try {
 			$this->header('Content-Type: ' . MIME::get($path));
 		} catch (RequestHeadersAlreadySent $e) {}
 		if ($this->conn->sendfileCap) {
-			$req = $this;
-			$this->ensureSentHeaders();
-			FS::sendfile($this->conn->fd, $path, $cb, 0, null, $pri);
+			$req->ensureSentHeaders();
+			$req->conn->onWriteOnce(function($conn) use ($req, $path, $cb, $pri) {
+				FS::sendfile($req->conn->fd, $path, $cb, 0, null, $pri);
+			});
 			return;
 		}
-		$req = $this;
 		$first = true;
 		FS::readfileChunked($path, $cb,
 			function($file, $chunk) use ($req, &$first) { // readed chunk

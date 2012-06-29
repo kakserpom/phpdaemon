@@ -31,6 +31,7 @@ abstract class IOStream {
 	public $inited = false;
 	public $state = 0;             // stream state of the connection (application protocol level)
 	const STATE_ROOT = 0;
+	public $onWriteOnce;
 	
 	/**
 	 * IOStream constructor
@@ -46,6 +47,8 @@ abstract class IOStream {
 		if ($fd !== null) {
 			$this->setFd($fd);
 		}
+
+		$this->onWriteOnce = new SplStack();
 		
 	}
 	
@@ -326,6 +329,13 @@ abstract class IOStream {
 	public function onReady() {
 	}
 	
+	public function onWriteOnce($cb) {
+		if (!$this->sending) {
+			call_user_func($cb, $this);
+			return;
+		}
+		$this->onWriteOnce->push($cb);
+	}
 	/**
 	 * Called when the connection is ready to accept new data
 	 * @param resource Descriptor
@@ -341,8 +351,11 @@ abstract class IOStream {
 		if ($this->finished) {
 			$this->close();
 		}
+		while ($this->onWriteOnce->count() > 0) {
+			call_user_func($this->onWriteOnce->pop(), $this);
+		}
 		if (isset($this->onWrite)) {
-			call_user_func($this->onWrite);
+			call_user_func($this->onWrite, $this);
 		} else {
 			$this->onWrite();
 		}
