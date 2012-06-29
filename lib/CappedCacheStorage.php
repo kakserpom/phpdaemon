@@ -26,6 +26,9 @@ abstract class CappedCacheStorage {
 			return $item;
 		}
 		$item = new CacheItem($value);
+		if ($ttl !== null) {
+			$item->expire = microtime(true) + $ttl;
+		}
 		$this->cache[$k] = $item;
 		$s = sizeof($this->cache);
 		if ($s > $this->maxCacheSize + $this->capWindow) {
@@ -47,7 +50,14 @@ abstract class CappedCacheStorage {
 		if (!isset($this->cache[$k])) {
 			return null;
 		}
-		return $this->cache[$k];
+		$item = $this->cache[$k];
+		if (isset($item->expire)) {
+			if (microtime(true) >= $item->expire) {
+				unset($this->cache[$k]);
+				return null;
+			}
+		}
+		return $item;
 	}
 	public function getValue($key) {
 		$k = $this->hash($key);

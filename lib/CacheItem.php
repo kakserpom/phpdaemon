@@ -11,6 +11,7 @@ class CacheItem {
 	public $value;
 	public $hits = 1;
 	public $listeners;
+	public $expire;
 	public function __construct($value) {
 		$this->listeners = new SplStack;
 		$this->value = $value;
