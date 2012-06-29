@@ -64,6 +64,7 @@ class HTTPServer extends NetworkServer {
 	 * @return void
 	*/
 	public function onReady() {
+		parent::onReady();
 		$this->WS = WebSocketServer::getInstance();
 	}
 }

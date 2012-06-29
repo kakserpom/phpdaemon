@@ -22,6 +22,7 @@ class ConnectionPool {
 	public $name;
 	public $config;
 	public static $instances = array();
+	public $socketsEnabled = false;
 	
 	public function __construct($config = array()) {
 		$this->config = $config;
@@ -45,6 +46,7 @@ class ConnectionPool {
 	 * @return void
 	*/
 	public function onReady() {
+		$this->enable();
 	}
 	
 	
@@ -168,6 +170,10 @@ class ConnectionPool {
 		Daemon::$sockets[$k] = array($sock, $type, $addr);
 		Daemon::$socketEvents[$k] = $ev;
 		$this->socketEvents[$k] = $ev;
+		if ($this->socketsEnabled) {
+			event_base_set($ev, Daemon::$process->eventBase);
+			event_add($ev);
+		}
 	}
 	
 	/**
@@ -175,6 +181,10 @@ class ConnectionPool {
 	 * @return void
 	*/
 	public function enable() {
+		if ($this->socketsEnabled) {
+			return;
+		}
+		$this->socketsEnabled = true;
 		foreach ($this->socketEvents as $ev) {
 			event_base_set($ev, Daemon::$process->eventBase);
 			event_add($ev);

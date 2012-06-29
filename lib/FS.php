@@ -238,7 +238,7 @@ class FS {
 	
 	public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
-			call_user_func($cb, $path, readfile($path));
+			call_user_func($cb, $path, file_get_contents($path));
 			return;
 		}
 		FS::open($path, 'r', function ($file) use ($cb, $pri) {

@@ -17,18 +17,25 @@ class FlashPolicyServer extends NetworkServer {
 	protected function getConfigDefaults() {
 		return array(
 			// @todo add description strings
-			'file'                  =>  'crossdomain.xml',
+			'file'                  =>  './conf/crossdomain.xml',
 			'listen'				=> '127.0.0.1',
 			'listen-port'           => 843,
 		);
 	}
+	
+	public function onReady() {}
+
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void
 	 */
 	public function onConfigUpdated() {
 		parent::onConfigUpdated();
-		$this->policyData = file_get_contents($this->config->file->value, true);
+		$app = $this;
+		FS::readfile($this->config->file->value, function($file, $data) use ($app) {
+			$app->policyData = $data;
+			$app->enable();
+		});
 	}
 	
 }
