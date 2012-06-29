@@ -51,6 +51,7 @@ class File extends IOStream {
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			call_user_func($cb, $this, FS::statPrepare(fstat($this->fd)));
+			return;
 		}
 		if ($this->stat) {
 			call_user_func($cb, $this, $this->stat);
@@ -66,6 +67,7 @@ class File extends IOStream {
 	public function statvfs($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			call_user_func($cb, $this, false);
+			return;
 		}
 		if ($this->statvfs) {
 			call_user_func($cb, $this, $this->statvfs);
@@ -173,6 +175,7 @@ class File extends IOStream {
 				return;
 			}
 			if (!is_resource($outfd)) {
+				call_user_func($cb, $file, false);
 				return;
 			}
 			eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $file);
@@ -213,7 +216,7 @@ class File extends IOStream {
 			$offset = 0;
 			$buf = '';
 			$size = $stat['size'];
-			$handler = function ($file, $data) use ($cb, &$handler, $stat, &$offset, $pri, &$buf) {
+			$handler = function ($file, $data) use ($cb, &$handler, $size, &$offset, $pri, &$buf) {
 				$buf .= $data;
 				$offset += strlen($data);
 				$len = min($this->chunkSize, $size - $offset);

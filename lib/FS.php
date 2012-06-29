@@ -20,7 +20,7 @@ class FS {
  		0020000 => 'c',
  		0010000 => 'p',
  	);
- 	public $badFDttl = 5;
+ 	public static $badFDttl = 5;
 	public static $fdCache;
 	public static function init() {
 		if (!self::$supported = extension_loaded('eio')) {
@@ -82,12 +82,6 @@ class FS {
 	public static function statPrepare($stat) {
 		if ($stat === -1 || !$stat) {
 			return -1;
-		}
-		foreach ($stat as $k => $v) {
-			if (strpos($k, 'st_') === 0) {
-				$stat[substr($k, 3)] = $v;
-				unset($stat[$k]);
-			}
 		}
 		$stat['type'] = FS::$modeTypes[$stat['mode'] & 0170000];
 		return $stat;
@@ -214,7 +208,7 @@ class FS {
 			call_user_func($cb, false);
 			return;
 		}
-		FS::open($path, 'r', function ($file) use ($cb, $pri, $outfd, $offset, $length) {
+		FS::open($path, 'r', function ($file) use ($cb, $path, $pri, $outfd, $offset, $length) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
@@ -241,9 +235,10 @@ class FS {
 			call_user_func($cb, $path, file_get_contents($path));
 			return;
 		}
-		FS::open($path, 'r', function ($file) use ($cb, $pri) {
+		FS::open($path, 'r', function ($file) use ($cb, $pri, $path) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
+				return;
 			}
 			$file->readAll($cb, $pri);
 		}, null, $pri);
@@ -276,7 +271,6 @@ class FS {
 				$file = $item->getValue();
 				if ($file === null) { // operation in progress
 					$item->addListener($cb);
-										Daemon::log('add listener (miss) '.$path);
 				} else { // hit
 					call_user_func($cb, $file);
 				}
@@ -287,6 +281,7 @@ class FS {
 			}
 			return eio_open($path, $flags , $mode,
 			  $pri, function ($arg, $fd) use ($cb, $path, $flags, $fdCacheKey, $noncache) {
+			  	
 				if (!$fd) {
 					if ($noncache) {
 						call_user_func($cb, false);
@@ -316,7 +311,7 @@ class FS {
 						call_user_func($cb, $file);
 					}
 				}
-			}, null);
+			}, $path);
 		}
 		$mode = File::convertFlags($flags, true);
 		$fd = fopen($path, $mode);

@@ -17,7 +17,7 @@ class FlashPolicyServer extends NetworkServer {
 	protected function getConfigDefaults() {
 		return array(
 			// @todo add description strings
-			'file'                  =>  './conf/crossdomain.xml',
+			'file'                  =>  getcwd().'/conf/crossdomain.xml',
 			'listen'				=> '127.0.0.1',
 			'listen-port'           => 843,
 		);
