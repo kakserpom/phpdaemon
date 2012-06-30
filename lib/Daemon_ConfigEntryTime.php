@@ -13,10 +13,10 @@ class Daemon_ConfigEntryTime extends Daemon_ConfigEntry {
 	public function HumanToPlain($value) {
 		$time = 0;
 
-		preg_replace_callback('~(\d+)\s*([smhd])\s*|(.+)~i', function($m) use (&$time) {
+		preg_replace_callback('~(\d+(\.\d+))\s*([smhd])\s*|(.+)~i', function($m) use (&$time) {
 			if (
-				isset($m[3]) 
-				&& ($m[3] !== '')
+				isset($m[4]) 
+				&& ($m[4] !== '')
 			) {
 				$time = FALSE;
 			}
@@ -25,8 +25,13 @@ class Daemon_ConfigEntryTime extends Daemon_ConfigEntry {
 				return;
 			}
 
-			$n = (int) $m[1];
-			$l = strtolower($m[2]);
+			if (!empty($m[2]))  {
+				$n = (float) $m[1];
+			} else {
+				$n = (int) $m[1];
+			}
+
+			$l = strtolower($m[3]);
 
 			if ($l === 's') {
 				$time += $n;
