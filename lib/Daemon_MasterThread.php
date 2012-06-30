@@ -14,6 +14,7 @@ class Daemon_MasterThread extends Thread {
 	public $reload = FALSE;
 	public $connCounter = 0;
 	public $fileWatcher;
+	public $callbacks;
 	
 	/**
 	 * Runtime of Master process
@@ -23,6 +24,7 @@ class Daemon_MasterThread extends Thread {
 		Daemon::$process = $this;
 		
 		$this->prepareSystemEnv();
+		class_exists('Timer'); // ensure loading this class
 		
 		gc_enable();
 		
@@ -42,8 +44,8 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
 		));
-				
-		Timer::add(function($event) {
+		$this->callbacks = new SplStack;
+		Timer::add(function($event) use (&$cbs) {
 			$self = Daemon::$process;
 
 			static $c = 0;
@@ -80,8 +82,11 @@ class Daemon_MasterThread extends Thread {
 					);
 
 					if ($n > 0) {
-						Daemon::log('Spawning ' . $n . ' worker(s).');
-						$self->spawnWorkers($n);
+						$self->callbacks->push(function($self) use ($n) {
+							Daemon::log('Spawning ' . $n . ' worker(s).');
+							$self->spawnWorkers($n);
+						});
+						event_base_loopbreak($self->eventBase);
 					}
 
 					$n = min(
@@ -104,6 +109,9 @@ class Daemon_MasterThread extends Thread {
 
 		while (!$this->breakMainLoop) {
 			event_base_loop($this->eventBase);
+			while ($this->callbacks->count() > 0) {
+				call_user_func($this->callbacks->pop(), $this);
+			}
 		}
 	}
 	public function updatedWorkers() {
@@ -202,8 +210,13 @@ class Daemon_MasterThread extends Thread {
 			$thread = new Daemon_WorkerThread;
 			$this->workers->push($thread);
 
-			if (-1 === $thread->start()) {
+			$pid = $thread->start(true);
+			if (-1 === $pid) {
 				Daemon::log('could not start worker');
+			} elseif ($pid > 0) {
+				Daemon::log('worker started - '.$pid);
+			} else {
+				exit;
 			}
 		}
 

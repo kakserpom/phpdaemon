@@ -64,10 +64,6 @@ try {
 	if ($e) {
 		$thread = $e->thread;
 	    $e = null;
-	   	$thread->pid = posix_getpid();
-		if (!$thread->delayedSigReg) {
-			$thread->registerSignals();
-		}
 		$thread->run();
 		$thread->shutdown();
 	}
@@ -77,3 +73,4 @@ try {
 } catch (ClearStackException $e) {
     goto execute;
 }
+

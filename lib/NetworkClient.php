@@ -122,6 +122,7 @@ class NetworkClient extends ConnectionPool {
 				$conn->user = $u['user'];
 			}
 			
+			$conn->scheme = $u['scheme'];
 			$conn->host = $u['host'];
 			$conn->port = $u['port'];
 
@@ -140,6 +141,10 @@ class NetworkClient extends ConnectionPool {
 				return false;
 			}
 			$conn = $this->getConnectionById($connId);
+			$conn->host = $e[0];
+			if (isset($e[1])) {
+				$conn->port = $e[1];
+			}
 		}
 		if ($cb !== null) {
 			$conn->onConnected($cb);

@@ -157,20 +157,28 @@ abstract class Thread {
 	 * Starts the process
 	 * @return void
 	 */
-	public function start() {
+	public function start($clearstack = false) {
 		$pid = pcntl_fork();
 
 		if ($pid === -1) {
 			throw new Exception('Could not fork');
 		} 
-		elseif ($pid == 0) {
+		elseif ($pid === 0) { // we are the child
 			$thread = $this;
-			throw new ClearStackException('', 0, $thread);
+			$thread->pid = posix_getpid();
+			if (!$thread->delayedSigReg) {
+				$thread->registerSignals();
+			}
+			if ($clearstack) {
+				throw new ClearStackException('', 0, $thread);
+			} else {
+				$thread->run();
+				$thread->shutdown();
+			}
+		} else { // we are the master
+			$this->pid = $pid;
+			return $pid;
 		}
-
-		$this->pid = $pid;
-
-		return $pid;
 	}
 
 	/**
