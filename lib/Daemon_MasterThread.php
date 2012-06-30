@@ -213,9 +213,8 @@ class Daemon_MasterThread extends Thread {
 			$pid = $thread->start(true);
 			if (-1 === $pid) {
 				Daemon::log('could not start worker');
-			} elseif ($pid > 0) {
-				Daemon::log('worker started - '.$pid);
-			} else {
+			} elseif ($pid > 0) { // parent
+			} else { // worker
 				exit;
 			}
 		}
