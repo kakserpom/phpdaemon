@@ -23,7 +23,7 @@ class Daemon_Config implements ArrayAccess {
 	public $autoload   	 	= NULL;
 			
 	// Master-related
-	public $mpmdelay        = '0.5s';
+	public $mpmdelay        = '0.1s';
 	public $startworkers    = 20;
 	public $minworkers      = 20;
 	public $maxworkers      = 80;

@@ -136,7 +136,7 @@ class NetworkClient extends ConnectionPool {
 			
 		} else { // not URL
 			$e = explode(':', $addr);
-			$connId = $this->connectTo($e[0], isset($e[1]) ? $e[1] : null);
+			$connId = $this->connectTo($e[0], isset($e[1]) ? $e[1] : $this->config->defaultport->value);
 			if (!$connId) {
 				return false;
 			}

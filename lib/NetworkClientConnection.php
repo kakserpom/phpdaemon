@@ -38,6 +38,7 @@ class NetworkClientConnection extends Connection {
 	 */
 	public function onReady() {
 		if ($this->onConnected) {
+			$this->connected = true;
 			call_user_func($this->onConnected, $this);
 			$this->onConnected = null;
 		}

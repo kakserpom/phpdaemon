@@ -191,8 +191,6 @@ class Daemon_WorkerThread extends Thread {
 				}
 			}
 
-			register_shutdown_function(array($this,'shutdown'));
-
 			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
 
 			function register_shutdown_function($cb) {
@@ -244,7 +242,9 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function prepareSystemEnv() {
 		proc_nice(Daemon::$config->workerpriority->value);
-
+		
+		register_shutdown_function(array($this,'shutdown'));
+		
 		$this->setproctitle(
 			Daemon::$runName . ': worker process'
 			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
@@ -444,6 +444,13 @@ class Daemon_WorkerThread extends Thread {
 	 * @return boolean - Ready?
 	 */
 	public function shutdown($hard = FALSE) {
+		$error = error_get_last(); 
+		if ($error) {
+			if ($error['type'] === E_ERROR) {
+				Daemon::log('W#' . $this->pid . ' crashed by error \''.$error['message'].'\' at '.$error['file'].':'.$error['line']);
+			}
+
+		}
 		if (Daemon::$config->logevents->value) {
 			$this->log('event shutdown(' . ($hard ? 'HARD' : '') . ') invoked.');
 		}
