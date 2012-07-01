@@ -34,6 +34,21 @@ class HTTPClient extends NetworkClient {
 		);
 	}
 
+	public function post($url, $data = array(), $params) {
+		if (is_callable($params)) {
+			$params = array('resultcb' => $params);
+		}
+		if (!isset($params['uri']) || !isset($params['host'])) {
+			list ($params['host'], $params['uri'], $params['port']) = HTTPClient::prepareUrl($url);
+		}
+		$this->getConnection(
+			$addr = $params['host'] . (isset($params['port']) ? $params['port'] : null),
+			function($conn) use ($url, $data, $params) {
+				$conn->post($url, $data, $params);
+			}
+		);
+	}
+
 	public static function prepareUrl($mixed) {
 		if (is_string($mixed)) {
 			$url = $mixed;
@@ -41,10 +56,13 @@ class HTTPClient extends NetworkClient {
 		elseif (is_array($mixed)) {
 			$url = '';
 			$buf = array();
+			$queryDelimiter = '?';
 			$mixed[] = '';
 			foreach ($mixed as $k => $v) {
 				if (is_int($k) || ctype_digit($k)) {
 					if (sizeof($buf) > 0) {
+						$url .= $queryDelimiter;
+						$queryDelimiter = '';
 						$url .= http_build_query($buf);
 					}
 					$url .= $v; 
@@ -64,9 +82,7 @@ class HTTPClient extends NetworkClient {
 				$uri .= '?'.$u['query'];
 			}
 		}
-		$path = isset($u['path']) ? $u['path'] : null;
-		$query = isset($u['query']) ? $u['query'] : null;
-		return array($u['host'], $path, isset($u['port']) ? $u['port'] : null);
+		return array($u['host'], $uri, isset($u['port']) ? $u['port'] : null);
 	}
 }
 class HTTPClientConnection extends NetworkClientConnection {
@@ -109,6 +125,51 @@ class HTTPClientConnection extends NetworkClientConnection {
 			$this->writeln('Cookie: '.http_build_query($this->cookie, '', '; '));
 		}
 		$this->writeln('');
+		$this->headers = array();
+		$this->body = '';
+		$this->onResponse->push($params['resultcb']);
+		$this->checkFree();
+	}
+
+	public function post($url, $data = array(), $params = null) {
+		if (!is_array($params)) {
+			$params = array('resultcb' => $params);
+		}
+		if (!isset($params['uri']) || !isset($params['host'])) {
+			$prepared = HTTPClient::prepareUrl($url);
+			if (!$prepared) {
+				if (isset($params['resultcb'])) {
+					call_user_func($params['resultcb'], false);
+				}
+				return;
+			}
+			list ($params['host'], $params['uri']) = $prepared;
+		}
+		if (!isset($params['version'])) {
+			$params['version'] = '1.1';
+		}
+		if (!isset($params['contentType'])) {
+			$params['contentType'] = 'application/x-www-form-urlencoded';
+		}
+		$this->writeln('POST '.$params['uri']. ' HTTP/'.$params['version']);
+		$this->writeln('Host: '.$params['host']);
+		if ($this->pool->config->expose->value) {
+			$this->writeln('User-Agent: phpDaemon/'.Daemon::$version);
+		}
+		if (isset($params['cookie']) && sizeof($params['cookie'])) {
+			$this->writeln('Cookie: '.http_build_query($this->cookie, '', '; '));
+		}
+		$body = '';
+		foreach ($data as $k => $v) {
+			if (is_object($v) && $v instanceof HTTPClientUpload) {
+				$params['contentType'] = 'multipart/form-data';
+			}
+		}
+		$this->writeln('Content-Type: ' . $params['contentType']);
+		$body = http_build_query($data, '&', PHP_QUERY_RFC3986);
+		$this->writeln('Content-Length: ' . strlen($body));
+		$this->writeln('');
+		$this->write($body);
 		$this->headers = array();
 		$this->body = '';
 		$this->onResponse->push($params['resultcb']);
@@ -252,3 +313,24 @@ class HTTPClientConnection extends NetworkClientConnection {
 		$this->checkFree();
 	}
 }
+class HTTPClientUpload {
+	public $name;
+	public $data;
+	public $path;
+	public static function fromFile($path) {
+		$upload = new self;
+		$upload->path = $path;
+		$upload->name = basename($path);
+		return $upload;
+	}
+	public static function fromString($str) {
+		$upload = new self;
+		$upload->data = $str;
+		return $upload;
+	}
+	public function setName($name) {
+		$this->name = $name;
+		return $this;
+	}
+}
+

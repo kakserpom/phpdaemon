@@ -64,9 +64,11 @@ class ExampleHTTPClientRequest extends HTTPRequest {
 		
 		$job('request', function($name, $job) { // registering job named 'showvar'
 			$httpclient = HTTPClient::getInstance();
-			$httpclient->get('http://phpdaemon.net/Example/', function($conn, $success) use ($name, $job) {
+			$cb = function($conn, $success) use ($name, $job) {
 					$job->setResult($name, $conn->body);
-			});
+			};
+			//$httpclient->get(['http://phpdaemon.net/Example/', 'foo' => 'bar'], $cb);
+			$httpclient->post(['http://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'] , $cb);
 		});
 		
 		$job(); // let the fun begin
