@@ -478,7 +478,18 @@ class ConnectionPool {
 		}
 		$id = ++Daemon::$process->connCounter;
 		$conn = $this->list[$id] = new $class(null, $id, $this);
-		$conn->connectTo($host, $port);
+		if (($port !== 0) && (@inet_pton($host) === false)) { // dirty condition check
+			DNSClient::getInstance()->resolve($host, function($ip) use ($conn, $host, $port) {
+				if ($ip === false) {
+					Daemon::log(get_class($this).'->connectTo: enable to resolve domain: '.$host);
+					return;
+				}
+				$conn->connectTo($ip, $port);
+			});
+		}
+		else {
+			$conn->connectTo($host, $port);
+		}
 		return $id;
 	}
 	
