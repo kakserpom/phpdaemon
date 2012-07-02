@@ -36,7 +36,7 @@ class NetworkClient extends ConnectionPool {
 	public function applyConfig() {
 		parent::applyConfig();
 		if (isset($this->config->servers)) {
-			$servers = array_map('trim',explode(',', $this->config->servers->value));
+			$servers = array_filter(array_map('trim',explode(',', $this->config->servers->value)), 'strlen');
 			foreach ($servers as $s) {
 				if (strpos($s, '://') !== false) {
 					$this->addServer($s);
@@ -90,7 +90,7 @@ class NetworkClient extends ConnectionPool {
 			$cb = $url;
 			$url = null; 
 		}
-		if ($url == null) {
+		if ($url === null) {
 			$url = $this->config->server->value;
 		}
 		$u = $this->parseUrl($url);
@@ -164,7 +164,7 @@ class NetworkClient extends ConnectionPool {
 	 * @param string Key
 	 * @return object Connection
 	 */
-	public function getConnectionByKey($key) {
+	public function getConnectionByKey($key, $cb = null) {
 		if (
 			($this->dtags_enabled) 
 			&& (($sp = strpos($key, '[')) !== FALSE) 
@@ -178,7 +178,7 @@ class NetworkClient extends ConnectionPool {
 		$addr = array_rand($this->servers);
 		srand();  
 
-		return $this->getConnection($addr);
+		return $this->getConnection($addr, $cb);
 	}
 
 	/**

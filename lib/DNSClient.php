@@ -25,6 +25,8 @@ class DNSClient extends NetworkClient {
  		32768 => 'TA', 32769 => 'DLV',
 	);
 
+	public $hosts = array();
+
 	public function init() {
 		$this->resolveCache = new CappedCacheStorageHits($this->config->resolvecachesize->value);
 	}
@@ -34,6 +36,8 @@ class DNSClient extends NetworkClient {
  		3 => 'CH',
  		255 => 'ANY',
 	);
+
+	public $ns;
 
 	/**
 	 * Setting default config options
@@ -45,11 +49,49 @@ class DNSClient extends NetworkClient {
 			// @todo add description strings
 			'defaultport' => 53,
 			'resolvecachesize' => 128,
-			'server' => '127.0.0.1',
+			'servers' => '',
+			'hostsfile' => '/etc/hosts',
+			'resolvfile' => '/etc/resolv.conf',
 			'expose' => 1,
 		);
 	}
+
+	public function applyConfig() {
+		parent::applyConfig();
+		$app = $this;
+		if (!sizeof($this->servers)) {
+			FS::readfile($this->config->resolvfile->value, function($file, $data) use ($app) {
+				if ($file) {
+					preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
+					foreach ($m[1] as $s) {
+						$e = explode(':', trim($s));
+						$app->addServer($e[0], isset($e[1]) ? $e[1] : $app->config->defaultport->value);
+					}
+				}
+			});
+		}
+		FS::readfile($this->config->hostsfile->value, function($file, $data) use ($app) {
+			if ($file) {
+				preg_match_all('~^(\S+)\s+([^\r\n]+)\s*~m', $data, $m, PREG_SET_ORDER);
+				$app->hosts = array();
+				foreach ($m as $h) {
+					$hosts = preg_split('~\s+~', $h[2]);
+					$ip = $h[1];
+					foreach ($hosts as $host) {
+						$host = rtrim($host, '.') . '.';
+						$app->hosts[$host] = $ip;
+					}
+				}
+			}
+		});
+	}
+
 	public function resolve($hostname, $cb, $noncache = false) {
+		$hostname = rtrim($hostname, '.') . '.';
+		if (isset($this->hosts[$hostname])) {
+			call_user_func($cb, $this->hosts[$hostname]);
+			return;
+		}
 		if (!$noncache && ($item = $this->resolveCache->get($hostname))) { // cache hit
 			$ip = $item->getValue();
 			if ($ip === null) { // operation in progress
@@ -77,7 +119,7 @@ class DNSClient extends NetworkClient {
 				return;
 			}
 			srand(Daemon::$process->pid);
-			$r = $response['A'][rand(0, sizeof($response['A']) - 1];
+			$r = $response['A'][rand(0, sizeof($response['A']) - 1)];
 			srand();
 			if ($noncache) {
 				call_user_func($cb, $r['ip']);
@@ -87,7 +129,7 @@ class DNSClient extends NetworkClient {
 		});
 	}
 	public function get($domain, $cb) {
-		$conn = $this->getConnection();
+		$conn = $this->getConnectionByKey($domain);
 		if (!$conn) {
 			return false;
 		}
@@ -171,7 +213,6 @@ class DNSClientConnection extends NetworkClientConnection {
 			$qtype = isset(DNSClient::$type[$qtypeInt]) ? DNSClient::$type[$qtypeInt] : 'UNK(' . $qtypeInt . ')';
 			$qclassInt = Binary::getWord($packet);
 			$qclass = isset(DNSClient::$class[$qclassInt]) ? DNSClient::$class[$qclassInt] : 'UNK(' . $qclassInt . ')';
-
 			if (binarySubstr($packet, 0, 2) === "\xc0\x0c") {
 				$packet = binarySubstr($packet, 2);
 				continue;
