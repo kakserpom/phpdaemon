@@ -10,6 +10,7 @@
 class HTTPServerConnection extends Connection {
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
+	public $timeout = 45;
 	
 	const STATE_HEADERS = 1;
 	const STATE_CONTENT = 2;

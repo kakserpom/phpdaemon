@@ -1,6 +1,7 @@
 <?php
 class WebSocketServerConnection extends Connection {
 	
+	public $timeout = 120;
 	public $secprotocol;
 	public $resultKey;
 	public $handshaked = FALSE;

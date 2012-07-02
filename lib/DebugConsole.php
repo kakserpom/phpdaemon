@@ -6,7 +6,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class DebugConsole extends NetworkServer {	
+class DebugConsole extends NetworkServer {
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -15,11 +15,11 @@ class DebugConsole extends NetworkServer {
 	protected function getConfigDefaults() {
 		return array(
 			// listen to
-			'listen'     => 'tcp://127.0.0.1'
+			'listen'     => 'tcp://127.0.0.1',
 			// listen port
 			'listenport' => 8818,
 			
-			'passphrase' => 'secret'
+			'passphrase' => 'secret',
 		);
 	}
 	
@@ -33,6 +33,9 @@ class DebugConsole extends NetworkServer {
 }
 
 class DebugConsoleConnection extends Connection {
+
+	public $timeout = 5;
+	
 	/**
 	 * Are we authorized?
 	 * @var boolean

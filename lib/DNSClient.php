@@ -76,9 +76,9 @@ class DNSClient extends NetworkClient {
 				call_user_func($cb, false);
 				return;
 			}
-			mt_srand(Daemon::$process->pid);
-			$r = $response['A'][array_rand($response['A'])];
-			mt_srand();
+			srand(Daemon::$process->pid);
+			$r = $response['A'][rand(0, sizeof($response['A']) - 1];
+			srand();
 			if ($noncache) {
 				call_user_func($cb, $r['ip']);
 			} else {
@@ -187,7 +187,14 @@ class DNSClientConnection extends NetworkClientConnection {
 				'class' => $qclass,
 			);
 			if ($qtype === 'A') {
-				$record['ip'] = inet_ntop($rdata);
+				if ($rdata === "\x00") {
+					$record['ip'] = false;
+					$record['ttl'] = 5;
+					$packet = '';
+					break;
+				} else {
+					$record['ip'] = inet_ntop($rdata);
+				}
 			}
 			elseif ($qtype === 'NS') {
 				$record['ns'] = Binary::parseLabels($rdata);

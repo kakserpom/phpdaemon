@@ -32,7 +32,19 @@ abstract class IOStream {
 	public $state = 0;             // stream state of the connection (application protocol level)
 	const STATE_ROOT = 0;
 	public $onWriteOnce;
-	
+	public $timeout = null;
+
+	public function touchEvent() {
+		if ($this->timeout !== null) {
+			if ($this->readEvent !== null) {
+				event_add($this->readEvent, 1e6 * $this->timeout);
+			}
+			if ($this->buffer !== null) {
+				event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
+			}
+		}
+	}
+
 	/**
 	 * IOStream constructor
 	 * @param integer Stream ID in Pool
@@ -78,15 +90,16 @@ abstract class IOStream {
 		$this->fd = $fd;
 		if ($this->directInput) {
 			$ev = event_new();
-			if (!event_set($ev, $this->fd, EV_READ | EV_PERSIST, array($this, 'onReadEvent'))) {
-				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on '.Daemon::dump($fd));
-				return;
-			}
+			event_set($ev, $this->fd, EV_READ | EV_TIMEOUT | EV_PERSIST, array($this, 'onReadEvent'));
 			event_base_set($ev, Daemon::$process->eventBase);
 			if ($this->priority !== null) {
 				event_priority_set($ev, $this->priority);
 			}
-			event_add($ev);
+			if ($this->timeout !== null) {
+				event_add($ev, 1e6 * $this->timeout);
+			} else {
+				event_add($ev);
+			}
 			$this->readEvent = $ev;
 		}
 		$this->buffer = event_buffer_new($this->fd,	$this->directInput ? NULL : array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onFailureEvent'));
@@ -94,8 +107,11 @@ abstract class IOStream {
 		if ($this->priority !== null) {
 			event_buffer_priority_set($this->buffer, $this->priority);
 		}
+		if ($this->timeout) {
+			event_buffer_timeout_set($this->buffer, $this->timeout, $this->timeout);
+		}
 		event_buffer_watermark_set($this->buffer, EV_READ, $this->lowMark, $this->highMark);
-		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_PERSIST) : (EV_READ | EV_WRITE | EV_PERSIST));
+		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
 		
 		if (!$this->inited) {
 			$this->inited = true;
