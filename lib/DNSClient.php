@@ -68,7 +68,7 @@ class DNSClient extends NetworkClient {
 				if ($noncache) {
 					call_user_func($cb, false);
 				} else {
-					$pool->resolveCache->put($hostname, false, 5);
+					$pool->resolveCache->put($hostname, false, 5); // 5 - TTL of unsuccessful request
 				}
 				return;
 			}
@@ -82,7 +82,7 @@ class DNSClient extends NetworkClient {
 			if ($noncache) {
 				call_user_func($cb, $r['ip']);
 			} else {
-				$pool->resolveCache->put($hostname, $r['ip']);
+				$pool->resolveCache->put($hostname, $r['ip'], $r['ttl']);
 			}
 		});
 	}
