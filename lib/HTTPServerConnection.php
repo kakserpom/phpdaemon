@@ -136,7 +136,7 @@ class HTTPServerConnection extends Connection {
 				}
 
 				if ($req instanceof stdClass) {
-					$this->endRequest($req);
+					$this->endRequest($req, 0, 0);
 				} else {
 					if ($this->pool->config->sendfile->value && (!$this->pool->config->sendfileonlybycommand->value	|| isset($req->attrs->server['USE_SENDFILE'])) 
 						&& !isset($req->attrs->server['DONT_USE_SENDFILE'])

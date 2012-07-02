@@ -127,6 +127,9 @@ class Daemon_ConfigParser {
 								$elTypes[$i] = Daemon_ConfigParser::T_STRING;
 							}
 						}
+						elseif ($c === '}') {
+							$cfg->raiseError('Unexpected \'}\' instead of \';\' or \'{\'');
+						}
 						elseif ($c === ';') {
 							$tokenType = Daemon_ConfigParser::T_VAR;
 							break;
