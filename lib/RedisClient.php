@@ -89,7 +89,7 @@ class RedisClientConnection extends NetworkClientConnection {
 		if (($this->result !== null) && ($this->resultSize >= $this->resultLength)) {
 			$f = $this->onResponse->shift();
 			if (!$this->finished && $this->onResponse->isEmpty()) {
-				$this->pool->servConnFree[$this->addr][$this->connId] = $this->connId;
+				$this->pool->servConnFree[$this->addr][$this->id] = $this->id;
 			}
 
 			if ($f) {

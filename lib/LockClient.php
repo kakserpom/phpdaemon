@@ -98,7 +98,7 @@ class LockClient extends NetworkClient {
 	}
 }
 
-class LockClientConnection extends Connection {
+class LockClientConnection extends NetworkClientConnection {
 
 	/**
 	 * Called when new data received

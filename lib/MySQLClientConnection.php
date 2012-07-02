@@ -46,7 +46,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
 	 */
-	public function onConnect() {
+	public function onReady() {
 	}
 	
 	/**

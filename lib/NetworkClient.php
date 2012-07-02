@@ -28,6 +28,7 @@ class NetworkClient extends ConnectionPool {
 			// @todo add description strings
 			'expose'                => 1,
 			'servers'               =>  '127.0.0.1',
+			'server'               =>  '127.0.0.1',
 			'maxconnperserv'		=> 32
 		);
 	}
@@ -60,20 +61,40 @@ class NetworkClient extends ConnectionPool {
 		$this->servers[$host . ':' . $port] = $weight;
 	}
 	
+	public function parseUrl($url) {
+		if (strpos($url, '://') !== false) { // URL
+			$u = parse_url($url);
+
+			if (!isset($u['port'])) {
+				$u['port'] = $this->config->defaultport->value;
+			}
+		} else {
+			$e = explode(':', $url, 2);
+			$u = array(
+				'scheme' => 'tcp',
+				'host' => $e[0],
+				'port' => isset($e[1]) ? $e[1] : $this->config->defaultport->value,
+			);
+		}
+		return $u;
+	}
+
 	/**
 	 * Returns available connection from the pool
 	 * @param string Address
 	 * @param callback onConnected
 	 * @return object Connection
 	 */
-	public function getConnection($addr = null, $cb = null) {
-		if (!is_string($addr) && $addr !== null && $cb === null) { // if called getConnection(function....)
-			$cb = $addr;
-			$addr = null; 
+	public function getConnection($url = null, $cb = null) {
+		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
+			$cb = $url;
+			$url = null; 
 		}
-		if ($addr == null) {
-			$addr = $this->config->server->value;
+		if ($url == null) {
+			$url = $this->config->server->value;
 		}
+		$u = $this->parseUrl($url);
+		$addr = $u['host'] . ':' . $u['port'];
 		$conn = false;
 		if (isset($this->servConn[$addr])) {
 			if ($this->acquireOnGet) {
@@ -84,7 +105,7 @@ class NetworkClient extends ConnectionPool {
 					}
 				}
 			} else {
-				if ($c = end($this->servConn[$addr])) {
+				if ($c = end($this->servConnFree[$addr])) {
 					if (isset($this->list[$c])) {
 						$conn = $this->list[$c];
 					}
@@ -104,54 +125,36 @@ class NetworkClient extends ConnectionPool {
 			$this->servConnFree[$addr] = array();
 		}
 		
-		if (strpos($addr, '://') !== false) { // URL
-			$u = parse_url($addr);
+		$connId = $this->connectTo($u['host'], $u['port']);
 
-			if (!isset($u['port'])) {
-				$u['port'] = $this->config->defaultport->value;
-			}
-
-			$connId = $this->connectTo($u['host'], $u['port']);
-
-			if (!$connId) {
-				return false;
-			}
-			$conn = $this->getConnectionById($connId);
-			
-			if (isset($u['user'])) {
-				$conn->user = $u['user'];
-			}
-			
-			$conn->scheme = $u['scheme'];
-			$conn->host = $u['host'];
-			$conn->port = $u['port'];
-
-			if (isset($u['pass'])) {
-				$conn->password = $u['pass'];
-			}
-
-			if (isset($u['path'])) {
-				$conn->path = ltrim($u['path'], '/');
-			}
-			
-		} else { // not URL
-			$e = explode(':', $addr);
-			$connId = $this->connectTo($e[0], isset($e[1]) ? $e[1] : $this->config->defaultport->value);
-			if (!$connId) {
-				return false;
-			}
-			$conn = $this->getConnectionById($connId);
-			$conn->host = $e[0];
-			if (isset($e[1])) {
-				$conn->port = $e[1];
-			}
+		if (!$connId) {
+			return false;
 		}
+	
+		$conn = $this->getConnectionById($connId);
+			
+		if (isset($u['user'])) {
+			$conn->user = $u['user'];
+		}
+			
+		$conn->scheme = $u['scheme'];
+		$conn->host = $u['host'];
+		$conn->port = $u['port'];
+
+		if (isset($u['pass'])) {
+			$conn->password = $u['pass'];
+		}
+
+		if (isset($u['path'])) {
+			$conn->path = ltrim($u['path'], '/');
+		}
+			
+		$this->servConn[$addr][$connId] = $connId;
+		$this->servConnFree[$addr][$connId] = $connId;
+
 		if ($cb !== null) {
 			$conn->onConnected($cb);
 		}
-
-		$this->servConn[$addr][$connId] = $connId;
-		$this->servConnFree[$addr][$connId] = $connId;
 
 		return $conn;
 	}
