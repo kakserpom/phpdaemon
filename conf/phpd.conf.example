@@ -8,9 +8,14 @@ min-workers	8;
 start-workers	8;
 max-idle	0;
 
-Pool:FastCGI {
+Pool:FastCGIServer {
 	# you can redefine default settings for FastCGI
 }
+
+#Pool:HTTPServer {
+	# you can redefine default settings for FastCGI
+#}
+
 Pool:WebSocketServer {
 }
 
