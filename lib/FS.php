@@ -22,12 +22,13 @@ class FS {
  	);
  	public static $badFDttl = 5;
 	public static $fdCache;
+	public static $fdCacheSize = 128;
 	public static function init() {
 		if (!self::$supported = extension_loaded('eio')) {
 			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}
-		self::$fdCache = new CappedCacheStorageHits(128);
+		self::$fdCache = new CappedCacheStorageHits(self::$fdCacheSize);
 		eio_init();
 	}
 	public static function initEvent() {

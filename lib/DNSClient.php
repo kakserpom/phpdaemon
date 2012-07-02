@@ -25,6 +25,10 @@ class DNSClient extends NetworkClient {
  		32768 => 'TA', 32769 => 'DLV',
 	);
 
+	public function init() {
+		$this->resolveCache = new CappedCacheStorageHits($this->config->resolvecachesize->value);
+	}
+
 	public static $class = array(
  		1 => 'IN',
  		3 => 'CH',
@@ -40,20 +44,46 @@ class DNSClient extends NetworkClient {
 		return array(
 			// @todo add description strings
 			'defaultport' => 53,
+			'resolvecachesize' => 128,
 			'server' => '127.0.0.1',
 			'expose' => 1,
 		);
 	}
-	public function resolve($hostname, $cb) {
-		$this->get($hostname, function ($response) use ($cb) {
+	public function resolve($hostname, $cb, $noncache = false) {
+		if (!$noncache && ($item = $this->resolveCache->get($hostname))) { // cache hit
+			$ip = $item->getValue();
+			if ($ip === null) { // operation in progress
+				$item->addListener($cb);
+			} else { // hit
+				call_user_func($cb, $ip);
+			}
+			return;
+		} elseif (!$noncache) {
+			$item = $this->resolveCache->put($hostname, null);
+			$item->addListener($cb);
+		}
+		$pool = $this;
+		$this->get($hostname, function ($response) use ($cb, $noncache, $hostname, $pool) {
+			if (!isset($response['A'])) {
+				if ($noncache) {
+					call_user_func($cb, false);
+				} else {
+					$pool->resolveCache->put($hostname, false, 5);
+				}
+				return;
+			}
 			if (!isset($response['A'])) {
 				call_user_func($cb, false);
 				return;
 			}
 			mt_srand(Daemon::$process->pid);
 			$r = $response['A'][array_rand($response['A'])];
-			call_user_func($cb, $r['ip']);
 			mt_srand();
+			if ($noncache) {
+				call_user_func($cb, $r['ip']);
+			} else {
+				$pool->resolveCache->put($hostname, $r['ip']);
+			}
 		});
 	}
 	public function get($domain, $cb) {
