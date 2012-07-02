@@ -302,9 +302,6 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onReadEvent($stream, $arg = null) {
-		if ($this instanceof File) {
-			Daemon::log(__METHOD__);
-		}
 		if ($this->readLocked) {
 			return;
 		}
