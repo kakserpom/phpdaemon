@@ -518,7 +518,7 @@ class ConnectionPool {
     				}
     			}
 				$conn->addr = ($host === '') ? '' : $host . ':' . $port;
-				if ($this->allowedClients !== null) {
+				if ($conn->pool->allowedClients !== null) {
 					if (!ConnectionPool::netMatch($this->allowedClients, substr($addr, 0, $p))) {
 						Daemon::log('Connection is not allowed (' . $addr . ')');
 						$conn->ready = false;
