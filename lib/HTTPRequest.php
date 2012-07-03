@@ -800,9 +800,6 @@ class HTTPRequest extends Request {
 							&& isset($this->mpartcondisp['filename'])
 						) {
 							if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
-								Daemon::log(Debug::dump(
-									['fp not found', $this->attrs->files,$this->mpartcondisp['name'] ]
-								));
 								return; // fd is not ready yet, interrupt
 							}
 							if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
