@@ -973,11 +973,11 @@ class MongoClient extends NetworkClient {
 	 * @param string Distrubution key
 	 * @return integer Connection's ID.
 	 */
-	public function getConnectionByKey($key) {
+	public function getConnectionByKey($key, $cb = null) {
 		srand(crc32($key));
 		$url = array_rand($this->servers);
 		srand();  
-		return $this->getConnection($url);
+		return $this->getConnection($url, $cb);
 	}	
 }
 class MongoClientConnectionFinished extends Exception {}

@@ -20,7 +20,7 @@ abstract class IOStream {
 	public $ready = false;
 	public $readLocked = false;
 	public $addr;
-	private $sending = false;
+	private $sending = true;
 	private $reading = false;
 	public $connected = false;
 	public $directInput = false; // do not use prebuffering of incoming data
@@ -357,15 +357,23 @@ abstract class IOStream {
 	 */
 	public function onWriteEvent($stream, $arg = null) {
 		$this->sending = false;
-		if (!$this->ready) {
-			$this->ready = true;
-			$this->onReady();
-		}
 		if ($this->finished) {
 			$this->close();
+			return;
 		}
-		while ($this->onWriteOnce->count() > 0) {
-			call_user_func($this->onWriteOnce->pop(), $this);
+		if (!$this->ready) {
+			$this->ready = true;
+			while (!$this->onWriteOnce->isEmpty()) {
+				call_user_func($this->onWriteOnce->pop(), $this);
+			}
+			if (!$this->ready) {
+				return;
+			}
+			$this->onReady();
+		} else {
+			while (!$this->onWriteOnce->isEmpty()) {
+				call_user_func($this->onWriteOnce->pop(), $this);
+			}
 		}
 		if (isset($this->onWrite)) {
 			call_user_func($this->onWrite, $this);

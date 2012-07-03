@@ -96,11 +96,15 @@ class FS {
 		return eio_stat($path, $pri, function($path, $stat) use ($cb) {call_user_func($cb, $path, FS::statPrepare($stat));}, $path);
 	}
 	
-	public static function unlink($path, $cb, $pri = EIO_PRI_DEFAULT) {
+	public static function unlink($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
-			call_user_func($cb, $path, unlink($path));
+			$r = unlink($path);
+			if ($cb) {
+				call_user_func($cb, $path, $r);
+			}
+			return;
 		}
-		return unlink($path, $pri, $cb, $path);
+		return eio_unlink($path, $pri, $cb, $path);
 	}
 	
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {

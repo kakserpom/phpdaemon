@@ -58,7 +58,7 @@ class HTTPRequest extends Request {
 	);
 
 	// @todo phpdoc needed
-	public $oldFashionUploadFP = false;
+	public $oldFashionUploadFP = true;
 	public $answerlen = 0;
 	public $contentLength;
 	private $cookieNum = 0;
@@ -632,10 +632,10 @@ class HTTPRequest extends Request {
 			elseif ($this->mpartstate === self::MPSTATE_HEADERS) {
 				// parse the part's headers
 				$this->mpartcondisp = false;
-
 				if (($p = strpos($this->attrs->stdinbuf, "\r\n\r\n", $this->mpartoffset)) !== false) {
 					// we got all of the headers
 					$h = explode("\r\n", binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset));
+					//Daemon::log(Debug::dump([$h]));
 					$this->mpartoffset = $p + 4;
 					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
 					$this->mpartoffset = 0;
@@ -677,25 +677,30 @@ class HTTPRequest extends Request {
 									'error'    => UPLOAD_ERR_OK,
 									'size'     => 0,
 								);
-								$el = &$this->attrs->files[$name];
 								$tmpdir = ini_get('upload_tmp_dir');
 								if ($tmpdir === false) {
-									$el['fp'] = false;
-									$el['error'] = UPLOAD_ERR_NO_TMP_DIR;
+									$this->attrs->files[$name]['fp'] = false;
+									$this->attrs->files[$name]['error'] = UPLOAD_ERR_NO_TMP_DIR;
 								} else {
-									$el['tmp_name'] = FS::tempnam($tmpdir, 'php');
+									$this->attrs->files[$name]['tmp_name'] = FS::tempnam($tmpdir, 'php');
 									if ($this->oldFashionUploadFP) {
-										$el['fp'] = fopen($el['tmp_name'], 'c+');
+										$this->attrs->files[$name]['fp'] = fopen($this->attrs->files[$name]['tmp_name'], 'c+');
 									} else {
-										FS::open($el['tmp_name'], 'c+', function ($fp) use (&$el) {
+										$req = $this;
+										if (FS::$supported) {
+											$this->conn->lockRead();
+										}
+										FS::open($this->attrs->files[$name]['tmp_name'], 'c+', function ($fp) use ($req, $name) {
 											if (!$fp) {
-												$el['error'] = UPLOAD_ERR_CANT_WRITE;
+												$req->attrs->files[$name]['error'] = UPLOAD_ERR_CANT_WRITE;
 											}
-											$el['fp'] = $fp;
+											$req->attrs->files[$name]['fp'] = $fp;
+											if (FS::$supported) {
+												$req->conn->unlockRead();
+											}
 										});
 									}
 								}
-								unset($el);
 
 								$this->mpartstate = self::MPSTATE_UPLOAD;
 							} else {
@@ -730,19 +735,28 @@ class HTTPRequest extends Request {
 				if (
 					(($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "\r\n", $this->mpartoffset)) !== false)
 					|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== false)
-				) {
+				) { // we have the whole Part in buffer
+					$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
+					//Daemon::log(Debug::dump(['whole body', strlen($chunk)]));
 					if (
 						($this->mpartstate === self::MPSTATE_BODY)
 						&& isset($this->mpartcondisp['name'])
 					) {
-						$this->attrs->post[$this->mpartcondisp['name']] .= binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset);
+						$this->attrs->post[$this->mpartcondisp['name']] .= $chunk;
 					}
 					elseif (
 						($this->mpartstate === self::MPSTATE_UPLOAD)
 						&& isset($this->mpartcondisp['filename'])
 					) {
+
+						if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
+							Daemon::log(Debug::dump(
+								['fp not found', $this->attrs->files,$this->mpartcondisp['name'] ]
+							));
+							return; // fd is not ready yet, interrupt
+						}
+
 						if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-							$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p-$this->mpartoffset);
 							if ($this->oldFashionUploadFP) {
 								fwrite($fp, $chunk);
 							} else {
@@ -752,34 +766,54 @@ class HTTPRequest extends Request {
 
 						$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
 					}
-
-					if ($ndl === "\r\n--" . $this->boundary . "--\r\n") {
+					if ($ndl === "\r\n--" . $this->boundary . "--\r\n") { // end of whole message
 						$this->mpartoffset = $p + strlen($ndl);
-						$this->mpartstate = 0; // we done at all
+						$this->mpartstate = self::MPSTATE_SEEKBOUNDARY;
+						$this->stdin_done = true;
 					} else {
 						$this->mpartoffset = $p;
-						$this->mpartstate = 1; // let us parse the next part
+						$this->mpartstate = self::MPSTATE_HEADERS; // let's read the next part
 						$continue = true;
 					}
 
 					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
 					$this->mpartoffset = 0;
-				} else {
+				
+				} else { // we have only piece of Part in buffer
+
 					$p = strrpos($this->attrs->stdinbuf, "\r\n", $this->mpartoffset);
+					/*if ($p === false) {
+						$p = strlen($this->attrs->stdinbuf);
+						Daemon::log('\r\n not found. p = strlen(buf) = '.$p);
+					} else {
+						Daemon::log('\r\n found. p = '.$p);
+					}*/
 
 					if ($p !== false) {
+						$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
+						//Daemon::log(Debug::dump(['part of body', strlen($chunk), $this->attrs->files[$this->mpartcondisp['name']]['size']]));
 						if (
 							($this->mpartstate === self::MPSTATE_BODY)
 							&& isset($this->mpartcondisp['name'])
 						) {
-							$this->attrs->post[$this->mpartcondisp['name']] .= binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
+							$this->attrs->post[$this->mpartcondisp['name']] .= $chunk;
 						}
 						elseif (
 							($this->mpartstate === self::MPSTATE_UPLOAD)
 							&& isset($this->mpartcondisp['filename'])
 						) {
-							if ($this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-								fwrite($this->attrs->files[$this->mpartcondisp['name']]['fp'], binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset));
+							if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
+								Daemon::log(Debug::dump(
+									['fp not found', $this->attrs->files,$this->mpartcondisp['name'] ]
+								));
+								return; // fd is not ready yet, interrupt
+							}
+							if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
+								if ($this->oldFashionUploadFP) {
+									fwrite($fp, $chunk);
+								} else {
+									$fp->write($chunk);
+								}
 							}
 
 							$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;

@@ -161,7 +161,7 @@ class ConnectionPool {
 	public function addSocket($sock, $type, $addr) {
 		$ev = event_new();
 		
-		if (!event_set($ev,	$sock, EV_READ,	array($this, 'onAcceptEvent'), array(Daemon::$sockCounter, $type))) {
+		if (!event_set($ev,	$sock, EV_READ | EV_PERSIST, array($this, 'onAcceptEvent'), array(Daemon::$sockCounter, $type))) {
 			
 			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on binded socket: ' . Debug::dump($sock));
 			return;
@@ -419,28 +419,6 @@ class ConnectionPool {
 		}
 	}
 	
-	
-	/**
-	 * Called when remote host is trying to establish the connection
-	 * @param integer Connection's ID
-	 * @param string Address
-	 * @return boolean Accept/Drop the connection
-	 */
-	public function onAccept($id, $addr) {
-		if ($this->allowedClients === NULL) {
-			return true;
-		}
-		if ($addr === 'unix') { // Local UNIX-socket connection
-			return true;
-		}
-		
-		if (($p = strrpos($addr, ':')) === FALSE) {
-			return true;
-		}
-		
-		return $this->netMatch($this->allowedClients, substr($addr, 0, $p));
-	}
-	
 	public function removeConnection($id) {
 		$conn = $this->getConnectionById($id);
 		if (!$conn) {
@@ -449,22 +427,7 @@ class ConnectionPool {
 		$conn->onFinish();
 		unset($this->list[$id]);
 	}
-	/**
-	 * Called when remote host is trying to establish the connection
-	 * @param resource Descriptor
-	 * @param integer Events
-	 * @param mixed Attached variable
-	 * @return boolean If true then we can accept new connections, else we can't
-	 */
-	public function checkAccept($stream, $events, $arg) {
-		if (Daemon::$process->reload) {
-			return FALSE;
-		}
-		
-		return TRUE;
-	}
-	
-	
+
 	/**
 	 * Establish a connection with remote peer
 	 * @param string Destination Host/IP/UNIX-socket
@@ -514,8 +477,8 @@ class ConnectionPool {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
 		}
 		
-		if ($this->checkAccept($stream, $events, $arg)) {
-			event_add($this->socketEvents[$sockId]);
+		if (Daemon::$process->reload) {
+			return FALSE;
 		}
 		
 		if (Daemon::$useSockets) {
@@ -526,14 +489,6 @@ class ConnectionPool {
 			}
 			
 			socket_set_nonblock($fd);
-			
-			if ($type === self::TYPE_SOCKET) {
-				$addr = 'unix';
-			} else {
-				socket_getpeername($fd, $host, $port);
-				
-				$addr = ($host === '') ? '' : $host . ':' . $port;
-			}
 		} else {
 			$fd = @stream_socket_accept($stream, 0, $addr);
 
@@ -544,24 +499,36 @@ class ConnectionPool {
 			stream_set_blocking($fd, 0);
 		}
 		
-		if (!$this->onAccept(Daemon::$process->connCounter + 1, $addr)) {
-			Daemon::log('Connection is not allowed (' . $addr . ')');
-
-			if (Daemon::$useSockets) {
-				socket_close($fd);
-			} else {
-				fclose($fd);
-			}
-			
-			return;
-		}
-		
 		$id = ++Daemon::$process->connCounter;
 		
 		$class = $this->connectionClass;
  		$conn = new $class($fd, $id, $this);
-		$conn->addr = $addr;
 		$this->list[$id] = $conn;
+
+		if (Daemon::$useSockets && ($type !== self::TYPE_SOCKET)) {
+			$getpeername = function($conn) use (&$getpeername) { 
+				$r = @socket_getpeername($conn->fd, $host, $port);
+				if ($r === false) {
+    				if (109 === socket_last_error()) { // interrupt
+    					if ($this->allowedClients !== null) {
+    						$conn->ready = false; // lockwait
+    					}
+    					$conn->onWriteOnce($handler);
+    					return;
+    				}
+    			}
+				$conn->addr = ($host === '') ? '' : $host . ':' . $port;
+				if ($this->allowedClients !== null) {
+					if (!ConnectionPool::netMatch($this->allowedClients, substr($addr, 0, $p))) {
+						Daemon::log('Connection is not allowed (' . $addr . ')');
+						$conn->ready = false;
+						$conn->finish();
+					}
+				}
+			};
+			$getpeername($conn);
+		}
+
 	}
 
 	/**
@@ -570,11 +537,11 @@ class ConnectionPool {
 	 * @param string IP
 	 * @return boolean Result
 	 */
-	protected function netMatch($CIDR, $IP) {
+	public static function netMatch($CIDR, $IP) {
 		/* TODO: IPV6 */
 		if (is_array($CIDR)) {
 			foreach ($CIDR as &$v) {
-				if ($this->netMatch($v, $IP)) {
+				if (self::netMatch($v, $IP)) {
 					return TRUE;
 				}
 			}

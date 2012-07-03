@@ -52,7 +52,7 @@ class DebugConsoleConnection extends Connection {
 	 * Constructor.
 	 * @return void
 	 */
-	public function init() {
+	public function onReady() {
 		$this->write('Welcome to the debug console for phpDaemon.
 
 Please enter the password or type "exit": ');

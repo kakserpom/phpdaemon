@@ -31,7 +31,7 @@ class ICMPClientConnection extends NetworkClientConnection {
 	public function sendEcho($cb) {
 		++$this->seq;
 		
-		$data = 'PingHost';
+		$data = 'phpdaemon';
 		$packet = pack('ccnnn', strlen($data), 0, 0, Daemon::$process->pid,	$this->seq) . $data;
 		$packet = substr_replace($packet, self::checksum($packet), 2, 2);
 		$this->write($packet);
