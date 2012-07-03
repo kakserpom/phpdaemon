@@ -28,7 +28,7 @@ class CacheItem {
 
 	public function setValue($value) {
 		$this->value = $value;
-		while ($this->listeners->count()) {
+		while (!$this->listeners->isEmpty()) {
 			call_user_func($this->listeners->pop(), $this->value);
 		}
 	}
