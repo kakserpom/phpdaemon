@@ -58,7 +58,7 @@ class HTTPRequest extends Request {
 	);
 
 	// @todo phpdoc needed
-	public $oldFashionUploadFP = true;
+	public $oldFashionUploadFP = false;
 	public $answerlen = 0;
 	public $contentLength;
 	private $cookieNum = 0;
@@ -750,9 +750,6 @@ class HTTPRequest extends Request {
 					) {
 
 						if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
-							Daemon::log(Debug::dump(
-								['fp not found', $this->attrs->files,$this->mpartcondisp['name'] ]
-							));
 							return; // fd is not ready yet, interrupt
 						}
 
