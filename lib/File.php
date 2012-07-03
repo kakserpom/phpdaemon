@@ -219,14 +219,14 @@ class File extends IOStream {
 			$handler = function ($file, $data) use ($cb, &$handler, $size, &$offset, $pri, &$buf) {
 				$buf .= $data;
 				$offset += strlen($data);
-				$len = min($this->chunkSize, $size - $offset);
+				$len = min($file->chunkSize, $size - $offset);
 				if ($offset >= $size) {
 					call_user_func($cb, $file, $buf);
 					return;
 				}
-				eio_read($this->fd, $len, $offset, $pri, $handler, $this);
+				eio_read($file->fd, $len, $offset, $pri, $handler, $this);
 			};
-			eio_read($this->fd, min($this->chunkSize, $size), 0, $pri, $handler, $this);
+			eio_read($file->fd, min($this->chunkSize, $size), 0, $pri, $handler, $file);
 		}, $pri);
 	}
 	
@@ -246,9 +246,9 @@ class File extends IOStream {
 					call_user_func($cb, $file, true);
 					return;
 				}
-				eio_read($this->fd, $len, $offset, $pri, $handler, $this);
+				eio_read($file->fd, $len, $offset, $pri, $handler, $file);
 			};
-			eio_read($this->fd, min($this->chunkSize, $size), $offset, $pri, $handler, $this);
+			eio_read($file->fd, min($this->chunkSize, $size), $offset, $pri, $handler, $file);
 		}, $pri);
 	}
 	public function __toString() {
