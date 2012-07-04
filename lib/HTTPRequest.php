@@ -635,7 +635,6 @@ class HTTPRequest extends Request {
 				if (($p = strpos($this->attrs->stdinbuf, "\r\n\r\n", $this->mpartoffset)) !== false) {
 					// we got all of the headers
 					$h = explode("\r\n", binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset));
-					//Daemon::log(Debug::dump([$h]));
 					$this->mpartoffset = $p + 4;
 					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
 					$this->mpartoffset = 0;
@@ -737,7 +736,6 @@ class HTTPRequest extends Request {
 					|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== false)
 				) { // we have the whole Part in buffer
 					$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
-					//Daemon::log(Debug::dump(['whole body', strlen($chunk)]));
 					if (
 						($this->mpartstate === self::MPSTATE_BODY)
 						&& isset($this->mpartcondisp['name'])
@@ -778,17 +776,10 @@ class HTTPRequest extends Request {
 				
 				} else { // we have only piece of Part in buffer
 
-					$p = strrpos($this->attrs->stdinbuf, "\r\n", $this->mpartoffset);
-					/*if ($p === false) {
-						$p = strlen($this->attrs->stdinbuf);
-						Daemon::log('\r\n not found. p = strlen(buf) = '.$p);
-					} else {
-						Daemon::log('\r\n found. p = '.$p);
-					}*/
+					$p = strlen($this->attrs->stdinbuf) - strlen($ndl);
 
 					if ($p !== false) {
 						$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
-						//Daemon::log(Debug::dump(['part of body', strlen($chunk), $this->attrs->files[$this->mpartcondisp['name']]['size']]));
 						if (
 							($this->mpartstate === self::MPSTATE_BODY)
 							&& isset($this->mpartcondisp['name'])
