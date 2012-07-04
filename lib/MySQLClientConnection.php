@@ -495,7 +495,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 */
 	public function onResultDone() {
 		$this->instate = self::INSTATE_HEADER;
-		$callback = $this->onResponse->shift();
+		$callback = $this->onResponse->isEmpty() ? null : $this->onResponse->shift();
 
 		if ($callback && is_callable($callback)) {
 			call_user_func($callback, $this, TRUE);

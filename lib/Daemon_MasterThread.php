@@ -40,11 +40,11 @@ class Daemon_MasterThread extends Thread {
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		Daemon::$appResolver->preload(true); 
 
+		$this->callbacks = new SplStack;
 		$this->spawnWorkers(min(
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
 		));
-		$this->callbacks = new SplStack;
 		Timer::add(function($event) use (&$cbs) {
 			$self = Daemon::$process;
 
@@ -82,10 +82,8 @@ class Daemon_MasterThread extends Thread {
 					);
 
 					if ($n > 0) {
-						$self->callbacks->push(function($self) use ($n) {
-							Daemon::log('Spawning ' . $n . ' worker(s).');
-							$self->spawnWorkers($n);
-						});
+						Daemon::log('Spawning ' . $n . ' worker(s).');
+						$self->spawnWorkers($n);
 						event_base_loopbreak($self->eventBase);
 					}
 
@@ -108,10 +106,11 @@ class Daemon_MasterThread extends Thread {
 		
 
 		while (!$this->breakMainLoop) {
-			event_base_loop($this->eventBase);
-			while ($this->callbacks->count() > 0) {
-				call_user_func($this->callbacks->pop(), $this);
+			while (!$this->callbacks->isEmpty()) {
+				Daemon::log('shifting callback -- '.posix_getpid());
+				call_user_func($this->callbacks->shift(), $this);
 			}
+			event_base_loop($this->eventBase);
 		}
 	}
 	public function updatedWorkers() {
@@ -188,8 +187,7 @@ class Daemon_MasterThread extends Thread {
 		if (isset($this->workers->threads[$spawnId])) {
 			if (!$this->workers->threads[$spawnId]->reloaded) {
 				Daemon::log('Spawning worker-replacer for reloaded worker #' . $spawnId . '.');
-			
-				$this->spawnWorkers();
+				$this->spawnWorkers(1);
 				$this->workers->threads[$spawnId]->reloaded = true;
 			}
 		}
@@ -200,7 +198,8 @@ class Daemon_MasterThread extends Thread {
 	 * @param $n - integer - number of workers to spawn
 	 * @return boolean - success
 	 */
-	public function spawnWorkers($n = 1) {
+	public function spawnWorkers($n) {
+		Daemon::log('spawnWorkers('.$n.') -- '.posix_getpid());
 		if (FS::$supported) {
 			eio_event_loop();
 		}
@@ -210,13 +209,16 @@ class Daemon_MasterThread extends Thread {
 			$thread = new Daemon_WorkerThread;
 			$this->workers->push($thread);
 
-			$pid = $thread->start(true);
-			if (-1 === $pid) {
-				Daemon::log('could not start worker');
-			} elseif ($pid > 0) { // parent
-			} else { // worker
-				exit;
-			}
+			$this->callbacks->push(function($self) use ($thread) {
+				$pid = $thread->start();
+				if ($pid < 0) {
+					Daemon::log('could not fork worker');
+				} elseif ($pid === 0) { // worker
+					Daemon::log('Unexcepted execution return to outside of Thread_start()');
+					exit;
+				}
+			});
+
 		}
 
 		return true;
@@ -273,7 +275,7 @@ class Daemon_MasterThread extends Thread {
 	 */
 	public function shutdown($signo = false) {
 		$this->shutdown = true;
-		$this->waitAll($signo);
+		$this->waitAll(true);
 
 		if (Daemon::$shm_wstate) {
 			shmop_delete(Daemon::$shm_wstate);

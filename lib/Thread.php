@@ -318,14 +318,13 @@ abstract class Thread {
 	 * Waits until children is alive
 	 * @return void
 	 */
-	protected function waitAll() {
+	protected function waitAll($check) {
 		do {
 			$n = 0;
 
 			foreach ($this->collections as &$col) {
-				$n += $col->removeTerminated();
+				$n += $col->removeTerminated($check);
 			}
-
 			if (!$this->waitPid()) {
 				$this->sigwait(0, 20000);
 			}

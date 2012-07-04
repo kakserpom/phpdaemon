@@ -76,7 +76,7 @@ class ThreadCollection {
 
 		foreach ($this->threads as $k => &$t) {
 			if (
-				$t->terminated
+				$t->terminated || !$t->pid
 				|| (
 					$check
 					&& !$t->signal(SIGTTIN)
