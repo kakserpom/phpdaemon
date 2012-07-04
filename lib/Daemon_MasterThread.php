@@ -107,7 +107,6 @@ class Daemon_MasterThread extends Thread {
 
 		while (!$this->breakMainLoop) {
 			while (!$this->callbacks->isEmpty()) {
-				Daemon::log('shifting callback -- '.posix_getpid());
 				call_user_func($this->callbacks->shift(), $this);
 			}
 			event_base_loop($this->eventBase);
@@ -199,7 +198,6 @@ class Daemon_MasterThread extends Thread {
 	 * @return boolean - success
 	 */
 	public function spawnWorkers($n) {
-		Daemon::log('spawnWorkers('.$n.') -- '.posix_getpid());
 		if (FS::$supported) {
 			eio_event_loop();
 		}
