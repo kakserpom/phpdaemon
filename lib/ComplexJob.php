@@ -56,7 +56,7 @@ class ComplexJob {
 		}
 		$this->jobs[$name] = $cb;
 		++$this->jobsNum;
-		if ($this->state === self::STATE_RUNNING) {
+		if (($this->state === self::STATE_RUNNING) || ($this->state === self::STATE_DONE)) {
 			$cb($name, $this);
 		}
 		return true;
@@ -69,6 +69,10 @@ class ComplexJob {
 	}
 	
 	public function addListener($cb) {
+		if ($this->state === self::STATE_DONE) {
+			$cb($name, $this);
+			return;
+		}
 		$this->listeners[] = $cb;
 	}
 	

@@ -28,8 +28,7 @@ class ConnectionPool {
 		}
 		if (isset($this->config->listen)) {
 			$this->bind($this->config->listen->value, isset($this->config->port->value) ? $this->config->port->value : null);
-		}
-		
+		}		
 		$this->init();
 	}
 	

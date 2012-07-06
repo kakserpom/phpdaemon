@@ -26,6 +26,8 @@ class DNSClient extends NetworkClient {
 	);
 
 	public $hosts = array();
+	public $preloading;
+	public $resolveCache;
 
 	public function init() {
 		$this->resolveCache = new CappedCacheStorageHits($this->config->resolvecachesize->value);
@@ -58,33 +60,50 @@ class DNSClient extends NetworkClient {
 
 	public function applyConfig() {
 		parent::applyConfig();
-		$app = $this;
-		FS::readfile($this->config->resolvfile->value, function($file, $data) use ($app) {
-			if ($file) {
-				preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
-				foreach ($m[1] as $s) {
-					$app->addServer($s);
-				}
-			}
-		});
-
-		FS::readfile($this->config->hostsfile->value, function($file, $data) use ($app) {
-			if ($file) {
-				preg_match_all('~^(\S+)\s+([^\r\n]+)\s*~m', $data, $m, PREG_SET_ORDER);
-				$app->hosts = array();
-				foreach ($m as $h) {
-					$hosts = preg_split('~\s+~', $h[2]);
-					$ip = $h[1];
-					foreach ($hosts as $host) {
-						$host = rtrim($host, '.') . '.';
-						$app->hosts[$host] = $ip;
+		$pool = $this;
+		if (!isset($this->preloading)) {
+			$this->preloading = new ComplexJob;
+		}
+		$job = $this->preloading;
+		$job->addJob('resolvfile', function ($jobname, $job) use ($pool) {
+			FS::readfile($this->config->resolvfile->value, function($file, $data) use ($pool, $job, $jobname) {
+				if ($file) {
+					preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
+					foreach ($m[1] as $s) {
+						$pool->addServer($s);
 					}
 				}
-			}
+				$job->setResult($jobname);
+			});
 		});
+		$job->addJob('hostsfile', function ($jobname, $job) use ($pool) {
+			FS::readfile($this->config->hostsfile->value, function($file, $data) use ($pool, $job, $jobname) {
+				if ($file) {
+					preg_match_all('~^(\S+)\s+([^\r\n]+)\s*~m', $data, $m, PREG_SET_ORDER);
+					$pool->hosts = array();
+					foreach ($m as $h) {
+						$hosts = preg_split('~\s+~', $h[2]);
+						$ip = $h[1];
+						foreach ($hosts as $host) {
+							$host = rtrim($host, '.') . '.';
+							$pool->hosts[$host] = $ip;
+						}
+					}
+				}
+				$job->setResult($jobname);
+			});
+		});
+		$job();
 	}
 
 	public function resolve($hostname, $cb, $noncache = false) {
+		if (!$this->preloading->hasCompleted()) {
+			$pool = $this;
+			$this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool) {
+				$pool->resolve($hostname, $cb, $noncache);
+			});
+			return;
+		}
 		$hostname = rtrim($hostname, '.') . '.';
 		if (isset($this->hosts[$hostname])) {
 			call_user_func($cb, $this->hosts[$hostname]);
@@ -126,16 +145,23 @@ class DNSClient extends NetworkClient {
 			}
 		});
 	}
-	public function get($domain, $cb) {
-		$conn = $this->getConnectionByKey($domain);
+	public function get($hostname, $cb) {
+		if (!$this->preloading->hasCompleted()) {
+			$pool = $this;
+			$this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool) {
+				$pool->get($hostname, $cb, $noncache);
+			});
+			return;
+		}
+		$conn = $this->getConnectionByKey($hostname);
 		if (!$conn) {
 			call_user_func($cb, false);
 			return false;
 		}
  		$conn->onResponse->push($cb);
 		$conn->setFree(false);
-		$e = explode(':', $domain, 3);
-		$domain = $e[0];
+		$e = explode(':', $hostname, 3);
+		$hostname = $e[0];
 		$qtype = isset($e[1]) ? $e[1] : 'A';
 		$qclass = isset($e[2]) ? $e[2] : 'IN';
 		$QD = array();
@@ -145,7 +171,7 @@ class DNSClient extends NetworkClient {
 			call_user_func($cb, false);
 			return;
 		}
-		$q =	Binary::labels($domain) .  // domain
+		$q =	Binary::labels($hostname) .  // domain
 				Binary::word($qtypeInt) . 
 				Binary::word($qclassInt);
 		$QD[] = $q;
@@ -206,7 +232,7 @@ class DNSClientConnection extends NetworkClientConnection {
 		$this->response['nscount'] = Binary::getWord($packet);
 		$this->response['arcount'] = Binary::getWord($packet);
 		$this->response = array();
-		$domain = Binary::parseLabels($packet);
+		$hostname = Binary::parseLabels($packet);
 		while (strlen($packet) > 0) {
 			$qtypeInt = Binary::getWord($packet);
 			$qtype = isset(DNSClient::$type[$qtypeInt]) ? DNSClient::$type[$qtypeInt] : 'UNK(' . $qtypeInt . ')';
@@ -222,7 +248,7 @@ class DNSClientConnection extends NetworkClientConnection {
 			$packet = binarySubstr($packet, $rdlength);
 			$record = array(
 				'type' => $qtype,
-				'domain' => $domain,
+				'domain' => $hostname,
 				'ttl' => $ttl,
 				'class' => $qclass,
 			);

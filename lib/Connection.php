@@ -59,7 +59,7 @@ class Connection extends IOStream {
 		if (($this->port !== 0) && (@inet_pton($this->host) === false)) { // dirty condition check
 			DNSClient::getInstance()->resolve($this->host, function($real) use ($conn) {
 				if ($real === false) {
-					Daemon::log(get_class($this).'->connectTo: enable to resolve hostname: '.$host);
+					Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
 					return;
 				}
 				$conn->hostReal = $real;
