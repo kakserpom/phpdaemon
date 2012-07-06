@@ -19,7 +19,7 @@ class WebSocketServer extends NetworkServer
 			// @todo add description strings
 			'expose'                  => 1,
 			'listen'                  =>  '0.0.0.0',
-			'listen-port'             => 8047,
+			'port' 	 		          => 8047,
 			'max-allowed-packet'  	  => new Daemon_ConfigEntrySize('16k'),
 		);
 	}

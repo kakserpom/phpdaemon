@@ -8,6 +8,70 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class Connection extends IOStream {
+
+	public $host;
+	public $hostReal;
+	public $port;
+	public function parseUrl($url) {
+		if (strpos($url, '://') !== false) { // URL
+			$u = parse_url($url);
+
+			if (!isset($u['port'])) {
+				$u['port'] = $this->pool->config->port->value;
+			}
+		} else {
+			$e = explode(':', $url, 2);
+			$u = array(
+				'scheme' => 'tcp',
+				'host' => $e[0],
+				'port' => isset($e[1]) ? $e[1] : $this->pool->config->port->value,
+			);
+		}
+		return $u;
+	}
+
+
+	public function connect($url, $cb) {
+		$u = $this->parseUrl($url);
+		if (isset($u['user'])) {
+			$this->user = $u['user'];
+		}
+			
+		$this->url = $url;
+		$this->scheme = $u['scheme'];
+		$this->host = $u['host'];
+		$this->port = $u['port'];
+
+		if (isset($u['pass'])) {
+			$this->password = $u['pass'];
+		}
+
+		if (isset($u['path'])) {
+			$this->path = ltrim($u['path'], '/');
+		}
+
+		if ($cb !== null) {
+			$this->onConnected($cb);
+		}
+
+		$conn = $this;
+
+		if (($this->port !== 0) && (@inet_pton($this->host) === false)) { // dirty condition check
+			DNSClient::getInstance()->resolve($this->host, function($real) use ($conn) {
+				if ($real === false) {
+					Daemon::log(get_class($this).'->connectTo: enable to resolve hostname: '.$host);
+					return;
+				}
+				$conn->hostReal = $real;
+				$conn->connectTo($conn->hostReal, $conn->port);
+			});
+		}
+		else {
+			$conn->hostReal = $conn->host;
+			$conn->connectTo($conn->hostReal, $conn->port);
+		}
+
+	}
 	public function connectTo($host, $port = 0) {
 		if (stripos($host, 'unix:') === 0) {
 			// Unix-socket

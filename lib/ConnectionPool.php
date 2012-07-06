@@ -11,10 +11,6 @@ class ConnectionPool {
 
 	const TYPE_TCP    = 0;
 	const TYPE_SOCKET = 1;
-
-	protected $queuedReads     = FALSE;
-
-	public $buf             = array();   // collects connection's buffers.
 	public $allowedClients  = NULL;
 	public $socketEvents    = array();
 	public $connectionClass;
@@ -31,7 +27,7 @@ class ConnectionPool {
 			$this->connectionClass = get_class($this) . 'Connection';
 		}
 		if (isset($this->config->listen)) {
-			$this->bind($this->config->listen->value, $this->config->listenport->value);
+			$this->bind($this->config->listen->value, isset($this->config->port->value) ? $this->config->port->value : null);
 		}
 		
 		$this->init();
@@ -430,32 +426,22 @@ class ConnectionPool {
 
 	/**
 	 * Establish a connection with remote peer
-	 * @param string Destination Host/IP/UNIX-socket
-	 * @param integer Optional. Destination port
+	 * @param string URL
+	 * @param callback Optional. Callback.
 	 * @param string Optional. Connection class name.
 	 * @return integer Connection's ID. Boolean false when failed.
 	 */
-	public function connectTo($host, $port = 0, $class = null) {
+	public function connect($url, $cb, $class = null) {
 		if ($class === null) {
 			$class = $this->connectionClass;
 		}
 		$id = ++Daemon::$process->connCounter;
 		$conn = $this->list[$id] = new $class(null, $id, $this);
-		if (($port !== 0) && (@inet_pton($host) === false)) { // dirty condition check
-			DNSClient::getInstance()->resolve($host, function($ip) use ($conn, $host, $port) {
-				if ($ip === false) {
-					Daemon::log(get_class($this).'->connectTo: enable to resolve domain: '.$host);
-					return;
-				}
-				$conn->connectTo($ip, $port);
-			});
-		}
-		else {
-			$conn->connectTo($host, $port);
-		}
-		return $id;
+		$conn->connect($url, $cb);
+		return $conn;
 	}
-	
+
+	//$this->config->defaultport->value
 	public function getConnectionById($id) {
 		if (!isset($this->list[$id])) {
 			return false;

@@ -45,8 +45,6 @@ class MongoClient extends NetworkClient {
 	}
 
 
-
-
 	/**
 	 * Sets default database name
 	 * @param string Database name
@@ -98,8 +96,7 @@ class MongoClient extends NetworkClient {
 				throw new MongoClientConnectionFinished;
 			}
 		} else {
-			$connId = $this->getConnectionByKey($key);
-			$conn = $this->getConnectionById($connId);
+			$conn = $this->getConnectionByKey($key);
 			if (!$conn || $conn->finished) {
 				throw new MongoClientConnectionFinished;
 			}
@@ -884,101 +881,6 @@ class MongoClient extends NetworkClient {
 	public function __get($name) {
 		return $this->getCollection($name);
 	}
-
-	/**
-	 * Establishes connection
-	 * @param string URL
-	 * @param callback. Optional.
-	 * @return integer Connection's ID.
-	 */
-	public function getConnection($url = null, $cb = null) {
-		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
-			$cb = $url;
-			$url = null; 
-		}
-		$connId = false;
-		if (isset($this->servConn[$url])) {
-			while (($c = array_pop($this->servConnFree[$url])) !== null) {
-				if (isset($this->list[$c])) {
-					$connId = $c;
-					break;
-				}
-			}
-			if (sizeof($this->servConn[$url]) >= $this->config->maxconnperserv->value) {
-			 	$connId = $this->servConn[$url][array_rand($this->servConn[$url])];
-			}
-		} else {
-			$this->servConn[$url] = array();
-			$this->servConnFree[$url] = array();
-		}
-		if ($connId && ($conn = $this->getConnectionById($connId))) {
-			if ($cb !== null) {
-				$conn->onConnected($cb);
-			}
-			return $connId;
-		}
-		
-		$u = parse_url($url);
-		
-		if (!isset($u['port'])) {
-			$u['port'] = $this->config->port->value;
-		}
-		
-		$connId = $this->connectTo($u['host'], $u['port']);
-		$conn = $this->getConnectionById($connId);
-		$conn->url = $url;
-
-		if (isset($u['user'])) {
-			$conn->user = $u['user'];
-		}
-		
-		if (isset($u['pass'])) {
-			$conn->password = $u['pass'];
-		}
-		
-		if (isset($u['path'])) {
-			$conn->dbname = ltrim($u['path'], '/');
-		}
-		
-		$this->servConn[$url][$connId] = $connId;
-		$this->servConnFree[$url][$connId] = $connId;
-
-		if ($conn->user !== NULL) {
-			$this->getNonce(array(
-				'dbname' => $conn->dbname), 
-				function($result) use ($conn) {
-					$conn->appInstance->auth(
-						array(
-							'user'     => $conn->user, 
-							'password' => $conn->password, 
-							'nonce'    => $result['nonce'], 
-							'dbname'   => $conn->dbname, 
-						), 
-						function($result) use ($conn) {
-							if (!$result['ok']) {
-								Daemon::log('MongoClient: authentication error with ' . $conn->url . ': ' . $result['errmsg']);
-							}
-						}, 
-						$conn
-					);
-				}, $conn
-			);
-		}
-		$conn->onConnected($cb);
-		return $connId;
-	}
-
-	/**
-	 * Establishes connection
-	 * @param string Distrubution key
-	 * @return integer Connection's ID.
-	 */
-	public function getConnectionByKey($key, $cb = null) {
-		srand(crc32($key));
-		$url = array_rand($this->servers);
-		srand();  
-		return $this->getConnection($url, $cb);
-	}	
 }
 class MongoClientConnectionFinished extends Exception {}
 

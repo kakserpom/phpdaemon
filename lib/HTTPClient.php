@@ -14,7 +14,7 @@ class HTTPClient extends NetworkClient {
 	protected function getConfigDefaults() {
 		return array(
 			// @todo add description strings
-			'defaultport' => 80,
+			'port' => 80,
 			'expose' => 1,
 		);
 	}

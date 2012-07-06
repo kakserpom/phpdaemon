@@ -84,8 +84,8 @@ class ExampleDNSClientRequest extends HTTPRequest {
 	 */
 	public function run() {		
 		try {$this->header('Content-Type: text/plain');} catch (Exception $e) {}
-		var_dump($this->job->getResult('resolve'));
 		var_dump($this->job->getResult('query'));
+		var_dump($this->job->getResult('resolve'));
 	}
 	
 }

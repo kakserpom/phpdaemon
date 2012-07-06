@@ -16,8 +16,8 @@ class SocksServer extends NetworkServer {
 		return array(
 			// listen to
 			'listen'         => 'tcp://0.0.0.0',
-			// listen port
-			'listenport'     => 1080,
+			// default port
+			'port'     => 1080,
 			// authentication required
 			'auth'           => 0,
 			// user name

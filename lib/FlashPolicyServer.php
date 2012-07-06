@@ -19,7 +19,7 @@ class FlashPolicyServer extends NetworkServer {
 			// @todo add description strings
 			'file'                  =>  getcwd().'/conf/crossdomain.xml',
 			'listen'				=> '127.0.0.1',
-			'listen-port'           => 843,
+			'port' 			        => 843,
 		);
 	}
 	

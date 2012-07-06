@@ -20,8 +20,8 @@ class HTTPServer extends NetworkServer {
 		return array(
 			// listen to
 			'listen'     => 'tcp://0.0.0.0',
-			// listen port
-			'listenport' => 80,
+			// default port
+			'port' => 80,
 			// log events
 			'log-events' => 0,
 			// log queue

@@ -6,6 +6,34 @@ class MongoClientConnection extends NetworkClientConnection {
 	public $dbname;            // Database name
 	public $busy = false;      // Is this session busy?
 
+
+	public function onConnected($cb) {
+		$conn = $this;
+		if ($conn->user !== NULL) {
+			$this->pool->getNonce(array(
+				'dbname' => $conn->dbname), 
+				function($result) use ($conn) {
+					$conn->appInstance->auth(
+						array(
+							'user'     => $conn->user, 
+							'password' => $conn->password, 
+							'nonce'    => $result['nonce'], 
+							'dbname'   => $conn->dbname, 
+						), 
+						function($result) use ($conn) {
+							if (!$result['ok']) {
+								Daemon::log('MongoClient: authentication error with ' . $conn->url . ': ' . $result['errmsg']);
+							}
+						}, 
+						$conn
+					);
+				}, $conn
+			);
+		} else {
+			parent::onConnected();
+		}
+	}
+
 	/**
 	 * Called when new data received
 	 * @param string New data

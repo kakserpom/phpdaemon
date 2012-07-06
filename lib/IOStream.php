@@ -24,6 +24,7 @@ abstract class IOStream {
 	private $reading = false;
 	public $connected = false;
 	public $directInput = false; // do not use prebuffering of incoming data
+	public $directOutput = false; // do not use prebuffering of outgoing data
 	public $readEvent;
 	protected $lowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
@@ -33,6 +34,7 @@ abstract class IOStream {
 	const STATE_ROOT = 0;
 	public $onWriteOnce;
 	public $timeout = null;
+	public $url;
 
 	public function touchEvent() {
 		if ($this->timeout !== null) {
@@ -88,9 +90,19 @@ abstract class IOStream {
 	
 	public function setFd($fd) {
 		$this->fd = $fd;
-		if ($this->directInput) {
+		if ($this->directInput || $this->directOutput) {
 			$ev = event_new();
-			event_set($ev, $this->fd, EV_READ | EV_TIMEOUT | EV_PERSIST, array($this, 'onReadEvent'));
+			$flags = 0;
+			if ($this->directInput) {
+				$flags |= EV_READ;
+			}
+			if ($this->directOutput) {
+				$flags |= EV_WRITE;
+			}
+			if ($this->timeout !== null) {
+				$flags |= EV_TIMEOUT;
+			}
+			event_set($ev, $this->fd, $flags | EV_PERSIST, array($this, 'onDirectEvent'));
 			event_base_set($ev, Daemon::$process->eventBase);
 			if ($this->priority !== null) {
 				event_priority_set($ev, $this->priority);
@@ -102,20 +114,40 @@ abstract class IOStream {
 			}
 			$this->readEvent = $ev;
 		}
-		$this->buffer = event_buffer_new($this->fd,	$this->directInput ? NULL : array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onFailureEvent'));
-		event_buffer_base_set($this->buffer, Daemon::$process->eventBase);
-		if ($this->priority !== null) {
-			event_buffer_priority_set($this->buffer, $this->priority);
+		if (!$this->directOutput || !$this->directOutput) {
+			$this->buffer = event_buffer_new(
+					$this->fd,
+					$this->directInput ? null : array($this, 'onReadEvent'),
+					$this->directOutput ? null : array($this, 'onWriteEvent'),
+					array($this, 'onFailureEvent')
+			);
+			event_buffer_base_set($this->buffer, Daemon::$process->eventBase);
+			if ($this->priority !== null) {
+				event_buffer_priority_set($this->buffer, $this->priority);
+			}
+			if ($this->timeout) {
+				event_buffer_timeout_set($this->buffer, $this->timeout, $this->timeout);
+			}
+			if (!$this->directInput) {
+				event_buffer_watermark_set($this->buffer, EV_READ, $this->lowMark, $this->highMark);
+			}
+			event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
 		}
-		if ($this->timeout) {
-			event_buffer_timeout_set($this->buffer, $this->timeout, $this->timeout);
-		}
-		event_buffer_watermark_set($this->buffer, EV_READ, $this->lowMark, $this->highMark);
-		event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
-		
 		if (!$this->inited) {
 			$this->inited = true;
 			$this->init();
+		}
+	}
+
+	public function onDirectEvent($fd, $events, $arg) {
+		if (($events | EV_READ) === $events) {
+			$this->onReadEvent($fd);
+		}
+		if (($events | EV_WRITE) === $events) {
+			$this->onWriteEvent($fd);
+		}
+		if (($events | EV_TIMEOUT) === $events) {
+			$this->onFailureEvent($fd);
 		}
 	}
 	

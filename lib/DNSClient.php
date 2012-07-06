@@ -47,7 +47,7 @@ class DNSClient extends NetworkClient {
 	protected function getConfigDefaults() {
 		return array(
 			// @todo add description strings
-			'defaultport' => 53,
+			'port' => 53,
 			'resolvecachesize' => 128,
 			'servers' => '',
 			'hostsfile' => '/etc/hosts',
@@ -59,17 +59,15 @@ class DNSClient extends NetworkClient {
 	public function applyConfig() {
 		parent::applyConfig();
 		$app = $this;
-		if (!sizeof($this->servers)) {
-			FS::readfile($this->config->resolvfile->value, function($file, $data) use ($app) {
-				if ($file) {
-					preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
-					foreach ($m[1] as $s) {
-						$e = explode(':', trim($s));
-						$app->addServer($e[0], isset($e[1]) ? $e[1] : $app->config->defaultport->value);
-					}
+		FS::readfile($this->config->resolvfile->value, function($file, $data) use ($app) {
+			if ($file) {
+				preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
+				foreach ($m[1] as $s) {
+					$app->addServer($s);
 				}
-			});
-		}
+			}
+		});
+
 		FS::readfile($this->config->hostsfile->value, function($file, $data) use ($app) {
 			if ($file) {
 				preg_match_all('~^(\S+)\s+([^\r\n]+)\s*~m', $data, $m, PREG_SET_ORDER);
@@ -131,6 +129,7 @@ class DNSClient extends NetworkClient {
 	public function get($domain, $cb) {
 		$conn = $this->getConnectionByKey($domain);
 		if (!$conn) {
+			call_user_func($cb, false);
 			return false;
 		}
  		$conn->onResponse->push($cb);

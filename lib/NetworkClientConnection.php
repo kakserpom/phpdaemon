@@ -48,10 +48,10 @@ class NetworkClientConnection extends Connection {
 	public function setFree($isFree = true) {
 		$this->busy = !$isFree;
 		if ($this->busy) {
-			unset($this->pool->servConnFree[$this->addr][$this->id]);
+			unset($this->pool->servConnFree[$this->url][$this->id]);
 		}
 		else {
-			$this->pool->servConnFree[$this->addr][$this->id] = $this->id;
+			$this->pool->servConnFree[$this->url][$this->id] = $this->id;
 		}
 	}
 
