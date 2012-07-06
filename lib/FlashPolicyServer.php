@@ -41,8 +41,8 @@ class FlashPolicyServer extends NetworkServer {
 }
 
 class FlashPolicyServerConnection extends Connection {
-	protected $initialLowMark = 23; // length of "<policy-file-request/>\x00"
-	protected $initialHighMark = 23;
+	protected $lowMark = 23; // length of "<policy-file-request/>\x00"
+	protected $highMark = 23;
 	/**
 	 * Called when new data received.
 	 * @param string New data.
