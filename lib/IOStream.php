@@ -25,7 +25,7 @@ abstract class IOStream {
 	public $connected = false;
 	public $directInput = false; // do not use prebuffering of incoming data
 	public $directOutput = false; // do not use prebuffering of outgoing data
-	public $readEvent;
+	public $event;
 	protected $lowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
 	public $priority;
@@ -112,7 +112,7 @@ abstract class IOStream {
 			} else {
 				event_add($ev);
 			}
-			$this->readEvent = $ev;
+			$this->event = $ev;
 		}
 		if (!$this->directOutput || !$this->directOutput) {
 			$this->buffer = event_buffer_new(
@@ -157,8 +157,8 @@ abstract class IOStream {
 		if ($this->buffer !== null) {
 			event_buffer_priority_set($this->buffer, $p);
 		}
-		if ($this->readEvent !== null) {
-			event_priority_set($this->readEvent, $p);
+		if ($this->event !== null) {
+			event_priority_set($this->event, $p);
 		}
 		
 	}
@@ -327,10 +327,10 @@ abstract class IOStream {
 		if (!isset($this->buffer)) {
 			return;
 		}
-		if (isset($this->readEvent)) {
-			event_del($this->readEvent);
-			event_free($this->readEvent);
-			$this->readEvent = null;
+		if (isset($this->event)) {
+			event_del($this->event);
+			event_free($this->event);
+			$this->event = null;
 		}
 		event_buffer_free($this->buffer);
 		$this->buffer = null;
