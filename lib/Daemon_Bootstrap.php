@@ -247,7 +247,7 @@ class Daemon_Bootstrap {
 				Daemon::$config->minworkers->value = Daemon::$config->maxworkers->value;
 			}
 		}
-		
+
 		if ($runmode == 'start') {
 			if ($error === FALSE) {
 				Daemon_Bootstrap::start();

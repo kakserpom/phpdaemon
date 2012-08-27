@@ -93,7 +93,6 @@ class Daemon_WorkerThread extends Thread {
 
 			$event->timeout();
 		}, 1e6 * 1,	'checkState');
-
 		if (Daemon::$config->autoreload->value > 0) {
 			Timer::add(function($event) {
 				$self = Daemon::$process;
