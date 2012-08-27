@@ -502,10 +502,11 @@ class ConnectionPool {
     					return;
     				}
     			}
-				$conn->addr = ($host === '') ? '' : $host . ':' . $port;
+				$conn->addr = $host;
+				$conn->port =  $port;
 				if ($conn->pool->allowedClients !== null) {
-					if (!ConnectionPool::netMatch($conn->pool->allowedClients, substr($addr, 0, $p))) {
-						Daemon::log('Connection is not allowed (' . $addr . ')');
+					if (!ConnectionPool::netMatch($conn->pool->allowedClients, $host)) {
+						Daemon::log('Connection is not allowed (' . $host . ')');
 						$conn->ready = false;
 						$conn->finish();
 					}
