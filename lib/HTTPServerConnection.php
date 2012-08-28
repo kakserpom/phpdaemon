@@ -100,10 +100,8 @@ class HTTPServerConnection extends Connection {
 				$req->attrs->server['SCRIPT_NAME'] = $req->attrs->server['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
 				$req->attrs->server['SERVER_PROTOCOL'] = isset($command[2]) ? $command[2] : 'HTTP/1.1';
 
-				list(
-					$req->attrs->server['REMOTE_ADDR'],
-					$req->attrs->server['REMOTE_PORT']
-				) = explode(':', $this->addr);
+				$req->attrs->server['REMOTE_ADDR'] = $this->addr;
+				$req->attrs->server['REMOTE_PORT'] = $this->port;
 
 				for ($i = 1, $n = sizeof($headersArray); $i < $n; ++$i) {
 					$e = explode(': ', $headersArray[$i]);
