@@ -90,7 +90,7 @@ class FileReaderRequest extends HTTPRequest {
 							}
 							if (!$found) {
 								if (isset($this->attrs->server['FR_AUTOINDEX']) && $this->attrs->server['FR_AUTOINDEX']) {
-									$this->autoindex($dir);
+									$this->autoindex($path, $dir);
 								} else {
 									$req->fileNotFound();
 								}
@@ -122,7 +122,7 @@ class FileReaderRequest extends HTTPRequest {
 			});
 		});
 	}
-	public function autoindex($dir) {
+	public function autoindex($path, $dir) {
 		$this->onWakeup();
 		Daemon::$req = $this;
 
@@ -162,7 +162,7 @@ div.foot { font: 90% monospace; color: #787878; padding-top: 4px;}
 </tr> 
 <?php
 	foreach ($dir['dents'] as $item) {
-		$type = $item['type'] === EIO_DT_DIR ? 'Directory' : MIME::get($path);
+		$type = $item['type'] === EIO_DT_DIR ? 'Directory' : MIME::get($path . $item['name']);
 	?><tr>
 			<td class="n"><a href="<?php echo htmlspecialchars($item['name']) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($item['name']); ?></a></td>
 			<td class="t"><?php echo $type; ?></td>

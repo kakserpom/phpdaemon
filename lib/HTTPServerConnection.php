@@ -1,4 +1,4 @@
-<?php
+><?php
 
 /**
  * @package NetworkServers
@@ -11,9 +11,12 @@ class HTTPServerConnection extends Connection {
 	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
 	public $timeout = 45;
+
+	public $req;
 	
 	const STATE_HEADERS = 1;
 	const STATE_CONTENT = 2;
+
 	
 	public $sendfileCap = true; // we can use sendfile() with this kind of connection
 
