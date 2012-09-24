@@ -696,6 +696,7 @@ class HTTPRequest extends Request {
 											$req->attrs->files[$name]['fp'] = $fp;
 											if (FS::$supported) {
 												$req->conn->unlockRead();
+												$req->stdin('');
 											}
 										});
 									}
@@ -724,6 +725,10 @@ class HTTPRequest extends Request {
 					}
 
 					$continue = true;
+
+					if ($this->conn->readLocked) {
+						return;
+					}
 				}
 			}
 			elseif (
@@ -759,7 +764,7 @@ class HTTPRequest extends Request {
 							}
 						}
 
-						$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
+						$this->attrs->files[$this->mpartcondisp['name']]['size'] += strlen($chunk);
 					}
 					if ($ndl === "\r\n--" . $this->boundary . "--\r\n") { // end of whole message
 						$this->mpartoffset = $p + strlen($ndl);
