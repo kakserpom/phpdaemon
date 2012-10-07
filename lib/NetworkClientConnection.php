@@ -15,6 +15,8 @@ class NetworkClientConnection extends Connection {
 	
 	public $onConnected = null;
 
+	public $alive = true;
+
 	public function __construct($fd, $id = null, $pool = null) {
 		parent::__construct($fd, $id, $pool);
 		$this->onResponse = new SplStack();
