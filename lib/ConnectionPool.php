@@ -498,12 +498,12 @@ class ConnectionPool {
     					if ($this->allowedClients !== null) {
     						$conn->ready = false; // lockwait
     					}
-    					$conn->onWriteOnce($handler);
+    					$conn->onWriteOnce($getpeername);
     					return;
     				}
     			}
 				$conn->addr = $host;
-				$conn->port =  $port;
+				$conn->port = $port;
 				if ($conn->pool->allowedClients !== null) {
 					if (!ConnectionPool::netMatch($conn->pool->allowedClients, $host)) {
 						Daemon::log('Connection is not allowed (' . $host . ')');

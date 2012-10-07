@@ -35,6 +35,7 @@ abstract class IOStream {
 	public $onWriteOnce;
 	public $timeout = null;
 	public $url;
+	public $alive = false; // alive?
 
 	public function touchEvent() {
 		if ($this->timeout !== null) {
@@ -244,6 +245,10 @@ abstract class IOStream {
 	 * @return boolean Success.
 	 */
 	public function write($s) {
+		if (!$this->alive) {
+			Daemon::log('Attempt to write to dead IOStream ('.get_class($this).')');
+			return false;
+		}
 		if (!$this->buffer) {
 			return false;
 		}
@@ -341,6 +346,7 @@ abstract class IOStream {
 	
 	public function closeFd() {
 		fclose($this->fd);
+		$this->closed = true;
 	}
 	
 	/**
@@ -397,10 +403,11 @@ abstract class IOStream {
 			$this->ready = true;
 			while (!$this->onWriteOnce->isEmpty()) {
 				call_user_func($this->onWriteOnce->pop(), $this);
+				if (!$this->ready) {
+					return;
+				}
 			}
-			if (!$this->ready) {
-				return;
-			}
+			$this->alive = true;
 			$this->onReady();
 		} else {
 			while (!$this->onWriteOnce->isEmpty()) {
