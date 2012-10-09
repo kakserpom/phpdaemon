@@ -26,8 +26,8 @@ class XMPPRoster {
 			//Daemon::log("Presence: {$payload['from']} [{$payload['show']}] {$payload['status']}");
 			if(array_key_exists('type', $xml->attrs) and $xml->attrs['type'] == 'subscribe') {
 				if($this->auto_subscribe) {
-					$this->xmpp->sendXML("<presence type='subscribed' to='{$xml->attrs['from']}' from='{$this->fulljid}' />");
-					$this->xmpp->sendXML("<presence type='subscribe' to='{$xml->attrs['from']}' from='{$this->fulljid}' />");
+					$this->xmpp->sendXML("<presence type='subscribed' to='{$xml->attrs['from']}' from='{$this->xmpp->fulljid}' />");
+					$this->xmpp->sendXML("<presence type='subscribe' to='{$xml->attrs['from']}' from='{$this->xmpp->fulljid}' />");
 				}
 				$this->event('subscription_requested', $payload);
 			} elseif(array_key_exists('type', $xml->attrs) and $xml->attrs['type'] == 'subscribed') {
