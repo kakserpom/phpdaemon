@@ -4,7 +4,7 @@ class XMLStream {
 	protected $xml_depth = 0;
 	protected $current_ns = array();
 	protected $idhandlers = array();
-	protected $nshandlers = array();
+	protected $xpathhandlers = array();
 	protected $eventHandlers = array();
 	protected $default_ns;
 
@@ -25,7 +25,7 @@ class XMLStream {
 		$this->xml_depth = 0;
 		$this->current_ns = array();
 		$this->idhandlers = array();
-		$this->nshandlers = array();
+		$this->xpathhandlers = array();
 		$this->eventHandlers = array();	
 	}
 
@@ -83,9 +83,7 @@ class XMLStream {
 	 */
 	public function endXML($parser, $name) {
 		--$this->xml_depth;
-		if($this->xml_depth == 1) {
-			#clean-up old objects
-			#$found = false; #FIXME This didn't appear to be in use --Gar
+		if ($this->xml_depth == 1) {
 			foreach($this->xpathhandlers as $handler) {
 				if (is_array($this->xmlobj) && array_key_exists(2, $this->xmlobj)) {
 					$searchxml = $this->xmlobj[2];
@@ -106,17 +104,6 @@ class XMLStream {
 							call_user_func($handler[1], $this->xmlobj[2]);
 						}
 					}
-				}
-			}
-			foreach($this->nshandlers as $handler) {
-				if($handler[4] != 1 and array_key_exists(2, $this->xmlobj) and  $this->xmlobj[2]->hasSub($handler[0])) {
-					$searchxml = $this->xmlobj[2]->sub($handler[0]);
-				} elseif(is_array($this->xmlobj) and array_key_exists(2, $this->xmlobj)) {
-					$searchxml = $this->xmlobj[2];
-				}
-				if($searchxml !== null and $searchxml->name == $handler[0] and ($searchxml->ns == $handler[1] or (!$handler[1] and $searchxml->ns == $this->default_ns))) {
-					if($handler[3] === null) $handler[3] = $this;
-					call_user_func($handler[3]->$handler[2], $this->xmlobj[2]);
 				}
 			}
 			foreach($this->idhandlers as $id => $handler) {
