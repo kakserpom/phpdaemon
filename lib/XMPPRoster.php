@@ -1,0 +1,170 @@
+<?php
+class XMPPRoster {
+	public $xmpp;
+	public $eventHandlers;
+	public $roster_array = array();
+	public $track_presence = true;
+	
+	public function __construct($xmpp) {
+		$this->xmpp = $xmpp;
+
+		$this->xmpp->xml->addXPathHandler('{jabber:client}presence', function ($xml) {
+			$payload = array();
+			$payload['type'] = (isset($xml->attrs['type'])) ? $xml->attrs['type'] : 'available';
+			$payload['show'] = (isset($xml->sub('show')->data)) ? $xml->sub('show')->data : $payload['type'];
+			$payload['from'] = $xml->attrs['from'];
+			$payload['status'] = (isset($xml->sub('status')->data)) ? $xml->sub('status')->data : '';
+			$payload['priority'] = (isset($xml->sub('priority')->data)) ? intval($xml->sub('priority')->data) : 0;
+			$payload['xml'] = $xml;
+			if ($this->track_presence) {
+				$this->setPresence($payload['from'], $payload['priority'], $payload['show'], $payload['status']);
+			}
+			//Daemon::log("Presence: {$payload['from']} [{$payload['show']}] {$payload['status']}");
+			if(array_key_exists('type', $xml->attrs) and $xml->attrs['type'] == 'subscribe') {
+				if($this->auto_subscribe) {
+					$this->xmpp->sendXML("<presence type='subscribed' to='{$xml->attrs['from']}' from='{$this->fulljid}' />");
+					$this->xmpp->sendXML("<presence type='subscribe' to='{$xml->attrs['from']}' from='{$this->fulljid}' />");
+				}
+				$this->event('subscription_requested', $payload);
+			} elseif(array_key_exists('type', $xml->attrs) and $xml->attrs['type'] == 'subscribed') {
+				$this->event('subscription_accepted', $payload);
+			} else {
+				$this->event('presence', $payload);
+			}
+		});
+		$this->fetch();
+
+	}
+
+	public function fetch() {
+		$this->xmpp->queryGet('jabber:iq:roster', function ($xml) {
+			$status = "result";
+			$xmlroster = $xml->sub('query');
+			foreach($xmlroster->subs as $item) {
+				$groups = array();
+				if ($item->name == 'item') {
+					$jid = $item->attrs['jid']; //REQUIRED
+					$name = isset($item->attrs['name']) ? $item->attrs['name'] : ''; //MAY
+					$subscription = $item->attrs['subscription'];
+					foreach($item->subs as $subitem) {
+						if ($subitem->name == 'group') {
+							$groups[] = $subitem->data;
+						}
+					}
+					$contacts[] = array($jid, $subscription, $name, $groups); //Store for action if no errors happen
+				} else {
+					$status = "error";
+				}
+			}
+			if ($status == "result") { //No errors, add contacts
+				foreach($contacts as $contact) {
+					$this->addContact($contact[0], $contact[1], $contact[2], $contact[3]);
+				}
+			}
+			if ($xml->attrs['type'] == 'set') {
+				$this->xmpp->sendXML('<iq type="reply" id="'.$xml->attrs['id'].'" to="'.$xml->attrs['from'].'" />');
+			}
+		});
+	}
+
+	public function addEventHandler($name, $cb) {
+		if (!isset($this->eventHandlers[$event])) {
+			$this->eventHandlers[$event] = array();
+		}
+		$this->eventHandlers[$event][] = $cb;
+	}
+
+	public function event() {
+		$args = func_get_args();
+		$name = array_shift($args);
+		if (isset($this->eventHandlers[$name])) {
+			foreach ($this->eventHandlers[$name] as $cb) {
+				call_user_func($cb, $args);
+			}
+		}
+	}
+
+		/**
+	 *
+	 * Add given contact to roster
+	 *
+	 * @param string $jid
+	 * @param string $subscription
+	 * @param string $name
+	 * @param array $groups
+	 */
+	public function addContact($jid, $subscription, $name='', $groups=array()) {
+		$contact = array('jid' => $jid, 'subscription' => $subscription, 'name' => $name, 'groups' => $groups);
+		if ($this->isContact($jid)) {
+			$this->roster_array[$jid]['contact'] = $contact;
+		} else {
+			$this->roster_array[$jid] = array('contact' => $contact);
+		}
+	}
+
+	/**
+	 * 
+	 * Retrieve contact via jid
+	 *
+	 * @param string $jid
+	 */
+	public function getContact($jid) {
+		if ($this->isContact($jid)) {
+			return $this->roster_array[$jid]['contact'];
+		}
+	}
+
+	/**
+	 *
+	 * Discover if a contact exists in the roster via jid
+	 *
+	 * @param string $jid
+	 */
+	public function isContact($jid) {
+		return (array_key_exists($jid, $this->roster_array));
+	}
+
+	/**
+	 *
+	 * Set presence
+	 *
+	 * @param string $presence
+	 * @param integer $priority
+	 * @param string $show
+	 * @param string $status
+	*/
+	public function setPresence($presence, $priority, $show, $status) {
+		list($jid, $resource) = explode('/', $presence);
+		if ($show != 'unavailable') {
+			if (!$this->isContact($jid)) {
+				$this->addContact($jid, 'not-in-roster');
+			}
+			$resource = $resource ? $resource : '';
+			$this->roster_array[$jid]['presence'][$resource] = array('priority' => $priority, 'show' => $show, 'status' => $status);
+		} else { //Nuke unavailable resources to save memory
+			unset($this->roster_array[$jid]['resource'][$resource]);
+		}
+	}
+
+	/*
+	 *
+	 * Return best presence for jid
+	 *
+	 * @param string $jid
+	 */
+	public function getPresence($jid) {
+		$split = split("/", $jid);
+		$jid = $split[0];
+		if($this->isContact($jid)) {
+			$current = array('resource' => '', 'active' => '', 'priority' => -129, 'show' => '', 'status' => ''); //Priorities can only be -128 = 127
+			foreach($this->roster_array[$jid]['presence'] as $resource => $presence) {
+				//Highest available priority or just highest priority
+				if ($presence['priority'] > $current['priority'] and (($presence['show'] == "chat" or $presence['show'] == "available") or ($current['show'] != "chat" or $current['show'] != "available"))) {
+					$current = $presence;
+					$current['resource'] = $resource;
+				}
+			}
+			return $current;
+		}
+	}
+}

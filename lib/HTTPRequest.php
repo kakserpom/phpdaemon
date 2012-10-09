@@ -934,3 +934,21 @@ class HTTPRequest extends Request {
 	}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
