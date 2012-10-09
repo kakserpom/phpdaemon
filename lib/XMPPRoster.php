@@ -4,6 +4,7 @@ class XMPPRoster {
 	public $eventHandlers;
 	public $roster_array = array();
 	public $track_presence = true;
+	public $auto_subscribe = true;
 	
 	public function __construct($xmpp) {
 		$this->xmpp = $xmpp;
