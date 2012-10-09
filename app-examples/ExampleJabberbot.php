@@ -39,25 +39,30 @@ class ExampleJabberbot extends AppInstance {
 	public function onReady() {
 		if ($this->xmppclient) {
 			$this->xmppclient->onReady();
-			$app = $this;
-			$this->xmppclient->getConnection($this->config->url->value, function ($conn) use ($app) {
-				$app->xmppconn = $conn;
-				if ($conn->connected) {
-					Daemon::log('Jabberbot connected at '.$this->config->url->value);
-					$conn->presence();
-					$conn->addEventHandler('message', function($msg) use ($conn) {
-						Daemon::log('JabberBot: got message \''.$msg['body'].'\'');
-						$conn->message($msg['from'], $msg['body']); // send the message back
-
-					});
-				}
-				else {
-					Daemon::log('Jabberbot: unable to connect ('.$this->config->url->value.')');
-				}
-			});
+			$this->connect();
 		}
 	}
 	
+	public function connect() {
+		$app = $this;
+		$this->xmppclient->getConnection($this->config->url->value, function ($conn) use ($app) {
+			$app->xmppconn = $conn;
+			if ($conn->connected) {
+				Daemon::log('Jabberbot connected at '.$this->config->url->value);
+				$conn->presence('I\'m a robot.', 'chat');
+				$conn->addEventHandler('message', function($msg) use ($conn) {
+					Daemon::log('JabberBot: got message \''.$msg['body'].'\'');
+					$conn->message($msg['from'], 'You just wrote: '.$msg['body']); // send the message back
+				});
+				$conn->addEventHandler('disconnect', function() use ($app) {
+					$app->connect();
+				});
+			}
+			else {
+				Daemon::log('Jabberbot: unable to connect ('.$this->config->url->value.')');
+			}
+		});
+	}
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void

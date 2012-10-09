@@ -6,6 +6,7 @@ class XMLStream {
 	protected $idhandlers = array();
 	protected $nshandlers = array();
 	protected $eventHandlers = array();
+	protected $default_ns;
 
 	public function __construct() {
 		$this->parser = xml_parser_create('UTF-8');
@@ -14,6 +15,10 @@ class XMLStream {
 		xml_set_object($this->parser, $this);
 		xml_set_element_handler($this->parser, 'startXML', 'endXML');
 		xml_set_character_data_handler($this->parser, 'charXML');
+	}
+
+	public function setDefaultNS($ns) {
+		$this->default_ns = $ns;
 	}
 
 	public function finish() {

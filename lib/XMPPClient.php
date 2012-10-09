@@ -26,6 +26,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 	public $lastId = 0;
 	public $roster;
 	public $xml;
+	public $fulljid;
 
 	/**
 	 * Get next ID
@@ -55,6 +56,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 	 */
 	public function onFinish() {
 		parent::onFinish();
+		$this->event('disconnect');
 		if (isset($this->xml)) {
 			$this->xml->finish();
 		}
@@ -63,6 +65,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 	}
 
 	public function sendXML($s) {
+		//Daemon::log(Debug::dump(['send', $s]));
 		$this->write($s);
 	}
 	public function startXMLStream() {
@@ -118,6 +121,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 
 	public function createXMLStream() {
 		$this->xml = new XMLStream;
+		$this->xml->setDefaultNS('jabber:client');
 		$this->xml->conn = $this;
 		$this->xml->addXPathHandler('{http://etherx.jabber.org/streams}features', function ($xml) {
 			if ($xml->hasSub('starttls') and $this->use_encryption) {
@@ -234,22 +238,33 @@ class XMPPClientConnection extends NetworkClientConnection {
 	 * @param string $show
 	 * @param string $to
 	 */
-	public function presence($status = null, $show = 'available', $to = null, $type='available', $priority=0) {
+	public function presence($status = null, $show = 'available', $to = null, $type='available', $priority = 50 ) {
 		if($type == 'available') $type = '';
 		$to	 = htmlspecialchars($to);
 		$status = htmlspecialchars($status);
 		if($show == 'unavailable') $type = 'unavailable';
 		
 		$out = "<presence";
-		if($to) $out .= " to=\"$to\"";
-		if($type) $out .= " type='$type'";
+		$out .= ' from="'.$this->fulljid.'"';
+		if ($to) {
+			$out .= ' to="'.$to.'"';
+		}
+		if ($type) {
+			$out .= ' type="'.$type.'"';
+		}
 		if($show == 'available' and !$status) {
 			$out .= "/>";
 		} else {
 			$out .= ">";
-			if($show != 'available') $out .= "<show>$show</show>";
-			if($status) $out .= "<status>$status</status>";
-			if($priority) $out .= "<priority>$priority</priority>";
+			if ($show != 'available') {
+				$out .= "<show>$show</show>";
+			}
+			if ($status) {
+				$out .= "<status>$status</status>";
+			}
+			if ($priority) {
+				$out .= "<priority>$priority</priority>";
+			}
 			$out .= "</presence>";
 		}
 		
@@ -288,6 +303,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 	*/
 	public function stdin($buf) {
 		Timer::setTimeout($this->keepaliveTimer);
+		//Daemon::log(Debug::dump(['read', $buf]));
 		if (isset($this->xml)) {
 			$this->xml->feed($buf);
 		}

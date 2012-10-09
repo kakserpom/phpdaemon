@@ -16,6 +16,9 @@ class XMPPRoster {
 			$payload['status'] = (isset($xml->sub('status')->data)) ? $xml->sub('status')->data : '';
 			$payload['priority'] = (isset($xml->sub('priority')->data)) ? intval($xml->sub('priority')->data) : 0;
 			$payload['xml'] = $xml;
+			if (($payload['from'] === $this->xmpp->fulljid) && $payload['type'] === 'unavailable') {
+				$this->xmpp->finish();
+			}
 			if ($this->track_presence) {
 				$this->setPresence($payload['from'], $payload['priority'], $payload['show'], $payload['status']);
 			}
