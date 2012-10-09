@@ -116,7 +116,7 @@ class XMLStream {
 			}
 			foreach($this->idhandlers as $id => $handler) {
 				if(array_key_exists('id', $this->xmlobj[2]->attrs) and $this->xmlobj[2]->attrs['id'] == $id) {
-					call_user_func($handler[0], $this->xmlobj[2]);
+					call_user_func($handler, $this->xmlobj[2]);
 					#id handlers are only used once
 					unset($this->idhandlers[$id]);
 					break;
@@ -175,8 +175,11 @@ class XMLStream {
 	 * @param string  $pointer
 	 * @param string  $obj
 	 */
-	public function addIdHandler($id, $pointer, $obj = null) {
-		$this->idhandlers[$id] = array($pointer, $obj);
+	public function addIdHandler($id, $cb) {
+		if ($cb === null) {
+			return;
+		}
+		$this->idhandlers[$id] = $cb;
 	}
 
 	public function addEventHandler($name, $cb) {

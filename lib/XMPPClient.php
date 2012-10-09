@@ -33,7 +33,8 @@ class XMPPClientConnection extends NetworkClientConnection {
 	 * @return integer
 	 */
 	public function getId() {
-		return ++$this->lastId;
+		$id = ++$this->lastId;
+		return dechex($id);
 	}
 
 	/**
@@ -43,6 +44,10 @@ class XMPPClientConnection extends NetworkClientConnection {
 	public function onReady() {
 		$this->createXMLStream();
 		$this->startXMLStream();
+		$this->keepaliveTimer = setTimeout(function($timer) {
+			Daemon::log('send ping');
+			$this->ping();
+		}, 1e6 * 10);
 	}
 	
 	/**
@@ -55,6 +60,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 			$this->xml->finish();
 		}
 		unset($this->roster);
+		Timer::remove($this->keepaliveTimer);
 	}
 
 	public function sendXML($s) {
@@ -79,6 +85,20 @@ class XMPPClientConnection extends NetworkClientConnection {
 		$this->xml->addIdHandler($id, $cb);
 		$this->sendXML('<iq xmlns="jabber:client" type="get" id="'.$id.'">'.$xml.'</iq>');
 
+	}
+
+	public function iqGetTo($to, $xml, $cb) {
+		$id = $this->getId();
+		$this->xml->addIdHandler($id, $cb);
+		$this->sendXML('<iq xmlns="jabber:client" type="get" id="'.$id.'" to="'.htmlspecialchars($to).'">'.$xml.'</iq>');
+
+	}
+
+	public function ping($to = null, $cb = null) {
+		if ($to === null) {
+			$to = $this->host; 
+		}
+		$this->iqGetTo($to, '<ping xmlns="urn:xmpp:ping"/>');
 	}
 
 	public function queryGet($ns, $cb) {
@@ -256,6 +276,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 	 * @return void
 	*/
 	public function stdin($buf) {
+		Timer::setTimeout($this->keepaliveTimer);
 		//Daemon::log(Debug::dump(['buf', $buf]));
 		$this->xml->feed($buf);
 	}	
