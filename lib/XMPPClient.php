@@ -238,7 +238,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 	 * @param string $show
 	 * @param string $to
 	 */
-	public function presence($status = null, $show = 'available', $to = null, $type='available', $priority = 50 ) {
+	public function presence($status = null, $show = 'available', $to = null, $type='available', $priority = 0 ) {
 		if($type == 'available') $type = '';
 		$to	 = htmlspecialchars($to);
 		$status = htmlspecialchars($status);
@@ -252,20 +252,20 @@ class XMPPClientConnection extends NetworkClientConnection {
 		if ($type) {
 			$out .= ' type="'.$type.'"';
 		}
-		if($show == 'available' and !$status) {
+		$inner = '';
+		if ($show != 'available') {
+			$inner .= "<show>$show</show>";
+		}
+		if ($status) {
+			$inner .= "<status>$status</status>";
+		}
+		if ($priority) {
+			$inner .= "<priority>$priority</priority>";
+		}
+		if ($inner === '') {
 			$out .= "/>";
 		} else {
-			$out .= ">";
-			if ($show != 'available') {
-				$out .= "<show>$show</show>";
-			}
-			if ($status) {
-				$out .= "<status>$status</status>";
-			}
-			if ($priority) {
-				$out .= "<priority>$priority</priority>";
-			}
-			$out .= "</presence>";
+			$out .= '>' . $inner . '</presence>';
 		}
 		
 		$this->sendXML($out);

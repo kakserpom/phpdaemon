@@ -10,7 +10,6 @@ class WebSocketServerConnection extends Connection {
 	public $cookie = array();
 	public $firstline = FALSE;
 	public $writeReady = TRUE;
-	public $callbacks = array();
 	public $extensions = array();
 	public $framebuf = '';
 	public $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
@@ -34,7 +33,7 @@ class WebSocketServerConnection extends Connection {
 	 * @return boolean Success.
 	 */
 
-	public function sendFrame($data, $type = NULL, $callback = NULL)
+	public function sendFrame($data, $type = NULL, $cb = NULL)
 	{
 		if (!$this->handshaked)
 		{
@@ -48,13 +47,9 @@ class WebSocketServerConnection extends Connection {
         }
 
         $this->protocol->sendFrame($data, $type) ;
-		$this->writeReady = FALSE;
-
-		if ($callback)
-		{
-			$this->callbacks[] = $callback;
-		}
-
+        if ($cb) {
+        	$this->onWriteOnce($cb);
+        }
 		return TRUE;
 	}
 
@@ -96,12 +91,6 @@ class WebSocketServerConnection extends Connection {
 	{
 		if (Daemon::$config->logevents->value) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked');
-		}
-		
-		$this->writeReady = TRUE;
-		
-		for ($i = 0, $s = sizeof($this->callbacks); $i < $s; ++$i) {
-			call_user_func(array_shift($this->callbacks), $this);
 		}
 		
 		if ($this->upstream && is_callable(array($this->upstream, 'onWrite')))	{

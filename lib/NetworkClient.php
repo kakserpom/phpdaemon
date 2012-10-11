@@ -80,7 +80,7 @@ class NetworkClient extends ConnectionPool {
 		$conn = false;
 		if (isset($this->servConn[$url])) {
 			if ($this->acquireOnGet) {
-				while (($c = array_pop($this->servConnFree[$url])) !== null) {
+				while (($c = array_shift($this->servConnFree[$url])) !== null) {
 					if (isset($this->list[$c])) {
 						$conn = $this->list[$c];
 						break;

@@ -67,6 +67,7 @@ class NetworkClientConnection extends Connection {
 	public function onFinish() {
 		parent::onFinish();
 		unset($this->onResponse);
+		unset($this->pool->servConn[$this->url][$this->id]);
 		$this->checkFree();
 	}
 

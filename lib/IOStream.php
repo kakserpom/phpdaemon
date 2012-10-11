@@ -369,6 +369,9 @@ abstract class IOStream {
 	public function onRead() {
 		while (($buf = $this->read($this->readPacketSize)) !== false) {
 			$this->stdin($buf);
+			if ($this->readLocked) {
+				return true;
+			}
 		}
 		return true;
 	}

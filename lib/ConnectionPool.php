@@ -206,26 +206,25 @@ class ConnectionPool {
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
+		$this->finish();
+	}
+
+	public function finish() {
 		$this->disable(); 
 		
-		if (isset($this->list)) {
-			$result = TRUE;
+		$result = true;
 	
-			foreach ($this->list as $k => $sess) {
-				if (!is_object($sess)) {
-					unset($this->sessions[$k]); 
-					continue;
-				}
-
-				if (!$sess->gracefulShutdown()) {
-					$result = FALSE;
-				}
+		foreach ($this->list as $k => $conn) {
+			if (!is_object($conn)) {
+				unset($this->list[$k]); 
+				continue;
 			}
 
-			return $result;
+			if (!$conn->gracefulShutdown()) {
+				$result = false;
+			}
 		}
-
-		return TRUE;
+		return $result;
 	}
 	
 	/**
