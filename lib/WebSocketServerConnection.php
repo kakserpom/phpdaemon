@@ -63,8 +63,10 @@ class WebSocketServerConnection extends Connection {
 			$this->upstream->onFinish();
 		}
 		$this->upstream = null;
-		$this->protocol->connection = null;
-		$this->protocol = null;
+		if ($this->protocol) {
+			$this->protocol->connection = null;
+			$this->protocol = null;
+		}
 	}
 	
 	/**

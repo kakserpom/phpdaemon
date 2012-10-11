@@ -206,7 +206,7 @@ class ConnectionPool {
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
-		$this->finish();
+		return $this->finish();
 	}
 
 	public function finish() {
