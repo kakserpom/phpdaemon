@@ -41,12 +41,12 @@ class XMPPRoster {
 
 	}
 
-	public function rosterSet($xml) {
-		$this->xmpp->querySetTo($this->xmpp->fulljid, $this->ns, $xml);
+	public function rosterSet($xml, $cb = null) {
+		$this->xmpp->querySetTo($this->xmpp->fulljid, $this->ns, $xml, $cb);
 	}
 
-	public function setSubscription($jid, $type) {
-		$this->rosterSet('<item jid="'.htmlspecialchars($jid).'" subscription="'.htmlspecialchars($type).'" />');
+	public function setSubscription($jid, $type, $cb = null) {
+		$this->rosterSet('<item jid="'.htmlspecialchars($jid).'" subscription="'.htmlspecialchars($type).'" />', $cb);
 	} 
 	public function fetch() {
 		$this->xmpp->queryGet($this->ns, function ($xml) {
