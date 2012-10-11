@@ -83,6 +83,17 @@ class XMPPClientConnection extends NetworkClientConnection {
 		return true;
 	}
 
+	public function iqSetTo($to, $xml, $cb) {
+		if (!isset($this->xml)) {
+			return false;
+		}
+		$id = $this->getId();
+		$this->xml->addIdHandler($id, $cb);
+		$this->sendXML('<iq xmlns="jabber:client" type="set" id="'.$id.'" to="'.htmlspecialchars($to).'">'.$xml.'</iq>');
+		return true;
+
+	}
+
 	public function iqGet($xml, $cb) {
 		if (!isset($this->xml)) {
 			return false;
@@ -117,6 +128,15 @@ class XMPPClientConnection extends NetworkClientConnection {
 
 	public function queryGet($ns, $cb) {
 		return $this->iqGet('<query xmlns="'.$ns.'" />', $cb);
+	}
+
+
+	public function querySet($ns, $xml, $cb) {
+		return $this->iqSet('<query xmlns="'.$ns.'">'.$xml.'</query>', $cb);
+	}
+
+	public function querySetTo($to, $ns, $xml, $cb) {
+		return $this->iqSetTo($to, '<query xmlns="'.$ns.'">'.$xml.'</query>', $cb);
 	}
 
 	public function createXMLStream() {

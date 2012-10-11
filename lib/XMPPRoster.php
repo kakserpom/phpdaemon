@@ -5,6 +5,7 @@ class XMPPRoster {
 	public $roster_array = array();
 	public $track_presence = true;
 	public $auto_subscribe = true;
+	public $ns = 'jabber:iq:roster';
 	
 	public function __construct($xmpp) {
 		$this->xmpp = $xmpp;
@@ -40,8 +41,15 @@ class XMPPRoster {
 
 	}
 
+	public function rosterSet($xml) {
+		$this->xmpp->querySetTo($this->xmpp->fulljid, $this->ns, $xml);
+	}
+
+	public function setSubscription($jid, $type) {
+		$this->rosterSet('<item jid="'.htmlspecialchars($jid).'" subscription="'.htmlspecialchars($type).'" />');
+	} 
 	public function fetch() {
-		$this->xmpp->queryGet('jabber:iq:roster', function ($xml) {
+		$this->xmpp->queryGet($this->ns, function ($xml) {
 			$status = "result";
 			$xmlroster = $xml->sub('query');
 			foreach($xmlroster->subs as $item) {
@@ -62,7 +70,7 @@ class XMPPRoster {
 			}
 			if ($status == "result") { //No errors, add contacts
 				foreach($contacts as $contact) {
-					$this->addContact($contact[0], $contact[1], $contact[2], $contact[3]);
+					$this->_addContact($contact[0], $contact[1], $contact[2], $contact[3]);
 				}
 			}
 			if ($xml->attrs['type'] == 'set') {
@@ -97,7 +105,7 @@ class XMPPRoster {
 	 * @param string $name
 	 * @param array $groups
 	 */
-	public function addContact($jid, $subscription, $name='', $groups=array()) {
+	public function _addContact($jid, $subscription, $name='', $groups=array()) {
 		$contact = array('jid' => $jid, 'subscription' => $subscription, 'name' => $name, 'groups' => $groups);
 		if ($this->isContact($jid)) {
 			$this->roster_array[$jid]['contact'] = $contact;
@@ -141,7 +149,7 @@ class XMPPRoster {
 		list($jid, $resource) = explode('/', $presence . '/');
 		if ($show != 'unavailable') {
 			if (!$this->isContact($jid)) {
-				$this->addContact($jid, 'not-in-roster');
+				$this->_addContact($jid, 'not-in-roster');
 			}
 			$this->roster_array[$jid]['presence'][$resource] = array('priority' => $priority, 'show' => $show, 'status' => $status);
 		} else { //Nuke unavailable resources to save memory
