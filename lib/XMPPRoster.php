@@ -48,8 +48,8 @@ class XMPPRoster {
 	public function setSubscription($jid, $type, $cb = null) {
 		$this->rosterSet('<item jid="'.htmlspecialchars($jid).'" subscription="'.htmlspecialchars($type).'" />', $cb);
 	} 
-	public function fetch() {
-		$this->xmpp->queryGet($this->ns, function ($xml) {
+	public function fetch($cb = null) {
+		$this->xmpp->queryGet($this->ns, function ($xml) use ($cb) {
 			$status = "result";
 			$xmlroster = $xml->sub('query');
 			foreach($xmlroster->subs as $item) {
@@ -76,6 +76,7 @@ class XMPPRoster {
 			if ($xml->attrs['type'] == 'set') {
 				$this->xmpp->sendXML('<iq type="reply" id="'.$xml->attrs['id'].'" to="'.$xml->attrs['from'].'" />');
 			}
+			call_user_func($cb, $status);
 		});
 	}
 
