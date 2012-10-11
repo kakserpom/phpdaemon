@@ -12,6 +12,7 @@ class WebSocketServerConnection extends Connection {
 	public $writeReady = TRUE;
 	public $extensions = array();
 	public $framebuf = '';
+	public $alive = true; // HACK
 	public $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
 	const STATE_HANDSHAKING = 1;
 	const STATE_HANDSHAKED = 2;
@@ -83,23 +84,7 @@ class WebSocketServerConnection extends Connection {
 		$this->upstream->onFrame($data, $type);
 		return true;
 	}
-	
-	/**
-	 * Called when the connection is ready to accept new data.
-	 * @return void
-	 */
 
-	public function onWrite()
-	{
-		if (Daemon::$config->logevents->value) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked');
-		}
-		
-		if ($this->upstream && is_callable(array($this->upstream, 'onWrite')))	{
-			$this->upstream->onWrite();
-		}
-	}
-	
 	/**
 	 * Called when the connection is handshaked.
 	 * @return boolean Ready to handshake ?
