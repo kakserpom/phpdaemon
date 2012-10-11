@@ -132,7 +132,7 @@ abstract class IOStream {
 			if (!$this->directInput) {
 				event_buffer_watermark_set($this->buffer, EV_READ, $this->lowMark, $this->highMark);
 			}
-			event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
+			event_buffer_enable($this->buffer, EV_WRITE | EV_TIMEOUT | EV_PERSIST);
 		}
 		if (!$this->inited) {
 			$this->inited = true;
@@ -411,6 +411,7 @@ abstract class IOStream {
 				}
 			}
 			$this->alive = true;
+			event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
 			$this->onReady();
 		} else {
 			while (!$this->onWriteOnce->isEmpty()) {

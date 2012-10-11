@@ -501,7 +501,8 @@ class ConnectionPool {
     					return;
     				}
     			}
-				$conn->addr = $host;
+				$conn->addr = $host.':'.$port;
+				$conn->ip = $host;
 				$conn->port = $port;
 				if ($conn->pool->allowedClients !== null) {
 					if (!ConnectionPool::netMatch($conn->pool->allowedClients, $host)) {
