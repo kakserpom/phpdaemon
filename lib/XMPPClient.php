@@ -273,7 +273,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 
 	public function getVCard($jid = null, $cb) {
 		$id = $this->getId();
-		$this->addIdHandler($id, function ($xml) use ($cb) {
+		$this->xml->addIdHandler($id, function ($xml) use ($cb) {
 			$vcard = array();
 			$vcardXML = $xml->sub('vcard');
 			foreach ($vcardXML->subs as $sub) {
