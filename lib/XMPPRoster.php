@@ -52,6 +52,7 @@ class XMPPRoster {
 		$this->xmpp->queryGet($this->ns, function ($xml) use ($cb) {
 			$status = "result";
 			$xmlroster = $xml->sub('query');
+			$contacts = array();
 			foreach($xmlroster->subs as $item) {
 				$groups = array();
 				if ($item->name == 'item') {

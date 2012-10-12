@@ -128,7 +128,7 @@ class IPCManagerMasterPoolConnection extends Connection {
 	
 	public function onFinish() {
 		unset(Daemon::$process->workers->threads[$this->spawnid]->connection);
-		unset($this->appInstance->sessions[$this->connId]);
+		unset($this->appInstance->sessions[$this->id]);
 		Daemon::$process->updatedWorkers();
 	}
 	

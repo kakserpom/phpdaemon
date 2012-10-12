@@ -21,6 +21,7 @@ class ConnectionPool {
 	public $sockets = array();
 	public $socketEvents = array();
 	public $sockCounter = 0;
+	public $finished = false;
 	
 	public function __construct($config = array()) {
 		$this->config = $config;
@@ -246,7 +247,8 @@ class ConnectionPool {
 				$result = false;
 			}
 		}
-		if ($result) {
+		if ($result && !$this->finished) {
+			$this->finished = true;
 			$this->onFinish();
 		}
 		return $result;

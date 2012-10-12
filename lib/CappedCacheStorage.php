@@ -11,10 +11,7 @@ abstract class CappedCacheStorage {
 	public $sorter;
 	public $maxCacheSize = 64;
 	public $capWindow = 5;
-	public $cache = array();
-	
-	public function __construct() {}
-	
+	public $cache = array();	
 	public function hash($key) {
 		return crc32($key);
 	}
