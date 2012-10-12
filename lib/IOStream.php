@@ -55,7 +55,7 @@ abstract class IOStream {
 	 * @param object AppInstance
 	 * @return void
 	 */
-	public function __construct($fd, $id = null, $pool = null) {
+	public function __construct($fd = null, $id = null, $pool = null) {
 		$this->id = $id;
 		$this->pool = $pool;
 	
