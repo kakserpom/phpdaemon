@@ -12,6 +12,8 @@ class Connection extends IOStream {
 	public $host;
 	public $hostReal;
 	public $port;
+	public $onConnected = null;
+	public $connected = false;
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);
@@ -30,6 +32,36 @@ class Connection extends IOStream {
 		return $u;
 	}
 
+	/**
+	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * @return void
+	 */
+	public function onReady() {
+		if ($this->onConnected) {
+			$this->connected = true;
+					Daemon::log(get_class($this).' executeAll() start');
+			$this->onConnected->executeAll($this);
+			Daemon::log(get_class($this).' executeAll() end');
+			$this->onConnected = null;
+		}
+	}
+
+	/**
+	 * Executes the given callback when/if the connection is handshaked
+	 * Callback
+	 * @return void
+	 */
+	public function onConnected($cb) {
+		if ($this->connected) {
+			call_user_func($cb, $this);
+		} else {
+			if (!$this->onConnected) {
+				$this->onConnected = new SplStackCallbacks;
+			}
+			$this->onConnected->push($cb);
+		}
+	}
+	
 
 	public function connect($url, $cb) {
 		$u = $this->parseUrl($url);

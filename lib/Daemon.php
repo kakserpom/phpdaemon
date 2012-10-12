@@ -43,9 +43,6 @@ class Daemon {
 	public static $process;
 	public static $appResolver;
 	public static $appInstances = array();
-	public static $sockCounter = 0;
-	public static $sockets = array();
-	public static $socketEvents = array();
 	public static $req;
 	private static $workers;
 	private static $masters;

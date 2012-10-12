@@ -76,7 +76,9 @@ class XMPPRoster {
 			if ($xml->attrs['type'] == 'set') {
 				$this->xmpp->sendXML('<iq type="reply" id="'.$xml->attrs['id'].'" to="'.$xml->attrs['from'].'" />');
 			}
-			call_user_func($cb, $status);
+			if ($cb) {
+				call_user_func($cb, $status);
+			}
 		});
 	}
 

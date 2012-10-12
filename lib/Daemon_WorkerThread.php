@@ -85,7 +85,6 @@ class Daemon_WorkerThread extends Thread {
 			$self = Daemon::$process;
 
 			if ($self->checkState() !== TRUE) {
-				$self->closeSockets();
 				$self->breakMainLoop = TRUE;
 				event_base_loopexit($self->eventBase);
 				return;
@@ -314,30 +313,6 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * Close each of binded sockets.
-	 * @return void
-	 */
-	public function closeSockets() {
-		for (;sizeof(Daemon::$socketEvents);) {
-			if (!is_resource($ev = array_pop(Daemon::$socketEvents))) {
-				continue;
-			}
-			@event_del($ev); // bogus notice
-			event_free($ev);
-		}
-		for (;sizeof(Daemon::$sockets);) {
-			if (!$sock = array_pop(Daemon::$sockets)) {
-				continue;
-			}
-			if (Daemon::$useSockets) {
-				socket_close($sock[0]);
-			} else {
-				fclose($sock[0]);
-			}
-		}
-	}
-
-	/**
 	 * Reloads additional config-files on-the-fly.
 	 * @return void
 	 */
@@ -469,7 +444,6 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		$this->terminated = TRUE;
-		$this->closeSockets();
 		$this->setStatus(3);
 
 		if ($hard) {

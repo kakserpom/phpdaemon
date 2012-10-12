@@ -1,18 +1,12 @@
 <?php
 
 /**
- * @package Applications
+ * @package lib
  * @subpackage PostgreSQLClient
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class PostgreSQLClient extends AsyncServer {
-
-	public $sessions = array(); // Active sessions
-	public $servConn = array(); // Active connections
-
-	public $ready = FALSE; // Ready?
-
+class PostgreSQLClient extends NetworkClient {
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -30,78 +24,9 @@ class PostgreSQLClient extends AsyncServer {
 			'enable' => 0
 		);
 	}
-
-	/**
-	 * Constructor
-	 * @return void
-	 */
-	public function init() {
-		if ($this->config->enable->value) {
-			$this->ready = TRUE;
-		}
-	}
-
-	/**
-	 * Establish connection
-	 * @param string Address
-	 * @return integer Connection's ID
-	 */
-	public function getConnection($addr = NULL) {
-		if (!$this->ready) {
-			return FALSE;
-		}
-		
-		if (empty($addr)) {
-			$addr = $this->config->server->value;
-		}
-		
-		if (isset($this->servConn[$addr])) {
-			foreach ($this->servConn[$addr] as &$c) {
-				if (
-					isset($this->sessions[$c]) 
-					&& !sizeof($this->sessions[$c]->callbacks)
-				) {
-					return $this->sessions[$c];
-				}
-			}
-		} else {
-			$this->servConn[$addr] = array();
-		}
-		
-		$u = parse_url($addr);
-		
-		if (!isset($u['port'])) {
-			$u['port'] = $this->config->port->value;
-		}
-		
-		$connId = $this->connectTo($u['host'], $u['port']);
-
-		if (!$connId) {
-			return;
-		}
-		
-		$this->sessions[$connId] = new PostgreSQLClientSession($connId, $this);
-		$this->sessions[$connId]->url = $addr;
-		
-		if (isset($u['user'])) {
-			$this->sessions[$connId]->user = $u['user'];
-		}
-		
-		if (isset($u['pass'])) {
-			$this->sessions[$connId]->password = $u['pass'];
-		}
-		
-		if (isset($u['path'])) {
-			$this->sessions[$connId]->dbname = ltrim($u['path'], '/');
-		}
-		
-		$this->servConn[$addr][$connId] = $connId;
-		
-		return $this->sessions[$connId];
-	}
 }
 
-class PostgreSQLClientSession extends SocketSession {
+class PostgreSQLClientConnection extends NetworkClientConnection {
 	public $url;                       // Connection's URL.
 	public $protover      = '3.0';
 	public $maxPacketSize = 0x1000000; // Maximum packet size.
@@ -110,7 +35,7 @@ class PostgreSQLClientSession extends SocketSession {
 	public $user          = 'root';    // Username
 	public $password      = '';        // Password
 	public $options       = '';        // Default options
-	public $cstate        = 0;         // Connection's state. 0 - start,  1 - got initial packet,  2 - auth. packet sent,  3 - auth. error,  4 - handshaked OK
+	public $state        = 0;         // Connection's state. 0 - start,  1 - got initial packet,  2 - auth. packet sent,  3 - auth. error,  4 - handshaked OK
 	public $instate       = 0;         // State of pointer of incoming data. 0 - Result Set Header Packet,  1 - Field Packet,  2 - Row Packet
 	public $resultRows    = array();   // Resulting rows.
 	public $resultFields  = array();   // Resulting fields
@@ -123,33 +48,32 @@ class PostgreSQLClientSession extends SocketSession {
 	public $ready         = FALSE;
 	public $parameters    = array();   // Runtime parameters from server
 	public $backendKey;
+	const STATE_AUTH_ERROR = 3;
+	const STATE_AUTH_OK = 4;
+	const STATE_AUTH_PACKET_SENT = 2;
 
 	/**
 	 * Called when the connection is ready to accept new data
 	 * @return void
 	 */
-	public function onWrite() {
-		if (!$this->ready) {
-			$this->ready = TRUE;
-			$e = explode('.', $this->protover);
-			$packet = pack('nn', $e[0], $e[1]);
+	public function onReady() {
+		$e = explode('.', $this->protover);
+		$packet = pack('nn', $e[0], $e[1]);
 	
-			if (strlen($this->user)) {
-				$packet .= "user\x00" . $this->user . "\x00";
-			}
-			
-			if (strlen($this->dbname)) {
-				$packet .= "database\x00" . $this->dbname . "\x00";
-			}
-			
-			if (strlen($this->options)) {
-				$packet .= "options\x00" . $this->options . "\x00";
-			}
-			
-			$packet .= "\x00";
-			
-			$this->sendPacket('', $packet);
+		if (strlen($this->user)) {
+			$packet .= "user\x00" . $this->user . "\x00";
 		}
+			
+		if (strlen($this->dbname)) {
+			$packet .= "database\x00" . $this->dbname . "\x00";
+		}
+			
+		if (strlen($this->options)) {
+			$packet .= "options\x00" . $this->options . "\x00";
+		}
+			
+		$packet .= "\x00";
+		$this->sendPacket('', $packet);
 	}
 
 	/**
@@ -157,14 +81,17 @@ class PostgreSQLClientSession extends SocketSession {
 	 * Callback.
 	 * @return void
 	 */
-	public function onConnected($callback) {
-		$this->onConnected[] = $callback;
-
-		if ($this->cstate == 3) {
-			call_user_func($callback, $this, FALSE);
+	public function onConnected($cb) {
+		if ($this->state == self::STATE_AUTH_ERROR) {
+			call_user_func($callback, $this, false);
 		}
-		elseif ($this->cstate === 4) {
-			call_user_func($callback, $this, TRUE);
+		elseif ($this->state === self::STATE_AUTH_OK) {
+			call_user_func($callback, $this, true);
+		} else {
+			if (!$this->onConnected) {
+				$this->onConnected = new SplStackCallbacks;
+			}
+			$this->onConnected->push($cb);
 		}
 	}
 
@@ -370,7 +297,7 @@ class PostgreSQLClientSession extends SocketSession {
 	 * @return boolean Success
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {
-		if ($this->cstate !== 4) {
+		if ($this->state !== self::STATE_AUTH_OK) {
 			return FALSE;
 		}
 		
@@ -388,7 +315,7 @@ class PostgreSQLClientSession extends SocketSession {
 	public function selectDB($name) {
 		$this->dbname = $name;
 
-		if ($this->cstate !== 1) {
+		if ($this->state !== 1) {
 			return $this->query('USE `' . $name . '`');
 		}
 
@@ -439,7 +366,7 @@ class PostgreSQLClientSession extends SocketSession {
 					Daemon::log(__CLASS__ . ': auth. ok.');
 				}
 
-				$this->cstate = 4; // Auth. ok
+				$this->state = self::STATE_AUTH_OK;
 
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, TRUE);
@@ -448,36 +375,36 @@ class PostgreSQLClientSession extends SocketSession {
 			elseif ($authType === 2) {
 				// KerberosV5
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: KerberosV5.');
-				$this->cstate = 3; // Auth. error
+				$this->state = self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 			elseif ($authType === 3) {
 				// Cleartext
 				$this->sendPacket('p', $this->password); // Password Message
-				$this->cstate = 2; // Auth. packet sent
+				$this->state = self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 4) {
 				// Crypt
 				$salt = binarySubstr($packet, 4, 2);
 				$this->sendPacket('p', crypt($this->password, $salt)); // Password Message
-				$this->cstate = 2; // Auth. packet sent
+				$this->state = self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 5) {
 				// MD5
 				$salt = binarySubstr($packet, 4, 4);
 				$this->sendPacket('p', 'md5' . md5(md5($this->password . $this->user) . $salt)); // Password Message
-				$this->cstate = 2; // Auth. packet sent
+				$this->state = self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 6) {
 				// SCM
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: SCM.');
-				$this->cstate = 3; // Auth. error
+				$this->state = self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 			elseif ($authType == 9) {
 				// GSS
 				Daemon::log(__CLASS__.': Unsupported authentication method: GSS.');
-				$this->cstate = 3; // Auth. error
+				$this->state = self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 		}
@@ -582,13 +509,13 @@ class PostgreSQLClientSession extends SocketSession {
 			$this->errno = -1;
 			$this->errmsg = $message;
 
-			if ($this->cstate == 2) {
+			if ($this->state == self::STATE_AUTH_PACKET_SENT) {
 				// Auth. error
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, FALSE);
 				}
 
-				$this->cstate = 3;
+				$this->state = self::STATE_AUTH_ERROR;
 			}
 			
 			$this->onError();
@@ -710,9 +637,9 @@ class PostgreSQLClientSession extends SocketSession {
 		$this->resultRows = array();
 		$this->resultFields = array();
 
-		if ($this->cstate === 2) {
+		if ($this->state === self::STATE_AUTH_PACKET_SENT) {
 			// in case of auth error
-			$this->cstate = 3;
+			$this->state = self::STATE_AUTH_ERROR;
 			$this->finish();
 		}
 	

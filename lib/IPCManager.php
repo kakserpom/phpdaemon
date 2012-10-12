@@ -6,10 +6,13 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class IPCManager extends AsyncServer {
 
-	public $sessions = array();  // Active sessions
 
+class IPCManager extends AppInstance {
+	public $pool;
+	public $conn;
+	
+	
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -19,7 +22,6 @@ class IPCManager extends AsyncServer {
 		return array(
 			// listen to
 			'mastersocket'     => 'unix:/tmp/phpDaemon-master-%x.sock',
-			'mastersocketport' => 0,
 		);
 	}
 
@@ -28,88 +30,66 @@ class IPCManager extends AsyncServer {
 	 * @return void
 	 */
 	public function init() {
-		if (Daemon::$process instanceof Daemon_MasterThread)
-		{
-			$this->bindSockets(
-				sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value)),
-				$this->config->mastersocketport->value
-			);
-			$this->enableSocketEvents();
-		}
+		$this->socketurl = $this->config->mastersocket->value;
+		$this->pool = IPCManagerMasterPool::getInstance(array('listen' => $this->socketurl));
+		$this->pool->onReady();
 	}
-	
+
 	/**
-	 * Called when the worker is ready to go
-	 * @todo -> protected?
+	 * Called when the worker is ready to go.
 	 * @return void
 	 */
-	public function onReady()	{
-		if (Daemon::$process instanceof Daemon_WorkerThread)
-		{
-			$this->sessions = array();
-			$this->getConnection();
-		}
+	public function onReady() {
+		$this->sendPacket(array(
+			'op' => 'start',
+			'pid' => Daemon::$process->pid,
+			'spawnid' => Daemon::$process->spawnid)
+		);
 	}
-  public function getConnection()
-  {
-		if (sizeof($this->sessions)) {return current($this->sessions);}
-		
-		$connId = $this->connectTo(sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value)), $this->config->mastersocketport->value);
-		if (!$connId) {
+
+	/**
+	 * Called when application instance is going to shutdown.
+	 * @return boolean Ready to shutdown?
+	 */
+	public function onShutdown() {
+		if ($this->pool) {
+			return $this->pool->onShutdown();
+		}
+		return true;
+	}
+
+
+	public function sendPacket($packet) {
+		if ($this->conn && $this->conn->connected) {
+			$this->conn->sendPacket($packet);
 			return;
 		}
-		
-		return $this->sessions[$connId] = new IPCManagerWorkerSession($connId, $this);
 
-  }
-  
-  public function sendPacket($packet) {
-		if ($c = $this->getConnection()) {
-			$c->sendPacket($packet);
+		$cb = function($conn) use ($packet) {
+			$conn->sendPacket($packet);
+		};
+		if (!$this->conn) {
+			$this->conn = new IPCManagerWorkerConnection(null, null, null);
+			$this->conn->connectTo($this->socketurl);
 		}
-  }
-  
-  
-  public function sendBroadcastCall($appInstance, $method, $args = array(), $cb = null) {
-		if ($c = $this->getConnection()) {
-			
-			$c->sendPacket(array(
-					'op' => 'broadcastCall',
-					'appfullname' => $appInstance,
-					'method' => $method,
-					'args' => $args
-			));
-		}
-  }
-  
-		
-		
-	/**
-	 * Called when new connection is accepted
-	 * @param integer Connection's ID
-	 * @param string Address of the connected peer
-	 * @return void
-	 */
-	protected function onAccepted($connId, $addr) {
-		$this->sessions[$connId] = new IPCManagerMasterSession($connId, $this);
-	}
-	
+		$this->conn->onConnected($cb);
+ 	}
+
+	public function sendBroadcastCall($appInstance, $method, $args = array(), $cb = null) {
+		$this->sendPacket(array(
+			'op' => 'broadcastCall',
+			'appfullname' => $appInstance,
+			'method' => $method,
+			'args' => $args
+		));
+ 	}
+
 }
-
-class IPCManagerMasterSession extends SocketSession {
+class IPCManagerMasterPool extends NetworkServer {}
+class IPCManagerMasterPoolConnection extends Connection {
 
 	public $spawnid;
-
-	/**
-	 * Called when the session constructed
-	 * @return void
-	 */
-	public function init() {
-		
-	}
-	
 	public function onPacket($p) {
-	
 		if ($p['op'] === 'start') {
 			$this->spawnid = $p['spawnid'];
 			Daemon::$process->workers->threads[$this->spawnid]->connection = $this;
@@ -169,22 +149,8 @@ class IPCManagerMasterSession extends SocketSession {
 		}
 	}
 }
-class IPCManagerWorkerSession extends SocketSession {
+class IPCManagerWorkerConnection extends Connection {
 
-	/**
-	 * Called when the session constructed
-	 * @return void
-	 */
-	public function init() {
-		
-		//Daemon::log(Debug::backtrace());
-		$this->sendPacket(array(
-			'op' => 'start',
-			'pid' => Daemon::$process->pid,
-			'spawnid' => Daemon::$process->spawnid)
-		);
-	
-	}
 	public function onPacket($p) {
 		if ($p['op'] === 'spawnInstance') {
 			$fullname = $p['appfullname'];
@@ -201,9 +167,9 @@ class IPCManagerWorkerSession extends SocketSession {
 				$self = Daemon::$process;
 				
 				if (Daemon::supported(Daemon::SUPPORT_RUNKIT_IMPORT)) {
-					//Daemon::log('--start runkit_import('.$path.')');
+					Daemon::log('--start runkit_import('.$path.')');
 					runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
-					//Daemon::log('--end runkit_import('.$path.')');
+					Daemon::log('--end runkit_import('.$path.')');
 				} else {
 					$this->appInstance->log('Cannot import \''.$path.'\': runkit_import is not callable.');
 				}
@@ -237,8 +203,8 @@ class IPCManagerWorkerSession extends SocketSession {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 		
-		while (($l = $this->gets()) !== FALSE) {
-			$this->onPacket(json_decode($l,TRUE));
+		while (($l = $this->gets()) !== false) {
+			$this->onPacket(json_decode($l, true));
 		}
 	}
 }

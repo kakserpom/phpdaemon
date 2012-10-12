@@ -12,13 +12,15 @@ class ConnectionPool {
 	const TYPE_TCP    = 0;
 	const TYPE_SOCKET = 1;
 	public $allowedClients  = NULL;
-	public $socketEvents    = array();
 	public $connectionClass;
 	public $list = array();
 	public $name;
 	public $config;
 	public static $instances = array();
 	public $socketsEnabled = false;
+	public $sockets = array();
+	public $socketEvents = array();
+	public $sockCounter = 0;
 	
 	public function __construct($config = array()) {
 		$this->config = $config;
@@ -155,15 +157,12 @@ class ConnectionPool {
 	 */
 	public function addSocket($sock, $type, $addr) {
 		$ev = event_new();
-		
-		if (!event_set($ev,	$sock, EV_READ | EV_PERSIST, array($this, 'onAcceptEvent'), array(Daemon::$sockCounter, $type))) {
-			
-			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on binded socket: ' . Debug::dump($sock));
+		$k = $this->sockCounter++;
+		if (!event_set($ev,	$sock, EV_READ | EV_PERSIST, array($this, 'onAcceptEvent'), array($k, $type))) {
+			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($sock));
 			return;
 		}
-		$k = Daemon::$sockCounter++;
-		Daemon::$sockets[$k] = array($sock, $type, $addr);
-		Daemon::$socketEvents[$k] = $ev;
+		$this->sockets[$k] = array($sock, $type, $addr);
 		$this->socketEvents[$k] = $ev;
 		if ($this->socketsEnabled) {
 			event_base_set($ev, Daemon::$process->eventBase);
@@ -190,13 +189,12 @@ class ConnectionPool {
 	 * Disable all events of sockets
 	 * @return void
 	 */
-	public function disable() { 
-		return; // possible critical bug
-		for (;sizeof($this->socketEvents);) {
+	public function disable() {
+		while (sizeof($this->socketEvents) > 0) {
 			if (!is_resource($ev = array_pop($this->socketEvents))) {
 				continue;
 			}
-			event_del($ev);
+			@event_del($ev); // bogus notice
 			event_free($ev);
 		}
 	}
@@ -209,8 +207,32 @@ class ConnectionPool {
 		return $this->finish();
 	}
 
+	public function onFinish() {
+
+	}
+
+
+	/**
+	 * Close each of binded sockets.
+	 * @return void
+	 */
+	public function closeSockets() {
+		while (sizeof($this->sockets) > 0) {
+			if (!$sock = array_pop($this->sockets)) {
+				continue;
+			}
+			if (Daemon::$useSockets) {
+				socket_close($sock[0]);
+			} else {
+				fclose($sock[0]);
+			}
+		}
+	}
+
+
 	public function finish() {
 		$this->disable(); 
+		$this->closeSockets();
 		
 		$result = true;
 	
@@ -223,6 +245,9 @@ class ConnectionPool {
 			if (!$conn->gracefulShutdown()) {
 				$result = false;
 			}
+		}
+		if ($result) {
+			$this->onFinish();
 		}
 		return $result;
 	}
@@ -350,8 +375,9 @@ class ConnectionPool {
 				if (!isset($hp[1])) {
 					$hp[1] = $listenport;
 				}
-
-				$addr = $hp[0] . ':' . $hp[1];
+				$host = $hp[0];
+				$port = (int) $hp[1];
+				$addr = $host . ':' . $port;
 
 				if (Daemon::$useSockets) {
 					$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -385,6 +411,9 @@ class ConnectionPool {
 
 						continue;
 					}
+
+					socket_getsockname($sock, $host, $port);
+					$addr = $host . ':' . $port;
 
 					if (!socket_listen($sock, SOMAXCONN)) {
 						$errno = socket_last_error();
@@ -439,7 +468,6 @@ class ConnectionPool {
 		return $conn;
 	}
 
-	//$this->config->defaultport->value
 	public function getConnectionById($id) {
 		if (!isset($this->list[$id])) {
 			return false;
