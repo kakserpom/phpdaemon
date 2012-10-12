@@ -39,9 +39,7 @@ class Connection extends IOStream {
 	public function onReady() {
 		if ($this->onConnected) {
 			$this->connected = true;
-					Daemon::log(get_class($this).' executeAll() start');
 			$this->onConnected->executeAll($this);
-			Daemon::log(get_class($this).' executeAll() end');
 			$this->onConnected = null;
 		}
 	}
