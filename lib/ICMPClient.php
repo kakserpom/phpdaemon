@@ -15,19 +15,15 @@ class ICMPClient extends NetworkClient {
 	 */
 	
 	public function sendPing($host, $cb) {
-
-		$connId = $this->connectTo('raw:' . $host);		
-		if (!$connId) {
-			return false;
-		}
-		$conn = $this->getConnectionById($connId);
-		$conn->sendEcho($cb);
-		return $connId;
+		$this->connectTo('raw:' . $host, 0, function($conn) use ($cb) {
+			$conn->sendEcho($cb);
+		});
 	}	
 }
 
 class ICMPClientConnection extends NetworkClientConnection {
 	public $seq = 0;
+
 	public function sendEcho($cb) {
 		++$this->seq;
 		
@@ -58,10 +54,10 @@ class ICMPClientConnection extends NetworkClientConnection {
 	 */
 	public function stdin($buf) {
 		// TODO: implement sequential packet exchange, incoming packet check
-		$el = $this->onResponse->pop();
-		if ($el) {
+		while (!$this->onResponse->isEmpty()) {
+			$el = $this->onResponse->shift();
 			list ($cb, $st) = $el;
-			$cb(microtime(true) - $st);
+			call_user_func($cb, microtime(true) - $st);
 		}
 		$this->finish();
 	}

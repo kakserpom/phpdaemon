@@ -14,6 +14,7 @@ class Connection extends IOStream {
 	public $port;
 	public $onConnected = null;
 	public $connected = false;
+	public $timeout = 120;
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);
@@ -70,7 +71,7 @@ class Connection extends IOStream {
 		$this->url = $url;
 		$this->scheme = $u['scheme'];
 		$this->host = $u['host'];
-		$this->port = $u['port'];
+		$this->port = isset($u['port']) ? $u['port'] : 0;
 
 		if (isset($u['pass'])) {
 			$this->password = $u['pass'];
@@ -114,6 +115,8 @@ class Connection extends IOStream {
 					return FALSE;
 				}
 				socket_set_nonblock($fd);
+				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 				@socket_connect($fd, $e[1], 0);
 			} else {
 				$fd = @stream_socket_client('unix://' . $e[1]);
@@ -133,6 +136,8 @@ class Connection extends IOStream {
 				if (!$fd) {
 					return false;
 				}
+				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 				socket_set_nonblock($fd);
 				@socket_connect($fd, $e[1], 0);
 			} else {
@@ -147,6 +152,8 @@ class Connection extends IOStream {
 					return FALSE;
 				}
 				socket_set_nonblock($fd);
+				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 				@socket_connect($fd, $host, $port);
 			} else {
 				$fd = @stream_socket_client(($host === '') ? '' : $host . ':' . $port);

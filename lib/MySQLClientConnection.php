@@ -9,7 +9,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $path        = ''; 	        // Default database name.
 	public $user          = 'root';     // Username
 	public $password      = '';         // Password
-	public $cstate        = 0;          // Connection's state. 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
+	public $state        = 0;          // Connection's state. 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
 	const STATE_GOT_INIT = 1;
 	const STATE_AUTH_SENT = 2;
 	const STATE_AUTH_ERR = 3;
@@ -32,14 +32,17 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function onConnected($cb) {
-		if ($this->cstate == self::STATE_AUTH_ERR) {
+		if ($this->state == self::STATE_AUTH_ERR) {
 			call_user_func($cb, $this, FALSE);
 		}
-		elseif ($this->cstate === self::STATE_HANDSHAKED) {
+		elseif ($this->state === self::STATE_HANDSHAKED) {
 			call_user_func($cb, $this, TRUE);
 		}
 		else {
-			$this->onConnected = $cb;
+			if (!$this->onConnected) {
+				$this->onConnected = new SplStackCallbacks;
+			}
+			$this->onConnected->push($cb);
 		}
 	}
 	
@@ -229,13 +232,18 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * @return string Result
 	 */
 	public function auth() {
-		if ($this->cstate !== self::STATE_GOT_INIT) {
+		if ($this->state !== self::STATE_GOT_INIT) {
 			return;
 		}
 		
-		$this->cstate = self::STATE_AUTH_SENT;
-		$this->onResponse->push($this->onConnected);
-		$this->onConnected = null;
+		$this->state = self::STATE_AUTH_SENT;
+		$this->onResponse->push(function($conn, $result) {
+			if ($conn->onConnected) {
+				$conn->connected = true;
+				$conn->onConnected->executeAll($conn, $result);
+				$conn->onConnected = null;
+			}
+		});
 		
 		$this->clientFlags =
 			MySQLClient::CLIENT_LONG_PASSWORD | 
@@ -291,7 +299,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 			throw new MySQLClientConnectionFinished;
 		}
 		
-		if ($this->cstate !== self::STATE_HANDSHAKED) {
+		if ($this->state !== self::STATE_HANDSHAKED) {
 			return false;
 		}
 		
@@ -310,7 +318,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public function selectDB($name) {
 		$this->path = $name;
 
-		if ($this->cstate !== self::STATE_GOT_INIT) {
+		if ($this->state !== self::STATE_GOT_INIT) {
 			return $this->query('USE `' . $name . '`');
 		}
 		
@@ -337,16 +345,21 @@ class MySQLClientConnection extends NetworkClientConnection {
 			return;
 		}
 		$p = 4;
-		if ($this->cstate === self::STATE_ROOT) {
-			$this->cstate = self::STATE_GOT_INIT;
+		if ($this->state === self::STATE_ROOT) {
+			$this->state = self::STATE_GOT_INIT;
 			$p = 4;
 
 			$this->protover = ord(binarySubstr($this->buf, $p++, 1));
 			if ($this->protover === 0xFF) { // error
 				$fieldCount = $this->protover;
 				$this->protover = 0;
-				$this->onResponse->push($this->onConnected);
-				$this->onConnected = null;
+				$this->onResponse->push(function($conn, $result) {
+					if ($conn->onConnected) {
+						$conn->connected = true;
+						$conn->onConnected->executeAll($conn, $result);
+						$conn->onConnected = null;
+					}
+				});
 				goto field;
 			}
 			$this->serverver = '';
@@ -397,8 +410,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 			}
 			elseif ($fieldCount === 0x00) {
 				// OK Packet Empty
-				if ($this->cstate === self::STATE_AUTH_SENT) {
-					$this->cstate = self::STATE_HANDSHAKED;
+				if ($this->state === self::STATE_AUTH_SENT) {
+					$this->state = self::STATE_HANDSHAKED;
 			
 					if ($this->path !== '') {
 						$this->query('USE `' . $this->path . '`');
@@ -523,9 +536,9 @@ class MySQLClientConnection extends NetworkClientConnection {
 		$this->resultRows = array();
 		$this->resultFields = array();
 
-		if (($this->cstate === self::STATE_AUTH_SENT) || ($this->cstate == self::STATE_GOT_INIT)) {
+		if (($this->state === self::STATE_AUTH_SENT) || ($this->state == self::STATE_GOT_INIT)) {
 			// in case of auth error
-			$this->cstate = self::STATE_AUTH_ERR;
+			$this->state = self::STATE_AUTH_ERR;
 			$this->finish();
 		}
 	

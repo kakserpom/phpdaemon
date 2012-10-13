@@ -37,17 +37,6 @@ abstract class IOStream {
 	public $url;
 	public $alive = false; // alive?
 
-	public function touchEvent() {
-		if ($this->timeout !== null) {
-			if ($this->readEvent !== null) {
-				event_add($this->readEvent, 1e6 * $this->timeout);
-			}
-			if ($this->buffer !== null) {
-				event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
-			}
-		}
-	}
-
 	/**
 	 * IOStream constructor
 	 * @param integer Stream ID in Pool

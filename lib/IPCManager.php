@@ -36,18 +36,6 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
-	 * Called when the worker is ready to go.
-	 * @return void
-	 */
-	public function onReady() {
-		$this->sendPacket(array(
-			'op' => 'start',
-			'pid' => Daemon::$process->pid,
-			'spawnid' => Daemon::$process->spawnid)
-		);
-	}
-
-	/**
 	 * Called when application instance is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
@@ -151,6 +139,14 @@ class IPCManagerMasterPoolConnection extends Connection {
 }
 class IPCManagerWorkerConnection extends Connection {
 
+	public function onReady() {
+		$this->sendPacket(array(
+			'op' => 'start',
+			'pid' => Daemon::$process->pid,
+			'spawnid' => Daemon::$process->spawnid)
+		);
+		parent::onReady();
+	}
 	public function onPacket($p) {
 		if ($p['op'] === 'spawnInstance') {
 			$fullname = $p['appfullname'];
@@ -189,10 +185,8 @@ class IPCManagerWorkerConnection extends Connection {
 			}
 		}
 	}
-	public function sendPacket($p) {
-		
+	public function sendPacket($p) {		
 		$this->writeln(json_encode($p));
-		
 	}
 
 	/**

@@ -17,7 +17,7 @@ class NetworkClientConnection extends Connection {
 
 	public function __construct($fd, $id = null, $pool = null) {
 		parent::__construct($fd, $id, $pool);
-		$this->onResponse = new SplStack();
+		$this->onResponse = new SplStackCallbacks();
 	}	
 
 	

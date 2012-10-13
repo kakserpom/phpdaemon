@@ -481,6 +481,28 @@ class ConnectionPool {
 		return $conn;
 	}
 
+
+	/**
+	 * Establish a connection with remote peer
+	 * @param string Address
+	 * @param string Optional. Default port
+	 * @param callback Optional. Callback.
+	 * @param string Optional. Connection class name.
+	 * @return integer Connection's ID. Boolean false when failed.
+	 */
+	public function connectTo($addr, $port = 0, $cb = null, $class = null) {
+		if ($class === null) {
+			$class = $this->connectionClass;
+		}
+		$id = ++Daemon::$process->connCounter;
+		$conn = $this->list[$id] = new $class(null, $id, $this);
+		$conn->connectTo($addr, $port);
+		if ($cb !== null) {
+			$conn->onConnected($cb);
+		}
+		return $conn;
+	}
+
 	public function getConnectionById($id) {
 		if (!isset($this->list[$id])) {
 			return false;
