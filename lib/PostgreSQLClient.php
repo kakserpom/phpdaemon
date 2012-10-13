@@ -155,7 +155,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 		$this->write($header);
 		$this->write($packet);
 
-		if ($this->appInstance->config->protologging->value) {
+		if ($this->pool->config->protologging->value) {
 			Daemon::log('Client --> Server: ' . Debug::exportBytes($header . $packet) . "\n\n");
 		}
 		
@@ -330,7 +330,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 
-		if ($this->appInstance->config->protologging->value) {
+		if ($this->pool->config->protologging->value) {
 			Daemon::log('Server --> Client: ' . Debug::exportBytes($buf) . "\n\n");
 		}
 		
@@ -362,7 +362,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	
 			if ($authType === 0) {
 				// Successful
-				if ($this->appInstance->config->protologging->value) {
+				if ($this->pool->config->protologging->value) {
 					Daemon::log(__CLASS__ . ': auth. ok.');
 				}
 
@@ -454,7 +454,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 		) {
 			// Copy in response
 			// The backend is ready to copy data from the frontend to a table; see Section 45.2.5.
-			if ($this->appInstance->config->protologging->value) {
+			if ($this->pool->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': Caught CopyInResponse');
 			}
 		}
@@ -520,7 +520,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 			
 			$this->onError();
 		
-			if ($this->appInstance->config->protologging->value) {
+			if ($this->pool->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': Error response caught (0x' . dechex($code) . '): ' . $message);
 			}
 		}
@@ -532,7 +532,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 		}
 		elseif ($type === 'S') {
 			// Portal Suspended
-			if ($this->appInstance->config->protologging->value) {
+			if ($this->pool->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': Caught PortalSuspended');
 			}
 		}
@@ -543,7 +543,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 			if (isset($u[0])) {
 				$this->parameters[$u[0]] = isset($u[1]) ? $u[1] : NULL;
 
-				if ($this->appInstance->config->protologging->value) {
+				if ($this->pool->config->protologging->value) {
 					Daemon::log(__CLASS__ . ': Parameter ' . $u[0] . ' = \'' . $this->parameters[$u[0]] . '\'');
 				}
 			}
@@ -553,7 +553,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 			list(, $this->backendKey) = unpack('N', $packet);
 			$this->backendKey = isset($u[1])?$u[1]:NULL;
 	
-			if ($this->appInstance->config->protologging->value) {
+			if ($this->pool->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': BackendKey is ' . $this->backendKey);
 			}
 		}
@@ -561,7 +561,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 			// Ready For Query
 			$this->status = $packet;
 		
-			if ($this->appInstance->config->protologging->value) {
+			if ($this->pool->config->protologging->value) {
 				Daemon::log(__CLASS__ . ': Ready For Query. Status: ' . $this->status);
 			}
 		} else {
@@ -614,7 +614,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 		$this->resultRows = array();
 		$this->resultFields = array();
 		
-		if ($this->appInstance->config->protologging->value) {
+		if ($this->pool->config->protologging->value) {
 			Daemon::log(__METHOD__);
 		}
 	}
@@ -644,17 +644,6 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 		}
 	
 		Daemon::log(__METHOD__ . ' #' . $this->errno . ': ' . $this->errmsg);
-	}
-
-	/**
-	 * Called when session finishes
-	 * @return void
-	 */
-	public function onFinish() {
-		$this->finished = TRUE;
-	
-		unset($this->servConn[$this->url][$this->connId]);
-		unset($this->appInstance->sessions[$this->connId]);
 	}
 }
 
