@@ -31,7 +31,7 @@ class ConnectionPool {
 		}
 		if (isset($this->config->listen)) {
 			$this->bind($this->config->listen->value, isset($this->config->port->value) ? $this->config->port->value : null);
-		}		
+		}
 		$this->init();
 	}
 	
@@ -265,7 +265,7 @@ class ConnectionPool {
 		if (is_string($addrs)) {
 			$addrs = explode(',', $addrs);
 		}
-		
+		$n = 0;
 		for ($i = 0, $s = sizeof($addrs); $i < $s; ++$i) {
 			$addr = trim($addrs[$i]);
 	
@@ -310,6 +310,9 @@ class ConnectionPool {
 					// SO_REUSEADDR is meaningless in AF_UNIX context
 
 					if (!@socket_bind($sock, $path)) {
+						if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
+							continue;
+						}
 						$errno = socket_last_error();
 						Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
@@ -408,6 +411,9 @@ class ConnectionPool {
 					}
 
 					if (!@socket_bind($sock, $hp[0], $hp[1])) {
+						if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
+							continue;
+						}
 						$errno = socket_last_error();
 						Daemon::$process->log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 
@@ -440,8 +446,13 @@ class ConnectionPool {
 				Daemon::$process->log(get_class($this) . ': Couldn\'t add errorneus socket with address \'' . $addr . '\'.');
 			} else {
 				$this->addSocket($sock, $type, $addr);
+				++$n;
+				if (isset($this->config->maxboundsockets->value) && ($n >= $this->config->maxboundsockets->value)) {
+					return $n;
+				}
 			}
 		}
+		return $n;
 	}
 	
 	public function removeConnection($id) {

@@ -6,11 +6,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class WebSocketOverCOMET extends AsyncServer {
-
-	const IPCPacketType_C2S = 0x01;
-	const IPCPacketType_S2C = 0x02;
-	const IPCPacketType_POLL = 0x03;
+class WebSocketOverCOMET extends AppInstance {
 
 	public $IpcTransSessions = array();
 	public $WS;
@@ -117,6 +113,9 @@ class WebSocketOverCOMET extends AsyncServer {
 class WebSocketOverCOMET_IPCSession extends SocketSession {
 
 	public $ipcId;
+	const TYPE_C2S = 0x01;
+	const TYPE_S2C = 0x02;
+	const TYPE_POLL = 0x03;
 
 	/**
 	 * Constructor.
@@ -175,11 +174,11 @@ class WebSocketOverCOMET_IPCSession extends SocketSession {
 				isset($this->appInstance->queue[$reqId]->downstream) 
 				&& $this->appInstance->queue[$reqId]->authKey == $authKey
 			) {
-				if ($type === WebSocketOverCOMET::IPCPacketType_C2S) {
+				if ($type === self::TYPE_C2S) {
 					$this->appInstance->queue[$reqId]->downstream->onFrame($body, WebSocketServer::STRING);
 					$this->appInstance->queue[$reqId]->atime = time();
 				}
-				elseif ($type === WebSocketOverCOMET::IPCPacketType_POLL) {
+				elseif ($type === self::TYPE_POLL) {
 					list ($ts, $instanceId) = explode('|', $body);
 					$this->appInstance->queue[$reqId]->polling[] = $instanceId;
 					$this->appInstance->queue[$reqId]->flushBufferedPackets($ts);
