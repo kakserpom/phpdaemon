@@ -193,8 +193,16 @@ class Daemon_Bootstrap {
 			}
 		}
 		
-		if (!@is_file(Daemon::$config->path->value)) {
-			Daemon::log('Your application resolver \'' . Daemon::$config->path->value . '\' is not available.');
+		$pathList = preg_split('~\s*;\s*~', Daemon::$config->path->value);
+		$found = false;
+		foreach ($pathList as $path) {
+			 if (@is_file($path)) {
+			 	Daemon::$appResolverPath = $path;
+			 	$found = true;
+			 }
+		}
+		if (!$found) {
+			Daemon::log('Your application resolver \'' . Daemon::$config->path->value . '\' is not available (config directive \'path\').');
 			$error = TRUE;
 		}
 

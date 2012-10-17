@@ -36,7 +36,7 @@ class Daemon_MasterThread extends Thread {
 		$this->workers = new ThreadCollection;
 		$this->collections['workers'] = $this->workers;
 		
-		Daemon::$appResolver = require Daemon::$config->path->value;
+		Daemon::$appResolver = require Daemon::$appResolverPath;
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		Daemon::$appResolver->preload(true); 
 

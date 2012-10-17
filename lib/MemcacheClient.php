@@ -280,12 +280,8 @@ class MemcacheClientConnection extends NetworkClientConnection {
 						$this->error = isset($e[1]) ? $e[1] : NULL;
 					}
 
-					$f = $this->onResponse->isEmpty() ? null : $this->onResponse->shift();
+					$this->onResponse->executeOne($this);
 					$this->checkFree();
-
-					if ($f) {
-						call_user_func($f, $this);
-					}
 
 					$this->valueSize = 0;
 					$this->result = NULL;

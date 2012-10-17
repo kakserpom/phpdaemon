@@ -15,6 +15,11 @@ class MyAppResolver extends AppResolver {
 	 * @return string Application's name.
 	 */
 	public function getRequestRoute($req, $upstream) {
+
+		/*
+			This method should return application name to handle incoming request ($req).
+		*/
+
 		if (preg_match('~^/(WebSocketOverCOMET|Example)/~', $req->attrs->server['DOCUMENT_URI'], $m)) {
 			return $m[1];
 		}

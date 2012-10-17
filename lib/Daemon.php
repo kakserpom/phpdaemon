@@ -54,6 +54,7 @@ class Daemon {
 	public static $compatMode = FALSE;
 	public static $runName = 'phpdaemon';
 	public static $config;
+	public static $appResolverPath;
 
 	public static $obInStack = false; // whether if the current execution stack contains ob-filter
 	/**
