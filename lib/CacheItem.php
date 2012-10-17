@@ -13,7 +13,7 @@ class CacheItem {
 	public $listeners;
 	public $expire;
 	public function __construct($value) {
-		$this->listeners = new SplStack;
+		$this->listeners = new SplStackCallbacks;
 		$this->value = $value;
 	}
 	
@@ -28,9 +28,7 @@ class CacheItem {
 
 	public function setValue($value) {
 		$this->value = $value;
-		while (!$this->listeners->isEmpty()) {
-			call_user_func($this->listeners->pop(), $this->value);
-		}
+		$this->listeners->executeAll($this->value);
 	}
 }
 

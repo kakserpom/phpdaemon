@@ -72,16 +72,11 @@ class WebSocketOverCOMET extends AppInstance {
 			return $this->IpcTransSessions[$id];
 		}
 
-		$connId = $this->connectTo('unix:' . sprintf($this->config->ipcpath->value, basename($id)));
+		$conn = new IPCManagerWorkerConnection(null, null, null);
+		$this->IpcTransSessions[$id] = $conn;
+		$conn->connectTo('unix:' . sprintf($this->config->ipcpath->value, basename($id)));
+		$conn->ipcId = $id;
 
-		if (!$connId) {
-			return FALSE;
-		}
-
-		$this->sessions[$connId] = new WebSocketOverCOMET_IPCSession($connId, $this);
-		$this->sessions[$connId]->ipcId = $id;
-
-		return $this->IpcTransSessions[$id] = $connId;
 	}
 
 	/**

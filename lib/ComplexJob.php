@@ -45,7 +45,7 @@ class ComplexJob {
 			$this->jobs = array();
 			$this->state = self::STATE_DONE;
 			while ($cb = array_pop($this->listeners)) {
-				$cb($this);
+				call_user_func($cb, $this);
 			}
 		}
 	}
@@ -57,7 +57,7 @@ class ComplexJob {
 		$this->jobs[$name] = $cb;
 		++$this->jobsNum;
 		if (($this->state === self::STATE_RUNNING) || ($this->state === self::STATE_DONE)) {
-			$cb($name, $this);
+			call_user_func($cb, $name, $this);
 		}
 		return true;
 	}
@@ -70,7 +70,7 @@ class ComplexJob {
 	
 	public function addListener($cb) {
 		if ($this->state === self::STATE_DONE) {
-			$cb($name, $this);
+			call_user_func($cb, $name, $this);
 			return;
 		}
 		$this->listeners[] = $cb;
@@ -81,7 +81,7 @@ class ComplexJob {
 			if ($this->state === self::STATE_WAITING) {
 				$this->state = self::STATE_RUNNING;
 				foreach ($this->jobs as $name => $cb) {
-					$cb($name, $this);
+					call_user_func($cb, $name, $this);
 					$this->jobs[$name] = null;
 				}
 				$this->checkIfAllReady();

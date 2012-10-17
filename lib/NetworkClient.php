@@ -148,7 +148,7 @@ class NetworkClient extends ConnectionPool {
 	 * @param mixed Callback called when the request complete
 	 * @return object Connection
 	 */
-	public function requestByServer($k, $s, $onResponse) {
+	public function requestByServer($k, $s, $onResponse = null) {
 
 		if ($k === NULL) {
 			srand();
@@ -176,7 +176,7 @@ class NetworkClient extends ConnectionPool {
 	 * @param mixed Callback called when the request complete
 	 * @return boolean Success
 	 */
-	public function requestByKey($k, $s, $onResponse) {
+	public function requestByKey($k, $s, $onResponse = null) {
 		$conn = $this->getConnectionByKey($k);
 		if (!$conn) {
 			return false;
