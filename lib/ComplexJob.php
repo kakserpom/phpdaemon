@@ -75,18 +75,21 @@ class ComplexJob {
 		}
 		$this->listeners[] = $cb;
 	}
+
+	public function execute() {
+		if ($this->state === self::STATE_WAITING) {
+			$this->state = self::STATE_RUNNING;
+			foreach ($this->jobs as $name => $cb) {
+				call_user_func($cb, $name, $this);
+				$this->jobs[$name] = null;
+			}
+			$this->checkIfAllReady();
+		}
+	}
 	
 	public function __invoke($name = null, $cb = null) {
 		if (func_num_args() === 0) {
-			if ($this->state === self::STATE_WAITING) {
-				$this->state = self::STATE_RUNNING;
-				foreach ($this->jobs as $name => $cb) {
-					call_user_func($cb, $name, $this);
-					$this->jobs[$name] = null;
-				}
-				$this->checkIfAllReady();
-			}
-			return;
+			return $this->execute();
 		}
 		$this->addJob($name, $cb);
 	}
