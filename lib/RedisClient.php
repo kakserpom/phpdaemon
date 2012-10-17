@@ -25,15 +25,9 @@ class RedisClient extends NetworkClient {
 
 
 	public function __call($name, $args) {
-		$onResponse = array();		
-		while (true) {
-			if (($e = end($args)) &&
-			(is_array($e) || is_object($e)) &&
-			is_callable($e)) {
-				$onResponse[] = array_pop($args);
-			} else {
-				break;
-			}
+		$onResponse = null;		
+		if (($e = end($args)) && (is_array($e) || is_object($e)) &&	is_callable($e)) {
+			$onResponse= array_pop($args);
 		}
 		reset($args);
 		$name = strtoupper($name);
@@ -50,7 +44,7 @@ class RedisClient extends NetworkClient {
 				if (!isset($this->subscribeCb[$arg])) {
 					$this->subscribeCb[$arg] = $onResponse;
 				} else {
-					$this->subscribeCb[$arg] = array_merge($this->subscribeCb[$arg], $onResponse);
+					$this->subscribeCb[$arg] = array_merge($this->subscribeCb[$arg], array($onResponse));
 				}
 			}
 		}
@@ -87,17 +81,8 @@ class RedisClientConnection extends NetworkClientConnection {
 		$this->buf .= $buf;
 		start:
 		if (($this->result !== null) && ($this->resultSize >= $this->resultLength)) {
-			$f = $this->onResponse->shift();
-			if (!$this->finished && $this->onResponse->isEmpty()) {
-				$this->pool->servConnFree[$this->addr][$this->id] = $this->id;
-			}
-
-			if ($f) {
-				foreach ($f as $cb ) {
-					call_user_func($cb, $this);
-				}
-			}
-			
+			$this->onResponse->executeOne($this);
+			$this->checkFree();			
 			$this->resultSize = 0;
 			$this->resultLength = 0;
 			$this->result = null;

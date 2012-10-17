@@ -28,7 +28,7 @@ class DeferredEvent {
 		$this->result = $result;
 		$this->state = self::STATE_DONE;
 		while ($cb = array_pop($this->listeners)) {
-			$cb($this->result);
+			call_user_func($cb, $this->result);
 		}
 	}
 	
@@ -40,7 +40,7 @@ class DeferredEvent {
 	
 	public function addListener($cb) {
 		if ($this->state === self::STATE_DONE) {
-			$cb($this);
+			call_user_func($cb, $this);
 			return;
 		}
 		$this->listeners[] = $cb;
