@@ -74,7 +74,7 @@ class FastCGIServerConnection extends Connection {
 			$this->header = unpack('Cver/Ctype/nreqid/nconlen/Cpadlen/Creserved', $header);
 
 			if ($this->header['conlen'] > 0) {
-				$this->setWatermark($this->header['conlen'], 0xFFFFFF);
+				$this->setWatermark($this->header['conlen'], $this->header['conlen']);
 			}
 			$type = $this->header['type'];
 			$this->header['ttype'] = isset(self::$requestTypes[$type]) ? self::$requestTypes[$type] : $type;
