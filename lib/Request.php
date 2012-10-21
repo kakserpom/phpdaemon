@@ -291,9 +291,12 @@ class Request {
 	 * @param boolean Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
 	 * @return void
 	 */
-	public function sleep($time = 0, $set = FALSE) {
+	public function sleep($time = 0, $set = false) {
 		if ($this->state === Request::STATE_FINISHED) {
 			return;
+		}
+		if ($this->state !== Request::STATE_RUNNING) {
+			$set = true;
 		}
  
 		$this->sleepTime = $time*1000000;
