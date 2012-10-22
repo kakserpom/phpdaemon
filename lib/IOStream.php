@@ -245,7 +245,8 @@ abstract class IOStream {
 			return true;
 		}
  		$this->sending = true;
-		return event_buffer_write($this->buffer, $s);		
+		event_buffer_write($this->buffer, $s);
+		return true;
 	}
 
 	/**
