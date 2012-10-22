@@ -106,6 +106,9 @@ class ConnectionPool {
 			$obj = self::$instances[$key] = new $class($config);
 			$obj->name = $arg;
 			return $obj;
+		} elseif ($arg instanceof Daemon_ConfigSection) {
+			return new $class($arg);
+
 		} else {
 			return new $class(new Daemon_ConfigSection($arg));
 		}
