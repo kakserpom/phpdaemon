@@ -60,10 +60,13 @@ class Timer {
 		}
 	}
 	public function timeout($timeout = null)	{
-	 if ($timeout !== null) {
-		$this->lastTimeout = $timeout;
+		if ($timeout !== null) {
+			$this->lastTimeout = $timeout;
+		}
+		event_timer_add($this->ev, $this->lastTimeout);
 	}
-	 event_timer_add($this->ev, $this->lastTimeout);
+	public function cancel() {
+		event_timer_del($this->ev);
 	}
 	public function finish(){
 		$this->free();

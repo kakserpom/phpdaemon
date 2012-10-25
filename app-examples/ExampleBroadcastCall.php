@@ -20,13 +20,13 @@ class ExampleBroadcastCall extends AppInstance {
 		 
 		$appInstance = $this;
 		
-		Daemon_TimedEvent::add(function($event) use ($appInstance) {
+		setTimeout(function($event) use ($appInstance) {
 			
-			$appInstance->broadcastCall('hello',array(Daemon::$process->pid));
+			$appInstance->broadcastCall('hello', array(Daemon::$process->pid));
 
 			$event->finish();
 			
-		}, pow(10,6) * 2);
+		}, 2e6);
 		
 	}
 }

@@ -19,7 +19,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	const INSTATE_FIELD = 1;
 	const INSTATE_ROW = 2;
 	public $resultRows    = array();    // Resulting rows
-	public $resultFields  = array();    // Resulting fieldsd
+	public $resultFields  = array();    // Resulting fields
 	public $context;                    // Property holds a reference to user's object
 	public $insertId;                   // INSERT_ID()
 	public $affectedRows;               // Affected rows number
