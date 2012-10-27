@@ -47,7 +47,7 @@ class IPCManager extends AppInstance {
 	}
 
 
-	public function sendPacket($packet) {
+	public function sendPacket($packet = null) {
 		if ($this->conn && $this->conn->connected) {
 			$this->conn->sendPacket($packet);
 			return;
@@ -100,11 +100,16 @@ class IPCManagerMasterPoolConnection extends Connection {
 		}
 		elseif ($p['op'] === 'singleCall') {
 			$p['op'] = 'call';
+			$sent = false;
 			foreach (Daemon::$process->workers->threads as $worker) {
-				if (isset($worker->connection) && $worker->connection) {
+				if ($worker->connection) {
 					$worker->connection->sendPacket($p);
+					$sent = true;
 					break;
 				}
+			}
+			if (!$sent) {
+				Daemon::$process->log('singleCall(). not sent.');
 			}
 		}
 		elseif ($p['op'] === 'addIncludedFiles') {
@@ -120,7 +125,8 @@ class IPCManagerMasterPoolConnection extends Connection {
 	}
 	
 	public function sendPacket($p) {
-		$this->writeln(json_encode($p));
+		$data = serialize($p);
+		$this->write(pack('N', strlen($data)) . $data);
 	}
 
 	/**
@@ -130,10 +136,27 @@ class IPCManagerMasterPoolConnection extends Connection {
 	 */
 	public function stdin($buf) {
 		$this->buf .= $buf;
-		
-		while (($l = $this->gets()) !== FALSE) {
-			$this->onPacket(json_decode($l, TRUE));
+
+		start:
+
+		if (strlen($this->buf) < 4) {
+			return; // not ready yet
 		}
+
+		$u = unpack('N', $this->buf);
+		$size = $u[1];
+		
+		if (strlen($this->buf) < 4 + $size) {
+			return; // no ready yet;
+		}
+
+		$packet = binarySubstr($this->buf, 4, $size);
+
+		$this->buf = binarySubstr($this->buf, 4 + $size);
+
+		$this->onPacket(unserialize($packet));
+
+		goto start;
 	}
 }
 class IPCManagerWorkerConnection extends Connection {
@@ -184,8 +207,12 @@ class IPCManagerWorkerConnection extends Connection {
 			}
 		}
 	}
-	public function sendPacket($p) {		
-		$this->writeln(json_encode($p));
+	public function sendPacket($p) {	
+		if ($p === null) {
+			return;
+		}
+		$data = serialize($p);
+		$this->write(pack('N', strlen($data)) . $data);
 	}
 
 	/**
@@ -195,9 +222,24 @@ class IPCManagerWorkerConnection extends Connection {
 	 */
 	public function stdin($buf) {
 		$this->buf .= $buf;
-		
-		while (($l = $this->gets()) !== false) {
-			$this->onPacket(json_decode($l, true));
+
+		start:
+
+		if (strlen($this->buf) < 4) {
+			return; // not ready yet
 		}
+
+		$u = unpack('N', $this->buf);
+		$size = $u[1];
+		
+		if (strlen($this->buf) < 4 + $size) {
+			return; // no ready yet;
+		}
+
+		$packet = binarySubstr($this->buf, 4, $size);
+		$this->buf = binarySubstr($this->buf, 4 + $size);
+		$this->onPacket(unserialize($packet));
+
+		goto start;
 	}
 }

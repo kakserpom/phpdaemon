@@ -68,6 +68,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->fileWatcher = new FileWatcher;
 
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
+		$this->IPCManager->sendPacket();
 		Daemon::$appResolver->preload();
 
 		foreach (Daemon::$appInstances as $app) {
