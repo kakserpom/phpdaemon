@@ -59,6 +59,11 @@ class Timer {
 			Timer::$list[$id]->free();
 		}
 	}
+	public static function cancelTimeout($id) {
+		if (isset(Timer::$list[$id])) {
+			Timer::$list[$id]->cancel();
+		}
+	}
 	public function timeout($timeout = null)	{
 		if ($timeout !== null) {
 			$this->lastTimeout = $timeout;
