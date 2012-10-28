@@ -258,6 +258,7 @@ class FS {
 		FS::open($path, 'r', function ($file) use ($cb, $chunkcb, $pri) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
+				return;
 			}
 			$file->readAllChunked($cb, $chunkcb, $pri);
 		}, null, $pri);

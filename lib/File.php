@@ -13,6 +13,8 @@ class File extends IOStream {
 	public $stat;
 	public $offset;
 	public $fdCacheKey;
+	public $append;
+	public $path;
 
 	public static function convertFlags($mode, $text = false) {
 		$plus = strpos($mode, '+') !== false;
@@ -62,6 +64,18 @@ class File extends IOStream {
 				call_user_func($cb, $file, $stat);
 			}, $this);		
 		}
+	}
+
+	public function statRefresh($cb, $pri = EIO_PRI_DEFAULT) {
+		if (!FS::$supported) {
+			call_user_func($cb, $this, FS::statPrepare(fstat($this->fd)));
+			return;
+		}
+		eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
+			$stat = FS::statPrepare($stat);
+			$file->stat = $stat;
+			call_user_func($cb, $file, $stat);
+		}, $this);
 	}
 	
 	public function statvfs($cb, $pri = EIO_PRI_DEFAULT) {
@@ -184,7 +198,7 @@ class File extends IOStream {
 			$handler($this, -1);
 			return;
 		}
-		$this->stat(function ($file, $stat) use ($handler, &$length) {
+		$this->statRefresh(function ($file, $stat) use ($handler, &$length) {
 			$length = $stat['size'];
 			$handler($file, -1);
 		}, $pri);
@@ -208,7 +222,7 @@ class File extends IOStream {
 	}
 
 	public function readAll($cb = null, $pri = EIO_PRI_DEFAULT) {
-		$this->stat(function ($file, $stat) use ($cb, $pri) {
+		$this->statRefresh(function ($file, $stat) use ($cb, $pri) {
 			if (!$stat) {
 				call_user_func($cb, $file, false);
 				return;
@@ -231,7 +245,7 @@ class File extends IOStream {
 	}
 	
 	public function readAllChunked($cb = null, $chunkcb = null, $pri = EIO_PRI_DEFAULT) {
-		$this->stat(function ($file, $stat) use ($cb, $chunkcb, $pri) {
+		$this->statRefresh(function ($file, $stat) use ($cb, $chunkcb, $pri) {
 			if (!$stat) {
 				call_user_func($cb, $file, false);
 				return;
@@ -291,11 +305,13 @@ class File extends IOStream {
 			return;
 		}
 
-		if (FS::$supported) {
-			$r = eio_close($this->fd);
-			$this->fd = null;
-			return $r;
+		if (!FS::$supported) {
+			fclose($this->fd);
+			return;
 		}
-		fclose($this->fd);
+
+		$r = eio_close($this->fd);
+		$this->fd = null;
+		return $r;
 	}
 }

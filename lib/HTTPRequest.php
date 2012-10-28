@@ -122,7 +122,7 @@ class HTTPRequest extends Request {
 			function($file, $chunk) use ($req, &$first) { // readed chunk
 				if ($first) {
 					try {
-						$req->header('Content-Length: ' . $file->stat['st_size']);
+						$req->header('Content-Length: ' . $file->stat['size']);
 					} catch (RequestHeadersAlreadySent $e) {}
 					$first = false;
 				}
