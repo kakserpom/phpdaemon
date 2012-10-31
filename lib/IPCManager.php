@@ -47,6 +47,10 @@ class IPCManager extends AppInstance {
 	}
 
 
+	public function ensureConnection() {
+		$this->sendPacket('');
+	}
+
 	public function sendPacket($packet = null) {
 		if ($this->conn && $this->conn->connected) {
 			$this->conn->sendPacket($packet);
