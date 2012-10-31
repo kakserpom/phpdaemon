@@ -69,6 +69,7 @@ class Daemon_WorkerThread extends Thread {
 
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		$this->IPCManager->ensureConnection();
+		
 		Daemon::$appResolver->preload();
 
 		foreach (Daemon::$appInstances as $app) {

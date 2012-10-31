@@ -82,6 +82,9 @@ class IPCManagerMasterPoolConnection extends Connection {
 
 	public $spawnid;
 	public function onPacket($p) {
+		if (!is_array($p)) {
+			return;
+		}
 		if ($p['op'] === 'start') {
 			$this->spawnid = $p['spawnid'];
 			Daemon::$process->workers->threads[$this->spawnid]->connection = $this;
