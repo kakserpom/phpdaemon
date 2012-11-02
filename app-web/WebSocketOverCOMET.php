@@ -56,11 +56,10 @@ class WebSocketOverCOMET extends AppInstance {
 			return;
 		}
 		$req = $this->requests[$reqId];
-		if (isset($req->attrs->get['_script'])) {
-			$q = Request::getString($req->attrs->get['q']);
-			$body = 'Response' . $q . ' = ' . $data . ";\n";
+		if ($req->jsid) {
+			$body = 'Response' . $req->jsid . ' = ' . $data . ";\n";
 		} else {
-			$body = '<script type="text/javascript">WebSocket.onmessage(' . json_encode($data) . ");</script>\n";
+			$body = '<script type="text/javascript">WebSocket.onmessage(' . $data . ");</script>\n";
 		}
 		$req->out($body);
 		$req->finish();
@@ -225,6 +224,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	public $authKey;
 	public $type;
 	public $reqIdAuthKey;
+	public $jsid;
 
 	/**
 	 * Constructor.
@@ -343,11 +343,13 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 				}
 
 				if (isset($req->attrs->get['_script'])) {
+					$req->header('Content-Type: application/x-javascript; charset=utf-8');
 					$q = self::getString($req->attrs->get['q']);
 	
 					if (!ctype_digit($q)) {
 						$ret['error'] = 'Bad q.';
 					}
+					$this->jsid = $q;
 				}
 
 				if (sizeof($ret)) {
