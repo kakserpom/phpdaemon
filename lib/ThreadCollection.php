@@ -32,9 +32,8 @@ class ThreadCollection {
 	 * @return void
 	 */
 	public function push($thread) {
-		++$this->spawncounter;
-		$thread->spawnid = $this->spawncounter;
-		$this->threads[$thread->spawnid] = $thread;
+		$thread->id = ++$this->spawnCounter;
+		$this->threads[$thread->id] = $thread;
 	}
 
 	/**

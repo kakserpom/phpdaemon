@@ -72,22 +72,39 @@ class IPCManager extends AppInstance {
 			'op' => 'broadcastCall',
 			'appfullname' => $appInstance,
 			'method' => $method,
-			'args' => $args
+			'args' => $args,
+		));
+	}
+	public function sendSingleCall($appInstance, $method, $args = array(), $cb = null) {
+		$this->sendPacket(array(
+			'op' => 'broadcastCall',
+			'appfullname' => $appInstance,
+			'method' => $method,
+			'args' => $args,
+		));
+	}
+	public function sendDirectCall($workerId, $appInstance, $method, $args = array(), $cb = null) {
+		$this->sendPacket(array(
+			'op' => 'directCall',
+			'appfullname' => $appInstance,
+			'method' => $method,
+			'args' => $args,
+			'workerId' => $workerId,
 		));
  	}
-
 }
 class IPCManagerMasterPool extends NetworkServer {}
 class IPCManagerMasterPoolConnection extends Connection {
+	public $timeout = null;
 
-	public $spawnid;
+	public $workerId;
 	public function onPacket($p) {
 		if (!is_array($p)) {
 			return;
 		}
 		if ($p['op'] === 'start') {
-			$this->spawnid = $p['spawnid'];
-			Daemon::$process->workers->threads[$this->spawnid]->connection = $this;
+			$this->workerId = $p['workerId'];
+			Daemon::$process->workers->threads[$this->workerId]->connection = $this;
 			Daemon::$process->updatedWorkers();
 		}
 		elseif ($p['op'] === 'broadcastCall') {
@@ -100,10 +117,11 @@ class IPCManagerMasterPoolConnection extends Connection {
 		}
 		elseif ($p['op'] === 'directCall') {
 			$p['op'] = 'call';
-			if (!isset(Daemon::$process->workers->threads[$p['spawnid']]->connection)) {
+			if (!isset(Daemon::$process->workers->threads[$p['workerId']]->connection)) {
+				Daemon::$process->log('directCall(). not sent.');
 				return;
 			}
-			Daemon::$process->workers->threads[$p['spawnid']]->connection->sendPacket($p);
+			Daemon::$process->workers->threads[$p['workerId']]->connection->sendPacket($p);
 		}
 		elseif ($p['op'] === 'singleCall') {
 			$p['op'] = 'call';
@@ -121,13 +139,13 @@ class IPCManagerMasterPoolConnection extends Connection {
 		}
 		elseif ($p['op'] === 'addIncludedFiles') {
 			foreach ($p['files'] as $file) {
-				Daemon::$process->fileWatcher->addWatch($file, $this->spawnid);
+				Daemon::$process->fileWatcher->addWatch($file, $this->workerId);
 			}
 		}
 	}
 	
 	public function onFinish() {
-		unset(Daemon::$process->workers->threads[$this->spawnid]->connection);
+		unset(Daemon::$process->workers->threads[$this->workerId]->connection);
 		Daemon::$process->updatedWorkers();
 	}
 	
@@ -167,12 +185,13 @@ class IPCManagerMasterPoolConnection extends Connection {
 	}
 }
 class IPCManagerWorkerConnection extends Connection {
-
+	public $timeout = null;
+	
 	public function onReady() {
 		$this->sendPacket(array(
 			'op' => 'start',
 			'pid' => Daemon::$process->pid,
-			'spawnid' => Daemon::$process->spawnid)
+			'workerId' => Daemon::$process->id)
 		);
 		parent::onReady();
 	}
@@ -203,7 +222,6 @@ class IPCManagerWorkerConnection extends Connection {
 			}, 5);
 		}
 		elseif ($p['op'] === 'call') {
-				
 			if (strpos($p['appfullname'],'-') === false) {
 				$p['appfullname'] .= '-';
 			}

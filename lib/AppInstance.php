@@ -11,10 +11,10 @@ class AppInstance {
 
 	public $status = 0;        // runtime status
 	public $passphrase;        // optional passphrase
-	public $reqCounter = 0;    // counter of requests
 	public $ready = FALSE;     // ready to start?
 	public $name;              // name of instance
 	public $config;
+	public $enableRPC = false;
  
 	/**	
 	 * Application constructor
@@ -105,6 +105,42 @@ class AppInstance {
 	 */
 	public function broadcastCall($method, $args = array(), $cb = NULL) {
 		return Daemon::$process->IPCManager->sendBroadcastCall(
+					get_class($this) . ($this->name !== '' ? '-' . $this->name : ''),
+					$method,
+					$args,
+					$cb
+		);
+	}
+
+	/**
+	 * Send RPC, executed once in any worker.
+	 * You can override it
+	 * @param string Method name.
+	 * @param array Arguments.
+	 * @param mixed Callback.
+	 * @return boolean Success.
+	 */
+	public function singleCall($method, $args = array(), $cb = NULL) {
+		return Daemon::$process->IPCManager->sendSingleCall(
+					get_class($this) . ($this->name !== '' ? '-' . $this->name : ''),
+					$method,
+					$args,
+					$cb
+		);
+	}
+
+	/**
+	 * Send RPC, executed once in certain worker.
+	 * You can override it
+	 * @param integer Worker Id.
+	 * @param string Method name.
+	 * @param array Arguments.
+	 * @param mixed Callback.
+	 * @return boolean Success.
+	 */
+	public function directCall($workerId, $method, $args = array(), $cb = NULL) {
+		return Daemon::$process->IPCManager->sendDirectCall(
+					$workerId,
 					get_class($this) . ($this->name !== '' ? '-' . $this->name : ''),
 					$method,
 					$args,

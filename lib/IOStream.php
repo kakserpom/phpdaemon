@@ -115,7 +115,7 @@ abstract class IOStream {
 			if ($this->priority !== null) {
 				event_buffer_priority_set($this->buffer, $this->priority);
 			}
-			if ($this->timeout) {
+			if ($this->timeout !== null) {
 				event_buffer_timeout_set($this->buffer, $this->timeout, $this->timeout);
 			}
 			if (!$this->directInput) {

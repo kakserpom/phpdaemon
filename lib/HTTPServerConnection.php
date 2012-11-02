@@ -65,7 +65,7 @@ class HTTPServerConnection extends Connection {
 			$req->attrs->stdinlen = 0;
 			$req->attrs->inbuf = '';
 			$req->attrs->chunked = false;
-			$req->queueId = $rid;
+			$req->id = $rid;
 			$req->conn = $this;
 
 			$this->req = $req;

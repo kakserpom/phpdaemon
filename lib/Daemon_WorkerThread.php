@@ -499,7 +499,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @return boolean - Success.
 	 */
 	public function setStatus($int) {
-		if (!$this->spawnid) {
+		if (!$this->id) {
 			return FALSE;
 		}
 
@@ -513,7 +513,7 @@ class Daemon_WorkerThread extends Thread {
 			$this->log('status is ' . $int);
 		}
 
-		return shmop_write(Daemon::$shm_wstate, chr($int), $this->spawnid - 1);
+		return shmop_write(Daemon::$shm_wstate, chr($int), $this->id - 1);
 	}
 
 	/**

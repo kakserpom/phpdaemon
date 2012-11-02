@@ -18,7 +18,7 @@ class Request {
 	const STATE_SLEEPING = 3;
 	public $conn;
  
-	public $queueId;
+	public $id;
 	public $appInstance;
 	public $aborted = FALSE;
 	public $state = self::STATE_ALIVE;
@@ -42,13 +42,13 @@ class Request {
 	public function __construct($appInstance, $upstream, $parent = NULL) {
 		$this->appInstance = $appInstance;
 		$this->upstream = $upstream;		
-		$this->queueId = isset($parent->queueId)?$parent->queueId:(++Daemon::$process->reqCounter);
+		$this->id = isset($parent->id)?$parent->id:(++Daemon::$process->reqCounter);
 		$this->ev = event_new();
  
 		event_set(
 			$this->ev, STDIN, EV_TIMEOUT, 
 			array($this, 'eventCall'), 
-			array($this->queueId)
+			array($this->id)
 		);
 		event_base_set($this->ev, Daemon::$process->eventBase);
 		if ($this->priority !== null) {

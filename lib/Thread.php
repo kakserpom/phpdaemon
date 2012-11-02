@@ -9,6 +9,8 @@
  */
 abstract class Thread {
 
+	public $id;
+
 	/**
 	 * Process identificator
 	 * @var int
