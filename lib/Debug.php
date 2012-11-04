@@ -58,9 +58,9 @@ class Debug {
 		if (Daemon::$process->obInStack) {
 			try {
 				throw new Exception;
-			} catch (Exception $e) (
+			} catch (Exception $e) {
 				return $e->getTraceAsString();
-			)
+			}
 		}
 		ob_start();
 		debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
