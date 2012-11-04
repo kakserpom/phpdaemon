@@ -23,14 +23,14 @@ class NetworkServer extends ConnectionPool {
 			return false;
 		}
 		$class = $this->connectionClass;
-		$conn = new $class(null, $oldConn->id, $this);
+		$conn = new $class(null, $this);
 		$conn->fd = $oldConn->fd;
-		$this->list[$oldConn->id] = $conn;
+		$this->attach($conn);
 		$conn->buffer = $oldConn->buffer;
 		$conn->fd = $oldConn->fd;
-		unset($oldConn->buffer);
-		unset($oldConn->fd);
-		$pool->removeConnection($oldConn->id);
+		unset($oldConn->buffer); // to prevent freeing the buffer
+		unset($oldConn->fd); // to prevent closing the socket
+		$pool->detach($oldConn);
 		$set = event_buffer_set_callback(
 			$conn->buffer, 
 			array($conn, 'onReadEvent'),
