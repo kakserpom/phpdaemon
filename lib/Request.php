@@ -438,13 +438,7 @@ class Request {
 			return;
 		}
  
-		if (
-			(Daemon::$config->autogc->value > 0) 
-			&& (Daemon::$process->reqCounter > 0) 
-			&& (Daemon::$process->reqCounter % Daemon::$config->autogc->value === 0)
-		) {
-			gc_collect_cycles();
-		}
+		Daemon::callAutoGC();
  
 		if (Daemon::$compatMode) {
 			return;

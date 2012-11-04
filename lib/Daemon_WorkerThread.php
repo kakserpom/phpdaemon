@@ -30,6 +30,7 @@ class Daemon_WorkerThread extends Thread {
 	public $delayedSigReg = TRUE;
 	public $instancesCount = array();
 	public $connection;
+	public $counterGC = 0;
 	/**
 	 * Runtime of Worker process.
 	 * @return void

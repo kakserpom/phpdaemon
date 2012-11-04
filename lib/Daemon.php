@@ -70,11 +70,21 @@ class Daemon {
 
 		// currently re-using listener ports across multiple processes is available
 		// only in BSD flavour operating systems via SO_REUSEPORT socket option
-		Daemon::$reusePort = (boolean) preg_match("~BSD~i", php_uname('s'));
+		Daemon::$reusePort = 1 === preg_match("~BSD~i", php_uname('s'));
 		
-		if (Daemon::$reusePort)
-		if (!defined("SO_REUSEPORT"))
+		if (Daemon::$reusePort && !defined("SO_REUSEPORT"))
 		    define("SO_REUSEPORT", 0x200);	// FIXME: this is a BSD-only hack
+	}
+
+	public static function callAutoGC() {
+		if (
+			(Daemon::$config->autogc->value > 0) 
+			&& (Daemon::$process->counterGC > 0) 
+			&& (Daemon::$process->counterGC % Daemon::$config->autogc->value === 0)
+		) {
+			gc_collect_cycles();
+			++Daemon::$process->counterGC;
+		}
 	}
 
 	/**

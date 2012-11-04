@@ -95,16 +95,16 @@ class Daemon_Bootstrap {
 		}
 
 		if (!Daemon::$config->loadCmdLineArgs($args)) {
-			$error = TRUE;
+			$error = true;
 		}
 		
 		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
-			$error = TRUE;
+			$error = true;
 		}
 
 		if (version_compare(PHP_VERSION, '5.3.0', '>=') === 1) {
 			Daemon::log('PHP >= 5.3.0 required.');
-			$error = TRUE;
+			$error = true;
 		}
 		
 		if (!Daemon::$useSockets) {
@@ -128,43 +128,43 @@ class Daemon_Bootstrap {
 		
 		if (!is_callable('posix_kill')) {
 			Daemon::log('Posix not found. You should compile PHP without \'--disable-posix\'.');
-			$error = TRUE;
+			$error = true;
 		}
 	
 		if (!is_callable('pcntl_signal')) {
 			Daemon::log('PCNTL not found. You should compile PHP with \'--enable-pcntl\'.');
-			$error = TRUE;
+			$error = true;
 		}
 	
 		if (!is_callable('event_base_new')) {
 			Daemon::log('libevent extension not found. You have to install libevent from pecl (http://pecl.php.net/package/libevent). `svn checkout http://svn.php.net/repository/pecl/libevent pecl-libevent`.');
-			$error = TRUE;
+			$error = true;
 		}
 	
 		if (!is_callable('socket_create')) {
 			Daemon::log('Sockets extension not found. You should compile PHP with \'--enable-sockets\'.');
-			$error = TRUE;
+			$error = true;
 		}
 		
 		if (!is_callable('shmop_open')) {
 			Daemon::log('Shmop extension not found. You should compile PHP with \'--enable-shmop\'.');
-			$error = TRUE;
+			$error = true;
 		}
 		
 		if (!isset(Daemon::$config->user)) {
 			Daemon::log('You must set \'user\' parameter.');
-			$error = TRUE;
+			$error = true;
 		}
 		
 		if (!isset(Daemon::$config->path)) {
 			Daemon::log('You must set \'path\' parameter (path to your application resolver).');
-			$error = TRUE;
+			$error = true;
 		}
 		
 		if (!file_exists(Daemon::$config->pidfile->value)) {
 			if (!touch(Daemon::$config->pidfile->value)) {
 				Daemon::log('Couldn\'t create pid-file \'' . Daemon::$config->pidfile->value . '\'.');
-				$error = TRUE;
+				$error = true;
 			}
 
 			Daemon_Bootstrap::$pid = 0;
@@ -172,16 +172,16 @@ class Daemon_Bootstrap {
 		elseif (!is_file(Daemon::$config->pidfile->value)) {
 			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be a regular file.');
 			Daemon_Bootstrap::$pid = FALSE;
-			$error = TRUE;
+			$error = true;
 		}
 		elseif (!is_writable(Daemon::$config->pidfile->value)) {
 			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be writable.');
-			$error = TRUE;
+			$error = true;
 		}
 		elseif (!is_readable(Daemon::$config->pidfile->value)) {
 			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be readable.');
 			Daemon_Bootstrap::$pid = FALSE;
-			$error = TRUE;
+			$error = true;
 		} else {
 			Daemon_Bootstrap::$pid = (int) file_get_contents(Daemon::$config->pidfile->value);
 		}
@@ -189,7 +189,7 @@ class Daemon_Bootstrap {
 		if (Daemon::$config->chroot->value !== '/') {
 			if (posix_getuid() != 0) {
 				Daemon::log('You must have the root privileges to change root.');
-				$error = TRUE;
+				$error = true;
 			}
 		}
 		
@@ -203,7 +203,7 @@ class Daemon_Bootstrap {
 		}
 		if (!$found) {
 			Daemon::log('Your application resolver \'' . Daemon::$config->path->value . '\' is not available (config directive \'path\').');
-			$error = TRUE;
+			$error = true;
 		}
 
 		if (
@@ -212,11 +212,11 @@ class Daemon_Bootstrap {
 		) {
 			if (($sg = posix_getgrnam(Daemon::$config->group->value)) === FALSE) {
 				Daemon::log('Unexisting group \'' . Daemon::$config->group->value . '\'. You have to replace config-variable \'group\' with existing group-name.');
-				$error = TRUE;
+				$error = true;
 			}
 			elseif (($sg['gid'] != posix_getgid()) && (posix_getuid() != 0)) {
 				Daemon::log('You must have the root privileges to change group.');
-				$error = TRUE;
+				$error = true;
 			}
 		}
 		
@@ -226,14 +226,14 @@ class Daemon_Bootstrap {
 		) {
 			if (($su = posix_getpwnam(Daemon::$config->user->value)) === FALSE) {
 				Daemon::log('Unexisting user \'' . Daemon::$config->user->value . '\', user not found. You have to replace config-variable \'user\' with existing username.');
-				$error = TRUE;
+				$error = true;
 			}
 			elseif (
 				($su['uid'] != posix_getuid()) 
 				&& (posix_getuid() != 0)
 			) {
 				Daemon::log('You must have the root privileges to change user.');
-				$error = TRUE;
+				$error = true;
 			}
 		}
 		
@@ -243,7 +243,7 @@ class Daemon_Bootstrap {
 		) {
 			if (Daemon::$config->minspareworkers->value > Daemon::$config->maxspareworkers->value) {
 				Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
-				$error = TRUE;
+				$error = true;
 			}
 		}
 		
@@ -329,7 +329,7 @@ class Daemon_Bootstrap {
 		}
 		elseif ($runmode == 'configtest') {
 			$term = new Terminal;
-			$term->enable_color = TRUE;
+			$term->enable_color = true;
 
 			echo "\n";
 
@@ -339,7 +339,7 @@ class Daemon_Bootstrap {
 				'parameter' => 'PARAMETER',
 				'value'     => 'VALUE',
 				'_color'    => '37',
-				'_bold'     => TRUE,
+				'_bold'     => true,
 			);
 			
 			foreach (Daemon::$config as $name => $entry) {
@@ -347,11 +347,11 @@ class Daemon_Bootstrap {
 				
 				$row = array(
 					'parameter' => $name,
-					'value'     => var_export($entry->humanValue, TRUE),
+					'value'     => var_export($entry->humanValue, true),
 				);
 
 				if ($entry->defaultValue != $entry->humanValue) {
-					$row['value'] .= ' (' . var_export($entry->defaultValue, TRUE) . ')';
+					$row['value'] .= ' (' . var_export($entry->defaultValue, true) . ')';
 				}
 			
 				$rows[] = $row;
@@ -489,7 +489,7 @@ class Daemon_Bootstrap {
 				if (isset($parts[1])) {
 					$out[$key] = $parts[1];
 				} else {
-					$out[$key] = TRUE;
+					$out[$key] = true;
 				}
 
 				$last_arg = $key;

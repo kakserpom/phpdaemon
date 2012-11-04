@@ -44,9 +44,6 @@ class HTTPServerConnection extends Connection {
 				$this->finish();
 				return;
 			}
-
-			$rid = ++Daemon::$process->reqCounter;
-
 			$this->state = self::STATE_HEADERS;
 
 			$req = new stdClass();
@@ -58,14 +55,12 @@ class HTTPServerConnection extends Connection {
 			$req->attrs->server = array();
 			$req->attrs->files = array();
 			$req->attrs->session = null;
-			$req->attrs->id = $rid;
 			$req->attrs->params_done = false;
 			$req->attrs->stdin_done = false;
 			$req->attrs->stdinbuf = '';
 			$req->attrs->stdinlen = 0;
 			$req->attrs->inbuf = '';
 			$req->attrs->chunked = false;
-			$req->id = $rid;
 			$req->conn = $this;
 
 			$this->req = $req;
