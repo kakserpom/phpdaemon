@@ -159,7 +159,7 @@ abstract class Thread {
 	 * Starts the process
 	 * @return void
 	 */
-	public function start($clearstack = false) {
+	public function start($clearstack = true) {
 		$pid = pcntl_fork();
 
 		if ($pid === -1) {
@@ -171,7 +171,6 @@ abstract class Thread {
 			if (!$thread->delayedSigReg) {
 				$thread->registerSignals();
 			}
-			$clearstack = false;
 			if ($clearstack) {
 				throw new ClearStackException('', 0, $thread);
 			} else {

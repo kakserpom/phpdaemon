@@ -55,8 +55,15 @@ class Debug {
 	 * @return string
 	 */
 	public static function backtrace() {
+		if (Daemon::$process->obInStack) {
+			try {
+				throw new Exception;
+			} catch (Exception $e) (
+				return $e->getTraceAsString();
+			)
+		}
 		ob_start();
-		debug_print_backtrace();
+		debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 		$dump = ob_get_contents();
 		ob_end_clean();
 

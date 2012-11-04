@@ -88,20 +88,19 @@ class Daemon {
 		if ($s === '') {
 			return '';
 		}
-
+		++$n;
+		Daemon::$obInStack = true;
 		if (
 			Daemon::$config->obfilterauto->value
 			&& (Daemon::$req !== NULL)
 		) {
-			++$n;
-			Daemon::$obInStack = true;
 			Daemon::$req->out($s, false);
-			--$n;
-			Daemon::$obInStack = $n > 0;
-		} else {
-			Daemon::log('Unexcepted output (len. ' . strlen($s) . '): \'' . $s . '\'');
-		}
 
+		} else {
+			Daemon::log('Unexcepted output (len. ' . strlen($s) . '): \'' . $s . '\': '.Debug::backtrace());
+		}
+		--$n;
+		Daemon::$obInStack = $n > 0;
 		return '';
 	}
 

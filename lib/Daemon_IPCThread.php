@@ -20,6 +20,7 @@ class Daemon_IPCThread extends Thread {
 	public $instancesCount = array();
 	public $connection;
 	public $fileWatcher;
+	public $reload = false;
 	/**
 	 * Runtime of Worker process.
 	 * @return void
@@ -284,7 +285,7 @@ class Daemon_IPCThread extends Thread {
 	 * Handler of the SIGTTIN signal in worker process.
 	 * @return void
 	 */
-	public function sigttin() { }
+	public function sigttin() {}
 
 	/**
 	 * Handler of the SIGXSFZ signal in worker process.

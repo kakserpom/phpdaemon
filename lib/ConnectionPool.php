@@ -21,6 +21,7 @@ class ConnectionPool {
 	public $sockets = array();
 	public $socketEvents = array();
 	public $sockCounter = 0;
+	public $maxConcurrency = 0;
 	public $finished = false;
 	
 	public function __construct($config = array()) {
@@ -78,7 +79,10 @@ class ConnectionPool {
 				$this->allowedClients = $v;
 			}
 			elseif ($k === 'maxallowedpacket') {
-				$this->maxAllowedPacket = $v;
+				$this->maxAllowedPacket = (int) $v;
+			}
+			elseif ($k === 'maxconcurrency') {
+				$this->maxConcurrency = (int) $v;
 			}
 		}		
 	}
@@ -166,7 +170,13 @@ class ConnectionPool {
 			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($sock));
 			return;
 		}
-		$this->sockets[$k] = array($sock, $type, $addr, posix_getpid());
+		$this->sockets[$k] = array(
+				$sock,
+				$type,
+				$addr,
+				posix_getpid(),
+				false, // overload
+			);
 		$this->socketEvents[$k] = $ev;
 		if ($this->socketsEnabled) {
 			event_base_set($ev, Daemon::$process->eventBase);
@@ -514,6 +524,10 @@ class ConnectionPool {
 		return $this->list[$id];
  	}
 
+ 	public function getNumberOfConnections() {
+ 		return sizeof($this->list);
+ 	}
+
 	/**
 	 * Called when new connections is waiting for accept
 	 * @param resource Descriptor
@@ -529,7 +543,12 @@ class ConnectionPool {
 		}
 		
 		if (Daemon::$process->reload) {
-			return FALSE;
+			return;
+		}
+		if ($this->maxConcurrency) {
+			if ($this->getNumberOfConnections() >= $this->maxConcurrency) {
+				$this->sockets[$sockId][4] = true; // overload
+			}
 		}
 		
 		if (Daemon::$useSockets) {

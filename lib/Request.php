@@ -71,23 +71,17 @@ class Request {
 	/**
 	 * @todo description is missing
 	 */
-	public function eventCall($fd, $flags, $arg) {
-		$k = $arg[0];
-		$req = $this;
-		
-		if ($req->state === Request::STATE_SLEEPING) {
-			$req->state = Request::STATE_ALIVE;
+	public function eventCall($fd, $flags, $arg) {		
+		if ($this->state === Request::STATE_SLEEPING) {
+			$this->state = Request::STATE_ALIVE;
 		}
-	
-		$ret = $req->call();
-	
- 
+		$ret = $this->call();
 		if ($ret === Request::STATE_FINISHED) {		
 			$this->free();
 
 		}
 		elseif ($ret === REQUEST::STATE_SLEEPING) {
-			event_add($req->ev, $req->sleepTime);
+			event_add($this->ev, $this->sleepTime);
 		}
 	}
 	public function free() {
@@ -277,7 +271,6 @@ class Request {
 	public function codepoint($p) {
 		if ($this->codepoint !== $p) {
 			$this->codepoint = $p;
- 
 			return TRUE;
 		}
  
