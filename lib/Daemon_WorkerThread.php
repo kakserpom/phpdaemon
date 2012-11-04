@@ -84,7 +84,7 @@ class Daemon_WorkerThread extends Thread {
 		Timer::add(function($event) {
 			$self = Daemon::$process;
 
-			$this->IPCManager->ensureConnection();
+			$self->IPCManager->ensureConnection();
 
 			if ($self->checkState() !== TRUE) {
 				$self->breakMainLoop = TRUE;
