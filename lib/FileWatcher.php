@@ -17,14 +17,14 @@ class FileWatcher {
 			stream_set_blocking($this->inotify, 0);
 		}
 		
-		Daemon_TimedEvent::add(function($event) {
+		Timer::add(function($event) {
 			
 			Daemon::$process->fileWatcher->watch();
 			if (sizeof(Daemon::$process->fileWatcher->files) > 0) {
 				$event->timeout();
 			}
 			
-		}, 1e6 * 1, 'fileWatcherTimedEvent');
+		}, 1e6 * 1, 'fileWatcher');
 		
 		
 	}
@@ -37,7 +37,7 @@ class FileWatcher {
 			}
 		}
 		$this->files[$path][] = $subscriber;
-		Daemon_TimedEvent::setTimeout('fileWatcherTimedEvent');
+		Timer::setTimeout('fileWatcher');
 		return true;
 	}
 	public function rmWatch($path, $subscriber) {
@@ -59,7 +59,6 @@ class FileWatcher {
 		return true;
 	}
 	public function onFileChanged($path) {
-	
 		if (!Daemon::lintFile($path)) {
 			Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);
 			return;
@@ -67,20 +66,9 @@ class FileWatcher {
 		foreach ($this->files[$path] as $k => $subscriber) {
 			if (is_callable($subscriber) || is_array($subscriber)) {
 				call_user_func($subscriber, $path);
-				continue;
 			}
-			if (!isset(Daemon::$process->workers->threads[$subscriber])) {
-				unset($this->files[$path][$k]);
-				continue;
-			}
-			$worker = Daemon::$process->workers->threads[$subscriber];
-			if (Daemon::$config->autoreimport->value) {
-				if ($worker->connection) {
-					$worker->connection->sendPacket(array('op' => 'importFile', 'path' => $path));
-				}
-			}
-			else {
-				$worker->signal(SIGUSR2);
+			elseif (!Daemon::$process->IPCManager->importFile($subscriber, $path)) {
+				$this->rmWatch($path, $subscriber);
 			}
 		}
 	}

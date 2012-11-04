@@ -10,8 +10,7 @@
 
 class IPCManager extends AppInstance {
 	public $pool;
-	public $conn;
-	
+	public $conn;	
 	
 	/**
 	 * Setting default config options
@@ -21,7 +20,7 @@ class IPCManager extends AppInstance {
 	protected function getConfigDefaults() {
 		return array(
 			// listen to
-			'mastersocket'     => 'unix:/tmp/phpDaemon-master-%x.sock',
+			'mastersocket'     => 'unix:/tmp/phpDaemon-ipc-%x.sock',
 		);
 	}
 
@@ -31,8 +30,53 @@ class IPCManager extends AppInstance {
 	 */
 	public function init() {
 		$this->socketurl = sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value));
-		$this->pool = IPCManagerMasterPool::getInstance(array('listen' => $this->socketurl));
-		$this->pool->onReady();
+		if (Daemon::$process instanceof Daemon_IPCThread) {
+			$this->pool = IPCManagerMasterPool::getInstance(array('listen' => $this->socketurl));
+			$this->pool->appInstance = $this;
+			$this->pool->onReady();
+		}
+	}
+
+
+	public function updatedWorkers() {
+		$perWorker = 1;
+		$instancesCount = array();
+		foreach (Daemon::$config as $name => $section)
+		{
+		 if (
+			(!$section instanceof Daemon_ConfigSection)
+			|| !isset($section->limitinstances)) {
+			
+				continue;
+			}
+			$instancesCount[$name] = 0;
+		}
+		foreach ($this->pool->workers as $worker) {
+			foreach ($worker->instancesCount as $k => $v) {
+				if (!isset($instancesCount[$k])) {
+					unset($worker->instancesCount[$k]);
+					continue;
+				}
+				$instancesCount[$k] += $v;
+			}
+		}
+		foreach ($instancesCount as $name => $num) {
+			$v = Daemon::$config->{$name}->limitinstances->value - $num;
+			foreach ($this->pool->workers as $worker) {
+					if ($v <= 0) {break;}
+					if ((isset($worker->instancesCount[$name])) && ($worker->instancesCount[$name] < $perWorker))	{
+						continue;
+					}
+					if (!isset($worker->instancesCount[$name])) {
+						$worker->instancesCount[$name] = 1;
+					}
+					else {
+						++$worker->instancesCount[$name];
+					}
+					$worker->sendPacket(array('op' => 'spawnInstance', 'appfullname' => $name));
+					--$v;
+			}
+		}
 	}
 
 	/**
@@ -46,7 +90,14 @@ class IPCManager extends AppInstance {
 		return true;
 	}
 
-
+	public function importFile($workerId, $path) {
+		if (!isset($this->pool->workers[$workerId])) {
+			return false;
+		}
+		$worker = $this->pool->workers[$workerId];
+		$worker->sendPacket(array('op' => 'importFile', 'path' => $path));
+		return true;
+	}
 	public function ensureConnection() {
 		$this->sendPacket('');
 	}
@@ -93,9 +144,12 @@ class IPCManager extends AppInstance {
 		));
  	}
 }
-class IPCManagerMasterPool extends NetworkServer {}
+class IPCManagerMasterPool extends NetworkServer {
+	public $workers = array();
+}
 class IPCManagerMasterPoolConnection extends Connection {
 	public $timeout = null;
+	public $instancesCount = array();
 
 	public $workerId;
 	public function onPacket($p) {
@@ -104,34 +158,30 @@ class IPCManagerMasterPoolConnection extends Connection {
 		}
 		if ($p['op'] === 'start') {
 			$this->workerId = $p['workerId'];
-			Daemon::$process->workers->threads[$this->workerId]->connection = $this;
-			Daemon::$process->updatedWorkers();
+			$this->pool->workers[$this->workerId] = $this;
+			$this->pool->appInstance->updatedWorkers();
 		}
 		elseif ($p['op'] === 'broadcastCall') {
 			$p['op'] = 'call';
-			foreach (Daemon::$process->workers->threads as $worker) {
-				if (isset($worker->connection) && $worker->connection) {
-					$worker->connection->sendPacket($p);
-				}
+			foreach ($this->pool->workers as $worker) {
+				$worker->sendPacket($p);
 			}
 		}
 		elseif ($p['op'] === 'directCall') {
 			$p['op'] = 'call';
-			if (!isset(Daemon::$process->workers->threads[$p['workerId']]->connection)) {
+			if (!isset($this->pool->workers[$p['workerId']])) {
 				Daemon::$process->log('directCall(). not sent.');
 				return;
 			}
-			Daemon::$process->workers->threads[$p['workerId']]->connection->sendPacket($p);
+			$this->pool->workers[$p['workerId']]->sendPacket($p);
 		}
 		elseif ($p['op'] === 'singleCall') {
 			$p['op'] = 'call';
 			$sent = false;
-			foreach (Daemon::$process->workers->threads as $worker) {
-				if ($worker->connection) {
-					$worker->connection->sendPacket($p);
-					$sent = true;
-					break;
-				}
+			foreach ($this->pool->workers as $worker) {
+				$worker->sendPacket($p);
+				$sent = true;
+				break;
 			}
 			if (!$sent) {
 				Daemon::$process->log('singleCall(). not sent.');
@@ -145,8 +195,8 @@ class IPCManagerMasterPoolConnection extends Connection {
 	}
 	
 	public function onFinish() {
-		unset(Daemon::$process->workers->threads[$this->workerId]->connection);
-		Daemon::$process->updatedWorkers();
+		unset($this->pool->workers[$this->workerId]);
+		$this->pool->appInstance->updatedWorkers();
 	}
 	
 	public function sendPacket($p) {
@@ -186,7 +236,6 @@ class IPCManagerMasterPoolConnection extends Connection {
 }
 class IPCManagerWorkerConnection extends Connection {
 	public $timeout = null;
-	
 	public function onReady() {
 		$this->sendPacket(array(
 			'op' => 'start',
@@ -206,6 +255,10 @@ class IPCManagerWorkerConnection extends Connection {
 			Daemon::$appResolver->appInstantiate($app,$name);
 		}
 		elseif ($p['op'] === 'importFile') {
+			if (!Daemon::$config->autoreimport->value) {
+				Daemon::$process->sigusr2(); // graceful restart
+				return;
+			}
 			$path = $p['path'];
 			Daemon_TimedEvent::add(function($event) use ($path) {
 				$self = Daemon::$process;

@@ -231,21 +231,6 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	 * @return void
 	 */
 	public function init() {
-		if (isset($this->attrs->get['_pull'])) {
-			$this->type = 'pull';
-		}
-		elseif (
-			isset($this->attrs->get['_poll']) 
-			&& isset($this->attrs->get['_init'])
-		) {
-			$this->type = 'pollInit';
-		}
-		elseif (isset($this->attrs->get['_poll'])) {
-			$this->type = 'poll';
-		} else {
-			$this->type = 'push';
-		}
-
 		$this->header('Cache-Control: no-cache, must-revalidate');
 		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
 	}
@@ -255,7 +240,12 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {
-		if ($this->type === 'push') {
+		if ($this->inited) {
+			return;
+		}
+		$this->inited = true;
+		$data = self::getString($_REQUEST['data']);
+		if ($data !== '') {
 			$ret = array();
 			$id = self::getString($_REQUEST['_id']);
 			if (strpos($id, '.') === false) {
@@ -270,14 +260,14 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 			else {
 				list ($workerId, $this->reqIdAuthKey) = explode('.', $id, 2);
 				$workerId = (int) $workerId;
-				$this->appInstance->directCall($workerId, 'c2s', array($this->reqIdAuthKey,	self::getString($_REQUEST['data'])));
+				$this->appInstance->directCall($workerId, 'c2s', array($this->reqIdAuthKey,	$data));
 			}
-
-			echo json_encode($ret);
-
-			return;
+			if (sizeof($ret)) {
+				echo json_encode($ret);
+				return;
+			}
 		} 
-		elseif ($this->type === 'pull') {
+		/*if ($this->type === 'pull') {
 			if (!$this->inited) {
 				$this->authKey = sprintf('%x', crc32(microtime() . "\x00" . $this->attrs->server['REMOTE_ADDR']));
 				$this->header('Content-Type: text/html; charset=utf-8');
@@ -307,8 +297,8 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 			}
 
 			$this->sleep(1);
-		}
-		elseif ($this->type === 'pollInit') {
+		}*/
+		if (isset($_REQUEST['_init'])) {
 			$this->header('Content-Type: application/x-javascript; charset=utf-8');
 			$route = self::getString($_REQUEST['_route']);
 			$res = $this->appInstance->initSession($route, $this);
@@ -320,48 +310,44 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 			} else {
 				$this->out(json_encode($res));
 			}
+			return;
 		}
-		elseif ($this->type === 'poll') {
-			if (!$this->inited) {
-				$this->header('Content-Type: text/plain; charset=utf-8');
-				$this->inited = TRUE;
+		if (isset($_REQUEST['_poll'])) {
+			$this->header('Content-Type: text/plain; charset=utf-8');
 
-				$ret = array();
-				$id = self::getString($_REQUEST['_id']);
-				if (strpos($id, '.') === false) {
-					$ret['error'] = 'Bad cookie.';
-				}
-				else {
-					list ($workerId, $this->reqIdAuthKey) = explode('.', $id, 2);
-					$workerId = (int) $workerId;
-					$this->appInstance->directCall($workerId, 'poll', array(
-						Daemon::$process->id,
-						$this->id,
-						$this->reqIdAuthKey,
-						self::getString($_REQUEST['ts'])
-					));
-				}
-
-				if (isset($req->attrs->get['_script'])) {
-					$req->header('Content-Type: application/x-javascript; charset=utf-8');
-					$q = self::getString($req->attrs->get['q']);
-	
-					if (!ctype_digit($q)) {
-						$ret['error'] = 'Bad q.';
-					}
-					$this->jsid = $q;
-				}
-
-				if (sizeof($ret)) {
-					echo json_encode($ret);
-					return;
-				}
-
-				$this->out("\n");
-				$this->sleep(15);
+			$ret = array();
+			$id = self::getString($_REQUEST['_id']);
+			if (strpos($id, '.') === false) {
+				$ret['error'] = 'Bad cookie.';
+			}
+			else {
+				list ($workerId, $this->reqIdAuthKey) = explode('.', $id, 2);
+				$workerId = (int) $workerId;
+				$this->appInstance->directCall($workerId, 'poll', array(
+					Daemon::$process->id,
+					$this->id,
+					$this->reqIdAuthKey,
+					self::getString($_REQUEST['ts'])
+				));
 			}
 
-			return;
+			if (isset($this->attrs->get['_script'])) {
+				$this->header('Content-Type: application/x-javascript; charset=utf-8');
+				$q = self::getString($this->attrs->get['q']);
+	
+				if (!ctype_digit($q)) {
+					$ret['error'] = 'Bad q.';
+				}
+				$this->jsid = $q;
+			}
+
+			if (sizeof($ret)) {
+				echo json_encode($ret);
+				return;
+			}
+
+			$this->out("\n");
+			$this->sleep(15);
 		}
 	}
 

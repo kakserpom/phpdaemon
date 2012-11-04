@@ -13,8 +13,9 @@ class Daemon_MasterThread extends Thread {
 	public $breakMainLoop = FALSE;
 	public $reload = FALSE;
 	public $connCounter = 0;
-	public $fileWatcher;
 	public $callbacks;
+	public $workers;
+	public $ipcthreads;
 	
 	/**
 	 * Runtime of Master process
@@ -30,17 +31,17 @@ class Daemon_MasterThread extends Thread {
 		
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
-		FS::initEvent();
 
-		$this->fileWatcher = new FileWatcher;
 		$this->workers = new ThreadCollection;
 		$this->collections['workers'] = $this->workers;
+		$this->ipcthreads = new ThreadCollection;
+		$this->collections['ipcthreads'] = $this->ipcthreads;
 		
 		Daemon::$appResolver = require Daemon::$appResolverPath;
-		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		Daemon::$appResolver->preload(true); 
 
-		$this->callbacks = new SplStack;
+		$this->callbacks = new SplStackCallbacks;
+		$this->spawnIPCThread();
 		$this->spawnWorkers(min(
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
@@ -58,9 +59,11 @@ class Daemon_MasterThread extends Thread {
 				
 			if (($c % 10 == 0)) {
 				$self->workers->removeTerminated(true);
+				$self->ipcthreads->removeTerminated(true);
 				gc_collect_cycles();
 			} else {
 				$self->workers->removeTerminated();
+				$self->ipcthreads->removeTerminated();
 			}
 			
 			if (
@@ -103,54 +106,9 @@ class Daemon_MasterThread extends Thread {
 			$event->timeout();
 		}, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
 		
-		
-
 		while (!$this->breakMainLoop) {
-			while (!$this->callbacks->isEmpty()) {
-				call_user_func($this->callbacks->shift(), $this);
-			}
+			$this->callbacks->executeAll($this);
 			event_base_loop($this->eventBase);
-		}
-	}
-	public function updatedWorkers() {
-	
-		$perWorker = 1;
-		$instancesCount = array();
-		foreach (Daemon::$config as $name => $section)
-		{
-		 if (
-			(!$section instanceof Daemon_ConfigSection)
-			|| !isset($section->limitinstances)) {
-			
-				continue;
-			}
-			$instancesCount[$name] = 0;
-		}
-		foreach ($this->workers->threads as $worker) {
-			foreach ($worker->instancesCount as $k => $v) {
-				if (!isset($instancesCount[$k])) {
-					unset($worker->instancesCount[$k]);
-					continue;
-				}
-				$instancesCount[$k] += $v;
-			}
-		}
-		foreach ($instancesCount as $name => $num) {
-			$v = Daemon::$config->{$name}->limitinstances->value - $num;
-			foreach ($this->workers->threads as $worker) {
-					if ($v <= 0) {break;}
-					if ((isset($worker->instancesCount[$name])) && ($worker->instancesCount[$name] < $perWorker) || !isset($worker->connection))	{
-						continue;
-					}
-					if (!isset($worker->instancesCount[$name])) {
-						$worker->instancesCount[$name] = 1;
-					}
-					else {
-						++$worker->instancesCount[$name];
-					}
-					$worker->connection->sendPacket(array('op' => 'spawnInstance', 'appfullname' => $name));
-					--$v;
-			}
 		}
 	}
 	
@@ -182,12 +140,12 @@ class Daemon_MasterThread extends Thread {
 	/**
 	 * @todo description missed
 	 */	
-	public function reloadWorker($spawnId) {
-		if (isset($this->workers->threads[$spawnId])) {
-			if (!$this->workers->threads[$spawnId]->reloaded) {
-				Daemon::log('Spawning worker-replacer for reloaded worker #' . $spawnId . '.');
+	public function reloadWorker($id) {
+		if (isset($this->workers->threads[$id])) {
+			if (!$this->workers->threads[$id]->reloaded) {
+				Daemon::$process->log('Spawning worker-replacer for reloaded worker #' . $id);
 				$this->spawnWorkers(1);
-				$this->workers->threads[$spawnId]->reloaded = true;
+				$this->workers->threads[$id]->reloaded = true;
 			}
 		}
 	}
@@ -206,18 +164,44 @@ class Daemon_MasterThread extends Thread {
 		for ($i = 0; $i < $n; ++$i) {
 			$thread = new Daemon_WorkerThread;
 			$this->workers->push($thread);
-
 			$this->callbacks->push(function($self) use ($thread) {
 				$pid = $thread->start();
 				if ($pid < 0) {
-					Daemon::log('could not fork worker');
+					Daemon::$process->log('could not fork worker');
 				} elseif ($pid === 0) { // worker
-					Daemon::log('Unexcepted execution return to outside of Thread_start()');
+					Daemon::log('Unexcepted execution return to outside of Thread->start()');
 					exit;
 				}
 			});
 
 		}
+		if ($n > 0) {
+			event_base_loopbreak($this->eventBase);
+		}
+		return true;
+	}
+
+		/**
+	 * Spawn IPC process
+	 * @param $n - integer - number of workers to spawn
+	 * @return boolean - success
+	 */
+	public function spawnIPCThread() {
+		if (FS::$supported) {
+			eio_event_loop();
+		}
+		$thread = new Daemon_IPCThread;
+		$this->ipcthreads->push($thread);
+
+		$this->callbacks->push(function($self) use ($thread) {
+			$pid = $thread->start();
+			if ($pid < 0) {
+				Daemon::$process->log('could not fork IPCThread');
+			} elseif ($pid === 0) { // worker
+				$this->log('Unexcepted execution return to outside of Thread->start()');
+				exit;
+			}
+		});
 
 		return true;
 	}
@@ -261,7 +245,7 @@ class Daemon_MasterThread extends Thread {
 			return;
 		}
 
-		Daemon::log('Unexcepted master shutdown.'); 
+		$this->log('Unexcepted shutdown.'); 
 
 		$this->shutdown(SIGTERM);
 	}
@@ -291,7 +275,7 @@ class Daemon_MasterThread extends Thread {
 	 */
 	protected function sigchld() {
 		if (Daemon::$config->logsignals->value) {
-			Daemon::log('Master caught SIGCHLD.');
+			$this->log('Caught SIGCHLD.');
 		}
 
 		parent::sigchld();
@@ -304,13 +288,19 @@ class Daemon_MasterThread extends Thread {
 	 */
 	protected function sigint() {
 		if (Daemon::$config->logsignals->value) {
-			Daemon::log('Master caught SIGINT.');
+			$this->log('Caught SIGINT.');
 		}
 	
-		$this->workers->signal(SIGINT);
+		$this->signalToChildren(SIGINT);
 		$this->shutdown(SIGINT);
 	}
 	
+	public function signalToChildren($signo) {
+		foreach ($this->collections as $col) {
+			$col->signal($signo);
+		}
+
+	}
 	/**
 	 * Handler for the SIGTERM (shutdown) signal in master process
 	 * @todo +on & -> protected?
@@ -318,10 +308,10 @@ class Daemon_MasterThread extends Thread {
 	 */
 	protected function sigterm() {
 		if (Daemon::$config->logsignals->value) {
-			Daemon::log('Master caught SIGTERM.');
+			$this->log('Caught SIGTERM.');
 		}
 	
-		$this->workers->signal(SIGTERM);
+		$this->signalToChildren(SIGTERM);
 		$this->shutdown(SIGTERM);
 	}
 	
@@ -332,10 +322,10 @@ class Daemon_MasterThread extends Thread {
 	 */
 	protected function sigquit() {
 		if (Daemon::$config->logsignals->value) {
-			Daemon::log('Master caught SIGQUIT.');
+			$this->log('Caught SIGQUIT.');
 		}
 
-		$this->workers->signal(SIGQUIT);
+		$this->signalToChildren(SIGQUIT);
 		$this->shutdown(SIGQUIT);
 	}
 
@@ -346,14 +336,14 @@ class Daemon_MasterThread extends Thread {
 	 */
 	public function sighup() {
 		if (Daemon::$config->logsignals->value) {
-			Daemon::log('Master caught SIGHUP (reload config).');
+			$this->log('Caught SIGHUP (reload config).');
 		}
 
 		if (isset(Daemon::$config->configfile)) {
 			Daemon::loadConfig(Daemon::$config->configfile->value);
 		}
 
-		$this->workers->signal(SIGHUP);
+		$this->signalToChildren(SIGHUP);
 	}
 
 	/**
@@ -363,11 +353,11 @@ class Daemon_MasterThread extends Thread {
 	 */
 	public function sigusr1() {
 		if (Daemon::$config->logsignals->value) {
-			Daemon::log('Master caught SIGUSR1 (re-open log-file).');
+			$this->log('Caught SIGUSR1 (re-open log-file).');
 		}
 
 		Daemon::openLogs();
-		$this->workers->signal(SIGUSR1);
+		$this->signalToChildren(SIGUSR1);
 	}
 
 	/**
@@ -377,10 +367,10 @@ class Daemon_MasterThread extends Thread {
 	 */
 	public function sigusr2() {
 		if (Daemon::$config->logsignals->value) {
-			Daemon::log('Master caught SIGUSR2 (graceful restart all workers).');
+			$this->log('Caught SIGUSR2 (graceful restart all workers).');
 		}
 
-		$this->workers->signal(SIGUSR2);
+		$this->signalToChildren(SIGUSR2);
 	}
 
 	/**
@@ -396,7 +386,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function sigxfsz() {
-		Daemon::log('Master caught SIGXFSZ.');
+		$this->log('Caught SIGXFSZ.');
 	}
 	
 	/**
@@ -411,7 +401,7 @@ class Daemon_MasterThread extends Thread {
 			$sig = 'UNKNOWN';
 		}
 
-		Daemon::log('Master caught signal #' . $signo . ' (' . $sig . ').');
+		$this->log('Caught signal #' . $signo . ' (' . $sig . ').');
 	}
 
 }

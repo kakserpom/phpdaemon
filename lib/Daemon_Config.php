@@ -30,6 +30,7 @@ class Daemon_Config implements ArrayAccess {
 	public $minspareworkers = 20;
 	public $maxspareworkers = 50;
 	public $masterpriority  = 100;
+	public $ipcthreadpriority = 100;
 			 
 	// Requests
 	public $obfilterauto                   = 1;
@@ -73,7 +74,7 @@ class Daemon_Config implements ArrayAccess {
 		static $sizes = array('maxmemoryusage');
 		static $times = array('maxidle', 'autoreload', 'mpmdelay', 'eiosetmaxpolltime');
 		static $numbers = array(
-			'maxrequests', 'autogc','minworkers','maxworkers','minspareworkers','maxspareworkers','masterpriority',
+			'maxrequests', 'autogc','minworkers','maxworkers','minspareworkers','maxspareworkers','masterpriority', 'ipcthreadpriority',
 			'eiosetmaxidle', 'eiosetmaxparallel', 'eiosetmaxpollreqs', 'eiosetminparallel',
 		);
 

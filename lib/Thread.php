@@ -171,6 +171,7 @@ abstract class Thread {
 			if (!$thread->delayedSigReg) {
 				$thread->registerSignals();
 			}
+			$clearstack = false;
 			if ($clearstack) {
 				throw new ClearStackException('', 0, $thread);
 			} else {
@@ -292,7 +293,6 @@ abstract class Thread {
 	 */
 	private function waitPid() {
 		$pid = pcntl_waitpid(-1, $status, WNOHANG);
-
 		if ($pid > 0) {
 			foreach ($this->collections as &$col) {
 				foreach ($col->threads as $k => &$t) {

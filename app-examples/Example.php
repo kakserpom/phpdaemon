@@ -1,6 +1,6 @@
-<?php
+<?php  
 
-/**
+/** 
  * @package Examples
  * @subpackage Base
  *

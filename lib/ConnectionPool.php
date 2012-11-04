@@ -166,7 +166,7 @@ class ConnectionPool {
 			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($sock));
 			return;
 		}
-		$this->sockets[$k] = array($sock, $type, $addr);
+		$this->sockets[$k] = array($sock, $type, $addr, posix_getpid());
 		$this->socketEvents[$k] = $ev;
 		if ($this->socketsEnabled) {
 			event_base_set($ev, Daemon::$process->eventBase);
@@ -221,8 +221,8 @@ class ConnectionPool {
 	 * @return void
 	 */
 	public function closeSockets() {
-		while (sizeof($this->sockets) > 0) {
-			if (!$sock = array_pop($this->sockets)) {
+		foreach ($this->sockets as $k => $sock) {
+			if ($sock[3] != posix_getpid()) {
 				continue;
 			}
 			if (Daemon::$useSockets) {
@@ -230,6 +230,7 @@ class ConnectionPool {
 			} else {
 				fclose($sock[0]);
 			}
+			unset($this->sockets[$k]);
 		}
 	}
 
