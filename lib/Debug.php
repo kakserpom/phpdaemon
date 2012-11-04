@@ -55,7 +55,7 @@ class Debug {
 	 * @return string
 	 */
 	public static function backtrace() {
-		if (Daemon::$process->obInStack) {
+		if (Daemon::$obInStack) {
 			try {
 				throw new Exception;
 			} catch (Exception $e) {

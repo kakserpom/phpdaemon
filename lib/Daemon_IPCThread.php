@@ -1,4 +1,4 @@
-f<?php
+<?php
 
 /**
  * Implementation of the worker thread

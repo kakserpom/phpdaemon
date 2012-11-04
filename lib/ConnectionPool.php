@@ -251,12 +251,7 @@ class ConnectionPool extends SplObjectStorage {
 		
 		$result = true;
 	
-		foreach ($this->list as $k => $conn) {
-			if (!is_object($conn)) {
-				unset($this->list[$k]); 
-				continue;
-			}
-
+		foreach ($this as $k => $conn) {
 			if (!$conn->gracefulShutdown()) {
 				$result = false;
 			}

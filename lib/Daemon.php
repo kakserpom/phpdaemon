@@ -97,7 +97,7 @@ class Daemon {
 			Daemon::$req->out($s, false);
 
 		} else {
-			Daemon::log('Unexcepted output (len. ' . strlen($s) . '): \'' . $s . '\': '.Debug::backtrace());
+			Daemon::log('Unexcepted output (len. ' . strlen($s) . '): \'' . $s . '\'');
 		}
 		--$n;
 		Daemon::$obInStack = $n > 0;
