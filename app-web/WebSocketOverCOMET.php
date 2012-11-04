@@ -40,6 +40,7 @@ class WebSocketOverCOMET extends AppInstance {
 		if (!$sess->downstream) {
 			return array('error' => 403);
 		}
+		$sess->server = $req->attrs->server;
 		$id = Daemon::$process->id . '.' . $sess->id . '.' . $sess->authKey;
 		return array('id' => $id);
 	}
@@ -114,6 +115,7 @@ class WebSocketOverCOMET_Session {
 	public $bufferedPackets = array();
 	public $finished = false;
 	public $timeout = 30; // 30
+	public $server;
 	public function __construct($route, $appInstance, $authKey) {
 		$this->polling = new SplStack;
 		$this->callbacks = new SplStackCallbacks;
