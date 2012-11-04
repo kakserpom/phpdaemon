@@ -315,7 +315,7 @@ class MongoClient extends NetworkClient {
 	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function count($p, $callback, $key = '') {
+	public function findCount($p, $callback, $key = '') {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}

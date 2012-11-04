@@ -9,7 +9,7 @@ class DeferredEvent {
 	const STATE_RUNNING = 2;
 	const STATE_DONE = 3;
 	
-	public $listeners = array();
+	public $listeners;
 	public $result;
 	public $state;
 	public $args;
@@ -18,6 +18,7 @@ class DeferredEvent {
 	public function __construct($cb) {
 		$this->state = self::STATE_WAITING;
 		$this->onRun = $cb;
+		$this->listeners = new SplStackCallback;
 	}
 	
 	public function setProducer($cb) {
@@ -27,9 +28,7 @@ class DeferredEvent {
 	public function setResult($result = NULL) {
 		$this->result = $result;
 		$this->state = self::STATE_DONE;
-		while ($cb = array_pop($this->listeners)) {
-			call_user_func($cb, $this->result);
-		}
+		$this->listeners->executeAll($this->result);
 	}
 	
 	public function cleanup() {
@@ -43,7 +42,7 @@ class DeferredEvent {
 			call_user_func($cb, $this);
 			return;
 		}
-		$this->listeners[] = $cb;
+		$this->listeners->push($cb);
 		if ($this->state === self::STATE_WAITING) {
 			$i = 1;
 			$n = func_num_args();
@@ -52,7 +51,7 @@ class DeferredEvent {
 				++$i;
 			}
 			$this->state = self::STATE_RUNNING;
-			call_user_func($this->onRun,$this);
+			call_user_func($this->onRun, $this);
 		}
 	}
 	

@@ -7,13 +7,12 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class ConnectionPool {
+class ConnectionPool extends SplObjectStorage {
 
 	const TYPE_TCP    = 0;
 	const TYPE_SOCKET = 1;
 	public $allowedClients  = NULL;
 	public $connectionClass;
-	public $list = array();
 	public $name;
 	public $config;
 	public static $instances = array();
@@ -84,7 +83,7 @@ class ConnectionPool {
 			elseif ($k === 'maxconcurrency') {
 				$this->maxConcurrency = (int) $v;
 			}
-		}		
+		}
 	}
 	/**
 	 * Setting default config options
@@ -231,8 +230,9 @@ class ConnectionPool {
 	 * @return void
 	 */
 	public function closeSockets() {
+		$pid = posix_getpid();
 		foreach ($this->sockets as $k => $sock) {
-			if ($sock[3] != posix_getpid()) {
+			if ($sock[3] != $pid) {
 				continue;
 			}
 			if (Daemon::$useSockets) {
@@ -468,15 +468,6 @@ class ConnectionPool {
 		}
 		return $n;
 	}
-	
-	public function removeConnection($id) {
-		$conn = $this->getConnectionById($id);
-		if (!$conn) {
-			return false;
-		}
-		$conn->onFinish();
-		unset($this->list[$id]);
-	}
 
 	/**
 	 * Establish a connection with remote peer
@@ -490,7 +481,8 @@ class ConnectionPool {
 			$class = $this->connectionClass;
 		}
 		$id = ++Daemon::$process->connCounter;
-		$conn = $this->list[$id] = new $class(null, $id, $this);
+		$conn = new $class(null, $this);
+		$this->attach($conn);
 		$conn->connect($url, $cb);
 		return $conn;
 	}
@@ -508,25 +500,14 @@ class ConnectionPool {
 		if ($class === null) {
 			$class = $this->connectionClass;
 		}
-		$id = ++Daemon::$process->connCounter;
-		$conn = $this->list[$id] = new $class(null, $id, $this);
+		$conn = new $class(null, $this);
+		$this->attach($conn);
 		$conn->connectTo($addr, $port);
 		if ($cb !== null) {
 			$conn->onConnected($cb);
 		}
 		return $conn;
 	}
-
-	public function getConnectionById($id) {
-		if (!isset($this->list[$id])) {
-			return false;
-		}
-		return $this->list[$id];
- 	}
-
- 	public function getNumberOfConnections() {
- 		return sizeof($this->list);
- 	}
 
 	/**
 	 * Called when new connections is waiting for accept
@@ -546,7 +527,7 @@ class ConnectionPool {
 			return;
 		}
 		if ($this->maxConcurrency) {
-			if ($this->getNumberOfConnections() >= $this->maxConcurrency) {
+			if ($this->count() >= $this->maxConcurrency) {
 				$this->sockets[$sockId][4] = true; // overload
 			}
 		}
@@ -569,11 +550,9 @@ class ConnectionPool {
 			stream_set_blocking($fd, 0);
 		}
 		
-		$id = ++Daemon::$process->connCounter;
-		
 		$class = $this->connectionClass;
- 		$conn = new $class($fd, $id, $this);
-		$this->list[$id] = $conn;
+ 		$conn = new $class($fd, $this);
+		$this->attach($conn);
 
 		if (Daemon::$useSockets && ($type !== self::TYPE_SOCKET)) {
 			$getpeername = function($conn) use (&$getpeername) { 

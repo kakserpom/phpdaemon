@@ -12,6 +12,7 @@ class WebSocketOverCOMET extends AppInstance {
 	public $sessions = array();
 	public $enableRPC = true;
 	public $sessCounter = 0;
+	public $reqCounter = 0;
 
 	/**
 	 * Constructor.
@@ -49,7 +50,8 @@ class WebSocketOverCOMET extends AppInstance {
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		return $this->requests[$req->id] = new WebSocketOverCOMET_Request($this, $upstream, $req);
+		$req = new WebSocketOverCOMET_Request($this, $upstream, $req);
+		return $this->requests[$req->id] = $req;
 	}
 	public function s2c($reqId, $data, $ts) {
 		if (!isset($this->requests[$reqId])) {
@@ -225,6 +227,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	public $type;
 	public $reqIdAuthKey;
 	public $jsid;
+	public $id;
 
 	/**
 	 * Constructor.
@@ -233,6 +236,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	public function init() {
 		$this->header('Cache-Control: no-cache, must-revalidate');
 		$this->header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+		$this->id = ++$this->appInstance->reqCounter;
 	}
 
 	/**

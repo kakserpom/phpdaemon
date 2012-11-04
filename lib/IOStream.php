@@ -10,7 +10,6 @@
 abstract class IOStream {
 
 	public $buf = '';
-	public $id;
 	public $EOL = "\n";
 
 	public $readPacketSize  = 8192;
@@ -39,13 +38,11 @@ abstract class IOStream {
 
 	/**
 	 * IOStream constructor
-	 * @param integer Stream ID in Pool
  	 * @param resource File descriptor.
 	 * @param object AppInstance
 	 * @return void
 	 */
-	public function __construct($fd = null, $id = null, $pool = null) {
-		$this->id = $id;
+	public function __construct($fd = null, $pool = null) {
 		$this->pool = $pool;
 	
 		if ($fd !== null) {
@@ -285,10 +282,11 @@ abstract class IOStream {
 			return;
 		}
 		$this->finished = true;
-		if ($this->pool) {
-			unset($this->pool->list[$this->id]);
-		}
 		$this->onFinish();
+		if ($this->pool) {
+			$this->pool->detach($this);
+			$this->pool = null;
+		}
 		if (!$this->sending) {
 			$this->close();
 		}
@@ -427,10 +425,11 @@ abstract class IOStream {
 			return;
 		}
 		$this->finished = true;
-		if ($this->pool) {
-			unset($this->pool->list[$this->id]);
-		}
 		$this->onFinish();
+		if ($this->pool) {
+			$this->pool->detach($this);
+			$this->pool = null;
+		}
 		
 		event_base_loopexit(Daemon::$process->eventBase);
 	}

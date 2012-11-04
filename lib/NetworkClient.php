@@ -79,22 +79,16 @@ class NetworkClient extends ConnectionPool {
 		}
 		$conn = false;
 		if (isset($this->servConn[$url])) {
-			if ($this->acquireOnGet) {
-				while (($c = array_shift($this->servConnFree[$url])) !== null) {
-					if (isset($this->list[$c])) {
-						$conn = $this->list[$c];
-						break;
-					}
-				}
-			} else {
-				if ($c = end($this->servConnFree[$url])) {
-					if (isset($this->list[$c])) {
-						$conn = $this->list[$c];
-					}
+			$storage = $this->servConn[$url];
+			$free = $this->servConnFree[$url];
+			if ($free->count() > 0) {
+				$conn = $free->current();
+				if ($this->acquireOnGet) {
+					$free->detach($conn);			
 				}
 			}
-			if (sizeof($this->servConn[$url]) >= $this->maxConnPerServ) {
-				$conn = $this->getConnectionById($this->servConn[$url][array_rand($this->servConn[$url])]);
+			elseif ($storage->count() >= $this->maxConnPerServ) {
+				$conn = $storage->current();
 			}
 			if ($conn) {
 				if ($cb !== null) {
@@ -103,8 +97,8 @@ class NetworkClient extends ConnectionPool {
 				return $conn;
 			}
 		} else {
-			$this->servConn[$url] = array();
-			$this->servConnFree[$url] = array();
+			$this->servConn[$url] = new SplObjectStorage;
+			$this->servConnFree[$url] = new SplObjectStorage;
 		}
 		
 		$conn = $this->connect($url, $cb);
@@ -113,8 +107,8 @@ class NetworkClient extends ConnectionPool {
 			return false;
 		}
 	
-		$this->servConn[$url][$conn->id] = $conn->id;
-		$this->servConnFree[$url][$conn->id] = $conn->id;
+		$this->servConn[$url]->attach($conn);
+		$this->servConnFree[$url]->attach($conn);
 
 		return $conn;
 	}

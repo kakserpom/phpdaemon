@@ -15,8 +15,8 @@ class NetworkClientConnection extends Connection {
 	
 	public $alive = true;
 
-	public function __construct($fd, $id = null, $pool = null) {
-		parent::__construct($fd, $id, $pool);
+	public function __construct($fd, $pool = null) {
+		parent::__construct($fd, $pool);
 		$this->onResponse = new SplStackCallbacks;
 	}	
 
@@ -24,10 +24,10 @@ class NetworkClientConnection extends Connection {
 	public function setFree($isFree = true) {
 		$this->busy = !$isFree;
 		if ($this->busy) {
-			unset($this->pool->servConnFree[$this->url][$this->id]);
+			$this->pool->servConnFree[$this->url]->detach($this);
 		}
 		else {
-			$this->pool->servConnFree[$this->url][$this->id] = $this->id;
+			$this->pool->servConnFree[$this->url]->attach($this);
 		}
 	}
 
@@ -41,7 +41,8 @@ class NetworkClientConnection extends Connection {
 	public function onFinish() {
 		parent::onFinish();
 		unset($this->onResponse);
-		unset($this->pool->servConn[$this->url][$this->id]);
+		$this->pool->servConnFree[$this->url]->detach($this);
+		$this->pool->servConn[$this->url]->detach($this);
 		$this->checkFree();
 	}
 
