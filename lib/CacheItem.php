@@ -13,7 +13,7 @@ class CacheItem {
 	public $listeners;
 	public $expire;
 	public function __construct($value) {
-		$this->listeners = new SplStackCallbacks;
+		$this->listeners = new StackCallbacks;
 		$this->value = $value;
 	}
 	

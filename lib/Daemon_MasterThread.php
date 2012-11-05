@@ -40,7 +40,7 @@ class Daemon_MasterThread extends Thread {
 		Daemon::$appResolver = require Daemon::$appResolverPath;
 		Daemon::$appResolver->preload(true); 
 
-		$this->callbacks = new SplStackCallbacks;
+		$this->callbacks = new StackCallbacks;
 		$this->spawnIPCThread();
 		$this->spawnWorkers(min(
 			Daemon::$config->startworkers->value,

@@ -158,7 +158,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 						$this->roster = new XMPPRoster($this);
 						if ($this->onConnected) {
 							$this->connected = true;
-							call_user_func($this->onConnected, $this);
+							$conn->onConnected->executeAll($conn, $this);
 							$this->onConnected = null;
 						}
 						$this->event('connected');

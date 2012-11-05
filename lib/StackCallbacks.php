@@ -1,5 +1,5 @@
 <?php
-class SplStackCallbacks extends SplStack {
+class StackCallbacks extends SplStack {
 	public function executeOne() {
 		if ($this->isEmpty()) {
 			return false;

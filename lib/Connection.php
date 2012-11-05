@@ -55,7 +55,7 @@ class Connection extends IOStream {
 			call_user_func($cb, $this);
 		} else {
 			if (!$this->onConnected) {
-				$this->onConnected = new SplStackCallbacks;
+				$this->onConnected = new StackCallbacks;
 			}
 			$this->onConnected->push($cb);
 		}

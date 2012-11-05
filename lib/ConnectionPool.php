@@ -7,37 +7,32 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class ConnectionPool extends SplObjectStorage {
+class ConnectionPool extends ObjectStorage {
 
-	const TYPE_TCP    = 0;
-	const TYPE_SOCKET = 1;
-	public $allowedClients  = NULL;
+	public $allowedClients  = null;
 	public $connectionClass;
 	public $name;
 	public $config;
 	public static $instances = array();
-	public $socketsEnabled = false;
-	public $sockets = array();
-	public $socketEvents = array();
-	public $sockCounter = 0;
 	public $maxConcurrency = 0;
 	public $finished = false;
+	public $bound;
+	public $enabled = false;
 	
 	public function __construct($config = array()) {
+		$this->bound = new ObjectStorage;
 		$this->config = $config;
 		$this->onConfigUpdated();
 		if ($this->connectionClass === null) {
 			$this->connectionClass = get_class($this) . 'Connection';
 		}
 		if (isset($this->config->listen)) {
-			$this->bind($this->config->listen->value, isset($this->config->port->value) ? $this->config->port->value : null);
+			$this->bind($this->config->listen->value);
 		}
 		$this->init();
 	}
 	
-	public function init() {
-	}
-	
+	public function init() {}
 	
 	/**
 	 * Called when the worker is ready to go.
@@ -154,48 +149,14 @@ class ConnectionPool extends SplObjectStorage {
 	public function setConnectionClass($class) {
 		$this->connectionClass = $class;
 	}
-
-	/**
-	 * Route incoming request to related application
-	 * @param resource Socket
-	 * @param int Type (TYPE_* constants)
-	 * @param string Address
-	 * @return void
-	 */
-	public function addSocket($sock, $type, $addr) {
-		$ev = event_new();
-		$k = $this->sockCounter++;
-		if (!event_set($ev,	$sock, EV_READ | EV_PERSIST, array($this, 'onAcceptEvent'), array($k, $type))) {
-			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($sock));
-			return;
-		}
-		$this->sockets[$k] = array(
-				$sock,
-				$type,
-				$addr,
-				posix_getpid(),
-				false, // overload
-			);
-		$this->socketEvents[$k] = $ev;
-		if ($this->socketsEnabled) {
-			event_base_set($ev, Daemon::$process->eventBase);
-			event_add($ev);
-		}
-	}
 	
 	/**
 	 * Enable socket events
 	 * @return void
 	*/
 	public function enable() {
-		if ($this->socketsEnabled) {
-			return;
-		}
-		$this->socketsEnabled = true;
-		foreach ($this->socketEvents as $ev) {
-			event_base_set($ev, Daemon::$process->eventBase);
-			event_add($ev);
-		}
+		$this->enabled = true;
+		$this->bound->each('enable');
 	}
 	
 	/**
@@ -203,13 +164,8 @@ class ConnectionPool extends SplObjectStorage {
 	 * @return void
 	 */
 	public function disable() {
-		while (sizeof($this->socketEvents) > 0) {
-			if (!is_resource($ev = array_pop($this->socketEvents))) {
-				continue;
-			}
-			@event_del($ev); // bogus notice
-			event_free($ev);
-		}
+		$this->enabled = false;
+		$this->bound->each('disable');
 	}
 
 	/**
@@ -229,25 +185,14 @@ class ConnectionPool extends SplObjectStorage {
 	 * Close each of binded sockets.
 	 * @return void
 	 */
-	public function closeSockets() {
-		$pid = posix_getpid();
-		foreach ($this->sockets as $k => $sock) {
-			if ($sock[3] != $pid) {
-				continue;
-			}
-			if (Daemon::$useSockets) {
-				socket_close($sock[0]);
-			} else {
-				fclose($sock[0]);
-			}
-			unset($this->sockets[$k]);
-		}
+	public function closeBound() {
+		$this->bound->each('close');
 	}
 
 
 	public function finish() {
 		$this->disable(); 
-		$this->closeSockets();
+		$this->closeBound();
 		
 		$result = true;
 	
@@ -262,203 +207,58 @@ class ConnectionPool extends SplObjectStorage {
 		}
 		return $result;
 	}
+
+	public function attachBound($bound) {
+		$this->bound->attach($bound);
+	}
+
+	public function detachBound($bound) {
+		$this->bound->detach($bound);
+	}
+
+	public function attachConn($bound) {
+		$this->attach($bound);
+	}
+
+	public function detachConn($bound) {
+		$this->detach($bound);
+	}
 	
 	/**
 	 * Bind given sockets
 	 * @param mixed Addresses to bind
-	 * @param integer Optional. Default port to listen
 	 * @param boolean SO_REUSE. Default is true
 	 * @return void
 	 */
-	public function bind($addrs = array(), $listenport = 0, $reuse = TRUE) {
+	public function bind($addrs = array(), $reuse = true, $max = 0) {
 		if (is_string($addrs)) {
 			$addrs = explode(',', $addrs);
 		}
 		$n = 0;
 		for ($i = 0, $s = sizeof($addrs); $i < $s; ++$i) {
 			$addr = trim($addrs[$i]);
-	
 			if (stripos($addr, 'unix:') === 0) {
-				$type = self::TYPE_SOCKET;
-				$e = explode(':', $addr, 4);
-
-				if (sizeof($e) == 4) {
-					$user = $e[1];
-					$group = $e[2];
-					$path = $e[3];
-				}
-				elseif (sizeof($e) == 3) {
-					$user = $e[1];
-					$group = FALSE;
-					$path = $e[2];
-				} else {
-					$user = FALSE;
-					$group = FALSE;
-					$path = $e[1];
-				}
-
-				if (pathinfo($path, PATHINFO_EXTENSION) !== 'sock') {
-					Daemon::$process->log('Unix-socket \'' . $path . '\' must has \'.sock\' extension.');
-					continue;
-				}
+				$addr = substr($addr, 5);
+				$socket = new BoundUNIXSocket($addr, $reuse);
 				
-				if (file_exists($path)) {
-					unlink($path);
-				}
-
-				if (Daemon::$useSockets) {
-					$sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
-
-					if (!$sock) {
-						$errno = socket_last_error();
-						Daemon::$process->log(get_class($this) . ': Couldn\'t create UNIX-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-
-						continue;
-					}
-
-					// SO_REUSEADDR is meaningless in AF_UNIX context
-
-					if (!@socket_bind($sock, $path)) {
-						if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
-							continue;
-						}
-						$errno = socket_last_error();
-						Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
-
-						continue;
-					}
-		
-					if (!socket_listen($sock, SOMAXCONN)) {
-						$errno = socket_last_error();
-						Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
-					}
-
-					socket_set_nonblock($sock);
-				} else {
-					if (!$sock = @stream_socket_server('unix://' . $path, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN)) {
-						Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . $errstr . ').');
-
-						continue;
-					}
-
-					stream_set_blocking($sock, 0);
-				}
-
-				chmod($path, 0770);
-
-				if (
-					($group === FALSE) 
-					&& isset(Daemon::$config->group->value)
-				) {
-					$group = Daemon::$config->group->value;
-				}
-
-				if ($group !== FALSE) {
-					if (!@chgrp($path, $group)) {
-						unlink($path);
-						Daemon::log('Couldn\'t change group of the socket \'' . $path . '\' to \'' . $group . '\'.');
-
-						continue;
-					}
-				}
-				
-				if (
-					($user === FALSE) 
-					&& isset(Daemon::$config->user->value)
-				) {
-					$user = Daemon::$config->user->value;
-				}
-
-				if ($user !== FALSE) {
-					if (!@chown($path, $user)) {
-						unlink($path);
-						Daemon::log('Couldn\'t change owner of the socket \'' . $path . '\' to \'' . $user . '\'.');
-
-						continue;
-					}
-				}
 			} else {
-				$type = self::TYPE_TCP;
-		
 				if (stripos($addr,'tcp://') === 0) {
 					$addr = substr($addr, 6);
 				}
-
-				$hp = explode(':', $addr, 2);
-				
-				if (!isset($hp[1])) {
-					$hp[1] = $listenport;
-				}
-				$host = $hp[0];
-				$port = (int) $hp[1];
-				$addr = $host . ':' . $port;
-
-				if (Daemon::$useSockets) {
-					$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-
-					if (!$sock) {
-						$errno = socket_last_error();
-						Daemon::$process->log(get_class($this) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-
-						continue;
-					}
-
-					if ($reuse) {
-						if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
-							$errno = socket_last_error();
-							Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-
-							continue;
-						}
-
-						if (Daemon::$reusePort && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
-							$errno = socket_last_error();
-							Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-
-							continue;
-						}
-					}
-
-					if (!@socket_bind($sock, $hp[0], $hp[1])) {
-						if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
-							continue;
-						}
-						$errno = socket_last_error();
-						Daemon::$process->log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
-
-						continue;
-					}
-
-					socket_getsockname($sock, $host, $port);
-					$addr = $host . ':' . $port;
-
-					if (!socket_listen($sock, SOMAXCONN)) {
-						$errno = socket_last_error();
-						Daemon::$process->log(get_class($this) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
-
-						continue;
-					}
-
-					socket_set_nonblock($sock);
-				} else {
-					if (!$sock = @stream_socket_server($addr, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN)) {
-						Daemon::$process->log(get_class($this) . ': Couldn\'t bind address \'' . $addr . '\' (' . $errno . ' - ' . $errstr . ')');
-
-						continue;
-					}
-
-					stream_set_blocking($sock, 0);
+				$socket = new BoundTCPSocket($addr, $reuse);
+				if (isset($this->config->port->value)) {
+					$socket->setDefaultPort($this->config->port->value);
 				}
 			}
-		
-			if (!is_resource($sock)) {
-				Daemon::$process->log(get_class($this) . ': Couldn\'t add errorneus socket with address \'' . $addr . '\'.');
-			} else {
-				$this->addSocket($sock, $type, $addr);
-				++$n;
-				if (isset($this->config->maxboundsockets->value) && ($n >= $this->config->maxboundsockets->value)) {
-					return $n;
+			if ($socket->bind()) {
+				$socket->attachTo($this);
+				if ($this->enabled) {
+					$socket->enable();
 				}
+				++$n;
+			}
+			if ($max > 0 && ($n >= $max)) {
+				return $n;
 			}
 		}
 		return $n;
@@ -477,7 +277,6 @@ class ConnectionPool extends SplObjectStorage {
 		}
 		$id = ++Daemon::$process->connCounter;
 		$conn = new $class(null, $this);
-		$this->attach($conn);
 		$conn->connect($url, $cb);
 		return $conn;
 	}
@@ -496,111 +295,10 @@ class ConnectionPool extends SplObjectStorage {
 			$class = $this->connectionClass;
 		}
 		$conn = new $class(null, $this);
-		$this->attach($conn);
 		$conn->connectTo($addr, $port);
 		if ($cb !== null) {
 			$conn->onConnected($cb);
 		}
 		return $conn;
-	}
-
-	/**
-	 * Called when new connections is waiting for accept
-	 * @param resource Descriptor
-	 * @param integer Events
-	 * @param mixed Attached variable
-	 * @return void
-	 */
-	public function onAcceptEvent($stream, $events, $arg) {
-		$sockId = $arg[0];
-		$type = $arg[1];
-		if (Daemon::$config->logevents->value) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
-		}
-		
-		if (Daemon::$process->reload) {
-			return;
-		}
-		if ($this->maxConcurrency) {
-			if ($this->count() >= $this->maxConcurrency) {
-				$this->sockets[$sockId][4] = true; // overload
-			}
-		}
-		
-		if (Daemon::$useSockets) {
-			$fd = @socket_accept($stream);
-
-			if (!$fd) {
-				return;
-			}
-			
-			socket_set_nonblock($fd);
-		} else {
-			$fd = @stream_socket_accept($stream, 0, $addr);
-
-			if (!$fd) {
-				return;
-			}
-			
-			stream_set_blocking($fd, 0);
-		}
-		
-		$class = $this->connectionClass;
- 		$conn = new $class($fd, $this);
-		$this->attach($conn);
-
-		if (Daemon::$useSockets && ($type !== self::TYPE_SOCKET)) {
-			$getpeername = function($conn) use (&$getpeername) { 
-				$r = @socket_getpeername($conn->fd, $host, $port);
-				if ($r === false) {
-    				if (109 === socket_last_error()) { // interrupt
-    					if ($this->allowedClients !== null) {
-    						$conn->ready = false; // lockwait
-    					}
-    					$conn->onWriteOnce($getpeername);
-    					return;
-    				}
-    			}
-				$conn->addr = $host.':'.$port;
-				$conn->ip = $host;
-				$conn->port = $port;
-				if ($conn->pool->allowedClients !== null) {
-					if (!ConnectionPool::netMatch($conn->pool->allowedClients, $host)) {
-						Daemon::log('Connection is not allowed (' . $host . ')');
-						$conn->ready = false;
-						$conn->finish();
-					}
-				}
-			};
-			$getpeername($conn);
-		}
-
-	}
-
-	/**
-	 * Checks if the CIDR-mask matches the IP
-	 * @param string CIDR-mask
-	 * @param string IP
-	 * @return boolean Result
-	 */
-	public static function netMatch($CIDR, $IP) {
-		/* TODO: IPV6 */
-		if (is_array($CIDR)) {
-			foreach ($CIDR as &$v) {
-				if (self::netMatch($v, $IP)) {
-					return TRUE;
-				}
-			}
-		
-			return FALSE;
-		}
-
-		$e = explode ('/', $CIDR, 2);
-
-		if (!isset($e[1])) {
-			return $e[0] === $IP;
-		}
-
-		return (ip2long ($IP) & ~((1 << (32 - $e[1])) - 1)) === ip2long($e[0]);
 	}
 }

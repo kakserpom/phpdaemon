@@ -43,7 +43,10 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function __construct($fd = null, $pool = null) {
-		$this->pool = $pool;
+		if ($pool) {
+			$this->pool = $pool;
+			$this->pool->attachConn($this);
+		}
 	
 		if ($fd !== null) {
 			$this->setFd($fd);
