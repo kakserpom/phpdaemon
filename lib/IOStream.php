@@ -285,7 +285,6 @@ abstract class IOStream {
 		$this->onFinish();
 		if ($this->pool) {
 			$this->pool->detach($this);
-			$this->pool = null;
 		}
 		if (!$this->sending) {
 			$this->close();
@@ -428,7 +427,6 @@ abstract class IOStream {
 		$this->onFinish();
 		if ($this->pool) {
 			$this->pool->detach($this);
-			$this->pool = null;
 		}
 		
 		event_base_loopexit(Daemon::$process->eventBase);

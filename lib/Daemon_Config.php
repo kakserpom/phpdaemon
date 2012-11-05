@@ -39,7 +39,7 @@ class Daemon_Config implements ArrayAccess {
 	// Worker-related
 	public $user                     = NULL;
 	public $group                    = NULL;
-	public $autogc                   = '1';
+	public $autogc                   = '1000';
 	public $chroot                   = '/';
 	public $cwd                      = '.';
 	public $autoreload               = '0s';

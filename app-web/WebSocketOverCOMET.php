@@ -54,15 +54,19 @@ class WebSocketOverCOMET extends AppInstance {
 		$req = new WebSocketOverCOMET_Request($this, $upstream, $req);
 		return $this->requests[$req->id] = $req;
 	}
-	public function s2c($reqId, $data, $ts) {
+	public function s2c($reqId, $sessId, $packets, $ts) {
 		if (!isset($this->requests[$reqId])) {
 			return;
 		}
 		$req = $this->requests[$reqId];
 		if ($req->jsid) {
-			$body = 'Response' . $req->jsid . ' = ' . $data . ";\n";
+			$body = 'Response' . $req->jsid . ' = ' . json_encode(array('packets' => $packets)) . ";\n";
 		} else {
-			$body = '<script type="text/javascript">WebSocket.onmessage(' . $data . ");</script>\n";
+			$body = '<script type="text/javascript">';
+			foreach ($packets as $packet) {
+				$body .= 'WebSocket.onmessage('.json_encode(array('type' => $packet[0], 'data' => $packet[1])). ");\n";
+			}
+			$body .= "</script>\n";
 		}
 		$req->out($body);
 		$req->finish();
@@ -195,11 +199,10 @@ class WebSocketOverCOMET_Session {
 
 		$ts = microtime(true);
 
-		$data = json_encode($this->bufferedPackets);
 		while (!$this->polling->isEmpty()) {
 			list ($workerId, $reqId) = $this->polling->pop();
 			$workerId = (int) $workerId;
-			$this->appInstance->directCall($workerId, 's2c', array($reqId, $data, $ts));
+			$this->appInstance->directCall($workerId, 's2c', array($reqId, $this->id, $this->bufferedPackets, $ts));
 		}
 
 		$this->onWrite();
