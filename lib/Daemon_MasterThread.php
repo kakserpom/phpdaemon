@@ -132,7 +132,6 @@ class Daemon_MasterThread extends Thread {
 
 		posix_setsid();
 		proc_nice(Daemon::$config->masterpriority->value);
-		Daemon::log(Daemon::$config->verbosetty->value);
 		if (!Daemon::$config->verbosetty->value) {
      		fclose(STDIN);
         	fclose(STDOUT);

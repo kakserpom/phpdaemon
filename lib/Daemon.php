@@ -449,7 +449,7 @@ class Daemon {
 		$mt = explode(' ', microtime());
 
 		if (is_resource(STDERR)) {
-			fwrite(STDERR, '[PHPD] ' . $msg . "\n");
+			fwrite(STDERR, '[PHPD] ' . $msg . "\n".Debug::backtrace());
 		}
 		$msg = '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0]*1000000) . ' ' . date('O') . '] ' . $msg . "\n";
 		if (Daemon::$logpointerAsync) {
