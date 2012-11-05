@@ -50,7 +50,6 @@ class Daemon_Config implements ArrayAccess {
 			
 	// Logging-related
 	public $logging            = 1;
-	public $logtostderr        = 1;
 	public $logstorage         = '/var/log/phpdaemon.log';
 	public $logerrors          = 1;
 	public $logworkersetstatus = 0;
@@ -58,6 +57,8 @@ class Daemon_Config implements ArrayAccess {
 	public $logqueue           = 0;
 	public $logreads           = 0;
 	public $logsignals         = 0;
+	public $verbose = 0;
+	public $verbosetty = 0;
 	
 	// eio
 	public $eiosetmaxidle = null;
@@ -75,7 +76,7 @@ class Daemon_Config implements ArrayAccess {
 		static $times = array('maxidle', 'autoreload', 'mpmdelay', 'eiosetmaxpolltime');
 		static $numbers = array(
 			'maxrequests', 'autogc','minworkers','maxworkers','minspareworkers','maxspareworkers','masterpriority', 'ipcthreadpriority',
-			'eiosetmaxidle', 'eiosetmaxparallel', 'eiosetmaxpollreqs', 'eiosetminparallel',
+			'eiosetmaxidle', 'eiosetmaxparallel', 'eiosetmaxpollreqs', 'eiosetminparallel', 'verbose', 'verbosetty'
 		);
 
 		foreach ($this as $name => $value) {

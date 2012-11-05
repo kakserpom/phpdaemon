@@ -12,7 +12,7 @@ class Daemon_Bootstrap {
 	public static $pid;
 
 	private static $commands = array(
-		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest'
+		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log'
 	);
 
 	/**
@@ -90,6 +90,15 @@ class Daemon_Bootstrap {
 			exit;
 		}
 
+		if ('log' === $runmode) {
+			if (isset($args['n'])) {
+				$n = $args['n'];
+				unset($args['n']);
+			} else {
+				$n = 20;
+			}
+		}
+
 		if (isset($args['configfile'])) {
 			Daemon::$config->configfile->setHumanValue($args['configfile']);
 		}
@@ -105,6 +114,11 @@ class Daemon_Bootstrap {
 		if (version_compare(PHP_VERSION, '5.3.0', '>=') === 1) {
 			Daemon::log('PHP >= 5.3.0 required.');
 			$error = true;
+		}
+
+		if ('log' === $runmode) {
+			passthru('tail -n '.$n.' -f '.escapeshellarg(Daemon::$config->logstorage->value));
+			exit;
 		}
 		
 		if (!Daemon::$useSockets) {
@@ -400,7 +414,7 @@ class Daemon_Bootstrap {
 	}
 
 	private static function printUsage() {
-		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|help) ...\n";
+		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|help) ...\n";
 	}
 
 	private static function printHelp() {

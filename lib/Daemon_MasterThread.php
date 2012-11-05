@@ -129,8 +129,14 @@ class Daemon_MasterThread extends Thread {
 	public function prepareSystemEnv() {
 	
 		register_shutdown_function(array($this,'onShutdown'));
-		
+
+		posix_setsid();
 		proc_nice(Daemon::$config->masterpriority->value);
+		if (!Daemon::$config->verbosetty->value) {
+     		fclose(STDIN);
+        	fclose(STDOUT);
+        	fclose(STDERR);
+        }
 		
 		$this->setproctitle(
 			Daemon::$runName . ': master process' 
