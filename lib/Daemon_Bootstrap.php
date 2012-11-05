@@ -470,7 +470,7 @@ class Daemon_Bootstrap {
 		$ok = Daemon_Bootstrap::$pid && posix_kill(Daemon_Bootstrap::$pid, $mode === 3 ? SIGINT:SIGTERM);
 
 		if (!$ok) {
-			echo '[STOP] ERROR. It seems that phpDaemon is not running' . (Daemon_Bootstrap::$pid ? ' (PID ' . Daemon_Bootstrap::$pid . ')' : '') . ".\n";
+			echo '[WARN]. It seems that phpDaemon is not running' . (Daemon_Bootstrap::$pid ? ' (PID ' . Daemon_Bootstrap::$pid . ')' : '') . ".\n";
 		}
 		
 		if (
