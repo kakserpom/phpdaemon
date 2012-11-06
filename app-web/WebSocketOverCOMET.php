@@ -157,6 +157,9 @@ class WebSocketOverCOMET_Session {
 	}
 	
 	public function onWrite() {
+		if ($this->finished) {
+			return;
+		}
 		$this->callbacks->executeAll($this->downstream);
 		if (is_callable(array($this->downstream, 'onWrite'))) {
 			$this->downstream->onWrite();
@@ -380,7 +383,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	 * @return void
 	 */
 	public function onFinish() {
-		unset($this->appInstance->queue[$this->id]);
+		unset($this->appInstance->requests[$this->id]);
 	}
 	
 }
