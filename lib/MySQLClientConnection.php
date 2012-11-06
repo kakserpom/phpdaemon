@@ -5,7 +5,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $seq           = 0;          // Pointer of packet sequence.
 	public $clientFlags   = 239237;     // Flags of this MySQL client.
 	public $maxPacketSize = 0x1000000;  // Maximum packet size.
-	public $charsetNumber = 0x08;       // Charset number.
+	public $charsetNumber = 0x21;       // Charset number.
 	public $path        = ''; 	        // Default database name.
 	public $user          = 'root';     // Username
 	public $password      = '';         // Password
