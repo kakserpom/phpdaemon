@@ -107,9 +107,7 @@ abstract class BoundSocket {
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onAcceptEvent($stream, $events, $arg) {
-		$sockId = $arg[0];
-		$type = $arg[1];
+	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
 		if (Daemon::$config->logevents->value) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
 		}
@@ -120,6 +118,7 @@ abstract class BoundSocket {
 		if ($this->pool->maxConcurrency) {
 			if ($this->pool->count() >= $this->pool->maxConcurrency) {
 				$this->overload = true;
+				return;
 			}
 		}
 		

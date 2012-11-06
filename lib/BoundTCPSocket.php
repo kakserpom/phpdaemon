@@ -81,7 +81,7 @@ class BoundTCPSocket extends BoundSocket {
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onAcceptEvent($stream, $events, $arg) {
+	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
 		$conn = parent::onAcceptEvent($stream, $events, $arg);
 		if (!$conn) {
 			return;

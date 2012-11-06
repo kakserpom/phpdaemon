@@ -216,12 +216,17 @@ class ConnectionPool extends ObjectStorage {
 		$this->bound->detach($bound);
 	}
 
-	public function attachConn($bound) {
-		$this->attach($bound);
+	public function attachConn($conn) {
+		$this->attach($conn);
 	}
 
-	public function detachConn($bound) {
-		$this->detach($bound);
+	public function detachConn($conn) {
+		$this->detach($conn);
+		foreach ($this->bound as $bound) {
+			if ($bound->overload) {
+				$bound->onAcceptEvent();
+			}
+		}
 	}
 	
 	/**
