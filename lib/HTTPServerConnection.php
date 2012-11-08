@@ -222,7 +222,7 @@ class HTTPServerConnection extends Connection {
 		$this->freeRequest($req);
 	}
 	public function freeRequest($req) {
-		unset($this->req);
+		$this->req = null;
 	}
 	public function badRequest($req) {
 		$this->write('400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor="white"><center><h1>400 Bad Request</h1></center></body></html>');

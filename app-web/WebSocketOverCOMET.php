@@ -142,8 +142,8 @@ class WebSocketOverCOMET_Session {
 	}
 
 	public function onFinish() {
-		if (isset($this->upstream)) {
-			$this->upstream->onFinish();
+		if (isset($this->downstream)) {
+			$this->downstream->onFinish();
 		}
 		unset($this->downstream);
 		if ($this->finishTimer !== null) {
@@ -360,21 +360,6 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 
 			$this->out("\n");
 			$this->sleep(15);
-		}
-	}
-
-	/**
-	 * Called when the request aborted.
-	 * @return void
-	 */
-	public function onAbort() {
-		if ($this->type !== 'pollInit') {
-			if (isset($this->downstream)) {
-				$this->downstream->onFinish();
-				unset($this->downstream);
-			}
-
-			$this->finish();
 		}
 	}
 
