@@ -32,31 +32,20 @@ class ExampleWithPostgreSQLRequest extends HTTPRequest {
 	 * @return void
 	 */
 	public function init() {
-		$this->stime = microtime(TRUE);
-		$sqlclient = PostgreSQLClient::getInstance();
-
-		if (
-			$sqlclient 
-			&& ($this->sql = $sqlclient->getConnection())
-		) {
-			 $this->sql->context = $this;
-
-			$this->sql->onConnected(
-				function($sql, $success) {
-					if (!$success) {
-						return;
-					}
-
-					$sql->query(
-						'SELECT 123 as integer, NULL as nul, \'test\' as string', 
-						function($sql, $success) {
-							$sql->context->queryResult = $sql->resultRows; // save the result
-							$sql->context->wakeup(); // wake up the request immediately
-						}
-					);
-				}
-			);
-		}
+		$req = $this;
+		PostgreSQLClient::getInstance()->getConnection(function($sql) use ($req) {
+			if (!$sql->connected) { // failed to connect
+				$req->wakeup(); // wake up the request immediately
+				$sql->release();
+				return;
+			}
+			$sql->query('SELECT 123 as integer, NULL as nul, \'test\' as string', function($sql, $success) use ($req) {
+				$req->queryResult = $sql->resultRows; // save the result
+				$req->wakeup(); // wake up the request immediately
+				$sql->release();
+			});
+		});
+		$this->sleep(5);
 	}
 
 	/**
@@ -64,18 +53,7 @@ class ExampleWithPostgreSQLRequest extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {
-		if (
-			!$this->queryResult 
-			&& ($this->runstate++ === 0)
-		) {
-			// sleep for 5 seconds or until wakeup
-			$this->sleep(5);
-		}
-
-		try {
-			$this->header('Content-Type: text/html');
-		} catch (Exception $e) {}
-
+		try {$this->header('Content-Type: text/html');} catch (Exception $e) {}
 		?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -94,7 +72,7 @@ if ($this->queryResult) {
 	echo '<h1>Something went wrong! We have no result.</h1>';
 }
 
-echo '<br />Request (http) took: ' . round(microtime(TRUE) - $this->stime, 6);
+echo '<br />Request (http) took: ' . round(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 6);
 
 ?>
 </body>

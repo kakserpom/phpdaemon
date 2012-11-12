@@ -122,7 +122,7 @@ class WebSocketOverCOMET_Session {
 	public $server;
 	public function __construct($route, $appInstance, $authKey) {
 		$this->polling = new SplStack;
-		$this->callbacks = new SplStackCallbacks;
+		$this->callbacks = new StackCallbacks;
 		$this->authKey = $authKey;
 		$this->id = ++$appInstance->sessCounter;
 		$this->appInstance = $appInstance;

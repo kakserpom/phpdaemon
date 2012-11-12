@@ -61,6 +61,7 @@ class NetworkClient extends ConnectionPool {
 	 * Returns available connection from the pool
 	 * @param string Address
 	 * @param callback onConnected
+	 * @param boolean Unshift?
 	 * @return object Connection
 	 */
 	public function getConnection($url = null, $cb = null, $unshift = false) {
@@ -127,8 +128,12 @@ class NetworkClient extends ConnectionPool {
 
 	public function detachConn($conn) {
 		parent::detachConn($conn);
-		if (isset($this->pending[$conn->url]) && $this->pending[$conn->url]->count()) {
-			$this->getConnection($conn->url, $this->pending[$conn->url]->shift());
+		$this->touchPending($conn->url);
+	}
+
+	public function touchPending($url) {
+		if (isset($this->pending[$url]) && $this->pending[$url]->count()) {
+			while ($this->getConnection($url, $this->pending[$url]->shift(), true)) {}
 		}
 	}
 

@@ -52,15 +52,15 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 		
 		$job('showvar', function($name, $job) use ($req) { // registering job named 'showvar'
 		
-			$req->appInstance->sql->getConnection(function($sql, $success) use ($name, $job) {
-				if (!$success) {
+			$req->appInstance->sql->getConnection(function($sql) use ($name, $job) {
+				if (!$sql->connected) {
 					return $job->setResult($name, null);
 				}
 
 				$sql->query('SHOW VARIABLES', function($sql, $success) use ($job, $name) {
 					
 					$job('showdbs', function($name, $job) use ($sql) { // registering job named 'showdbs'
-						$sql->query('SHOW DATABASES', function($sql, $success) use ($job, $name) {
+						$sql->query('SHOW DATABASES', function($sql, $t) use ($job, $name) {
 							$job->setResult($name, $sql->resultRows);
 						});
 					});				

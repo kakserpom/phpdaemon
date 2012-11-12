@@ -31,6 +31,12 @@ class NetworkClientConnection extends Connection {
 		}
 	}
 
+	public function release() {
+		if ($this->pool && !$this->busy) {
+			$this->pool->touchPending($this->url);
+		}
+	}
+
 	public function checkFree() {
 		$this->setFree(!$this->finished && $this->onResponse && $this->onResponse->isEmpty());
 	}

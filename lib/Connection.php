@@ -41,7 +41,7 @@ class Connection extends IOStream {
 	public function onReady() {
 		if ($this->onConnected) {
 			$this->connected = true;
-			$this->onConnected->executeAll($this, true);
+			$this->onConnected->executeAll($this);
 			$this->onConnected = null;
 		}
 	}
@@ -52,7 +52,7 @@ class Connection extends IOStream {
 	 */
 	public function onFailure() {
 		if ($this->onConnected) {
-			$this->onConnected->executeAll($this, false);
+			$this->onConnected->executeAll($this);
 			$this->onConnected = null;
 		}
 	}
