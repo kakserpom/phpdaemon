@@ -264,7 +264,7 @@ class FastCGIServerConnection extends Connection {
 		*/ 
 		// string bytes counter 
 		$d = 0; 
-		for ($c = 0; $c < $outlen; ++$c) { 
+		while($d < $outlen){ 
 		  
 		  $ord_var_c = ord($output{$d}); 
 		  
@@ -316,7 +316,7 @@ class FastCGIServerConnection extends Connection {
 				. pack('nn', $req->attrs->id, $c)					// id, content length
 				. "\x00" 												// padding length
 				. "\x00"												// reserved 
-				. ($c === $d ? $output : binarySubstr($output, $o, $c)) // content
+				. ($c === $d ? $output : mb_substr($output, $o, $c, 'UTF-8')) // content
 			);
 			if ($w === false) {
 				$req->abort();

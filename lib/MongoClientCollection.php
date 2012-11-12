@@ -1,17 +1,17 @@
 <?php
 class MongoClientCollection {
-	public $appInstance;
+	public $pool;
 	public $name; // Name of collection.
 
 	/**
 	 * Contructor of MongoClientCOllection
 	 * @param string Name of collection
-	 * @param string Application's instance
+	 * @param object Pool
 	 * @return void
 	 */
-	public function __construct($name, $appInstance) {
+	public function __construct($name, $pool) {
 		$this->name = $name;
-		$this->pool = $appInstance;
+		$this->pool = $pool;
 	}
 
 	/**

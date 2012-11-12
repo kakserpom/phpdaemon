@@ -17,6 +17,7 @@ class NetworkClient extends ConnectionPool {
 	public $maxConnPerServ = 32;
 	public $acquireOnGet = false;
 	public $noSAF = false;
+	public $pending = array();
 	
 	/**
 	 * Setting default config options
@@ -42,6 +43,9 @@ class NetworkClient extends ConnectionPool {
 				$this->addServer($s);
 			}
 		}
+		if (isset($this->config->maxconnperserv)) {
+			$this->maxConnPerServ = $this->config->maxconnperserv->value;
+		}
 	}
 	/**
 	 * Adds server
@@ -59,7 +63,7 @@ class NetworkClient extends ConnectionPool {
 	 * @param callback onConnected
 	 * @return object Connection
 	 */
-	public function getConnection($url = null, $cb = null) {
+	public function getConnection($url = null, $cb = null, $unshift = false) {
 		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
 			$cb = $url;
 			$url = null; 
@@ -74,7 +78,7 @@ class NetworkClient extends ConnectionPool {
 				if ($cb) {
 					call_user_func($cb, false);
 				}
-				return false;
+				return true;
 			}
 		}
 		$conn = false;
@@ -88,7 +92,15 @@ class NetworkClient extends ConnectionPool {
 				}
 			}
 			elseif ($storage->count() >= $this->maxConnPerServ) {
-				$conn = $storage->current();
+				if (!isset($this->pending[$url])) {
+					$this->pending[$url] = new StackCallbacks;
+				}
+				if ($unshift) {
+					$this->pending[$url]->unshift($cb);
+				} else {
+					$this->pending[$url]->push($cb);
+				}
+				return false;
 			}
 			if ($conn) {
 				if ($cb !== null) {
@@ -111,6 +123,13 @@ class NetworkClient extends ConnectionPool {
 		$this->servConnFree[$url]->attach($conn);
 
 		return $conn;
+	}
+
+	public function detachConn($conn) {
+		parent::detachConn($conn);
+		if (isset($this->pending[$conn->url]) && $this->pending[$conn->url]->count()) {
+			$this->getConnection($conn->url, $this->pending[$conn->url]->shift());
+		}
 	}
 
 	/**

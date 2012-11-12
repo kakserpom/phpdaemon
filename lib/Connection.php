@@ -14,6 +14,7 @@ class Connection extends IOStream {
 	public $port;
 	public $onConnected = null;
 	public $connected = false;
+	public $failed = false;
 	public $timeout = 120;
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
@@ -40,9 +41,33 @@ class Connection extends IOStream {
 	public function onReady() {
 		if ($this->onConnected) {
 			$this->connected = true;
-			$this->onConnected->executeAll($this);
+			$this->onConnected->executeAll($this, true);
 			$this->onConnected = null;
 		}
+	}
+
+	/**
+	 * Called when the connection failed to be established.
+	 * @return void
+	 */
+	public function onFailure() {
+		if ($this->onConnected) {
+			$this->onConnected->executeAll($this, false);
+			$this->onConnected = null;
+		}
+	}
+	/**
+	 * Called when the connection failed
+	 * @param resource Descriptor
+	 * @param mixed Attached variable
+	 * @return void
+	 */
+	public function onFailureEvent($stream, $arg = null) {
+		if (!$this->connected && !$this->failed) {
+			$this->failed = true;
+			$this->onFailure();
+		}
+		parent::onFailureEvent($stream, $arg);
 	}
 
 	/**

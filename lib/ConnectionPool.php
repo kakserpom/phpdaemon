@@ -224,7 +224,7 @@ class ConnectionPool extends ObjectStorage {
 		$this->detach($conn);
 		foreach ($this->bound as $bound) {
 			if ($bound->overload) {
-				$bound->onAcceptEvent();
+				while ($bound->onAcceptEvent()) {}
 			}
 		}
 	}
