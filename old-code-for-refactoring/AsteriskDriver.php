@@ -533,8 +533,8 @@ class AsteriskDriverSession extends SocketSession {
 	 * Description: Lists channel status along with requested channel vars.
 	 * Variables: (Names marked with * are required)
 		*Channel: Name of the channel to query for status
-		Variables: Comma ',' separated list of variables to include
-		ActionID: Optional ID for this transaction
+	 *	Variables: Comma ',' separated list of variables to include
+	 * ActionID: Optional ID for this transaction
 	 * Will return the status information of each channel along with the
 	 * value for the specified channel variables.
 	 */

@@ -80,6 +80,9 @@ abstract class BoundSocket {
 		if ($this->pid != posix_getpid()) {
 			return;
 		}
+		if ($this->fd === null) {
+			return;
+		}
 		if (Daemon::$useSockets) {
 			socket_close($this->fd);
 		} else {

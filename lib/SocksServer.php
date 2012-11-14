@@ -193,9 +193,9 @@ class SocksServerConnection extends Connection {
 			$pl += 2;
 			$this->buf = binarySubstr($this->buf, $pl);
 
-			$connId = $this->pool->connectTo($this->destAddr = $address, $this->destPort = $port, 'SocksServerSlaveConnection');
+			$conn = $this->pool->connectTo($this->destAddr = $address, $this->destPort = $port, 'SocksServerSlaveConnection');
 
-			if (!$connId) {
+			if (!$conn) {
 				// Early connection error
 				$this->write($this->ver . "\x05");
 				$this->finish();
@@ -233,23 +233,19 @@ class SocksServerConnection extends Connection {
 		$this->write($reply);
 	}
 
-	/**
-	 * Event of SocketSession (asyncServer).
-	 * @return void
-	 */
+	
 	public function onFinish() {
 		if (isset($this->slave)) {
 			$this->slave->finish();
+			unset($this->slave);
 		}
-
-		unset($this->slave);
 	}
 }
-
+class SocksServerSlave extends NetworkServer {}
 class SocksServerSlaveConnection extends Connection {
 
 	public $client;
-	public $ready = FALSE;
+	public $ready = false;
 
 	/**
 	 * Called when the connection is ready to accept new data.

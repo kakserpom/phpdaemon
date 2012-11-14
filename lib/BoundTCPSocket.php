@@ -10,6 +10,8 @@
 class BoundTCPSocket extends BoundSocket {
 	public $defaultPort = 0;
 	public $reuse = true;
+	public $host;
+	public $port;
 
 	public function setDefaultPort($n) {
 		$this->defaultPort = (int) $n;
@@ -53,8 +55,8 @@ class BoundTCPSocket extends BoundSocket {
 				Daemon::$process->log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 				return false;
 			}
-			socket_getsockname($sock, $host, $port);
-			$addr = $host . ':' . $port;
+			socket_getsockname($sock, $this->host, $this->port);
+			$addr = $this->host . ':' . $this->port;
 			if (!socket_listen($sock, SOMAXCONN)) {
 				$errno = socket_last_error();
 				Daemon::$process->log(get_class($this) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');

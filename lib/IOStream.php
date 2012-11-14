@@ -52,11 +52,8 @@ abstract class IOStream {
 			$this->setFd($fd);
 		}
 
-		$this->onWriteOnce = new SplStack();
+		$this->onWriteOnce = new SplStack;
 		
-	}
-	
-	public function onInheritanceFromRequest($req) {
 	}
 	
 	/**
@@ -126,6 +123,15 @@ abstract class IOStream {
 		if (!$this->inited) {
 			$this->inited = true;
 			$this->init();
+		}
+	}
+
+	public function setTimeout($timeout) {
+		$this->timeout = $timeout;
+		if ($this->timeout !== null) {
+			if ($this->buffer) {
+				event_buffer_timeout_set($this->buffer, $this->timeout, $this->timeout);
+			}
 		}
 	}
 

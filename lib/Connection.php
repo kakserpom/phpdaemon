@@ -45,7 +45,10 @@ class Connection extends IOStream {
 			$this->onConnected = null;
 		}
 	}
-
+	
+	public function onInheritanceFromRequest($req) {
+	}
+	
 	/**
 	 * Called when the connection failed to be established.
 	 * @return void
@@ -192,6 +195,14 @@ class Connection extends IOStream {
 		return true;
 	}
 	
+	public function setTimeout($timeout) {
+		parent::setTimeout($timeout);
+		if (Daemon::$useSockets) {
+			socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+		}
+	}
+
 	/**
 	 * Read data from the connection's buffer
 	 * @param integer Max. number of bytes to read

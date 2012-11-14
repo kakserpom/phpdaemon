@@ -13,4 +13,23 @@ class ObjectStorage extends SplObjectStorage {
 		}
 		return $n;
 	}
+	public function removeAll($obj = null) {
+		if ($obj === null) {
+			$this->removeAllExcept(new SplObjectStorage);
+		}
+		parent::removeAll($obj);
+	}
+	public function detachFirst() {
+		$this->rewind();
+		$o = $this->current();
+		if (!$o) {
+			return false;
+		}
+		$this->detach($o);
+		return $o;
+	}
+	public function getFirst() {
+		$this->rewind();
+		return $this->current();
+	}
 }
