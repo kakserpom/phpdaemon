@@ -7,6 +7,7 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class IRChatClient extends NetworkClient {
+	public $identd;
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -18,12 +19,18 @@ class IRChatClient extends NetworkClient {
 		);
 	}
 
+	public function onReady() {}
+		$this->identd = IdentServer::getInstance();
+		parent::onReady();
+	}
+
 	public static function parseUsermask($mask) {
-		preg_match('~^(?:(.*?)!\~(.*?)@)?(.*)$~D', $mask, $m);
+		preg_match('~^(?:(.*?)!(\~?)(.*?)@)?(.*)$~D', $mask, $m);
 		return array(
 			'nick' => $m[1],
-			'user' => $m[2],
-			'host' => $m[3],
+			'unverified' => $m[2] === '~',
+			'user' => $m[3],
+			'host' => $m[4],
 			'orig' => $mask,
 		);
 	}
@@ -114,8 +121,14 @@ class IRChatClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function onReady() {
+		$this->pool->identd->registerPair($this->locPort, $this->port, 'UNIX : '.$this->user)
+		Daemon::log($this->locPort);
+		return;
 		$this->command('USER', $this->user, 0, '*', 'John Doe');
 		$this->command('NICK', $this->path);
+		if (strlen($this->password)) {
+			$this->message('NickServ', 'IDENTIFY '.$this->password);
+		}
 		$this->keepaliveTimer = setTimeout(function($timer) {
 			$this->ping();
 		}, 1e6 * 40);
@@ -215,6 +228,7 @@ class IRChatClientConnection extends NetworkClientConnection {
 		}
 		elseif ($cmd === 'NOTICE') {
 			list ($target, $text) = $args;
+			$log = true;
 			$this->event('notice', $target, $text);
 		}
 		elseif ($cmd == 'RPL_YOURHOST') {
@@ -300,7 +314,6 @@ class IRChatClientConnection extends NetworkClientConnection {
 			if (!$msg['private']) {
 				$this->channel($target)->event('msg', $msg);
 			}
-		
 		}
 		elseif ($cmd === "PONG") {}
 		else {

@@ -275,13 +275,13 @@ class IPCManagerWorkerConnection extends Connection {
 			}, 5);
 		}
 		elseif ($p['op'] === 'call') {
-			if (strpos($p['appfullname'],'-') === false) {
-				$p['appfullname'] .= '-';
+			if (strpos($p['appfullname'],':') === false) {
+				$p['appfullname'] .= ':';
 			}
-			list($app, $name) = explode('-', $p['appfullname'], 2);
+			list($app, $name) = explode(':', $p['appfullname'], 2);
 			
 			if ($app = Daemon::$appResolver->getInstanceByAppName($app,$name)) {
-				$app->RPCall($p['method'],$p['args']);
+				$app->RPCall($p['method'], $p['args']);
 			}
 		}
 	}

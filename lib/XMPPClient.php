@@ -143,23 +143,24 @@ class XMPPClientConnection extends NetworkClientConnection {
 		$this->xml = new XMLStream;
 		$this->xml->setDefaultNS('jabber:client');
 		$this->xml->conn = $this;
-		$this->xml->addXPathHandler('{http://etherx.jabber.org/streams}features', function ($xml) {
+		$conn = $this;
+		$this->xml->addXPathHandler('{http://etherx.jabber.org/streams}features', function ($xml) use ($conn) {
 			if ($xml->hasSub('starttls') and $this->use_encryption) {
-				$this->sendXML("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'><required /></starttls>");
+				$conn->sendXML("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'><required /></starttls>");
 			} elseif ($xml->hasSub('bind') and $this->authorized) {
 				$id = $this->getId();
-				$this->iqSet('<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><resource>'.$this->path.'</resource></bind>', function ($xml) {
+				$this->iqSet('<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><resource>'.$this->path.'</resource></bind>', function ($xml) use ($conn) {
 					if($xml->attrs['type'] == 'result') {
-						$this->fulljid = $xml->sub('bind')->sub('jid')->data;
+						$conn->fulljid = $xml->sub('bind')->sub('jid')->data;
 						$jidarray = explode('/',$this->fulljid);
-						$this->jid = $jidarray[0];
+						$conn->jid = $jidarray[0];
 					}
-					$this->iqSet('<session xmlns="urn:ietf:params:xml:ns:xmpp-session" />', function() {
-						$this->roster = new XMPPRoster($this);
-						if ($this->onConnected) {
-							$this->connected = true;
+					$conn->iqSet('<session xmlns="urn:ietf:params:xml:ns:xmpp-session" />', function($xml) use ($conn) {
+						$conn->roster = new XMPPRoster($conn);
+						if ($conn->onConnected) {
+							$conn->connected = true;
 							$conn->onConnected->executeAll($conn, $this);
-							$this->onConnected = null;
+							$conn->onConnected = null;
 						}
 						$this->event('connected');
 					});

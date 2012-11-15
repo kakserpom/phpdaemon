@@ -47,7 +47,7 @@ class AppInstance {
 
 		$this->config = Daemon::$config->{$fullname};
 		if ($this->isEnabled()) {
-			Daemon::$process->log($appName . ($name ? "-{$name}" : '') . ' up.');
+			Daemon::$process->log($appName . ($name ? ":{$name}" : '') . ' up.');
 		}
 
 		$defaults = $this->getConfigDefaults();
@@ -105,7 +105,7 @@ class AppInstance {
 	 */
 	public function broadcastCall($method, $args = array(), $cb = NULL) {
 		return Daemon::$process->IPCManager->sendBroadcastCall(
-					get_class($this) . ($this->name !== '' ? '-' . $this->name : ''),
+					get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 					$method,
 					$args,
 					$cb
@@ -122,7 +122,7 @@ class AppInstance {
 	 */
 	public function singleCall($method, $args = array(), $cb = NULL) {
 		return Daemon::$process->IPCManager->sendSingleCall(
-					get_class($this) . ($this->name !== '' ? '-' . $this->name : ''),
+					get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 					$method,
 					$args,
 					$cb
@@ -141,7 +141,7 @@ class AppInstance {
 	public function directCall($workerId, $method, $args = array(), $cb = NULL) {
 		return Daemon::$process->IPCManager->sendDirectCall(
 					$workerId,
-					get_class($this) . ($this->name !== '' ? '-' . $this->name : ''),
+					get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 					$method,
 					$args,
 					$cb

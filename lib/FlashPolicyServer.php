@@ -18,7 +18,7 @@ class FlashPolicyServer extends NetworkServer {
 		return array(
 			// @todo add description strings
 			'file'                  =>  getcwd().'/conf/crossdomain.xml',
-			'listen'				=> '127.0.0.1',
+			'listen'				=> '0.0.0.0',
 			'port' 			        => 843,
 		);
 	}
@@ -31,10 +31,10 @@ class FlashPolicyServer extends NetworkServer {
 	 */
 	public function onConfigUpdated() {
 		parent::onConfigUpdated();
-		$app = $this;
-		FS::readfile($this->config->file->value, function($file, $data) use ($app) {
-			$app->policyData = $data;
-			$app->enable();
+		$pool = $this;
+		FS::readfile($this->config->file->value, function($file, $data) use ($pool) {
+			$pool->policyData = $data;
+			$pool->enable();
 		});
 	}
 	
