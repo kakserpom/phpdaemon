@@ -151,7 +151,7 @@ class IRChatClientConnection extends NetworkClientConnection {
 	}
 
 	public function ping() {
-		$this->command('PING phpdaemon');
+		$this->command('PING', 'phpdaemon');
 	}
 
 	public function message($to, $msg) {

@@ -87,7 +87,7 @@ class NetworkClient extends ConnectionPool {
 			$storage = $this->servConn[$url];
 			$free = $this->servConnFree[$url];
 			if ($free->count() > 0) {
-				$conn = $free->current();
+				$conn = $free->getFirst();
 				if ($this->acquireOnGet) {
 					$free->detach($conn);			
 				}
@@ -110,8 +110,8 @@ class NetworkClient extends ConnectionPool {
 				return $conn;
 			}
 		} else {
-			$this->servConn[$url] = new SplObjectStorage;
-			$this->servConnFree[$url] = new SplObjectStorage;
+			$this->servConn[$url] = new ObjectStorage;
+			$this->servConnFree[$url] = new ObjectStorage;
 		}
 		
 		$conn = $this->connect($url, $cb);
