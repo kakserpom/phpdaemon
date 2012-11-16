@@ -31,6 +31,7 @@ class Pool extends AppInstance {
 				return;
 			}
 			$this->pool = call_user_func(array($class, 'getInstance'), $name);
+			$this->pool->appInstance = $this;
 		}
 	}
 
@@ -42,8 +43,8 @@ class Pool extends AppInstance {
 	 * @return mixed Result
 	 */
 	public function RPCall($method, $args) {
-		if (is_callable(array($this->pool, 'RPCall'))) {
-			return call_user_func(array($this, 'RPCall'), $args);
+		if (is_callable($f = array($this->pool, 'RPCall'))) {
+			return call_user_func($f, $method, $args);
 		}
 	}
 

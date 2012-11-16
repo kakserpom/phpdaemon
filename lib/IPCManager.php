@@ -280,7 +280,7 @@ class IPCManagerWorkerConnection extends Connection {
 			}
 			list($app, $name) = explode(':', $p['appfullname'], 2);
 			
-			if ($app = Daemon::$appResolver->getInstanceByAppName($app,$name)) {
+			if ($app = Daemon::$appResolver->getInstanceByAppName($app, $name)) {
 				$app->RPCall($p['method'], $p['args']);
 			}
 		}

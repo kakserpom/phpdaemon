@@ -27,6 +27,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 	public $roster;
 	public $xml;
 	public $fulljid;
+	public $keepaliveTimer;
 
 	/**
 	 * Get next ID
@@ -61,7 +62,9 @@ class XMPPClientConnection extends NetworkClientConnection {
 			$this->xml->finish();
 		}
 		unset($this->roster);
-		Timer::remove($this->keepaliveTimer);
+		if ($this->keepaliveTimer) {
+			Timer::remove($this->keepaliveTimer);
+		}
 	}
 
 	public function sendXML($s) {

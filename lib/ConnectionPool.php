@@ -18,6 +18,7 @@ class ConnectionPool extends ObjectStorage {
 	public $finished = false;
 	public $bound;
 	public $enabled = false;
+	public $appInstance;
 	
 	public function __construct($config = array()) {
 		$this->bound = new ObjectStorage;
@@ -165,7 +166,9 @@ class ConnectionPool extends ObjectStorage {
 	 */
 	public function disable() {
 		$this->enabled = false;
-		$this->bound->each('disable');
+		if ($this->bound) {
+			$this->bound->each('disable');
+		}
 	}
 
 	/**

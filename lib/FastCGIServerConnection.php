@@ -129,7 +129,6 @@ class FastCGIServerConnection extends Connection {
 			$req->attrs->server      = array();
 			$req->attrs->files       = array();
 			$req->attrs->session     = null;
-			$req->attrs->connId      = $this->id;
 			$req->attrs->role       = self::$roles[$u['role']];
 			$req->attrs->flags       = $u['flags'];
 			$req->attrs->id          = $this->header['reqid'];

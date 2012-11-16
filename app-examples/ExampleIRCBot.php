@@ -7,9 +7,9 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 
-class ExampleIRCbot extends AppInstance {
-	public $irchatclient;
-	public $irchatconn;
+class ExampleIRCBot extends AppInstance {
+	public $client;
+	public $conn;
 	
 	/**
 	 * Setting default config options
@@ -29,7 +29,7 @@ class ExampleIRCbot extends AppInstance {
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->irchatclient = IRChatClient::getInstance();
+			$this->client = IRCClient::getInstance();
 		}
 	}
 
@@ -38,16 +38,16 @@ class ExampleIRCbot extends AppInstance {
 	 * @return void
 	 */
 	public function onReady() {
-		if ($this->irchatclient) {
-			$this->irchatclient->onReady();
+		if ($this->client) {
+			$this->client->onReady();
 			$this->connect();
 		}
 	}
 	
 	public function connect() {
 		$app = $this;
-		$this->irchatclient->getConnection($this->config->url->value, function ($conn) use ($app) {
-			$app->irchatconn = $conn;
+		$r = $this->client->getConnection($this->config->url->value, function ($conn) use ($app) {
+			$app->conn = $conn;
 			if ($conn->connected) {
 				Daemon::log('IRC bot connected at '.$this->config->url->value);
 				$conn->join('#botwar_phpdaemon');
@@ -63,7 +63,7 @@ class ExampleIRCbot extends AppInstance {
 				});
 			}
 			else {
-				Daemon::log('Jabberbot: unable to connect ('.$this->config->url->value.')');
+				Daemon::log('IRCBot: unable to connect ('.$this->config->url->value.')');
 			}
 		});
 	}
@@ -72,9 +72,9 @@ class ExampleIRCbot extends AppInstance {
 	 * @return void
 	 */
 	public function onConfigUpdated() {
-		if ($this->irchatclient) {
-			$this->irchatclient->config = $this->config;
-			return $this->irchatclient->onConfigUpdated();
+		if ($this->client) {
+			$this->client->config = $this->config;
+			return $this->client->onConfigUpdated();
 		}
 	}
 
@@ -83,8 +83,8 @@ class ExampleIRCbot extends AppInstance {
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown() {
-		if ($this->irchatclient) {
-			return $this->irchatclient->onShutdown();
+		if ($this->client) {
+			return $this->client->onShutdown();
 		}
 		return true;
 	}
