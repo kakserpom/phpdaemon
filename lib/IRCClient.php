@@ -29,12 +29,15 @@ class IRCClientConnection extends NetworkClientConnection {
 	public $user 			= 'Guest';     // Username
 	public $password 		= '';         // Password
 	public $EOL				= "\r\n";
-	public $nicl;
+	public $nick;
 	public $eventHandlers = array();
 	public $mode = '';
-	public $keepaliveTimer;
 	public $buffers = array();
 	public $servername;
+	public $channels = array();
+	public $latency;
+	public $lastPingTS;
+	public $timeout = 300;
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
@@ -50,9 +53,6 @@ class IRCClientConnection extends NetworkClientConnection {
 		if (strlen($this->password)) {
 			$this->message('NickServ', 'IDENTIFY '.$this->password);
 		}
-		$this->keepaliveTimer = setTimeout(function($timer) {
-			$this->ping();
-		}, 1e6 * 40);
 	}
 
 	public function command($cmd) {
@@ -61,7 +61,17 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		$line = $cmd;
 		for ($i = 1, $s = func_num_args(); $i < $s; ++$i) {
-			$line .= ($i + 1 === $s ? ' :' : ' ') . func_get_arg($i);
+			$arg = func_get_arg($i);
+			if (is_array($arg)) {
+				Daemon::log('!!!!!array!!!! '.json_encode(func_get_args()));
+			}
+			if (($i + 1 === $s) && (strpos($arg, "\x20") !== false)) {
+				$line .= ' :';
+			}
+			else {
+				$line .= ' ';
+			}
+			$line .= $arg;
 		}
 		$this->writeln($line);
 		if (!in_array($cmd, array('PONG'))) {
@@ -78,9 +88,14 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		$line = $cmd;
 		for ($i = 0, $s = sizeof($args); $i < $s; ++$i) {
-			$line .= ($i + 1 === $s ? ' :' : ' ') . $args[$i];
+			if (($i + 1 === $s) && (strpos($args[$i], "\x20") !== false)) {
+				$line .= ' :';
+			}
+			else {
+				$line .= ' ';
+			}
+			$line .= $args[$i];
 		}
-		Daemon::log('commandArr('.json_encode(func_get_args()).') --> '.json_encode($line));
 		$this->writeln($line);
 		if (!in_array($cmd, array('PONG'))) {
 			Daemon::log('->->->-> '.$line);
@@ -89,10 +104,15 @@ class IRCClientConnection extends NetworkClientConnection {
 
 
 	public function join($channels) {
-		$this->command('JOIN', $channels);
+		if (!is_array($channels)) {
+			$channels = array_map('trim', explode(',', $channels));
+		}
+		foreach ($channels as $chan) {
+			$this->command('JOIN', $chan);
+		}
 	}
 
-	public function part($channels) {
+	public function part($channels, $msg = null) {
 		$this->command('PART', $channels, $msg);
 	}
 	
@@ -101,16 +121,17 @@ class IRCClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function onFinish() {
+		Daemon::log('onFinish!!!!!!!');
 		if ($this->pool->identd) {
 			$this->pool->identd->unregisterPair($this->locPort, $this->port);
 		}
 		$this->event('disconnect');
-		Timer::remove($this->keepaliveTimer);
 		parent::onFinish();
 	}
 
 	public function ping() {
-		$this->command('PING', 'phpdaemon');
+		$this->lastPingTS = microtime(true);
+		$this->command('PING');
 	}
 
 	public function message($to, $msg) {
@@ -188,43 +209,57 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		elseif ($cmd === 'RPL_MOTDSTART') {
 			$this->motd = $args[1];
+			return;
 		}
 		elseif ($cmd === 'RPL_MOTD') {
 			$this->motd .= "\r\n" . $args[1];
+			return;
 		}
 		elseif ($cmd === 'RPL_ENDOFMOTD') {
 			$this->motd .= "\r\n";// . $args[1];
 			$this->event('motd', $this->motd);
+			return;
 		}
 		elseif ($cmd === 'JOIN') {
 			list ($channel) = $args;
 			$chan = $this->channel($channel);
 			IRCClientChannelParticipant::instance($chan, $from['nick'])->setUsermask($from);
 		}
+		elseif ($cmd === 'PART') {
+			list ($channel, $msg) = $args;
+			if ($chan = $this->channelIfExists($channel)) {
+				$chan->onPart($from, $msg);
+			}
+		}
 		elseif ($cmd === 'RPL_NAMREPLY') {
-			list($nick, $channelName) = $args;
-			if (!isset($this->buffers[$cmd])) {
-				$this->buffers[$cmd] = array();
+			$bufName = 'RPL_NAMREPLY';
+			list($myNick, $chanType, $channelName) = $args;
+			$this->channel($channelName)->setChanType($chanType);
+			if (!isset($this->buffers[$bufName])) {
+				$this->buffers[$bufName] = array();
 			}
-			if (!isset($this->buffers[$cmd][$channelName])) {
-				$this->buffers[$cmd][$channelName] = new SplStack;
+			if (!isset($this->buffers[$bufName][$channelName])) {
+				$this->buffers[$bufName][$channelName] = new SplStack;
 			}
-			$this->buffers[$cmd][$channelName]->push($args);
+			$this->buffers[$bufName][$channelName]->push($args);
 		}
 		elseif ($cmd === 'RPL_ENDOFNAMES') {
+			$bufName = 'RPL_NAMREPLY';
+			Daemon::$process->log('<-<-<-< '.$cmd.': '.json_encode($args). ' ('.json_encode($from['orig']).')');
 			list($nick, $channelName, $text) = $args;
-			if (!isset($this->buffers[$cmd][$channelName])) {
+			if (!isset($this->buffers[$bufName][$channelName])) {
 				return;
 			}
-			$buf = $this->buffers[$cmd][$channelName];
+			$buf = $this->buffers[$bufName][$channelName];
 			$chan = null;
 			while (!$buf->isEmpty()) {
-				list($nick, $chantype, $channelName, $participants) = $buf->shift();
+				$shift = $buf->shift();
+				list($nick, $chantype, $channelName, $participants) = $shift;
 				if (!$chan) {
 					$chan = $this->channel($channelName)->setType($chantype);
-					$chan->each('remove');
+					$chan->each('destroy');
 				}
-				preg_match_all('~([\+%@]?)\S+~', $participants, $matches, PREG_SET_ORDER);
+				preg_match_all('~([\+%@]?)(\S+)~', $participants, $matches, PREG_SET_ORDER);
 
 				foreach ($matches as $m) {
 					list(, $flag, $nickname) = $m;
@@ -232,13 +267,32 @@ class IRCClientConnection extends NetworkClientConnection {
 				}
 
 			}
-			if (!$chan) {
-				return;
+		}
+		elseif ($cmd === 'RPL_WHOREPLY') {
+			if (sizeof($args) < 7) {
+				Daemon::log('!!!!!' . json_encode(func_get_args()));
+				sleep(10);
+		}
+			list($myNick, $channelName, $user, $host, $server, $nick, $mode, $hopCountRealName) = $args;
+			list ($hopCount, $realName) = explode("\x20", $hopCountRealName);
+			if ($channel = $this->channelIfExists($channelName)) {
+				IRCClientChannelParticipant::instance($channel, $nick)
+				->setUsermask($nick . '!' . $user . '@' . $server)
+				->setFlag($mode);
 			}
+		}
+		elseif ($cmd === 'RPL_TOPIC') {
+			list($myNick, $channelName, $text) = $args;
+			if ($channel = $this->channelIfExists($channelName)) {
+				$channel->setTopic($text);
+			}	
+		}
+		elseif ($cmd === 'RPL_ENDOFWHO') {
+			list($myNick, $channelName, $text) = $args;
 		}
 		elseif ($cmd === 'MODE') {
 			if (sizeof($args) === 3) {
-				list ($channel, $target, $mode) = $args;
+				list ($channel, $mode, $target) = $args;
 			} else {
 				$channel = null;
 				list ($target, $mode) = $args;
@@ -268,12 +322,21 @@ class IRCClientConnection extends NetworkClientConnection {
 				$this->channel($target)->event('msg', $msg);
 			}
 		}
-		elseif ($cmd === "PONG") {}
+		elseif ($cmd === 'PING') {
+			$this->commandArr('PONG', $args);
+		}
+		elseif ($cmd === 'PONG') {
+			if ($this->lastPingTS) {
+				$this->latency = microtime(true) - $this->lastPingTS;
+				$this->lastPingTS = null;
+			}
+			return;
+		}
 		else {
 			$log = true;
 		}
 		if ($log) {
-			Daemon::$process->log('<-<-<-< '.$cmd.': '.json_encode($args). ' ('.$from['orig'].'	)');
+			Daemon::$process->log('<-<-<-< '.$cmd.': '.json_encode($args). ' ('.json_encode($from['orig']).') (' . json_encode($this->lastLine) . ')');
 		}
 	}
 
@@ -283,7 +346,6 @@ class IRCClientConnection extends NetworkClientConnection {
 	 * @return void
 	*/
 	public function stdin($buf) {
-		Timer::setTimeout($this->keepaliveTimer);
 		$this->buf .= $buf;
 		while (($line = $this->gets()) !== false) {
 			if ($line === $this->EOL) {
@@ -295,8 +357,8 @@ class IRCClientConnection extends NetworkClientConnection {
 				return;
 			}
 			$line = binarySubstr($line, 0, -strlen($this->EOL));
-			$p = strpos($line, ':', 1);
-			$max = $p ? substr_count($line, "\x20", 0, $p) + 1 : 18;
+			$p = strpos($line, ' :', 1);
+			$max = $p !== false ? substr_count($line, "\x20", 0, $p + 1) + 1 : 18;
 			$e = explode("\x20", $line, $max);
 			$i = 0;
 			$from = IRC::parseUsermask($e[$i]{0} === ':' ? binarySubstr($e[$i++], 1) : null);
@@ -315,6 +377,7 @@ class IRCClientConnection extends NetworkClientConnection {
 				$code = (int) $cmd;
 				$cmd = isset(IRC::$codes[$code]) ? IRC::$codes[$code] : 'UNKNOWN-'.$code;
 			}
+			$this->lastLine = $line;
 			$this->onCommand($from, $cmd, $args);
 		}
 		if (strlen($this->buf) > 512) {
@@ -329,6 +392,13 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		return $this->channels[$chan] = new IRCClientChannel($this, $chan);
 	}
+
+	public function channelIfExists($chan) {
+		if (isset($this->channels[$chan])) {
+			return $this->channels[$chan];
+		}
+		return false;
+	}
 }
 class IRCClientChannel extends ObjectStorage {
 	public $irc;
@@ -337,11 +407,38 @@ class IRCClientChannel extends ObjectStorage {
 	public $nicknames = array();
 	public $self;
 	public $type;
-	public function ___construct($irc, $name) {
+	public $topic;
+	public function __construct($irc, $name) {
 		$this->irc = $irc;
 		$this->name = $name;
+		//$this->irc->command('WHO', $name);
 	}
-	
+
+	public function onPart($mask, $msg = null) {
+		if (is_string($mask)) {
+			$mask = IRC::parseUsermask($mask);
+		}
+		if (($mask['nick'] === $this->irc->nick) && ($mask['user'] === $this->irc->user)) {
+			$chan->destroy();
+		} else {
+			unset($this->nicknames[$mask['nick']]);
+		}
+	}
+	public function setChanType($type) {
+		$this->type = $type;
+	}
+
+	public function exportNicksArray() {
+		$nicks = array();
+		foreach ($this as $participant) {
+			$nicks[] = $participant->flag . $participant->nick;
+		}
+		return $nicks;
+	}	
+
+	public function setTopic($msg) {
+		$this->topic = $msg;
+	}
 
 	public function addMode($nick, $mode) {
 		if (!isset($this->nicknames[$nick])) {
@@ -351,6 +448,7 @@ class IRCClientChannel extends ObjectStorage {
 		if (strpos($participant->mode, $mode) === false) {
 			$participant->mode .= $mode;
 		}
+		Daemon::log('addMode -- '.$nick. ' -- '.$mode);
 		$participant->onModeUpdate();
 	}
 
@@ -385,6 +483,10 @@ class IRCClientChannel extends ObjectStorage {
 		return true;
 	}
 
+	public function destroy() {
+		unset($this->irc->channels[$this->name]);
+	}
+
 	public function event() {
 		$args = func_get_args();
 		$name = array_shift($args);
@@ -416,11 +518,14 @@ class IRCClientChannel extends ObjectStorage {
 class IRCClientChannelParticipant {
 	public $channel;
 	public $nick;
-	public $mask;
+	public $user;
 	public $flag;
 	public $mode;
+	public $unverified;
+	public $host;
 
 	public function setFlag($flag) {
+		$flag = strtr($flag, array('H' => '', 'G' => '', '*' => ''));
 		$this->flag = $flag;
 		if ($flag === '@') {
 			$this->mode = 'o';
@@ -453,12 +558,35 @@ class IRCClientChannelParticipant {
 		}
 	}
 
+	public function setUser($user) {
+		$this->user = $user;
+		return $this;
+	}
+
+	public function getUsermask() {
+		return $this->nick . '!' . ($this->unverified ? '~' : '') . $this->user . '@' . $this->host;
+	}
+
+	public function setUnverified($bool) {
+		$this->unverified = (bool) $bool;
+		return $this;
+	}
+
+	public function setHost($host) {
+		$this->host = $host;
+		return $this;
+	}
+
 	public function setUsermask($mask) {
 		if (is_string($mask)) {
 			$mask = IRC::parseUsermask($mask);
 		}
-		$this->mask = $mask['orig'];
-		$this->setNick($mask['nick']);
+		$this
+			->setUnverified($mask['unverified'])
+			->setUser($mask['user'])
+			->setNick($mask['nick'])
+			->setHost($mask['host']);
+		return $this;
 	}
 
 	public static function instance($channel, $nick) {
@@ -470,17 +598,17 @@ class IRCClientChannelParticipant {
 	}
 	public function setNick($nick) {
 		if ($this->nick === $nick) {
-			return;
+			return $this;
 		}
 		$this->nick = $nick;
 		unset($this->channel->nicknames[$this->nick]);
 		$this->nick = $nick;
-		$this->channel->nicknames[$this->nick] = $this;	
+		$this->channel->nicknames[$this->nick] = $this;
+		return $this;
 	}
 
-	public function remove() {
+	public function destroy() {
 		$this->channel->detach($this);
-		unset($this->channel->nicknames[$this->nick]);
 	}
 	public function chanMessage($msg) {
 		$this->channel->message($this->nick.': '.$msg);
