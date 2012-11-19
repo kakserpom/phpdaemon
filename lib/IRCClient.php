@@ -131,7 +131,7 @@ class IRCClientConnection extends NetworkClientConnection {
 
 	public function ping() {
 		$this->lastPingTS = microtime(true);
-		$this->command('PING');
+		$this->writeln('PING :'.$this->servername);
 	}
 
 	public function message($to, $msg) {
@@ -225,7 +225,25 @@ class IRCClientConnection extends NetworkClientConnection {
 			$chan = $this->channel($channel);
 			IRCClientChannelParticipant::instance($chan, $from['nick'])->setUsermask($from);
 		}
+		elseif ($cmd === 'NICK') {
+			list ($newNick) = $args;
+			foreach ($this->channels as $channel) {
+				if (isset($channel->nicknames[$from['nick']])) {
+					$channel->nicknames[$from['nick']]->setNick($newNick);
+				}
+			}
+		}
+		elseif ($cmd === 'QUIT') {
+			$args[] = null;
+			list ($msg) = $args;
+			foreach ($this->channels as $channel) {
+				if (isset($channel->nicknames[$from['nick']])) {
+					$channel->nicknames[$from['nick']]->destroy();
+				}
+			}
+		}
 		elseif ($cmd === 'PART') {
+			$args[] = null;
 			list ($channel, $msg) = $args;
 			if ($chan = $this->channelIfExists($channel)) {
 				$chan->onPart($from, $msg);
@@ -323,7 +341,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			}
 		}
 		elseif ($cmd === 'PING') {
-			$this->commandArr('PONG', $args);
+			$this->writeln(isset($args[0]) ? 'PONG :'.$args[0] : 'PONG');
 		}
 		elseif ($cmd === 'PONG') {
 			if ($this->lastPingTS) {
@@ -419,7 +437,7 @@ class IRCClientChannel extends ObjectStorage {
 			$mask = IRC::parseUsermask($mask);
 		}
 		if (($mask['nick'] === $this->irc->nick) && ($mask['user'] === $this->irc->user)) {
-			$chan->destroy();
+			$this->destroy();
 		} else {
 			unset($this->nicknames[$mask['nick']]);
 		}

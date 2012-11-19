@@ -212,17 +212,12 @@ class Connection extends IOStream {
 	 * @return string Readed data
 	 */
 	public function read($n) {
-		if (!isset($this->buffer)) {
-			return false;
-		}
-		
 		if (isset($this->readEvent)) {
 			if (Daemon::$useSockets) {
 				$read = socket_read($this->fd, $n);
 
 				if ($read === false) {
 					$no = socket_last_error($this->fd);
-
 					if ($no !== 11) {  // Resource temporarily unavailable
 						Daemon::log(get_class($this) . '::' . __METHOD__ . ': id = ' . $this->id . '. Socket error. (' . $no . '): ' . socket_strerror($no));
 						$this->onFailureEvent($this->id);
@@ -231,8 +226,10 @@ class Connection extends IOStream {
 			} else {
 				$read = fread($this->fd, $n);
 			}
-		} else {
+		} elseif (isset($this->buffer)) {
 			$read = event_buffer_read($this->buffer, $n);
+		} else {
+			return false;
 		}
 		if (
 			($read === '') 

@@ -194,6 +194,19 @@ abstract class IOStream {
 		return $r;
 	}
 
+	public function readFromBufExact($n) {
+		if ($n === 0) {
+			return '';
+		}
+		if (strlen($this->buf) < $n) {
+			return false;
+		} else {
+			$r = binarySubstr($this->buf, 0, $n);
+			$this->buf = binarySubstr($this->buf, $n);
+			return $r;
+		}
+	}
+
 	/**
 	 * Called when the worker is going to shutdown
 	 * @return boolean Ready to shutdown?
