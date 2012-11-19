@@ -393,7 +393,7 @@ class IRCClientConnection extends NetworkClientConnection {
 
 			if (ctype_digit($cmd)) {
 				$code = (int) $cmd;
-				$cmd = isset(IRC::$codes[$code]) ? IRC::$codes[$code] : 'UNKNOWN-'.$code;
+				$cmd = isset(IRC::$codes[$code]) ? IRC::$codes[$code] : $code;
 			}
 			$this->lastLine = $line;
 			$this->onCommand($from, $cmd, $args);
