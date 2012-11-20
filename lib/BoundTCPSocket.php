@@ -31,46 +31,37 @@ class BoundTCPSocket extends BoundSocket {
 		$host = $hp[0];
 		$port = (int) $hp[1];
 		$addr = $host . ':' . $port;
-		if (Daemon::$useSockets) {
-			$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-			if (!$sock) {
-				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-				return false;
-			}
-			if ($this->reuse) {
-				if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
-					$errno = socket_last_error();
-					Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-					return false;
-				}
-				if (Daemon::$reusePort && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
-					$errno = socket_last_error();
-					Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-					return false;
-				}
-			}
-			if (!@socket_bind($sock, $hp[0], $hp[1])) {
-				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
-				return false;
-			}
-			socket_getsockname($sock, $this->host, $this->port);
-			$addr = $this->host . ':' . $this->port;
-			if (!socket_listen($sock, SOMAXCONN)) {
-				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
-
-				return false;
-			}
-			socket_set_nonblock($sock);
-		} else {
-			if (!$sock = @stream_socket_server($addr, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN)) {
-				Daemon::$process->log(get_class($this) . ': Couldn\'t bind address \'' . $addr . '\' (' . $errno . ' - ' . $errstr . ')');
-				return false;
-			}
-			stream_set_blocking($sock, 0);
+		$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		if (!$sock) {
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			return false;
 		}
+		if ($this->reuse) {
+			if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
+				$errno = socket_last_error();
+				Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+				return false;
+			}
+			if (Daemon::$reusePort && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
+				$errno = socket_last_error();
+				Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+				return false;
+			}
+		}
+		if (!@socket_bind($sock, $hp[0], $hp[1])) {
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			return false;
+		}
+		socket_getsockname($sock, $this->host, $this->port);
+		$addr = $this->host . ':' . $this->port;
+		if (!socket_listen($sock, SOMAXCONN)) {
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
+			return false;
+			}
+		socket_set_nonblock($sock);
 		$this->setFd($sock);
 		return true;
 	}
@@ -88,31 +79,29 @@ class BoundTCPSocket extends BoundSocket {
 		if (!$conn) {
 			return;
 		}
-		if (Daemon::$useSockets) {
-			$getpeername = function($conn) use (&$getpeername) { 
-				$r = @socket_getpeername($conn->fd, $host, $port);
-				if ($r === false) {
-    				if (109 === socket_last_error()) { // interrupt
-    					if ($this->allowedClients !== null) {
-    						$conn->ready = false; // lockwait
-    					}
-    					$conn->onWriteOnce($getpeername);
-    					return;
-    				}
-    			}
-				$conn->addr = $host.':'.$port;
-				$conn->ip = $host;
-				$conn->port = $port;
-				if ($conn->pool->allowedClients !== null) {
-					if (!BoundTCPSocket::netMatch($conn->pool->allowedClients, $host)) {
-						Daemon::log('Connection is not allowed (' . $host . ')');
-						$conn->ready = false;
-						$conn->finish();
-					}
+		$getpeername = function($conn) use (&$getpeername) { 
+			$r = @socket_getpeername($conn->fd, $host, $port);
+			if ($r === false) {
+   				if (109 === socket_last_error()) { // interrupt
+   					if ($this->allowedClients !== null) {
+   						$conn->ready = false; // lockwait
+   					}
+   					$conn->onWriteOnce($getpeername);
+   					return;
+   				}
+   			}
+			$conn->addr = $host.':'.$port;
+			$conn->ip = $host;
+			$conn->port = $port;
+			if ($conn->pool->allowedClients !== null) {
+				if (!BoundTCPSocket::netMatch($conn->pool->allowedClients, $host)) {
+					Daemon::log('Connection is not allowed (' . $host . ')');
+					$conn->ready = false;
+					$conn->finish();
 				}
-			};
-			$getpeername($conn);
-		}
+			}
+		};
+		$getpeername($conn);
 	}
 
 	/**

@@ -138,61 +138,40 @@ class Connection extends IOStream {
 			// Unix-socket
 			$e = explode(':', $host, 2);
 			$this->addr = $host;
-			if (Daemon::$useSockets) {
-				$fd = socket_create(AF_UNIX, SOCK_STREAM, 0);
+			$fd = socket_create(AF_UNIX, SOCK_STREAM, 0);
 
-				if (!$fd) {
-					return FALSE;
-				}
-				socket_set_nonblock($fd);
-				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-				@socket_connect($fd, $e[1], 0);
-			} else {
-				$fd = @stream_socket_client('unix://' . $e[1]);
-
-				if (!$fd) {
-					return FALSE;
-				}
-				stream_set_blocking($fd, 0);
+			if (!$fd) {
+				return FALSE;
 			}
+			socket_set_nonblock($fd);
+			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			@socket_connect($fd, $e[1], 0);
 		} 
 		elseif (stripos($host, 'raw:') === 0) {
 			// Raw-socket
 			$e = explode(':', $host, 2);
 			$this->addr = $host;
-			if (Daemon::$useSockets) {
-				$fd = socket_create(AF_INET, SOCK_RAW, 1);
-				if (!$fd) {
-					return false;
-				}
-				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-				socket_set_nonblock($fd);
-				@socket_connect($fd, $e[1], 0);
-			} else {
+			$fd = socket_create(AF_INET, SOCK_RAW, 1);
+			if (!$fd) {
 				return false;
 			}
+			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_nonblock($fd);
+			@socket_connect($fd, $e[1], 0);
 		} else {
 			// TCP
 			$this->addr = $host . ':' . $port;
-			if (Daemon::$useSockets) {
-				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-				if (!$fd) {
-					return FALSE;
-				}
-				socket_set_nonblock($fd);
-				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-				@socket_connect($fd, $host, $port);
-				socket_getsockname($fd, $this->locAddr, $this->locPort);
-			} else {
-				$fd = @stream_socket_client(($host === '') ? '' : $host . ':' . $port);
-				if (!$fd) {
-					return FALSE;
-				}
-				stream_set_blocking($fd, 0);
+			$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+			if (!$fd) {
+				return FALSE;
 			}
+			socket_set_nonblock($fd);
+			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			@socket_connect($fd, $host, $port);
+			socket_getsockname($fd, $this->locAddr, $this->locPort);
 		}
 		$this->setFd($fd);
 		return true;
@@ -200,10 +179,8 @@ class Connection extends IOStream {
 	
 	public function setTimeout($timeout) {
 		parent::setTimeout($timeout);
-		if (Daemon::$useSockets) {
-			socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-			socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-		}
+		socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+		socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 	}
 
 	/**
@@ -213,18 +190,14 @@ class Connection extends IOStream {
 	 */
 	public function read($n) {
 		if (isset($this->readEvent)) {
-			if (Daemon::$useSockets) {
-				$read = socket_read($this->fd, $n);
+			$read = socket_read($this->fd, $n);
 
-				if ($read === false) {
-					$no = socket_last_error($this->fd);
-					if ($no !== 11) {  // Resource temporarily unavailable
-						Daemon::log(get_class($this) . '::' . __METHOD__ . ': id = ' . $this->id . '. Socket error. (' . $no . '): ' . socket_strerror($no));
-						$this->onFailureEvent($this->id);
-					}
+			if ($read === false) {
+				$no = socket_last_error($this->fd);
+				if ($no !== 11) {  // Resource temporarily unavailable
+					Daemon::log(get_class($this) . '::' . __METHOD__ . ': id = ' . $this->id . '. Socket error. (' . $no . '): ' . socket_strerror($no));
+					$this->onFailureEvent($this->id);
 				}
-			} else {
-				$read = fread($this->fd, $n);
 			}
 		} elseif (isset($this->buffer)) {
 			$read = event_buffer_read($this->buffer, $n);
@@ -243,10 +216,6 @@ class Connection extends IOStream {
 	}
 	
 	public function closeFd() {
-		if (Daemon::$useSockets) {
-			socket_close($this->fd);
-		} else {
-			fclose($this->fd);
-		}
+		socket_close($this->fd);
 	}
 }

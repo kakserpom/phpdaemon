@@ -25,7 +25,8 @@ class IRCBouncer extends NetworkServer {
 			'listen'				=> '0.0.0.0',
 			'port' 			        => 6667,
 			'url' => 'irc://user@host/nickname',
-			'servername' => 'bnchost.tld'
+			'servername' => 'bnchost.tld',
+			'defaultchannles' => '',
 		);
 	}
 
@@ -42,7 +43,7 @@ class IRCBouncer extends NetworkServer {
 			$conn->attachedClients = new ObjectStorage;
 			if ($conn->connected) {
 				Daemon::log('IRC bot connected at '.$url);
-				$conn->join('#offtopic');
+				$conn->join($pool->config->defaultchannels->value);
 				$conn->bind('motd', function($conn) {
 					//Daemon::log($conn->motd);
 				});
@@ -99,6 +100,7 @@ class IRCBouncerConnection extends Connection {
 		$this->keepaliveTimer = setTimeout(function($timer) use ($conn) {
 			$conn->ping();
 		}, 10e6);
+		$this->msgFromBNC('----- Hello! You have connected to BNC.');
 	}
 
 	public function onFinish() {
@@ -174,6 +176,7 @@ class IRCBouncerConnection extends Connection {
 		} else {
 			return;
 		}
+		$this->msgFromBNC('Attached to '.$this->attachedServer->url);
 		$this->usermask = $this->attachedServer->nick . '!' . $this->attachedServer->user . '@' . $this->pool->config->servername->value;
 		$this->command(null, 'RPL_WELCOME', $this->attachedServer->nick, 'Welcome to phpDaemon bouncer -- ' . $this->pool->config->servername->value);
 		foreach ($this->attachedServer->channels as $chan) {
@@ -224,13 +227,37 @@ class IRCBouncerConnection extends Connection {
 		elseif ($cmd === 'NICK') {
 			return;
 		}
-		elseif ($cmd === 'JOIN') {
+		elseif ($cmd === 'PRIVMSG') {
+			Daemon::$process->log('<=<=<=< '.$cmd.': '.json_encode($args));
+			list ($target, $msg) = $args;
+			if ($target === '$') {
+				if (preg_match('~^\s*(NICK\s+\S+|DETACH|ATTACH)\s*$~i', $msg, $m)) {
+					$clientCmd = strtoupper($m[1]);
+					if ($clientCmd === 'NICK') {
 
+					}
+					elseif ($clientCmd === 'DETACH') {
+						$this->detach();
+						$this->msgFromBNC('Detached.');
+					}
+					elseif ($clientCmd === 'ATTACH') {
+						$this->attachTo();
+					}
+
+				} else {
+					$this->msgFromBNC('Unknown command: '.$msg);
+				}
+				return;
+			}
 		}
-		if ($this->pool->conn) {
-			$this->pool->conn->commandArr($cmd, $args);
+		if ($this->attachedServer) {
+			$this->attachedServer->commandArr($cmd, $args);
 		}
 		Daemon::$process->log('<=<=<=< '.$cmd.': '.json_encode($args));
+	}
+
+	public function msgFromBNC($msg) {
+		$this->command('$!@' . $this->pool->config->servername->value, 'PRIVMSG' , $this->usermask, $msg);
 	}
 
 	/**

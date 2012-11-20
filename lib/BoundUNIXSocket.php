@@ -39,35 +39,27 @@ class BoundUNIXSocket extends BoundSocket {
 			unlink($path);
 		}
 
-		if (Daemon::$useSockets) {
-			$sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
-			if (!$sock) {
-				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t create UNIX-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-				return false;
-			}
-
-			// SO_REUSEADDR is meaningless in AF_UNIX context
-			if (!@socket_bind($sock, $path)) {
-				if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
-					return false;
-				}
-				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
-				return;
-			}
-			if (!socket_listen($sock, SOMAXCONN)) {
-				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
-			}
-			socket_set_nonblock($sock);
-		} else {
-			if (!$sock = @stream_socket_server('unix://' . $path, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN)) {
-				Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . $errstr . ').');
-				return false;
-			}
-			stream_set_blocking($sock, 0);
+		$sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
+		if (!$sock) {
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t create UNIX-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			return false;
 		}
+
+		// SO_REUSEADDR is meaningless in AF_UNIX context
+		if (!@socket_bind($sock, $path)) {
+			if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
+				return false;
+			}
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			return;
+		}
+		if (!socket_listen($sock, SOMAXCONN)) {
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
+		}
+		socket_set_nonblock($sock);
 		chmod($path, 0770);
 		if (
 			($group === FALSE) 

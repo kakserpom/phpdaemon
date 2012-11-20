@@ -83,11 +83,7 @@ abstract class BoundSocket {
 		if ($this->fd === null) {
 			return;
 		}
-		if (Daemon::$useSockets) {
-			socket_close($this->fd);
-		} else {
-			fclose($this->fd);
-		}
+		socket_close($this->fd);
 	}
 
 
@@ -124,25 +120,11 @@ abstract class BoundSocket {
 				return;
 			}
 		}
-		
-		if (Daemon::$useSockets) {
-			$fd = @socket_accept($stream);
-
-			if (!$fd) {
-				return;
-			}
-			
-			socket_set_nonblock($fd);
-		} else {
-			$fd = @stream_socket_accept($stream, 0, $addr);
-
-			if (!$fd) {
-				return;
-			}
-			
-			stream_set_blocking($fd, 0);
+		$fd = @socket_accept($stream);
+		if (!$fd) {
+			return;
 		}
-		
+		socket_set_nonblock($fd);	
 		$class = $this->pool->connectionClass;
  		return new $class($fd, $this->pool);
 	}
