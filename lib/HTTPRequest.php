@@ -168,7 +168,7 @@ class HTTPRequest extends Request {
 		}
 
 		if (isset($this->attrs->server['QUERY_STRING'])) {
-			HTTPRequest::parse_str($this->attrs->server['QUERY_STRING'], $this->attrs->get);
+			self::parse_str($this->attrs->server['QUERY_STRING'], $this->attrs->get);
 		}
 
 		if (
@@ -176,18 +176,29 @@ class HTTPRequest extends Request {
 			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
 			&& isset($this->attrs->server['HTTP_CONTENT_TYPE'])
 		) {
-			parse_str(strtr($this->attrs->server['HTTP_CONTENT_TYPE'], HTTPRequest::$hvaltr), $contype);
+			self::parse_str($this->attrs->server['HTTP_CONTENT_TYPE'], $this->contype, true);
+			$found = false;
+			foreach ($this->contype as $k => $v) {
+				if (strpos($k, '/') === false) {
+					continue;
+				}
+				if (!$found) {
+					$found = true;
+				} else {
+					unset($this->contype[$k]);
+				}
+			}
 
 			if (
-				isset($contype['multipart/form-data'])
-				&& (isset($contype['boundary']))
+				isset($this->contype['multipart/form-data'])
+				&& (isset($this->contype['boundary']))
 			) {
-				$this->boundary = $contype['boundary'];
+				$this->boundary = $this->contype['boundary'];
 			}
 		}
 
 		if (isset($this->attrs->server['HTTP_COOKIE'])) {
-			HTTPRequest::parse_str(strtr($this->attrs->server['HTTP_COOKIE'], HTTPRequest::$hvaltr), $this->attrs->cookie);
+			self::parse_str($this->attrs->server['HTTP_COOKIE'], $this->attrs->cookie, true);
 		}
 
 		if (isset($this->attrs->server['HTTP_AUTHORIZATION'])) {
@@ -210,7 +221,7 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * Prepares the request's body
+	 * Prepares the request body
 	 * @return void
 	 */
 	public function postPrepare() {
@@ -218,18 +229,18 @@ class HTTPRequest extends Request {
 			isset($this->attrs->server['REQUEST_METHOD'])
 			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
 		) {
-			if ($this->boundary === false) {
-				HTTPRequest::parse_str($this->attrs->stdinbuf, $this->attrs->post);
+			if (isset($this->contype['application/x-www-form-urlencoded'])) {
+				self::parse_str($this->attrs->stdinbuf, $this->attrs->post);
 			}
 
-			if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] == 'nginx') {
+			if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] === 'nginx') {
 				if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'])) {
 					$URLprefix = $this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'];
 					$l = strlen($URLprefix);
 					foreach (array('PHP_SELF', 'REQUEST_URI', 'SCRIPT_NAME', 'DOCUMENT_URI') as $k) {
 						if (!isset($this->attrs->server[$k])) {continue;}
 						if (strncmp($this->attrs->server[$k], $URLprefix, $l) === 0) {
-							$this->attrs->server[$k] = substr($this->attrs->server[$k], $l-1);
+							$this->attrs->server[$k] = substr($this->attrs->server[$k], $l - 1);
 						}
 					}
 				}
@@ -545,7 +556,7 @@ class HTTPRequest extends Request {
 		$k = strtr(strtoupper($e[0]), HTTPRequest::$htr);
 
 		if ($k === 'CONTENT_TYPE') {
-			HTTPRequest::parse_str(strtr(strtolower($e[1]), HTTPRequest::$hvaltr), $ctype);
+			self::parse_str(strtolower($e[1]), $ctype, true);
 			if (!isset($ctype['charset'])) {
 				$ctype['charset'] = $this->upstream->config->defaultcharset->value;
 
@@ -613,133 +624,165 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	public function parseStdin() {
-		do {
-			if ($this->boundary === false) {
-				break;
+		if (!isset($this->contype['multipart/form-data'])) {
+			return;
+		}
+		start:
+		if ($this->mpartstate === self::MPSTATE_SEEKBOUNDARY) {
+			// seek to the nearest boundary
+			if (($p = strpos($this->attrs->stdinbuf, $ndl = '--' . $this->boundary . "\r\n", $this->mpartoffset)) !== false) {
+				// we have found the nearest boundary at position $p
+				$this->mpartoffset = $p + strlen($ndl);
+				$this->mpartstate = self::MPSTATE_HEADERS;
+			} else {
+				return;
 			}
+		}
+		if ($this->mpartstate === self::MPSTATE_HEADERS) {
+			// parse the part's headers
+			$this->mpartcondisp = false;
+			if (($p = strpos($this->attrs->stdinbuf, "\r\n\r\n", $this->mpartoffset)) !== false) {
+				// we got all of the headers
+				$h = explode("\r\n", binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset));
+				$this->mpartoffset = $p + 4;
+				$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
+				$this->mpartoffset = 0;
+				for ($i = 0, $s = sizeof($h); $i < $s; ++$i) {
+					$e = explode(':', $h[$i], 2);
+					$e[0] = strtr(strtoupper($e[0]), HTTPRequest::$htr);
 
-			$continue = false;
-
-			if ($this->mpartstate === self::MPSTATE_SEEKBOUNDARY) {
-				// seek to the nearest boundary
-				if (($p = strpos($this->attrs->stdinbuf, $ndl = '--' . $this->boundary . "\r\n", $this->mpartoffset)) !== false) {
-					// we have found the nearest boundary at position $p
-					$this->mpartoffset = $p + strlen($ndl);
-					$this->mpartstate = self::MPSTATE_HEADERS;
-					$continue = true;
-				}
-			}
-			elseif ($this->mpartstate === self::MPSTATE_HEADERS) {
-				// parse the part's headers
-				$this->mpartcondisp = false;
-				if (($p = strpos($this->attrs->stdinbuf, "\r\n\r\n", $this->mpartoffset)) !== false) {
-					// we got all of the headers
-					$h = explode("\r\n", binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset));
-					$this->mpartoffset = $p + 4;
-					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-					$this->mpartoffset = 0;
-
-					for ($i = 0, $s = sizeof($h); $i < $s; ++$i) {
-						$e = explode(':', $h[$i], 2);
-						$e[0] = strtr(strtoupper($e[0]), HTTPRequest::$htr);
-
-						if (isset($e[1])) {
-							$e[1] = ltrim($e[1]);
+					if (isset($e[1])) {
+						$e[1] = ltrim($e[1]);
+					}
+					if (
+						($e[0] == 'CONTENT_DISPOSITION')
+						&& isset($e[1])
+					) {
+						self::parse_str($e[1], $this->mpartcondisp, true);
+						if (!isset($this->mpartcondisp['form-data'])) {
+							break;
 						}
 
-						if (
-							($e[0] == 'CONTENT_DISPOSITION')
-							&& isset($e[1])
-						) {
-							parse_str(strtr($e[1], HTTPRequest::$hvaltr), $this->mpartcondisp);
-
-							if (!isset($this->mpartcondisp['form-data'])) {
+						if (!isset($this->mpartcondisp['name'])) {
+							break;
+						}
+						$this->mpartcondisp['name'] = trim($this->mpartcondisp['name'], '"');
+						$name = $this->mpartcondisp['name'];
+						if (isset($this->mpartcondisp['filename'])) {
+							$this->mpartcondisp['filename'] = trim($this->mpartcondisp['filename'], '"');
+							if (!ini_get('file_uploads')) {
 								break;
 							}
-
-							if (!isset($this->mpartcondisp['name'])) {
-								break;
-							}
-							$this->mpartcondisp['name'] = trim($this->mpartcondisp['name'], '"');
-							$name = $this->mpartcondisp['name'];
-							if (isset($this->mpartcondisp['filename'])) {
-								$this->mpartcondisp['filename'] = trim($this->mpartcondisp['filename'], '"');
-
-								if (!ini_get('file_uploads')) {
-									break;
-								}
-
-								$this->attrs->files[$name] = array(
-									'name'     => $this->mpartcondisp['filename'],
-									'type'     => '',
-									'tmp_name' => '',
-									'error'    => UPLOAD_ERR_OK,
-									'size'     => 0,
-								);
-								$tmpdir = ini_get('upload_tmp_dir');
-								if ($tmpdir === false) {
-									$this->attrs->files[$name]['fp'] = false;
-									$this->attrs->files[$name]['error'] = UPLOAD_ERR_NO_TMP_DIR;
-								} else {
-									$this->attrs->files[$name]['tmp_name'] = FS::tempnam($tmpdir, 'php');
-									if ($this->oldFashionUploadFP) {
-										$this->attrs->files[$name]['fp'] = fopen($this->attrs->files[$name]['tmp_name'], 'c+');
-									} else {
-										$req = $this;
-										if (FS::$supported) {
-											$this->conn->lockRead();
-										}
-										FS::open($this->attrs->files[$name]['tmp_name'], 'c+', function ($fp) use ($req, $name) {
-											if (!$fp) {
-												$req->attrs->files[$name]['error'] = UPLOAD_ERR_CANT_WRITE;
-											}
-											$req->attrs->files[$name]['fp'] = $fp;
-											if (FS::$supported) {
-												$req->conn->unlockRead();
-												$req->stdin('');
-											}
-										});
-									}
-								}
-
-								$this->mpartstate = self::MPSTATE_UPLOAD;
+							$this->attrs->files[$name] = array(
+								'name'     => $this->mpartcondisp['filename'],
+								'type'     => '',
+								'tmp_name' => '',
+								'error'    => UPLOAD_ERR_OK,
+								'size'     => 0,
+							);
+							$tmpdir = ini_get('upload_tmp_dir');
+							if ($tmpdir === false) {
+								$this->attrs->files[$name]['fp'] = false;
+								$this->attrs->files[$name]['error'] = UPLOAD_ERR_NO_TMP_DIR;
 							} else {
-								$this->attrs->post[$this->mpartcondisp['name']] = '';
+								$this->attrs->files[$name]['tmp_name'] = FS::tempnam($tmpdir, 'php');
+								if ($this->oldFashionUploadFP) {
+									$this->attrs->files[$name]['fp'] = fopen($this->attrs->files[$name]['tmp_name'], 'c+');
+								} else {
+									$req = $this;
+									if (FS::$supported) {
+										$this->conn->lockRead();
+									}
+									FS::open($this->attrs->files[$name]['tmp_name'], 'c+', function ($fp) use ($req, $name) {
+										if (!$fp) {
+											$req->attrs->files[$name]['error'] = UPLOAD_ERR_CANT_WRITE;
+										}
+										$req->attrs->files[$name]['fp'] = $fp;
+										if (FS::$supported) {
+											$req->conn->unlockRead();
+											$req->stdin('');
+										}
+									});
+								}
 							}
+							$this->mpartstate = self::MPSTATE_UPLOAD;
+						} else {
+							$this->attrs->post[$this->mpartcondisp['name']] = '';
 						}
-						elseif (
-							($e[0] == 'CONTENT_TYPE')
-							&& isset($e[1])
+					}
+					elseif (
+						($e[0] == 'CONTENT_TYPE')
+						&& isset($e[1])
+					) {
+						if (
+							isset($this->mpartcondisp['name'])
+							&& isset($this->mpartcondisp['filename'])
 						) {
-							if (
-								isset($this->mpartcondisp['name'])
-								&& isset($this->mpartcondisp['filename'])
-							) {
-								$this->attrs->files[$this->mpartcondisp['name']]['type'] = $e[1];
-							}
+							$this->attrs->files[$this->mpartcondisp['name']]['type'] = $e[1];
 						}
-					}
-
-					if ($this->mpartstate === self::MPSTATE_HEADERS) {
-						$this->mpartstate = self::MPSTATE_BODY;
-					}
-
-					$continue = true;
-
-					if ($this->conn->readLocked) {
-						return;
 					}
 				}
+				if ($this->mpartstate === self::MPSTATE_HEADERS) {
+					$this->mpartstate = self::MPSTATE_BODY;
+				}
+
+				if ($this->conn->readLocked) {
+					return;
+				}
+
+				goto start;
 			}
-			elseif (
-				($this->mpartstate === self::MPSTATE_BODY)
-				|| ($this->mpartstate === self::MPSTATE_UPLOAD)
-			) {
-				 // process the body
+		}
+		if (
+			($this->mpartstate === self::MPSTATE_BODY)
+			|| ($this->mpartstate === self::MPSTATE_UPLOAD)
+		) {
+			 // process the body
+			if (
+				(($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "\r\n", $this->mpartoffset)) !== false)
+				|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== false)
+			) { // we have the whole Part in buffer
+				$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
 				if (
-					(($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "\r\n", $this->mpartoffset)) !== false)
-					|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== false)
-				) { // we have the whole Part in buffer
+					($this->mpartstate === self::MPSTATE_BODY)
+					&& isset($this->mpartcondisp['name'])
+				) {
+					$this->attrs->post[$this->mpartcondisp['name']] .= $chunk;
+				}
+				elseif (
+					($this->mpartstate === self::MPSTATE_UPLOAD)
+					&& isset($this->mpartcondisp['filename'])
+				) {
+
+					if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
+						return; // fd is not ready yet, interrupt
+					}
+
+					if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
+						if ($this->oldFashionUploadFP) {
+							fwrite($fp, $chunk);
+						} else {
+							$fp->write($chunk);
+						}
+					}
+
+					$this->attrs->files[$this->mpartcondisp['name']]['size'] += strlen($chunk);
+				}
+				if ($ndl === "\r\n--" . $this->boundary . "--\r\n") { // end of whole message
+					$this->mpartoffset = $p + strlen($ndl);
+					$this->mpartstate = self::MPSTATE_SEEKBOUNDARY;
+					$this->stdin_done = true;
+				} else {
+					$this->mpartoffset = $p;
+					$this->mpartstate = self::MPSTATE_HEADERS; // let's read the next part
+					goto start;
+				}
+
+				$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
+				$this->mpartoffset = 0;
+			} else { // we have only piece of Part in buffer
+				$p = strlen($this->attrs->stdinbuf) - strlen($ndl);
+				if ($p !== false) {
 					$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
 					if (
 						($this->mpartstate === self::MPSTATE_BODY)
@@ -751,11 +794,9 @@ class HTTPRequest extends Request {
 						($this->mpartstate === self::MPSTATE_UPLOAD)
 						&& isset($this->mpartcondisp['filename'])
 					) {
-
 						if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
 							return; // fd is not ready yet, interrupt
 						}
-
 						if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
 							if ($this->oldFashionUploadFP) {
 								fwrite($fp, $chunk);
@@ -763,70 +804,26 @@ class HTTPRequest extends Request {
 								$fp->write($chunk);
 							}
 						}
+						$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
 
-						$this->attrs->files[$this->mpartcondisp['name']]['size'] += strlen($chunk);
-					}
-					if ($ndl === "\r\n--" . $this->boundary . "--\r\n") { // end of whole message
-						$this->mpartoffset = $p + strlen($ndl);
-						$this->mpartstate = self::MPSTATE_SEEKBOUNDARY;
-						$this->stdin_done = true;
-					} else {
-						$this->mpartoffset = $p;
-						$this->mpartstate = self::MPSTATE_HEADERS; // let's read the next part
-						$continue = true;
+						if ($this->parseSize(ini_get('upload_max_filesize')) < $this->attrs->files[$this->mpartcondisp['name']]['size']) {
+							$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_INI_SIZE;
+						}
+
+						if (
+							isset($this->attrs->post['MAX_FILE_SIZE'])
+							&& ($this->attrs->post['MAX_FILE_SIZE'] < $this->attrs->files[$this->mpartcondisp['name']]['size'])
+						) {
+							$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_FORM_SIZE;
+						}
 					}
 
+					$this->mpartoffset = $p;
 					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
 					$this->mpartoffset = 0;
-				
-				} else { // we have only piece of Part in buffer
-
-					$p = strlen($this->attrs->stdinbuf) - strlen($ndl);
-
-					if ($p !== false) {
-						$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
-						if (
-							($this->mpartstate === self::MPSTATE_BODY)
-							&& isset($this->mpartcondisp['name'])
-						) {
-							$this->attrs->post[$this->mpartcondisp['name']] .= $chunk;
-						}
-						elseif (
-							($this->mpartstate === self::MPSTATE_UPLOAD)
-							&& isset($this->mpartcondisp['filename'])
-						) {
-							if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
-								return; // fd is not ready yet, interrupt
-							}
-							if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-								if ($this->oldFashionUploadFP) {
-									fwrite($fp, $chunk);
-								} else {
-									$fp->write($chunk);
-								}
-							}
-
-							$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
-
-							if ($this->parseSize(ini_get('upload_max_filesize')) < $this->attrs->files[$this->mpartcondisp['name']]['size']) {
-								$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_INI_SIZE;
-							}
-
-							if (
-								isset($this->attrs->post['MAX_FILE_SIZE'])
-								&& ($this->attrs->post['MAX_FILE_SIZE'] < $this->attrs->files[$this->mpartcondisp['name']]['size'])
-							) {
-								$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_FORM_SIZE;
-							}
-						}
-
-						$this->mpartoffset = $p;
-						$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-						$this->mpartoffset = 0;
-					}
 				}
 			}
-		} while ($continue);
+		}
 	}
 
 
@@ -886,14 +883,18 @@ class HTTPRequest extends Request {
 	 * Replacement for default parse_str(), it supoorts UCS-2 like this: %uXXXX
 	 * @param string String to parse.
 	 * @param array Reference to the resulting array.
+	 * @param boolean Header-style string.
 	 * @return void
 	 */
-	public static function parse_str($s, &$array) {
+	public static function parse_str($s, &$var, $header = false) {
 		static $cb;
 		if ($cb === NULL) {
 			$cb = function ($m) {
 				return urlencode(html_entity_decode('&#' . hexdec($m[1]) . ';', ENT_NOQUOTES, 'utf-8'));
 			};
+		}
+		if ($header) {
+			$s = strtr($s, HTTPRequest::$hvaltr);
 		}
 		if (
 			(stripos($s,'%u') !== false)
@@ -901,8 +902,7 @@ class HTTPRequest extends Request {
 		) {
 			$s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i', $cb, $s);
 		}
-
-		parse_str($s, $array);
+		parse_str($s, $var);
 	}
 
 	/**

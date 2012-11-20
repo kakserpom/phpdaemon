@@ -18,6 +18,7 @@ class Connection extends IOStream {
 	public $timeout = 120;
 	public $locAddr;
 	public $locPort;
+	public $keepaliveMode = false;
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);
@@ -131,8 +132,8 @@ class Connection extends IOStream {
 			$conn->hostReal = $conn->host;
 			$conn->connectTo($conn->hostReal, $conn->port);
 		}
-
 	}
+
 	public function connectTo($host, $port = 0) {
 		if (stripos($host, 'unix:') === 0) {
 			// Unix-socket
@@ -170,6 +171,9 @@ class Connection extends IOStream {
 			socket_set_nonblock($fd);
 			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			if ($this->keepaliveMode) {
+				socket_set_option($fd, SOL_SOCKET, SO_KEEPALIVE, 1);
+			}
 			@socket_connect($fd, $host, $port);
 			socket_getsockname($fd, $this->locAddr, $this->locPort);
 		}
