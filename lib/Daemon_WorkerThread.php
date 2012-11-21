@@ -74,7 +74,7 @@ class Daemon_WorkerThread extends Thread {
 		foreach (Daemon::$appInstances as $app) {
 			foreach ($app as $appInstance) {
 				if (!$appInstance->ready) {
-					$appInstance->ready = TRUE;
+					$appInstance->ready = true;
 					$appInstance->onReady();
 				}
 			}

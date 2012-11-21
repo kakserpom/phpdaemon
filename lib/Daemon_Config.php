@@ -47,6 +47,7 @@ class Daemon_Config implements ArrayAccess {
 	public $workerpriority           = 4;
 	public $throwexceptiononshutdown = 0;
 	public $locale                   = '';
+	public $restricterrorcontrol = false; 
 			
 	// Logging-related
 	public $logging            = 1;

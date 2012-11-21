@@ -37,7 +37,11 @@ class Timer {
 		Timer::$list[$id] = $this;
 	}
 	public function eventCall($fd, $flags, $arg) {
-		call_user_func($this->cb, $this);
+		try {
+			call_user_func($this->cb, $this);
+		} catch (Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+		}
 	}
 	public function setPriority($priority) {
 		$this->priority = $priority;

@@ -53,7 +53,15 @@ class Request {
 		$this->init();
 		$this->onSleep();
 	}
- 
+ 	
+ 	/**
+	 * Output some data
+	 * @param string String to out
+	 * @return boolean Success
+	 */
+	public function out($s, $flush = true) {
+	}
+	
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
@@ -67,7 +75,13 @@ class Request {
 		if ($this->state === Request::STATE_SLEEPING) {
 			$this->state = Request::STATE_ALIVE;
 		}
-		$ret = $this->call();
+		try {
+			$ret = $this->call();
+		} catch (Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+			$this->finish();
+			return;
+		}
 		if ($ret === Request::STATE_FINISHED) {		
 			$this->free();
 

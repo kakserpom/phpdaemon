@@ -54,6 +54,8 @@ class Daemon {
 	public static $runName = 'phpdaemon';
 	public static $config;
 	public static $appResolverPath;
+	public static $restrictErrorControl = false;
+	public static $defaultErrorLevel;
 
 	public static $obInStack = false; // whether if the current execution stack contains ob-filter
 	/**
@@ -111,6 +113,46 @@ class Daemon {
 		return '';
 	}
 
+	public static function uncaughtExceptionHandler(Exception $e) {
+		$msg = $e->getMessage();
+		Daemon::log('Uncaught '.get_class($e).' (' . $e->getCode() . ')' . (strlen($msg) ? ': ' . $msg : ''). ".\n" . $e->getTraceAsString());
+		if (Daemon::$req) {
+			Daemon::$req->out('<b>Uncaught '.get_class($e).' (' . $e->getCode() . ')</b>' . (strlen($msg) ? ': ' . $msg : ''). '.<br />');
+		}
+	}
+
+	public static function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
+		$l = error_reporting();
+		if ($l === 0) {
+			if (!Daemon::$restrictErrorControl) {
+				return;
+			}
+		}
+		elseif ($l & $errno === $l) {
+			return;
+		}
+
+		static $errtypes = array(
+			E_ERROR => 'Fatal error',
+			E_WARNING => 'Warning',
+			E_PARSE => 'Parse error',
+			E_NOTICE => 'Notice',
+			E_PARSE => 'Parse error',
+			E_USER_ERROR => 'Fatal error (userland)',
+			E_USER_WARNING => 'Warning (userland)',
+			E_USER_NOTICE => 'Notice (userland)',
+			E_STRICT => 'Notice (userland)',
+			E_RECOVERABLE_ERROR => 'Fatal error (recoverable)',
+			E_DEPRECATED => 'Deprecated',
+			E_USER_DEPRECATED => 'Deprecated (userland)',
+		);
+		$errtype = $errtypes[$errno];
+		Daemon::log($errtype . ': '.$errstr.' in ' . $errfile . ':' . $errline . "\n");
+		if (Daemon::$req) {
+			Daemon::$req->out('<strong>' . $errtype . '</strong>: ' . $errstr . ' in ' . basename($errfile) . ':' . $errline.'<br />');
+		}
+	}
+
 	/**
 	 * Performs initial actions.
 	 * @return void
@@ -119,7 +161,10 @@ class Daemon {
 		Daemon::$startTime = time();
 		set_time_limit(0);
 
+		Daemon::$defaultErrorLevel = error_reporting();
+		Daemon::$restrictErrorControl = (bool) Daemon::$config->restricterrorcontrol->value; 
 		ob_start(array('Daemon', 'outputFilter'));
+		set_error_handler(array('Daemon', 'errorHandler'));
 		
 		Daemon::checkSupports();
 

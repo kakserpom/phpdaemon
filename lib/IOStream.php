@@ -35,6 +35,7 @@ abstract class IOStream {
 	public $timeout = null;
 	public $url;
 	public $alive = false; // alive?
+	public $pool;
 
 	/**
 	 * IOStream constructor
@@ -368,10 +369,14 @@ abstract class IOStream {
 		if ($this->readLocked) {
 			return;
 		}
-		if (isset($this->onRead)) {
-			$this->reading = !call_user_func($this->onRead);
-		} else {
-			$this->reading = !$this->onRead();
+		try {
+			if (isset($this->onRead)) {
+				$this->reading = !call_user_func($this->onRead);
+			} else {
+				$this->reading = !$this->onRead();
+			}
+		} catch (Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
 		}
 	}
 	
@@ -414,23 +419,35 @@ abstract class IOStream {
 		if (!$this->ready) {
 			$this->ready = true;
 			while (!$this->onWriteOnce->isEmpty()) {
-				call_user_func($this->onWriteOnce->pop(), $this);
+				try {
+					call_user_func($this->onWriteOnce->pop(), $this);
+				} catch (Exception $e) {
+					Daemon::uncaughtExceptionHandler($e);
+				}
 				if (!$this->ready) {
 					return;
 				}
 			}
 			$this->alive = true;
 			event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
-			$this->onReady();
+			try {			
+				$this->onReady();
+			} catch (Exception $e) {
+				Daemon::uncaughtExceptionHandler($e);
+			}
 		} else {
 			while (!$this->onWriteOnce->isEmpty()) {
 				call_user_func($this->onWriteOnce->pop(), $this);
 			}
 		}
-		if (isset($this->onWrite)) {
-			call_user_func($this->onWrite, $this);
-		} else {
-			$this->onWrite();
+		try {
+			if (isset($this->onWrite)) {
+				call_user_func($this->onWrite, $this);
+			} else {
+				$this->onWrite();
+			}
+		} catch (Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
 		}
 	}
 	
@@ -445,12 +462,15 @@ abstract class IOStream {
 		if ($this->finished) {
 			return;
 		}
-		$this->finished = true;
-		$this->onFinish();
-		if ($this->pool) {
-			$this->pool->detach($this);
+		try {
+			$this->finished = true;
+			$this->onFinish();
+			if ($this->pool) {
+				$this->pool->detach($this);
+			}
+		} catch (Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
 		}
-		
 		event_base_loopexit(Daemon::$process->eventBase);
 	}
 	
