@@ -13,6 +13,7 @@ class IRCBouncer extends NetworkServer {
 
 	public function init() {
 		$this->client = IRCClient::getInstance();
+		$this->client->protologging = $this->protologging;
 	}
 
 	/**
@@ -35,7 +36,9 @@ class IRCBouncer extends NetworkServer {
 	public function applyConfig() {
 		parent::applyConfig();
 		$this->protologging = (bool) $this->config->protologging->value;
-		$this->client->protologging = $this->protologging;
+		if (isset($this->client)) {
+			$this->client->protologging = $this->protologging;
+		}
 	}
 
 	public function onReady() {
@@ -272,7 +275,7 @@ class IRCBouncerConnection extends Connection {
 		elseif ($cmd === 'PRIVMSG') {
 			list ($target, $msg) = $args;
 			if ($target === '$') {
-				if (preg_match('~^\s*(NICK\s+\S+|DETACH|ATTACH)\s*$~i', $msg, $m)) {
+				if (preg_match('~^\s*(NICK\s+\S+|DETACH|ATTACH|BYE)\s*$~i', $msg, $m)) {
 					$clientCmd = strtoupper($m[1]);
 					if ($clientCmd === 'NICK') {
 
@@ -283,6 +286,11 @@ class IRCBouncerConnection extends Connection {
 					}
 					elseif ($clientCmd === 'ATTACH') {
 						$this->attachTo();
+					}
+					elseif ($clientCmd === 'BYE') {
+						$this->detach();
+						$this->msgFromBNC('Bye-bye.');
+						$this->finish();
 					}
 
 				} else {

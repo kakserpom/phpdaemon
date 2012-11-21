@@ -32,6 +32,7 @@ class IRCClientConnection extends NetworkClientConnection {
 	public $password 		= '';         // Password
 	public $EOL				= "\r\n";
 	public $nick;
+	public $realname;
 	public $eventHandlers = array();
 	public $mode = '';
 	public $buffers = array();
@@ -49,9 +50,8 @@ class IRCClientConnection extends NetworkClientConnection {
 		if ($this->pool->identd) {
 			$this->pool->identd->registerPair($this->locPort, $this->port, 'UNIX : '.$this->user);
 		}
-		list($this->nick, $this->realname) = explode('/', $this->path . '/John Doe', 2);
-		$this->nick = $this->path;
-		$this->command('USER', $this->user, 0, '*');
+		list($this->nick, $this->realname) = explode('/', $this->path . '/John Doe');
+		$this->command('USER', $this->user, 0, '*', $this->realname);
 		$this->command('NICK', $this->nick);
 		if (strlen($this->password)) {
 			$this->message('NickServ', 'IDENTIFY '.$this->password);
