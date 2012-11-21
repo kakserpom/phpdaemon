@@ -8,6 +8,8 @@
  */
 class IRCClient extends NetworkClient {
 	public $identd;
+	public $protologging = false;
+
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -47,8 +49,9 @@ class IRCClientConnection extends NetworkClientConnection {
 		if ($this->pool->identd) {
 			$this->pool->identd->registerPair($this->locPort, $this->port, 'UNIX : '.$this->user);
 		}
+		list($this->nick, $this->realname) = explode('/', $this->path . '/John Doe', 2);
 		$this->nick = $this->path;
-		$this->command('USER', $this->user, 0, '*', 'John Doe');
+		$this->command('USER', $this->user, 0, '*');
 		$this->command('NICK', $this->nick);
 		if (strlen($this->password)) {
 			$this->message('NickServ', 'IDENTIFY '.$this->password);
@@ -62,9 +65,6 @@ class IRCClientConnection extends NetworkClientConnection {
 		$line = $cmd;
 		for ($i = 1, $s = func_num_args(); $i < $s; ++$i) {
 			$arg = func_get_arg($i);
-			if (is_array($arg)) {
-				Daemon::log('!!!!!array!!!! '.json_encode(func_get_args()));
-			}
 			if (($i + 1 === $s) && (strpos($arg, "\x20") !== false)) {
 				$line .= ' :';
 			}
@@ -74,7 +74,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			$line .= $arg;
 		}
 		$this->writeln($line);
-		if (!in_array($cmd, array('PONG'))) {
+		if ($this->pool->protologging) {
 			Daemon::log('->->->-> '.$line);
 		}
 	}
@@ -97,7 +97,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			$line .= $args[$i];
 		}
 		$this->writeln($line);
-		if (!in_array($cmd, array('PONG'))) {
+		if ($this->pool->protologging && !in_array($cmd, array('PONG'))) {
 			Daemon::log('->->->-> '.$line);
 		}
 	}
@@ -121,7 +121,6 @@ class IRCClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function onFinish() {
-		Daemon::log('onFinish!!!!!!!');
 		if ($this->pool->identd) {
 			$this->pool->identd->unregisterPair($this->locPort, $this->port);
 		}
@@ -191,7 +190,6 @@ class IRCClientConnection extends NetworkClientConnection {
 
 	public function onCommand($from, $cmd, $args) {
 		$this->event('command', $from, $cmd, $args);
-		$log = true;
 		if ($cmd === 'RPL_WELCOME') {
 			$this->servername = $from['orig'];
 			if ($this->onConnected) {
@@ -263,7 +261,6 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		elseif ($cmd === 'RPL_ENDOFNAMES') {
 			$bufName = 'RPL_NAMREPLY';
-			Daemon::$process->log('<-<-<-< '.$cmd.': '.json_encode($args). ' ('.json_encode($from['orig']).')');
 			list($nick, $channelName, $text) = $args;
 			if (!isset($this->buffers[$bufName][$channelName])) {
 				return;
@@ -288,9 +285,8 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		elseif ($cmd === 'RPL_WHOREPLY') {
 			if (sizeof($args) < 7) {
-				Daemon::log('!!!!!' . json_encode(func_get_args()));
-				sleep(10);
-		}
+
+			}
 			list($myNick, $channelName, $user, $host, $server, $nick, $mode, $hopCountRealName) = $args;
 			list ($hopCount, $realName) = explode("\x20", $hopCountRealName);
 			if ($channel = $this->channelIfExists($channelName)) {
@@ -350,10 +346,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			}
 			return;
 		}
-		else {
-			$log = true;
-		}
-		if ($log) {
+		if ($this->pool->protologging) {
 			Daemon::$process->log('<-<-<-< '.$cmd.': '.json_encode($args). ' ('.json_encode($from['orig']).') (' . json_encode($this->lastLine) . ')');
 		}
 	}
@@ -429,7 +422,10 @@ class IRCClientChannel extends ObjectStorage {
 	public function __construct($irc, $name) {
 		$this->irc = $irc;
 		$this->name = $name;
-		//$this->irc->command('WHO', $name);
+	}
+
+	public function who() {
+		$this->irc->command('WHO', $this->name);
 	}
 
 	public function onPart($mask, $msg = null) {
@@ -466,7 +462,6 @@ class IRCClientChannel extends ObjectStorage {
 		if (strpos($participant->mode, $mode) === false) {
 			$participant->mode .= $mode;
 		}
-		Daemon::log('addMode -- '.$nick. ' -- '.$mode);
 		$participant->onModeUpdate();
 	}
 

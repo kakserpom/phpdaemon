@@ -9,6 +9,7 @@
 class IRCBouncer extends NetworkServer {
 	public $client;
 	public $conn;
+	public $protologging = false;
 
 	public function init() {
 		$this->client = IRCClient::getInstance();
@@ -24,10 +25,17 @@ class IRCBouncer extends NetworkServer {
 			// @todo add description strings
 			'listen'				=> '0.0.0.0',
 			'port' 			        => 6667,
-			'url' => 'irc://user@host/nickname',
+			'url' => 'irc://user@host/nickname/realname',
 			'servername' => 'bnchost.tld',
-			'defaultchannles' => '',
+			'defaultchannels' => '',
+			'protologging' => 0,
 		);
+	}
+
+	public function applyConfig() {
+		parent::applyConfig();
+		$this->protologging = (bool) $this->config->protologging->value;
+		$this->client->protologging = $this->protologging;
 	}
 
 	public function onReady() {
@@ -90,6 +98,41 @@ class IRCBouncerConnection extends Connection {
 	public $latency;
 	public $lastPingTS;
 	public $timeout = 180;
+	public $eventHandlers = array();
+	public $protologging = false;
+
+	public function bind($event, $cb) {
+		if (!isset($this->eventHandlers[$event])) {
+			$this->eventHandlers[$event] = array();
+		}
+		$this->eventHandlers[$event][] = $cb;
+	}
+
+	public function unbind($event, $cb = null) {
+		if (!isset($this->eventHandlers[$event])) {
+			return false;
+		}
+		if ($cb === null) {
+			unset($this->eventHandlers[$event]);
+			return true;
+		}
+		if (($p = array_search($cb, $this->eventHandlers[$event], true)) === false) {
+			return false;
+		}
+		unset($this->eventHandlers[$event][$p]);
+		return true;
+	}
+
+	public function event() {
+		$args = func_get_args();
+		$name = array_shift($args);
+		array_unshift($args, $this);
+		if (isset($this->eventHandlers[$name])) {
+			foreach ($this->eventHandlers[$name] as $cb) {
+				call_user_func_array($cb, $args);
+			}
+		}
+	}
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
@@ -133,7 +176,7 @@ class IRCBouncerConnection extends Connection {
 			$line .= $arg;
 		}
 		$this->writeln($line);
-		if (!in_array($cmd, array('PONG'))) {
+		if ($this->pool->protologging && !in_array($cmd, array('PONG'))) {
 			Daemon::log('=>=>=>=> '.json_encode($line));
 		}
 	}
@@ -157,7 +200,7 @@ class IRCBouncerConnection extends Connection {
 			$line .= $args[$i];
 		}
 		$this->writeln($line);
-		if (!in_array($cmd, array('PONG'))) {
+		if ($this->pool->protologging && !in_array($cmd, array('PONG'))) {
 			Daemon::log('=>=>=>=> '.json_encode($line));
 		}
 	}
@@ -180,7 +223,6 @@ class IRCBouncerConnection extends Connection {
 		$this->usermask = $this->attachedServer->nick . '!' . $this->attachedServer->user . '@' . $this->pool->config->servername->value;
 		$this->command(null, 'RPL_WELCOME', $this->attachedServer->nick, 'Welcome to phpDaemon bouncer -- ' . $this->pool->config->servername->value);
 		foreach ($this->attachedServer->channels as $chan) {
-			Daemon::log('Exporting '.$chan->name);
 			$this->exportChannel($chan);
 		}
 	}
@@ -220,7 +262,7 @@ class IRCBouncerConnection extends Connection {
 			if ($this->lastPingTS) {
 				$this->latency = microtime(true) - $this->lastPingTS;
 				$this->lastPingTS = null;
-				//Daemon::log('latency ~' . round($this->latency * 1e3, 3) . 'ms');
+				$this->event('lantency');
 			}
 			return;
 		}
@@ -228,7 +270,6 @@ class IRCBouncerConnection extends Connection {
 			return;
 		}
 		elseif ($cmd === 'PRIVMSG') {
-			Daemon::$process->log('<=<=<=< '.$cmd.': '.json_encode($args));
 			list ($target, $msg) = $args;
 			if ($target === '$') {
 				if (preg_match('~^\s*(NICK\s+\S+|DETACH|ATTACH)\s*$~i', $msg, $m)) {
@@ -253,7 +294,9 @@ class IRCBouncerConnection extends Connection {
 		if ($this->attachedServer) {
 			$this->attachedServer->commandArr($cmd, $args);
 		}
-		Daemon::$process->log('<=<=<=< '.$cmd.': '.json_encode($args));
+		if ($this->protologging) {
+			Daemon::$process->log('<=<=<=< '.$cmd.': '.json_encode($args));
+		}
 	}
 
 	public function msgFromBNC($msg) {
