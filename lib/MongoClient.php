@@ -96,7 +96,7 @@ class MongoClient extends NetworkClient {
 				throw new MongoClientConnectionFinished;
 			}
 		} else {
-			$conn = $this->getConnectionByKey($key);
+			$this->getConnectionByKey($key);
 			if (!$conn || $conn->finished) {
 				throw new MongoClientConnectionFinished;
 			}

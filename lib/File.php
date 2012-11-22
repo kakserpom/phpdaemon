@@ -125,9 +125,9 @@ class File extends IOStream {
 	
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
-			$r = chown($path, $uid);
+			$r = chown($this->path, $uid);
 			if ($gid !== -1) {
-				$r = $r && chgrp($path, $gid);
+				$r = $r && chgrp($this->path, $gid);
 			}
 			if ($cb) {
 				call_user_func($cb, $this, $r);

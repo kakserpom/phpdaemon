@@ -62,7 +62,7 @@ class NetworkClient extends ConnectionPool {
 	 * @param string Address
 	 * @param callback onConnected
 	 * @param boolean Unshift?
-	 * @return object Connection
+	 * @return boolean Success.
 	 */
 	public function getConnection($url = null, $cb = null, $unshift = false) {
 		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
@@ -101,13 +101,13 @@ class NetworkClient extends ConnectionPool {
 				} else {
 					$this->pending[$url]->push($cb);
 				}
-				return false;
+				return true;
 			}
 			if ($conn) {
 				if ($cb !== null) {
 					$conn->onConnected($cb);
 				}
-				return $conn;
+				return true;
 			}
 		} else {
 			$this->servConn[$url] = new ObjectStorage;
@@ -123,7 +123,7 @@ class NetworkClient extends ConnectionPool {
 		$this->servConn[$url]->attach($conn);
 		$this->servConnFree[$url]->attach($conn);
 
-		return $conn;
+		return true;
 	}
 
 	public function detachConn($conn) {
@@ -140,7 +140,7 @@ class NetworkClient extends ConnectionPool {
 	/**
 	 * Returns available connection from the pool by key
 	 * @param string Key
-	 * @return object Connection
+	 * @return boolean Success.
 	 */
 	public function getConnectionByKey($key, $cb = null) {
 		if (

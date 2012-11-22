@@ -19,8 +19,8 @@ abstract class IOStream {
 	public $ready = false;
 	public $readLocked = false;
 	public $addr;
-	private $sending = true;
-	private $reading = false;
+	public $sending = true;
+	public $reading = false;
 	public $connected = false;
 	public $directInput = false; // do not use prebuffering of incoming data
 	public $directOutput = false; // do not use prebuffering of outgoing data

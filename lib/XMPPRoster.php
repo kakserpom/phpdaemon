@@ -83,7 +83,7 @@ class XMPPRoster {
 		});
 	}
 
-	public function addEventHandler($name, $cb) {
+	public function addEventHandler($event, $cb) {
 		if (!isset($this->eventHandlers[$event])) {
 			$this->eventHandlers[$event] = array();
 		}

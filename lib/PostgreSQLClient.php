@@ -82,10 +82,10 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	 */
 	public function onConnected($cb) {
 		if ($this->state == self::STATE_AUTH_ERROR) {
-			call_user_func($callback, $this, false);
+			call_user_func($cb, $this, false);
 		}
 		elseif ($this->state === self::STATE_AUTH_OK) {
-			call_user_func($callback, $this, true);
+			call_user_func($cb, $this, true);
 		} else {
 			if (!$this->onConnected) {
 				$this->onConnected = new StackCallbacks;
@@ -276,16 +276,16 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	 * @param callback Optional. Callback called when response received.
 	 * @return boolean Success
 	 */
-	public function sync($callback = NULL) {
-		return $this->command('S', '', $callback);
+	public function sync($cb = NULL) {
+		return $this->command('S', '', $cb);
 	}
 
 	/**
 	 * Send terminate-request to shutdown the connection
 	 * @return boolean Success
 	 */
-	public function terminate() {
-		return $this->command('X', '', $callback);
+	public function terminate($cb = NULL) {
+		return $this->command('X', '', $cb);
 	}
 
 	/**

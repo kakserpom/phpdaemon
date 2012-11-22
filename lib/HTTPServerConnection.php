@@ -139,7 +139,9 @@ class HTTPServerConnection extends Connection {
 						&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
 					) {
 						$fn = FS::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value);
-						$req->sendfp = FS::open($fn, 'wb');
+						FS::open($fn, 'wb', function ($file) use ($req) {
+							$req->sendfp = $file;
+						});
 						$req->header('X-Sendfile: ' . $fn);
 					}
 					$buf = $req->attrs->inbuf;

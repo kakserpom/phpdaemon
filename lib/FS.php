@@ -223,7 +223,7 @@ class FS {
 		}, $pri);
 	}
 	
-	public static function chown($path, $uid, $gid = -1, $pri = EIO_PRI_DEFAULT) {
+	public static function chown($path, $uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			$r = chown($path, $uid);
 			if ($gid !== -1) {
@@ -257,7 +257,7 @@ class FS {
 		}
 		FS::open($path, 'r', function ($file) use ($cb, $chunkcb, $pri) {
 			if (!$file) {
-				call_user_func($cb, $path, false);
+				call_user_func($cb, $file->path, false);
 				return;
 			}
 			$file->readAllChunked($cb, $chunkcb, $pri);

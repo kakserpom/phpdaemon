@@ -26,7 +26,7 @@ class PubSub {
 		if (!isset($this->events[$id])) {
 			return false;
 		}
-		return $this->events[$id]->sub($obj, $cb);
+		return $this->events[$id]->unsub($obj);
 	}
 	public function pub($id, $data) {
 		if (!isset($this->events[$id])) {

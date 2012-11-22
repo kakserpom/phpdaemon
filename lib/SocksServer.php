@@ -200,7 +200,7 @@ class SocksServerConnection extends Connection {
 				$this->write($this->ver . "\x05");
 				$this->finish();
 			} else {
-				$this->slave = $this->pool->getConnectionById($connId);
+				$this->slave = $conn;
 				$this->slave->client = $this;
 				$this->slave->write($this->buf);
 				$this->buf = '';
