@@ -466,10 +466,10 @@ class IRCClientChannel extends ObjectStorage {
 	}
 
 	public function removeMode($target, $mode) {
-		if (!isset($this->nicknames[$nick])) {
+		if (!isset($this->nicknames[$target])) {
 			return;
 		}
-		$participant = $this->nicknames[$nick];
+		$participant = $this->nicknames[$target];
 		$participant->mode = str_replace($mode, '', $participant->mode);
 		$participant->onModeUpdate();
 	}

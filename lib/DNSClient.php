@@ -145,7 +145,7 @@ class DNSClient extends NetworkClient {
 			}
 		});
 	}
-	public function get($hostname, $cb) {
+	public function get($hostname, $cb, $noncache = false) {
 		if (!$this->preloading->hasCompleted()) {
 			$pool = $this;
 			$this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool) {
@@ -153,48 +153,48 @@ class DNSClient extends NetworkClient {
 			});
 			return;
 		}
-		$conn = $this->getConnectionByKey($hostname);
-		if (!$conn) {
-			call_user_func($cb, false);
-			return false;
-		}
- 		$conn->onResponse->push($cb);
-		$conn->setFree(false);
-		$e = explode(':', $hostname, 3);
-		$hostname = $e[0];
-		$qtype = isset($e[1]) ? $e[1] : 'A';
-		$qclass = isset($e[2]) ? $e[2] : 'IN';
-		$QD = array();
-		$qtypeInt = array_search($qtype, DNSClient::$type, true);
-		$qclassInt = array_search($qclass, DNSClient::$class, true);
-		if (($qtypeInt === false) || ($qclassInt === false)) {
-			call_user_func($cb, false);
-			return;
-		}
-		$q =	Binary::labels($hostname) .  // domain
-				Binary::word($qtypeInt) . 
-				Binary::word($qclassInt);
-		$QD[] = $q;
-		$packet = 
-			Binary::word(++$conn->seq) . // Query ID
-			Binary::bitmap2bytes(
-				'0' . // QR = 0
-				'0000' . // OPCODE = 0000 (standard query)
-				'0' . // AA = 0
-				'0' . // TC = 0
-				'1' . // RD = 1
+		$this->getConnectionByKey($hostname, function($conn) use ($cb, $hostname) {
+			if (!$conn->connected) {
+				call_user_func($cb, false);
+				return false;
+			}
+			$conn->onResponse->push($cb);
+			$conn->setFree(false);
+			$e = explode(':', $hostname, 3);
+			$hostname = $e[0];
+			$qtype = isset($e[1]) ? $e[1] : 'A';
+			$qclass = isset($e[2]) ? $e[2] : 'IN';
+			$QD = array();
+			$qtypeInt = array_search($qtype, DNSClient::$type, true);
+			$qclassInt = array_search($qclass, DNSClient::$class, true);
+			if (($qtypeInt === false) || ($qclassInt === false)) {
+				call_user_func($cb, false);
+				return;
+			}
+			$q =	Binary::labels($hostname) .  // domain
+					Binary::word($qtypeInt) . 
+					Binary::word($qclassInt);
+			$QD[] = $q;
+			$packet = 
+				Binary::word(++$conn->seq) . // Query ID
+				Binary::bitmap2bytes(
+					'0' . // QR = 0
+					'0000' . // OPCODE = 0000 (standard query)
+					'0' . // AA = 0
+					'0' . // TC = 0
+					'1' . // RD = 1
 
-				'0' . // RA = 0, 
-				'000' . // reserved
-				'0000' // RCODE
-			, 2) . 
-			Binary::word(sizeof($QD)) . // QDCOUNT
-			Binary::word(0) . // ANCOUNT
-			Binary::word(0) . // NSCOUNT
-			Binary::word(0) . // ARCOUNT
-			implode('', $QD);
-		$conn->write(Binary::word(strlen($packet)) . $packet);
-
+					'0' . // RA = 0, 
+					'000' . // reserved
+					'0000' // RCODE
+				, 2) . 
+				Binary::word(sizeof($QD)) . // QDCOUNT
+				Binary::word(0) . // ANCOUNT
+				Binary::word(0) . // NSCOUNT
+				Binary::word(0) . // ARCOUNT
+				implode('', $QD);
+			$conn->write(Binary::word(strlen($packet)) . $packet);
+		});
 	}
 }
 class DNSClientConnection extends NetworkClientConnection {

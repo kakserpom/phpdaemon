@@ -62,7 +62,7 @@ class NetworkClient extends ConnectionPool {
 	 * @param string Address
 	 * @param callback onConnected
 	 * @param boolean Unshift?
-	 * @return object Connection
+	 * @return boolean Success.
 	 */
 	public function getConnection($url = null, $cb = null, $unshift = false) {
 		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
@@ -101,13 +101,13 @@ class NetworkClient extends ConnectionPool {
 				} else {
 					$this->pending[$url]->push($cb);
 				}
-				return false;
+				return true;
 			}
 			if ($conn) {
 				if ($cb !== null) {
 					$conn->onConnected($cb);
 				}
-				return $conn;
+				return true;
 			}
 		} else {
 			$this->servConn[$url] = new ObjectStorage;
@@ -123,7 +123,7 @@ class NetworkClient extends ConnectionPool {
 		$this->servConn[$url]->attach($conn);
 		$this->servConnFree[$url]->attach($conn);
 
-		return $conn;
+		return true;
 	}
 
 	public function detachConn($conn) {
@@ -140,7 +140,7 @@ class NetworkClient extends ConnectionPool {
 	/**
 	 * Returns available connection from the pool by key
 	 * @param string Key
-	 * @return object Connection
+	 * @return boolean Success.
 	 */
 	public function getConnectionByKey($key, $cb = null) {
 		if (
@@ -154,8 +154,7 @@ class NetworkClient extends ConnectionPool {
 
 		srand(crc32($key));
 		$addr = array_rand($this->servers);
-		srand();  
-
+		srand();
 		return $this->getConnection($addr, $cb);
 	}
 
@@ -164,26 +163,26 @@ class NetworkClient extends ConnectionPool {
 	 * @param string Server
 	 * @param string Request
 	 * @param mixed Callback called when the request complete
-	 * @return object Connection
+	 * @return boolean Success.
 	 */
-	public function requestByServer($k, $s, $onResponse = null) {
+	public function requestByServer($server, $data, $onResponse = null) {
 
-		if ($k === NULL) {
+		if ($server === NULL) {
 			srand();
-			$k = array_rand($this->servers);
+			$server = array_rand($this->servers);
 		}
-
-		$conn = $this->getConnection($k);
-		if (!$conn) {
-			return false;
-		}
-		if ($onResponse !== NULL) {
-			$conn->onResponse->push($onResponse);
-			$conn->setFree(false);
-		} elseif ($this->noSAF) {
-			$conn->onResponse->push(null);
-		}
-;		$conn->write($s);
+		$this->getConnection($server, function ($conn) use ($data, $onResponse) {
+			if (!$conn->connected) {
+				return;
+			}
+			if ($onResponse !== null) {
+				$conn->onResponse->push($onResponse);
+				$conn->setFree(false);
+			} elseif ($this->noSAF) {
+				$conn->onResponse->push(null);
+			}
+			$conn->write($data);
+		});
 		return true;
 	}
 
@@ -194,18 +193,19 @@ class NetworkClient extends ConnectionPool {
 	 * @param mixed Callback called when the request complete
 	 * @return boolean Success
 	 */
-	public function requestByKey($k, $s, $onResponse = null) {
-		$conn = $this->getConnectionByKey($k);
-		if (!$conn) {
-			return false;
-		}
-		if ($onResponse !== NULL) {
-			$conn->onResponse->push($onResponse);
-			$conn->setFree(false);
-		} elseif ($this->noSAF) {
-			$conn->onResponse->push(null);
-		}
-		$conn->write($s);
+	public function requestByKey($key, $data, $onResponse = null) {
+		 $this->getConnectionByKey($key, function ($conn) use ($data, $onResponse) {
+		 	if (!$conn->connected) {
+				return;
+			}
+			if ($onResponse !== NULL) {
+				$conn->onResponse->push($onResponse);
+				$conn->setFree(false);
+			} elseif ($this->noSAF) {
+				$conn->onResponse->push(null);
+			}
+			$conn->write($s);
+		 });
 		return true;
 	}
 }

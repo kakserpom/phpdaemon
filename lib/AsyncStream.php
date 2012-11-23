@@ -31,6 +31,7 @@ class AsyncStream {
 	public $noEvents = FALSE;
 	public $fileMode = FALSE;
 	public $filePath;
+	public $useSockets = true;
 
 	public function __construct($readFD = NULL, $writeFD = NULL) {
 		$this->initStream($readFD, $writeFD);
@@ -54,7 +55,7 @@ class AsyncStream {
 			$u = parse_url($url = $readFD);
 		
 			if ($u['scheme'] === 'unix') {
-				if (!Daemon::$useSockets) {
+				if (!$this->useSockets) {
 					$readFD = stream_socket_client($readFD, $errno, $errstr, 1);
 				} else {
 					$readFD = socket_create(AF_UNIX, SOCK_STREAM, 0);
@@ -70,7 +71,7 @@ class AsyncStream {
 				|| ($u['scheme'] === 'tcpstream')
 			) {
 				if (
-					!Daemon::$useSockets 
+					!$this->useSockets 
 					|| ($u['scheme'] === 'tcpstream')
 				) {
 					$readFD = stream_socket_client('tcp://' . substr($readFD, 12), $errno, $errstr, 1);
@@ -84,7 +85,7 @@ class AsyncStream {
 				}
 			}
 			elseif ($u['scheme'] === 'udp') {
-				if (!Daemon::$useSockets) {
+				if (!$this->useSockets) {
 					$readFD = stream_socket_client($readFD, $errno, $errstr, 1);
 				} else {
 					$readFD = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);

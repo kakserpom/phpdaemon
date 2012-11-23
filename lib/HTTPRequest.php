@@ -833,7 +833,7 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	public function isUploadedFile($path) {
-		$filename = realpath($filename);
+		$path = realpath($path);
 		if (!$path) {
 			return false;
 		}
@@ -869,6 +869,7 @@ class HTTPRequest extends Request {
 		if (!isset($this->attrs->server['REQUEST_BODY_FILE'])) {
 			return false;
 		}
+		$req = $this;
 		FS::readfileChunked($this->attrs->server['REQUEST_BODY_FILE'],
 			function ($file, $success) use ($req) {
 				$req->attrs->stdin_done = true;

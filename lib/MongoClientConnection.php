@@ -6,8 +6,7 @@ class MongoClientConnection extends NetworkClientConnection {
 	public $dbname;            // Database name
 	public $busy = false;      // Is this session busy?
 
-
-	public function onConnected($cb) {
+	public function onReady() {
 		$conn = $this;
 		if ($conn->user !== NULL) {
 			$this->pool->getNonce(array(
@@ -29,11 +28,9 @@ class MongoClientConnection extends NetworkClientConnection {
 					);
 				}, $conn
 			);
-		} else {
-			parent::onConnected();
 		}
+		parent::onReady();
 	}
-
 	/**
 	 * Called when new data received
 	 * @param string New data

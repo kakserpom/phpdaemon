@@ -108,7 +108,7 @@ abstract class BoundSocket {
 	 */
 	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
 		if (Daemon::$config->logevents->value) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . '(' . $sockId . ') invoked.');
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
 		}
 		
 		if (Daemon::$process->reload) {

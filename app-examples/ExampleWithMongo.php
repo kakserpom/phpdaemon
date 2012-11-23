@@ -7,6 +7,18 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class ExampleWithMongo extends AppInstance {	
+	public $mongo;
+
+	/**
+	 * Constructor.
+	 * @return void
+	 */
+	public function init() {
+		$this->mongo = MongoClient::getInstance(
+			array('maxconnperserv' => 100)
+		);
+	}
+
 	/**
 	 * Creates Request.
 	 * @param object Request.
@@ -36,8 +48,7 @@ class ExampleWithMongoRequest extends HTTPRequest {
 
 		});
 		
-		$mongo = MongoClient::getInstance();
-		$collection = $mongo->{'testdb.testcollection'};
+		$collection = $this->appInstance->mongo->{'testdb.testcollection'};
 		$collection->insert(array('a' => microtime(true))); // just pushing something
 		
 		$job('testquery', function($name, $job) use ($collection) { // registering job named 'testquery'

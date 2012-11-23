@@ -196,7 +196,7 @@ class FastCGIServerConnection extends Connection {
 					if (($namelen = ord($this->content{$p})) < 128) {
 						++$p;
 					} else {
-						$u = unpack('Nlen', chr(ord($c{$p}) & 0x7f) . binarySubstr($this->content, $p + 1, 3));
+						$u = unpack('Nlen', chr(ord($this->content{$p}) & 0x7f) . binarySubstr($this->content, $p + 1, 3));
 						$namelen = $u['len'];
 						$p += 4;
 					}
