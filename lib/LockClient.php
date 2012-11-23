@@ -35,14 +35,13 @@ class LockClient extends NetworkClient {
 	 */
 	public function job($name, $wait, $onRun, $onSuccess = NULL, $onFailure = NULL) {
 		$name = $this->prefix . $name;
-		$conn = $this->getConnectionByName($name);
-
-		if (!$conn) {
-			return;
-		}
-
-		$this->jobs[$name] = array($onRun, $onSuccess, $onFailure);
-		$conn->writeln('acquire' . ($wait ? 'Wait' : '') . ' ' . $name);
+		$this->getConnectionByName($name, function ($conn) use ($wait, $onRun, $onSuccess, $onFailure) {
+			if (!$conn->connected) {
+				return;
+			}
+			$this->jobs[$name] = array($onRun, $onSuccess, $onFailure);
+			$conn->writeln('acquire' . ($wait ? 'Wait' : '') . ' ' . $name);
+		});
 	}
 
 	/**
@@ -78,7 +77,7 @@ class LockClient extends NetworkClient {
 	/**
 	 * Returns available connection from the pool by name
 	 * @param string Key
-	 * @return object MemcacheSession
+	 * @return boolean Success.
 	 */
 	public function getConnectionByName($name) {
 		if (

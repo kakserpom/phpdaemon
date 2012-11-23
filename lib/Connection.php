@@ -69,11 +69,16 @@ class Connection extends IOStream {
 	 * @return void
 	 */
 	public function onFailureEvent($stream, $arg = null) {
-		if (!$this->connected && !$this->failed) {
-			$this->failed = true;
-			$this->onFailure();
+		try {
+			if (!$this->connected && !$this->failed) {
+				$this->failed = true;
+				$this->onFailure();
+			}
+			$this->connected = false;
+			parent::onFailureEvent($stream, $arg);
+		} catch (Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
 		}
-		parent::onFailureEvent($stream, $arg);
 	}
 
 	/**
