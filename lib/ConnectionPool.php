@@ -11,17 +11,31 @@ class ConnectionPool extends ObjectStorage {
 
 	public $allowedClients  = null;
 	public $connectionClass;
-	public $name;
-	public $config;
-	public static $instances = array();
+    /**
+     * @var string
+     */
+    public $name;
+    /**
+     * @var Daemon_ConfigSection
+     */
+    public $config;
+    /**
+     * ConnectionPool list
+     * @var ConnectionPool[]
+     * @static
+     */
+    protected static $instances = array();
 	public $maxConcurrency = 0;
 	public $finished = false;
 	public $bound;
 	public $enabled = false;
 	public $appInstance;
-	
+
 	public function __construct($config = array()) {
 		$this->bound = new ObjectStorage;
+        if (!($config instanceof Daemon_ConfigSection)){
+            $config = new Daemon_ConfigSection($config);
+        }
 		$this->config = $config;
 		$this->onConfigUpdated();
 		if ($this->connectionClass === null) {
@@ -32,9 +46,9 @@ class ConnectionPool extends ObjectStorage {
 		}
 		$this->init();
 	}
-	
+
 	public function init() {}
-	
+
 	/**
 	 * Called when the worker is ready to go.
 	 * @return void
@@ -42,8 +56,8 @@ class ConnectionPool extends ObjectStorage {
 	public function onReady() {
 		$this->enable();
 	}
-	
-	
+
+
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void
@@ -57,7 +71,7 @@ class ConnectionPool extends ObjectStorage {
 		}
 		$this->applyConfig();
 	}
-	
+
 	public function applyConfig() {
 		foreach ($this->config as $k => $v) {
 			if (is_object($v) && $v instanceof Daemon_ConfigEntry) {
@@ -88,32 +102,36 @@ class ConnectionPool extends ObjectStorage {
 	protected function getConfigDefaults() {
 		return false;
 	}
-	
+
+    /**
+     * @param string|array|Daemon_ConfigSection $arg
+     * @return MongoClient
+     * @static
+     */
 	public static function getInstance($arg = '') {
 		if ($arg === 'default') {
 			$arg = '';
 		}
 		$class = get_called_class();
-		if (is_string($arg)) {
-			$key = $class . ':' . $arg;
-			if (isset(self::$instances[$key])) {
-				return self::$instances[$key];
-			}
-			$k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '' );
-			
-			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: new Daemon_ConfigSection;			
-			$obj = self::$instances[$key] = new $class($config);
-			$obj->name = $arg;
-			return $obj;
-		} elseif ($arg instanceof Daemon_ConfigSection) {
-			return new $class($arg);
+        if (is_string($arg)) {
+            $key = $class . ':' . $arg;
+            if (isset(self::$instances[$key])) {
+                return self::$instances[$key];
+            }
+            $k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '' );
 
-		} else {
-			return new $class(new Daemon_ConfigSection($arg));
-		}
+            $config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: new Daemon_ConfigSection;
+            $obj = self::$instances[$key] = new $class($config);
+            $obj->name = $arg;
+            return $obj;
+        } elseif ($arg instanceof Daemon_ConfigSection) {
+            return new $class($arg);
+
+        } else {
+            return new $class(new Daemon_ConfigSection($arg));
+        }
 	}
-	
-	
+
  	/**
 	 * Process default config
 	 * @todo move it to Daemon_Config class
@@ -139,18 +157,18 @@ class ConnectionPool extends ObjectStorage {
 				} else {
 					$this->config->{$k} = $v;
 				}
-				
+
 				$this->config->{$k}->setHumanValue($current->value);
 				$this->config->{$k}->source = $current->source;
 				$this->config->{$k}->revision = $current->revision;
 			}
 		}
 	}
-	
+
 	public function setConnectionClass($class) {
 		$this->connectionClass = $class;
 	}
-	
+
 	/**
 	 * Enable socket events
 	 * @return void
@@ -159,7 +177,7 @@ class ConnectionPool extends ObjectStorage {
 		$this->enabled = true;
 		$this->bound->each('enable');
 	}
-	
+
 	/**
 	 * Disable all events of sockets
 	 * @return void
@@ -180,7 +198,6 @@ class ConnectionPool extends ObjectStorage {
 	}
 
 	public function onFinish() {
-
 	}
 
 
@@ -194,11 +211,11 @@ class ConnectionPool extends ObjectStorage {
 
 
 	public function finish() {
-		$this->disable(); 
+		$this->disable();
 		$this->closeBound();
-		
+
 		$result = true;
-	
+
 		foreach ($this as $k => $conn) {
 			if (!$conn->gracefulShutdown()) {
 				$result = false;
@@ -231,7 +248,7 @@ class ConnectionPool extends ObjectStorage {
 			}
 		}
 	}
-	
+
 	/**
 	 * Bind given sockets
 	 * @param mixed Addresses to bind
@@ -248,7 +265,7 @@ class ConnectionPool extends ObjectStorage {
 			if (stripos($addr, 'unix:') === 0) {
 				$addr = substr($addr, 5);
 				$socket = new BoundUNIXSocket($addr, $reuse);
-				
+
 			} else {
 				if (stripos($addr,'tcp://') === 0) {
 					$addr = substr($addr, 6);
