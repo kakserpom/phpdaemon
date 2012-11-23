@@ -1,17 +1,13 @@
 <?php
 
 /**
- * Implementation of the worker thread
+ * Implementation of the IPC thread
  *
  * @package Core
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class Daemon_IPCThread extends Thread {
-	/**
-	 * Map connnection id to application which created this connection
-	 * @var string
-	 */
 	public $eventBase;
 	public $timeoutEvent;
 	public $breakMainLoop = FALSE;
