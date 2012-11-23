@@ -200,7 +200,7 @@ class DNSClient extends NetworkClient {
 class DNSClientConnection extends NetworkClientConnection {
 	protected $lowMark = 2;
 	public $seq = 0;
-	public $keepalive = false;
+	public $keepalive = true;
 
 
 	/**
@@ -210,8 +210,13 @@ class DNSClientConnection extends NetworkClientConnection {
 	 */
 	public function stdin($buf) {
 		$this->buf .= $buf;
+		start:
+		$l = strlen($this->buf);
+		if ($l < 2) {
+			return; // not enough data yet
+		}
 		$length = Binary::bytes2int(binarySubstr($this->buf, 0, 2));
-		if ($length > strlen($this->buf) + 2) {
+		if ($length > $l + 2) {
 			return; // not enough data yet
 		
 		}
@@ -274,18 +279,13 @@ class DNSClientConnection extends NetworkClientConnection {
 				continue;
 			}
 		}
-		$this->requestFinished();
-	}
-
-	public function requestFinished() {
-		$cb = $this->onResponse->isEmpty() ? null : $this->onResponse->shift();
-		if ($cb) {
-			call_user_func($cb, $this->response);
-		}
+		$this->onResponse->executeOne($this->response);
 		if (!$this->keepalive) {
 			$this->finish();
+			return;
 		} else {
 			$this->checkFree();
 		}
+		goto start;
 	}
 }

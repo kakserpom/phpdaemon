@@ -128,7 +128,7 @@ class IPCManager extends AppInstance {
 	}
 	public function sendSingleCall($appInstance, $method, $args = array(), $cb = null) {
 		$this->sendPacket(array(
-			'op' => 'broadcastCall',
+			'op' => 'singleCall',
 			'appfullname' => $appInstance,
 			'method' => $method,
 			'args' => $args,

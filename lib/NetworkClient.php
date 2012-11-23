@@ -204,7 +204,7 @@ class NetworkClient extends ConnectionPool {
 			} elseif ($this->noSAF) {
 				$conn->onResponse->push(null);
 			}
-			$conn->write($s);
+			$conn->write($data);
 		 });
 		return true;
 	}
