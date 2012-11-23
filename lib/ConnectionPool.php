@@ -113,32 +113,23 @@ class ConnectionPool extends ObjectStorage {
 			$arg = '';
 		}
 		$class = get_called_class();
-        $key = $class . ':';
-		if (is_string($arg)) {
-			$key .= $arg;
-		}
-        if (is_array($arg)) {
-            $arg = new Daemon_ConfigSection($arg);
-		}
-        if ($arg instanceof Daemon_ConfigSection){
-            if(!empty($arg->servers->value) || !empty($arg->port->value)){
-                $key .= $arg->servers->value . ':' . $arg->port->value;
-            } elseif (!empty($arg->name->value)){
-                $key .= $arg->name->value;
-            }
-        }
-        if (isset(self::$instances[$key])) {
-            return self::$instances[$key];
-        }
         if (is_string($arg)) {
+            $key = $class . ':' . $arg;
+            if (isset(self::$instances[$key])) {
+                return self::$instances[$key];
+            }
             $k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '' );
-            $config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k} : new Daemon_ConfigSection;
-            $config->name = new Daemon_ConfigEntry($arg);
-        }else{
-            $config = $arg;
+
+            $config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: new Daemon_ConfigSection;
+            $obj = self::$instances[$key] = new $class($config);
+            $obj->name = $arg;
+            return $obj;
+        } elseif ($arg instanceof Daemon_ConfigSection) {
+            return new $class($arg);
+
+        } else {
+            return new $class(new Daemon_ConfigSection($arg));
         }
-        $obj = self::$instances[$key] = new $class($config);
-        return $obj;
 	}
 
  	/**
