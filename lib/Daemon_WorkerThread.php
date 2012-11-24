@@ -479,7 +479,7 @@ class Daemon_WorkerThread extends Thread {
 			if (!$self->reloadReady) {
 				$event->timeout();
 			}
-			else	{
+			else {
 				event_base_loopexit($self->eventBase);
 			}
 		}, 1e6, 'checkReloadReady');

@@ -35,11 +35,11 @@ class LockClient extends NetworkClient {
 	 */
 	public function job($name, $wait, $onRun, $onSuccess = NULL, $onFailure = NULL) {
 		$name = $this->prefix . $name;
-		$this->getConnectionByName($name, function ($conn) use ($wait, $onRun, $onSuccess, $onFailure) {
+		$this->getConnectionByName($name, function ($conn) use ($name, $wait, $onRun, $onSuccess, $onFailure) {
 			if (!$conn->connected) {
 				return;
 			}
-			$this->jobs[$name] = array($onRun, $onSuccess, $onFailure);
+			$conn->pool->jobs[$name] = array($onRun, $onSuccess, $onFailure);
 			$conn->writeln('acquire' . ($wait ? 'Wait' : '') . ' ' . $name);
 		});
 	}
@@ -50,7 +50,7 @@ class LockClient extends NetworkClient {
 	 * @return void
 	 */
 	public function done($name) {
-		$this->getConnectionByName($name, function ($conn) {
+		$this->getConnectionByName($name, function ($conn) use ($name) {
 			if (!$conn->connected) {
 				return;
 			}
@@ -64,7 +64,7 @@ class LockClient extends NetworkClient {
 	 * @return void
 	 */
 	public function failed($name) {
-		$this->getConnectionByName($name, function ($conn) {
+		$this->getConnectionByName($name, function ($conn) use ($name) {
 			if (!$conn->connected) {
 				return;
 			}
