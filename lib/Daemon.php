@@ -40,9 +40,15 @@ class Daemon {
 	 */	
 	private static $support = array();
 	
+    /**
+     * @var Thread
+     */
 	public static $process;
 	public static $appResolver;
 	public static $appInstances = array();
+    /**
+     * @var Request
+     */
 	public static $req;
 	private static $workers;
 	private static $masters;
@@ -270,6 +276,7 @@ class Daemon {
 		$req->attrs->request = $_REQUEST;
 		$req->attrs->get = $_GET;
 		$req->attrs->post = $_REQUEST;
+		$req->attrs->put = null;
 		$req->attrs->cookie = $_REQUEST;
 		$req->attrs->server = $_SERVER;
 		$req->attrs->files = $_FILES;

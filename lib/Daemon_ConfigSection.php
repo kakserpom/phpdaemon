@@ -24,6 +24,11 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
      */
     public $port;
     /**
+     * Server port
+     * @var Daemon_ConfigEntry
+     */
+    public $maxconnperserv;
+    /**
      * Server/connect name
      * @var Daemon_ConfigEntry
      */

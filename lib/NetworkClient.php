@@ -11,7 +11,13 @@ class NetworkClient extends ConnectionPool {
 	
 	public $servers = array();      // Array of servers 
 	public $dtags_enabled = false;   // Enables tags for distribution
-	public $servConn = array();      // Active connections
+    /**
+     * @var ObjectStorage[]
+     */
+    public $servConn = array();      // Active connections
+    /**
+     * @var ObjectStorage[]
+     */
 	public $servConnFree = array();
 	public $prefix = '';             // Prefix for all keys
 	public $maxConnPerServ = 32;

@@ -339,6 +339,7 @@ class HTTPRequest extends Request {
 	/**
 	 * Output some data
 	 * @param string String to out
+	 * @param bool $flush
 	 * @return boolean Success
 	 */
 	public function out($s, $flush = true) {
@@ -474,7 +475,7 @@ class HTTPRequest extends Request {
 	 * Send HTTP-status
 	 * @throws RequestHeadersAlreadySent
 	 * @param int Code
-	 * @return void
+	 * @return boolean
 	 */
 	public function status($code = 200) {
 		if (!isset(self::$codes[$code])) {
@@ -830,7 +831,7 @@ class HTTPRequest extends Request {
 	/**
 	 * Tells whether the file was uploaded via HTTP POST
 	 * @param string The filename being checked.
-	 * @return void
+	 * @return bool
 	 */
 	public function isUploadedFile($path) {
 		$path = realpath($path);
