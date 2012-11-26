@@ -41,9 +41,7 @@ class File extends IOStream {
 	public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
-				if ($cb) {
 				call_user_func($cb, $this, false);
-			}
 			}
 			return false;
 		}
