@@ -19,6 +19,7 @@ class Connection extends IOStream {
 	public $locAddr;
 	public $locPort;
 	public $keepaliveMode = false;
+	public $type;
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);
@@ -139,25 +140,28 @@ class Connection extends IOStream {
 		}
 	}
 
-	public function connectTo($host, $port = 0) {
-		if (stripos($host, 'unix:') === 0) {
+	public function connectTo($addr, $port = 0) {
+		if (stripos($addr, 'unix:') === 0) {
+			$this->type = 'unix';
 			// Unix-socket
-			$e = explode(':', $host, 2);
-			$this->addr = $host;
+			$this->addr = $addr;
+			$e = explode(':', $addr, 2);
+			$this->addr = $addr;
 			$fd = socket_create(AF_UNIX, SOCK_STREAM, 0);
 
 			if (!$fd) {
-				return FALSE;
+				return false;
 			}
 			socket_set_nonblock($fd);
 			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			@socket_connect($fd, $e[1], 0);
 		} 
-		elseif (stripos($host, 'raw:') === 0) {
+		elseif (stripos($addr, 'raw:') === 0) {
+			$this->type = 'raw';
 			// Raw-socket
-			$e = explode(':', $host, 2);
-			$this->addr = $host;
+			$this->addr = $addr;
+			list (, $host) = explode(':', $addr, 2);
 			$fd = socket_create(AF_INET, SOCK_RAW, 1);
 			if (!$fd) {
 				return false;
@@ -165,13 +169,46 @@ class Connection extends IOStream {
 			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			socket_set_nonblock($fd);
-			@socket_connect($fd, $e[1], 0);
-		} else {
-			// TCP
-			$this->addr = $host . ':' . $port;
-			$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+			@socket_connect($fd, $host, 0);
+		}
+		elseif (stripos($addr, 'udp:') === 0) {
+			$this->type = 'udp';
+			// Raw-socket
+			$this->addr = $addr;
+			list (, $host) = explode(':', $addr, 2);
+			$l = strlen(inet_pton($addr));
+			if ($l === 4) {
+				$this->addr = $host . ':' . $port;
+				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+			} elseif ($l === 16) {
+				$this->addr = '[' . $host . ']:' . $port;
+				$fd = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
+			} else {
+				return false;
+			}
 			if (!$fd) {
-				return FALSE;
+				return false;
+			}
+			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_nonblock($fd);
+			@socket_connect($fd, $host, $port);
+		} else {
+			$host = $addr;
+			// TCP
+			$this->type = 'tcp';
+			$l = strlen(inet_pton($addr));
+			if ($l === 4) {
+				$this->addr = $host . ':' . $port;
+				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+			} elseif ($l === 16) {
+				$this->addr = '[' . $host . ']:' . $port;
+				$fd = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
+			} else {
+				return false;
+			}
+			if (!$fd) {
+				return false;
 			}
 			socket_set_nonblock($fd);
 			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));

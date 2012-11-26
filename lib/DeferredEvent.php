@@ -18,7 +18,7 @@ class DeferredEvent {
 	public function __construct($cb) {
 		$this->state = self::STATE_WAITING;
 		$this->onRun = $cb;
-		$this->listeners = new SplStackCallbacks;
+		$this->listeners = new StackCallbacks;
 	}
 	
 	public function setProducer($cb) {

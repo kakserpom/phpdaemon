@@ -56,7 +56,6 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 				if (!$sql->connected) {
 					return $job->setResult($name, null);
 				}
-
 				$sql->query('SHOW VARIABLES', function($sql, $success) use ($job, $name) {
 					
 					$job('showdbs', function($name, $job) use ($sql) { // registering job named 'showdbs'

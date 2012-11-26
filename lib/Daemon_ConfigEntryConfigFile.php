@@ -22,7 +22,7 @@ class Daemon_ConfigEntryConfigFile extends Daemon_ConfigEntry {
 				}
 				$e = explode(';',$this->value);
 				foreach ($e as $path) {
-					Daemon::$process->fileWatcher->addWatch($path,array(Daemon::$process,'sighup'));
+					Daemon::$process->fileWatcher->addWatch($path, array(Daemon::$process, 'sighup'));
 				}
 			}
 		}

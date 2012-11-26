@@ -104,18 +104,6 @@ class MySQLClientConnection extends NetworkClientConnection {
 	}
 
 	/**
-	 * Returns packet's header
-	 * @return array [length, seq]
-	 */
-	private function getPacketHeader() {
-		if ($this->buflen < 4) {
-			return FALSE;
-		}
-		
-		return array($this->bytes2int(binarySubstr($this->buf, 0, 3)), ord(binarySubstr($this->buf, 3, 1)));
-	}
-
-	/**
 	 * Sends a packet
 	 * @param string Data
 	 * @return boolean Success
@@ -336,9 +324,11 @@ class MySQLClientConnection extends NetworkClientConnection {
 		
 		$this->buflen = strlen($this->buf);
 		
-		if (($packet = $this->getPacketHeader()) === FALSE) {
+		if ($this->buflen < 4) {
 			return;
 		}
+		
+		$packet = array($this->bytes2int(binarySubstr($this->buf, 0, 3)), ord(binarySubstr($this->buf, 3, 1)));
 		$this->seq = $packet[1] + 1;
 		if ($this->buflen < 4 + $packet[0]) {
 			// not whole packet yet
