@@ -135,7 +135,9 @@ class File extends IOStream {
 	
 	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+            if ($cb) {
+			    call_user_func($cb, $this, false);
+            }
 			return false;
 		}
 		if (!FS::$supported) {
