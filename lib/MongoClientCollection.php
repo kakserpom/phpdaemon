@@ -1,5 +1,8 @@
 <?php
 class MongoClientCollection {
+    /**
+     * @var MongoClient
+     */
 	public $pool;
 	public $name; // Name of collection.
 
@@ -134,5 +137,35 @@ class MongoClientCollection {
 	public function remove($cond = array(), $cb = NULL, $key = '') {
 		return $this->pool->remove($this->name, $cond, $cb, $key);
 	}
-	
+
+    /**
+     * Evaluates a code on the server side
+     * @param string Code
+     * @param mixed Callback called when response received
+     * @param string Optional. Distribution key
+     * @return void
+     */
+    public function evaluate($code, $callback, $key = '')
+    {
+        $this->pool->evaluate($code, $callback, $key);
+    }
+
+    /**
+     * Generation autoincrement
+     * @param Closure $callback called when response received
+     * @param string $key Optional. Distribution key
+     * @return void
+     */
+    public function autoincrement($callback, $key = '')
+    {
+        $this->evaluate(
+            'function () { '
+                . 'return db.autoincrement.findAndModify({ '
+                . 'query: {"_id":"' . $this->name . '"}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',
+            function ($res) use ($callback) {
+                call_user_func($callback, $res);
+            },
+            $key
+        );
+    }
 }

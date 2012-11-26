@@ -724,7 +724,7 @@ class MongoClient extends NetworkClient {
 	 * @param string Collection's name
 	 * @param array Data
 	 * @param string Optional. Distribution key.
-	 * @return void
+	 * @return mixed
 	 */
 	public function insert($col, $doc = array(), $cb = NULL,  $key = '') {
 		if (strpos($col, '.') === false) {
@@ -767,7 +767,7 @@ class MongoClient extends NetworkClient {
 	 * @param string Collection's name
 	 * @param array Array of docs
 	 * @param string Optional. Distribution key.
-	 * @return void
+	 * @return array
 	 */
 	public function insertMulti($col, $docs = array(), $cb = NULL, $key = '') {
 		if (strpos($col, '.') === false) {
@@ -854,13 +854,16 @@ class MongoClient extends NetworkClient {
 	/**
 	 * Returns an object of collection
 	 * @param string Collection's name
-	 * @return object MongoClientCollection
+	 * @return MongoClientCollection
 	 */
 	public function getCollection($col) {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
-		}
-		
+		} else {
+            $collName = explode('.', $col);
+            $this->dbname = $collName[0];
+        }
+
 		if (isset($this->collections[$col])) {
 			return $this->collections[$col];
 		}
@@ -871,12 +874,10 @@ class MongoClient extends NetworkClient {
 	/**
 	 * Magic getter-method. Proxy for getCollection. 
 	 * @param string Collection's name
-	 * @return void
+	 * @return MongoClientCollection
 	 */
 	public function __get($name) {
 		return $this->getCollection($name);
 	}
 }
 class MongoClientConnectionFinished extends Exception {}
-
-

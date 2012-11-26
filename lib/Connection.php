@@ -130,13 +130,11 @@ class Connection extends IOStream {
 					Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
 					return;
 				}
-				$conn->hostReal = $real;
-				$conn->connectTo($conn->hostReal, $conn->port);
+				$conn->connectTo($real, $conn->port);
 			});
 		}
 		else {
-			$conn->hostReal = $conn->host;
-			$conn->connectTo($conn->hostReal, $conn->port);
+			$conn->connectTo($conn->host, $conn->port);
 		}
 	}
 
@@ -161,7 +159,12 @@ class Connection extends IOStream {
 			$this->type = 'raw';
 			// Raw-socket
 			$this->addr = $addr;
+			$this->port = 0;
 			list (, $host) = explode(':', $addr, 2);
+			$this->hostReal = $host;
+			if ($this->host === null) {
+				$this->host = $this->hostReal;
+			}
 			$fd = socket_create(AF_INET, SOCK_RAW, 1);
 			if (!$fd) {
 				return false;
@@ -176,13 +179,18 @@ class Connection extends IOStream {
 			// Raw-socket
 			$this->addr = $addr;
 			list (, $host) = explode(':', $addr, 2);
+			$this->hostReal = $host;
+			if ($this->host === null) {
+				$this->host = $this->hostReal;
+			}
+			$this->port = $port;
 			$l = strlen(inet_pton($addr));
 			if ($l === 4) {
 				$this->addr = $host . ':' . $port;
-				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				$fd = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 			} elseif ($l === 16) {
 				$this->addr = '[' . $host . ']:' . $port;
-				$fd = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
+				$fd = socket_create(AF_INET6, SOCK_DGRAM, SOL_UDP);
 			} else {
 				return false;
 			}
@@ -192,7 +200,6 @@ class Connection extends IOStream {
 			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			socket_set_nonblock($fd);
-			@socket_connect($fd, $host, $port);
 		} else {
 			$host = $addr;
 			// TCP
@@ -222,7 +229,8 @@ class Connection extends IOStream {
 		$this->setFd($fd);
 		return true;
 	}
-	
+	public function sendTo($send) {
+	}
 	public function setTimeout($timeout) {
 		parent::setTimeout($timeout);
 		socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
