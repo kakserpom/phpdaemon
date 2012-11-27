@@ -180,7 +180,8 @@ class Connection extends IOStream {
 			// UDP-socket
 			$this->addr = $addr;
 			list (, $host) = explode(':', $addr, 2);
-			if (@inet_pton($host) === false) { // dirty condition check
+			$pton = @inet_pton($host);
+			if ($pton === false) { // dirty condition check
 				DNSClient::getInstance()->resolve($host, function($real) use ($conn) {
 					if ($real === false) {
 						Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
@@ -195,7 +196,7 @@ class Connection extends IOStream {
 				$this->host = $this->hostReal;
 			}
 			$this->port = $port;
-			$l = strlen(inet_pton($host));
+			$l = strlen($pton);
 			if ($l === 4) {
 				$this->addr = $host . ':' . $port;
 				$fd = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);

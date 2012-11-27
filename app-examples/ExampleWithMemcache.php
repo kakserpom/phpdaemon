@@ -28,7 +28,7 @@ class ExampleWithMemcacheRequest extends HTTPRequest {
 	 * @return void
 	 */
 	public function init() {
-		
+		try {$this->header('Content-Type: text/html');} catch (Exception $e) {}
 		$req = $this;
 		
 		$job = $this->job = new ComplexJob(function() use ($req) { // called when job is done
@@ -41,9 +41,9 @@ class ExampleWithMemcacheRequest extends HTTPRequest {
 		$job('testquery', function($name, $job) use ($memcache) { // registering job named 'testquery'
 		
 			$memcache->stats(function($memcache) use ($name, $job) { // calling 'stats'
-				
+
 				$job->setResult($name, $memcache->result); // setting job result
-				
+
 			});
 			
 		});
@@ -58,7 +58,6 @@ class ExampleWithMemcacheRequest extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {
-		try {$this->header('Content-Type: text/html');} catch (Exception $e) {}
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>

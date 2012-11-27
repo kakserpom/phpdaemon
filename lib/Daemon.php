@@ -44,6 +44,7 @@ class Daemon {
 	public static $appResolver;
 	public static $appInstances = array();
 	public static $req;
+	public static $context;
 	private static $workers;
 	private static $masters;
 	private static $initservervar;

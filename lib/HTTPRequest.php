@@ -455,12 +455,9 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	public function onSleep() {
-		parent::onSleep();
-		
 		if (!Daemon::$obInStack) { // preventing recursion
 			@ob_flush();
 		}
-
 		unset($_GET);
 		unset($_POST);
 		unset($_COOKIE);
@@ -468,6 +465,7 @@ class HTTPRequest extends Request {
 		unset($_SESSION);
 		unset($_FILES);
 		unset($_SERVER);
+		parent::onSleep();
 	}
 
 	/**
