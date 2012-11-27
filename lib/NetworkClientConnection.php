@@ -18,9 +18,8 @@ class NetworkClientConnection extends Connection {
 	public function __construct($fd, $pool = null) {
 		parent::__construct($fd, $pool);
 		$this->onResponse = new StackCallbacks;
-	}	
+	}
 
-	
 	public function setFree($isFree = true) {
 		$this->busy = !$isFree;
 		if ($this->busy) {
@@ -47,6 +46,9 @@ class NetworkClientConnection extends Connection {
 	public function onFinish() {
 		parent::onFinish();
 		unset($this->onResponse);
+		if (!$this->pool || !$this->url) {
+			return;
+		}
 		$this->pool->servConnFree[$this->url]->detach($this);
 		$this->pool->servConn[$this->url]->detach($this);
 		$this->checkFree();
