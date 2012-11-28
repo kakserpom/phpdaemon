@@ -45,6 +45,7 @@ class NetworkClientConnection extends Connection {
 	 */
 	public function onFinish() {
 		parent::onFinish();
+		$this->onResponse->executeAll($this, false);
 		unset($this->onResponse);
 		if (!$this->pool || !$this->url) {
 			return;

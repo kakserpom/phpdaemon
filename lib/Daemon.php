@@ -148,7 +148,7 @@ class Daemon {
 			E_USER_DEPRECATED => 'Deprecated (userland)',
 		);
 		$errtype = $errtypes[$errno];
-		Daemon::log($errtype . ': '.$errstr.' in ' . $errfile . ':' . $errline . "\n");
+		Daemon::log($errtype . ': '.$errstr.' in ' . $errfile . ':' . $errline . "\n" . Debug::backtrace());
 		if (Daemon::$req) {
 			Daemon::$req->out('<strong>' . $errtype . '</strong>: ' . $errstr . ' in ' . basename($errfile) . ':' . $errline.'<br />');
 		}
