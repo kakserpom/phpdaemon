@@ -273,7 +273,7 @@ class Daemon
             E_USER_DEPRECATED => 'Deprecated (userland)',
         );
         $errType = $errTypes[$errNo];
-        Daemon::log($errType . ': ' . $errStr . ' in ' . $errFile . ':' . $errLine . "\n");
+        Daemon::log($errType . ': ' . $errStr . ' in ' . $errFile . ':' . $errLine . "\n" . Debug::backtrace());
         if (Daemon::$req) {
             Daemon::$req->out('<strong>' . $errType . '</strong>: ' . $errStr . ' in ' . basename($errFile) . ':' . $errLine . '<br />');
         }
