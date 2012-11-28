@@ -157,7 +157,7 @@ abstract class Thread {
 
 	/**
 	 * Starts the process
-	 * @return void
+	 * @return mixed
 	 */
 	public function start($clearstack = true) {
 		$pid = pcntl_fork();

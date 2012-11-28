@@ -12,7 +12,28 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 
 	public $source;
 	public $revision;
-	
+
+    /**
+     * Server address
+     * @var Daemon_ConfigEntry
+     */
+    public $servers;
+    /**
+     * Server port
+     * @var Daemon_ConfigEntry
+     */
+    public $port;
+    /**
+     * Server port
+     * @var Daemon_ConfigEntry
+     */
+    public $maxconnperserv;
+    /**
+     * Server/connect name
+     * @var Daemon_ConfigEntry
+     */
+    public $name;
+
 	public function __construct($arr = array()) {
 		foreach ($arr as $k => $v) {
 			if (!is_object($v)) {
