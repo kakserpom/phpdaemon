@@ -9,6 +9,7 @@
 class ValveClient extends NetworkClient {
 	const A2S_INFO = "\x54";
 	const S2A_INFO = "\x49";
+	const S2A_INFO_SOURCE = "\x6d";
 	const A2S_PLAYER = "\x55";
 	const S2A_PLAYER = "\x44";
 	const A2S_SERVERQUERY_GETCHALLENGE = "\x57";
@@ -20,8 +21,8 @@ class ValveClient extends NetworkClient {
 		$e = explode(':', $addr);
 		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':'.$e[1] : '') . '/', function($conn) use ($cb, $addr, $data, $name) {
 			if (!$conn->connected) {
-				call_user_func($cb, false);
-				return false;
+				call_user_func($cb, $this, false);
+				return;
 			}
 			$conn->request($name, $data, $cb);
 		});
@@ -39,8 +40,12 @@ class ValveClient extends NetworkClient {
 	}
 
 	public function requestPlayers($addr, $cb) {
-		$this->request($addr, 'challenge', null, function ($conn, $challenge) use ($cb) {
-			$conn->request('players', $challenge, $cb);
+		$this->request($addr, 'challenge', null, function ($conn, $result) use ($cb) {
+			if (is_array($result)) {
+				$cb($conn, $result);
+				return;
+			}
+			$conn->request('players', $result, $cb);
 		});
 	}
 
@@ -66,17 +71,22 @@ class ValveClientConnection extends NetworkClientConnection {
 		if ($name === 'ping') {
 			$packet .= ValveClient::A2A_PING;
 		} elseif ($name === 'challenge') {
-			$packet .= ValveClient::A2S_SERVERQUERY_GETCHALLENGE;
+			//$packet .= ValveClient::A2S_SERVERQUERY_GETCHALLENGE;
+			$packet .= ValveClient::A2S_PLAYER . "\xFF\xFF\xFF\xFF";
 		} elseif ($name === 'info') {
 			$packet .= ValveClient::A2S_INFO . "Source Engine Query\x00";
 			//"\xFF\xFF\xFF\xFFdetails\x00"
 		} elseif ($name === 'players') {
+			if ($data === null) {
+				$data = "\xFF\xFF\xFF\xFF";
+			}
 			$packet .= ValveClient::A2S_PLAYER . $data;
 		} else {
 			return false;
 		}
 		$this->onResponse->push($cb);
 		$this->setFree(false);
+		//Daemon::log('packet: '.Debug::exportBytes($packet, true));
    		$this->write($packet);
 	}
 
@@ -86,6 +96,7 @@ class ValveClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function stdin($buf) {
+		//Daemon::log('stdin: '.Debug::exportBytes($buf, true));
 		$this->buf .= $buf;
 		start:
 		if (strlen($this->buf) < 5) {
@@ -97,14 +108,15 @@ class ValveClientConnection extends NetworkClientConnection {
 			return;
 		}
 		$type = Binary::getChar($this->buf);
-		if ($type === ValveClient::S2A_INFO) {
-			$result = $this->parseInfo($this->buf);
+		if (($type === ValveClient::S2A_INFO) || ($type === ValveClient::S2A_INFO_SOURCE)) {
+			$result = $this->parseInfo($this->buf, $type);
+			Daemon::log(Debug::exportBytes($this->buf, true));
 		}
 		elseif ($type === ValveClient::S2A_PLAYER) {
 			$result = $this->parsePlayers($this->buf);
 		}
 		elseif ($type === ValveClient::S2A_SERVERQUERY_GETCHALLENGE) {
-			$result = binarySubstr($this->buf, 0, 5);
+			$result = binarySubstr($this->buf, 0, 4);
 			$this->buf = binarySubstr($this->buf, 5);
 		}
 		elseif ($type === ValveClient::S2A_PONG) {
@@ -128,27 +140,25 @@ class ValveClientConnection extends NetworkClientConnection {
 			}
 			$u = unpack('f', binarySubstr($st, 0, 4));
 			$st = binarySubstr($st, 4);
-			$time = $u[1];
-			if ($time == -1) {
+			$seconds = $u[1];
+			if ($seconds == -1) {
 				continue;
 			}
 			$players[] = array(
 				'name' => $name,
 				'score' => $score,
-				'time' => $time
+				'seconds' => $seconds,
+				'joinedts' => microtime() - $seconds,
+				'spm' => $score / ($seconds / 60),
 			);
 		}
 		return $players;
 	}
 
-	public function parseInfo(&$st) {
-		$h = Binary::getDWord($st);
-   		$t = Binary::getChar($st);
+	public function parseInfo(&$st, $type) {
 		$info = array();
-		if ($t == 'I') {// Source
-			$info['proto'] = Binary::getByte($st);   
-			$e = explode(':',$this->addr);
-			$info['address'] = $e[0];
+		if ($type === ValveClient::S2A_INFO) {
+			$info['proto'] = Binary::getByte($st);
 			$info['hostname'] = Binary::getString($st);
 			$info['map'] = Binary::getString($st);
 			$info['gamedir'] = Binary::getString($st);
@@ -162,8 +172,8 @@ class ValveClientConnection extends NetworkClientConnection {
 			$info['passworded'] = Binary::getByte($st); 
 			$info['secure'] = Binary::getByte($st); 
    		}
-   		elseif ($t == 'm') {
-    		$info['address'] = Binary::getString($st);
+   		elseif ($type === ValveClient::S2A_INFO_SOURCE) {
+    		$info['srvaddress'] = Binary::getString($st);
     		$info['hostname'] = Binary::getString($st);
     		$info['map'] = Binary::getString($st);
     		$info['gamedir'] = Binary::getString($st);
@@ -185,6 +195,7 @@ class ValveClientConnection extends NetworkClientConnection {
 				$info['mod_customdll'] = Binary::getByte($st);
     		}
 			$info['secure'] = Binary::getByte($st);
+			$info['botsnum'] = Binary::getByte($st);
 		}
 		return $info;
 	}
