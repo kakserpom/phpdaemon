@@ -881,5 +881,3 @@ class MongoClient extends NetworkClient {
 	}
 }
 class MongoClientConnectionFinished extends Exception {}
-
-

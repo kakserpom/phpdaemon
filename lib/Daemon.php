@@ -74,6 +74,12 @@ class Daemon
     public static $req;
 
     /**
+     * @var CallbackWrapper
+     * @static
+     */
+    public static $context;
+
+    /**
      * @var
      * @static
      * @deprecated

@@ -370,6 +370,7 @@ class Request {
 		$this->running = true;
  
 		Daemon::$req = $this;
+		Daemon::$context = $this;
 	}
  
 	/**
@@ -382,6 +383,7 @@ class Request {
 		}
  
 		Daemon::$req = NULL;
+		Daemon::$context = NULL;
 		$this->running = FALSE;
 	}	
  

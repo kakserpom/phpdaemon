@@ -102,6 +102,8 @@ if ($displaystate) {
 <br />
 <?php
 
+	$callback = new CallbackWrapper();
+
 }
 
 ?>

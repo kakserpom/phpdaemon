@@ -40,7 +40,9 @@ class File extends IOStream {
 
 	public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
@@ -56,7 +58,9 @@ class File extends IOStream {
 	
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
@@ -76,7 +80,9 @@ class File extends IOStream {
 
 	public function statRefresh($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
@@ -92,11 +98,15 @@ class File extends IOStream {
 	
 	public function statvfs($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return;
 		}
 		if ($this->statvfs) {
@@ -111,33 +121,37 @@ class File extends IOStream {
 
 	public function sync($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
 			call_user_func($cb, $this, true);
-			return;
+			return false;
 		}
 		return eio_fsync($this->fd, $pri, $cb, $this);
 	}
 	
 	public function datasync($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
 			call_user_func($cb, $this, true);
-			return;
+			return false;
 		}
 		return eio_fdatasync($this->fd, $pri, $cb, $this);
 	}
 	
 	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-            if ($cb) {
-			    call_user_func($cb, $this, false);
-            }
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
@@ -148,14 +162,16 @@ class File extends IOStream {
 			if ($cb) {
 				call_user_func($cb, $this, $r);
 			}
-			return;
+			return false;
 		}
 		return eio_write($this->fd, $data, null, $offset, $pri, $cb, $this);
 	}
 	
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
@@ -166,14 +182,16 @@ class File extends IOStream {
 			if ($cb) {
 				call_user_func($cb, $this, $r);
 			}
-			return;
+			return false;
 		}
 		return eio_fchown($this->fd, $uid, $gid, $pri, $cb, $this);
 	}
 	
 	public function touch($mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
@@ -181,7 +199,7 @@ class File extends IOStream {
 			if ($cb) {
 				call_user_func($cb, $this, $r);
 			}
-			return;
+			return false;
 		}
 		eio_futime($this->fd, $atime, $mtime, $pri, $cb, $this);
 	}
@@ -194,12 +212,16 @@ class File extends IOStream {
 	
 	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
-			call_user_func($cb, $this, false);
-			return;
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
+			return false;
 		}
 		$this->offset += $length;
 		$file = $this;
@@ -216,12 +238,16 @@ class File extends IOStream {
 
 	public function sendfile($outfd, $cb, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
-			call_user_func($cb, $this, false);
-			return;
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
+			return false;
 		}
 		static $chunkSize = 1024;
 		$handler = function ($file, $sent) use ($outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
@@ -252,11 +278,15 @@ class File extends IOStream {
 
 	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		if (!FS::$supported) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return;
 		}
 		$this->offset += $length;
@@ -271,14 +301,18 @@ class File extends IOStream {
 		return true;
 	}
 
-	public function readAll($cb = null, $pri = EIO_PRI_DEFAULT) {
+	public function readAll($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		$this->statRefresh(function ($file, $stat) use ($cb, $pri) {
 			if (!$stat) {
-				call_user_func($cb, $file, false);
+				if ($cb) {
+					call_user_func($cb, $file, false);
+				}
 				return;
 			}
 			$offset = 0;
@@ -289,7 +323,9 @@ class File extends IOStream {
 				$offset += strlen($data);
 				$len = min($file->chunkSize, $size - $offset);
 				if ($offset >= $size) {
-					call_user_func($cb, $file, $buf);
+					if ($cb) {
+						call_user_func($cb, $file, $buf);
+					}
 					return;
 				}
 				eio_read($file->fd, $len, $offset, $pri, $handler, $this);
@@ -300,7 +336,9 @@ class File extends IOStream {
 	
 	public function readAllChunked($cb = null, $chunkcb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
-			call_user_func($cb, $this, false);
+			if ($cb) {
+				call_user_func($cb, $this, false);
+			}
 			return false;
 		}
 		$this->statRefresh(function ($file, $stat) use ($cb, $chunkcb, $pri) {

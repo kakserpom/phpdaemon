@@ -1,5 +1,11 @@
 <?php
 class StackCallbacks extends SplStack {
+	public function push($cb) {
+		parent::push(CallbackWrapper::wrap($cb));
+	}
+	public function unshift($cb) {
+		parent::unshift(CallbackWrapper::wrap($cb));
+	}
 	public function executeOne() {
 		if ($this->isEmpty()) {
 			return false;

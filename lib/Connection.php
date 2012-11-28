@@ -23,7 +23,9 @@ class Connection extends IOStream {
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);
-
+			if (isset($u['host']) && (substr($u['host'], 0, 1) === '[')) {
+				$u['host'] = substr($u['host'], 1, -1);
+			}
 			if (!isset($u['port'])) {
 				$u['port'] = $this->pool->config->port->value;
 			}
@@ -122,25 +124,12 @@ class Connection extends IOStream {
 			$this->onConnected($cb);
 		}
 
-		$conn = $this;
-
-		if (($this->port !== 0) && (@inet_pton($this->host) === false)) { // dirty condition check
-			DNSClient::getInstance()->resolve($this->host, function($real) use ($conn) {
-				if ($real === false) {
-					Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
-					return;
-				}
-				$conn->hostReal = $real;
-				$conn->connectTo($conn->hostReal, $conn->port);
-			});
-		}
-		else {
-			$conn->hostReal = $conn->host;
-			$conn->connectTo($conn->hostReal, $conn->port);
-		}
+		$this->connectTo($this->host, $this->port);
 	}
 
 	public function connectTo($addr, $port = 0) {
+		$conn = $this;
+		$this->port = $port;
 		if (stripos($addr, 'unix:') === 0) {
 			$this->type = 'unix';
 			// Unix-socket
@@ -161,7 +150,22 @@ class Connection extends IOStream {
 			$this->type = 'raw';
 			// Raw-socket
 			$this->addr = $addr;
+			$this->port = 0;
 			list (, $host) = explode(':', $addr, 2);
+			if (@inet_pton($host) === false) { // dirty condition check
+				DNSClient::getInstance()->resolve($host, function($real) use ($conn) {
+					if ($real === false) {
+						Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
+						return;
+					}
+					$conn->connectTo('raw:'.$real);
+				});
+				return;
+			}
+			$this->hostReal = $host;
+			if ($this->host === null) {
+				$this->host = $this->hostReal;
+			}
 			$fd = socket_create(AF_INET, SOCK_RAW, 1);
 			if (!$fd) {
 				return false;
@@ -173,16 +177,32 @@ class Connection extends IOStream {
 		}
 		elseif (stripos($addr, 'udp:') === 0) {
 			$this->type = 'udp';
-			// Raw-socket
+			// UDP-socket
 			$this->addr = $addr;
 			list (, $host) = explode(':', $addr, 2);
-			$l = strlen(inet_pton($addr));
+			$pton = @inet_pton($host);
+			if ($pton === false) { // dirty condition check
+				DNSClient::getInstance()->resolve($host, function($real) use ($conn) {
+					if ($real === false) {
+						Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
+						return;
+					}
+					$conn->connectTo('udp:'.$real, $conn->port);
+				});
+				return;
+			}
+			$this->hostReal = $host;
+			if ($this->host === null) {
+				$this->host = $this->hostReal;
+			}
+			$this->port = $port;
+			$l = strlen($pton);
 			if ($l === 4) {
 				$this->addr = $host . ':' . $port;
-				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				$fd = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 			} elseif ($l === 16) {
 				$this->addr = '[' . $host . ']:' . $port;
-				$fd = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
+				$fd = socket_create(AF_INET6, SOCK_DGRAM, SOL_UDP);
 			} else {
 				return false;
 			}
@@ -193,11 +213,22 @@ class Connection extends IOStream {
 			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			socket_set_nonblock($fd);
 			@socket_connect($fd, $host, $port);
+			socket_getsockname($fd, $this->locAddr, $this->locPort);
 		} else {
-			$host = $addr;
-			// TCP
 			$this->type = 'tcp';
-			$l = strlen(inet_pton($addr));
+			$host = $addr;
+			$pton = @inet_pton($addr);
+			if ($pton === false) { // dirty condition check
+				DNSClient::getInstance()->resolve($this->host, function($real) use ($conn) {
+					if ($real === false) {
+						Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
+						return;
+					}
+					$conn->connectTo($real, $conn->port);
+				});
+			}
+			// TCP
+			$l = strlen($pton);
 			if ($l === 4) {
 				$this->addr = $host . ':' . $port;
 				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -222,7 +253,6 @@ class Connection extends IOStream {
 		$this->setFd($fd);
 		return true;
 	}
-	
 	public function setTimeout($timeout) {
 		parent::setTimeout($timeout);
 		socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));

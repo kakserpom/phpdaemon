@@ -68,8 +68,14 @@ class Binary {
 
 	public static function getByte(&$p) {
 		$r = self::bytes2int($p{0});
-		$p = binarySubstr($p,1);
-		return intval($r);
+		$p = binarySubstr($p, 1);
+		return (int) $r;
+	}
+
+	public static function getChar(&$p) {
+		$r = $p{0};
+		$p = binarySubstr($p, 1);
+		return $r;
 	}
 	
 	public static function getWord(&$p, $l = false) {
@@ -95,6 +101,15 @@ class Binary {
 		}
 		$p = binarySubstr($p, 8);
 		return $r;
+	}
+	public static function getString(&$str) {
+		$p = strpos($str,"\x00");
+		if ($p === FALSE) {
+			return '';
+		}
+ 		$r = substr($str,0,$p);
+ 		$str = substr($str, $p+1);
+ 		return $r;
 	}
 	public static function getLV(&$p, $l = 1, $nul = false, $lrev = false) {
  		$s = self::b2i(binarySubstr($p,0,$l),!!$lrev);

@@ -70,7 +70,7 @@ class DNSClient extends NetworkClient {
 				if ($file) {
 					preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
 					foreach ($m[1] as $s) {
-						$pool->addServer($s);
+						$pool->addServer('dns://[udp:' . $s . ']');
 					}
 				}
 				$job->setResult($jobname);
@@ -193,7 +193,11 @@ class DNSClient extends NetworkClient {
 				Binary::word(0) . // NSCOUNT
 				Binary::word(0) . // ARCOUNT
 				implode('', $QD);
-			$conn->write(Binary::word(strlen($packet)) . $packet);
+			if ($conn->type === 'udp') {
+				$conn->write($packet);
+			} else {
+				$conn->write(Binary::word(strlen($packet)) . $packet);
+			}
 		});
 	}
 }
@@ -201,7 +205,6 @@ class DNSClientConnection extends NetworkClientConnection {
 	protected $lowMark = 2;
 	public $seq = 0;
 	public $keepalive = true;
-
 
 	/**
 	 * Called when new data received
@@ -215,13 +218,17 @@ class DNSClientConnection extends NetworkClientConnection {
 		if ($l < 2) {
 			return; // not enough data yet
 		}
-		$length = Binary::bytes2int(binarySubstr($this->buf, 0, 2));
-		if ($length > $l + 2) {
-			return; // not enough data yet
-		
+		if ($this->type === 'udp') {
+			$packet = $this->buf;
+			$this->buf = '';
+		} else {
+			$length = Binary::bytes2int(binarySubstr($this->buf, 0, 2));
+			if ($length > $l + 2) {
+				return; // not enough data yet
+			}
+			$packet = binarySubstr($this->buf, 2, $length);
+			$this->buf = binarySubstr($this->buf, $length + 2);
 		}
-		$packet = binarySubstr($this->buf, 2, $length);
-		$this->buf = binarySubstr($this->buf, $length + 2);
 
 		$id = Binary::getWord($packet);
 		$bitmap = Binary::getBitmap(Binary::getByte($packet)) . Binary::getBitmap(Binary::getByte($packet));

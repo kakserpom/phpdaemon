@@ -168,6 +168,4 @@ class MongoClientCollection {
             $key
         );
     }
-
-
 }
