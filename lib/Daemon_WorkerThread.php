@@ -38,10 +38,10 @@ class Daemon_WorkerThread extends Thread {
 	public function run() {
 		FS::init();
 		Daemon::$process = $this;
-		if (Daemon::$logpointerAsync) {
-			$oldfd = Daemon::$logpointerAsync->fd;
-			Daemon::$logpointerAsync->fd = null;
-			Daemon::$logpointerAsync = null;
+		if (Daemon::$logPointerAsync) {
+			$oldfd = Daemon::$logPointerAsync->fd;
+			Daemon::$logPointerAsync->fd = null;
+			Daemon::$logPointerAsync = null;
 		}
 		class_exists('Timer');
 		class_exists('Daemon_TimedEvent');

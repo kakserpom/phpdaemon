@@ -75,7 +75,7 @@ class HTTPRequest extends Request {
 	private $headers_sent_line;
 	private $boundary = false;
 	public $sendfp;
-	
+
 	const MPSTATE_SEEKBOUNDARY = 0;
 	const MPSTATE_HEADERS = 1;
 	const MPSTATE_BODY = 2;
@@ -104,7 +104,7 @@ class HTTPRequest extends Request {
 
 		$this->parseParams();
 	}
-	
+
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$req = $this;
 		try {
@@ -130,7 +130,7 @@ class HTTPRequest extends Request {
 			}
 		);
 	}
-	
+
 	/**
 	 * Called by call() to check if ready
 	 * @todo protected?
@@ -335,7 +335,7 @@ class HTTPRequest extends Request {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Output some data
 	 * @param string String to out
@@ -355,12 +355,12 @@ class HTTPRequest extends Request {
 		if (!isset($this->conn)) {
 				return false;
 		}
-		
+
 		$l = strlen($s);
 		$this->answerlen += $l;
 
 		$this->ensureSentHeaders();
-		
+
 		if ($this->attrs->chunked) {
 			for ($o = 0; $o < $l;) {
 				$c = min($this->upstream->config->chunksize->value, $l - $o);
@@ -457,7 +457,7 @@ class HTTPRequest extends Request {
 	 */
 	public function onSleep() {
 		parent::onSleep();
-		
+
 		if (!Daemon::$obInStack) { // preventing recursion
 			@ob_flush();
 		}
@@ -531,7 +531,7 @@ class HTTPRequest extends Request {
 	 * @param string Header. Example: 'Location: http://php.net/'
 	 * @param boolean Optional. Replace?
 	 * @param int Optional. HTTP response code.
-	 * @return void
+	 * @return bool
 	 * @throws RequestHeadersAlreadySent
 	 */
 	public function header($s, $replace = true, $code = false) {
