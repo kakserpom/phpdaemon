@@ -75,7 +75,7 @@ class HTTPRequest extends Request {
 	private $headers_sent_line;
 	private $boundary = false;
 	public $sendfp;
-	
+
 	const MPSTATE_SEEKBOUNDARY = 0;
 	const MPSTATE_HEADERS = 1;
 	const MPSTATE_BODY = 2;
@@ -104,7 +104,7 @@ class HTTPRequest extends Request {
 
 		$this->parseParams();
 	}
-	
+
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$req = $this;
 		try {
@@ -130,7 +130,7 @@ class HTTPRequest extends Request {
 			}
 		);
 	}
-	
+
 	/**
 	 * Called by call() to check if ready
 	 * @todo protected?
@@ -335,10 +335,11 @@ class HTTPRequest extends Request {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Output some data
 	 * @param string String to out
+	 * @param bool $flush
 	 * @return boolean Success
 	 */
 	public function out($s, $flush = true) {
@@ -354,12 +355,12 @@ class HTTPRequest extends Request {
 		if (!isset($this->conn)) {
 				return false;
 		}
-		
+
 		$l = strlen($s);
 		$this->answerlen += $l;
 
 		$this->ensureSentHeaders();
-		
+
 		if ($this->attrs->chunked) {
 			for ($o = 0; $o < $l;) {
 				$c = min($this->upstream->config->chunksize->value, $l - $o);
@@ -472,7 +473,7 @@ class HTTPRequest extends Request {
 	 * Send HTTP-status
 	 * @throws RequestHeadersAlreadySent
 	 * @param int Code
-	 * @return void
+	 * @return boolean
 	 */
 	public function status($code = 200) {
 		if (!isset(self::$codes[$code])) {
@@ -528,7 +529,7 @@ class HTTPRequest extends Request {
 	 * @param string Header. Example: 'Location: http://php.net/'
 	 * @param boolean Optional. Replace?
 	 * @param int Optional. HTTP response code.
-	 * @return void
+	 * @return bool
 	 * @throws RequestHeadersAlreadySent
 	 */
 	public function header($s, $replace = true, $code = false) {
@@ -828,7 +829,7 @@ class HTTPRequest extends Request {
 	/**
 	 * Tells whether the file was uploaded via HTTP POST
 	 * @param string The filename being checked.
-	 * @return void
+	 * @return bool
 	 */
 	public function isUploadedFile($path) {
 		$path = realpath($path);
