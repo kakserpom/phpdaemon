@@ -89,8 +89,8 @@ class FileReaderRequest extends HTTPRequest {
 								}
 							}
 							if (!$found) {
-								if (isset($this->attrs->server['FR_AUTOINDEX']) && $this->attrs->server['FR_AUTOINDEX']) {
-									$this->autoindex($path, $dir);
+								if (isset($req->attrs->server['FR_AUTOINDEX']) && $req->attrs->server['FR_AUTOINDEX']) {
+									$req->autoindex($path, $dir);
 								} else {
 									$req->fileNotFound();
 								}
@@ -99,7 +99,7 @@ class FileReaderRequest extends HTTPRequest {
 						},  EIO_READDIR_STAT_ORDER | EIO_READDIR_DENTS);
 					});
 				} elseif ($stat['type'] == 'f') {
-					$this->file($path);
+					$req->file($path);
 				}
 				$job->setResult('stat', $stat);
 			});
@@ -107,11 +107,12 @@ class FileReaderRequest extends HTTPRequest {
 		$job();	
 	}
 	public function fileNotFound() {
+		$req = $this;
 		try {
-			$this->header('404 Not Found');
-			$this->header('Content-Type: text/html');
+			$req->header('404 Not Found');
+			$req->header('Content-Type: text/html');
 		} catch (RequestHeadersAlreadySent $e ) {}
-		$this->out('File not found.');
+		$req->out('File not found.');
 	}
 	public function file($path) {
 		$req = $this;
@@ -124,7 +125,6 @@ class FileReaderRequest extends HTTPRequest {
 	}
 	public function autoindex($path, $dir) {
 		$this->onWakeup();
-		Daemon::$req = $this;
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"> 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 

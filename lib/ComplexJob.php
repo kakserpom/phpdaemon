@@ -93,5 +93,4 @@ class ComplexJob {
 		}
 		$this->addJob($name, $cb);
 	}
-	
 }

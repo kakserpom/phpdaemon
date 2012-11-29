@@ -153,9 +153,10 @@ class Connection extends IOStream {
 			$this->port = 0;
 			list (, $host) = explode(':', $addr, 2);
 			if (@inet_pton($host) === false) { // dirty condition check
-				DNSClient::getInstance()->resolve($host, function($real) use ($conn) {
+				DNSClient::getInstance()->resolve($host, function($real) use ($conn, $host) {
 					if ($real === false) {
-						Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
+						Daemon::log(get_class($conn).'->connectTo (raw) : enable to resolve hostname: '.$host);
+						$conn->onFailureEvent(null);
 						return;
 					}
 					$conn->connectTo('raw:'.$real);
@@ -182,9 +183,10 @@ class Connection extends IOStream {
 			list (, $host) = explode(':', $addr, 2);
 			$pton = @inet_pton($host);
 			if ($pton === false) { // dirty condition check
-				DNSClient::getInstance()->resolve($host, function($real) use ($conn) {
+				DNSClient::getInstance()->resolve($host, function($real) use ($conn, $host) {
 					if ($real === false) {
-						Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
+						Daemon::log(get_class($conn).'->connectTo (udp) : enable to resolve hostname: '.$host);
+						$conn->onFailureEvent(null);
 						return;
 					}
 					$conn->connectTo('udp:'.$real, $conn->port);
@@ -219,9 +221,10 @@ class Connection extends IOStream {
 			$host = $addr;
 			$pton = @inet_pton($addr);
 			if ($pton === false) { // dirty condition check
-				DNSClient::getInstance()->resolve($this->host, function($real) use ($conn) {
+				DNSClient::getInstance()->resolve($this->host, function($real) use ($conn, $host) {
 					if ($real === false) {
-						Daemon::log(get_class($conn).'->connectTo: enable to resolve hostname: '.$conn->host);
+						Daemon::log(get_class($conn).'->connectTo (tcp) : enable to resolve hostname: '.$host);
+						$conn->onFailureEvent(null);
 						return;
 					}
 					$conn->connectTo($real, $conn->port);
@@ -293,5 +296,6 @@ class Connection extends IOStream {
 	
 	public function closeFd() {
 		socket_close($this->fd);
+		$this->fd = null;
 	}
 }

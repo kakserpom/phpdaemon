@@ -116,10 +116,10 @@ class NetworkClient extends ConnectionPool {
 		
 		$conn = $this->connect($url, $cb);
 
-		if (!$conn) {
+		if (!$conn || $conn->finished) {
 			return false;
 		}
-	
+
 		$this->servConn[$url]->attach($conn);
 		$this->servConnFree[$url]->attach($conn);
 

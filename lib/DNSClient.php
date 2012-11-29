@@ -71,6 +71,7 @@ class DNSClient extends NetworkClient {
 					preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
 					foreach ($m[1] as $s) {
 						$pool->addServer('dns://[udp:' . $s . ']');
+						//$pool->addServer('dns://[' . $s . ']');
 					}
 				}
 				$job->setResult($jobname);
@@ -294,5 +295,14 @@ class DNSClientConnection extends NetworkClientConnection {
 			$this->checkFree();
 		}
 		goto start;
+	}
+
+	/**
+	 * Called when connection finishes
+	 * @return void
+	 */
+	public function onFinish() {
+		$this->onResponse->executeAll(false);
+		parent::onFinish();
 	}
 }

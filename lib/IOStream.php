@@ -337,16 +337,15 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if (!isset($this->buffer)) {
-			return;
-		}
 		if (isset($this->event)) {
 			event_del($this->event);
 			event_free($this->event);
 			$this->event = null;
 		}
-		event_buffer_free($this->buffer);
-		$this->buffer = null;
+		if (isset($this->buffer)) {
+			event_buffer_free($this->buffer);
+			$this->buffer = null;
+		}
 		if (isset($this->fd)) {
 			$this->closeFd();
 		}

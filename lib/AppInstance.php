@@ -22,7 +22,6 @@ class AppInstance {
 	 */
 	public function __construct($name = '') {
 		$this->name = $name;
-		
 		$appName = get_class($this);
 		$appNameLower = strtolower($appName);
 		$fullname = Daemon::$appResolver->getAppFullName($appName, $this->name);

@@ -499,11 +499,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 */
 	public function onResultDone() {
 		$this->instate = self::INSTATE_HEADER;
-		$callback = $this->onResponse->isEmpty() ? null : $this->onResponse->shift();
-
-		if ($callback && is_callable($callback)) {
-			call_user_func($callback, $this, TRUE);
-		}
+		$this->onResponse->executeOne($this, true);
 		$this->checkFree();
 		$this->resultRows = array();
 		$this->resultFields = array();
@@ -515,13 +511,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 */
 	public function onError() {
 		$this->instate = self::INSTATE_HEADER;
-		$callback = $this->onResponse->count() ? $this->onResponse->shift() : null;
-		if (
-			$callback 
-			&& is_callable($callback)
-		) {
-			call_user_func($callback, $this, FALSE);
-		}
+		$this->onResponse->executeOne($this, false);
 		$this->checkFree();
 		$this->resultRows = array();
 		$this->resultFields = array();

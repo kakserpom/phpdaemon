@@ -16,23 +16,33 @@ class ValveClient extends NetworkClient {
 	const S2A_SERVERQUERY_GETCHALLENGE = "\x41";
 	const A2A_PING = "\x69";
 	const S2A_PONG = "\x6A";
+	
+	public static $zombie = 0;
 
 	public function request($addr, $name, $data,  $cb) {
 		$e = explode(':', $addr);
 		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':'.$e[1] : '') . '/', function($conn) use ($cb, $addr, $data, $name) {
 			if (!$conn->connected) {
-				call_user_func($cb, $this, false);
+				call_user_func($cb, $conn, false);
 				return;
 			}
 			$conn->request($name, $data, $cb);
 		});
 	}
 	
-	public function requestPing($addr, $cb) {
-		$mt = microtime(true);
-		$this->request($addr, 'ping', null, function ($conn, $latency) use ($mt, $cb) {
-			call_user_func($cb, $this, microtime(true) - $mt);
-		});	
+
+	public function ping($addr, $cb) {
+		$e = explode(':', $addr);
+		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':'.$e[1] : '') . '/ping', function($conn) use ($cb) {
+			if (!$conn->connected) {
+				call_user_func($cb, $conn, false);
+				return;
+			}
+			$mt = microtime(true);
+			$conn->request('ping', null, function ($conn, $success) use ($mt, $cb) {
+				call_user_func($cb, $conn, $success ? (microtime(true) - $mt) : false);
+			});
+		});
 	}
 
 	public function requestInfo($addr, $cb) {
@@ -59,12 +69,26 @@ class ValveClient extends NetworkClient {
 			// @todo add description strings
 			'servers'               =>  '127.0.0.1',
 			'port'					=> 27015,
-			'maxconnperserv'		=> 1
+			'maxconnperserv'		=> 32,
 		);
 	}
 }
 class ValveClientConnection extends NetworkClientConnection {
-	public $timeout = 10;
+	public $timeout = 1;
+
+	public function requestPlayers($cb) {
+		$this->request('challenge', null, function ($conn, $result) use ($cb) {
+			if (is_array($result)) {
+				$cb($conn, $result);
+				return;
+			}
+			$conn->request('players', $result, $cb);
+		});
+	}
+	
+	public function requestInfo($cb) {
+		$this->request('info', null, $cb);
+	}
 
 	public function request($name, $data = null, $cb = null) {
 		$packet = "\xFF\xFF\xFF\xFF";
@@ -110,7 +134,6 @@ class ValveClientConnection extends NetworkClientConnection {
 		$type = Binary::getChar($this->buf);
 		if (($type === ValveClient::S2A_INFO) || ($type === ValveClient::S2A_INFO_SOURCE)) {
 			$result = $this->parseInfo($this->buf, $type);
-			Daemon::log(Debug::exportBytes($this->buf, true));
 		}
 		elseif ($type === ValveClient::S2A_PLAYER) {
 			$result = $this->parsePlayers($this->buf);
@@ -120,17 +143,19 @@ class ValveClientConnection extends NetworkClientConnection {
 			$this->buf = binarySubstr($this->buf, 5);
 		}
 		elseif ($type === ValveClient::S2A_PONG) {
-			$result =  null;
+			$result = true;
 		}
 		else {
 			$result = null;
 		}
 		$this->onResponse->executeOne($this, $result);
+		$this->checkFree();
 		goto start;
 	}
 
 	public function parsePlayers(&$st) {
 		$playersn = Binary::getByte($st);
+		$players = array();
 		for ($i = 1; $i < $playersn; ++$i) {
 			$n = Binary::getByte($st);
 			$name = Binary::getString($st);
@@ -145,10 +170,10 @@ class ValveClientConnection extends NetworkClientConnection {
 				continue;
 			}
 			$players[] = array(
-				'name' => $name,
+				'name' => Encoding::toUTF8($name),
 				'score' => $score,
 				'seconds' => $seconds,
-				'joinedts' => microtime() - $seconds,
+				'joinedts' => microtime(true) - $seconds,
 				'spm' => $score / ($seconds / 60),
 			);
 		}
@@ -196,6 +221,11 @@ class ValveClientConnection extends NetworkClientConnection {
     		}
 			$info['secure'] = Binary::getByte($st);
 			$info['botsnum'] = Binary::getByte($st);
+		}
+		foreach ($info as &$val) {
+			if (is_string($val)) {
+				$val = Encoding::toUTF8($val);
+			}
 		}
 		return $info;
 	}

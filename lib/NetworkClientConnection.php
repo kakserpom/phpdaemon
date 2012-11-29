@@ -39,20 +39,19 @@ class NetworkClientConnection extends Connection {
 	public function checkFree() {
 		$this->setFree(!$this->finished && $this->onResponse && $this->onResponse->isEmpty());
 	}
+
 	/**
-	 * Called when session finishes
+	 * Called when connection finishes
 	 * @return void
 	 */
 	public function onFinish() {
-		parent::onFinish();
 		$this->onResponse->executeAll($this, false);
 		unset($this->onResponse);
-		if (!$this->pool || !$this->url) {
-			return;
+		if ($this->pool && ($this->url !== null)) {
+			$this->pool->servConnFree[$this->url]->detach($this);
+			$this->pool->servConn[$this->url]->detach($this);
 		}
-		$this->pool->servConnFree[$this->url]->detach($this);
-		$this->pool->servConn[$this->url]->detach($this);
-		$this->checkFree();
+		parent::onFinish();
 	}
 
 }
