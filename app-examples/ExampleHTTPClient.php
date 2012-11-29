@@ -7,12 +7,14 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class ExampleHTTPClient extends AppInstance {
-
+	public $httpclient;
 	/**
 	 * Constructor.
 	 * @return void
 	 */
-	public function init() { }
+	public function init() {
+		$this->httpclient = HTTPClient::getInstance();
+	}
 
 	/**
 	 * Called when the worker is ready to go.
@@ -54,24 +56,15 @@ class ExampleHTTPClientRequest extends HTTPRequest {
 	 */
 	public function init() {
 
-		$req = $this;
-		
-		$job = $this->job = new ComplexJob(function() use ($req) { // called when job is done
+		try {$this->header('Content-Type: text/html');} catch (Exception $e) {}
 
-			$req->wakeup(); // wake up the request immediately
-
-		});
-		
-		$job('request', function($name, $job) { // registering job named 'showvar'
-			$httpclient = HTTPClient::getInstance();
-			$cb = function($conn, $success) use ($name, $job) {
-					$job->setResult($name, $conn->body);
-			};
-			//$httpclient->get(['http://phpdaemon.net/Example/', 'foo' => 'bar'], $cb);
-			$httpclient->post(['http://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'] , $cb);
-		});
-		
-		$job(); // let the fun begin
+			$this->appInstance->httpclient->post(
+				['http://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
+				function($conn, $success) use ($name, $job) {
+					echo $conn->body;
+					Daemon::$req->finish();
+				}
+			);
 		
 		$this->sleep(5, true); // setting timeout
 	}
@@ -81,8 +74,7 @@ class ExampleHTTPClientRequest extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {		
-		try {$this->header('Content-Type: text/html');} catch (Exception $e) {}
-		echo $this->job->getResult('request');
+		echo 'Something went wrong.';
 	}
 	
 }

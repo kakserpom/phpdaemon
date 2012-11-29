@@ -79,7 +79,7 @@ class ValveClientConnection extends NetworkClientConnection {
 	public function requestPlayers($cb) {
 		$this->request('challenge', null, function ($conn, $result) use ($cb) {
 			if (is_array($result)) {
-				$cb($conn, $result);
+				call_user_func($cb, $conn, $result);
 				return;
 			}
 			$conn->request('players', $result, $cb);

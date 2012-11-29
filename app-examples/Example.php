@@ -101,9 +101,6 @@ if ($displaystate) {
 <br />Init: <?php echo $stat['init']; ?>
 <br />
 <?php
-
-	$callback = new CallbackWrapper();
-
 }
 
 ?>
