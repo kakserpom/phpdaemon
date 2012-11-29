@@ -460,7 +460,9 @@ class Request {
 			return;
 		}
  
-		ob_flush();
+		if (!Daemon::$obInStack) { // preventing recursion
+				ob_flush();
+			}
  
 		if ($status !== -1) {
 			$this->postFinishHandler();
