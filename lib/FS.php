@@ -24,7 +24,7 @@ class FS {
 	public static $fdCache;
 	public static $fdCacheSize = 128;
 	public static function init() {
-		if (!self::$supported = extension_loaded('eio')) {
+		if (!self::$supported =	Daemon::loadModuleIfAbsent('eio')) {
 			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}

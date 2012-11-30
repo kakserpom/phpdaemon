@@ -338,7 +338,7 @@ abstract class Thread {
 	 * @return void
 	 */
 	protected function setproctitle($title) {
-		if (function_exists('setproctitle')) {
+		if (Daemon::loadModuleIfAbsent('proctitle')) {
 			return setproctitle($title);
 		}
 

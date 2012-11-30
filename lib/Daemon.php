@@ -76,6 +76,16 @@ class Daemon {
 		    define("SO_REUSEPORT", 0x200);	// FIXME: this is a BSD-only hack
 	}
 
+	public static function loadModuleIfAbsent($mod) {
+		if (extension_loaded($mod)) {
+			return true;
+		}
+		if (!get_cfg_var('enable_dl')) {
+			return false;
+		}
+		return @dl(basename($mod) . '.so');
+	}
+
 	public static function callAutoGC() {
 		if (
 			(Daemon::$config->autogc->value > 0) 

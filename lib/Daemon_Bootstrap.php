@@ -122,7 +122,7 @@ class Daemon_Bootstrap {
 		}
 
 		if (extension_loaded('apc') && ini_get('apc.enabled')) {
-			Daemon::log('Detected pecl-apc extension enabled. Please do not use it with phpdaemon to avoid possible fatal error \'Base lambda function for closure not found\' (php bug#52144). Usage of bytecode caching (APC/eAccelerator/xcache/...) in case of phpdaemon makes no sense at all \'cause PHPDaemon includes files just in time itself.');
+			Daemon::log('Detected pecl-apc extension enabled. Usage of bytecode caching (APC/eAccelerator/xcache/...)  makes no sense at all in case of using phpDaemon \'cause phpDaemon includes files just in time itself.');
 		}
 		
 		if (isset(Daemon::$config->locale->value) && Daemon::$config->locale->value !== '') {
@@ -133,47 +133,47 @@ class Daemon_Bootstrap {
 			Daemon::$config->autoreimport->value
 			&& !is_callable('runkit_import')
 		) {
-			Daemon::log('runkit extension not found. You should install it or disable --auto-reimport. Non-critical error.');
+			Daemon::log('[WARN] runkit extension not found. You should install it or disable --auto-reimport. Non-critical error.');
 		}
 		
 		if (!is_callable('posix_kill')) {
-			Daemon::log('Posix not found. You should compile PHP without \'--disable-posix\'.');
+			Daemon::log('[EMERG] Posix not found. You should compile PHP without \'--disable-posix\'.');
 			$error = true;
 		}
 	
 		if (!is_callable('pcntl_signal')) {
-			Daemon::log('PCNTL not found. You should compile PHP with \'--enable-pcntl\'.');
+			Daemon::log('[EMERG] PCNTL not found. You should compile PHP with \'--enable-pcntl\'.');
 			$error = true;
 		}
 	
 		if (!is_callable('event_base_new')) {
-			Daemon::log('libevent extension not found. You have to install libevent from pecl (http://pecl.php.net/package/libevent). `svn checkout http://svn.php.net/repository/pecl/libevent pecl-libevent`.');
+			Daemon::log('[EMERG] libevent extension not found. You have to install libevent from pecl (http://pecl.php.net/package/libevent). `svn checkout http://svn.php.net/repository/pecl/libevent pecl-libevent`.');
 			$error = true;
 		}
 	
 		if (!is_callable('socket_create')) {
-			Daemon::log('Sockets extension not found. You should compile PHP with \'--enable-sockets\'.');
+			Daemon::log('[EMERG] Sockets extension not found. You should compile PHP with \'--enable-sockets\'.');
 			$error = true;
 		}
 		
 		if (!is_callable('shmop_open')) {
-			Daemon::log('Shmop extension not found. You should compile PHP with \'--enable-shmop\'.');
+			Daemon::log('[EMERG] Shmop extension not found. You should compile PHP with \'--enable-shmop\'.');
 			$error = true;
 		}
 		
 		if (!isset(Daemon::$config->user)) {
-			Daemon::log('You must set \'user\' parameter.');
+			Daemon::log('[EMERG] You must set \'user\' parameter.');
 			$error = true;
 		}
 		
 		if (!isset(Daemon::$config->path)) {
-			Daemon::log('You must set \'path\' parameter (path to your application resolver).');
+			Daemon::log('[EMERG] You must set \'path\' parameter (path to your application resolver).');
 			$error = true;
 		}
 		
 		if (!file_exists(Daemon::$config->pidfile->value)) {
 			if (!touch(Daemon::$config->pidfile->value)) {
-				Daemon::log('Couldn\'t create pid-file \'' . Daemon::$config->pidfile->value . '\'.');
+				Daemon::log('[EMERG] Couldn\'t create pid-file \'' . Daemon::$config->pidfile->value . '\'.');
 				$error = true;
 			}
 
