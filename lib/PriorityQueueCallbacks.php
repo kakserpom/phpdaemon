@@ -1,15 +1,12 @@
 <?php
 class PriorityQueueCallbacks extends SplPriorityQueue {
 	public function insert($cb, $pri = 0) {
-		Daemon::log('enqueue!');
 		parent::insert(CallbackWrapper::wrap($cb), $pri);
 	}
 	public function enqueue($cb, $pri = 0) {
-		Daemon::log('enqueue!');
 		return parent::insert(CallbackWrapper::wrap($cb), $pri);
 	}
 	public function dequeue() {
-		Daemon::log('dequeue!');
 		return $this->extract();
 	}
 	public function compare($pri1, $pri2)  { 
