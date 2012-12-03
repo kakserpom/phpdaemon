@@ -61,10 +61,10 @@ class NetworkClient extends ConnectionPool {
 	 * Returns available connection from the pool
 	 * @param string Address
 	 * @param callback onConnected
-	 * @param boolean Unshift?
+	 * @param integer Optional. Priority.
 	 * @return boolean Success.
 	 */
-	public function getConnection($url = null, $cb = null, $unshift = false) {
+	public function getConnection($url = null, $cb = null, $pri = 0) {
 		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
 			$cb = $url;
 			$url = null; 
@@ -94,13 +94,9 @@ class NetworkClient extends ConnectionPool {
 			}
 			elseif ($storage->count() >= $this->maxConnPerServ) {
 				if (!isset($this->pending[$url])) {
-					$this->pending[$url] = new StackCallbacks;
+					$this->pending[$url] = new PriorityQueueCallbacks;
 				}
-				if ($unshift) {
-					$this->pending[$url]->unshift($cb);
-				} else {
-					$this->pending[$url]->push($cb);
-				}
+				$this->pending[$url]->enqueue($cb, $pri);
 				return true;
 			}
 			if ($conn) {
@@ -132,8 +128,11 @@ class NetworkClient extends ConnectionPool {
 	}
 
 	public function touchPending($url) {
-		if (isset($this->pending[$url]) && $this->pending[$url]->count()) {
-			while ($this->getConnection($url, $this->pending[$url]->shift(), true)) {}
+		Daemon::log('touchPending');
+		while (isset($this->pending[$url]) && !$this->pending[$url]->isEmpty()) {
+			if (!$this->getConnection($url, $this->pending[$url]->dequeue())) {
+				return;
+			}
 		}
 	}
 

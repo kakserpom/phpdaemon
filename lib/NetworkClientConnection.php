@@ -27,6 +27,7 @@ class NetworkClientConnection extends Connection {
 		}
 		else {
 			$this->pool->servConnFree[$this->url]->attach($this);
+			$this->release();
 		}
 	}
 
