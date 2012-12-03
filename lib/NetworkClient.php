@@ -128,7 +128,6 @@ class NetworkClient extends ConnectionPool {
 	}
 
 	public function touchPending($url) {
-		Daemon::log('touchPending');
 		while (isset($this->pending[$url]) && !$this->pending[$url]->isEmpty()) {
 			if (!$this->getConnection($url, $this->pending[$url]->dequeue())) {
 				return;

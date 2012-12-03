@@ -1,5 +1,5 @@
 <?php
-
+// @todo Make it more abstract
 /**
  * IOStram
  * 
