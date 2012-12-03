@@ -54,12 +54,20 @@ class AppInstance {
 			$this->processDefaultConfig($defaults);
 		}
 
-		$this->init();
+		try {
+			$this->init();
+		} catch (Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+		}
 
 		if (Daemon::$process instanceof Daemon_WorkerThread) {
 			if (!$this->ready) {
 				$this->ready = true;
-				$this->onReady();
+				try {
+					$this->onReady();
+				} catch (Exception $e) {
+					Daemon::uncaughtExceptionHandler($e);
+				}
 			}
 		}
 	}
@@ -89,7 +97,11 @@ class AppInstance {
 	 */
 	public function RPCall($method, $args) {
 		if ($this->enableRPC && is_callable(array($this, $method))) {
-			return call_user_func_array(array($this, $method), $args);
+			try {
+				return call_user_func_array(array($this, $method), $args);
+			} catch (Exception $e) {
+				Daemon::uncaughtExceptionHandler($e);
+			}
 		}
 	}
 	
@@ -265,10 +277,6 @@ class AppInstance {
 
 		if (!$req) {
 			return $parent;
-		}
-
-		if (Daemon::$config->logqueue->value) {
-			Daemon::$process->log('request added to ' . get_class($this) . '->queue.');
 		}
 
 		return $req;
