@@ -12,6 +12,7 @@ class BoundUDPSocket extends BoundSocket {
 	public $reuse = true;
 	public $host;
 	public $port;
+	public $portsMap = array();
 
 	public function setDefaultPort($n) {
 		$this->defaultPort = (int) $n;
@@ -34,7 +35,7 @@ class BoundUDPSocket extends BoundSocket {
 		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 		if (!$sock) {
 			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			Daemon::$process->log(get_class($this) . ': Couldn\'t create UDP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}
 		if ($this->reuse) {
@@ -56,11 +57,6 @@ class BoundUDPSocket extends BoundSocket {
 		}
 		socket_getsockname($sock, $this->host, $this->port);
 		$addr = $this->host . ':' . $this->port;
-		if (!socket_listen($sock, SOMAXCONN)) {
-			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
-			return false;
-			}
 		socket_set_nonblock($sock);
 		$this->setFd($sock);
 		return true;
@@ -68,41 +64,53 @@ class BoundUDPSocket extends BoundSocket {
 
 
 	/**
-	 * Called when new connections is waiting for accept
+	 * Called when we got UDP packet
 	 * @param resource Descriptor
 	 * @param integer Events
 	 * @param mixed Attached variable
-	 * @return void
+	 * @return boolean Success.
 	 */
 	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
-		$conn = parent::onAcceptEvent($stream, $events, $arg);
-		if (!$conn) {
-			return;
+		if (Daemon::$config->logevents->value) {
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
 		}
-		$getpeername = function($conn) use (&$getpeername) { 
-			$r = @socket_getpeername($conn->fd, $host, $port);
-			if ($r === false) {
-   				if (109 === socket_last_error()) { // interrupt
-   					if ($this->allowedClients !== null) {
-   						$conn->ready = false; // lockwait
-   					}
-   					$conn->onWriteOnce($getpeername);
-   					return;
-   				}
-   			}
-			$conn->addr = $host.':'.$port;
-			$conn->ip = $host;
-			$conn->port = $port;
-			if ($conn->pool->allowedClients !== null) {
-				if (!BoundTCPSocket::netMatch($conn->pool->allowedClients, $host)) {
-					Daemon::log('Connection is not allowed (' . $host . ')');
-					$conn->ready = false;
-					$conn->finish();
+		
+		if (Daemon::$process->reload) {
+			return false;
+		}
+
+		if ($this->pool->maxConcurrency) {
+			if ($this->pool->count() >= $this->pool->maxConcurrency) {
+				$this->overload = true;
+				return false;
+			}
+		}
+
+		$host = null;
+		do {
+			$l = @socket_recvfrom($this->fd, $buf, 10240, MSG_DONTWAIT, $host, $port);
+			if ($l) {
+				$key = '['.$host . ']:' . $port;
+				if (!isset($this->portsMap[$key])) {
+					$class = $this->pool->connectionClass;
+ 					$conn = new $class(null, $this->pool);
+ 					$conn->dgram = true;
+ 					$conn->onWriteEvent();
+ 					$conn->host = $host;
+ 					$conn->port = $port;
+ 					$conn->addr = $key;
+ 					$conn->parentSocket = $this;
+ 					$this->portsMap[$key] = $conn;
+				} else {
+					$conn = $this->portsMap[$key];
+					$conn->stdin($buf);
 				}
 			}
-		};
-		$getpeername($conn);
+		} while ($l);
+
+		return $host !== null;
 	}
+
 
 	/**
 	 * Checks if the CIDR-mask matches the IP

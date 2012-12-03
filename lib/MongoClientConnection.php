@@ -70,8 +70,8 @@ class MongoClientConnection extends NetworkClientConnection {
 				&& !isset($this->pool->cursors[$cur])
 			) {
 				$this->pool->cursors[$cur] = new MongoClientCursor($cur, $this->pool->requests[$id][0], $this);
-				$this->pool->cursors[$cur]->failure = $flagBits[1] == '1';
-				$this->pool->cursors[$cur]->await = $flagBits[3] == '1';
+				$this->pool->cursors[$cur]->failure = $flagBits[1] === '1';
+				$this->pool->cursors[$cur]->await = $flagBits[3] === '1';
 				$this->pool->cursors[$cur]->callback = $this->pool->requests[$id][1];
 				$this->pool->cursors[$cur]->parseOplog = 
 					isset($this->pool->requests[$id][3]) 

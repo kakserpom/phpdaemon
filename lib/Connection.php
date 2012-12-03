@@ -20,6 +20,8 @@ class Connection extends IOStream {
 	public $locPort;
 	public $keepaliveMode = false;
 	public $type;
+	public $parentSocket;
+	public $dgram = false;
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);
@@ -82,6 +84,18 @@ class Connection extends IOStream {
 		} catch (Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
+	}
+
+	/**
+	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
+	 * @param string Data to send.
+	 * @return boolean Success.
+	 */
+	public function write($data) {
+		if ($this->dgram) {
+			return socket_sendto($this->parentSocket->fd, $data, strlen($data), $this->finished ? MSG_EOF : 0, $this->host, $this->port);
+		}
+		return parent::write($data); // @todo
 	}
 
 	/**

@@ -62,7 +62,7 @@ class NetworkClient extends ConnectionPool {
 	 * @param string Address
 	 * @param callback onConnected
 	 * @param integer Optional. Priority.
-	 * @return boolean Success.
+	 * @return mixed Success|Connection.
 	 */
 	public function getConnection($url = null, $cb = null, $pri = 0) {
 		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
@@ -129,7 +129,8 @@ class NetworkClient extends ConnectionPool {
 
 	public function touchPending($url) {
 		while (isset($this->pending[$url]) && !$this->pending[$url]->isEmpty()) {
-			if (!$this->getConnection($url, $this->pending[$url]->dequeue())) {
+			$r = $this->getConnection($url, $this->pending[$url]->dequeue());
+			if ($r === true) {
 				return;
 			}
 		}

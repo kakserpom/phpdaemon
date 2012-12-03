@@ -24,10 +24,10 @@ class MongoClientCollection {
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function find($callback, $p = array(), $key = '') {
+	public function find($cb, $p = array(), $key = '') {
 		$p['col'] = $this->name;
 
-		return $this->pool->find($p, $callback, $key);
+		return $this->pool->find($p, $cb, $key);
 	}
 
 	/**
@@ -37,10 +37,10 @@ class MongoClientCollection {
 	 * @param string Optional. Distribution key.
 	 * @return void
  	*/
-	public function findOne($callback, $p = array(), $key = '') {
+	public function findOne($cb, $p = array(), $key = '') {
 		$p['col'] = $this->name;
 
-		return $this->pool->findOne($p, $callback, $key);
+		return $this->pool->findOne($p, $cb, $key);
 	}
 
 	/**
@@ -50,9 +50,9 @@ class MongoClientCollection {
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function count($callback, $p = array(), $key = '') {
+	public function count($cb, $p = array(), $key = '') {
 		$p['col'] = $this->name;
-		return $this->pool->count($p, $callback, $key);
+		return $this->pool->count($p, $cb, $key);
 	}
 
 	/**
@@ -61,10 +61,10 @@ class MongoClientCollection {
 	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
 	 * @return void
 	 */
-	public function group($callback, $p = array(), $key = '') {
+	public function group($cb, $p = array(), $key = '') {
 		$p['col'] = $this->name;
 	
-		return $this->pool->group($p, $callback, $key);
+		return $this->pool->group($p, $cb, $key);
 	}
 
 	/**
@@ -145,25 +145,25 @@ class MongoClientCollection {
      * @param string Optional. Distribution key
      * @return void
      */
-    public function evaluate($code, $callback, $key = '')
+    public function evaluate($code, $cb, $key = '')
     {
-        $this->pool->evaluate($code, $callback, $key);
+        $this->pool->evaluate($code, $cb, $key);
     }
 
     /**
      * Generation autoincrement
-     * @param Closure $callback called when response received
+     * @param Closure $cb called when response received
      * @param string $key Optional. Distribution key
      * @return void
      */
-    public function autoincrement($callback, $key = '')
+    public function autoincrement($cb, $key = '')
     {
         $this->evaluate(
             'function () { '
                 . 'return db.autoincrement.findAndModify({ '
                 . 'query: {"_id":"' . $this->name . '"}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',
-            function ($res) use ($callback) {
-                call_user_func($callback, $res);
+            function ($res) use ($cb) {
+                call_user_func($cb, $res);
             },
             $key
         );

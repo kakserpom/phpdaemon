@@ -72,12 +72,12 @@ class BoundTCPSocket extends BoundSocket {
 	 * @param resource Descriptor
 	 * @param integer Events
 	 * @param mixed Attached variable
-	 * @return void
+	 * @return boolean Success.
 	 */
 	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
-		$conn = parent::onAcceptEvent($stream, $events, $arg);
+		$conn = $this->accept();
 		if (!$conn) {
-			return;
+			return false;
 		}
 		$getpeername = function($conn) use (&$getpeername) { 
 			$r = @socket_getpeername($conn->fd, $host, $port);
@@ -91,8 +91,9 @@ class BoundTCPSocket extends BoundSocket {
    				}
    			}
 			$conn->addr = $host.':'.$port;
-			$conn->ip = $host;
+			$conn->host = $host;
 			$conn->port = $port;
+			$conn->parentSocket = $this;
 			if ($conn->pool->allowedClients !== null) {
 				if (!BoundTCPSocket::netMatch($conn->pool->allowedClients, $host)) {
 					Daemon::log('Connection is not allowed (' . $host . ')');
@@ -102,6 +103,7 @@ class BoundTCPSocket extends BoundSocket {
 			}
 		};
 		$getpeername($conn);
+		return $conn;
 	}
 
 	/**

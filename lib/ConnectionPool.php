@@ -225,9 +225,10 @@ class ConnectionPool extends ObjectStorage {
 
 	public function detachConn($conn) {
 		$this->detach($conn);
-		foreach ($this->bound as $bound) {
-			if ($bound->overload) {
-				while ($bound->onAcceptEvent()) {}
+		if ($conn->parentSocket) {
+			unset($conn->parentSocket->portsMap[$conn->addr]);
+			if ($conn->parentSocket->overload) {
+				$conn->parentSocket->onAcceptEvent();
 			}
 		}
 	}
@@ -249,9 +250,18 @@ class ConnectionPool extends ObjectStorage {
 				$addr = substr($addr, 5);
 				$socket = new BoundUNIXSocket($addr, $reuse);
 				
+			} elseif (stripos($addr, 'udp:') === 0) {
+				$addr = substr($addr, 4);
+				$socket = new BoundUDPSocket($addr, $reuse);
+				if (isset($this->config->port->value)) {
+					$socket->setDefaultPort($this->config->port->value);
+				}
 			} else {
 				if (stripos($addr,'tcp://') === 0) {
 					$addr = substr($addr, 6);
+				}
+				elseif (stripos($addr,'tcp:') === 0) {
+					$addr = substr($addr, 4);
 				}
 				$socket = new BoundTCPSocket($addr, $reuse);
 				if (isset($this->config->port->value)) {

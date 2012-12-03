@@ -34,6 +34,7 @@ abstract class BoundSocket {
 	 */
 	public function setFd($fd) {
 		$this->ev = event_new();
+		$this->fd = $fd;
 		if (!event_set($this->ev, $fd, EV_READ | EV_PERSIST, array($this, 'onAcceptEvent'))) {
 			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($fd));
 			return;
@@ -107,6 +108,10 @@ abstract class BoundSocket {
 	 * @return void
 	 */
 	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
+		$this->accept();
+	}
+
+	public function accept() {
 		if (Daemon::$config->logevents->value) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
 		}
@@ -120,7 +125,7 @@ abstract class BoundSocket {
 				return;
 			}
 		}
-		$fd = @socket_accept($stream);
+		$fd = @socket_accept($this->fd);
 		if (!$fd) {
 			return;
 		}

@@ -7,7 +7,7 @@ Each worker is able to handle thousands of simultaneous connections holding beer
 Main features and possibilites:
 
  * Powerful servers: HTTP, FastCGI, FlashPolicy, Ident, Socks4/5.
- * Many bundled clients like MySQL, Postgresql, Memcache, MongoDB, Redis, HTTP, IRC, Jabber, ICMP, Valve games client, etc.
+ * Many bundled clients like DNS, MySQL, Postgresql, Memcache, MongoDB, Redis, HTTP, IRC, Jabber, ICMP, Valve games client, etc.
  * Asynchrounous Filesystem I/O (using eio).
  * Many useful built-in applications like CGI.
  * Interactive debug console.

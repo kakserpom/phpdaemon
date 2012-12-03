@@ -251,7 +251,7 @@ abstract class IOStream {
 	 * @param string Data to send.
 	 * @return boolean Success.
 	 */
-	public function write($s) {
+	public function write($data) {
 		if (!$this->alive) {
 			Daemon::log('Attempt to write to dead IOStream ('.get_class($this).')');
 			return false;
@@ -259,11 +259,11 @@ abstract class IOStream {
 		if (!$this->buffer) {
 			return false;
 		}
-		if (!strlen($s)) {
+		if (!strlen($data)) {
 			return true;
 		}
  		$this->sending = true;
-		event_buffer_write($this->buffer, $s);
+		event_buffer_write($this->buffer, $data);
 		return true;
 	}
 
@@ -407,7 +407,7 @@ abstract class IOStream {
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onWriteEvent($stream, $arg = null) {
+	public function onWriteEvent($stream = null, $arg = null) {
 		$this->sending = false;
 		if ($this->finished) {
 			$this->close();
@@ -426,7 +426,9 @@ abstract class IOStream {
 				}
 			}
 			$this->alive = true;
-			event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
+			if (isset($this->buffer)) {
+				event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
+			}
 			try {			
 				$this->onReady();
 			} catch (Exception $e) {
