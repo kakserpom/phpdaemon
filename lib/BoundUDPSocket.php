@@ -101,9 +101,15 @@ class BoundUDPSocket extends BoundSocket {
  					$conn->addr = $key;
  					$conn->parentSocket = $this;
  					$this->portsMap[$key] = $conn;
+ 					$conn->timeoutRef = setTimeout(function($timer) use ($conn) {
+ 						$conn->finish();
+ 						$timer->finish();
+ 					}, $conn->timeout * 1e6);
+ 					 $conn->stdin($buf);
 				} else {
 					$conn = $this->portsMap[$key];
 					$conn->stdin($buf);
+					Timer::setTimeout($conn->timeoutRef);
 				}
 			}
 		} while ($l);

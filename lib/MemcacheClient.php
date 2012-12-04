@@ -6,6 +6,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
+// @todo: Binary protocol
 class MemcacheClient extends NetworkClient {
 	/**
 	 * Setting default config options

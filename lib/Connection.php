@@ -22,6 +22,7 @@ class Connection extends IOStream {
 	public $type;
 	public $parentSocket;
 	public $dgram = false;
+	public $timer;
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);

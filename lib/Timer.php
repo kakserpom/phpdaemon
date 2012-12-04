@@ -51,7 +51,7 @@ class Timer {
 		$obj = new self($cb, $timeout, $id, $priority);
 		return $obj->id;
 	}
-	public static function setTimeout($id,$timeout = NULL) {
+	public static function setTimeout($id, $timeout = NULL) {
 		if (isset(Timer::$list[$id])) {
 			Timer::$list[$id]->timeout($timeout);
 			return true;
