@@ -8,7 +8,7 @@
 /* @author kak.serpom.po.yaitsam@gmail.com
 /* @description Bootstrap init script.
 /**************************************************************************/
-
+@ob_end_clean(); // clean shebang
 error_reporting(E_ALL);
 
 foreach (array('/usr/share/phpdaemon', dirname(dirname(__FILE__))) as $d) {
@@ -68,7 +68,7 @@ try {
 		$thread->shutdown();
 	}
 	else {
-	    Daemon_Bootstrap::init();
+	    Daemon_Bootstrap::init(isset($configFile) ? $configFile : null);
 	}
 } catch (ClearStackException $e) {
     goto execute;

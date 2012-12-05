@@ -105,31 +105,4 @@ class BoundTCPSocket extends BoundSocket {
 		$getpeername($conn);
 		return $conn;
 	}
-
-	/**
-	 * Checks if the CIDR-mask matches the IP
-	 * @param string CIDR-mask
-	 * @param string IP
-	 * @return boolean Result
-	 */
-	public static function netMatch($CIDR, $IP) {
-		/* TODO: IPV6 */
-		if (is_array($CIDR)) {
-			foreach ($CIDR as &$v) {
-				if (self::netMatch($v, $IP)) {
-					return TRUE;
-				}
-			}
-		
-			return FALSE;
-		}
-
-		$e = explode ('/', $CIDR, 2);
-
-		if (!isset($e[1])) {
-			return $e[0] === $IP;
-		}
-
-		return (ip2long ($IP) & ~((1 << (32 - $e[1])) - 1)) === ip2long($e[0]);
-	}
 }

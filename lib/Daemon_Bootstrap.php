@@ -62,9 +62,10 @@ class Daemon_Bootstrap {
 
 	/**
 	 * Actions on early startup.
+	 * @param string Optional. Config file path.
 	 * @return void
 	 */
-	public static function init() {
+	public static function init($configFile = null) {
 		Daemon::initSettings();
 		FS::init();
 		Daemon::$runName = basename($_SERVER['argv'][0]);
@@ -99,6 +100,9 @@ class Daemon_Bootstrap {
 			}
 		}
 
+		if (isset($configFile)) {
+			Daemon::$config->configfile->setHumanValue($configFile);
+		}
 		if (isset($args['configfile'])) {
 			Daemon::$config->configfile->setHumanValue($args['configfile']);
 		}

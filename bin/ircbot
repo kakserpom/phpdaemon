@@ -1,0 +1,6 @@
+#!/usr/bin/php -q
+<?php
+$filename = 'phpd-ircbot.conf';
+$configFile = '/etc/phpdaemon/' .$filename . '.conf;/etc/phpd/' .$filename . ';./conf/' .$filename;
+ob_start();
+include 'phpd';

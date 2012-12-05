@@ -10,10 +10,12 @@ class IRCBouncer extends NetworkServer {
 	public $client;
 	public $conn;
 	public $protologging = false;
+	public $db;
 
 	public function init() {
 		$this->client = IRCClient::getInstance();
 		$this->client->protologging = $this->protologging;
+		$this->db = MongoClient::getInstance();
 	}
 
 	/**
