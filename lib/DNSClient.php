@@ -136,13 +136,19 @@ class DNSClient extends NetworkClient {
 				call_user_func($cb, false);
 				return;
 			}
-			srand(Daemon::$process->pid);
-			$r = $response['A'][rand(0, sizeof($response['A']) - 1)];
-			srand();
+			$addrs = array();
+			$ttl = 0;
+			foreach ($response['A'] as $r) {
+				$addrs[] = $r['ip'];
+				$ttl = $r['ttl'];
+			}
+			if (sizeof($addrs) === 1) {
+				$addrs = $addrs[0];
+			}
 			if ($noncache) {
-				call_user_func($cb, $r['ip']);
+				call_user_func($cb, $addrs);
 			} else {
-				$pool->resolveCache->put($hostname, $r['ip'], $r['ttl']);
+				$pool->resolveCache->put($hostname, $addrs, $ttl);
 			}
 		});
 	}
@@ -206,6 +212,7 @@ class DNSClientConnection extends NetworkClientConnection {
 	protected $lowMark = 2;
 	public $seq = 0;
 	public $keepalive = true;
+	public $response = array();
 
 	/**
 	 * Called when new data received
@@ -230,62 +237,94 @@ class DNSClientConnection extends NetworkClientConnection {
 			$packet = binarySubstr($this->buf, 2, $length);
 			$this->buf = binarySubstr($this->buf, $length + 2);
 		}
-
+		$orig = $packet;
+		$this->response = array();
 		$id = Binary::getWord($packet);
 		$bitmap = Binary::getBitmap(Binary::getByte($packet)) . Binary::getBitmap(Binary::getByte($packet));
 		$qr = (int) $bitmap[0];
-		$this->response['opcode'] = bindec(substr($bitmap, 1, 4));
-		$this->response['aa'] = (int) $bitmap[5];
+		$opcode = bindec(substr($bitmap, 1, 4));
+		$aa = (int) $bitmap[5];
 		$tc = (int) $bitmap[6];
 		$rd = (int) $bitmap[7];
 		$ra = (int) $bitmap[8];
 		$z = bindec(substr($bitmap, 9, 3));
-		$this->response['qdcount']= Binary::getWord($packet);
-		$this->response['ancount'] = Binary::getWord($packet);
-		$this->response['nscount'] = Binary::getWord($packet);
-		$this->response['arcount'] = Binary::getWord($packet);
-		$this->response = array();
-		$hostname = Binary::parseLabels($packet);
-		while (strlen($packet) > 0) {
-			$qtypeInt = Binary::getWord($packet);
-			$qtype = isset(DNSClient::$type[$qtypeInt]) ? DNSClient::$type[$qtypeInt] : 'UNK(' . $qtypeInt . ')';
-			$qclassInt = Binary::getWord($packet);
-			$qclass = isset(DNSClient::$class[$qclassInt]) ? DNSClient::$class[$qclassInt] : 'UNK(' . $qclassInt . ')';
-			if (binarySubstr($packet, 0, 2) === "\xc0\x0c") {
-				$packet = binarySubstr($packet, 2);
-				continue;
+		$rcode = bindec(substr($bitmap, 12));
+		Daemon::log('rcode == '.$rcode);
+		$qdcount = Binary::getWord($packet);
+		$ancount = Binary::getWord($packet);
+		$nscount = Binary::getWord($packet);
+		$arcount = Binary::getWord($packet);
+		for ($i = 0; $i < $qdcount; ++$i) {
+			$name = Binary::parseLabels($packet, $orig);
+			$typeInt = Binary::getWord($packet);
+			$type = isset(DNSClient::$type[$typeInt]) ? DNSClient::$type[$typeInt] : 'UNK(' . $typeInt . ')';
+			$classInt = Binary::getWord($packet);
+			$class = isset(DNSClient::$class[$classInt]) ? DNSClient::$class[$classInt] : 'UNK(' . $classInt . ')';
+			if (!isset($this->response[$type])) {
+				$this->response[$type] = array();
 			}
-			$ttl = Binary::getDWord($packet);
-			$rdlength = Binary::getWord($packet);
-			$rdata = binarySubstr($packet, 0, $rdlength);
-			$packet = binarySubstr($packet, $rdlength);
 			$record = array(
-				'type' => $qtype,
-				'domain' => $hostname,
-				'ttl' => $ttl,
-				'class' => $qclass,
+				'name' => $name,
+				'type' => $type,
+				'class' => $class,
 			);
-			if ($qtype === 'A') {
-				if ($rdata === "\x00") {
+			$this->response['query'][] = $record;
+		}
+		$getResRecord = function(&$packet) use ($orig) {
+			$name = Binary::parseLabels($packet, $orig);
+			$typeInt = Binary::getWord($packet);
+			$type = isset(DNSClient::$type[$typeInt]) ? DNSClient::$type[$typeInt] : 'UNK(' . $typeInt . ')';
+			$classInt = Binary::getWord($packet);
+			$class = isset(DNSClient::$class[$classInt]) ? DNSClient::$class[$classInt] : 'UNK(' . $classInt . ')';
+			$ttl = Binary::getDWord($packet);
+			$length = Binary::getWord($packet);
+			$data = binarySubstr($packet, 0, $length);
+			$packet = binarySubstr($packet, $length);
+
+			$record = array(
+				'name' => $name,
+				'type' => $type,
+				'class' => $class,
+				'ttl' => $ttl,
+			);
+
+			if ($type === 'A') {
+				if ($data === "\x00") {
 					$record['ip'] = false;
 					$record['ttl'] = 5;
-					$packet = '';
-					break;
 				} else {
-					$record['ip'] = inet_ntop($rdata);
+					$record['ip'] = inet_ntop($data);
 				}
 			}
-			elseif ($qtype === 'NS') {
-				$record['ns'] = Binary::parseLabels($rdata);
+			elseif ($type === 'NS') {
+				$record['ns'] = Binary::parseLabels($data);
 			}
-			if (!isset($this->response[$qtype])) {
-				$this->response[$qtype] = array();
+			elseif ($type === 'CNAME') {
+				$record['cname'] = Binary::parseLabels($data, $orig);
 			}
-			$this->response[$qtype][] = $record;
-			if (binarySubstr($packet, 0, 2) === "\xc0\x0c") {
-				$packet = binarySubstr($packet, 2);
-				continue;
+
+			return $record;
+		};
+		for ($i = 0; $i < $ancount; ++$i) {
+			$record = $getResRecord($packet);
+			if (!isset($this->response[$record['type']])) {
+				$this->response[$record['type']] = array();
 			}
+			$this->response[$record['type']][] = $record;
+		}
+		for ($i = 0; $i < $nscount; ++$i) {
+			$record = $getResRecord($packet);
+			if (!isset($this->response[$record['type']])) {
+				$this->response[$record['type']] = array();
+			}
+			$this->response[$record['type']][] = $record;
+		}
+		for ($i = 0; $i < $arcount; ++$i) {
+			$record = $getResRecord($packet);
+			if (!isset($this->response[$record['type']])) {
+				$this->response[$record['type']] = array();
+			}
+			$this->response[$record['type']][] = $record;
 		}
 		$this->onResponse->executeOne($this->response);
 		if (!$this->keepalive) {

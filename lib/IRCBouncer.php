@@ -11,11 +11,15 @@ class IRCBouncer extends NetworkServer {
 	public $conn;
 	public $protologging = false;
 	public $db;
+	public $messages;
+	public $channels;
 
 	public function init() {
 		$this->client = IRCClient::getInstance();
 		$this->client->protologging = $this->protologging;
 		$this->db = MongoClient::getInstance();
+		$this->messages = $this->db->{$this->config->dbname->value . '.messages'};
+		$this->channels = $this->db->{$this->config->dbname->value . '.channels'};
 	}
 
 	/**
@@ -32,6 +36,8 @@ class IRCBouncer extends NetworkServer {
 			'servername' => 'bnchost.tld',
 			'defaultchannels' => '',
 			'protologging' => 0,
+			'dbname' => 'bnc',
+			'password' => 'SecretPwd',
 		);
 	}
 
@@ -79,6 +85,11 @@ class IRCBouncer extends NetworkServer {
 				});
 				$conn->bind('privateMsg', function($conn, $msg) {
 					Daemon::log('IRCBouncer: got private message \''.$msg['body'].'\' from \''.$msg['from']['orig'].'\'');
+				});
+				$conn->bind('msg', function($conn, $msg) use ($pool) {
+					$msg['ts'] = microtime(true);
+					$msg['dir'] = 'i';
+					$pool->messages->insert($msg);
 				});
 				$conn->bind('disconnect', function($conn) use ($pool, $url) {
 					foreach ($pool as $bouncerConn) {
@@ -148,7 +159,6 @@ class IRCBouncerConnection extends Connection {
 		$this->keepaliveTimer = setTimeout(function($timer) use ($conn) {
 			$conn->ping();
 		}, 10e6);
-		$this->msgFromBNC('----- Hello! You have connected to BNC.');
 	}
 
 	public function onFinish() {
@@ -260,7 +270,7 @@ class IRCBouncerConnection extends Connection {
 			return;
 		}
 		elseif ($cmd === 'PING') {
-			$this->writeln(isset($args[0]) ? 'PONG :'.$args : 'PONG');
+			$this->writeln(isset($args[0]) ? 'PONG :' . $args[0] : 'PONG');
 			return;
 		}
 		elseif ($cmd === 'PONG') {
@@ -300,6 +310,13 @@ class IRCBouncerConnection extends Connection {
 				}
 				return;
 			}
+			$this->pool->messages->insert(array(
+				'from' => $this->usermask,
+				'to' => $target,
+				'body' => $msg,
+				'ts' => microtime(true),
+				'dir' => 'o',
+			));
 		}
 		if ($this->attachedServer) {
 			$this->attachedServer->commandArr($cmd, $args);
@@ -310,6 +327,9 @@ class IRCBouncerConnection extends Connection {
 	}
 
 	public function msgFromBNC($msg) {
+		if ($this->usermask === null) {
+			return;
+		}
 		$this->command('$!@' . $this->pool->config->servername->value, 'PRIVMSG' , $this->usermask, $msg);
 	}
 

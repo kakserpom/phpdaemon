@@ -332,6 +332,7 @@ class IRCClientConnection extends NetworkClientConnection {
 				'private' => substr($target, 0, 1) !== '#',
 			);
 			$this->event($msg['private'] ? 'privateMsg' : 'channelMsg', $msg);
+			$this->event('msg', $msg);
 			if (!$msg['private']) {
 				$this->channel($target)->event('msg', $msg);
 			}

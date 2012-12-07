@@ -11,14 +11,18 @@ class Binary {
  		}
  		return $r;
 	}
-	public static function parseLabels(&$data) {
+	public static function parseLabels(&$data, $orig = null) {
 		$domain = '';
 		while (strlen($data) > 0) {
-			if (binarySubstr($data, 0, 2) === "\xc0\x0c") {
-				$data = binarySubstr($data, 2);
-				continue;
-			}
 			$l = ord($data[0]);
+
+			if ($l >= 192) {
+				$pos = Binary::bytes2int(chr($l - 192) . binarySubstr($data, 1, 1));
+				$data = binarySubstr($data, 2);
+				$ref = binarySubstr($orig, $pos);
+				return $domain . Binary::parseLabels($ref);
+			}
+
      		$p = substr($data, 1, $l);
      		$domain .= $p.(($l !== 0)?'.':'');
      		$data = substr($data, $l + 1);
