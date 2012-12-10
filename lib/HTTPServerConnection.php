@@ -19,6 +19,7 @@ class HTTPServerConnection extends Connection {
 
 	
 	public $sendfileCap = true; // we can use sendfile() with this kind of connection
+	public $bufHead = '';
 
 	/**
 	 * Called when new data received.
@@ -27,10 +28,16 @@ class HTTPServerConnection extends Connection {
 	
 	public function onRead() {
 		start:
-		$buf = $this->read($this->readPacketSize);
+		$buf = $this->bufHead . $this->read($this->readPacketSize);
+		$this->bufHead = '';
 
 		if ($this->state === self::STATE_ROOT) {
 			if (strlen($buf) === 0) {
+				return;
+			}
+
+			if ($this->req !== null) { // we have to wait the current request.
+				$this->bufHead = $buf;
 				return;
 			}
 
@@ -59,7 +66,6 @@ class HTTPServerConnection extends Connection {
 			$req->attrs->stdin_done = false;
 			$req->attrs->stdinbuf = '';
 			$req->attrs->stdinlen = 0;
-			$req->attrs->inbuf = '';
 			$req->attrs->chunked = false;
 			$req->conn = $this;
 
@@ -74,13 +80,10 @@ class HTTPServerConnection extends Connection {
 		}
 
 		if ($this->state === self::STATE_HEADERS) {
-			$req->attrs->inbuf .= $buf;
-			$buf = '';
-
-			if (($p = strpos($req->attrs->inbuf, "\r\n\r\n")) !== false) {
-				$headers = binarySubstr($req->attrs->inbuf, 0, $p);
+			if (($p = strpos($buf, "\r\n\r\n")) !== false) {
+				$headers = binarySubstr($buf, 0, $p);
 				$headersArray = explode("\r\n", $headers);
-				$req->attrs->inbuf = binarySubstr($req->attrs->inbuf, $p + 4);
+				$buf = binarySubstr($buf, $p + 4);
 				$command = explode(' ', $headersArray[0]);
 				$u = isset($command[1]) ? parse_url($command[1]) : false;
 				if ($u === false) {
@@ -106,6 +109,9 @@ class HTTPServerConnection extends Connection {
 					if (isset($e[1])) {
 						$req->attrs->server['HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr))] = $e[1];
 					}
+				}
+				if (!isset($req->attrs->server['HTTP_CONTENT_LENGTH'])) {
+					$req->attrs->server['HTTP_CONTENT_LENGTH'] = 0;
 				}
 				if (isset($u['host'])) {
 					$req->attrs->server['HTTP_HOST'] = $u['host'];	
@@ -144,16 +150,20 @@ class HTTPServerConnection extends Connection {
 						});
 						$req->header('X-Sendfile: ' . $fn);
 					}
-					$buf = $req->attrs->inbuf;
-					$req->attrs->inbuf = '';
 					$this->state = self::STATE_CONTENT;
 				}
 			}
 			else {
+				$this->bufHead = $buf;
 				return; // not enough data
 			}
 		}
 		if ($this->state === self::STATE_CONTENT) {
+			$e = $req->attrs->server['HTTP_CONTENT_LENGTH'] - strlen($buf) - $req->attrs->stdinlen;
+			if ($e < 0) {
+				$this->bufHead = binarySubstr($buf, $e);
+				$buf = binarySubstr($buf, 0, $e);
+			}
 			$req->stdin($buf);
 			$buf = '';
 			if ($req->attrs->stdin_done) {
@@ -182,9 +192,8 @@ class HTTPServerConnection extends Connection {
 			}
 			Daemon::$process->timeLastReq = time();
 		}
-		else {
-			goto start;
-		}
+		
+		goto start;
 	}
 
 	/**
@@ -225,6 +234,11 @@ class HTTPServerConnection extends Connection {
 	}
 	public function freeRequest($req) {
 		$this->req = null;
+		setTimeout(array($this, 'onReadTimer'), 1e6);
+	}
+	public function onReadTimer($timer) {
+		$this->onRead();
+		$timer->free();
 	}
 	public function badRequest($req) {
 		$this->write('400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor="white"><center><h1>400 Bad Request</h1></center></body></html>');

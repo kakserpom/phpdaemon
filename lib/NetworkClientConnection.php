@@ -20,6 +20,17 @@ class NetworkClientConnection extends Connection {
 		$this->onResponse = new StackCallbacks;
 	}
 
+	/**
+	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * @return void
+	 */
+	public function onReady() {
+		parent::onReady();
+		if ($this->connected && !$this->busy) {
+			$this->pool->servConnFree[$this->url]->attach($this);
+		}
+	}
+
 	public function setFree($isFree = true) {
 		$this->busy = !$isFree;
 		if ($this->busy) {

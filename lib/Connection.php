@@ -174,9 +174,14 @@ class Connection extends IOStream {
 						$conn->onFailureEvent(null);
 						return;
 					}
-					srand(Daemon::$process->pid);
-					$real = $result[rand(0, sizeof($result) - 1)];
-					srand();
+					// @todo stack of addrs
+					if (is_array($result)) {
+						srand(Daemon::$process->pid);
+						$real = $result[rand(0, sizeof($result) - 1)];
+						srand();
+					} else {
+						$real = $result;
+					}
 					$conn->connectTo('raw:'. $real);
 				});
 				return;
@@ -207,9 +212,14 @@ class Connection extends IOStream {
 						$conn->onFailureEvent(null);
 						return;
 					}
-					srand(Daemon::$process->pid);
-					$real = $result[rand(0, sizeof($result) - 1)];
-					srand();
+					// @todo stack of addrs
+					if (is_array($result)) {
+						srand(Daemon::$process->pid);
+						$real = $result[rand(0, sizeof($result) - 1)];
+						srand();
+					} else {
+						$real = $result;
+					}
 					$conn->connectTo('udp:'.$real, $conn->port);
 				});
 				return;
@@ -249,9 +259,13 @@ class Connection extends IOStream {
 						return;
 					}
 					// @todo stack of addrs
-					srand(Daemon::$process->pid);
-					$real = $result[rand(0, sizeof($result) - 1)];
-					srand();
+					if (is_array($result)) {
+						srand(Daemon::$process->pid);
+						$real = $result[rand(0, sizeof($result) - 1)];
+						srand();
+					} else {
+						$real = $result;
+					}
 					$conn->connectTo($real, $conn->port);
 				});
 			}

@@ -284,9 +284,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 
 	public function onFinish() {
 		if ($this->protocolError) {
-			while (!$this->onResponse->isEmpty()) {
-				call_user_func($this->onResponse->shift(), $this, false);
-			}
+			$this->executeAll($this, false);
 		} else {
 			if (($this->state !== self::STATE_ROOT) && !$this->onResponse->isEmpty()) {
 				$this->requestFinished();
@@ -296,19 +294,15 @@ class HTTPClientConnection extends NetworkClientConnection {
 	}
 
 	public function requestFinished() {
-		$cb = $this->onResponse->isEmpty() ? null : $this->onResponse->shift();
-		if ($cb) {
-			call_user_func($cb, $this, true);
-		}
+		$this->onResponse->executeOne($this, true);
 		$this->state = self::STATE_ROOT;
+		$this->contentLength = -1;
+		$this->curChunkSize = null;
+		$this->chunked = false;
+		$this->headers = array();
+		$this->body = '';
 		if (!$this->keepalive) {
 			$this->finish();
-		} else {
-			$this->contentLength = -1;
-			$this->curChunkSize = null;
-			$this->chunked = false;
-			$this->headers = array();
-			$this->body = '';
 		}
 		$this->checkFree();
 	}

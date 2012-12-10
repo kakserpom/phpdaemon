@@ -48,8 +48,6 @@ class ExampleHTTPClient extends AppInstance {
 
 class ExampleHTTPClientRequest extends HTTPRequest {
 
-	public $job;
-
 	/**
 	 * Constructor.
 	 * @return void
@@ -60,7 +58,7 @@ class ExampleHTTPClientRequest extends HTTPRequest {
 
 			$this->appInstance->httpclient->post(
 				['http://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
-				function($conn, $success) use ($name, $job) {
+				function($conn, $success) {
 					echo $conn->body;
 					Daemon::$req->finish();
 				}

@@ -109,16 +109,12 @@ class NetworkClient extends ConnectionPool {
 			$this->servConn[$url] = new ObjectStorage;
 			$this->servConnFree[$url] = new ObjectStorage;
 		}
-		
 		$conn = $this->connect($url, $cb);
 
 		if (!$conn || $conn->finished) {
 			return false;
 		}
-
 		$this->servConn[$url]->attach($conn);
-		$this->servConnFree[$url]->attach($conn);
-
 		return true;
 	}
 

@@ -249,7 +249,6 @@ class DNSClientConnection extends NetworkClientConnection {
 		$ra = (int) $bitmap[8];
 		$z = bindec(substr($bitmap, 9, 3));
 		$rcode = bindec(substr($bitmap, 12));
-		Daemon::log('rcode == '.$rcode);
 		$qdcount = Binary::getWord($packet);
 		$ancount = Binary::getWord($packet);
 		$nscount = Binary::getWord($packet);
