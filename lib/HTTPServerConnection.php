@@ -234,7 +234,7 @@ class HTTPServerConnection extends Connection {
 	}
 	public function freeRequest($req) {
 		$this->req = null;
-		setTimeout(array($this, 'onReadTimer'), 1e6);
+		setTimeout(array($this, 'onReadTimer'), 0);
 	}
 	public function onReadTimer($timer) {
 		$this->onRead();
