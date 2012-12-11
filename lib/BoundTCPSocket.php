@@ -79,11 +79,12 @@ class BoundTCPSocket extends BoundSocket {
 		if (!$conn) {
 			return false;
 		}
-		$getpeername = function($conn) use (&$getpeername) { 
+		$socket = $this;
+		$getpeername = function($conn) use (&$getpeername, $socket) { 
 			$r = @socket_getpeername($conn->fd, $host, $port);
 			if ($r === false) {
    				if (109 === socket_last_error()) { // interrupt
-   					if ($this->allowedClients !== null) {
+   					if ($conn->allowedClients !== null) {
    						$conn->ready = false; // lockwait
    					}
    					$conn->onWriteOnce($getpeername);
@@ -93,7 +94,7 @@ class BoundTCPSocket extends BoundSocket {
 			$conn->addr = $host.':'.$port;
 			$conn->host = $host;
 			$conn->port = $port;
-			$conn->parentSocket = $this;
+			$conn->parentSocket = $socket;
 			if ($conn->pool->allowedClients !== null) {
 				if (!BoundTCPSocket::netMatch($conn->pool->allowedClients, $host)) {
 					Daemon::log('Connection is not allowed (' . $host . ')');
