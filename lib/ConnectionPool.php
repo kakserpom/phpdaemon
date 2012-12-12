@@ -41,19 +41,22 @@ class ConnectionPool extends ObjectStorage {
 	*/
 	public function onReady() {
 		$this->enable();
-	}
-	
+	}	
 	
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void
 	 */
 	public function onConfigUpdated() {
+		if (Daemon::$process instanceof Daemon_WorkerProcess) {
+			if ($this->config === null) {
+				$this->disable();
+			} else {
+				$this->enable();
+			}
+		}
 		if ($defaults = $this->getConfigDefaults()) {
 			$this->processDefaultConfig($defaults);
-		}
-		if ($this->config === null) {
-			return;
 		}
 		$this->applyConfig();
 	}
@@ -156,8 +159,13 @@ class ConnectionPool extends ObjectStorage {
 	 * @return void
 	*/
 	public function enable() {
+		if ($this->enabled) {
+			return;
+		}
 		$this->enabled = true;
-		$this->bound->each('enable');
+		if ($this->bound) {
+			$this->bound->each('enable');
+		}
 	}
 	
 	/**
@@ -165,6 +173,9 @@ class ConnectionPool extends ObjectStorage {
 	 * @return void
 	 */
 	public function disable() {
+		if (!$this->enabled) {
+			return;
+		}
 		$this->enabled = false;
 		if ($this->bound) {
 			$this->bound->each('disable');

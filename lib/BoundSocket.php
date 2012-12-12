@@ -69,7 +69,7 @@ abstract class BoundSocket {
 		if (!is_resource($this->ev)) {
 			return;
 		}
-		event_del($this->ev); // bogus notice
+		event_del($this->ev);
 		event_free($this->ev);
 	}
 
