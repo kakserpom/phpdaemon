@@ -49,6 +49,18 @@ class HTTPClient extends NetworkClient {
 		);
 	}
 
+	protected function customRequestHeaders($headers) {
+ 		foreach ($headers as $item) {
+ 			if (is_string($item)) {
+ 				$this->writeln($item);
+ 			}
+ 			elseif (is_array($item)) {
+				$this->writeln($item[0].': '.$item[1]); // @TODO: prevent injections
+			}
+		}
+	}
+
+
 	public static function prepareUrl($mixed) {
 		if (is_string($mixed)) {
 			$url = $mixed;
@@ -124,6 +136,9 @@ class HTTPClientConnection extends NetworkClientConnection {
 		if (isset($params['cookie']) && sizeof($params['cookie'])) {
 			$this->writeln('Cookie: '.http_build_query($this->cookie, '', '; '));
 		}
+		if (isset($params['headers'])) {
+			$this->customRequestHeaders($params['headers']);
+		}
 		$this->writeln('');
 		$this->headers = array();
 		$this->body = '';
@@ -168,6 +183,9 @@ class HTTPClientConnection extends NetworkClientConnection {
 		$this->writeln('Content-Type: ' . $params['contentType']);
 		$body = http_build_query($data, '&', PHP_QUERY_RFC3986);
 		$this->writeln('Content-Length: ' . strlen($body));
+		if (isset($params['headers'])) {
+			$this->customRequestHeaders($params['headers']);
+		}
 		$this->writeln('');
 		$this->write($body);
 		$this->headers = array();
