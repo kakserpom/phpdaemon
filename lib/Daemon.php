@@ -139,7 +139,7 @@ class Daemon {
 				return;
 			}
 		}
-		elseif ($l & $errno === $l) {
+		elseif (!($l & $errno)) {
 			return;
 		}
 
