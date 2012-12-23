@@ -316,7 +316,7 @@ class FastCGIServerConnection extends Connection {
 				. pack('nn', $req->attrs->id, $c)					// id, content length
 				. "\x00" 												// padding length
 				. "\x00"												// reserved 
-				. ($c === $d ? $output : mb_substr($output, $o, $c, 'UTF-8')) // content
+				. ($c === $d ? $output : substr($output, $o, $c)) // content
 			);
 			if ($w === false) {
 				$req->abort();
