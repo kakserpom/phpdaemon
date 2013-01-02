@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Connection
+ * File
  * 
  * @package Core
  *
@@ -57,7 +57,7 @@ class File extends IOStream {
 	}
 	
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
-		if (!$this->fd) {
+		if (!is_resource($this->fd)) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
@@ -79,7 +79,7 @@ class File extends IOStream {
 	}
 
 	public function statRefresh($cb, $pri = EIO_PRI_DEFAULT) {
-		if (!$this->fd) {
+		if (!is_resource($this->fd)) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
