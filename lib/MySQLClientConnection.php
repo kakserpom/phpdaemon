@@ -25,6 +25,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $affectedRows;               // Affected rows number
 	public $protover = 0;
 	public $timeout = 120;
+	public $errno;
+	public $errmsg;
 	
 	/**
 	 * Executes the given callback when/if the connection is handshaked
