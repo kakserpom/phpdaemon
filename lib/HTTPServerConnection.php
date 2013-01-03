@@ -20,6 +20,7 @@ class HTTPServerConnection extends Connection {
 	
 	public $sendfileCap = true; // we can use sendfile() with this kind of connection
 	public $bufHead = '';
+	public $prevState;
 
 	/**
 	 * Called when new data received.
@@ -28,14 +29,20 @@ class HTTPServerConnection extends Connection {
 	
 	public function onRead() {
 		start:
-		$buf = $this->bufHead . $this->read($this->readPacketSize);
+		$readed = $this->read($this->readPacketSize);
+
+		if ($this->state === $this->prevState) {
+			if (strlen($readed) === 0) {
+				return;
+			}
+		} else {
+			$this->prevState = $this->state;
+		}
+
+		$buf = $this->bufHead . $readed;
 		$this->bufHead = '';
 
 		if ($this->state === self::STATE_ROOT) {
-			if (strlen($buf) === 0) {
-				return;
-			}
-
 			if ($this->req !== null) { // we have to wait the current request.
 				$this->bufHead = $buf;
 				return;
@@ -155,7 +162,7 @@ class HTTPServerConnection extends Connection {
 			}
 			else {
 				$this->bufHead = $buf;
-				return; // not enough data
+				goto start;
 			}
 		}
 		if ($this->state === self::STATE_CONTENT) {
@@ -169,7 +176,7 @@ class HTTPServerConnection extends Connection {
 			if ($req->attrs->stdin_done) {
 				$this->state = self::STATE_ROOT;
 			} else {
-				return;
+				goto start;
 			}
 		}
 
@@ -245,4 +252,3 @@ class HTTPServerConnection extends Connection {
 		$this->finish();
 	}
 }
-

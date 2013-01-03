@@ -39,7 +39,7 @@ class File extends IOStream {
 
 
 	public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
-		if (!$this->fd) {
+		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
@@ -57,7 +57,7 @@ class File extends IOStream {
 	}
 	
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
-		if (!is_resource($this->fd)) {
+		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
@@ -79,10 +79,11 @@ class File extends IOStream {
 	}
 
 	public function statRefresh($cb, $pri = EIO_PRI_DEFAULT) {
-		if (!is_resource($this->fd)) {
+		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
+						Daemon::log([$this->path,$this->fd]);
 			return false;
 		}
 		if (!FS::$supported) {
