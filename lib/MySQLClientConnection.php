@@ -25,8 +25,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $affectedRows;               // Affected rows number
 	public $protover = 0;
 	public $timeout = 120;
-	public $errno;
-	public $errmsg;
+	public $errno = 0;
+	public $errmsg = '';
 	
 	/**
 	 * Executes the given callback when/if the connection is handshaked
@@ -399,6 +399,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 
 				$this->errmsg = binarySubstr($this->buf, $p, $packet[0] + 4 - $p);
 				$this->onError();
+				$this->errno = 0;
+				$this->errmsg = '';
 			}
 			elseif ($fieldCount === 0x00) {
 				// OK Packet Empty
