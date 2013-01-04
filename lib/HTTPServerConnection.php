@@ -114,7 +114,16 @@ class HTTPServerConnection extends Connection {
 				for ($i = 1, $n = sizeof($headersArray); $i < $n; ++$i) {
 					$e = explode(': ', $headersArray[$i]);
 					if (isset($e[1])) {
-						$req->attrs->server['HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr))] = $e[1];
+						$currentHeader = 'HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr));
+						$req->attrs->server[$currentHeader] = $e[1];
+					}
+					elseif (substr($e[0], 0, 1) == ' ' || substr($e[0], 0, 1) == '	')
+					{ // multiline header continued
+						$req->attrs->server[$currentHeader] .= $e[0];
+					}
+					else
+					{
+						// probably bad request here
 					}
 				}
 				if (!isset($req->attrs->server['HTTP_CONTENT_LENGTH'])) {
