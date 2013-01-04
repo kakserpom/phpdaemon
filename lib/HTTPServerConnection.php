@@ -117,13 +117,14 @@ class HTTPServerConnection extends Connection {
 						$currentHeader = 'HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr));
 						$req->attrs->server[$currentHeader] = $e[1];
 					}
-					elseif (substr($e[0], 0, 1) == ' ' || substr($e[0], 0, 1) == '	')
+					elseif ($e[0][0] === "\t" || $e[0][0] === "\x20")
 					{ // multiline header continued
 						$req->attrs->server[$currentHeader] .= $e[0];
 					}
 					else
-					{
-						// probably bad request here
+					{ // whatever client speaks is not HTTP anymore
+						$this->finish();
+						return;
 					}
 				}
 				if (!isset($req->attrs->server['HTTP_CONTENT_LENGTH'])) {
