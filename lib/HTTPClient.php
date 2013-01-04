@@ -47,18 +47,7 @@ class HTTPClient extends NetworkClient {
 				$conn->post($url, $data, $params);
 			}
 		);
-	}
-
-	protected function customRequestHeaders($headers) {
- 		foreach ($headers as $item) {
- 			if (is_string($item)) {
- 				$this->writeln($item);
- 			}
- 			elseif (is_array($item)) {
-				$this->writeln($item[0].': '.$item[1]); // @TODO: prevent injections
-			}
-		}
-	}
+	
 
 
 	public static function prepareUrl($mixed) {
@@ -145,6 +134,22 @@ class HTTPClientConnection extends NetworkClientConnection {
 		$this->onResponse->push($params['resultcb']);
 		$this->checkFree();
 	}
+
+	protected function customRequestHeaders($headers) {
+		foreach ($headers as $key => $item) {
+			if (is_numeric($key)) {
+				if (is_string($item)) {
+                    $this->writeln($item);
+                }
+				elseif (is_array($item)) {
+					$this->writeln($item[0].': '.$item[1]); // @TODO: prevent injections?
+				}
+			}
+			else {
+				$this->writeln($key.': '.$item);
+			}
+		}
+    }
 
 	public function post($url, $data = array(), $params = null) {
 		if (!is_array($params)) {
