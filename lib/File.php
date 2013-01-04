@@ -1,5 +1,4 @@
 <?php
-
 /**
  * File
  * 
@@ -83,7 +82,6 @@ class File extends IOStream {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
-						Daemon::log([$this->path,$this->fd]);
 			return false;
 		}
 		if (!FS::$supported) {
