@@ -9,7 +9,10 @@
 /* @description Bootstrap init script.
 /**************************************************************************/
 @ob_end_clean(); // clean shebang
-error_reporting(E_ALL);
+
+// store these for CustomGlobals.php (a legacy framework hook)
+$launchErrorReporting = error_reporting(E_ALL);
+$launchDirectory = getcwd();
 
 foreach (array('/usr/share/phpdaemon', dirname(dirname(__FILE__))) as $d) {
 	if (@chdir($d)) {
@@ -56,6 +59,9 @@ spl_autoload_register(function($classname) {
 	}
 	
 });
+
+// optional legacy framework hook
+include 'conf/CustomGlobals.php';
 
 require 'lib/BinarySubstr.php';
 $e = null;
