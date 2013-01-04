@@ -47,7 +47,7 @@ class HTTPClient extends NetworkClient {
 				$conn->post($url, $data, $params);
 			}
 		);
-	
+	}
 
 
 	public static function prepareUrl($mixed) {
@@ -100,6 +100,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 	public $curChunk;
 	public $chunked = false;
 	public $protocolError;
+	
 	public function get($url, $params = null) {
 		if (!is_array($params)) {
 			$params = array('resultcb' => $params);
@@ -149,7 +150,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 				$this->writeln($key.': '.$item);
 			}
 		}
-    }
+	}
 
 	public function post($url, $data = array(), $params = null) {
 		if (!is_array($params)) {
