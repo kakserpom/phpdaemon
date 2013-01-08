@@ -57,6 +57,8 @@ spl_autoload_register(function($classname) {
 	
 });
 
+class_exists('Debug');
+
 require 'lib/BinarySubstr.php';
 $e = null;
 execute:
