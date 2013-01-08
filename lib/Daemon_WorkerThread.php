@@ -47,7 +47,7 @@ class Daemon_WorkerThread extends Thread {
 		class_exists('Daemon_TimedEvent');
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
-		$this->setStatus(4);
+		$this->setStatus(Daemon::WSTATE_PREINIT);
 
 		if (Daemon::$config->autogc->value > 0) {
 			gc_enable();
@@ -58,7 +58,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->prepareSystemEnv();
 		$this->overrideNativeFuncs();
 
-		$this->setStatus(6);
+		$this->setStatus(Daemon::WSTATE_INIT);
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 
@@ -80,7 +80,7 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 
-		$this->setStatus(1);
+		$this->setStatus(Daemon::WSTATE_IDLE);
 
 		Timer::add(function($event) {
 			$self = Daemon::$process;
@@ -448,7 +448,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		$this->terminated = TRUE;
-		$this->setStatus(3);
+		$this->setStatus(Daemon::WSTATE_SHUTDOWN);
 
 		if ($hard) {
 			exit(0);
@@ -486,8 +486,7 @@ class Daemon_WorkerThread extends Thread {
 		while (!$this->reloadReady) {
 			event_base_loop($this->eventBase);
 		}
-		//FS::waitAllEvents(); // ensure that all I/O events completed before suicide
-		//posix_kill(posix_getppid(), SIGCHLD);
+		FS::waitAllEvents(); // ensure that all I/O events completed before suicide
 		exit(0); // R.I.P.
 	}
 
@@ -626,7 +625,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	public function __destruct()
 	{
-		$this->setStatus(0x03);
+		$this->setStatus(Daemon::WSTATE_SHUTDOWN);
 	}
 
 }

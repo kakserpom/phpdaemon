@@ -13,6 +13,12 @@ class Daemon {
 	const SUPPORT_RUNKIT_MODIFY          = 1;
 	const SUPPORT_RUNKIT_INTERNAL_MODIFY = 2;
 	const SUPPORT_RUNKIT_IMPORT 		 = 3;
+	const WSTATE_IDLE = 1;
+	const WSTATE_BUSY = 2;
+	const WSTATE_SHUTDOWN = 3;
+	const WSTATE_PREINIT = 4;
+	const WSTATE_WAITINIT = 5;
+	const WSTATE_INIT = 6;
 
 	/**
 	 * PHPDaemon version
@@ -366,7 +372,6 @@ class Daemon {
 	 * Get state of workers.
 	 * @return array - information.
 	 */
-	// @TODO: get rid of magic numbers in status (use constants)
 	public static function getStateOfWorkers($master = NULL) {
 		static $bufsize = 1024;
 		$offset = 0;
@@ -397,37 +402,36 @@ class Daemon {
 						$master->reloadWorker($offset + $i + 1);
 					}
 				}
-
 				if ($code === 0) {
 					break 2;
 				}
-				elseif ($code === 1) {
+				elseif ($code === Daemon::WSTATE_IDLE) {
 					// idle
 					++$stat['alive'];
 					++$stat['idle'];
 				}
-				elseif ($code === 2) {
+				elseif ($code === Daemon::WSTATE_BUSY) {
 					// busy
 					++$stat['alive'];
 					++$stat['busy'];
 				}
-				elseif ($code === 3) { 
+				elseif ($code === Daemon::WSTATE_SHUTDOWN) { 
 					// shutdown
 					++$stat['shutdown'];
 				}
-				elseif ($code === 4) {
+				elseif ($code === Daemon::WSTATE_PREINIT) {
 					// pre-init
 					++$stat['alive'];
 					++$stat['preinit'];
 					++$stat['idle'];
 				}
-				elseif ($code === 5) {
+				elseif ($code === Daemon::WSTATE_WAITINIT) {
 					// wait-init
 					++$stat['alive'];
 					++$stat['waitinit'];
 					++$stat['idle'];
 				}
-				elseif ($code === 6) { // init
+				elseif ($code === Daemon::WSTATE_INIT) { // init
 					++$stat['alive'];
 					++$stat['init'];
 					++$stat['idle'];

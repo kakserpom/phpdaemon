@@ -15,6 +15,7 @@ class AppInstance {
 	public $name;              // name of instance
 	public $config;
 	public $enableRPC = false;
+	public $requestClass;
  
 	/**	
 	 * Application constructor
@@ -26,6 +27,14 @@ class AppInstance {
 		$appNameLower = strtolower($appName);
 		$fullname = Daemon::$appResolver->getAppFullName($appName, $this->name);
 		//Daemon::$process->log($fullname . ' instantiated.');
+
+		if ($this->requestClass === null) {
+			$this->requestClass = get_class($this) . 'Request';
+			if (!class_exists($this->requestClass)) {
+				$this->requestClass = null;
+			}
+		}
+
 		if (!isset(Daemon::$appInstances[$appNameLower])) {
 			Daemon::$appInstances[$appNameLower] = array();
 		}
@@ -206,7 +215,7 @@ class AppInstance {
 	 * @todo protected?
 	 * @return boolean Ready to shutdown?
 	 */
-	public function onShutdown() {
+	public function onShutdown($graceful = false) {
 		return TRUE;
 	}
  
@@ -218,24 +227,13 @@ class AppInstance {
 	 * @return object Request
 	 */
 	public function beginRequest($req, $upstream) {
-		return FALSE;
-	}
- 
-	/**
-	 * Handles the output from downstream requests
-	 * @todo more description
-	 * @param object Request
-	 * @param string The output
-	 * @return void
-	 */
-	public function requestOut($r, $s) { }
- 
-	/**
-	 * Handles the output from downstream requests
-	 * @return void
-	 */
-	public function endRequest($req, $appStatus, $protoStatus) { }
- 
+		if (!$this->requestClass) {
+			return false;
+		}
+		$className = $this->requestClass;
+		return new $className($this, $upstream, $req);
+    }
+
 	/**
 	 * Log something
 	 * @param string - Message.
@@ -251,7 +249,7 @@ class AppInstance {
 	 * @return void
 	 */
 	public function shutdown($graceful = false) {
-		return $this->onShutdown();
+		return $this->onShutdown($graceful);
 	}
  
 	/**
@@ -267,21 +265,6 @@ class AppInstance {
 			return $parent;
 		}
 
-		if (Daemon::$config->logqueue->value) {
-			Daemon::$process->log('request added to ' . get_class($this) . '->queue.');
-		}
-
-		return $req;
-	}
- 
-	/**
-	 * Pushes request to the queue
-	 * @todo log warning message and then sometime remove it
-	 * @param object Request
-	 * @return object Request
-	 * @deprecated
-	 */
-	public function pushRequest($req) {
 		return $req;
 	}
  
@@ -293,20 +276,16 @@ class AppInstance {
 	public function handleStatus($ret) {
 		if ($ret === 2) {
 			// script update
-			$r = $this->onConfigUpdated();
-		}
-		elseif ($ret === 3) {
+			return  $this->onConfigUpdated();
+		} elseif ($ret === 3) {
 			 // graceful worker shutdown for restart
-			$r = $this->shutdown(TRUE);
-		}
-		elseif ($ret === 5) {
+			return $this->shutdown(TRUE);
+		} elseif ($ret === 5) {
 			// shutdown worker
-			$r = $this->shutdown();
+			return $this->shutdown();
 		} else {
-			$r = TRUE;
+			return true;
 		}
-
-		return $r;
 	}
 
 }

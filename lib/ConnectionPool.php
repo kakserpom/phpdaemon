@@ -186,7 +186,7 @@ class ConnectionPool extends ObjectStorage {
 	 * Called when application instance is going to shutdown
 	 * @return boolean Ready to shutdown?
 	 */
-	public function onShutdown() {
+	public function onShutdown($graceful = false) {
 		return $this->finish();
 	}
 
