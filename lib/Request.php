@@ -366,10 +366,7 @@ class Request {
 		$this->running = true;
 		Daemon::$req = $this;
 		Daemon::$context = $this;
-
-		if (!Daemon::$compatMode) {
-			Daemon::$process->setStatus(2);
-		}
+		Daemon::$process->setStatus(Daemon::WSTATE_BUSY);
 	}
  
 	/**
@@ -380,10 +377,7 @@ class Request {
 		Daemon::$req = null;
 		Daemon::$context = null;
 		$this->running = false;
-
-		if (!Daemon::$compatMode) {
-			Daemon::$process->setStatus(1);
-		}
+		Daemon::$process->setStatus(Daemon::WSTATE_IDLE);
 	}	
  
 	/**

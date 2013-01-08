@@ -496,6 +496,9 @@ class Daemon_WorkerThread extends Thread {
 	 * @return boolean - Success.
 	 */
 	public function setStatus($int) {
+		if (Daemon::$compatMode) {
+			return;
+		}
 		if (!$this->id) {
 			return FALSE;
 		}
