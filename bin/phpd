@@ -8,7 +8,7 @@
 /* @author kak.serpom.po.yaitsam@gmail.com
 /* @description Bootstrap init script.
 /**************************************************************************/
-@ob_end_clean(); // clean shebang
+@ob_end_clean(); // clear shebang
 error_reporting(E_ALL);
 
 foreach (array('/usr/share/phpdaemon', dirname(dirname(__FILE__))) as $d) {

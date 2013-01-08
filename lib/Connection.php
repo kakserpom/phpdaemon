@@ -48,8 +48,8 @@ class Connection extends IOStream {
 	 * @return void
 	 */
 	public function onReady() {
+		$this->connected = true;
 		if ($this->onConnected) {
-			$this->connected = true;
 			$this->onConnected->executeAll($this);
 			$this->onConnected = null;
 		}

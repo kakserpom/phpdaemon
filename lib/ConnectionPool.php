@@ -190,10 +190,7 @@ class ConnectionPool extends ObjectStorage {
 		return $this->finish();
 	}
 
-	public function onFinish() {
-
-	}
-
+	public function onFinish() {}
 
 	/**
 	 * Close each of binded sockets.

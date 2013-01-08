@@ -206,8 +206,9 @@ class Daemon_WorkerThread extends Thread {
 
 			function __create_function($arg, $body) {
 				static $cache = array();
-				static $maxCacheSize = 64;
+				static $maxCacheSize = 128;
 				static $sorter;
+				static $window = 32;
 
 				if ($sorter === NULL) {
 					$sorter = function($a, $b) {
@@ -219,20 +220,21 @@ class Daemon_WorkerThread extends Thread {
 					};
 				}
 
-				$crc = crc32($arg . "\x00" . $body);
+				$source = $arg . "\x00" . $body;
+				$key = md5($source, true) . pack('l', crc32($source));
 
-				if (isset($cache[$crc])) {
-					++$cache[$crc][1];
+				if (isset($cache[$key])) {
+					++$cache[$key][1];
 
-					return $cache[$crc][0];
+					return $cache[$key][0];
 				}
 
-				if (sizeof($cache) >= $maxCacheSize) {
+				if (sizeof($cache) >= $maxCacheSize + $window) {
 					uasort($cache, $sorter);
-					array_pop($cache);
+					$cache = array_slice($cache, $maxCacheSize);
 				}
 
-				$cache[$crc] = array($cb = eval('return function('.$arg.'){'.$body.'};'), 0);
+				$cache[$key] = array($cb = eval('return function('.$arg.'){'.$body.'};'), 0);
 				return $cb;
 			}
 		}

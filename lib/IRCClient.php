@@ -117,7 +117,7 @@ class IRCClientConnection extends NetworkClientConnection {
 	}
 	
 	/**
-	 * Called when session finishes
+	 * Called when connection finishes
 	 * @return void
 	 */
 	public function onFinish() {
