@@ -489,7 +489,7 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}, 1e6, 'checkReloadReady');
 		while (!$this->reloadReady) {
-			event_base_loop($this->eventBase);
+			@event_base_loop($this->eventBase);
 		}
 		FS::waitAllEvents(); // ensure that all I/O events completed before suicide
 		exit(0); // R.I.P.
