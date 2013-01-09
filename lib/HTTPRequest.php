@@ -113,6 +113,7 @@ class HTTPRequest extends Request {
 		if ($this->conn->sendfileCap) {
 			$req->ensureSentHeaders();
 			$req->conn->onWriteOnce(function($conn) use ($req, $path, $cb, $pri) {
+				Daemon::log('sendfile');
 				FS::sendfile($req->conn->fd, $path, $cb, 0, null, $pri);
 			});
 			return;
