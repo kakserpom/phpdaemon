@@ -14,7 +14,7 @@ class ExampleWithMongo extends AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->mongo = MongoClient::getInstance(
+		$this->mongo = MongoClientAsync::getInstance(
 			array('maxconnperserv' => 100)
 		);
 	}

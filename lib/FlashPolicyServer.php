@@ -23,7 +23,9 @@ class FlashPolicyServer extends NetworkServer {
 		);
 	}
 	
-	public function onReady() {}
+	public function onReady() {
+		$this->onConfigUpdated();
+	}
 
 	/**
 	 * Called when worker is going to update configuration.
@@ -31,11 +33,13 @@ class FlashPolicyServer extends NetworkServer {
 	 */
 	public function onConfigUpdated() {
 		parent::onConfigUpdated();
-		$pool = $this;
-		FS::readfile($this->config->file->value, function($file, $data) use ($pool) {
-			$pool->policyData = $data;
-			$pool->enable();
-		});
+		if (Daemon::$process instanceof Daemon_WorkerProcess) {
+			$pool = $this;
+			FS::readfile($this->config->file->value, function($file, $data) use ($pool) {
+				$pool->policyData = $data;
+				$pool->enable();
+			});
+		}
 	}
 	
 }

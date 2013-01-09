@@ -22,7 +22,10 @@ class Daemon_IPCThread extends Thread {
 	 * @return void
 	 */
 	public function run() {
-		FS::init();
+		if (Daemon::$process instanceof Daemon_MasterThread) {
+			Daemon::$process->unregisterSignals();
+		}
+		event_reinit(Daemon::$process->eventBase);
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
 			$oldfd = Daemon::$logpointerAsync->fd;
@@ -41,8 +44,8 @@ class Daemon_IPCThread extends Thread {
 
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
-		FS::init(); // re-init
-		FS::initEvent();
+		//FS::init(); // re-init
+		//FS::initEvent();
 		Daemon::openLogs();
 
 		$this->fileWatcher = new FileWatcher;

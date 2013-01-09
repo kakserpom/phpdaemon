@@ -33,12 +33,7 @@ abstract class BoundSocket {
 	 * @return void
 	 */
 	public function setFd($fd) {
-		$this->ev = event_new();
 		$this->fd = $fd;
-		if (!event_set($this->ev, $fd, EV_READ | EV_PERSIST, array($this, 'onAcceptEvent'))) {
-			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($fd));
-			return;
-		}
 		$this->pid = posix_getpid();
 	}
 	
@@ -51,8 +46,14 @@ abstract class BoundSocket {
 			return;
 		}
 		$this->enabled = true;
+		if ($this->ev === null) {
+			$this->ev = event_new(Daemon::$process->eventBase, $this->fd, EVENT_READ | EVENT_PERSIST, array($this, 'onAcceptEvent'));
+			if (!$this->ev) {
+				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($this->fd));
+				return;
+			}
+		}
 		if ($this->ev) {
-			event_base_set($this->ev, Daemon::$process->eventBase);
 			event_add($this->ev);
 		}
 	}

@@ -318,7 +318,7 @@ class Connection extends IOStream {
 				}
 			}
 		} elseif (isset($this->buffer)) {
-			$read = event_buffer_read($this->buffer, $n);
+			$n = bufferevent_read($this->buffer, $read, $n);
 		} else {
 			return false;
 		}

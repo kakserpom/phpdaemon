@@ -36,7 +36,10 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function run() {
-		FS::init();
+		if (Daemon::$process instanceof Daemon_MasterThread) {
+			Daemon::$process->unregisterSignals();
+		}
+		event_reinit(Daemon::$process->eventBase);
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
 			$oldfd = Daemon::$logpointerAsync->fd;
@@ -62,8 +65,8 @@ class Daemon_WorkerThread extends Thread {
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 
-		FS::init(); // re-init
-		FS::initEvent();
+		//FS::init();
+		//FS::initEvent();
 		Daemon::openLogs();
 
 
@@ -600,7 +603,13 @@ class Daemon_WorkerThread extends Thread {
 	 * Handler of the SIGTTIN signal in worker process.
 	 * @return void
 	 */
-	public function sigttin() { }
+	public function sigttin() {}
+
+	/**
+	 * Handler of the SIGPIPE signal in worker process.
+	 * @return void
+	 */
+	public function sigpipe() {}
 
 	/**
 	 * Handler of non-known signals.

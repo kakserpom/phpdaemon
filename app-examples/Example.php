@@ -39,7 +39,7 @@ class Example extends AppInstance {
 	 * Called when application instance is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
-	public function onShutdown() {
+	public function onShutdown($graceful = false) {
 		// Finalization.
 		return TRUE;
 	}

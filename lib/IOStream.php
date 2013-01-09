@@ -80,15 +80,15 @@ abstract class IOStream {
 			$ev = event_new();
 			$flags = 0;
 			if ($this->directInput) {
-				$flags |= EV_READ;
+				$flags |= EVENT_READ;
 			}
 			if ($this->directOutput) {
-				$flags |= EV_WRITE;
+				$flags |= EVENT_WRITE;
 			}
 			if ($this->timeout !== null) {
-				$flags |= EV_TIMEOUT;
+				$flags |= EVENT_TIMEOUT;
 			}
-			event_set($ev, $this->fd, $flags | EV_PERSIST, array($this, 'onDirectEvent'));
+			event_set($ev, $this->fd, $flags | EVENT_PERSIST, array($this, 'onDirectEvent'));
 			event_base_set($ev, Daemon::$process->eventBase);
 			if ($this->priority !== null) {
 				event_priority_set($ev, $this->priority);
@@ -101,23 +101,25 @@ abstract class IOStream {
 			$this->event = $ev;
 		}
 		if (!$this->directOutput || !$this->directOutput) {
-			$this->buffer = event_buffer_new(
+			$this->buffer = bufferevent_socket_new(Daemon::$process->eventBase,
 					$this->fd,
+					EVENT_BEV_OPT_CLOSE_ON_FREE | EVENT_BEV_OPT_DEFER_CALLBACKS
+			);
+			bufferevent_setcb($this->buffer,
 					$this->directInput ? null : array($this, 'onReadEvent'),
 					$this->directOutput ? null : array($this, 'onWriteEvent'),
-					array($this, 'onFailureEvent')
+					array($this, 'onStateEvent')
 			);
-			event_buffer_base_set($this->buffer, Daemon::$process->eventBase);
 			if ($this->priority !== null) {
-				event_buffer_priority_set($this->buffer, $this->priority);
+				bufferevent_priority_set($this->buffer, $this->priority);
 			}
 			if ($this->timeout !== null) {
-				event_buffer_timeout_set($this->buffer, $this->timeout, $this->timeout);
+				bufferevent_set_timeouts($this->buffer, $this->timeout, $this->timeout);
 			}
 			if (!$this->directInput) {
-				event_buffer_watermark_set($this->buffer, EV_READ, $this->lowMark, $this->highMark);
+				bufferevent_setwatermark($this->buffer, EVENT_READ, $this->lowMark, $this->highMark);
 			}
-			event_buffer_enable($this->buffer, EV_WRITE | EV_TIMEOUT | EV_PERSIST);
+			bufferevent_enable($this->buffer, EVENT_WRITE | EVENT_TIMEOUT | EVENT_PERSIST);
 		}
 		if (!$this->inited) {
 			$this->inited = true;
@@ -142,7 +144,7 @@ abstract class IOStream {
 			$this->onWriteEvent($fd);
 		}
 		if (($events | EV_TIMEOUT) === $events) {
-			$this->onFailureEvent($fd);
+			$this->onEvent($fd);
 		}
 	}
 	
@@ -263,7 +265,7 @@ abstract class IOStream {
 			return true;
 		}
  		$this->sending = true;
-		event_buffer_write($this->buffer, $data);
+		bufferevent_write($this->buffer, $data);
 		return true;
 	}
 
@@ -358,11 +360,10 @@ abstract class IOStream {
 	
 	/**
 	 * Called when the connection has got new data
-	 * @param resource Descriptor
-	 * @param mixed Optional. Attached variable
+	 * @param resource Bufferevent
 	 * @return void
 	 */
-	public function onReadEvent($stream, $arg = null) {
+	public function onReadEvent($bev) {
 		if ($this->readLocked) {
 			return;
 		}
@@ -403,11 +404,11 @@ abstract class IOStream {
 	}
 	/**
 	 * Called when the connection is ready to accept new data
-	 * @param resource Descriptor
+	 * @param resource Bufferedevent
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onWriteEvent($stream = null, $arg = null) {
+	public function onWriteEvent($bev) {
 		$this->sending = false;
 		if ($this->finished) {
 			$this->close();
@@ -427,7 +428,7 @@ abstract class IOStream {
 			}
 			$this->alive = true;
 			if (isset($this->buffer)) {
-				event_buffer_enable($this->buffer, $this->directInput ? (EV_WRITE | EV_TIMEOUT | EV_PERSIST) : (EV_READ | EV_WRITE | EV_TIMEOUT | EV_PERSIST));
+				event_buffer_enable($this->buffer, $this->directInput ? (EVENT_WRITE | EVENT_TIMEOUT | EVENT_PERSIST) : (EVENT_READ | EVENT_WRITE | EVENT_TIMEOUT | EVENT_PERSIST));
 			}
 			try {			
 				$this->onReady();
@@ -452,25 +453,30 @@ abstract class IOStream {
 	
 	/**
 	 * Called when the connection failed
-	 * @param resource Descriptor
+	 * @param resource Bufferevent
+	 * @param int Events
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onFailureEvent($stream, $arg = null) {
-		try {
-			$this->close();
-			if ($this->finished) {
-				return;
-			}
-			$this->finished = true;
-			$this->onFinish();
-			if ($this->pool) {
-				$this->pool->detach($this);
-			}
-		} catch (Exception $e) {
-			Daemon::uncaughtExceptionHandler($e);
+	public function onStateEvent($bev, $events) {
+		if ($events & EVENT_BEV_EVENT_CONNECTED) {
 		}
-		event_base_loopexit(Daemon::$process->eventBase);
+  		elseif ($events & (EVENT_BEV_EVENT_ERROR | EVENT_BEV_EVENT_EOF)) {
+			try {
+				$this->close();
+				if ($this->finished) {
+					return;
+				}
+				$this->finished = true;
+				$this->onFinish();
+				if ($this->pool) {
+					$this->pool->detach($this);
+				}
+			} catch (Exception $e) {
+				Daemon::uncaughtExceptionHandler($e);
+			}
+			event_base_loopexit(Daemon::$process->eventBase);
+		}
 	}
 	
 	/**

@@ -24,10 +24,7 @@ class Timer {
 		}
 		$this->id = $id;
 		$this->cb = $cb;
-		$this->ev = event_timer_new();
-		$timer = $this;
-		event_timer_set($this->ev, array($this, 'eventCall'));
-		event_base_set($this->ev, Daemon::$process->eventBase);
+		$this->ev = evtimer_new(Daemon::$process->eventBase, array($this, 'eventCall'));
 		if ($priority !== null) {
 			$this->setPriority($priority);
 		}
@@ -36,7 +33,7 @@ class Timer {
 		}
 		Timer::$list[$id] = $this;
 	}
-	public function eventCall($fd, $flags, $arg) {
+	public function eventCall($arg) {
 		try {
 			call_user_func($this->cb, $this);
 		} catch (Exception $e) {
@@ -72,7 +69,7 @@ class Timer {
 		if ($timeout !== null) {
 			$this->lastTimeout = $timeout;
 		}
-		event_timer_add($this->ev, $this->lastTimeout);
+		event_timer_add($this->ev, $this->lastTimeout / 1e6);
 	}
 	public function cancel() {
 		event_timer_del($this->ev);

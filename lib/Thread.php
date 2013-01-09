@@ -92,23 +92,20 @@ abstract class Thread {
 			) {
 				continue;
 			}
-			
-			$ev = event_new();
-			if (
-				!event_set(
-					$ev,
-					$no,
-					EV_SIGNAL | EV_PERSIST,
-					array($this,'eventSighandler'),
-					array($no)
-				)
-			) {
+			$ev = evsignal_new($this->eventBase, $no, array($this,'eventSighandler'), array($no));
+			if (!$ev) {
 				throw new Exception('Cannot event_set for '.$name.' signal');
 			}
-			
-			event_base_set($ev, $this->eventBase);
 			event_add($ev);
 			$this->sigEvents[$no] = $ev;
+		}
+	}
+
+	public function unregisterSignals() {
+		foreach ($this->sigEvents as $no => $ev) {
+			event_del($ev);
+			event_free($ev);
+			unset($this->sigEvents[$no]);
 		}
 	}
 
@@ -119,7 +116,7 @@ abstract class Thread {
 	 * @param mixed Argument.
 	 * @return void
 	 */
-	public function eventSighandler($fd, $events, $arg) {
+	public function eventSighandler($fd, $arg) {
 	  $this->sighandler($arg[0]);
 	}
 

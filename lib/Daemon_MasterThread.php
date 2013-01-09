@@ -16,17 +16,19 @@ class Daemon_MasterThread extends Thread {
 	public $callbacks;
 	public $workers;
 	public $ipcthreads;
+	public $eventBase;
+	public $eventBaseConfig;
 	
 	/**
 	 * Runtime of Master process
 	 * @return void
 	 */
 	public function run() {
+
 		Daemon::$process = $this;
 		
 		$this->prepareSystemEnv();
 		class_exists('Timer'); // ensure loading this class
-		
 		gc_enable();
 		
 		$this->eventBase = event_base_new();
@@ -46,7 +48,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
 		));
-		Timer::add(function($event) use (&$cbs) {
+		if (0) Timer::add(function($event) use (&$cbs) {
 			$self = Daemon::$process;
 
 			static $c = 0;

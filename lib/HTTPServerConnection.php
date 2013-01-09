@@ -30,7 +30,6 @@ class HTTPServerConnection extends Connection {
 	public function onRead() {
 		start:
 		$readed = $this->read($this->readPacketSize);
-
 		if ($this->state === $this->prevState) {
 			if (strlen($readed) === 0) {
 				return;

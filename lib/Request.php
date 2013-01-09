@@ -40,13 +40,11 @@ class Request {
 	public function __construct($appInstance, $upstream, $parent = NULL) {
 		$this->appInstance = $appInstance;
 		$this->upstream = $upstream;
-		$this->ev = event_timer_new();
-		event_timer_set($this->ev, array($this, 'eventCall'));
-		event_base_set($this->ev, Daemon::$process->eventBase);
+		$this->ev = evtimer_new(Daemon::$process->eventBase, array($this, 'eventCall'));
 		if ($this->priority !== null) {
 			event_priority_set($this->ev, $this->priority);
 		}
-		event_timer_add($this->ev, 1);
+		evtimer_add($this->ev, null);
 				
 		$this->preinit($parent);
 		$this->onWakeup();
@@ -71,7 +69,7 @@ class Request {
 	/**
 	 * @todo description is missing
 	 */
-	public function eventCall($fd, $flags, $arg) {		
+	public function eventCall($arg) {
 		if ($this->state === Request::STATE_SLEEPING) {
 			$this->state = Request::STATE_ALIVE;
 		}
@@ -298,7 +296,7 @@ class Request {
 			$set = true;
 		}
  
-		$this->sleepTime = $time*1000000;
+		$this->sleepTime = $time;
  
 		if (!$set) {
 			throw new RequestSleepException;
@@ -331,7 +329,7 @@ class Request {
 		if (is_resource($this->ev)) {
 			$this->state = Request::STATE_ALIVE;
 			event_timer_del($this->ev);
-			event_timer_add($this->ev, 1);
+			event_timer_add($this->ev, null);
 		}
 	}
 	
