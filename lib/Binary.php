@@ -88,6 +88,15 @@ class Binary {
 		return intval($r);
 	}
 
+	public static function getStrWord(&$p, $l = false) {
+		$r = binarySubstr($p, 0, 2);
+		$p = binarySubstr($p, 2);
+		if ($l) {
+			$r = strrev($r);
+		}
+		return $r;
+	}
+
 	public static function getDWord(&$p,$l = false) {
 		$r = self::bytes2int(binarySubstr($p,0,4),!!$l);
 		$p = binarySubstr($p,4);

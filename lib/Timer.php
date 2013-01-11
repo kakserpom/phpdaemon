@@ -69,10 +69,10 @@ class Timer {
 		if ($timeout !== null) {
 			$this->lastTimeout = $timeout;
 		}
-		event_timer_add($this->ev, $this->lastTimeout / 1e6);
+		evtimer_add($this->ev, $this->lastTimeout / 1e6);
 	}
 	public function cancel() {
-		event_timer_del($this->ev);
+		evtimer_del($this->ev);
 	}
 	public function finish(){
 		$this->free();
@@ -82,9 +82,10 @@ class Timer {
 	}
 	public function free() {
 		unset(Timer::$list[$this->id]);
-		if (is_resource($this->ev)) {
-			event_timer_del($this->ev);
+		if ($this->ev !== null) {
+			evtimer_del($this->ev);
 			event_free($this->ev);
+			$this->ev = null;
 		}
 	}
 }

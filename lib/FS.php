@@ -88,7 +88,7 @@ class FS {
 	}
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
-			call_user_func($cb, $path, FS::statPrepare(stat($path)));
+			call_user_func($cb, $path, FS::statPrepare(@stat($path)));
 			return;
 		}
 		return eio_stat($path, $pri, function($path, $stat) use ($cb) {call_user_func($cb, $path, FS::statPrepare($stat));}, $path);
@@ -208,7 +208,7 @@ class FS {
 
 	public static function sendfile($outfd, $path, $cb, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
-			call_user_func($cb, false);
+			call_user_func($cb, $path, false);
 			return;
 		}
 		FS::open($path, 'r', function ($file) use ($cb, $path, $pri, $outfd, $offset, $length) {

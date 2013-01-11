@@ -93,13 +93,14 @@ class Daemon {
 	}
 
 	public static function callAutoGC() {
+		++Daemon::$process->counterGC;
 		if (
 			(Daemon::$config->autogc->value > 0) 
 			&& (Daemon::$process->counterGC > 0) 
-			&& (Daemon::$process->counterGC % Daemon::$config->autogc->value === 0)
+			&& (Daemon::$process->counterGC >= Daemon::$config->autogc->value)
 		) {
 			gc_collect_cycles();
-			++Daemon::$process->counterGC;
+			Daemon::$process->counterGC = 0;
 		}
 	}
 

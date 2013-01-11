@@ -25,6 +25,9 @@ class CallbackWrapper {
 		$class = get_called_class();
 		return new $class($cb, Daemon::$context);
 	}
+	public function unwrap() {
+		return $this->cb;
+	}
 	public function __invoke() {
 		if ($this->cb === null) {
 			return;

@@ -150,8 +150,8 @@ class Daemon_Bootstrap {
 			$error = true;
 		}
 	
-		if (!is_callable('event_base_new')) {
-			Daemon::log('[EMERG] libevent extension not found. You have to install libevent from pecl (http://pecl.php.net/package/libevent). `svn checkout http://svn.php.net/repository/pecl/libevent pecl-libevent`.');
+		if (!Daemon::loadModuleIfAbsent('event') || !is_callable('bufferevent_socket_new')) {
+			Daemon::log('[EMERG] event extension not found. You have to install it from pecl (http://pecl.php.net/package/event).');
 			$error = true;
 		}
 	

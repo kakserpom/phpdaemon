@@ -48,7 +48,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
 		));
-		if (0) Timer::add(function($event) use (&$cbs) {
+		Timer::add(function($event) use (&$cbs) {
 			$self = Daemon::$process;
 
 			static $c = 0;

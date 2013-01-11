@@ -8,14 +8,14 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class NetworkServer extends ConnectionPool {
-	
+
 	/**
 	 * Called when a request to HTTP-server looks like WebSocket handshake query.
 	 * @return void
 	 */
 
 	public function inheritFromRequest($req, $pool) {
-		$oldConn = $req->conn;
+		$oldConn = $req->upstream;
 		if ($req instanceof Request) {
 			$req->free();
 		}
@@ -31,11 +31,10 @@ class NetworkServer extends ConnectionPool {
 		unset($oldConn->buffer); // to prevent freeing the buffer
 		unset($oldConn->fd); // to prevent closing the socket
 		$pool->detach($oldConn);
-		$set = event_buffer_set_callback(
-			$conn->buffer, 
+		$set = bufferevent_setcb($conn->buffer, 
 			array($conn, 'onReadEvent'),
 			array($conn, 'onWriteEvent'),
-			array($conn, 'onFailureEvent')
+			array($conn, 'onStateEvent')
 		);
 		$conn->addr = $req->attrs->server['REMOTE_ADDR'];
 		$conn->server = $req->attrs->server;

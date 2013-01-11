@@ -24,11 +24,18 @@ class ICMPClient extends NetworkClient {
 class ICMPClientConnection extends NetworkClientConnection {
 	public $seq = 0;
 
-	public function sendEcho($cb) {
+	public function sendEcho($cb, $data = 'phpdaemon') {
 		++$this->seq;
-		
-		$data = 'phpdaemon';
-		$packet = pack('ccnnn', strlen($data), 0, 0, Daemon::$process->pid,	$this->seq) . $data;
+		if (strlen($data) % 2 !== 0) {
+			$data .= "\x00";
+		}
+		$packet = pack('ccnnn',
+			8, // type (c)
+			0, // code (c)
+			0, // checksum (n)
+			Daemon::$process->pid, // pid (n)
+			$this->seq  // seq (n)
+		) . $data;
 		$packet = substr_replace($packet, self::checksum($packet), 2, 2);
 		$this->write($packet);
 		$this->onResponse->push(array($cb, microtime(true)));
@@ -52,10 +59,18 @@ class ICMPClientConnection extends NetworkClientConnection {
 	 * @param string New data
 	 * @return void
 	 */
-	public function stdin($buf) {
-		// TODO: implement sequential packet exchange, incoming packet check
+	public function stdin($packet) {
+		$type = Binary::getByte($packet);
+		$code = Binary::getByte($packet);
+		$checksum = Binary::getStrWord($packet);
+		$id = Binary::getWord($packet);
+		$seq = Binary::getWord($packet);
+
 		while (!$this->onResponse->isEmpty()) {
 			$el = $this->onResponse->shift();
+			if ($el instanceof CallbackWrapper) {
+				$el = $el->unwrap();
+			}
 			list ($cb, $st) = $el;
 			call_user_func($cb, microtime(true) - $st);
 		}

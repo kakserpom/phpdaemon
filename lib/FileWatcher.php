@@ -12,7 +12,7 @@ class FileWatcher {
 	public $inotify;
 	public $descriptors = array();
 	public function __construct() {
-		if (is_callable('inotify_init')) {
+		if (Daemon::loadModuleIfAbsent('inotify')) {
 			$this->inotify = inotify_init();
 			stream_set_blocking($this->inotify, 0);
 		}

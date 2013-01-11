@@ -29,7 +29,7 @@ class Connection extends IOStream {
 			if (isset($u['host']) && (substr($u['host'], 0, 1) === '[')) {
 				$u['host'] = substr($u['host'], 1, -1);
 			}
-			if (!isset($u['port'])) {
+			if (!isset($u['port']) && isset($this->pool->config->port->value)) {
 				$u['port'] = $this->pool->config->port->value;
 			}
 		} else {
@@ -334,6 +334,9 @@ class Connection extends IOStream {
 	}
 	
 	public function closeFd() {
+		if ($this->fd === null) {
+			return;
+		}
 		socket_close($this->fd);
 		$this->fd = null;
 	}

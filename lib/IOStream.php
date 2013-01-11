@@ -77,7 +77,6 @@ abstract class IOStream {
 	public function setFd($fd) {
 		$this->fd = $fd;
 		if ($this->directInput || $this->directOutput) {
-			$ev = event_new();
 			$flags = 0;
 			if ($this->directInput) {
 				$flags |= EVENT_READ;
@@ -88,23 +87,24 @@ abstract class IOStream {
 			if ($this->timeout !== null) {
 				$flags |= EVENT_TIMEOUT;
 			}
-			event_set($ev, $this->fd, $flags | EVENT_PERSIST, array($this, 'onDirectEvent'));
-			event_base_set($ev, Daemon::$process->eventBase);
+			$this->ev = event_new(Daemon::$process->eventBase, $this->fd, $flags | EVENT_PERSIST, array($this, 'onDirectEvent'));
 			if ($this->priority !== null) {
 				event_priority_set($ev, $this->priority);
 			}
 			if ($this->timeout !== null) {
-				event_add($ev, 1e6 * $this->timeout);
+				event_add($ev, $this->timeout);
 			} else {
 				event_add($ev);
 			}
-			$this->event = $ev;
 		}
 		if (!$this->directOutput || !$this->directOutput) {
 			$this->buffer = bufferevent_socket_new(Daemon::$process->eventBase,
 					$this->fd,
 					EVENT_BEV_OPT_CLOSE_ON_FREE | EVENT_BEV_OPT_DEFER_CALLBACKS
 			);
+			if (!$this->buffer) {
+				Daemon::log(get_class($this).': bufferevent_socket_new returned: '.Debug::dump($this->buffer));
+			}
 			bufferevent_setcb($this->buffer,
 					$this->directInput ? null : array($this, 'onReadEvent'),
 					$this->directOutput ? null : array($this, 'onWriteEvent'),
@@ -339,13 +339,13 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if (isset($this->event)) {
-			event_del($this->event);
-			event_free($this->event);
-			$this->event = null;
+		if (isset($this->ev)) {
+			event_del($this->ev);
+			event_free($this->ev);
+			$this->ev = null;
 		}
-		if (isset($this->buffer)) {
-			event_buffer_free($this->buffer);
+		if ($this->buffer) {
+			bufferevent_free($this->buffer);
 			$this->buffer = null;
 		}
 		if (isset($this->fd)) {
@@ -475,7 +475,7 @@ abstract class IOStream {
 			} catch (Exception $e) {
 				Daemon::uncaughtExceptionHandler($e);
 			}
-			event_base_loopexit(Daemon::$process->eventBase);
+			//event_base_loopexit(Daemon::$process->eventBase);
 		}
 	}
 	

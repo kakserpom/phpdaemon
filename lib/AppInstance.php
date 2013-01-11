@@ -16,6 +16,10 @@ class AppInstance {
 	public $config;
 	public $enableRPC = false;
 	public $requestClass;
+
+	const EVENT_CONFIG_UPDATED = 1;
+	const EVENT_GRACEFUL_SHUTDOWN = 2;
+	const EVENT_HARD_SHUTDOWN = 3;
  
 	/**	
 	 * Application constructor
@@ -255,7 +259,7 @@ class AppInstance {
 	/**
 	 * Handle the request
 	 * @param object Parent request
-	 * @param object Upstream application  @todo is upstream really needed?
+	 * @param object Upstream application
 	 * @return object Request
 	 */
 	public function handleRequest($parent, $upstream) {
@@ -274,13 +278,13 @@ class AppInstance {
 	 * @return boolean Result
 	 */
 	public function handleStatus($ret) {
-		if ($ret === 2) {
+		if ($ret === self::EVENT_CONFIG_UPDATED) {
 			// script update
 			return  $this->onConfigUpdated();
-		} elseif ($ret === 3) {
+		} elseif ($ret === self::EVENT_GRACEFUL_SHUTDOWN) {
 			 // graceful worker shutdown for restart
-			return $this->shutdown(TRUE);
-		} elseif ($ret === 5) {
+			return $this->shutdown(true);
+		} elseif ($ret === self::EVENT_HARD_SHUTDOWN) {
 			// shutdown worker
 			return $this->shutdown();
 		} else {

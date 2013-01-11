@@ -16,7 +16,7 @@ class Request {
 	const STATE_ALIVE    = 1;
 	const STATE_RUNNING  = 2;
 	const STATE_SLEEPING = 3;
-	public $conn;
+
 	public $appInstance;
 	public $aborted = FALSE;
 	public $state = self::STATE_ALIVE;
@@ -92,9 +92,10 @@ class Request {
 		if (is_resource($this->ev)) {
 			event_timer_del($this->ev);
 			event_free($this->ev);
+			$this->ev = null;
 		}
-		if (isset($this->conn)) {
-			$this->conn->freeRequest($this);
+		if (isset($this->upstream)) {
+			$this->upstream->freeRequest($this);
 		}
 	}
 	public function setPriority($p) {
@@ -364,18 +365,18 @@ class Request {
 		$this->running = true;
 		Daemon::$req = $this;
 		Daemon::$context = $this;
-		Daemon::$process->setStatus(Daemon::WSTATE_BUSY);
+		Daemon::$process->setState(Daemon::WSTATE_BUSY);
 	}
  
 	/**
 	 * Called when the request starts sleep
 	 * @return void
 	 */
-	public function onSleep() {  
+	public function onSleep() {
 		Daemon::$req = null;
 		Daemon::$context = null;
 		$this->running = false;
-		Daemon::$process->setStatus(Daemon::WSTATE_IDLE);
+		Daemon::$process->setState(Daemon::WSTATE_IDLE);
 	}	
  
 	/**
@@ -403,7 +404,7 @@ class Request {
 				!isset($this->upstream->keepalive->value) 
 				|| !$this->upstream->keepalive->value
 			) {
-				$this->conn->endRequest($this);
+				$this->upstream->endRequest($this);
 			}
 		} else {
 			$this->finish(-1);
@@ -459,8 +460,8 @@ class Request {
 			$this->postFinishHandler();
 			// $status: 0 - FCGI_REQUEST_COMPLETE, 1 - FCGI_CANT_MPX_CONN, 2 - FCGI_OVERLOADED, 3 - FCGI_UNKNOWN_ROLE  @todo what is -1 ? where is the constant for it?
 			$appStatus = 0;
-			if (isset($this->conn)) {
-				$this->conn->endRequest($this, $appStatus, $status);
+			if (isset($this->upstream)) {
+				$this->upstream->endRequest($this, $appStatus, $status);
 			}
  
 		}

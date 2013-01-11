@@ -64,7 +64,7 @@ class FileReaderRequest extends HTTPRequest {
 			$req->wakeup();
 		});
 		$this->job = $job;
-		$this->sleep(1, true);
+		$this->sleep(5, true);
 		$req->attrs->server['FR_PATH'] = FS::sanitizePath($req->attrs->server['FR_PATH']);
 		$job('stat', function($name, $job) use ($req) {
 			FS::stat($req->attrs->server['FR_PATH'], function($path, $stat) use ($job, $req) {
@@ -74,7 +74,10 @@ class FileReaderRequest extends HTTPRequest {
 					return;
 				}
 				if ($stat['type'] === 'd') {
-					$job('readdir', function ($name, $job) use ($path, $req) {
+					if (!FS::$supported) {
+						$req->file(rtrim($path,'/') . '/index.html');
+					}
+					else $job('readdir', function ($name, $job) use ($path, $req) {
 						FS::readdir(rtrim($path,'/'), function ($path, $dir) use ($job, $req) {
 							$found = false;
 							if (is_array($dir)) {
@@ -115,6 +118,11 @@ class FileReaderRequest extends HTTPRequest {
 		$req->out('File not found.');
 	}
 	public function file($path) {
+		if (!FS::$supported) {
+			$this->out(file_get_contents(realpath($path)));
+			$this->wakeup();
+			return;
+		}
 		$req = $this;
 		$job = $this->job;
 		$job('readfile', function ($name, $job) use ($req, $path) {
@@ -182,14 +190,8 @@ div.foot { font: 90% monospace; color: #787878; padding-top: 4px;}
 		$this->finish();
 	}
 
-	/**
-	 * Called when the request finished.
-	 * @return void
-	 */
-	public function onFinish() {
-		if ($this->stream) {
-			$this->stream->close();
-		}
+	public function __destruct() {
+		parent::__destruct();
 	}
 
 	/**
@@ -197,6 +199,5 @@ div.foot { font: 90% monospace; color: #787878; padding-top: 4px;}
 	 * @return integer Status.
 	 */
 	public function run() {
-
 	}	
 }

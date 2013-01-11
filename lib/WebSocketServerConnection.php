@@ -23,7 +23,7 @@ class WebSocketServerConnection extends Connection {
 	}
 	
 	public function onInheritanceFromRequest($req) {
-		$this->stdin("\r\n" . $req->conn->bufHead);
+		$this->stdin("\r\n" . $req->upstream->bufHead);
 	}
 	
 	/**

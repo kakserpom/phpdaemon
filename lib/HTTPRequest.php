@@ -98,7 +98,7 @@ class HTTPRequest extends Request {
 
 		$this->attrs = $req->attrs;
 
-		if ($this->upstream->config->expose->value) {
+		if ($this->upstream->pool->config->expose->value) {
 			$this->header('X-Powered-By: phpDaemon/' . Daemon::$version);
 		}
 
@@ -107,14 +107,16 @@ class HTTPRequest extends Request {
 	
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$req = $this;
+		if ($req->state === self::STATE_FINISHED) {
+			return;
+		}
 		try {
-			$this->header('Content-Type: ' . MIME::get($path));
+			$req->header('Content-Type: ' . MIME::get($path));
 		} catch (RequestHeadersAlreadySent $e) {}
-		if ($this->conn->sendfileCap) {
+		if ($req->upstream->sendfileCap) {
 			$req->ensureSentHeaders();
-			$req->conn->onWriteOnce(function($conn) use ($req, $path, $cb, $pri) {
-				Daemon::log('sendfile');
-				FS::sendfile($req->conn->fd, $path, $cb, 0, null, $pri);
+			$req->upstream->onWriteOnce(function($conn) use ($req, $path, $cb, $pri) {
+				FS::sendfile($req->upstream->fd, $path, $cb, 0, null, $pri);
 			});
 			return;
 		}
@@ -282,7 +284,7 @@ class HTTPRequest extends Request {
 
 			if (
 				isset($this->attrs->server['REQUEST_BODY_FILE'])
-				&& $this->upstream->config->autoreadbodyfile->value
+				&& $this->upstream->pool->config->autoreadbodyfile->value
 			) {
 				$this->readBodyFile();
 			}
@@ -295,6 +297,11 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	public function stdin($c) {
+		/*Daemon::log(Debug::dump([
+			$this->attrs->server['REQUEST_METHOD'],
+			$this->attrs->server,
+			$c
+		]));*/
 		if ($c !== '') {
 			$this->attrs->stdinbuf .= $c;
 			$this->attrs->stdinlen += strlen($c);
@@ -331,7 +338,7 @@ class HTTPRequest extends Request {
 			$this->headers_sent_file = __FILE__;
 			$this->headers_sent_line = __LINE__;
 			$this->headers_sent = true;
-			$this->conn->requestOut($this, $h);
+			$this->upstream->requestOut($this, $h);
 			return false;
 		}
 		return true;
@@ -352,7 +359,7 @@ class HTTPRequest extends Request {
 		if ($this->aborted) {
 			return false;
 		}
-		if (!isset($this->conn)) {
+		if (!isset($this->upstream)) {
 				return false;
 		}
 		
@@ -363,7 +370,7 @@ class HTTPRequest extends Request {
 		
 		if ($this->attrs->chunked) {
 			for ($o = 0; $o < $l;) {
-				$c = min($this->upstream->config->chunksize->value, $l - $o);
+				$c = min($this->upstream->pool->config->chunksize->value, $l - $o);
 
 				$chunk = dechex($c) . "\r\n"
 					. ($c === $l ? $s : binarySubstr($s, $o, $c)) // content
@@ -372,7 +379,7 @@ class HTTPRequest extends Request {
 				if ($this->sendfp) {
 					$this->sendfp->write($chunk);
 				} else {
-					$this->conn->requestOut($this, $chunk);
+					$this->upstream->requestOut($this, $chunk);
 				}
 
 				$o += $c;
@@ -388,7 +395,7 @@ class HTTPRequest extends Request {
 				return true;
 			}
 
-			return $this->conn->requestOut($this, $s);
+			return $this->upstream->requestOut($this, $s);
 		}
 	}
 
@@ -557,7 +564,7 @@ class HTTPRequest extends Request {
 		if ($k === 'CONTENT_TYPE') {
 			self::parse_str(strtolower($e[1]), $ctype, true);
 			if (!isset($ctype['charset'])) {
-				$ctype['charset'] = $this->upstream->config->defaultcharset->value;
+				$ctype['charset'] = $this->upstream->pool->config->defaultcharset->value;
 
 				$s = $e[0].': ';
 				$i = 0;
@@ -690,7 +697,7 @@ class HTTPRequest extends Request {
 								} else {
 									$req = $this;
 									if (FS::$supported) {
-										$this->conn->lockRead();
+										$this->upstream->lockRead();
 									}
 									FS::open($this->attrs->files[$name]['tmp_name'], 'c+', function ($fp) use ($req, $name) {
 										if (!$fp) {
@@ -698,7 +705,7 @@ class HTTPRequest extends Request {
 										}
 										$req->attrs->files[$name]['fp'] = $fp;
 										if (FS::$supported) {
-											$req->conn->unlockRead();
+											$req->upstream->unlockRead();
 											$req->stdin('');
 										}
 									});
@@ -725,7 +732,7 @@ class HTTPRequest extends Request {
 					$this->mpartstate = self::MPSTATE_BODY;
 				}
 
-				if ($this->conn->readLocked) {
+				if ($this->upstream->readLocked) {
 					return;
 				}
 

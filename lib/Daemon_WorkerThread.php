@@ -24,7 +24,7 @@ class Daemon_WorkerThread extends Thread {
 	private $currentStatus = 0;
 	public $eventBase;
 	public $timeoutEvent;
-	public $status = 0;
+	public $state = 0;
 	public $breakMainLoop = FALSE;
 	public $reloadReady = FALSE;
 	public $delayedSigReg = TRUE;
@@ -50,10 +50,11 @@ class Daemon_WorkerThread extends Thread {
 		class_exists('Daemon_TimedEvent');
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
-		$this->setStatus(Daemon::WSTATE_PREINIT);
+		$this->setState(Daemon::WSTATE_PREINIT);
 
 		if (Daemon::$config->autogc->value > 0) {
 			gc_enable();
+			gc_collect_cycles();
 		} else {
 			gc_disable();
 		}
@@ -61,12 +62,12 @@ class Daemon_WorkerThread extends Thread {
 		$this->prepareSystemEnv();
 		$this->overrideNativeFuncs();
 
-		$this->setStatus(Daemon::WSTATE_INIT);
+		$this->setState(Daemon::WSTATE_INIT);
 		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 
-		//FS::init();
-		//FS::initEvent();
+		FS::init();
+		FS::initEvent();
 		Daemon::openLogs();
 
 
@@ -83,21 +84,21 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}
 
-		$this->setStatus(Daemon::WSTATE_IDLE);
+		$this->setState(Daemon::WSTATE_IDLE);
 
 		Timer::add(function($event) {
 			$self = Daemon::$process;
 
 			$self->IPCManager->ensureConnection();
 
-			if ($self->checkState() !== TRUE) {
-				$self->breakMainLoop = TRUE;
+			$self->breakMainLoopCheck();
+			if ($self->breakMainLoop) {
 				event_base_loopexit($self->eventBase);
 				return;
 			}
 
 			$event->timeout();
-		}, 1e6 * 1,	'checkState');
+		}, 1e6 * 1,	'breakMainLoopCheck');
 		if (Daemon::$config->autoreload->value > 0) {
 			Timer::add(function($event) {
 				$self = Daemon::$process;
@@ -118,6 +119,7 @@ class Daemon_WorkerThread extends Thread {
 		while (!$this->breakMainLoop) {
 			event_base_loop($this->eventBase);
 		}
+		$this->shutdown();
 	}
 
 	/**
@@ -329,23 +331,28 @@ class Daemon_WorkerThread extends Thread {
 		FS::updateConfig();
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {
-				$appInstance->handleStatus(2);
+				$appInstance->handleStatus(AppInstance::EVENT_CONFIG_UPDATED);
 			}
 		}
 	}
 
-	/**
-	 * @todo description?
-	 */
-	public function checkState() {
+	public function breakMainLoopCheck() {
 		$time = microtime(true);
 
-		if ($this->terminated) {
-			return FALSE;
+		if ($this->terminated || $this->breakMainLoop) {
+			return;
 		}
 
-		if ($this->status > 0) {
-			return $this->status;
+		if ($this->shutdown) {
+			$this->breakMainLoop = true;
+			return;
+		}
+
+		if ($this->reload) {
+			if ($time > $this->reloadTime) {
+				$this->breakMainLoop = true;
+			}
+			return;
 		}
 
 		if (
@@ -354,10 +361,7 @@ class Daemon_WorkerThread extends Thread {
 		) {
 			$this->log('\'maxmemory\' exceed. Graceful shutdown.');
 
-			$this->reload = TRUE;
-			$this->reloadTime = $time + $this->reloadDelay;
-			$this->setStatus($this->currentStatus);
-			$this->status = 3;
+			$this->initReload();
 		}
 
 		if (
@@ -367,39 +371,19 @@ class Daemon_WorkerThread extends Thread {
 		) {
 			$this->log('\'maxworkeridle\' exceed. Graceful shutdown.');
 
-			$this->reload = TRUE;
-			$this->reloadTime = $time + $this->reloadDelay;
-			$this->setStatus($this->currentStatus);
-			$this->status = 3;
+			$this->initReload();
 		}
 
-		if ($this->update === TRUE) {
-			$this->update = FALSE;
+		if ($this->update === true) {
+			$this->update = false;
 			$this->update();
 		}
+	}
 
-		if ($this->shutdown === TRUE) {
-			$this->status = 5;
-		}
-
-		if (
-			($this->reload === TRUE)
-			&& ($time > $this->reloadTime)
-		) {
-			$this->status = 6;
-		}
-
-		if ($this->status > 0) {
-			foreach (Daemon::$appInstances as $app) {
-				foreach ($app as $appInstance) {
-					$appInstance->handleStatus($this->status);
-				}
-			}
-
-			return $this->status;
-		}
-
-		return TRUE;
+	public function initReload() {
+		$this->reload = true;
+		$this->reloadTime = microtime(true) + $this->reloadDelay;
+		$this->setState($this->state);
 	}
 
 	/**
@@ -411,9 +395,8 @@ class Daemon_WorkerThread extends Thread {
 
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {
-				if (!$appInstance->handleStatus($this->currentStatus)) {
+				if (!$appInstance->handleStatus(AppInstance::EVENT_GRACEFUL_SHUTDOWN)) {
 					$this->log(__METHOD__ . ': waiting for ' . $k);
-
 					$ready = FALSE;
 				}
 			}
@@ -453,7 +436,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		$this->terminated = TRUE;
-		$this->setStatus(Daemon::WSTATE_SHUTDOWN);
+		$this->setState(Daemon::WSTATE_SHUTDOWN);
 
 		if ($hard) {
 			exit(0);
@@ -471,7 +454,7 @@ class Daemon_WorkerThread extends Thread {
 
 		$n = 0;
 
-		unset(Timer::$list['checkState']);
+		unset(Timer::$list['breakMainLoopCheck']);
 
 		Timer::add(function($event) 	{
 			$self = Daemon::$process;
@@ -489,33 +472,33 @@ class Daemon_WorkerThread extends Thread {
 			}
 		}, 1e6, 'checkReloadReady');
 		while (!$this->reloadReady) {
-			@event_base_loop($this->eventBase);
+			event_base_loop($this->eventBase);
 		}
 		FS::waitAllEvents(); // ensure that all I/O events completed before suicide
 		exit(0); // R.I.P.
 	}
 
 	/**
-	 * Changes the worker's status.
-	 * @param int - Integer status.
+	 * Set wstate.
+	 * @param int Constant.
 	 * @return boolean - Success.
 	 */
-	public function setStatus($int) {
+	public function setState($int) {
 		if (Daemon::$compatMode) {
 			return;
 		}
 		if (!$this->id) {
-			return FALSE;
+			return false;
 		}
 
-		$this->currentStatus = $int;
+		$this->state = $int;
 
 		if ($this->reload) {
 			$int += 100;
 		}
 
-		if (Daemon::$config->logworkersetstatus->value) {
-			$this->log('status is ' . $int);
+		if (Daemon::$config->logworkersetstate->value) {
+			$this->log('state is ' . $int);
 		}
 
 		return shmop_write(Daemon::$shm_wstate, chr($int), $this->id - 1);
@@ -542,7 +525,8 @@ class Daemon_WorkerThread extends Thread {
 			$this->log('caught SIGTERM.');
 		}
 
-		$this->shutdown();
+		$this->breakMainLoop = true;
+		event_base_loopexit($this->eventBase);
 	}
 
 	/**
@@ -570,7 +554,7 @@ class Daemon_WorkerThread extends Thread {
 			Daemon::loadConfig(Daemon::$config->configfile->value);
 		}
 
-		$this->update = TRUE;
+		$this->update = true;
 	}
 
 	/**
@@ -596,7 +580,7 @@ class Daemon_WorkerThread extends Thread {
 
 		$this->reload = TRUE;
 		$this->reloadTime = microtime(TRUE) + $this->reloadDelay;
-		$this->setStatus($this->currentStatus);
+		$this->setState($this->state);
 	}
 
 	/**
@@ -629,9 +613,8 @@ class Daemon_WorkerThread extends Thread {
 	 * Destructor of worker thread.
 	 * @return void
 	 */
-	public function __destruct()
-	{
-		$this->setStatus(Daemon::WSTATE_SHUTDOWN);
+	public function __destruct() {
+		$this->setState(Daemon::WSTATE_SHUTDOWN);
 	}
 
 }

@@ -39,7 +39,7 @@ class Daemon_Config implements ArrayAccess {
 	// Worker-related
 	public $user                     = NULL;
 	public $group                    = NULL;
-	public $autogc                   = '1000';
+	public $autogc                   = '1k';
 	public $chroot                   = '/';
 	public $cwd                      = '.';
 	public $autoreload               = '0s';
@@ -53,7 +53,7 @@ class Daemon_Config implements ArrayAccess {
 	public $logging            = 1;
 	public $logstorage         = '/var/log/phpdaemon.log';
 	public $logerrors          = 1;
-	public $logworkersetstatus = 0;
+	public $logworkersetstate = 0;
 	public $logevents          = 0;
 	public $logqueue           = 0;
 	public $logreads           = 0;

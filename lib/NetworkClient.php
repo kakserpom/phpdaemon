@@ -138,6 +138,9 @@ class NetworkClient extends ConnectionPool {
 	 * @return boolean Success.
 	 */
 	public function getConnectionByKey($key, $cb = null) {
+		if (is_object($key)) {
+			return $key->onConnected($cb);
+		}
 		if (
 			($this->dtags_enabled) 
 			&& (($sp = strpos($key, '[')) !== FALSE) 

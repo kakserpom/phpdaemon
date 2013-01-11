@@ -26,6 +26,9 @@ class NetworkClientConnection extends Connection {
 	 */
 	public function onReady() {
 		parent::onReady();
+		if ($this->url === null) {
+			return;
+		}
 		if ($this->connected && !$this->busy) {
 			$this->pool->servConnFree[$this->url]->attach($this);
 		}
@@ -33,6 +36,9 @@ class NetworkClientConnection extends Connection {
 
 	public function setFree($isFree = true) {
 		$this->busy = !$isFree;
+		if ($this->url === null) {
+			return;
+		}
 		if ($this->busy) {
 			$this->pool->servConnFree[$this->url]->detach($this);
 		}
@@ -43,6 +49,9 @@ class NetworkClientConnection extends Connection {
 	}
 
 	public function release() {
+		if ($this->url === null) {
+			return;
+		}
 		if ($this->pool && !$this->busy) {
 			$this->pool->touchPending($this->url);
 		}

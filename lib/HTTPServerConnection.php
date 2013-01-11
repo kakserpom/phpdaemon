@@ -73,8 +73,7 @@ class HTTPServerConnection extends Connection {
 			$req->attrs->stdinbuf = '';
 			$req->attrs->stdinlen = 0;
 			$req->attrs->chunked = false;
-			$req->conn = $this;
-
+			$req->upstream = $this;
 			$this->req = $req;
 
 		} else {
@@ -149,8 +148,7 @@ class HTTPServerConnection extends Connection {
 						return;
 					}
 				} else {
-					$req = Daemon::$appResolver->getRequest($req, $this->pool, isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null);
-					$req->conn = $this;
+					$req = Daemon::$appResolver->getRequest($req, $this, isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null);
 					$this->req = $req;
 				}
 

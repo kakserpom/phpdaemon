@@ -301,7 +301,6 @@ class ConnectionPool extends ObjectStorage {
 		if ($class === null) {
 			$class = $this->connectionClass;
 		}
-		$id = ++Daemon::$process->connCounter;
 		$conn = new $class(null, $this);
 		$conn->connect($url, $cb);
 		return $conn;
