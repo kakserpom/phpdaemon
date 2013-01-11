@@ -38,8 +38,10 @@ class HTTPServer extends NetworkServer {
 			'chunksize' => new Daemon_ConfigEntrySize('8k'),
 			'defaultcharset' => 'utf-8',
 			// disabled by default
-			'enable'     => 0
+			'enable'     => 0,
 			//'responder' => default app
+			// use websocket
+			'use-ws' => 0,
 		);
 	}
 	/**
@@ -65,6 +67,7 @@ class HTTPServer extends NetworkServer {
 	*/
 	public function onReady() {
 		parent::onReady();
-		$this->WS = WebSocketServer::getInstance();
+		if($this->config['use-ws'])
+			$this->WS = WebSocketServer::getInstance();
 	}
 }
