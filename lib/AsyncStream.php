@@ -139,24 +139,18 @@ class AsyncStream {
 				throw new Exception('setting blocking for read stream failed');
 			}
 
-			$this->readBuf = event_buffer_new(
-				$this->readFD,
-				array($this, 'onReadEvent'),
-				array($this, 'onWriteEvent'),
-				array($this, 'onReadFailureEvent'),
-				array()
-			);
-
+			Daemon::log(Debug::dump($this->readFD));
+			$this->readBuf = bufferevent_socket_new(Daemon::$process->eventBase, $this->readFD, EVENT_BEV_OPT_CLOSE_ON_FREE | EVENT_BEV_OPT_DEFER_CALLBACKS);
 			if (!$this->readBuf) {
 				throw new Exception('creating read buffer failed');
 			}
-
-			if (!event_buffer_base_set($this->readBuf, Daemon::$process->eventBase)) {
-				throw new Exception('wrong base');
-			}
-
+			bufferevent_setcb($this->readBuf,
+				array($this, 'onReadEvent'),
+				array($this, 'onWriteEvent'),
+				array($this, 'onReadFailureEvent')
+			);
 			if (
-				(event_buffer_priority_set($this->readBuf, $this->readPriority) === FALSE) 
+				(bufferevent_priority_set($this->readBuf, $this->readPriority) === FALSE) 
 				&& FALSE
 			) {
 				throw new Exception('setting priority for read buffer failed');
@@ -166,7 +160,7 @@ class AsyncStream {
 				throw new Exception('setting blocking for read stream failed');
 			}
 
-			if (!event_buffer_fd_set($this->readBuf, $this->readFD)) {
+			if (!bufferevent_setfd($this->readBuf, $this->readFD)) {
 				throw new Exception('setting descriptor for write buffer failed');
 			}
 		}
@@ -184,31 +178,26 @@ class AsyncStream {
 				throw new Exception('setting blocking for write stream failed');
 			}
 
-			$this->writeBuf = event_buffer_new(
-				$this->writeFD,
-				NULL,
-				array($this, 'onWriteEvent'),
-				array($this, 'onWriteFailureEvent'),
-				array()
-			);
-			
+			$this->writeBuf = bufferevent_socket_new(Daemon::$process->eventBase, $this->writeFD, EVENT_BEV_OPT_CLOSE_ON_FREE | EVENT_BEV_OPT_DEFER_CALLBACKS);
 			if (!$this->writeBuf) {
 				throw new Exception('creating write buffer failed');
 			}
-
-			if (!event_buffer_base_set($this->writeBuf, Daemon::$process->eventBase)) {
-				throw new Exception('wrong base');
-			}
-
+			buffervent_setcb(
+				$this->writeBuf,
+				NULL,
+				array($this, 'onWriteEvent'),
+				array($this, 'onWriteFailureEvent')
+			);
+			
 			if (
-				(event_buffer_priority_set($this->writeBuf, $this->writePriority) === FALSE) 
+				(bufferevent_priority_set($this->writeBuf, $this->writePriority) === FALSE) 
 				&& FALSE
 			) {
 				throw new Exception('setting priority for write buffer failed');
 			}
 		} else {
 			stream_set_blocking($this->writeFD, 0);
-			event_buffer_fd_set($this->buf, $this->writeFD);
+			bufferevent_setfd($this->buf, $this->writeFD);
 		}
 	
 		return $this;
@@ -216,18 +205,18 @@ class AsyncStream {
 	
 	public function closeRead() {
 		if (is_resource($this->readBuf)) {
-			if (event_buffer_free($this->readBuf) === FALSE) {
-				$this->readBuf = FALSE;
+			if (bufferevent_free($this->readBuf) === FALSE) {
+				$this->readBuf = null;
 
 				throw new Exception('freeing read buffer failed.');
 			}
 		
-			$this->readBuf = FALSE;
+			$this->readBuf = null;
 		}
 		
 		if ($this->readFD) {
 			fclose($this->readFD);
-			$this->readFD = FALSE;
+			$this->readFD = null;
 		}
 
 		return $this;

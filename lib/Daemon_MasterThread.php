@@ -110,7 +110,9 @@ class Daemon_MasterThread extends Thread {
 		
 		while (!$this->breakMainLoop) {
 			$this->callbacks->executeAll($this);
-			event_base_loop($this->eventBase);
+			if ($this->eventBase) {
+				event_base_loop($this->eventBase);
+			}
 		}
 	}
 	

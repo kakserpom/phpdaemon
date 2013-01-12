@@ -41,6 +41,7 @@ class IRCClientConnection extends NetworkClientConnection {
 	public $latency;
 	public $lastPingTS;
 	public $timeout = 300;
+	public $bevConnectEnabled = false; // to get local port number
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data

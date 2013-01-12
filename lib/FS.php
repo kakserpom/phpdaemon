@@ -38,7 +38,7 @@ class FS {
 		self::updateConfig();
 		self::$fd = eio_get_event_stream();
 		self::$ev = event_new(Daemon::$process->eventBase, self::$fd, EVENT_READ | EVENT_PERSIST, function ($fd, $events, $arg) {
-			if (eio_nreqs()) {
+			while (eio_nreqs()) {
 	        	eio_poll();
 		    }
 		});
@@ -49,7 +49,7 @@ class FS {
 		if (!self::$supported) {
 			return;
 		}
-		while ($n = eio_nreqs()) {
+		while (eio_nreqs()) {
 		    eio_poll();
 		}
 	}
@@ -331,3 +331,5 @@ class FS {
 if (!defined('EIO_PRI_DEFAULT')) {
 	define('EIO_PRI_DEFAULT', 0);
 }
+
+# vim: ts=4 sts=4 sw=4 ai

@@ -23,6 +23,8 @@ class Connection extends IOStream {
 	public $parentSocket;
 	public $dgram = false;
 	public $timer;
+	public $bevConnectEnabled = true;
+	public $bevConnect = false;
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);
@@ -145,6 +147,7 @@ class Connection extends IOStream {
 	public function connectTo($addr, $port = 0) {
 		$conn = $this;
 		$this->port = $port;
+		$fd = null;
 		if (stripos($addr, 'unix:') === 0) {
 			$this->type = 'unix';
 			// Unix-socket
@@ -268,69 +271,58 @@ class Connection extends IOStream {
 					}
 					$conn->connectTo($real, $conn->port);
 				});
+				return;
 			}
+			$this->hostReal = $host;
+			if ($this->host === null) {
+				$this->host = $this->hostReal;
+			}
+			$this->port = $port;
 			// TCP
 			$l = strlen($pton);
 			if ($l === 4) {
 				$this->addr = $host . ':' . $port;
-				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				if (!$this->bevConnectEnabled) {
+					$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				}
 			} elseif ($l === 16) {
 				$this->addr = '[' . $host . ']:' . $port;
-				$fd = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
+				if (!$this->bevConnectEnabled) {
+					$fd = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
+				}
 			} else {
 				return false;
 			}
-			if (!$fd) {
+			if (!$this->bevConnectEnabled && !$fd) {
 				return false;
 			}
-			socket_set_nonblock($fd);
-			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-			if ($this->keepaliveMode) {
-				socket_set_option($fd, SOL_SOCKET, SO_KEEPALIVE, 1);
+			if (!$this->bevConnectEnabled) {
+				socket_set_nonblock($fd);
+				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			}
-			@socket_connect($fd, $host, $port);
-			socket_getsockname($fd, $this->locAddr, $this->locPort);
+			if ($this->keepaliveMode) {
+				if (!$this->bevConnect) {
+					socket_set_option($fd, SOL_SOCKET, SO_KEEPALIVE, 1);
+				}
+			}
+			if (!$this->bevConnectEnabled) {
+				@socket_connect($fd, $host, $port);
+				socket_getsockname($fd, $this->locAddr, $this->locPort);
+			}
+			else {
+				$this->bevConnect = true;
+			}
 		}
 		$this->setFd($fd);
 		return true;
 	}
 	public function setTimeout($timeout) {
 		parent::setTimeout($timeout);
-		socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-		socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-	}
-
-	/**
-	 * Read data from the connection's buffer
-	 * @param integer Max. number of bytes to read
-	 * @return string Readed data
-	 */
-	public function read($n) {
-		if (isset($this->readEvent)) {
-			$read = socket_read($this->fd, $n);
-
-			if ($read === false) {
-				$no = socket_last_error($this->fd);
-				if ($no !== 11) {  // Resource temporarily unavailable
-					Daemon::log(get_class($this) . '::' . __METHOD__ . ': id = ' . $this->id . '. Socket error. (' . $no . '): ' . socket_strerror($no));
-					$this->onFailureEvent($this->id);
-				}
-			}
-		} elseif (isset($this->buffer)) {
-			$n = bufferevent_read($this->buffer, $read, $n);
-		} else {
-			return false;
+		if ($this->fd !== null) {
+			socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 		}
-		if (
-			($read === '') 
-			|| ($read === null) 
-			|| ($read === false)
-		) {
-			$this->reading = false;
-			return false;
-		}
-		return $read;
 	}
 	
 	public function closeFd() {

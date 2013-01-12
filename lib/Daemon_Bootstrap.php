@@ -150,6 +150,11 @@ class Daemon_Bootstrap {
 			$error = true;
 		}
 	
+		if (extension_loaded('libevent')) {
+			Daemon::log('[EMERG] libevent extension found. You have to remove libevent.so extension.');
+			$error = true;
+		}
+
 		if (!Daemon::loadModuleIfAbsent('event') || !is_callable('bufferevent_socket_new')) {
 			Daemon::log('[EMERG] event extension not found. You have to install it from pecl (http://pecl.php.net/package/event).');
 			$error = true;

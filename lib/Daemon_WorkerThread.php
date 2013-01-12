@@ -23,6 +23,7 @@ class Daemon_WorkerThread extends Thread {
 	private $autoReloadLast = 0;
 	private $currentStatus = 0;
 	public $eventBase;
+	public $dnsBase;
 	public $timeoutEvent;
 	public $state = 0;
 	public $breakMainLoop = FALSE;
@@ -64,6 +65,7 @@ class Daemon_WorkerThread extends Thread {
 
 		$this->setState(Daemon::WSTATE_INIT);
 		$this->eventBase = event_base_new();
+		$this->dnsBase = evdns_base_new($this->eventBase, true); 
 		$this->registerEventSignals();
 
 		FS::init();

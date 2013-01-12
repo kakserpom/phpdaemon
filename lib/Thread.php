@@ -83,8 +83,10 @@ abstract class Thread {
 	 * Register signals.
 	 * @return void
 	 */
-	public function registerEventSignals()
-	{
+	public function registerEventSignals() {
+		if (!$this->eventBase) {
+			return;
+		}
 		foreach (self::$signals as $no => $name) {
 			if (
 				($name === 'SIGKILL') 
@@ -94,7 +96,7 @@ abstract class Thread {
 			}
 			$ev = evsignal_new($this->eventBase, $no, array($this,'eventSighandler'), array($no));
 			if (!$ev) {
-				throw new Exception('Cannot event_set for '.$name.' signal');
+				$this->log('Cannot event_set for '.$name.' signal');
 			}
 			event_add($ev);
 			$this->sigEvents[$no] = $ev;
@@ -147,7 +149,7 @@ abstract class Thread {
 			}
 
 			if (!pcntl_signal($no, array($this, 'sighandler'), TRUE)) {
-				throw new Exception('Cannot assign ' . $name . ' signal');
+				$this->log('Cannot assign ' . $name . ' signal');
 			}
 		}
 	}

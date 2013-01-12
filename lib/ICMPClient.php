@@ -23,7 +23,7 @@ class ICMPClient extends NetworkClient {
 
 class ICMPClientConnection extends NetworkClientConnection {
 	public $seq = 0;
-
+	public $bevConnect = false;
 	public function sendEcho($cb, $data = 'phpdaemon') {
 		++$this->seq;
 		if (strlen($data) % 2 !== 0) {
