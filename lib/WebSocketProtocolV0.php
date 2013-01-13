@@ -5,41 +5,36 @@
  * @see	http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76
  */
 
-class WebSocketProtocolV0 extends WebSocketProtocol
-{
+class WebSocketProtocolV0 extends WebSocketProtocol {
+
 	const STRING = 0x00;
 	const BINARY = 0x80;
 
-    public function onHandshake()
-    {
-        if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
-            return false;
-        }
-        return true;
-    }
+    public function onHandshake() {
+		if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->connection->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
+			return false;
+		}
+		return true;
+	}
 
-    /**
+	/**
      * Returns handshaked data for reply
 	 * @param string Received data (no use in this class)
      * @return string Handshaked data
      */
 
-    public function getHandshakeReply($data)
-    {
-        if ($this->onHandshake())
-        {
+	public function getHandshakeReply($data) {
+        if ($this->onHandshake()) {
 			if (strlen($data) < 8) {
 				return 0; // not enough data yet;
 			}
 			$final_key = $this->_computeFinalKey($this->connection->server['HTTP_SEC_WEBSOCKET_KEY1'], $this->connection->server['HTTP_SEC_WEBSOCKET_KEY2'], $data) ;
 
-			if (!$final_key)
-			{
-				return FALSE ;
+			if (!$final_key) {
+				return false;
 			}
 
-            if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN']))
-            {
+            if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'])) {
                 $this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '' ;
             }
 
@@ -51,14 +46,11 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 			if ($this->connection->pool->config->expose->value) {
 				$reply .= 'X-Powered-By: phpDaemon/' . Daemon::$version . "\r\n";
 			}
-            if (isset($this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL']))
-            {
-                $reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n" ;
+            if (isset($this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'])) {
+				$reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n";
             }
-
-            $reply .= "\r\n" . $final_key ;
-
-            return $reply ;
+            $reply .= "\r\n" . $final_key;
+            return $reply;
         }
 
         return FALSE ;
@@ -114,8 +106,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol
 		return pack('N', $result);
 	}
 
-    public function encodeFrame($data, $type)
-    {
+    public function encodeFrame($data, $type) {
 		// Binary
 		$type = $this->getFrameType($type);
 		if (($type & self::BINARY) === self::BINARY)

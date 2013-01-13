@@ -17,7 +17,7 @@ class WebSocketRoute {
 	 * @param object Remote client (WebSocketSession).
 	 * @return void
 	 */
-	public function __construct($client, $appInstance = NULL) {
+	public function __construct($client, $appInstance = null) {
 		$this->client = $client;
 
 		if ($appInstance) {

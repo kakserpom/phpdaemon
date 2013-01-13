@@ -34,7 +34,7 @@ class WebSocketServerConnection extends Connection {
 	 * @return boolean Success.
 	 */
 
-	public function sendFrame($data, $type = NULL, $cb = NULL)
+	public function sendFrame($data, $type = NULL, $cb = null)
 	{
 		if (!$this->handshaked)
 		{
@@ -203,7 +203,7 @@ class WebSocketServerConnection extends Connection {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 		if ($this->state === self::STATE_ROOT)	{
-			if (strpos($this->buf, "<policy-file-request/>\x00") !== FALSE) {
+			if (strpos($this->buf, "<policy-file-request/>\x00") !== false) {
 				$FP = FlashPolicyServer::getInstance();
 				if ($FP && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
@@ -214,7 +214,7 @@ class WebSocketServerConnection extends Connection {
 
 			$i = 0;
 
-			while (($l = $this->gets()) !== FALSE)
+			while (($l = $this->gets()) !== false)
 			{
 				if ($i++ > 100)
 				{

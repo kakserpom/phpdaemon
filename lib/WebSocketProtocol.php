@@ -4,8 +4,8 @@
  * Websocket protocol abstract class
  */
 
-class WebSocketProtocol
-{
+class WebSocketProtocol {
+	
 	public $description;
 	public $connection;
 
@@ -16,36 +16,30 @@ class WebSocketProtocol
 		$this->connection = $connection;
 	}
 
-	public function getFrameType($type)
-	{
+	public function getFrameType($type) {
 		if (is_int($type)) {
 			return $type;
 		}
-		if ($type === NULL) {
+		if ($type === null) {
 			$type = 'STRING';
 		}
 	    $frametype = @constant($a = get_class($this) .'::' . $type) ;
-	    
-	    if ($frametype === NULL)
-	    {
+	    if ($frametype === null) {
 	        Daemon::log(__METHOD__ . ' : Undefined frametype "' . $type . '"') ;
 	    }
-	    
 	    return $frametype ; 
 	}
 	
-	public function onHandshake()
-	{
-		return TRUE ;
+	public function onHandshake() {
+		return true;
 	}
 
-	public function sendFrame($data, $type)
-	{
-	    $this->connection->write($this->encodeFrame($data, $type)) ;
+	public function sendFrame($data, $type) {
+		$this->connection->write($this->encodeFrame($data, $type)) ;
 	}
 
 	public function onRead() {
-	 	$this->connection->buf = "" ;
+		$this->connection->buf = "" ;
 	}
 	
     /**
@@ -54,9 +48,8 @@ class WebSocketProtocol
      * @return string Handshaked data
      */
 
-    public function getHandshakeReply($data)
-	{
-		return FALSE ;
+    public function getHandshakeReply($data) {
+		return false;
     }
 
 }

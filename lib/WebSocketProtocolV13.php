@@ -45,10 +45,8 @@ class WebSocketProtocolV13 extends WebSocketProtocol
      * @return string Handshaked data
      */
 
-    public function getHandshakeReply($data)
-	{
-        if ($this->onHandshake())
-		{
+    public function getHandshakeReply($data) {
+        if ($this->onHandshake()) {
 	    	if (isset($this->connection->server['HTTP_ORIGIN'])) {
 				$this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = $this->connection->server['HTTP_ORIGIN'];
 			}
@@ -76,7 +74,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol
             return $reply ;
         }
 
-		return FALSE ;
+		return false;
     }
 
 	/**

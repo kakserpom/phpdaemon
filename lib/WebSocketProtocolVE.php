@@ -141,8 +141,7 @@ class WebSocketProtocolVE extends WebSocketProtocol {
             }
             else {
             	if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE) {
-                    if ($this->connection->pool->maxAllowedPacket <= $p - 1)
-                    {
+                    if ($this->connection->pool->maxAllowedPacket <= $p - 1) {                   {
                         // Too big packet
                         $this->connection->finish() ;
                         return FALSE ;
