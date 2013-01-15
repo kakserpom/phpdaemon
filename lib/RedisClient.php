@@ -8,7 +8,7 @@
  */
 class RedisClient extends NetworkClient {
 	public $noSAF = true; // Send-And-Forget queries are not present in the protocol
-	public $subscribeCb = array();
+	public $subscribeCb = array(); // subscriptions callbacks
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -38,21 +38,21 @@ class RedisClient extends NetworkClient {
 			$r .= '$' . strlen($arg) . "\r\n" . $arg . "\r\n";
 		}
 		$this->requestByServer($server = null, $r, $onResponse);
+
+		// PUB/SUB handling
 		if (($name === 'SUBSCRIBE') || ($name === 'PSUBSCRIBE')) {
 			for ($i = 1; $i < $s; ++$i) {
 				$arg = $args[$i];
-				if (!isset($this->subscribeCb[$arg])) {
-					$this->subscribeCb[$arg] = $onResponse;
-				} else {
-					$this->subscribeCb[$arg] = array_merge($this->subscribeCb[$arg], array($onResponse));
-				}
+				// TODO: check if $onResponse already in subscribeCb[$arg]?
+				$this->subscribeCb[$arg][] = CallbackWrapper::wrap($onResponse);
 			}
 		}
+
 		if (($name === 'UNSUBSCRIBE') || ($name === 'PUNSUBSCRIBE')) {
 			for ($i = 1; $i < $s; ++$i) {
 				$arg = $args[$i];
 				if (isset($this->subscribeCb[$arg])) {
-					$this->subscribeCb[$arg] = $onResponse;
+					unset($this->subscribeCb[$arg]);
 				}
 			}
 		}
@@ -69,8 +69,24 @@ class RedisClientConnection extends NetworkClientConnection {
 	public $valueSize = 0;         // size of received part of the value
 	public $error;                 // error message
 	public $key;                   // current incoming key
-	public $EOL = "\r\n";			// EOL for gets() and writeln()
+	public $EOL = "\r\n";		    // EOL for gets() and writeln()
 	const STATE_BINARY = 1;
+
+
+	/**
+	 * Check if arrived data is message from subscription
+	 */
+	protected function isSubMessage() {
+		if(sizeof($this->result) < 3)
+			return false;
+
+		$mtype = strtolower($this->result[0]);
+		if($mtype != 'message' && $mtype != 'pmessage')
+			return false;
+
+		return true;
+	}
+
 
 	/**
 	 * Called when new data received
@@ -81,7 +97,21 @@ class RedisClientConnection extends NetworkClientConnection {
 		$this->buf .= $buf;
 		start:
 		if (($this->result !== null) && ($this->resultSize >= $this->resultLength)) {
-			$this->onResponse->executeOne($this);
+			if($this->isSubMessage()) { // sub callback
+				$pchan = $this->result[1];
+				$sub_cbs = $this->pool->subscribeCb;
+
+				if(in_array($pchan, array_keys($sub_cbs))) {
+					$cbs = $sub_cbs[$pchan];
+					foreach($cbs as $cb) {
+						if(is_callable($cb))
+							call_user_func($cb, $this);
+					}
+				}
+			}
+			else { // request callback
+				$this->onResponse->executeOne($this);
+			}
 			$this->checkFree();			
 			$this->resultSize = 0;
 			$this->resultLength = 0;
