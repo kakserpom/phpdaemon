@@ -156,7 +156,7 @@ class Daemon_Bootstrap {
 		}
 
 		if (!Daemon::loadModuleIfAbsent('event') || !is_callable('bufferevent_socket_new')) {
-			Daemon::log('[EMERG] event extension not found. You have to install it from pecl (http://pecl.php.net/package/event).');
+			Daemon::log('[EMERG] event extension not found. You have to install it. `pecl install https://bitbucket.org/osmanov/pecl-event/downloads/event-1.0.0.tgz`');
 			$error = true;
 		}
 	

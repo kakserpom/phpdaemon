@@ -1,0 +1,10 @@
+			MIGRATION GUIDE (to 0.9)
+
+Why we are here?
+	The version 0.9 uses libevent 2.x (pecl-event bindings), many bugs have been fixed.
+
+Common changes:
+	
+	- MongoClient is now MongoClientAsync because "MongoClient" class-name taken by pecl-mongo.
+	- IOStream: non-buffered mechanism was removed.
+	- CallbackWrapper.
