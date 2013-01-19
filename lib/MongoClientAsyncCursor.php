@@ -1,5 +1,5 @@
 <?php
-class MongoClientCursor {
+class MongoClientAsyncCursor {
 	public $id;                 // Cursor's ID.
 	public $col;                // Collection's name.
 	public $items = array();    // Array of objects

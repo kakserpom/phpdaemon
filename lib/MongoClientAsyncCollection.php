@@ -1,5 +1,5 @@
 <?php
-class MongoClientCollection {
+class MongoClientAsyncCollection {
     /**
      * @var MongoClient
      */
@@ -7,7 +7,7 @@ class MongoClientCollection {
 	public $name; // Name of collection.
 
 	/**
-	 * Contructor of MongoClientCOllection
+	 * Contructor of MongoClientAsyncCollection
 	 * @param string Name of collection
 	 * @param object Pool
 	 * @return void

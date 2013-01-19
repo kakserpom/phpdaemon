@@ -11,9 +11,9 @@ class MongoClientAsync extends NetworkClient {
 	public $requests    = array(); // Pending requests
 	public $cursors     = array(); // Active cursors
 	public $lastReqId   = 0;       // ID of the last request
-	public $collections = array(); // Objects of MongoClientCollection
+	public $collections = array(); // Objects of MongoClientAsyncCollection
 	public $dbname      = '';      // Current database
-	public $lastRequestConnection;    // Holds last used MongoClientConnection object.
+	public $lastRequestConnection;    // Holds last used MongoClientAsyncConnection object.
 
 	/* Codes of operations */
 	const OP_REPLY        = 1; 
@@ -82,13 +82,13 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Data
 	 * @param boolean Is an answer expected?
 	 * @return integer Request ID
-	 * @throws MongoClientConnectionFinished
+	 * @throws MongoClientAsyncConnectionFinished
 	 */
 	public function request($key, $opcode, $data, $reply = false) {
 		$reqId = ++$this->lastReqId;
 		$cb = function ($conn) use ($opcode, $data, $reply, $reqId) {
 			if (!$conn->connected) {
-				throw new MongoClientConnectionFinished;
+				throw new MongoClientConnectionAsyncFinished;
 			}
 			$conn->pool->lastRequestConnection = $conn;
 			$conn->write(pack('VVVV', strlen($data) + 16, $reqId, 0, $opcode) . $data);
@@ -98,7 +98,7 @@ class MongoClientAsync extends NetworkClient {
 		};
 		if (
 			(is_object($key) 
-			&& ($key instanceof MongoClientConnection))
+			&& ($key instanceof MongoClientAsyncConnection))
 		) {
 			$cb($key);
 		} else {
@@ -853,7 +853,7 @@ class MongoClientAsync extends NetworkClient {
 	/**
 	 * Returns an object of collection
 	 * @param string Collection's name
-	 * @return MongoClientCollection
+	 * @return MongoClientAsyncCollection
 	 */
 	public function getCollection($col) {
 		if (strpos($col, '.') === false) {
@@ -867,16 +867,16 @@ class MongoClientAsync extends NetworkClient {
 			return $this->collections[$col];
 		}
 		
-		return $this->collections[$col] = new MongoClientCollection($col, $this);
+		return $this->collections[$col] = new MongoClientAsyncCollection($col, $this);
 	}
 
 	/**
 	 * Magic getter-method. Proxy for getCollection. 
 	 * @param string Collection's name
-	 * @return MongoClientCollection
+	 * @return MongoClientAsyncCollection
 	 */
 	public function __get($name) {
 		return $this->getCollection($name);
 	}
 }
-class MongoClientConnectionFinished extends Exception {}
+class MongoClientAsyncConnectionFinished extends Exception {}

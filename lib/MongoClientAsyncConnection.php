@@ -69,7 +69,7 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 				&& ($this->pool->requests[$id][2] === false) 
 				&& !isset($this->pool->cursors[$cur])
 			) {
-				$this->pool->cursors[$cur] = new MongoClientCursor($cur, $this->pool->requests[$id][0], $this);
+				$this->pool->cursors[$cur] = new MongoClientAsyncCursor($cur, $this->pool->requests[$id][0], $this);
 				$this->pool->cursors[$cur]->failure = $flagBits[1] === '1';
 				$this->pool->cursors[$cur]->await = $flagBits[3] === '1';
 				$this->pool->cursors[$cur]->callback = $this->pool->requests[$id][1];
@@ -130,7 +130,7 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 				);
 
 				if (isset($this->pool->cursors[$cur])) {
-					if ($this->pool->cursors[$cur] instanceof MongoClientCursor) {
+					if ($this->pool->cursors[$cur] instanceof MongoClientAsyncCursor) {
 						$this->pool->cursors[$cur]->destroy();
 					} else {
 						unset($this->pool->cursors[$cur]);
