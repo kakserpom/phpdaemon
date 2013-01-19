@@ -29,13 +29,6 @@ class MemcacheClient extends NetworkClient {
 	 * @return void
 	 */
 	public function get($key, $onResponse) {
-		if (
-			!is_string($key) 
-			|| !strlen($key)
-		) {
-			return;
-		}
-
 		$this->requestByKey($key, 'get ' . $this->prefix . $key . "\r\n", $onResponse);
 	}
 
@@ -48,30 +41,18 @@ class MemcacheClient extends NetworkClient {
 	 * @return void
 	 */
 	public function set($key, $value, $exp = 0, $onResponse = NULL) {
-		if (
-			!is_string($key) 
-			|| !strlen($key)
-		) {
-			return;
-		}
-
-		$conn = $this->getConnectionByKey($key);
-		if (!$conn) {
-			return;
-		}
-
-		if ($onResponse !== NULL) {
-			$conn->onResponse->push($onResponse);
-			$conn->checkFree();
-		}
-
-		$flags = 0;
-
-		$conn->write('set ' . $this->prefix . $key . ' ' . $flags . ' ' . $exp . ' ' 
-			. strlen($value) . ($onResponse === NULL ? ' noreply' : '') . "\r\n"
-		);
-		$conn->write($value);
-		$conn->write("\r\n");
+		$this->getConnectionByKey($key, function ($conn) use ($key, $value, $exp, $onResponse) {
+			if (!$conn->connected) {
+				return;
+			}
+			if ($onResponse !== NULL) {
+				$conn->onResponse->push($onResponse);
+				$conn->checkFree();
+			}
+			$conn->writeln('set ' . $this->prefix . $key . ' 0 ' . $exp . ' ' 
+				. strlen($value) . ($onResponse === NULL ? ' noreply' : '') . "\r\n" . $value
+			);
+		});
 	}
 
 	/**
@@ -83,29 +64,17 @@ class MemcacheClient extends NetworkClient {
 	 * @return void
 	 */
 	public function add($key, $value, $exp = 0, $onResponse = NULL) {
-		if (
-			!is_string($key) 
-			|| !strlen($key)
-		) {
-			return;
-		}
-
-		$conn = $this->getConnectionByKey($key);
-		if (!$conn) {
-			return false;
-		}
-
-		if ($onResponse !== NULL) {
-			$conn->onResponse->push($onResponse);
-			$conn->checkFree();
-		}
-
-		$flags = 0;
-
-		$conn->write('add ' . $this->prefix . $key . ' ' . $flags . ' ' . $exp . ' ' . strlen($value) 
-			. ($onResponse === null ? ' noreply' : '') . "\r\n");
-		$conn->write($value);
-		$conn->write("\r\n");
+		$this->getConnectionByKey($key, function ($conn) use ($key, $value, $exp, $onResponse) {
+			if (!$conn->connected) {
+				return;
+			}
+			if ($onResponse !== NULL) {
+				$conn->onResponse->push($onResponse);
+				$conn->checkFree();
+			}
+			$conn->writeln('add ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value) 
+				. ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+		});
 	}
 
 	/**
@@ -116,22 +85,16 @@ class MemcacheClient extends NetworkClient {
 	 * @return void
 	 */
 	public function delete($key, $onResponse = NULL, $time = 0) {
-		if (
-			!is_string($key) 
-			|| !strlen($key)
-		) {
-			return;
-		}
-
-		$conn = $this->getConnectionByKey($key);
-		if (!$conn) {
-			return false;
-		}
-
-		$conn->onResponse->push($onResponse);
-		$conn->checkFree();
-
-		$conn->write('delete ' . $this->prefix . $key . ' ' . $time . "\r\n");
+		$this->getConnectionByKey($key, function ($conn) use ($key, $time, $onResponse) {
+			if (!$conn->connected) {
+				return;
+			}
+			if ($onResponse !== NULL) {
+				$conn->onResponse->push($onResponse);
+				$conn->checkFree();
+			}
+			$conn->writeln('delete ' . $this->prefix . $key . ' ' . $time);
+		});
 	}
 
 	/**
@@ -143,23 +106,17 @@ class MemcacheClient extends NetworkClient {
 	 * @return void
 	 */
 	public function replace($key, $value, $exp = 0, $onResponse = NULL) {
-		$conn = $this->getConnectionByKey($key);
-
-		if (!$conn) {
-			return false;
-		}
-
-		if ($onResponse !== NULL) {
-			$conn->onResponse->push($onResponse);
-			$conn->setFree(false);
-		}
-
-		$flags = 0;
-
-		$conn->write('replace ' . $this->prefix . $key . ' ' . $flags . ' ' . $exp . ' ' . strlen($value) 
-			. ($onResponse === NULL ? ' noreply' : '') . "\r\n");
-		$conn->write($value);
-		$conn->write("\r\n");
+		$this->getConnectionByKey($key, function ($conn) use ($key, $value, $exp, $onResponse) {
+			if (!$conn->connected) {
+				return;
+			}
+			if ($onResponse !== NULL) {
+				$conn->onResponse->push($onResponse);
+				$conn->checkFree();
+			}
+			$conn->writeln('replace ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value) 
+				. ($onResponse === NULL ? ' noreply' : '') . "\r\n" . $value);
+		});
 	}
 
 	/**
@@ -171,23 +128,17 @@ class MemcacheClient extends NetworkClient {
 	 * @return void
 	 */
 	public function append($key, $value, $exp = 0, $onResponse = NULL) {
-		$conn = $this->getConnectionByKey($key);
-		
-		if (!$conn) {
-			return false;
-		}
-
-		if ($onResponse !== NULL) {
-			$conn->onResponse->push($onResponse);
-			$conn->setFree(false);
-		}
-
-		$flags = 0;
-
-		$conn->write('append ' . $this->prefix . $key . ' ' . $flags . ' ' . $exp . ' ' . strlen($value) 
-			. ($onResponse === NULL ? ' noreply' : '') . "\r\n");
-		$conn->write($value);
-		$conn->write("\r\n");
+		$this->getConnectionByKey($key, function ($conn) use ($key, $value, $exp, $onResponse) {
+			if (!$conn->connected) {
+				return;
+			}
+			if ($onResponse !== NULL) {
+				$conn->onResponse->push($onResponse);
+				$conn->checkFree();
+			}
+			$conn->writeln('replace ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value) 
+				. ($onResponse === NULL ? ' noreply' : '') . "\r\n" . $value);
+		});
 	}
 
 	/**
@@ -199,23 +150,17 @@ class MemcacheClient extends NetworkClient {
 	 * @return void
 	 */
 	public function prepend($key, $value, $exp = 0, $onResponse = NULL) {
-		$conn = $this->getConnectionByKey($key);
-
-		if (!$conn) {
-			return false;
-		}
-
-		if ($onResponse !== NULL) {
-			$conn->onResponse->push($onResponse);
-			$conn->setFree(false);
-		}
-
-		$flags = 0;
-
-		$conn->write('prepend ' . $this->prefix . $key . ' ' . $flags . ' ' . $exp . ' ' . strlen($value) 
-			. ($onResponse === NULL ? ' noreply' : '') . "\r\n");
-		$conn->write($value);
-		$conn->write("\r\n");
+		$this->getConnectionByKey($key, function ($conn) use ($key, $value, $exp, $onResponse) {
+			if (!$conn->connected) {
+				return;
+			}
+			if ($onResponse !== NULL) {
+				$conn->onResponse->push($onResponse);
+				$conn->setFree(false);
+			}
+			$conn->writeln('prepend ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value) 
+				. ($onResponse === NULL ? ' noreply' : '') . "\r\n" . $value);
+		});
 	}
 
 	/**

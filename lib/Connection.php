@@ -325,11 +325,11 @@ class Connection extends IOStream {
 		}
 	}
 	
+	
 	public function closeFd() {
-		if ($this->fd === null) {
-			return;
+		if (is_resource($this->fd)) {
+			socket_close($this->fd);
 		}
-		socket_close($this->fd);
 		$this->fd = null;
 	}
 }

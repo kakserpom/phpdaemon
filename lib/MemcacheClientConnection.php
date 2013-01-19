@@ -15,6 +15,7 @@ class MemcacheClientConnection extends NetworkClientConnection {
 	public $error;                 // error message
 	public $key;                   // current incoming key
 	const STATE_DATA = 1;
+	public $EOL = "\r\n";
 
 	/**
 	 * Called when new data received

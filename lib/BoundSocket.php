@@ -17,6 +17,7 @@ abstract class BoundSocket {
 	public $pool;
 	public $addr;
 	public $reuse;
+	public $listenerMode = false;
 	public function __construct($addr, $reuse = true) {
 		$this->addr = $addr;
 		$this->reuse = $reuse;
@@ -46,18 +47,36 @@ abstract class BoundSocket {
 			return;
 		}
 		$this->enabled = true;
-		if ($this->ev === null) {
-			$this->ev = event_new(Daemon::$process->eventBase, $this->fd, EVENT_READ | EVENT_PERSIST, array($this, 'onAcceptEvent'));
-			if (!$this->ev) {
-				Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($this->fd));
-				return;
+
+		if ($this->listenerMode) {
+			$this->ev = evconnlistener_new(
+				Daemon::$process->eventBase,
+				array($this, 'onListenerAcceptedEvent'),
+				null,
+				EVENT_LEV_OPT_CLOSE_ON_FREE | EVENT_LEV_OPT_REUSEABLE,
+				-1,
+				$this->fd
+			);
+		} else {
+			if ($this->ev === null) {
+				$this->ev = event_new(Daemon::$process->eventBase, $this->fd, EVENT_READ | EVENT_PERSIST, array($this, 'onAcceptEvent'));
+				if (!$this->ev) {
+					Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($this->fd));
+					return;
+				}
 			}
-		}
-		if ($this->ev) {
 			event_add($this->ev);
 		}
 	}
 	
+	public function onListenerAcceptedEvent($listener, $fd, $addrPort, $ctx)  {
+		$class = $this->pool->connectionClass;
+		$conn = new $class($fd, $this->pool);
+		$conn->addr = $addrPort[0].':'.$addrPort[1];
+		$conn->host = $addrPort[0];
+		$conn->port = $addrPort[1];
+	}
+
 	/**
 	 * Disable all events of sockets
 	 * @return void
@@ -67,11 +86,12 @@ abstract class BoundSocket {
 			return;
 		}
 		$this->enabled = false;
-		if (!is_resource($this->ev)) {
+		if ($this->ev) {
 			return;
 		}
 		event_del($this->ev);
 		event_free($this->ev);
+		$this->ev = null;
 	}
 
 	/**
@@ -82,10 +102,14 @@ abstract class BoundSocket {
 		if ($this->pid != posix_getpid()) {
 			return;
 		}
-		if ($this->fd === null) {
-			return;
+
+		if ($this->fd !== null) {
+			if ($this->listenerMode) {
+				evconnlistener_free($this->fd);
+			} else {
+				socket_close($this->fd);
+			}
 		}
-		socket_close($this->fd);
 	}
 
 
@@ -120,6 +144,7 @@ abstract class BoundSocket {
 		if (Daemon::$process->reload) {
 			return;
 		}
+
 		if ($this->pool->maxConcurrency) {
 			if ($this->pool->count() >= $this->pool->maxConcurrency) {
 				$this->overload = true;

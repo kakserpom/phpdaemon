@@ -206,7 +206,7 @@ abstract class IOStream {
 			Daemon::log('Attempt to write to dead IOStream ('.get_class($this).')');
 			return false;
 		}
-		if (!$this->buffer) {
+		if (!isset($this->buffer)) {
 			return false;
 		}
 		if (!strlen($data)) {
@@ -285,11 +285,11 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if ($this->buffer !== null) {
+		if (isset($this->buffer)) {
 			bufferevent_free($this->buffer);
 			$this->buffer = null;
 		}
-		if ($this->fd !== null) {
+		if (isset($this->fd)) {
 			$this->closeFd();
 		}
 	}

@@ -438,9 +438,9 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		$this->terminated = TRUE;
-		$this->setState(Daemon::WSTATE_SHUTDOWN);
 
 		if ($hard) {
+			$this->setState(Daemon::WSTATE_SHUTDOWN);
 			exit(0);
 		}
 
