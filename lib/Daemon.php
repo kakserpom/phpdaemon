@@ -19,6 +19,7 @@ class Daemon {
 	const WSTATE_PREINIT = 4;
 	const WSTATE_WAITINIT = 5;
 	const WSTATE_INIT = 6;
+	const SHM_WSTATE_SIZE = 1024;
 
 	/**
 	 * PHPDaemon version
@@ -55,7 +56,6 @@ class Daemon {
 	private static $masters;
 	private static $initservervar;
 	public static $shm_wstate;
-	private static $shm_wstate_size = 5120;
 	public static $reusePort;
 	public static $compatMode = FALSE;
 	public static $runName = 'phpdaemon';
@@ -188,7 +188,7 @@ class Daemon {
 
 		Daemon::$initservervar = $_SERVER;
 		Daemon::$masters = new ThreadCollection;
-		Daemon::$shm_wstate = Daemon::shmop_open(Daemon::$config->pidfile->value, Daemon::$shm_wstate_size, 'wstate');
+		Daemon::$shm_wstate = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate');
 		Daemon::openLogs();
 	}
 	
@@ -373,8 +373,8 @@ class Daemon {
 	 * Get state of workers.
 	 * @return array - information.
 	 */
-	public static function getStateOfWorkers($master = NULL) {
-		static $bufsize = 1024;
+	public static function getStateOfWorkers() {
+		$bufsize = min(1024, Daemon::SHM_WSTATE_SIZE);
 		$offset = 0;
 		
 		$stat = array(
@@ -387,107 +387,62 @@ class Daemon {
 			'init'     => 0,
 		);
 
+		Daemon::$shm_wstate->openAll();
 		$c = 0;
-
-		while ($offset < Daemon::$shm_wstate_size) {
-			$buf = shmop_read(Daemon::$shm_wstate, $offset, $bufsize);
-
-			for ($i = 0; $i < $bufsize; ++$i) {
-				$code = ord($buf[$i]);
-
-				if ($code >= 100) {
-					 // reloaded (shutdown)
-					$code -= 100;
-
-					if ($master !== NULL) {
-						$master->reloadWorker($offset + $i + 1);
+		foreach (Daemon::$shm_wstate->segments as $shm) {
+			while ($offset < Daemon::SHM_WSTATE_SIZE) {
+				$buf = shmop_read($shm, $offset, $bufsize);
+				for ($i = 0, $buflen = strlen($buf); $i < $buflen; ++$i) {
+					$code = ord($buf[$i]);
+					if ($code >= 100) {
+						 // reloaded (shutdown)
+						$code -= 100;
+						if ($code !== Daemon::WSTATE_SHUTDOWN) {
+							if (Daemon::$process instanceof Daemon_MasterThread) {
+								Daemon::$process->reloadWorker($offset + $i + 1);
+							}
+						}
 					}
+					if ($code === 0) {
+						break 2;
+					}
+					elseif ($code === Daemon::WSTATE_IDLE) {
+						// idle
+						++$stat['alive'];
+						++$stat['idle'];
+					}
+					elseif ($code === Daemon::WSTATE_BUSY) {
+						// busy
+						++$stat['alive'];
+						++$stat['busy'];
+					}
+					elseif ($code === Daemon::WSTATE_SHUTDOWN) { 
+						// shutdown
+						++$stat['shutdown'];
+					}
+					elseif ($code === Daemon::WSTATE_PREINIT) {
+						// pre-init
+						++$stat['alive'];
+						++$stat['preinit'];
+						++$stat['idle'];
+					}
+					elseif ($code === Daemon::WSTATE_WAITINIT) {
+						// wait-init
+						++$stat['alive'];
+						++$stat['waitinit'];
+						++$stat['idle'];
+					}
+					elseif ($code === Daemon::WSTATE_INIT) { // init
+						++$stat['alive'];
+						++$stat['init'];
+						++$stat['idle'];
+					}
+					++$c;
 				}
-				if ($code === 0) {
-					break 2;
-				}
-				elseif ($code === Daemon::WSTATE_IDLE) {
-					// idle
-					++$stat['alive'];
-					++$stat['idle'];
-				}
-				elseif ($code === Daemon::WSTATE_BUSY) {
-					// busy
-					++$stat['alive'];
-					++$stat['busy'];
-				}
-				elseif ($code === Daemon::WSTATE_SHUTDOWN) { 
-					// shutdown
-					++$stat['shutdown'];
-				}
-				elseif ($code === Daemon::WSTATE_PREINIT) {
-					// pre-init
-					++$stat['alive'];
-					++$stat['preinit'];
-					++$stat['idle'];
-				}
-				elseif ($code === Daemon::WSTATE_WAITINIT) {
-					// wait-init
-					++$stat['alive'];
-					++$stat['waitinit'];
-					++$stat['idle'];
-				}
-				elseif ($code === Daemon::WSTATE_INIT) { // init
-					++$stat['alive'];
-					++$stat['init'];
-					++$stat['idle'];
-				}
-
-				++$c;
+				$offset += $bufsize;
 			}
-
-			$offset += $bufsize;
 		}
-
 		return $stat;
-	}
-
-	/**
-	 * Opens segment of shared memory.
-	 * @param string Path to file.
-	 * @param int Size of segment.
-	 * @param string Name of segment.
-	 * @param boolean Whether to create if it doesn't exist.
-	 * @return int Resource ID.
-	 */
-	public static function shmop_open($path, $size, $name, $create = TRUE) {
-		if (
-			$create
-			&& !touch($path)
-		) {
-			Daemon::log('Couldn\'t touch IPC file \'' . $path . '\'.');
-			exit(0);
-		}
-
-		if (($key = ftok($path,'t')) === FALSE) {
-			Daemon::log('Couldn\'t ftok() IPC file \'' . $path . '\'.');
-			exit(0);
-		}
-
-		if (!$create) {
-			$shm = shmop_open($key, 'w', 0, 0);
-		} else {
-			$shm = @shmop_open($key, 'w', 0, 0);
-
-			if ($shm) {
-				shmop_delete($shm);
-				shmop_close($shm);
-			}
-
-			$shm = shmop_open($key, 'c', 0755, $size);
-		}
-
-		if (!$shm) {
-			Daemon::log('Couldn\'t open IPC-' . $name . ' shared memory segment (key=' . $key . ', size=' . $size . ', uid=' . posix_getuid() . ').');
-			exit(0);
-		}
-
-		return $shm;
 	}
 
 	/**

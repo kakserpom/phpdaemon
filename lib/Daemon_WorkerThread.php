@@ -503,7 +503,7 @@ class Daemon_WorkerThread extends Thread {
 			$this->log('state is ' . $int);
 		}
 
-		return shmop_write(Daemon::$shm_wstate, chr($int), $this->id - 1);
+		return Daemon::$shm_wstate->write(chr($int), $this->id - 1);
 	}
 
 	/**

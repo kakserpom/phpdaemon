@@ -52,7 +52,7 @@ class MongoClientAsyncCollection {
 	 */
 	public function count($cb, $p = array(), $key = '') {
 		$p['col'] = $this->name;
-		return $this->pool->count($p, $cb, $key);
+		return $this->pool->findCount($p, $cb, $key);
 	}
 
 	/**

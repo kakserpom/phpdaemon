@@ -268,11 +268,7 @@ class Daemon_MasterThread extends Thread {
 	public function shutdown($signo = false) {
 		$this->shutdown = true;
 		$this->waitAll(true);
-
-		if (Daemon::$shm_wstate) {
-			shmop_delete(Daemon::$shm_wstate);
-		}
-		
+		Daemon::$shm_wstate->delete();		
 		file_put_contents(Daemon::$config->pidfile->value,'');
 		
 		exit(0);
