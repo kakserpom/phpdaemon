@@ -31,8 +31,13 @@ class Daemon_MasterThread extends Thread {
 		class_exists('Timer'); // ensure loading this class
 		gc_enable();
 		
-		$this->eventBase = event_base_new();
-		$this->registerEventSignals();
+		//$this->eventBase = event_base_new();
+		
+		if ($this->eventBase) {
+			$this->registerEventSignals();
+		} else {
+			$this->registerSignals();
+		}
 
 		$this->workers = new ThreadCollection;
 		$this->collections['workers'] = $this->workers;
@@ -48,7 +53,7 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
 		));
-		Timer::add(function($event) use (&$cbs) {
+		$this->timerCb = function($event) use (&$cbs) {
 			$self = Daemon::$process;
 
 			static $c = 0;
@@ -89,7 +94,9 @@ class Daemon_MasterThread extends Thread {
 					if ($n > 0) {
 						Daemon::log('Spawning ' . $n . ' worker(s).');
 						$self->spawnWorkers($n);
-						event_base_loopbreak($self->eventBase);
+						if ($self->eventBase) {
+							event_base_loopbreak($self->eventBase);
+						}
 					}
 
 					$n = min(
@@ -103,15 +110,27 @@ class Daemon_MasterThread extends Thread {
 					}
 				}
 			}
-			
-			
-			$event->timeout();
-		}, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
-		
-		while (!$this->breakMainLoop) {
-			$this->callbacks->executeAll($this);
-			if ($this->eventBase) {
+			if ($event) {
+				$event->timeout();
+			}
+		};
+
+		if ($this->eventBase) {
+			Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
+			while (!$this->breakMainLoop) {
+				$this->callbacks->executeAll($this);
 				event_base_loop($this->eventBase);
+			}
+		} else {
+			$lastTimerCall = microtime(true);
+			while (!$this->breakMainLoop) {
+				$m = microtime(true);
+				$this->callbacks->executeAll($this);
+				if ($m > $lastTimerCall + Daemon::$config->mpmdelay->value) {
+					call_user_func($this->timerCb, null);
+					$lastTimerCall = $m;
+				}
+				$this->sigwait();
 			}
 		}
 	}
@@ -186,7 +205,9 @@ class Daemon_MasterThread extends Thread {
 
 		}
 		if ($n > 0) {
-			event_base_loopbreak($this->eventBase);
+			if ($this->eventBase) {
+				event_base_loopbreak($this->eventBase);
+			}
 		}
 		return true;
 	}
@@ -212,7 +233,9 @@ class Daemon_MasterThread extends Thread {
 				exit;
 			}
 		});
-
+		if ($this->eventBase) {
+			event_base_loopbreak($this->eventBase);
+		}
 		return true;
 	}
 

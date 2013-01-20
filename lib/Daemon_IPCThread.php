@@ -25,7 +25,7 @@ class Daemon_IPCThread extends Thread {
 		if (Daemon::$process instanceof Daemon_MasterThread) {
 			Daemon::$process->unregisterSignals();
 		}
-		event_reinit(Daemon::$process->eventBase);
+		//event_reinit(Daemon::$process->eventBase);
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
 			$oldfd = Daemon::$logpointerAsync->fd;

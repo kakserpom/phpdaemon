@@ -350,9 +350,9 @@ abstract class Thread {
 	 * @param int Nanoseconds
 	 * @return void
 	 */
-	protected function sigwait($sec = 0, $nano = 1) {
+	protected function sigwait($sec = 0, $nano = 0.3e9) {
 		$siginfo = NULL;
-		$signo = pcntl_sigtimedwait(self::$signalsno, $siginfo, $sec, $nano);
+		$signo = @pcntl_sigtimedwait(self::$signalsno, $siginfo, $sec, $nano);
 
 		if (is_bool($signo)) {
 			return $signo;

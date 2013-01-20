@@ -75,6 +75,9 @@ abstract class IOStream {
 	public function setFd($fd) {
 		$this->fd = $fd;
 		$this->buffer = bufferevent_socket_new(Daemon::$process->eventBase, $this->fd, EVENT_BEV_OPT_CLOSE_ON_FREE | EVENT_BEV_OPT_DEFER_CALLBACKS);
+		if (!$this->buffer) {
+			return;
+		}
 		bufferevent_setcb($this->buffer, array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onStateEvent'));
 		if ($this->priority !== null) {
 			bufferevent_priority_set($this->buffer, $this->priority);
@@ -285,7 +288,7 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if (isset($this->buffer)) {
+		if (is_resource($this->buffer)) {
 			bufferevent_free($this->buffer);
 			$this->buffer = null;
 		}
