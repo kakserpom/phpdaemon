@@ -188,7 +188,7 @@ class Daemon {
 
 		Daemon::$initservervar = $_SERVER;
 		Daemon::$masters = new ThreadCollection;
-		Daemon::$shm_wstate = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate');
+		Daemon::$shm_wstate = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate', true);
 		Daemon::openLogs();
 	}
 	

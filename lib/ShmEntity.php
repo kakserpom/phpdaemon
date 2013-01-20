@@ -6,11 +6,10 @@ class ShmEntity {
 	public $name;
 	public $key;
 
-	public function __construct($path, $segsize, $name) {
+	public function __construct($path, $segsize, $name, $create = false) {
 		$this->path = $path;
 		$this->segsize = $segsize;
 		$this->name = $name;
-		$create = true;
 		if ($create	&& !touch($this->path)) {
 			Daemon::log('Couldn\'t touch IPC file \'' . $this->path . '\'.');
 			exit(0);
@@ -20,9 +19,8 @@ class ShmEntity {
 			Daemon::log('Couldn\'t ftok() IPC file \'' . $this->path . '\'.');
 			exit(0);
 		}
-
-		if (!$this->open()) {
-			Daemon::log('Couldn\'t open IPC-'.$this->name.'  shared memory segment (key=' . $key . ', segsize=' . $this->segsize . ', uid=' . posix_getuid() . ', path = '.$this->path.').');
+		if (!$this->open(0, $create) && $create) {
+			Daemon::log('Couldn\'t open IPC-'.$this->name.'  shared memory segment (key=' . $this->key . ', segsize=' . $this->segsize . ', uid=' . posix_getuid() . ', path = '.$this->path.').');
 			exit(0);
 		}
 	}
@@ -30,7 +28,7 @@ class ShmEntity {
 	 * Opens segment of shared memory.
 	 * @return int Segment number.
 	 */
-	public function open($segno = 0, $create = true) {
+	public function open($segno = 0, $create = false) {
 		$key = $this->key + $segno;
 		if (!$create) {
 			$shm = @shmop_open($key, 'w', 0, 0);
@@ -43,6 +41,7 @@ class ShmEntity {
 			}
 
 			$shm = shmop_open($key, 'c', 0755, $this->segsize);
+			Daemon::log(Debug::dump(['shm', $shm]));
 		}
 		if (!$shm) {
 			return false;
@@ -53,7 +52,7 @@ class ShmEntity {
 
 	public function openall() {
 		do {
-			$r = $this->open(sizeof($this->segments), false);
+			$r = $this->open(sizeof($this->segments));
 		} while ($r);
 	}
 
