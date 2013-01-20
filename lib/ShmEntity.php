@@ -41,7 +41,6 @@ class ShmEntity {
 			}
 
 			$shm = shmop_open($key, 'c', 0755, $this->segsize);
-			Daemon::log(Debug::dump(['shm', $shm]));
 		}
 		if (!$shm) {
 			return false;
