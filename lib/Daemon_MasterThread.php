@@ -119,7 +119,9 @@ class Daemon_MasterThread extends Thread {
 			Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
 			while (!$this->breakMainLoop) {
 				$this->callbacks->executeAll($this);
-				event_base_loop($this->eventBase);
+				if (!event_base_loop($this->eventBase)) {
+					break;
+				}
 			}
 		} else {
 			$lastTimerCall = microtime(true);

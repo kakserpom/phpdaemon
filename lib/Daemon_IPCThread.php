@@ -25,7 +25,12 @@ class Daemon_IPCThread extends Thread {
 		if (Daemon::$process instanceof Daemon_MasterThread) {
 			Daemon::$process->unregisterSignals();
 		}
-		//event_reinit(Daemon::$process->eventBase);
+		if (Daemon::$process->eventBase) {
+			event_reinit(Daemon::$process->eventBase);
+			$this->eventBase = Daemon::$process->eventBase;
+		} else {
+			$this->eventBase = event_base_new();
+		}
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
 			$oldfd = Daemon::$logpointerAsync->fd;
@@ -41,8 +46,6 @@ class Daemon_IPCThread extends Thread {
 			gc_disable();
 		}
 		$this->prepareSystemEnv();
-
-		$this->eventBase = event_base_new();
 		$this->registerEventSignals();
 		//FS::init(); // re-init
 		//FS::initEvent();
@@ -52,7 +55,9 @@ class Daemon_IPCThread extends Thread {
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		
 		while (!$this->breakMainLoop) {
-			event_base_loop($this->eventBase);
+			if (!event_base_loop($this->eventBase)) {
+				break;
+			}
 		}
 	}
 
@@ -144,17 +149,6 @@ class Daemon_IPCThread extends Thread {
 				$appInstance->handleStatus(2);
 			}
 		}
-	}
-
-	/**
-	 * @todo description?
-	 */
-	public function checkState() {
-		if ($this->terminated) {
-			return FALSE;
-		}
-
-		return TRUE;
 	}
 
 	/**

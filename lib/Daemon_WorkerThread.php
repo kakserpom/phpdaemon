@@ -40,7 +40,12 @@ class Daemon_WorkerThread extends Thread {
 		if (Daemon::$process instanceof Daemon_MasterThread) {
 			Daemon::$process->unregisterSignals();
 		}
-		//event_reinit(Daemon::$process->eventBase);
+		if (Daemon::$process->eventBase) {
+			event_reinit(Daemon::$process->eventBase);
+			$this->eventBase = Daemon::$process->eventBase;
+		} else {
+			$this->eventBase = event_base_new();
+		}
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
 			$oldfd = Daemon::$logpointerAsync->fd;
@@ -63,8 +68,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->prepareSystemEnv();
 		$this->overrideNativeFuncs();
 
-		$this->setState(Daemon::WSTATE_INIT);
-		$this->eventBase = event_base_new();
+		$this->setState(Daemon::WSTATE_INIT);;
 		$this->dnsBase = evdns_base_new($this->eventBase, true); 
 		$this->registerEventSignals();
 
@@ -119,7 +123,9 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		while (!$this->breakMainLoop) {
-			event_base_loop($this->eventBase);
+			if (!event_base_loop($this->eventBase)) {
+				break;
+			}
 		}
 		$this->shutdown();
 	}
