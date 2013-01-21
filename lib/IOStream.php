@@ -288,7 +288,7 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if (is_resource($this->buffer)) {
+		if (isset($this->buffer) && is_resource($this->buffer)) {
 			bufferevent_free($this->buffer);
 			$this->buffer = null;
 		}
