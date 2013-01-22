@@ -115,7 +115,7 @@ class Daemon_MasterThread extends Thread {
 			}
 		};
 
-		if ($this->eventBase) {
+		if ($this->eventBase) { // we are using libevent in Master
 			Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
 			while (!$this->breakMainLoop) {
 				$this->callbacks->executeAll($this);
@@ -123,14 +123,13 @@ class Daemon_MasterThread extends Thread {
 					break;
 				}
 			}
-		} else {
+		} else { // we are NOT using libevent in Master
 			$lastTimerCall = microtime(true);
 			while (!$this->breakMainLoop) {
-				$m = microtime(true);
 				$this->callbacks->executeAll($this);
-				if ($m > $lastTimerCall + Daemon::$config->mpmdelay->value) {
+				if (microtime(true) > $lastTimerCall + Daemon::$config->mpmdelay->value) {
 					call_user_func($this->timerCb, null);
-					$lastTimerCall = $m;
+					$lastTimerCall = microtime(true);
 				}
 				$this->sigwait();
 			}
@@ -152,9 +151,7 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	public function prepareSystemEnv() {
-	
 		register_shutdown_function(array($this,'onShutdown'));
-
 		posix_setsid();
 		proc_nice(Daemon::$config->masterpriority->value);
 		if (!Daemon::$config->verbosetty->value) {

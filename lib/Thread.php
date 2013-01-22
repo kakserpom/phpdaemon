@@ -290,13 +290,14 @@ abstract class Thread {
 	 * @return boolean Success
 	 */
 	private function waitPid() {
+		start:
 		$pid = pcntl_waitpid(-1, $status, WNOHANG);
 		if ($pid > 0) {
 			foreach ($this->collections as &$col) {
 				foreach ($col->threads as $k => &$t) {
 					if ($t->pid === $pid) {
-						$t->terminated = TRUE;
-						return TRUE;
+						$t->terminated = true;
+						goto start;
 					}
 				}
 			}
