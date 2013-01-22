@@ -119,7 +119,7 @@ abstract class Thread {
 	 * @return void
 	 */
 	public function eventSighandler($fd, $arg) {
-	  $this->sighandler($arg[0]);
+		$this->sighandler($arg[0]);
 	}
 
 	/**
@@ -312,6 +312,20 @@ abstract class Thread {
 	 */
 	public function signal($sig) {
 		return posix_kill($this->pid, $sig);
+	}
+
+	public function ifExists() {
+		if (file_exists('/proc')) {
+			return file_exists('/proc/' . $this->pid);
+		}
+		return posix_signal($this->pid, SIGTTIN);
+	}
+
+	public static function ifExistsByPid($pid) {
+		if (file_exists('/proc')) {
+			return file_exists('/proc/' . $pid);
+		}
+		return posix_signal($pid, SIGTTIN);
 	}
 
 	/**

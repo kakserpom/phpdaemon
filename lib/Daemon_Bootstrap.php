@@ -287,7 +287,7 @@ class Daemon_Bootstrap {
 			$runmode == 'status' 
 			|| $runmode == 'fullstatus'
 		) {
-			$status = Daemon_Bootstrap::$pid && posix_kill(Daemon_Bootstrap::$pid, SIGTTIN);
+			$status = Daemon_Bootstrap::$pid && Thread::ifExistsByPid(Daemon_Bootstrap::$pid);
 			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon::$config->pidfile->value . ").\n";
 
 			if (
@@ -393,14 +393,14 @@ class Daemon_Bootstrap {
 			if ($ok) {
 				$i = 0;
 		
-				while ($r = posix_kill(Daemon_Bootstrap::$pid, SIGTTIN)) {
+				while ($r = Thread::ifExistsByPid(Daemon_Bootstrap::$pid)) {
 					usleep(500000);
 		
 					if ($i == 9) {
 						echo "\nphpDaemon master-process hasn't finished. Sending SIGKILL... ";
 						posix_kill(Daemon_Bootstrap::$pid, SIGKILL);
-
-						if (!posix_kill(Daemon_Bootstrap::$pid, SIGTTIN)) {
+						sleep(0.2);
+						if (!Thread::ifExistsByPid(Daemon_Bootstrap::$pid)) {
 							echo " Oh, his blood is on my hands :'(";
 						} else {
 							echo "ERROR: Process alive. Permissions?";
@@ -456,7 +456,7 @@ class Daemon_Bootstrap {
 	public static function start() {
 		if (
 			Daemon_Bootstrap::$pid 
-			&& posix_kill(Daemon_Bootstrap::$pid, SIGTTIN)
+			&& Thread::ifExistsByPid(Daemon_Bootstrap::$pid)
 		) {
 			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Daemon_Bootstrap::$pid . ')');
 			exit(6);
@@ -484,7 +484,7 @@ class Daemon_Bootstrap {
 		) {
 			$i = 0;
 
-			while ($r = posix_kill(Daemon_Bootstrap::$pid, SIGTTIN)) {
+			while ($r = Thread::ifExistsByPid(Daemon_Bootstrap::$pid)) {
 				usleep(10000);
 				++$i;
 			}

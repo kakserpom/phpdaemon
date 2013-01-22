@@ -78,7 +78,7 @@ class ThreadCollection {
 				$t->terminated || !$t->pid
 				|| (
 					$check
-					&& !$t->signal(SIGTTIN)
+					&& !$t->ifExists()
 				)
 			) {
 				unset($this->threads[$k]);
