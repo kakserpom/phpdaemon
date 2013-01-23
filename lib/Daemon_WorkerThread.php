@@ -103,6 +103,8 @@ class Daemon_WorkerThread extends Thread {
 				return;
 			}
 
+			Daemon::callAutoGC();
+
 			$event->timeout();
 		}, 1e6 * 1,	'breakMainLoopCheck');
 		if (Daemon::$config->autoreload->value > 0) {

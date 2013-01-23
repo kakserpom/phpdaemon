@@ -93,7 +93,6 @@ class Daemon {
 	}
 
 	public static function callAutoGC() {
-		++Daemon::$process->counterGC;
 		if (
 			(Daemon::$config->autogc->value > 0) 
 			&& (Daemon::$process->counterGC > 0) 

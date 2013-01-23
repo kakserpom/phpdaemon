@@ -446,7 +446,7 @@ class Request {
 			return;
 		}
  
-		Daemon::callAutoGC();
+		++Daemon::$process->counterGC;
  
 		if (Daemon::$compatMode) {
 			return;
