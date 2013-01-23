@@ -836,7 +836,7 @@ class HTTPRequest extends Request {
 	/**
 	 * Tells whether the file was uploaded via HTTP POST
 	 * @param string The filename being checked.
-	 * @return void
+	 * @return boolean Whether if this is uploaded file.
 	 */
 	public function isUploadedFile($path) {
 		$path = realpath($path);
@@ -858,7 +858,7 @@ class HTTPRequest extends Request {
 	 *  Moves an uploaded file to a new location
 	 * @param string The filename of the uploaded file.
 	 * @param string The destination of the moved file.
-	 * @return void
+	 * @return boolean Success.
 	 */
 	public function moveUploadedFile($filename,$dest) {
 		if (!$this->isUploadedFile($filename)) {

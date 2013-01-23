@@ -702,7 +702,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @return void
 	 */
 	public function updateMulti($col, $cond, $data, $cb = NULL, $key = '') {
-		return $this->update($col, $cond, $data, 2, $cb, $key);
+		$this->update($col, $cond, $data, 2, $cb, $key);
 	}
 
 	/**
@@ -715,7 +715,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @return void
 	 */
 	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $key = '') {
-		return $this->update($col, $cond, $data, $multi ? 3 : 1, $cb, $key);
+		$this->update($col, $cond, $data, $multi ? 3 : 1, $cb, $key);
 	}
 
 	/**
@@ -723,7 +723,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Collection's name
 	 * @param array Data
 	 * @param string Optional. Distribution key.
-	 * @return mixed
+	 * @return object MongoId
 	 */
 	public function insert($col, $doc = array(), $cb = NULL,  $key = '') {
 		if (strpos($col, '.') === false) {
