@@ -249,7 +249,7 @@ class File extends IOStream {
 			return false;
 		}
 		static $chunkSize = 1024;
-		$ret = null;
+		$ret = true;
 		$handler = function ($file, $sent) use (&$ret, $outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
 			if (!$ret) {
 				call_user_func($cb, $file, false);
