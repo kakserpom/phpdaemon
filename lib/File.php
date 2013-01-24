@@ -249,7 +249,12 @@ class File extends IOStream {
 			return false;
 		}
 		static $chunkSize = 1024;
-		$handler = function ($file, $sent) use ($outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
+		$ret = null;
+		$handler = function ($file, $sent) use (&$ret, $outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
+			if (!$ret) {
+				call_user_func($cb, $file, false);
+				return;
+			}
 			if ($sent === -1) {
 				$sent = 0;
 			}
@@ -263,7 +268,7 @@ class File extends IOStream {
 				call_user_func($cb, $file, false);
 				return;
 			}
-			eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $file);
+			$ret = eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $file);
 		};
 		if ($length !== null) {
 			$handler($this, -1);
