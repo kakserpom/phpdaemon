@@ -292,7 +292,6 @@ class Daemon_MasterThread extends Thread {
 		$this->waitAll(true);
 		Daemon::$shm_wstate->delete();		
 		file_put_contents(Daemon::$config->pidfile->value,'');
-		
 		exit(0);
 	}
 	
@@ -428,8 +427,6 @@ class Daemon_MasterThread extends Thread {
 		} else {
 			$sig = 'UNKNOWN';
 		}
-
 		$this->log('Caught signal #' . $signo . ' (' . $sig . ').');
 	}
-
 }

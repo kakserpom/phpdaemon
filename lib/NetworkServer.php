@@ -26,12 +26,12 @@ class NetworkServer extends ConnectionPool {
 		$conn = new $class(null, $this);
 		$conn->fd = $oldConn->fd;
 		$this->attach($conn);
-		$conn->buffer = $oldConn->buffer;
+		$conn->bev = $oldConn->bev;
 		$conn->fd = $oldConn->fd;
-		unset($oldConn->buffer); // to prevent freeing the buffer
+		unset($oldConn->bev); // to prevent freeing the buffer
 		unset($oldConn->fd); // to prevent closing the socket
 		$pool->detach($oldConn);
-		$set = bufferevent_setcb($conn->buffer, 
+		$set = bufferevent_setcb($conn->bev, 
 			array($conn, 'onReadEvent'),
 			array($conn, 'onWriteEvent'),
 			array($conn, 'onStateEvent')

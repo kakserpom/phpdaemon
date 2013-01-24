@@ -626,5 +626,4 @@ class Daemon_WorkerThread extends Thread {
 	public function __destruct() {
 		$this->setState(Daemon::WSTATE_SHUTDOWN);
 	}
-
 }
