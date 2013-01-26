@@ -101,11 +101,16 @@ class Daemon_ConfigParser {
 					$elTypes = array(NULL);
 					$i = 0;
 					$tokenType = 0;
+					$newLineDetected = null;
 
 					for (;$cfg->p < $cfg->len; ++$cfg->p) {
+						$prePoint = array($this->line, $this->col - 1);
 						$c = $cfg->getCurrentChar();
 
 						if (ctype_space($c) || $c === '=') {
+							if ($c === "\n") {
+								$newLineDetected = $prePoint;
+							}
 							if ($elTypes[$i] !== NULL)	{
 								++$i;
 								$elTypes[$i] = NULL;
@@ -131,6 +136,9 @@ class Daemon_ConfigParser {
 							$cfg->raiseError('Unexpected \'}\' instead of \';\' or \'{\'');
 						}
 						elseif ($c === ';') {
+							if ($newLineDetected) {
+								$this->raiseError('Unexpected new-line instead of \';\'', 'notice', $newLineDetected[0], $newLineDetected[1]);
+							}
 							$tokenType = Daemon_ConfigParser::T_VAR;
 							break;
 						}
@@ -173,7 +181,6 @@ class Daemon_ConfigParser {
 							}
 						}
 					}
-
 					if ($tokenType === 0) {
 						$cfg->raiseError('Expected \';\' or \'{\''); 
 					}
@@ -192,37 +199,42 @@ class Daemon_ConfigParser {
 									$parser = new Daemon_ConfigParser($fn, $scope, true);
 								}
 							}
-						} elseif (substr(strtolower($elements[0]),0,4) === 'mod-') {
+						} elseif (substr(strtolower($elements[0]),0,4) === 'mod-') { // @TODO: remove in 1.0
 							$cfg->raiseError('Variable started with \'mod-\'. This style is deprecated. You should replace it with block.');
-						} elseif (isset($scope->{$name})) {
-							if ($scope->{$name}->source !== 'cmdline')	{
-								if (!isset($elements[1])) {
-									$elements[1] = true;
-									$elTypes[1] = Daemon_ConfigParser::T_CVALUE;
+						} else {
+							if (sizeof($elements) > 2) {
+								$cfg->raiseError('Too many arguments.');
+							}
+							if (isset($scope->{$name})) {
+								if ($scope->{$name}->source !== 'cmdline')	{
+									if (!isset($elements[1])) {
+										$elements[1] = true;
+										$elTypes[1] = Daemon_ConfigParser::T_CVALUE;
+									}
+									if (
+										($elTypes[1] === Daemon_ConfigParser::T_CVALUE) 
+										&& is_string($elements[1])
+									) {
+										$scope->{$name}->setHumanValue($elements[1]);
+									} else {
+										$scope->{$name}->setValue($elements[1]);
+									}
+									$scope->{$name}->source = 'config';
+									$scope->{$name}->revision = $cfg->revision;
 								}
-								if (
-									($elTypes[1] === Daemon_ConfigParser::T_CVALUE) 
-									&& is_string($elements[1])
-								) {
-									$scope->{$name}->setHumanValue($elements[1]);
-								} else {
-									$scope->{$name}->setValue($elements[1]);
-								}
+							} elseif (sizeof($cfg->state) > 1) {
+								$scope->{$name} = new Daemon_ConfigEntry();
 								$scope->{$name}->source = 'config';
 								$scope->{$name}->revision = $cfg->revision;
+								if (!isset($elements[1])) {
+							 		$elements[1] = true;
+							 		$elTypes[1] = Daemon_ConfigParser::T_CVALUE;
+								}
+								$scope->{$name}->setValue($elements[1]);
+								$scope->{$name}->setValueType($elTypes[1]);
 							}
-						} elseif (sizeof($cfg->state) > 1) {
-							$scope->{$name} = new Daemon_ConfigEntry();
-							$scope->{$name}->source = 'config';
-							$scope->{$name}->revision = $cfg->revision;
-							if (!isset($elements[1])) {
-							 $elements[1] = true;
-							 $elTypes[1] = Daemon_ConfigParser::T_CVALUE;
-							}
-							$scope->{$name}->setValue($elements[1]);
-							$scope->{$name}->setValueType($elTypes[1]);
+							else {$cfg->raiseError('Unrecognized parameter \''.$name.'\'');}
 						}
-						else {$cfg->raiseError('Unrecognized parameter \''.$name.'\'');}
 					}
 					elseif ($tokenType === Daemon_ConfigParser::T_BLOCK) {
 						$scope = $cfg->getCurrentScope();
@@ -296,16 +308,22 @@ class Daemon_ConfigParser {
 	 * @param string Level.
 	 * @return void
 	 */
-	public function raiseError($msg, $level = 'emerg') {
+	public function raiseError($msg, $level = 'emerg', $line = null, $col = null) {
 		if ($level === 'emerg') {
 			$this->errorneus = true;
 		}
+		if ($line === null) {
+			$line = $this->line;
+		}
+		if ($col === null) {
+			$col = $this->col -1 ;
+		}
 
-		Daemon::log('[conf#' . $level . '][' . $this->file . ' L:' . $this->line . ' C: ' . ($this->col-1) . ']   '.$msg);
+		Daemon::log('[conf#' . $level . '][' . $this->file . ' L:' . $line . ' C: ' . $col . ']   '.$msg);
 	}
 
 	/**
-	 * executes token-parse callback.
+	 * Executes token-parse callback.
 	 * @return void
 	 */
 	public function token($token, $c) {

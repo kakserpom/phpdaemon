@@ -20,7 +20,8 @@ class ConnectionPool extends ObjectStorage {
 	public $enabled = false;
 	public $appInstance;
 	
-	public function __construct($config = array()) {
+	public function __construct($config = array(), $appInstance = null) {
+		$this->appInstance = $appInstance;
 		$this->bound = new ObjectStorage;
 		$this->config = $config;
 		$this->onConfigUpdated();
