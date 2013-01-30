@@ -51,7 +51,7 @@ abstract class Thread {
 		SIGILL    => 'SIGILL',
 //		SIGTRAP   => 'SIGTRAP',
 //		SIGABRT   => 'SIGABRT',
-		7         => 'SIGEMT',
+//		7         => 'SIGEMT',
 		SIGFPE    => 'SIGFPE',
 		SIGBUS    => 'SIGBUS',
 		SIGSYS    => 'SIGSYS',
