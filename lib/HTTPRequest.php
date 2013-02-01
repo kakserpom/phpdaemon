@@ -139,12 +139,12 @@ class HTTPRequest extends Request {
 	 * @todo protected?
 	 * @return void
 	 */
-	public function preCall() {
+	public function checkIfReady() {
 		if (
 			!$this->attrs->params_done
 			|| !$this->attrs->stdin_done
 		) {
-			$this->state = Request::STATE_SLEEPING;
+			return false;
 		} else {
 			if (isset($this->appInstance->passphrase)) {
 				if (
@@ -155,6 +155,7 @@ class HTTPRequest extends Request {
 				}
 			}
 		}
+		return true;
 	}
 
 	/**
@@ -312,6 +313,9 @@ class HTTPRequest extends Request {
 		) {
 			$this->attrs->stdin_done = true;
 			$this->postPrepare();
+			if ($this->sleepTime === 0) {
+				$this->wakeup();
+			}
 		}
 		$this->parseStdin();
 	}
@@ -875,13 +879,15 @@ class HTTPRequest extends Request {
 		if (!isset($this->attrs->server['REQUEST_BODY_FILE'])) {
 			return false;
 		}
-		$req = $this;
 		FS::readfileChunked($this->attrs->server['REQUEST_BODY_FILE'],
-			function ($file, $success) use ($req) {
-				$req->attrs->stdin_done = true;
+			function ($file, $success) {
+				$this->attrs->stdin_done = true;
+				if ($this->sleepTime === 0) {
+					$this->wakeup();
+				}
 			},
-			function($file, $chunk) use ($req) { // readed chunk
-				$req->stdin($chunk);
+			function($file, $chunk) { // readed chunk
+				$this->stdin($chunk);
 			}
 		);
 	}

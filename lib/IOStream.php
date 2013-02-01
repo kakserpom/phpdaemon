@@ -49,7 +49,7 @@ abstract class IOStream {
 			$this->setFd($fd);
 		}
 
-		$this->onWriteOnce = new SplStack;
+		$this->onWriteOnce = new StackCallbacks;
 	}
 	
 	/**
@@ -358,7 +358,7 @@ abstract class IOStream {
 			$this->ready = true;
 			while (!$this->onWriteOnce->isEmpty()) {
 				try {
-					call_user_func($this->onWriteOnce->pop(), $this);
+					$this->onWriteOnce->executeOne($this);
 				} catch (Exception $e) {
 					Daemon::uncaughtExceptionHandler($e);
 				}
@@ -377,7 +377,7 @@ abstract class IOStream {
 			}
 		} else {
 			while (!$this->onWriteOnce->isEmpty()) {
-				call_user_func($this->onWriteOnce->pop(), $this);
+				$this->onWriteOnce->executeOne($this);
 			}
 		}
 		try {

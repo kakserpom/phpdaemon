@@ -7,19 +7,15 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class Request {
- 
-	const INTERRUPT = 3; // alias of STATE_SLEEPING
-	const DONE      = 0; // alias of STATE_FINISHED
- 
-	const STATE_FINISHED = 0;
-	const STATE_ALIVE    = 1;
-	const STATE_RUNNING  = 2;
-	const STATE_SLEEPING = 3;
+class Request { 
+
+	const STATE_FINISHED = 1;
+	const STATE_WAITING  = 2;
+	const STATE_RUNNING  = 3;
 
 	public $appInstance;
 	public $aborted = FALSE;
-	public $state = self::STATE_ALIVE;
+	public $state = self::STATE_WAITING;
 	public $codepoint;
 	public $sendfp;
 	public $attrs;
@@ -27,7 +23,7 @@ class Request {
 	public $running = false;
 	public $upstream;
 	public $ev;
-	public $sleepTime = 1000;
+	public $sleepTime = 0;
 	public $priority = null;
  
 	/**
@@ -37,7 +33,7 @@ class Request {
 	 * @param object Source request.
 	 * @return void
 	 */
-	public function __construct($appInstance, $upstream, $parent = NULL) {
+	public function __construct($appInstance, $upstream, $parent = null) {
 		$this->appInstance = $appInstance;
 		$this->upstream = $upstream;
 		$this->ev = evtimer_new(Daemon::$process->eventBase, array($this, 'eventCall'));
@@ -70,21 +66,53 @@ class Request {
 	 * @todo description is missing
 	 */
 	public function eventCall($arg) {
-		if ($this->state === Request::STATE_SLEEPING) {
-			$this->state = Request::STATE_ALIVE;
-		}
 		try {
-			$ret = $this->call();
+			if ($this->state === Request::STATE_FINISHED) {
+				$this->finish();
+				return;
+			}
+			if (!$this->checkIfReady()) {
+				if ($this->state === Request::STATE_FINISHED) {
+					$this->free();
+				}
+				return;
+			}
+			$this->state = Request::STATE_RUNNING;
+			$this->onWakeup();
+			$throw = false;
+ 			try {
+				$ret = $this->run(); 
+				if (($ret === Request::STATE_FINISHED) || ($ret === null)) {
+					$this->finish();
+				}
+				elseif ($ret === Request::STATE_WAITING) {
+					$this->state = $ret;
+				}
+			} catch (RequestSleepException $e) {
+				$this->state = Request::STATE_WAITING;
+			} catch (RequestTerminatedException $e) {
+				$this->state = Request::STATE_FINISHED;
+			} catch (Exception $e) {
+				$throw = true;
+			}
+			if ($this->state === Request::STATE_FINISHED) {
+				$this->finish();
+			}
+			$this->onSleep();
+			if ($throw) {
+				throw $e;
+			}
+
 		} catch (Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 			$this->finish();
 			return;
 		}
-		if ($ret === Request::STATE_FINISHED) {		
+		handleStatus:
+		if ($this->state === Request::STATE_FINISHED) {		
 			$this->free();
-
 		}
-		elseif ($ret === REQUEST::STATE_SLEEPING) {
+		elseif ($this->state === REQUEST::STATE_WAITING) {
 			event_add($this->ev, $this->sleepTime);
 		}
 	}
@@ -103,62 +131,6 @@ class Request {
 		if ($this->ev !== null) {
 			event_priority_set($this->ev, $p);
 		}
-		
-	}
-	
-	/**
-	 * Called by queue dispatcher to touch the request
-	 * @return int Status
-	 */
-	public function call() {
-		if ($this->state === Request::STATE_FINISHED) {
-			$this->state = Request::STATE_ALIVE;
-			$this->finish();
-			return Request::STATE_FINISHED;
-		}
- 
-		$this->state = Request::STATE_ALIVE;
-		
-		$this->preCall();
- 
-		if ($this->state !== Request::STATE_ALIVE) {
-			return $this->state;
-		}
-		
-		$this->state = Request::STATE_RUNNING;
-		
-		$this->onWakeup();
- 
-		try {
-			$ret = $this->run();
- 
-			if ($this->state === Request::STATE_FINISHED) {
-				// Finished while running
-				return Request::STATE_FINISHED;
-			}
- 
-			if ($ret === NULL) {
-				$ret = Request::STATE_FINISHED;
-			}
-			if ($ret === Request::STATE_FINISHED) {
-				$this->finish();
-			}
-			elseif ($ret === Request::STATE_SLEEPING) {
-				$this->state = $ret;
-			}
-		} catch (RequestSleepException $e) {
-			$this->state = Request::STATE_SLEEPING;
-		} catch (RequestTerminatedException $e) {
-			$this->state = Request::STATE_FINISHED;
-		}
- 
-		if ($this->state === Request::STATE_FINISHED) {
-			$this->finish();
-		}
- 
-		$this->onSleep();
- 
-		return $this->state;
 	}
 	
 	/**
@@ -307,7 +279,7 @@ class Request {
 			event_timer_add($this->ev, $this->sleepTime);
 		}
  
-		$this->state = Request::STATE_SLEEPING;
+		$this->state = Request::STATE_WAITING;
 	}
  
 	/**
@@ -327,8 +299,7 @@ class Request {
 	 * @return void
 	 */
 	public function wakeup() {
-		if (is_resource($this->ev)) {
-			$this->state = Request::STATE_ALIVE;
+		if ($this->state === Request::STATE_WAITING) {
 			event_timer_del($this->ev);
 			event_timer_add($this->ev, null);
 		}
@@ -336,10 +307,9 @@ class Request {
 	
 	/**
 	 * Called by call() to check if ready
-	 * @todo -> protected?
-	 * @return void
+	 * @return boolean Ready?
 	 */
-	public function preCall() {
+	public function checkIfReady() {
 		return TRUE;
 	}
  
@@ -396,7 +366,7 @@ class Request {
 			(ignore_user_abort() === 1) 
 			&& (
 				($this->state === Request::STATE_RUNNING) 
-				|| ($this->state === Request::STATE_SLEEPING)
+				|| ($this->state === Request::STATE_WAITING)
 			)
 			&& !Daemon::$compatMode
 		) {
