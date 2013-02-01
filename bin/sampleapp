@@ -1,4 +1,4 @@
-#!/usr/bin/php -q
+#!/usr/bin/env php
 <?php
 $filename = 'phpd-sampleapp.conf';
 $configFile = '/etc/phpdaemon/' .$filename . '.conf;/etc/phpd/' .$filename . ';./conf/' .$filename;

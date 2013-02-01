@@ -66,6 +66,11 @@ class Daemon_Bootstrap {
 	 * @return void
 	 */
 	public static function init($configFile = null) {
+		if (version_compare(PHP_VERSION, '5.4.0', '>=') === 1) {
+			Daemon::log('PHP >= 5.4.0 required.');
+			$error = true;
+			return;
+		}
 		Daemon::initSettings();
 		FS::init();
 		Daemon::$runName = basename($_SERVER['argv'][0]);
@@ -110,15 +115,11 @@ class Daemon_Bootstrap {
 		if (!Daemon::$config->loadCmdLineArgs($args)) {
 			$error = true;
 		}
-		
+
 		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
 			$error = true;
 		}
 
-		if (version_compare(PHP_VERSION, '5.4.0', '>=') === 1) {
-			Daemon::log('PHP >= 5.4.0 required.');
-			$error = true;
-		}
 
 		if ('log' === $runmode) {
 			passthru('tail -n '.$n.' -f '.escapeshellarg(Daemon::$config->logstorage->value));
