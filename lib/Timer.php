@@ -84,7 +84,7 @@ class Timer {
 		unset(Timer::$list[$this->id]);
 		if ($this->ev !== null) {
 			$this->ev->del();
-			//$this->ev->free();
+			$this->ev->free();
 			$this->ev = null;
 		}
 	}

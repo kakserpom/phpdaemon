@@ -288,7 +288,7 @@ abstract class IOStream {
 	 */
 	public function close() {
 		if ($this->bev) {
-			//$this->bev->free();
+			$this->bev->free();
 			$this->bev = null;
 		}
 		if (isset($this->fd)) {
