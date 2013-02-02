@@ -103,8 +103,7 @@ abstract class Thread {
 
 	public function unregisterSignals() {
 		foreach ($this->sigEvents as $no => $ev) {
-			$ev->del();
-			//$ev->free();
+			$ev->free();
 			unset($this->sigEvents[$no]);
 		}
 	}
