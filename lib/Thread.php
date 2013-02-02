@@ -92,19 +92,19 @@ abstract class Thread {
 			) {
 				continue;
 			}
-			$ev = evsignal_new($this->eventBase, $no, array($this,'eventSighandler'), array($no));
+			$ev = Event::signal($this->eventBase, $no, array($this,'eventSighandler'), array($no));
 			if (!$ev) {
 				$this->log('Cannot event_set for '.$name.' signal');
 			}
-			event_add($ev);
+			$ev->add();
 			$this->sigEvents[$no] = $ev;
 		}
 	}
 
 	public function unregisterSignals() {
 		foreach ($this->sigEvents as $no => $ev) {
-			event_del($ev);
-			event_free($ev);
+			$ev->del();
+			//$ev->free();
 			unset($this->sigEvents[$no]);
 		}
 	}

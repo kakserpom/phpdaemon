@@ -73,22 +73,22 @@ abstract class IOStream {
 	
 	public function setFd($fd) {
 		$this->fd = $fd;
-		$this->bev = bufferevent_socket_new(Daemon::$process->eventBase, $this->fd, EVENT_BEV_OPT_CLOSE_ON_FREE | EVENT_BEV_OPT_DEFER_CALLBACKS);
+		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, EventBufferEvent::OPT_CLOSE_ON_FREE | EventBufferEvent::OPT_DEFER_CALLBACKS);
 		if (!$this->bev) {
 			return;
 		}
-		bufferevent_setcb($this->bev, array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onStateEvent'));
+		$this->bev->setCallbacks(array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onStateEvent'));
 		if ($this->priority !== null) {
-			bufferevent_priority_set($this->bev, $this->priority);
+			$this->bev->priority = $this->priority;
 		}
 		if ($this->timeout !== null) {
-			bufferevent_set_timeouts($this->bev, $this->timeout, $this->timeout);
+			$this->bev->setTimeouts($this->timeout, $this->timeout);
 		}
-		bufferevent_setwatermark($this->bev, EVENT_READ, $this->lowMark, $this->highMark);
-		bufferevent_enable($this->bev, EVENT_WRITE | EVENT_TIMEOUT | EVENT_PERSIST);
+		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
+		$this->bev->enable(Event::WRITE | Event::TIMEOUT | Event::PERSIST);
 		if ($this->bevConnect && ($this->fd === null)) {
-			//bufferevent_socket_connect($this->bev, $this->addr, false);
-			bufferevent_socket_connect_hostname($this->bev, Daemon::$process->dnsBase, $this->hostReal, $this->port, EVENT_AF_UNSPEC);
+			$this->bev->connect($this->addr, false);
+			$this->bev->connectHostname(Daemon::$process->dnsBase, $this->hostReal, $this->port, Event::AF_UNSPEC);
 		}
 		if (!$this->inited) {
 			$this->inited = true;
@@ -100,14 +100,14 @@ abstract class IOStream {
 		$this->timeout = $timeout;
 		if ($this->timeout !== null) {
 			if ($this->bev) {
-				bufferevent_set_timeouts($this->bev, $this->timeout, $this->timeout);
+				$this->bev->setTimeout($this->timeout, $this->timeout);
 			}
 		}
 	}
 	
 	public function setPriority($p) {
 		$this->priority = $p;
-		event_buffer_priority_set($this->bev, $p);
+		$this->bev->priority = $p;
 	}
 	
 	public function setWatermark($low = null, $high = null) {
@@ -117,7 +117,7 @@ abstract class IOStream {
 		if ($high != null) {
 		 	$this->highMark = $high;
 		}
-		bufferevent_setwatermark($this->bev, EVENT_READ, $this->lowMark, $this->highMark);
+		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
 	}
 	
 	/**
@@ -215,7 +215,7 @@ abstract class IOStream {
 			return true;
 		}
  		$this->sending = true;
-		bufferevent_write($this->bev, $data);
+		$this->bev->write($data);
 		return true;
 	}
 
@@ -287,8 +287,8 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if (isset($this->bev) && is_resource($this->bev)) {
-			bufferevent_free($this->bev);
+		if ($this->bev) {
+			//$this->bev->free();
 			$this->bev = null;
 		}
 		if (isset($this->fd)) {
@@ -368,7 +368,7 @@ abstract class IOStream {
 			}
 			$this->alive = true;
 			if (isset($this->bev)) {
-				event_buffer_enable($this->bev, EVENT_READ | EVENT_WRITE | EVENT_TIMEOUT | EVENT_PERSIST);
+				$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST);
 			}
 			try {			
 				$this->onReady();
@@ -399,10 +399,10 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onStateEvent($bev, $events) {
-		if ($events & EVENT_BEV_EVENT_CONNECTED) {
+		if ($events & EventBufferEvent::CONNECTED) {
 			$this->onWriteEvent($bev);
 		}
-  		elseif ($events & (EVENT_BEV_EVENT_ERROR | EVENT_BEV_EVENT_EOF)) {
+  		elseif ($events & (EventBufferEvent::ERROR | EventBufferEvent::EOF)) {
 			try {
 				$this->close();
 				if ($this->finished) {
@@ -413,7 +413,7 @@ abstract class IOStream {
 				if ($this->pool) {
 					$this->pool->detach($this);
 				}
-				event_base_loopexit(Daemon::$process->eventBase);
+				Daemon::$process->eventBase->exit();
 			} catch (Exception $e) {
 				Daemon::uncaughtExceptionHandler($e);
 			}
@@ -429,7 +429,7 @@ abstract class IOStream {
 		if ($this->bev === null) {
 			return false;
 		}
-		$r = bufferevent_read($this->bev, $read, $n);
+		$r = $this->bev->read($read, $n);
 		if (
 			($read === '') 
 			|| ($read === null) 

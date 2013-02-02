@@ -78,7 +78,7 @@ class HTTPServerConnection extends Connection {
 
 		} else {
 			if (!$this->req) {
-				Daemon::log('Unexpected input (HTTP request).');
+				Daemon::log('Unexpected input (HTTP request): '.Debug::dump($buf));
 				return;
 			}
 			$req = $this->req;

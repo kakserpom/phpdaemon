@@ -22,7 +22,7 @@ class Request {
 	public $shutdownFuncs = array();
 	public $running = false;
 	public $upstream;
-	public $ev;
+	private $ev;
 	public $sleepTime = 0;
 	public $priority = null;
  
@@ -36,11 +36,13 @@ class Request {
 	public function __construct($appInstance, $upstream, $parent = null) {
 		$this->appInstance = $appInstance;
 		$this->upstream = $upstream;
-		$this->ev = evtimer_new(Daemon::$process->eventBase, array($this, 'eventCall'));
+		$this->ev = Event::timer(Daemon::$process->eventBase, array($this, 'eventCall'));
 		if ($this->priority !== null) {
-			event_priority_set($this->ev, $this->priority);
+			$this->ev = $this->priority;
 		}
-		evtimer_add($this->ev, null);
+		$this->ev->add(0);
+
+		Daemon::log(get_class($this).'->__construct()');
 				
 		$this->preinit($parent);
 		$this->onWakeup();
@@ -113,14 +115,15 @@ class Request {
 			$this->free();
 		}
 		elseif ($this->state === REQUEST::STATE_WAITING) {
-			event_add($this->ev, $this->sleepTime);
+			$this->ev->add($this->sleepTime);
 		}
 	}
 	public function free() {
-		if (is_resource($this->ev)) {
-			event_timer_del($this->ev);
-			event_free($this->ev);
+		if ($this->ev) {
+			$this->ev->del();
+			//$this->ev->free();
 			$this->ev = null;
+			Daemon::log(get_class($this).'->free()');
 		}
 		if (isset($this->upstream)) {
 			$this->upstream->freeRequest($this);
@@ -129,7 +132,7 @@ class Request {
 	public function setPriority($p) {
 		$this->priority = $p;
 		if ($this->ev !== null) {
-			event_priority_set($this->ev, $p);
+			$this->ev->priority = $p;
 		}
 	}
 	
@@ -275,8 +278,8 @@ class Request {
 			throw new RequestSleepException;
 		}
 		else {
-			event_timer_del($this->ev);
-			event_timer_add($this->ev, $this->sleepTime);
+			$this->ev->del();
+			$this->ev->add($this->sleepTime);
 		}
  
 		$this->state = Request::STATE_WAITING;
@@ -300,8 +303,8 @@ class Request {
 	 */
 	public function wakeup() {
 		if ($this->state === Request::STATE_WAITING) {
-			event_timer_del($this->ev);
-			event_timer_add($this->ev, null);
+			$this->ev->del();
+			$this->ev->add(0);
 		}
 	}
 	
@@ -442,6 +445,7 @@ class Request {
 	public function onDestruct() {}
 	
 	public function __destruct() {
+		Daemon::log(get_class($this).'::__destruct()');
 		$this->onDestruct();
 	}
 }

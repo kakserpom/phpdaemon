@@ -26,10 +26,10 @@ class Daemon_IPCThread extends Thread {
 			Daemon::$process->unregisterSignals();
 		}
 		if (Daemon::$process->eventBase) {
-			event_reinit(Daemon::$process->eventBase);
+			Daemon::$process->eventBase->reinit();
 			$this->eventBase = Daemon::$process->eventBase;
 		} else {
-			$this->eventBase = event_base_new();
+			$this->eventBase = new EventBase();
 		}
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
@@ -55,7 +55,7 @@ class Daemon_IPCThread extends Thread {
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		
 		while (!$this->breakMainLoop) {
-			if (!event_base_loop($this->eventBase)) {
+			if (!$this->eventBase->loop()) {
 				break;
 			}
 		}

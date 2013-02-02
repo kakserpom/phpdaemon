@@ -31,7 +31,7 @@ class Daemon_MasterThread extends Thread {
 		class_exists('Timer'); // ensure loading this class
 		gc_enable();
 		
-		//$this->eventBase = event_base_new();
+		//$this->eventBase = new EventBase;
 		
 		if ($this->eventBase) {
 			$this->registerEventSignals();
@@ -95,7 +95,7 @@ class Daemon_MasterThread extends Thread {
 						Daemon::log('Spawning ' . $n . ' worker(s).');
 						$self->spawnWorkers($n);
 						if ($self->eventBase) {
-							event_base_loopbreak($self->eventBase);
+							$self->eventBase->stop();
 						}
 					}
 
@@ -119,7 +119,7 @@ class Daemon_MasterThread extends Thread {
 			Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
 			while (!$this->breakMainLoop) {
 				$this->callbacks->executeAll($this);
-				if (!event_base_loop($this->eventBase)) {
+				if (!$this->eventBase->loop()) {
 					break;
 				}
 			}
@@ -205,7 +205,7 @@ class Daemon_MasterThread extends Thread {
 		}
 		if ($n > 0) {
 			if ($this->eventBase) {
-				event_base_loopbreak($this->eventBase);
+				$this->eventBase->stop();
 			}
 		}
 		return true;
@@ -233,7 +233,7 @@ class Daemon_MasterThread extends Thread {
 			}
 		});
 		if ($this->eventBase) {
-			event_base_loopbreak($this->eventBase);
+			$this->eventBase->stop();
 		}
 		return true;
 	}
