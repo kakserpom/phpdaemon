@@ -120,8 +120,7 @@ class Request {
 	}
 	public function free() {
 		if ($this->ev) {
-			$this->ev->del();
-			//$this->ev->free();
+			$this->ev->free();
 			$this->ev = null;
 			Daemon::log(get_class($this).'->free()');
 		}
