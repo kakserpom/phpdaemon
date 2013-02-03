@@ -41,10 +41,10 @@ class Daemon_WorkerThread extends Thread {
 			Daemon::$process->unregisterSignals();
 		}
 		if (Daemon::$process->eventBase) {
-			event_reinit(Daemon::$process->eventBase);
+			Daemon::$process->eventBase->reinit();
 			$this->eventBase = Daemon::$process->eventBase;
 		} else {
-			$this->eventBase = event_base_new();
+			$this->eventBase = new EventBase();
 		}
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
@@ -69,7 +69,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->overrideNativeFuncs();
 
 		$this->setState(Daemon::WSTATE_INIT);;
-		$this->dnsBase = evdns_base_new($this->eventBase, true); 
+		$this->dnsBase = new EventDnsBase($this->eventBase, true); 
 		$this->registerEventSignals();
 
 		FS::init();
@@ -99,7 +99,7 @@ class Daemon_WorkerThread extends Thread {
 
 			$self->breakMainLoopCheck();
 			if ($self->breakMainLoop) {
-				event_base_loopexit($self->eventBase);
+				$self->eventBase->exit();
 				return;
 			}
 
@@ -125,7 +125,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		while (!$this->breakMainLoop) {
-			if (!event_base_loop($this->eventBase)) {
+			if (!$this->eventBase->dispatch()) {
 				break;
 			}
 		}
@@ -478,11 +478,11 @@ class Daemon_WorkerThread extends Thread {
 				$event->timeout();
 			}
 			else {
-				event_base_loopexit($self->eventBase);
+				$self->eventBase->exit();
 			}
 		}, 1e6, 'checkReloadReady');
 		while (!$this->reloadReady) {
-			event_base_loop($this->eventBase);
+			$this->eventBase->loop();
 		}
 		FS::waitAllEvents(); // ensure that all I/O events completed before suicide
 		exit(0); // R.I.P.
@@ -536,7 +536,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		$this->breakMainLoop = true;
-		event_base_loopexit($this->eventBase);
+		$this->eventBase->exit();
 	}
 
 	/**

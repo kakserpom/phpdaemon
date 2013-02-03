@@ -49,23 +49,23 @@ abstract class BoundSocket {
 		$this->enabled = true;
 
 		if ($this->listenerMode) {
-			$this->ev = evconnlistener_new(
+			$this->ev = new EventListener(
 				Daemon::$process->eventBase,
 				array($this, 'onListenerAcceptedEvent'),
 				null,
-				EVENT_LEV_OPT_CLOSE_ON_FREE | EVENT_LEV_OPT_REUSEABLE,
+				EventListener::OPT_CLOSE_ON_FREE | EventListener::OPT_REUSEABLE,
 				-1,
 				$this->fd
 			);
 		} else {
 			if ($this->ev === null) {
-				$this->ev = event_new(Daemon::$process->eventBase, $this->fd, EVENT_READ | EVENT_PERSIST, array($this, 'onAcceptEvent'));
+				$this->ev = new Event(Daemon::$process->eventBase, $this->fd, Event::READ | Event::PERSIST, array($this, 'onAcceptEvent'));
 				if (!$this->ev) {
 					Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($this->fd));
 					return;
 				}
 			}
-			event_add($this->ev);
+			$this->ev->add();
 		}
 	}
 	
@@ -105,7 +105,8 @@ abstract class BoundSocket {
 
 		if ($this->fd !== null) {
 			if ($this->listenerMode) {
-				evconnlistener_free($this->fd);
+				//$this->fd->free();
+				$this->fd = null;
 			} else {
 				socket_close($this->fd);
 			}

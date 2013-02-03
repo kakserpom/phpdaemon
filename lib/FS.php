@@ -37,12 +37,12 @@ class FS {
 		}
 		self::updateConfig();
 		self::$fd = eio_get_event_stream();
-		self::$ev = event_new(Daemon::$process->eventBase, self::$fd, EVENT_READ | EVENT_PERSIST, function ($fd, $events, $arg) {
+		self::$ev = new Event(Daemon::$process->eventBase, self::$fd, Event::READ | Event::PERSIST, function ($fd, $events, $arg) {
 			while (eio_nreqs()) {
 	        	eio_poll();
 		    }
 		});
-		event_add(self::$ev);
+		self::$ev->add();
 	}
 	
 	public static function waitAllEvents() {

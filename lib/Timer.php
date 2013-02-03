@@ -24,7 +24,7 @@ class Timer {
 		}
 		$this->id = $id;
 		$this->cb = $cb;
-		$this->ev = evtimer_new(Daemon::$process->eventBase, array($this, 'eventCall'));
+		$this->ev = Event::timer(Daemon::$process->eventBase, array($this, 'eventCall'));
 		if ($priority !== null) {
 			$this->setPriority($priority);
 		}
@@ -42,7 +42,7 @@ class Timer {
 	}
 	public function setPriority($priority) {
 		$this->priority = $priority;
-		event_priority_set($this->ev, $this->priority);
+		$this->ev->priority = $priority;
 	}
 	public static function add($cb, $timeout = null, $id = null, $priority = null) {
 		$obj = new self($cb, $timeout, $id, $priority);
@@ -69,10 +69,10 @@ class Timer {
 		if ($timeout !== null) {
 			$this->lastTimeout = $timeout;
 		}
-		evtimer_add($this->ev, $this->lastTimeout / 1e6);
+		$this->ev->add($this->lastTimeout / 1e6);
 	}
 	public function cancel() {
-		evtimer_del($this->ev);
+		$this->ev->del();
 	}
 	public function finish(){
 		$this->free();
@@ -83,8 +83,7 @@ class Timer {
 	public function free() {
 		unset(Timer::$list[$this->id]);
 		if ($this->ev !== null) {
-			evtimer_del($this->ev);
-			event_free($this->ev);
+			$this->ev->free();
 			$this->ev = null;
 		}
 	}
