@@ -6,9 +6,10 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
+
 class RedisClient extends NetworkClient {
 	public $noSAF = true; // Send-And-Forget queries are not present in the protocol
-	public $subscribeCb = array();
+	public $subscribeCb = array(); // subscriptions callbacks
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -38,21 +39,21 @@ class RedisClient extends NetworkClient {
 			$r .= '$' . strlen($arg) . "\r\n" . $arg . "\r\n";
 		}
 		$this->requestByServer($server = null, $r, $onResponse);
+
+		// PUB/SUB handling
 		if (($name === 'SUBSCRIBE') || ($name === 'PSUBSCRIBE')) {
 			for ($i = 1; $i < $s; ++$i) {
 				$arg = $args[$i];
-				if (!isset($this->subscribeCb[$arg])) {
-					$this->subscribeCb[$arg] = $onResponse;
-				} else {
-					$this->subscribeCb[$arg] = array_merge($this->subscribeCb[$arg], array($onResponse));
-				}
+				// TODO: check if $onResponse already in subscribeCb[$arg]?
+				$this->subscribeCb[$arg][] = CallbackWrapper::wrap($onResponse);
 			}
 		}
+
 		if (($name === 'UNSUBSCRIBE') || ($name === 'PUNSUBSCRIBE')) {
 			for ($i = 1; $i < $s; ++$i) {
 				$arg = $args[$i];
 				if (isset($this->subscribeCb[$arg])) {
-					$this->subscribeCb[$arg] = $onResponse;
+					unset($this->subscribeCb[$arg]);
 				}
 			}
 		}
