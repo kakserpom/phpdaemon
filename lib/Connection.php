@@ -327,7 +327,6 @@ class Connection extends IOStream {
 	
 	public function closeFd() {
 		if (is_resource($this->fd)) {
-			Daemon::log(get_class($this).'::closeFd');
 			socket_close($this->fd);
 		}
 		$this->fd = null;

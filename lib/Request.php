@@ -40,10 +40,7 @@ class Request {
 		if ($this->priority !== null) {
 			$this->ev = $this->priority;
 		}
-		$this->ev->add(0);
-
-		Daemon::log(get_class($this).'->__construct()');
-				
+		$this->ev->add(0);				
 		$this->preinit($parent);
 		$this->onWakeup();
 		$this->init();
@@ -122,7 +119,6 @@ class Request {
 		if ($this->ev) {
 			$this->ev->free();
 			$this->ev = null;
-			Daemon::log(get_class($this).'->free()');
 		}
 		if (isset($this->upstream)) {
 			$this->upstream->freeRequest($this);
@@ -444,7 +440,6 @@ class Request {
 	public function onDestruct() {}
 	
 	public function __destruct() {
-		Daemon::log(get_class($this).'::__destruct()');
 		$this->onDestruct();
 	}
 }
