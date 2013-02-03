@@ -125,7 +125,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		while (!$this->breakMainLoop) {
-			if (!$this->eventBase->loop()) {
+			if (!$this->eventBase->dispatch()) {
 				break;
 			}
 		}

@@ -72,7 +72,7 @@ class Timer {
 		$this->ev->add($this->lastTimeout / 1e6);
 	}
 	public function cancel() {
-		$this->ev->del($this->ev);
+		$this->ev->del();
 	}
 	public function finish(){
 		$this->free();

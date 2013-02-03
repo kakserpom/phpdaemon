@@ -119,7 +119,7 @@ class Daemon_MasterThread extends Thread {
 			Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
 			while (!$this->breakMainLoop) {
 				$this->callbacks->executeAll($this);
-				if (!$this->eventBase->loop()) {
+				if (!$this->eventBase->dispatch()) {
 					break;
 				}
 			}
