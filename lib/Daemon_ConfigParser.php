@@ -21,7 +21,7 @@ class Daemon_ConfigParser {
 	private $line = 1;
 	private $col = 1;
 	public $p = 0;
-	public $state = array();
+	public $state = [];
 	private $result;
 	public $errorneus = FALSE;
 
