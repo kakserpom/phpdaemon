@@ -157,12 +157,12 @@ class Daemon_Bootstrap {
 		}
 
 		if (!Daemon::loadModuleIfAbsent('event') || !class_exists('EventListener')) {
-			Daemon::log('[EMERG] event extension not found. You have to install it. `pecl install https://bitbucket.org/osmanov/pecl-event/downloads/event-1.0.0.tgz`');
+			Daemon::log('[EMERG] event extension not found. You have to install it. `pecl install https://bitbucket.org/osmanov/pecl-event/downloads/event-1.1.0.tgz`');
 			$error = true;
 		}
 
 		if (is_callable('bufferevent_socket_new')) {
-			Daemon::log('[EMERG] event extension is OUTDATED. You have to remove and install it: `pecl install https://bitbucket.org/osmanov/pecl-event/downloads/event-1.0.0.tgz`');
+			Daemon::log('[EMERG] event extension is OUTDATED. You have to remove and install it: `pecl install https://bitbucket.org/osmanov/pecl-event/downloads/event-1.1.0.tgz`');
 			$error = true;
 		}
 	
