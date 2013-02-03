@@ -55,7 +55,7 @@ class Daemon_IPCThread extends Thread {
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		
 		while (!$this->breakMainLoop) {
-			if (!$this->eventBase->dispatch())) {
+			if (!$this->eventBase->dispatch()) {
 				break;
 			}
 		}
