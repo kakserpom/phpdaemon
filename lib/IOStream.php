@@ -88,7 +88,7 @@ abstract class IOStream {
 		$this->bev->enable(Event::WRITE | Event::TIMEOUT | Event::PERSIST);
 		if ($this->bevConnect && ($this->fd === null)) {
 			//$this->bev->connect($this->addr, false);
-			$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, Event::AF_UNSPEC);
+			$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
 		}
 		if (!$this->inited) {
 			$this->inited = true;
