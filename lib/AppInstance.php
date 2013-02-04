@@ -40,7 +40,7 @@ class AppInstance {
 		}
 
 		if (!isset(Daemon::$appInstances[$appNameLower])) {
-			Daemon::$appInstances[$appNameLower] = array();
+			Daemon::$appInstances[$appNameLower] = [];
 		}
 		Daemon::$appInstances[$appNameLower][$this->name] = $this;
 		
@@ -101,8 +101,8 @@ class AppInstance {
 	 * @return mixed Result
 	 */
 	public function RPCall($method, $args) {
-		if ($this->enableRPC && is_callable(array($this, $method))) {
-			return call_user_func_array(array($this, $method), $args);
+		if ($this->enableRPC && is_callable([$this, $method])) {
+			return call_user_func_array([$this, $method], $args);
 		}
 	}
 	
@@ -115,7 +115,7 @@ class AppInstance {
 	 * @param mixed Callback.
 	 * @return boolean Success.
 	 */
-	public function broadcastCall($method, $args = array(), $cb = NULL) {
+	public function broadcastCall($method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendBroadcastCall(
 					get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 					$method,
@@ -132,7 +132,7 @@ class AppInstance {
 	 * @param mixed Callback.
 	 * @return boolean Success.
 	 */
-	public function singleCall($method, $args = array(), $cb = NULL) {
+	public function singleCall($method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendSingleCall(
 					get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 					$method,
@@ -150,7 +150,7 @@ class AppInstance {
 	 * @param mixed Callback.
 	 * @return boolean Success.
 	 */
-	public function directCall($workerId, $method, $args = array(), $cb = NULL) {
+	public function directCall($workerId, $method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendDirectCall(
 					$workerId,
 					get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
@@ -167,7 +167,7 @@ class AppInstance {
 	 * @param array {"setting": "value"}
 	 * @return void
 	 */
-	public function processDefaultConfig($settings = array()) {
+	public function processDefaultConfig($settings = []) {
 		foreach ($settings as $k => $v) {
 			$k = strtolower(str_replace('-', '', $k));
 
@@ -291,5 +291,4 @@ class AppInstance {
 			return true;
 		}
 	}
-
 }
