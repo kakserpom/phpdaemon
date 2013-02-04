@@ -93,7 +93,7 @@ class ConnectionPool extends ObjectStorage {
 		return false;
 	}
 	
-	public static function getInstance($arg = '') {
+	public static function getInstance($arg = '', $spawn = true) {
 		if ($arg === 'default') {
 			$arg = '';
 		}
@@ -102,6 +102,9 @@ class ConnectionPool extends ObjectStorage {
 			$key = $class . ':' . $arg;
 			if (isset(self::$instances[$key])) {
 				return self::$instances[$key];
+			}
+			elseif (!$spawn) {
+				return false;
 			}
 			$k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '' );
 			

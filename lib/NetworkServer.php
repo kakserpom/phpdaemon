@@ -28,8 +28,8 @@ class NetworkServer extends ConnectionPool {
 		$this->attach($conn);
 		$conn->bev = $oldConn->bev;
 		$conn->fd = $oldConn->fd;
-		unset($oldConn->bev); // to prevent freeing the buffer
-		unset($oldConn->fd); // to prevent closing the socket
+		$oldConn->bev = null; // to prevent freeing the buffer
+		$oldConn->fd = null; // to prevent closing the socket
 		$pool->detach($oldConn);
 		$conn->bev->setCallbacks( 
 			array($conn, 'onReadEvent'),
