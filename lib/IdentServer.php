@@ -1,4 +1,4 @@
-<?php
+[<?php
 
 /**
  * @package NetworkServers
@@ -7,7 +7,7 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class IdentServer extends NetworkServer {
-	public $pairs = array();
+	public $pairs = [];
 
 	/**
 	 * Setting default config options
@@ -15,11 +15,11 @@ class IdentServer extends NetworkServer {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'listen'				=> '0.0.0.0',
 			'port' 			        => 113,
-		);
+		];
 	}
 
 	/**
@@ -41,10 +41,10 @@ class IdentServer extends NetworkServer {
 	}
 
 	public function registerPair($local, $foreign, $user) {
-		$this->appInstance->broadcastCall('registerPair', array($local, $foreign, $user));
+		$this->appInstance->broadcastCall('registerPair', [$local, $foreign, $user]);
 	}
 	public function unregisterPair($local, $foreign) {
-		$this->appInstance->broadcastCall('unregisterPair', array($local, $foreign));
+		$this->appInstance->broadcastCall('unregisterPair', [$local, $foreign]);
 	}
 	public function findPair($local, $foreign) {
 		return

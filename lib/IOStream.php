@@ -77,7 +77,7 @@ abstract class IOStream {
 		if (!$this->bev) {
 			return;
 		}
-		$this->bev->setCallbacks(array($this, 'onReadEvent'), array($this, 'onWriteEvent'), array($this, 'onStateEvent'));
+		$this->bev->setCallbacks([$this, 'onReadEvent'], [$this, 'onWriteEvent'], [$this, 'onStateEvent']);
 		if ($this->priority !== null) {
 			$this->bev->priority = $this->priority;
 		}

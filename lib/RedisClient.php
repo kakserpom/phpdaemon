@@ -9,26 +9,26 @@
 
 class RedisClient extends NetworkClient {
 	public $noSAF = true; // Send-And-Forget queries are not present in the protocol
-	public $subscribeCb = array(); // subscriptions callbacks
+	public $subscribeCb = []; // subscriptions callbacks
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'servers'               =>  '127.0.0.1',
 			'port'					=> 6379,
 			'maxconnperserv'		=> 32,
-		);
+		];
 	}
 
 
 	public function __call($name, $args) {
 		$onResponse = null;		
 		if (($e = end($args)) && (is_array($e) || is_object($e)) &&	is_callable($e)) {
-			$onResponse= array_pop($args);
+			$onResponse = array_pop($args);
 		}
 		reset($args);
 		$name = strtoupper($name);

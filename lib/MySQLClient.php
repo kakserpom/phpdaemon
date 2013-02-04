@@ -104,12 +104,12 @@ class MySQLClient extends NetworkClient {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'server'               =>  'mysql://root@127.0.0.1',
 			'port'					=> 3306,
 			'maxconnperserv'		=> 32,
-		);
+		];
 	}
 	
 	
@@ -118,14 +118,14 @@ class MySQLClient extends NetworkClient {
 	 * @return string
 	 */
 	public static function escape($string) {
-		static $sqlescape = array(
+		static $sqlescape = [
 			"\x00"  => '\0',
 			"\n"	=> '\n',
 			"\r"	=> '\r',
 			'\\'	=> '\\\\',
 			'\''	=> '\\\'',
 			'"'		=> '\\"'
-		);
+		];
 		
 		return strtr($string, $sqlescape);
 	}
@@ -135,7 +135,7 @@ class MySQLClient extends NetworkClient {
 	 * @return string
 	 */
 	public static function likeEscape($string) {
-		static $sqlescape = array(
+		static $sqlescape = [
 			"\x00"	=> '\0',
 			"\n"	=> '\n',
 			"\r"	=> '\r',
@@ -144,7 +144,7 @@ class MySQLClient extends NetworkClient {
 			'"'	=> '\\"',
 			'%'	=> '\%',
 			'_'	=> '\_'
-		);
+		];
 
 		return strtr($string, $sqlescape);
 	}

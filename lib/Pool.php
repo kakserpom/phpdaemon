@@ -30,7 +30,7 @@ class Pool extends AppInstance {
 				Daemon::log($class. ' class not exists.');
 				return;
 			}
-			$this->pool = call_user_func(array($class, 'getInstance'), $name);
+			$this->pool = call_user_func([$class, 'getInstance'], $name);
 			$this->pool->appInstance = $this;
 		}
 	}

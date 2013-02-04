@@ -13,7 +13,7 @@ class PostgreSQLClient extends NetworkClient {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// default server
 			'server' => 'pg://root@127.0.0.1',
 			// default port
@@ -22,7 +22,7 @@ class PostgreSQLClient extends NetworkClient {
 			'protologging' => 0,
 			// disabled by default
 			'enable' => 0
-		);
+		];
 	}
 }
 
@@ -37,15 +37,15 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	public $options       = '';        // Default options
 	public $state        = 0;         // Connection's state. 0 - start,  1 - got initial packet,  2 - auth. packet sent,  3 - auth. error,  4 - handshaked OK
 	public $instate       = 0;         // State of pointer of incoming data. 0 - Result Set Header Packet,  1 - Field Packet,  2 - Row Packet
-	public $resultRows    = array();   // Resulting rows.
-	public $resultFields  = array();   // Resulting fields
-	public $onConnected   = array();   // Callback. Called when connection's handshaked.
+	public $resultRows    = [];   // Resulting rows.
+	public $resultFields  = [];   // Resulting fields
+	public $onConnected   = [];   // Callback. Called when connection's handshaked.
 	public $context;                   // Property holds a reference to user's object.
 	public $insertId;                  // Equals with INSERT_ID().
 	public $insertNum;                 // Equals with INSERT_ID().
 	public $affectedRows;              // Number of affected rows.
 	public $ready         = FALSE;
-	public $parameters    = array();   // Runtime parameters from server
+	public $parameters    = [];   // Runtime parameters from server
 	public $backendKey;
 	const STATE_AUTH_ERROR = 3;
 	const STATE_AUTH_OK = 4;
@@ -424,7 +424,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 			// Data Row
 			list(, $numfields) = unpack('n', binarySubstr($packet, 0, 2));
 			$p = 2;
-			$row = array();
+			$row = [];
 
 			for ($i = 0; $i < $numfields; ++$i) {
 				list(, $length) = unpack('N', binarySubstr($packet, $p, 4));
@@ -578,7 +578,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	 * @return array Decoded strings
 	 */
 	public function decodeNULstrings($data, $limit = 1, &$p = 0) {
-		$r = array();
+		$r = [];
 
 		for ($i = 0; $i < $limit; ++$i) {
 			$pos = strpos($data, "\x00", $p);
@@ -602,8 +602,8 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	public function onResultDone() {
 		$this->instate = 0;
 		$this->onResponse->executeOne($this, true);
-		$this->resultRows = array();
-		$this->resultFields = array();
+		$this->resultRows = [];
+		$this->resultFields = [];
 		
 		if ($this->pool->config->protologging->value) {
 			Daemon::log(__METHOD__);
@@ -617,8 +617,8 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	public function onError() {
 		$this->instate = 0;
 		$this->onResponse->executeOne($this, false);
-		$this->resultRows = array();
-		$this->resultFields = array();
+		$this->resultRows = [];
+		$this->resultFields = [];
 
 		if ($this->state === self::STATE_AUTH_PACKET_SENT) {
 			// in case of auth error

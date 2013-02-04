@@ -14,7 +14,7 @@ class Timer {
 	public $lastTimeout; // Current timeout holder
 	public $finished = false; // Is the timer finished?
 	public $cb; // callback
-	public static $list = array(); // list of timers
+	public static $list = []; // list of timers
 	public $priority;
 	static $counter = 0;
 	
@@ -24,7 +24,7 @@ class Timer {
 		}
 		$this->id = $id;
 		$this->cb = $cb;
-		$this->ev = Event::timer(Daemon::$process->eventBase, array($this, 'eventCall'));
+		$this->ev = Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
 		if ($priority !== null) {
 			$this->setPriority($priority);
 		}

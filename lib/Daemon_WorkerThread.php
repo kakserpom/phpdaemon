@@ -29,7 +29,7 @@ class Daemon_WorkerThread extends Thread {
 	public $breakMainLoop = FALSE;
 	public $reloadReady = FALSE;
 	public $delayedSigReg = TRUE;
-	public $instancesCount = array();
+	public $instancesCount = [];
 	public $connection;
 	public $counterGC = 0;
 	/**
@@ -117,7 +117,7 @@ class Daemon_WorkerThread extends Thread {
 				$s = sizeof($list);
 				if ($s > $n) {
 					$slice = array_map('realpath', array_slice($list, $n));
-					Daemon::$process->IPCManager->sendPacket(array('op' => 'addIncludedFiles', 'files' => $slice));
+					Daemon::$process->IPCManager->sendPacket(['op' => 'addIncludedFiles', 'files' => $slice]);
 					$n = $s;
 				}
 				$event->timeout();
@@ -147,7 +147,7 @@ class Daemon_WorkerThread extends Thread {
 					Daemon::$req
 					&& Daemon::$req instanceof HTTPRequest
 				) {
-					return call_user_func_array(array(Daemon::$req, 'header'), func_get_args());
+					return call_user_func_array([Daemon::$req, 'header'], func_get_args());
 				}
 			}
 
@@ -158,7 +158,7 @@ class Daemon_WorkerThread extends Thread {
 					Daemon::$req
 					&& Daemon::$req instanceof HTTPRequest
 				) {
-					return call_user_func_array(array(Daemon::$req, 'isUploadedFile'), func_get_args());
+					return call_user_func_array([Daemon::$req, 'isUploadedFile'], func_get_args());
 				}
 			}
 
@@ -170,7 +170,7 @@ class Daemon_WorkerThread extends Thread {
 					Daemon::$req
 					&& Daemon::$req instanceof HTTPRequest
 				) {
-					return call_user_func_array(array(Daemon::$req, 'moveUploadedFile'), func_get_args());
+					return call_user_func_array([Daemon::$req, 'moveUploadedFile'], func_get_args());
 				}
 			}
 
@@ -204,7 +204,7 @@ class Daemon_WorkerThread extends Thread {
 					Daemon::$req
 					&& Daemon::$req instanceof HTTPRequest
 				) {
-					return call_user_func_array(array(Daemon::$req, 'setcookie'), func_get_args());
+					return call_user_func_array([Daemon::$req, 'setcookie'], func_get_args());
 				}
 			}
 
@@ -220,7 +220,7 @@ class Daemon_WorkerThread extends Thread {
 			runkit_function_redefine('create_function', '$arg,$body', 'return __create_function($arg,$body);');
 
 			function __create_function($arg, $body) {
-				static $cache = array();
+				static $cache = [];
 				static $maxCacheSize = 128;
 				static $sorter;
 				static $window = 32;
@@ -249,7 +249,7 @@ class Daemon_WorkerThread extends Thread {
 					$cache = array_slice($cache, $maxCacheSize);
 				}
 
-				$cache[$key] = array($cb = eval('return function('.$arg.'){'.$body.'};'), 0);
+				$cache[$key] = [$cb = eval('return function('.$arg.'){'.$body.'};'), 0];
 				return $cb;
 			}
 		}

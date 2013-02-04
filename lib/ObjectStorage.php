@@ -8,7 +8,7 @@ class ObjectStorage extends SplObjectStorage {
 		$method = array_shift($args);
 		$n = 0;
 		foreach ($this as $obj) {
-			call_user_func_array(array($obj, $method), $args);
+			call_user_func_array([$obj, $method], $args);
 			++$n;
 		}
 		return $n;

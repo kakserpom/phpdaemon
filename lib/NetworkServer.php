@@ -31,11 +31,7 @@ class NetworkServer extends ConnectionPool {
 		$oldConn->bev = null; // to prevent freeing the buffer
 		$oldConn->fd = null; // to prevent closing the socket
 		$pool->detach($oldConn);
-		$conn->bev->setCallbacks( 
-			array($conn, 'onReadEvent'),
-			array($conn, 'onWriteEvent'),
-			array($conn, 'onStateEvent')
-		);
+		$conn->bev->setCallbacks([$conn, 'onReadEvent'], [$conn, 'onWriteEvent'], [$conn, 'onStateEvent']);
 		$conn->addr = $req->attrs->server['REMOTE_ADDR'];
 		$conn->server = $req->attrs->server;
 		$conn->firstline = true;
