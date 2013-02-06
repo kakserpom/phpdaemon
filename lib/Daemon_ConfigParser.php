@@ -156,7 +156,6 @@ class Daemon_ConfigParser {
 							}
 						}
 					}
-
 					foreach ($elTypes as $k => $v) {
 						if (Daemon_ConfigParser::T_CVALUE === $v) {
 							if (ctype_digit($elements[$k])) {
@@ -320,11 +319,11 @@ class Daemon_ConfigParser {
 	}
 
 	/**
-	 * Executes token-parse callback.
-	 * @return void
+	 * Executes token server.
+	 * @return mixed|void
 	 */
 	public function token($token, $c) {
-		call_user_func($this->tokens[$token], $c);
+		return call_user_func($this->tokens[$token], $c);
 	}
 	
 	/**
