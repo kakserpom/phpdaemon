@@ -2,14 +2,40 @@
 /**
  * Driver for Asterisk Call Manager/1.1
  *
- * @package Applications
- * @subpackage AsteriskDriver
+ * @package NetworkClient
+ * @subpackage AsteriskClient
  * 
- * @version 1.0.1
- * @author Ponomarev Dmitry <ponomarev.base@gmail.com>
+ * @version 2.0
+ * @author Ponomarev Dmitry <ponomarev.base@gmail.com> (original code)
  */
-class AsteriskDriver extends AsyncServer {
-	
+class AsteriskClient extends NetworkClient {
+	/**
+	 * Asterisk Call Manager Interface versions for each session.
+	 * @var array
+	 */
+	public $amiVersions = array();
+
+	/**
+	 * Setting default config options
+	 * Overriden from ConnectionPool::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return [
+			// default server
+			'server' => 'tcp://127.0.0.1',
+			// default port
+			'port'   => 5038,
+		];
+	}
+}
+
+/**
+ * Asterisk Call Manager Connection.
+ *
+ */
+class AsteriskClientConnection extends NetworkClientConnection {
+
 	const CONN_STATE_START                                  = 0;
 	const CONN_STATE_GOT_INITIAL_PACKET                     = 0.1;
 	const CONN_STATE_AUTH                                   = 1;
@@ -22,100 +48,6 @@ class AsteriskDriver extends AsyncServer {
 	const INPUT_STATE_START         = 0;
 	const INPUT_STATE_END_OF_PACKET = 1;
 	const INPUT_STATE_PROCESSING    = 2;
-
-	/**
-	 * Active sessions.
-	 * @var array
-	 */
-	public $sessions = array();
-	
-	/**
-	 * Active connections.
-	 * @var array
-	 */
-	public $servConn = array();
-	
-	/**
-	 * Asterisk Call Manager Interface versions for each session.
-	 * @var array
-	 */
-	public $amiVersions = array();
-
-	/**
-	 * Setting default config options
-	 * Overriden from AppInstance::getConfigDefaults
-	 * @return array|false
-	 */
-	protected function getConfigDefaults() {
-		return array(
-			// default server
-			'server' => 'tcp://127.0.0.1',
-			// default port
-			'port'   => 5038,
-			// disabled by default
-			'enable' => 0
-		);
-	}
-
-	/**
-	 * Establishes connection.
-	 * @param string $addr Optional address.
-	 * @return AsteriskDriverSession Session object.
-	 */
-	public function getConnection($addr = null) {
-		if ($this->config->enable->value) {
-			if (empty($addr)) {
-				$addr = $this->config->server->value;
-			}
-
-			if (isset($this->servConn[$addr])) {
-				foreach ($this->servConn[$addr] as &$c) {
-					if (
-						isset($this->sessions[$c])
-						&& !sizeof($this->sessions[$c]->callbacks)
-					) {
-						return $this->sessions[$c];
-					}
-				}
-			} else {
-				$this->servConn[$addr] = array();
-			}
-
-			$u = parse_url($addr);
-
-			if (!isset($u['port'])) {
-				$u['port'] = $this->config->port->value;
-			}
-
-			$connId = $this->connectTo($u['host'], $u['port']);
-
-			if (!$connId) {
-				return;
-			}
-
-			$this->sessions[$connId] = new AsteriskDriverSession($connId, $this);
-			$this->sessions[$connId]->addr = $addr;
-
-			if (isset($u['user'])) {
-				$this->sessions[$connId]->username = $u['user'];
-			}
-
-			if (isset($u['pass'])) {
-				$this->sessions[$connId]->secret = $u['pass'];
-			}
-
-			$this->servConn[$addr][$connId] = $connId;
-
-			return $this->sessions[$connId];
-		}
-	}
-}
-
-/**
- * Asterisk Call Manager Interface session.
- *
- */
-class AsteriskDriverSession extends SocketSession {
 	
 	/**
 	 * The username to access the interface.
@@ -136,28 +68,22 @@ class AsteriskDriverSession extends SocketSession {
 	public $authtype = 'md5';
 	
 	/**
-	 * Property holds a reference to user's object.
-	 * @var AppInstance
-	 */
-	public $context;
-	
-	/**
 	 * Connection's state.
 	 * @var float
 	 */
-	public $cstate = AsteriskDriver::CONN_STATE_START;
+	public $state = self::CONN_STATE_START;
 	
 	/**
 	 * Input state.
 	 * @var integer
 	 */
-	public $instate = AsteriskDriver::INPUT_STATE_START;
+	public $instate = self::INPUT_STATE_START;
 	
 	/**
 	 * Received packets.
 	 * @var array
 	 */
-	public $packets = array();
+	public $packets = [];
 	
 	/**
 	 * For composite response on action.
@@ -169,7 +95,7 @@ class AsteriskDriverSession extends SocketSession {
 	 * Stack of callbacks called when response received.
 	 * @var array
 	 */
-	public $callbacks = array();
+	public $callbacks = [];
 	
 	/**
 	 * Assertions for callbacks.
@@ -178,7 +104,7 @@ class AsteriskDriverSession extends SocketSession {
 	 * 
 	 * @var array
 	 */
-	public $assertions = array();
+	public $assertions = [];
 	
 	/**
 	 * Callback. Called when received response on challenge action.
@@ -205,16 +131,10 @@ class AsteriskDriverSession extends SocketSession {
 	public $onError;
 	
 	/**
-	 * Callback. Called when session finishes.
-	 * @var callback
-	 */
-	public $onFinish;
-	
-	/**
 	 * Beginning of the string in the header or value that indicates whether the save value case.
 	 * @var array
 	 */
-	public $safeCaseValues = array('dialstring', 'callerid');
+	public $safeCaseValues = ['dialstring', 'callerid'];
 
 	/**
 	 * Extract key and value pair from line.
@@ -254,9 +174,9 @@ class AsteriskDriverSession extends SocketSession {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 
-		if ($this->cstate === AsteriskDriver::CONN_STATE_START) {
-			$this->cstate = AsteriskDriver::CONN_STATE_GOT_INITIAL_PACKET;
-			$this->appInstance->amiVersions[$this->addr] = trim($this->buf);
+		if ($this->state === AsteriskDriver::CONN_STATE_START) {
+			$this->state = AsteriskDriver::CONN_STATE_GOT_INITIAL_PACKET;
+			$this->pool->amiVersions[$this->addr] = trim($this->buf);
 			$this->auth();
 		}
 		elseif (strlen($this->buf) < 4) {
@@ -274,18 +194,18 @@ class AsteriskDriverSession extends SocketSession {
 					$this->packets[$this->cnt][$header] = $value;
 				}
 
-				if ((int)$this->cstate === AsteriskDriver::CONN_STATE_AUTH) {
+				if ((int)$this->state === AsteriskDriver::CONN_STATE_AUTH) {
 					if ($this->instate == AsteriskDriver::INPUT_STATE_END_OF_PACKET) {
 						if ($packet['response'] == 'success') {
 							if (
-								$this->cstate === AsteriskDriver::CONN_STATE_CHALLENGE_PACKET_SENT
+								$this->state === AsteriskDriver::CONN_STATE_CHALLENGE_PACKET_SENT
 							) {
 								if (is_callable($this->onChallenge)) {
 									call_user_func($this->onChallenge, $this, $packet['challenge']);
 								}
 							} else {
 								if ($packet['message'] == 'authentication accepted') {
-									$this->cstate = AsteriskDriver::CONN_STATE_HANDSHAKED_OK;
+									$this->state = AsteriskDriver::CONN_STATE_HANDSHAKED_OK;
 									Daemon::$process->log(__METHOD__ . ': Authentication ok. Connected to ' . parse_url($this->addr, PHP_URL_HOST));
 									if (is_callable($this->onConnected)) {
 										call_user_func($this->onConnected, $this, true);
@@ -293,7 +213,7 @@ class AsteriskDriverSession extends SocketSession {
 								}
 							}
 						} else {
-							$this->cstate = AsteriskDriver::CONN_STATE_HANDSHAKED_ERROR;
+							$this->state = AsteriskDriver::CONN_STATE_HANDSHAKED_ERROR;
 							Daemon::$process->log(__METHOD__ . ': Authentication failed. Connection to ' . parse_url($this->addr, PHP_URL_HOST) . ' failed.');
 							if (is_callable($this->onConnected)) {
 								call_user_func($this->onConnected, $this, false);
@@ -304,7 +224,7 @@ class AsteriskDriverSession extends SocketSession {
 						$this->packets = array();
 					}
 				}
-				elseif ($this->cstate === AsteriskDriver::CONN_STATE_HANDSHAKED_OK) {
+				elseif ($this->state === AsteriskDriver::CONN_STATE_HANDSHAKED_OK) {
 					if ($this->instate == AsteriskDriver::INPUT_STATE_END_OF_PACKET) {
 						// Event
 						if (
@@ -350,23 +270,21 @@ class AsteriskDriverSession extends SocketSession {
 
 	/**
 	 * Execute the given callback when/if the connection is handshaked.
-	 * @param $callback
+	 * @param Callback
 	 * @return void
 	 */
-	public function onConnected($callback) {
-		$this->onConnected = $callback;
-
-		if (
-			$this->cstate === AsteriskDriver::CONN_STATE_HANDSHAKED_ERROR
-			&& is_callable($this->onConnected)
-		) {
-			call_user_func($this->onConnected, $this, false);
+	public function onConnected($cb) {
+		if ($this->state === self::CONN_STATE_HANDSHAKED_ERROR) {
+			call_user_func($cb, $this, false);
 		}
-		elseif (
-			$this->cstate === AsteriskDriver::CONN_STATE_HANDSHAKED_OK
-			&& is_callable($this->onConnected)
-		) {
-			call_user_func($this->onConnected, $this, true);
+		elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
+			call_user_func($cb, $this, true);
+		}
+		else {
+			if (!$this->onConnected) {
+				$this->onConnected = new StackCallbacks;
+			}
+			$this->onConnected->push($cb);
 		}
 	}
 
@@ -375,20 +293,20 @@ class AsteriskDriverSession extends SocketSession {
 	 * @return void
 	 */
 	protected function auth() {
-		if ($this->cstate !== AsteriskDriver::CONN_STATE_GOT_INITIAL_PACKET) {
+		if ($this->state !== AsteriskDriver::CONN_STATE_GOT_INITIAL_PACKET) {
 			return;
 		}
 
 		if (stripos($this->authtype, 'md5') !== false) {
-			$this->challenge(function(SocketSession $session, $challenge) {
+			$this->challenge(function($conn, $challenge) {
 				$packet = "Action: Login\r\n";
 				$packet .= "AuthType: MD5\r\n";
-				$packet .= "Username: " . $session->username . "\r\n";
-				$packet .= "Key: " . md5($challenge . $session->secret) . "\r\n";
+				$packet .= "Username: " . $this->username . "\r\n";
+				$packet .= "Key: " . md5($challenge . $this->secret) . "\r\n";
 				$packet .= "Events: on\r\n";
 				$packet .= "\r\n";
-				$session->cstate = AsteriskDriver::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
-				$session->sendPacket($packet);
+				$this->state = AsteriskDriver::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
+				$this->write($packet);
 			});
 		} else {
 			$this->login();
@@ -403,13 +321,13 @@ class AsteriskDriverSession extends SocketSession {
 	 * @return void
 	 */
 	protected function login() {
-		$packet = "Action: login\r\n";
-		$packet .= "Username: " . $this->username . "\r\n";
-		$packet .= "Secret: " . $this->secret . "\r\n";
-		$packet .= "Events: on\r\n";
-		$packet .= "\r\n";
-		$this->cstate = AsteriskDriver::CONN_STATE_LOGIN_PACKET_SENT;
-		$this->sendPacket($packet);
+		$this->state = AsteriskDriver::CONN_STATE_LOGIN_PACKET_SENT;
+		$this->write(
+			"Action: login\r\n"
+		. "Username: " . $this->username . "\r\n"
+		. "Secret: " . $this->secret . "\r\n"
+		. "Events: on\r\n"
+		. "\r\n");
 	}
 
 	/**
@@ -424,8 +342,8 @@ class AsteriskDriverSession extends SocketSession {
 		$packet = "Action: Challenge\r\n";
 		$packet .= "AuthType: MD5\r\n";
 		$packet .= "\r\n";
-		$this->cstate = AsteriskDriver::CONN_STATE_CHALLENGE_PACKET_SENT;
-		$this->sendPacket($packet);
+		$this->state = AsteriskDriver::CONN_STATE_CHALLENGE_PACKET_SENT;
+		$this->write($packet);
 	}
 
 	/**
@@ -634,16 +552,7 @@ class AsteriskDriverSession extends SocketSession {
 	protected function uniqid() {
 		return uniqid(Daemon::$process->pid, true);
 	}
-	
-	/**
-	 * Sends a packet.
-	 * @param string $pacekt Data
-	 * @return void
-	 */
-	public function sendPacket($packet) {
-		$this->write($packet);
-	}
-	
+		
 	/**
 	 * Sends arbitrary command.
 	 * @param string $packet A packet for sending by the connected client to Asterisk
@@ -652,10 +561,10 @@ class AsteriskDriverSession extends SocketSession {
 	 */
 	protected function command($packet, $callback, $assertion = null) {
 		if ($this->finished) {
-			throw new AsteriskDriverSessionFinished;
+			throw new AsteriskClientConnectionFinished;
 		}
 
-		if ($this->cstate !== AsteriskDriver::CONN_STATE_HANDSHAKED_OK) {
+		if ($this->state !== AsteriskDriver::CONN_STATE_HANDSHAKED_OK) {
 			return;
 		}
 
@@ -669,7 +578,7 @@ class AsteriskDriverSession extends SocketSession {
 			$this->assertions[$action_id] = $assertion;
 		}
 
-		$this->sendPacket($packet . "ActionID: {$action_id}\r\n\r\n");
+		$this->write($packet . "ActionID: {$action_id}\r\n\r\n");
 	}
 
 	/**
@@ -684,29 +593,5 @@ class AsteriskDriverSession extends SocketSession {
 		}
 		return $s;
 	}
-
-	/**
-	 * Called when session finishes or set onFinish callback.
-	 * @param $callback
-	 * @return void
-	 */
-	public function onFinish($callback = null) {
-		if (
-			$callback !== null
-			&& is_callable($callback)
-		) {
-			$this->onFinish = $callback;
-		} else {
-			unset($this->appInstance->sessions[$this->connId]);
-			unset($this->appInstance->servConn[$this->addr][$this->connId]);
-
-			if (is_callable($this->onFinish)) {
-				call_user_func($this->onFinish, $this);
-			}
-		}
-	}
 }
-
-class AsteriskDriverSessionFinished extends Exception {}
-
-
+class AsteriskClientConnectionFinished extends Exception {}

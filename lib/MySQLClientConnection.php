@@ -35,10 +35,10 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 */
 	public function onConnected($cb) {
 		if ($this->state == self::STATE_AUTH_ERR) {
-			call_user_func($cb, $this, FALSE);
+			call_user_func($cb, $this, false);
 		}
 		elseif ($this->state === self::STATE_HANDSHAKED) {
-			call_user_func($cb, $this, TRUE);
+			call_user_func($cb, $this, true);
 		}
 		else {
 			if (!$this->onConnected) {
