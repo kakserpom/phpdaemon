@@ -113,11 +113,15 @@ class AppResolver {
 	 * @param string Default application name.
 	 * @return object Request.
 	 */
-	public function getRequest($req, $upstream, $defaultApp = NULL) {
+	public function getRequest($req, $upstream, $defaultApp = null) {
 		if (isset($req->attrs->server['APPNAME'])) {
 			$appName = $req->attrs->server['APPNAME'];
 		}
-		elseif (($appName = $this->getRequestRoute($req, $upstream)) !== NULL) {}
+		elseif (($appName = $this->getRequestRoute($req, $upstream)) !== null) {
+			if ($appName === false) {
+				return $req;
+			}
+		}
 		else {
 			$appName = $defaultApp;
 		}
