@@ -93,7 +93,7 @@ class ConnectionPool extends ObjectStorage {
 		return false;
 	}
 	
-	public static function getInstance($arg = '', $spawn = true) {
+	public static function getInstance($arg = '', $spawn = true, $appInstance = null) {
 		if ($arg === 'default') {
 			$arg = '';
 		}
@@ -109,11 +109,11 @@ class ConnectionPool extends ObjectStorage {
 			$k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '' );
 			
 			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: new Daemon_ConfigSection;			
-			$obj = self::$instances[$key] = new $class($config);
+			$obj = self::$instances[$key] = new $class($config, $appInstance);
 			$obj->name = $arg;
 			return $obj;
 		} elseif ($arg instanceof Daemon_ConfigSection) {
-			return new $class($arg);
+			return new $class($arg, $appInstance);
 
 		} else {
 			return new $class(new Daemon_ConfigSection($arg));
