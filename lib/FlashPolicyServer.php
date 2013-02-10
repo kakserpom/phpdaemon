@@ -33,7 +33,7 @@ class FlashPolicyServer extends NetworkServer {
 	 */
 	public function onConfigUpdated() {
 		parent::onConfigUpdated();
-		if (Daemon::$process instanceof Daemon_WorkerProcess) {
+		if (Daemon::$process instanceof Daemon_WorkerThread) {
 			$pool = $this;
 			FS::readfile($this->config->file->value, function($file, $data) use ($pool) {
 				$pool->policyData = $data;
