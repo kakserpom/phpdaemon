@@ -2,7 +2,4 @@ applications/*.php
 conf/phpd.conf
 doc/output
 /.project
-
-conf/AppResolver.php
-
 .DS_Store
