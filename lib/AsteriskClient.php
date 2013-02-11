@@ -330,7 +330,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 
 		if (stripos($this->authtype, 'md5') !== false) {
 			$this->challenge(function($conn, $challenge) {
-				Daemon::log('start send challenge');
 				$packet = "Action: Login\r\n";
 				$packet .= "AuthType: MD5\r\n";
 				$packet .= "Username: " . $this->username . "\r\n";
