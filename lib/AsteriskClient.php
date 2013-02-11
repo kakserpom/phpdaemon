@@ -7,8 +7,21 @@
  * 
  * @version 2.0
  * @author Ponomarev Dmitry <ponomarev.base@gmail.com> (original code)
+ * @author TyShkan <denis@tyshkan.ru> (updated code)
  */
 class AsteriskClient extends NetworkClient {
+	/**
+	 * Active sessions.
+	 * @var array
+	 */
+	public $sessions = array();
+	
+	/**
+	 * Active connections.
+	 * @var array
+	 */
+	public $servConn = array();
+	
 	/**
 	 * Asterisk Call Manager Interface versions for each session.
 	 * @var array
@@ -28,6 +41,7 @@ class AsteriskClient extends NetworkClient {
 			'port'   => 5038,
 		];
 	}
+	
 }
 
 /**
@@ -135,7 +149,24 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @var array
 	 */
 	public $safeCaseValues = ['dialstring', 'callerid'];
-
+	
+	/**
+	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * @return void
+	 */
+	public function onReady() {
+		parent::onReady();
+		if ($this->url === null) {
+			return;
+		}
+		if ($this->connected && !$this->busy) {
+			$this->pool->servConnFree[$this->url]->attach($this);
+		}
+		
+		$this->username = $this->pool->config->username->value;
+		$this->secret = $this->pool->config->secret->value;
+	}
+	
 	/**
 	 * Extract key and value pair from line.
 	 * @param string $line
@@ -174,8 +205,8 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 
-		if ($this->state === AsteriskDriver::CONN_STATE_START) {
-			$this->state = AsteriskDriver::CONN_STATE_GOT_INITIAL_PACKET;
+		if ($this->state === self::CONN_STATE_START) {
+			$this->state = self::CONN_STATE_GOT_INITIAL_PACKET;
 			$this->pool->amiVersions[$this->addr] = trim($this->buf);
 			$this->auth();
 		}
@@ -185,27 +216,27 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		elseif (strpos($this->buf, "\r\n\r\n") !== false) {
 			while(($line = $this->gets()) !== false) {
 				if ($line == "\r\n") {
-					$this->instate = AsteriskDriver::INPUT_STATE_END_OF_PACKET;
+					$this->instate = self::INPUT_STATE_END_OF_PACKET;
 					$packet =& $this->packets[$this->cnt];
 					$this->cnt++;
 				} else {
-					$this->instate = AsteriskDriver::INPUT_STATE_PROCESSING;
+					$this->instate = self::INPUT_STATE_PROCESSING;
 					list($header, $value) = $this->extract($line);
 					$this->packets[$this->cnt][$header] = $value;
 				}
 
-				if ((int)$this->state === AsteriskDriver::CONN_STATE_AUTH) {
-					if ($this->instate == AsteriskDriver::INPUT_STATE_END_OF_PACKET) {
+				if ((int)$this->state === self::CONN_STATE_AUTH) {
+					if ($this->instate == self::INPUT_STATE_END_OF_PACKET) {
 						if ($packet['response'] == 'success') {
 							if (
-								$this->state === AsteriskDriver::CONN_STATE_CHALLENGE_PACKET_SENT
+								$this->state === self::CONN_STATE_CHALLENGE_PACKET_SENT
 							) {
 								if (is_callable($this->onChallenge)) {
 									call_user_func($this->onChallenge, $this, $packet['challenge']);
 								}
 							} else {
 								if ($packet['message'] == 'authentication accepted') {
-									$this->state = AsteriskDriver::CONN_STATE_HANDSHAKED_OK;
+									$this->state = self::CONN_STATE_HANDSHAKED_OK;
 									Daemon::$process->log(__METHOD__ . ': Authentication ok. Connected to ' . parse_url($this->addr, PHP_URL_HOST));
 									if (is_callable($this->onConnected)) {
 										call_user_func($this->onConnected, $this, true);
@@ -213,7 +244,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 								}
 							}
 						} else {
-							$this->state = AsteriskDriver::CONN_STATE_HANDSHAKED_ERROR;
+							$this->state = self::CONN_STATE_HANDSHAKED_ERROR;
 							Daemon::$process->log(__METHOD__ . ': Authentication failed. Connection to ' . parse_url($this->addr, PHP_URL_HOST) . ' failed.');
 							if (is_callable($this->onConnected)) {
 								call_user_func($this->onConnected, $this, false);
@@ -224,8 +255,8 @@ class AsteriskClientConnection extends NetworkClientConnection {
 						$this->packets = array();
 					}
 				}
-				elseif ($this->state === AsteriskDriver::CONN_STATE_HANDSHAKED_OK) {
-					if ($this->instate == AsteriskDriver::INPUT_STATE_END_OF_PACKET) {
+				elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
+					if ($this->instate == self::INPUT_STATE_END_OF_PACKET) {
 						// Event
 						if (
 							isset($packet['event'])
@@ -293,21 +324,26 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	protected function auth() {
-		if ($this->state !== AsteriskDriver::CONN_STATE_GOT_INITIAL_PACKET) {
+		if ($this->state !== self::CONN_STATE_GOT_INITIAL_PACKET) {
 			return;
 		}
 
 		if (stripos($this->authtype, 'md5') !== false) {
+			Daemon::log('start md5 challenge');
 			$this->challenge(function($conn, $challenge) {
+				Daemon::log('start send challenge');
 				$packet = "Action: Login\r\n";
 				$packet .= "AuthType: MD5\r\n";
 				$packet .= "Username: " . $this->username . "\r\n";
 				$packet .= "Key: " . md5($challenge . $this->secret) . "\r\n";
 				$packet .= "Events: on\r\n";
 				$packet .= "\r\n";
-				$this->state = AsteriskDriver::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
+				Daemon::log("packet:\r\n" . $packet);
+				$this->state = self::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
 				$this->write($packet);
+				Daemon::log('end send challenge');
 			});
+			Daemon::log('end md5 challenge');
 		} else {
 			$this->login();
 		}
@@ -321,13 +357,14 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	protected function login() {
-		$this->state = AsteriskDriver::CONN_STATE_LOGIN_PACKET_SENT;
+		$this->state = self::CONN_STATE_LOGIN_PACKET_SENT;
 		$this->write(
 			"Action: login\r\n"
-		. "Username: " . $this->username . "\r\n"
-		. "Secret: " . $this->secret . "\r\n"
-		. "Events: on\r\n"
-		. "\r\n");
+			. "Username: " . $this->username . "\r\n"
+			. "Secret: " . $this->secret . "\r\n"
+			. "Events: on\r\n"
+			. "\r\n"
+		);
 	}
 
 	/**
@@ -342,7 +379,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		$packet = "Action: Challenge\r\n";
 		$packet .= "AuthType: MD5\r\n";
 		$packet .= "\r\n";
-		$this->state = AsteriskDriver::CONN_STATE_CHALLENGE_PACKET_SENT;
+		$this->state = self::CONN_STATE_CHALLENGE_PACKET_SENT;
 		$this->write($packet);
 	}
 
@@ -564,7 +601,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			throw new AsteriskClientConnectionFinished;
 		}
 
-		if ($this->state !== AsteriskDriver::CONN_STATE_HANDSHAKED_OK) {
+		if ($this->state !== self::CONN_STATE_HANDSHAKED_OK) {
 			return;
 		}
 
