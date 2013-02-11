@@ -329,7 +329,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		}
 
 		if (stripos($this->authtype, 'md5') !== false) {
-			Daemon::log('start md5 challenge');
 			$this->challenge(function($conn, $challenge) {
 				Daemon::log('start send challenge');
 				$packet = "Action: Login\r\n";
@@ -338,12 +337,9 @@ class AsteriskClientConnection extends NetworkClientConnection {
 				$packet .= "Key: " . md5($challenge . $this->secret) . "\r\n";
 				$packet .= "Events: on\r\n";
 				$packet .= "\r\n";
-				Daemon::log("packet:\r\n" . $packet);
 				$this->state = self::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
 				$this->write($packet);
-				Daemon::log('end send challenge');
 			});
-			Daemon::log('end md5 challenge');
 		} else {
 			$this->login();
 		}
