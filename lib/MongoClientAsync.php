@@ -178,6 +178,12 @@ class MongoClientAsync extends NetworkClient {
 					$o['orderby'] = $v;
 				}
 				elseif ($k === 'parse_oplog') {}
+				elseif ($k == 'rp') {
+					if (is_string($v)) {
+						$v = ['mode' => $v];
+					}
+					$o['$readPreference'] = $v;
+				}
 				else {
 					$o[$k] = $v;
 				}
@@ -204,7 +210,7 @@ class MongoClientAsync extends NetworkClient {
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 			, true);
 
-		$this->requests[$reqId] = array($p['col'], $callback, false, isset($p['parse_oplog']), isset($p['tailable']));
+		$this->requests[$reqId] = [$p['col'], $callback, false, isset($p['parse_oplog']), isset($p['tailable'])];
 	}
 
 	/**
@@ -238,7 +244,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 		
 		if (!isset($p['where'])) {
-			$p['where'] = array();
+			$p['where'] = [];
 		}
 		
 		if (strpos($p['col'], '.') === false) {
@@ -250,7 +256,7 @@ class MongoClientAsync extends NetworkClient {
 			&& is_string($p['fields'])
 		) {
 			$e = explode(',', $p['fields']);
-			$p['fields'] = array();
+			$p['fields'] = [];
 	
 			foreach ($e as &$f) {
 				$p['fields'][$f] = 1;
@@ -261,7 +267,7 @@ class MongoClientAsync extends NetworkClient {
 			$p['where'] = new MongoCode($p['where']);
 		}
 		
-		$o = array();
+		$o = [];
 		$s = false;
 		
 		foreach ($p as $k => $v) {
@@ -279,6 +285,12 @@ class MongoClientAsync extends NetworkClient {
 					$o['orderby'] = $v;
 				}
 				elseif ($k === 'parse_oplog') {}
+				elseif ($k == 'rp') {
+					if (is_string($v)) {
+						$v = ['mode' => $v];
+					}
+					$o['$readPreference'] = $v;
+				}
 				else {
 					$o[$k] = $v;
 				}
@@ -299,7 +311,7 @@ class MongoClientAsync extends NetworkClient {
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 			, true);
 
-		$this->requests[$reqId] = array($p['col'], $callback, true);
+		$this->requests[$reqId] = [$p['col'], $callback, true];
 	}
 
 	/**
@@ -323,7 +335,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 		
 		if (!isset($p['where'])) {
-			$p['where'] = array();
+			$p['where'] = [];
 		}
 		
 		if (strpos($p['col'], '.') === false) {
@@ -332,11 +344,19 @@ class MongoClientAsync extends NetworkClient {
 		
 		$e = explode('.', $p['col']);
 
-		$query = array(
+		$query = [
 			'count' => $e[1], 
 			'query' => $p['where'], 
-			'fields' => array('_id' => 1), 
-		);
+			'fields' => ['_id' => 1], 
+		];
+
+		if (isset($p[$k = 'rp'])) {
+			$v = $p[$k];
+			if (is_string($v)) {
+				$v = ['mode' => $v];
+			}
+			$query['$readPreference'] = $v;
+		}
 
 		if (is_string($p['where'])) {
 			$query['where'] = new MongoCode($p['where']);
@@ -355,7 +375,7 @@ class MongoClientAsync extends NetworkClient {
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = array($p['col'], $callback, true);
+		$this->requests[$reqId] = [$p['col'], $callback, true];
 	}
 
 	/**
@@ -370,12 +390,12 @@ class MongoClientAsync extends NetworkClient {
 			$p['opts'] = 0;
 		}
 		
-		$query = array(
+		$query = [
 			'authenticate' => 1, 
 			'user' => $p['user'], 
 			'nonce' => $p['nonce'], 
 			'key' => MongoClientAsync::getAuthKey($p['user'], $p['password'], $p['nonce']), 
-		);
+		];
 
 		$packet = pack('V', $p['opts'])
 			. $p['dbname'] . '.$cmd' . "\x00"
@@ -384,7 +404,7 @@ class MongoClientAsync extends NetworkClient {
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = array($p['dbname'], $callback, true);
+		$this->requests[$reqId] = [$p['dbname'], $callback, true];
 	}
 
 	/**
@@ -396,9 +416,9 @@ class MongoClientAsync extends NetworkClient {
 			$p['opts'] = 0;
 		}
 		
-		$query = array(
+		$query = [
 			'getnonce' => 1, 
-		);
+		];
 		
 		$packet = pack('V', $p['opts'])
 			. $p['dbname'] . '.$cmd' . "\x00"
@@ -407,26 +427,27 @@ class MongoClientAsync extends NetworkClient {
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = array($p['dbname'], $callback, true);
+		$this->requests[$reqId] = [$p['dbname'], $callback, true];
 	}
 
 	/**
 	 * Gets last error
 	 * @param string Dbname
 	 * @param mixed Callback called when response received
+	 * @param array Parameters.
 	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function lastError($db, $callback, $key = '') {
+	public function lastError($db, $callback, $params = [], $key = '') {
 		$e = explode('.', $db);
-
-		$packet = pack('V', 0)
+		$params['getlasterror'] =  1;
+		$reqId = $this->request($key, self::OP_QUERY,
+			pack('V', 0)
 			. $e[0] . '.$cmd' . "\x00"
 			. pack('VV', 0, -1)
-			. bson_encode(array('getlasterror' => 1));
-
-		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = array($db, $callback, true);
+			. bson_encode($params)
+		, true);
+		$this->requests[$reqId] = [$db, $callback, true];
 	}
 
 	/**
@@ -450,15 +471,15 @@ class MongoClientAsync extends NetworkClient {
 		}
 		
 		if (!isset($p['where'])) {
-			$p['where'] = array();
+			$p['where'] = [];
 		}
 		
 		if (!isset($p['min'])) {
-			$p['min'] = array();
+			$p['min'] = [];
 		}
 		
 		if (!isset($p['max'])) {
-			$p['max'] = array();
+			$p['max'] = [];
 		}
 		
 		if (strpos($p['col'], '.') === false) {
@@ -467,9 +488,9 @@ class MongoClientAsync extends NetworkClient {
 		
 		$e = explode('.', $p['col']);
 
-		$query = array(
+		$query = [
 			'$query' => $p['where'], 
-		);
+		];
 
 		if (sizeof($p['min'])) {
 			$query['$min'] = $p['min'];
@@ -496,7 +517,7 @@ class MongoClientAsync extends NetworkClient {
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = array($p['col'], $callback, true);
+		$this->requests[$reqId] = [$p['col'], $callback, true];
 	}
 
 	/**
@@ -507,7 +528,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @return void
 	 */
 	public function evaluate($code, $callback, $key = '') {
-		$p = array();
+		$p = [];
 		
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
@@ -525,7 +546,7 @@ class MongoClientAsync extends NetworkClient {
 			$p['db'] = $this->dbname;
 		}
 		
-		$query = array('$eval' => new MongoCode($code));
+		$query = ['$eval' => new MongoCode($code)];
 		
 		$packet = pack('V', $p['opts'])
 			. $p['db'] . '.$cmd' . "\x00"
@@ -534,7 +555,7 @@ class MongoClientAsync extends NetworkClient {
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 	
 		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = array($p['db'], $callback, true);
+		$this->requests[$reqId] = [$p['db'], $callback, true];
 	}
 
 	/**
@@ -567,10 +588,19 @@ class MongoClientAsync extends NetworkClient {
 		
 		$e = explode('.', $p['col']);
 
-		$query = array(
+		$query = [
 			'distinct' => $e[1], 
 			'key' => $p['key'], 
-		);
+		];
+
+
+		if (isset($p[$k = 'rp'])) {
+			$v = $p[$k];
+			if (is_string($v)) {
+				$v = ['mode' => $v];
+			}
+			$query['$readPreference'] = $v;
+		}
 		
 		if (isset($p['where'])) {
 			$query['query'] = $p['where'];
@@ -583,7 +613,7 @@ class MongoClientAsync extends NetworkClient {
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = array($p['col'], $callback, true);
+		$this->requests[$reqId] = [$p['col'], $callback, true];
 	}
 
 	/**
@@ -620,17 +650,25 @@ class MongoClientAsync extends NetworkClient {
 		
 		$e = explode('.', $p['col']);
 		
-		$query = array(
-			'group' => array(
+		$query = [
+			'group' => [
 				'ns'      => $e[1], 
 				'key'     => $p['key'], 
 				'$reduce' => $p['reduce'], 
 				'initial' => $p['initial'], 
-			)
-		);
+			]
+		];
 		
 		if (isset($p[$k = 'cond'])) {
-			$query['group'][$k]= $p[$k];
+			$query['group'][$k] = $p[$k];
+		}
+
+		if (isset($p[$k = 'rp'])) {
+			$v = $p[$k];
+			if (is_string($v)) {
+				$v = ['mode' => $v];
+			}
+			$query['$readPreference'] = $v;
 		}
 		
 		if (isset($p[$k = 'finalize'])) {
@@ -652,7 +690,7 @@ class MongoClientAsync extends NetworkClient {
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = array($p['col'], $callback, false);
+		$this->requests[$reqId] = [$p['col'], $callback, false];
 	}
 
 	/**
@@ -661,10 +699,12 @@ class MongoClientAsync extends NetworkClient {
 	 * @param array Conditions
 	 * @param array Data
 	 * @param integer Optional. Flags.
+	 * @param callback Callback (getLastError)
+	 * @param array Parameters (getLastError).
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function update($col, $cond, $data, $flags = 0, $cb = NULL, $key = '') {
+	public function update($col, $cond, $data, $flags = 0, $cb = NULL, $params = [], $key = '') {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -689,7 +729,7 @@ class MongoClientAsync extends NetworkClient {
 		);
 		
 		if ($cb !== NULL) {
-			$this->lastError($col, $cb, $this->lastRequestConnection);
+			$this->lastError($col, $cb, $params, $this->lastRequestConnection);
 		}
 	}
 
@@ -698,11 +738,13 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Collection's name
 	 * @param array Conditions
 	 * @param array Data
+	 * @param callback Callback
+	 * @param array Parameters (getLastError).
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function updateMulti($col, $cond, $data, $cb = NULL, $key = '') {
-		$this->update($col, $cond, $data, 2, $cb, $key);
+	public function updateMulti($col, $cond, $data, $cb = NULL, $params = [], $key = '') {
+		$this->update($col, $cond, $data, 2, $cb, $params, $key);
 	}
 
 	/**
@@ -710,12 +752,12 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Collection's name
 	 * @param array Conditions
 	 * @param array Data
-	 * @param boolean Optional. Multi-flag.
+	 * @param boolean Optional. Multi-flag. | array Parameters.
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $key = '') {
-		$this->update($col, $cond, $data, $multi ? 3 : 1, $cb, $key);
+	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $params = [], $key = '') {
+		$this->update($col, $cond, $data, $multi ? 3 : 1, $cb, $params, $key);
 	}
 
 	/**
@@ -725,7 +767,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Optional. Distribution key.
 	 * @return object MongoId
 	 */
-	public function insert($col, $doc = array(), $cb = NULL,  $key = '') {
+	public function insert($col, $doc = [], $cb = NULL, $params = [], $key = '') {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -741,7 +783,7 @@ class MongoClientAsync extends NetworkClient {
 		);
 		
 		if ($cb !== NULL) {
-			$this->lastError($col, $cb, $this->lastRequestConnection);
+			$this->lastError($col, $cb, $params, $this->lastRequestConnection);
 		}
 		
 		return $doc['_id'];
@@ -753,7 +795,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function killCursors($cursors = array(), $key = '') {
+	public function killCursors($cursors = [], $key = '') {
 		$reqId = $this->request($key, self::OP_KILL_CURSORS, 
 			"\x00\x00\x00\x00"
 			. pack('V', sizeof($cursors))
@@ -768,7 +810,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Optional. Distribution key.
 	 * @return array
 	 */
-	public function insertMulti($col, $docs = array(), $cb = NULL, $key = '') {
+	public function insertMulti($col, $docs = [], $cb = NULL, $params = [], $key = '') {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -793,7 +835,7 @@ class MongoClientAsync extends NetworkClient {
 		);
 		
 		if ($cb !== NULL) {
-			$this->lastError($col, $cb, $this->lastRequestConnection);
+			$this->lastError($col, $cb, $params, $this->lastRequestConnection);
 		}
 		
 		return $ids;
@@ -807,7 +849,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function remove($col, $cond = array(), $cb = NULL, $key = '') {
+	public function remove($col, $cond = array(), $cb = NULL, $params = [], $key = '') {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -824,7 +866,7 @@ class MongoClientAsync extends NetworkClient {
 		);
 		
 		if ($cb !== NULL) {
-			$this->lastError($col, $cb, $this->lastRequestConnection);
+			$this->lastError($col, $cb, $params, $this->lastRequestConnection);
 		}
 	}
 
