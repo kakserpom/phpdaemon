@@ -7,13 +7,15 @@
  * 
  * @version 2.0
  * @author Ponomarev Dmitry <ponomarev.base@gmail.com> (original code)
+ * @author TyShkan <denis@tyshkan.ru> (updated code)
  */
 class AsteriskClient extends NetworkClient {
+	
 	/**
 	 * Asterisk Call Manager Interface versions for each session.
 	 * @var array
 	 */
-	public $amiVersions = array();
+	public $amiVersions = [];
 
 	/**
 	 * Setting default config options
@@ -28,6 +30,7 @@ class AsteriskClient extends NetworkClient {
 			'port'   => 5038,
 		];
 	}
+	
 }
 
 /**
@@ -135,7 +138,42 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @var array
 	 */
 	public $safeCaseValues = ['dialstring', 'callerid'];
-
+	
+	/**
+	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * @return void
+	 */
+	public function onReady() {
+		parent::onReady();
+		
+		if ($this->url === null) {
+			return;
+		}
+		
+		if ($this->connected && !$this->busy) {
+			$this->pool->servConnFree[$this->url]->attach($this);
+		}
+		
+		$this->username = $this->pool->config->username->value;
+		$this->secret = $this->pool->config->secret->value;
+	}
+	
+	/**
+	 * Called when the worker is going to shutdown
+	 * @return boolean Ready to shutdown?
+	 */
+	public function gracefulShutdown() {
+		if ($this->finished) {
+			return !$this->sending;
+		}
+		
+		$this->logoff();
+		
+		$this->finish();
+		
+		return false;
+	}
+	
 	/**
 	 * Extract key and value pair from line.
 	 * @param string $line
@@ -173,96 +211,98 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public function stdin($buf) {
 		$this->buf .= $buf;
-
-		if ($this->state === AsteriskDriver::CONN_STATE_START) {
-			$this->state = AsteriskDriver::CONN_STATE_GOT_INITIAL_PACKET;
+		
+		if ($this->state === self::CONN_STATE_START) {
+			$this->state = self::CONN_STATE_GOT_INITIAL_PACKET;
 			$this->pool->amiVersions[$this->addr] = trim($this->buf);
 			$this->auth();
+			return;
 		}
-		elseif (strlen($this->buf) < 4) {
+		
+		if (strlen($this->buf) < 4) {
 			return; // Not enough data buffered yet
 		}
-		elseif (strpos($this->buf, "\r\n\r\n") !== false) {
-			while(($line = $this->gets()) !== false) {
-				if ($line == "\r\n") {
-					$this->instate = AsteriskDriver::INPUT_STATE_END_OF_PACKET;
-					$packet =& $this->packets[$this->cnt];
-					$this->cnt++;
-				} else {
-					$this->instate = AsteriskDriver::INPUT_STATE_PROCESSING;
-					list($header, $value) = $this->extract($line);
-					$this->packets[$this->cnt][$header] = $value;
-				}
+		
+		while(($line = $this->gets()) !== false) {
+			if ($line == "\r\n") {
+				$this->instate = self::INPUT_STATE_END_OF_PACKET;
+				$packet =& $this->packets[$this->cnt];
+				++$this->cnt;
+			} else {
+				$this->instate = self::INPUT_STATE_PROCESSING;
+				list($header, $value) = $this->extract($line);
+				$this->packets[$this->cnt][$header] = $value;
+			}
 
-				if ((int)$this->state === AsteriskDriver::CONN_STATE_AUTH) {
-					if ($this->instate == AsteriskDriver::INPUT_STATE_END_OF_PACKET) {
-						if ($packet['response'] == 'success') {
-							if (
-								$this->state === AsteriskDriver::CONN_STATE_CHALLENGE_PACKET_SENT
-							) {
-								if (is_callable($this->onChallenge)) {
-									call_user_func($this->onChallenge, $this, $packet['challenge']);
-								}
-							} else {
-								if ($packet['message'] == 'authentication accepted') {
-									$this->state = AsteriskDriver::CONN_STATE_HANDSHAKED_OK;
-									Daemon::$process->log(__METHOD__ . ': Authentication ok. Connected to ' . parse_url($this->addr, PHP_URL_HOST));
-									if (is_callable($this->onConnected)) {
-										call_user_func($this->onConnected, $this, true);
-									}
-								}
+			if ((int)$this->state === self::CONN_STATE_AUTH) {
+				if ($this->instate == self::INPUT_STATE_END_OF_PACKET) {
+					if ($packet['response'] == 'success') {
+						if ($this->state === self::CONN_STATE_CHALLENGE_PACKET_SENT) {
+							if (is_callable($this->onChallenge)) {
+								call_user_func($this->onChallenge, $this, $packet['challenge']);
 							}
 						} else {
-							$this->state = AsteriskDriver::CONN_STATE_HANDSHAKED_ERROR;
-							Daemon::$process->log(__METHOD__ . ': Authentication failed. Connection to ' . parse_url($this->addr, PHP_URL_HOST) . ' failed.');
-							if (is_callable($this->onConnected)) {
-								call_user_func($this->onConnected, $this, false);
-							}
-
-							$this->finish();
-						}
-						$this->packets = array();
-					}
-				}
-				elseif ($this->state === AsteriskDriver::CONN_STATE_HANDSHAKED_OK) {
-					if ($this->instate == AsteriskDriver::INPUT_STATE_END_OF_PACKET) {
-						// Event
-						if (
-							isset($packet['event'])
-							&& !isset($packet['actionid'])
-						) {
-							if (is_callable($this->onEvent)) {
-								call_user_func($this->onEvent, $this, $packet);
-							}
-						}
-						// Response
-						elseif (isset($packet['actionid'])) {
-							$action_id =& $packet['actionid'];
-
-							if (isset($this->callbacks[$action_id])) {
-								if (isset($this->assertions[$action_id])) {
-									$this->packets[$action_id][] = $packet;
-
-									if (count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) == count($this->assertions[$action_id])) {
-										if (is_callable($this->callbacks[$action_id])) {
-											call_user_func($this->callbacks[$action_id], $this, $this->packets[$action_id]);
-											unset($this->callbacks[$action_id]);
-										}
-
-										unset($this->assertions[$action_id]);
-										unset($this->packets[$action_id]);
-									}
-								} else {
-									if (is_callable($this->callbacks[$action_id])) {
-										call_user_func($this->callbacks[$action_id], $this, $packet);
-										unset($this->callbacks[$action_id]);
-									}
+							if ($packet['message'] == 'authentication accepted') {
+								$this->state = self::CONN_STATE_HANDSHAKED_OK;
+								
+								Daemon::$process->log(__METHOD__ . ': Authentication ok. Connected to ' . parse_url($this->addr, PHP_URL_HOST));
+								
+								if (is_callable($this->onConnected)) {
+									call_user_func($this->onConnected, $this, true);
 								}
 							}
 						}
-						unset($packet);
-						unset($this->packets[$this->cnt - 1]);
+					} else {
+						$this->state = self::CONN_STATE_HANDSHAKED_ERROR;
+						
+						Daemon::$process->log(__METHOD__ . ': Authentication failed. Connection to ' . parse_url($this->addr, PHP_URL_HOST) . ' failed.');
+						
+						if (is_callable($this->onConnected)) {
+							call_user_func($this->onConnected, $this, false);
+						}
+						
+						$this->finish();
 					}
+					
+					$this->packets = [];
+				}
+			}
+			elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
+				if ($this->instate == self::INPUT_STATE_END_OF_PACKET) {
+					// Event
+					if (isset($packet['event']) && !isset($packet['actionid'])) {
+						if (is_callable($this->onEvent)) {
+							call_user_func($this->onEvent, $this, $packet);
+						}
+					}
+					// Response
+					elseif (isset($packet['actionid'])) {
+						$action_id =& $packet['actionid'];
+
+						if (isset($this->callbacks[$action_id])) {
+							if (isset($this->assertions[$action_id])) {
+								$this->packets[$action_id][] = $packet;
+								
+								if (count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) == count($this->assertions[$action_id])) {
+									if (is_callable($this->callbacks[$action_id])) {
+										call_user_func($this->callbacks[$action_id], $this, $this->packets[$action_id]);
+										unset($this->callbacks[$action_id]);
+									}
+
+									unset($this->assertions[$action_id]);
+									unset($this->packets[$action_id]);
+								}
+							} else {
+								if (is_callable($this->callbacks[$action_id])) {
+									call_user_func($this->callbacks[$action_id], $this, $packet);
+									unset($this->callbacks[$action_id]);
+								}
+							}
+						}
+					}
+					
+					unset($packet);
+					unset($this->packets[$this->cnt - 1]);
 				}
 			}
 		}
@@ -276,14 +316,13 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	public function onConnected($cb) {
 		if ($this->state === self::CONN_STATE_HANDSHAKED_ERROR) {
 			call_user_func($cb, $this, false);
-		}
-		elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
+		} elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
 			call_user_func($cb, $this, true);
-		}
-		else {
+		} else {
 			if (!$this->onConnected) {
 				$this->onConnected = new StackCallbacks;
 			}
+			
 			$this->onConnected->push($cb);
 		}
 	}
@@ -293,19 +332,20 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	protected function auth() {
-		if ($this->state !== AsteriskDriver::CONN_STATE_GOT_INITIAL_PACKET) {
+		if ($this->state !== self::CONN_STATE_GOT_INITIAL_PACKET) {
 			return;
 		}
 
 		if (stripos($this->authtype, 'md5') !== false) {
 			$this->challenge(function($conn, $challenge) {
-				$packet = "Action: Login\r\n";
-				$packet .= "AuthType: MD5\r\n";
-				$packet .= "Username: " . $this->username . "\r\n";
-				$packet .= "Key: " . md5($challenge . $this->secret) . "\r\n";
-				$packet .= "Events: on\r\n";
-				$packet .= "\r\n";
-				$this->state = AsteriskDriver::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
+				$packet = "Action: Login\r\n"
+				. "AuthType: MD5\r\n"
+				. "Username: " . $this->username . "\r\n"
+				. "Key: " . md5($challenge . $this->secret) . "\r\n"
+				. "Events: on\r\n"
+				. "\r\n";
+				
+				$this->state = self::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
 				$this->write($packet);
 			});
 		} else {
@@ -321,13 +361,14 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	protected function login() {
-		$this->state = AsteriskDriver::CONN_STATE_LOGIN_PACKET_SENT;
+		$this->state = self::CONN_STATE_LOGIN_PACKET_SENT;
 		$this->write(
 			"Action: login\r\n"
-		. "Username: " . $this->username . "\r\n"
-		. "Secret: " . $this->secret . "\r\n"
-		. "Events: on\r\n"
-		. "\r\n");
+			. "Username: " . $this->username . "\r\n"
+			. "Secret: " . $this->secret . "\r\n"
+			. "Events: on\r\n"
+			. "\r\n"
+		);
 	}
 
 	/**
@@ -339,10 +380,12 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	protected function challenge($callback) {
 		$this->onChallenge = $callback;
-		$packet = "Action: Challenge\r\n";
-		$packet .= "AuthType: MD5\r\n";
-		$packet .= "\r\n";
-		$this->state = AsteriskDriver::CONN_STATE_CHALLENGE_PACKET_SENT;
+		
+		$packet = "Action: Challenge\r\n"
+		. "AuthType: MD5\r\n"
+		. "\r\n";
+		
+		$this->state = self::CONN_STATE_CHALLENGE_PACKET_SENT;
 		$this->write($packet);
 	}
 
@@ -360,7 +403,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function getSipPeers($callback) {
-		$this->command("Action: SIPpeers\r\n", $callback, array('event' => 'peerlistcomplete'));
+		$this->command("Action: SIPpeers\r\n", $callback, ['event' => 'peerlistcomplete']);
 	}
 
 	/**
@@ -372,7 +415,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function getIaxPeers($callback) {
-		$this->command("Action: IAXpeerlist\r\n", $callback, array('event' => 'peerlistcomplete'));
+		$this->command("Action: IAXpeerlist\r\n", $callback, ['event' => 'peerlistcomplete']);
 	}
 
 	/**
@@ -421,12 +464,15 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public function setVar($channel, $variable, $value, $callback) {
 		$cmd = "Action: SetVar\r\n";
-		if($channel) {
+		
+		if ($channel) {
 			$cmd .= "Channel: " . trim($channel) . "\r\n";
 		}
-		if(isset($variable, $value)) {
+		
+		if (isset($variable, $value)) {
 			$cmd .= "Variable: " . trim($variable) . "\r\n";
 			$cmd .= "Value: " . trim($value) . "\r\n";
+			
 			$this->command($cmd, $callback);
 		}
 	}
@@ -458,9 +504,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public function status($callback, $channel = null) {
 		$cmd = "Action: Status\r\n";
-		if($channel !== null) {
+		
+		if ($channel !== null) {
 			$cmd .= "Channel: " . trim($channel) . "\r\n";
 		}
+		
 		$this->command($cmd, $callback, array('event' => 'statuscomplete'));
 	}
 
@@ -510,6 +558,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public function action($action, $callback, array $params = null, array $assertion = null) {
 		$action = trim($action);
+		
 		$this->command("Action: {$action}\r\n" . ($params ? $this->implodeParams($params) : ''), $callback, $assertion);
 	}
 
@@ -564,14 +613,16 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			throw new AsteriskClientConnectionFinished;
 		}
 
-		if ($this->state !== AsteriskDriver::CONN_STATE_HANDSHAKED_OK) {
+		if ($this->state !== self::CONN_STATE_HANDSHAKED_OK) {
 			return;
 		}
 
 		$action_id = $this->uniqid();
-		if(!is_callable($callback, true)) {
+		
+		if (!is_callable($callback, true)) {
 			$callback = false;
 		}
+		
 		$this->callbacks[$action_id] = $callback;
 
 		if ($assertion !== null) {
@@ -588,10 +639,13 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	protected function implodeParams(array $params) {
 		$s = '';
+		
 		foreach($params as $header => $value) {
 			$s .= trim($header) . ": " . trim($value) . "\r\n";
 		}
+		
 		return $s;
 	}
 }
+
 class AsteriskClientConnectionFinished extends Exception {}
