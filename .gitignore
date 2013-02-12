@@ -2,3 +2,4 @@ applications/*.php
 conf/phpd.conf
 doc/output
 /.project
+.DS_Store
