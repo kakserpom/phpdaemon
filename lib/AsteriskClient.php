@@ -156,15 +156,33 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public function onReady() {
 		parent::onReady();
+		
 		if ($this->url === null) {
 			return;
 		}
+		
 		if ($this->connected && !$this->busy) {
 			$this->pool->servConnFree[$this->url]->attach($this);
 		}
 		
 		$this->username = $this->pool->config->username->value;
 		$this->secret = $this->pool->config->secret->value;
+	}
+	
+	/**
+	 * Called when the worker is going to shutdown
+	 * @return boolean Ready to shutdown?
+	 */
+	public function gracefulShutdown() {
+		if ($this->finished) {
+			return !$this->sending;
+		}
+		
+		$this->logoff();
+		
+		$this->finish();
+		
+		return false;
 	}
 	
 	/**
@@ -204,6 +222,8 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public function stdin($buf) {
 		$this->buf .= $buf;
+		
+		Daemon::log($buf);
 
 		if ($this->state === self::CONN_STATE_START) {
 			$this->state = self::CONN_STATE_GOT_INITIAL_PACKET;
@@ -611,6 +631,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		}
 
 		$this->write($packet . "ActionID: {$action_id}\r\n\r\n");
+		Daemon::log("packet send:\r\n" . $packet . "ActionID: {$action_id}\r\n\r\n");
 	}
 
 	/**
