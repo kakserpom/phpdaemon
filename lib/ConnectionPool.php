@@ -113,10 +113,10 @@ class ConnectionPool extends ObjectStorage {
 			$obj->name = $arg;
 			return $obj;
 		} elseif ($arg instanceof Daemon_ConfigSection) {
-			return new $class($arg, $appInstance);
+			return new static($arg, $appInstance);
 
 		} else {
-			return new $class(new Daemon_ConfigSection($arg));
+			return new static(new Daemon_ConfigSection($arg));
 		}
 	}
 	

@@ -608,8 +608,7 @@ class IRCClientChannelParticipant {
 		if (isset($channel->nicknames[$nick])) {
 			return $channel->nicknames[$nick];
 		}
-		$class = get_called_class();
-		return new $class($channel, $nick);
+		return new static($channel, $nick);
 	}
 	public function setNick($nick) {
 		if ($this->nick === $nick) {

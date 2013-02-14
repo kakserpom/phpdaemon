@@ -24,8 +24,7 @@ class PubSubEvent extends SplObjectStorage {
 		return $this;
 	}
 	public static function init() {
-		$class = get_called_class();
-		return new $class;
+		return new static;
 	}
 	public function sub($obj, $cb) {
 		$act = $this->count() === 0;

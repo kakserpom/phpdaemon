@@ -19,11 +19,10 @@ class CallbackWrapper {
 		$this->context = null;
 	}
 	public static function wrap($cb) {
-		if ($cb instanceof CallbackWrapper) {
+		if ($cb instanceof CallbackWrapper || (Daemon::$context === null)) {
 			return $cb;
 		}
-		$class = get_called_class();
-		return new $class($cb, Daemon::$context);
+		return new static($cb, Daemon::$context);
 	}
 	public function unwrap() {
 		return $this->cb;
