@@ -156,7 +156,7 @@ class Daemon_Bootstrap {
 			$error = true;
 		}
 
-		$eventDownloadUrl = 'https://bitbucket.org/osmanov/pecl-event/downloads/event-1.1.2.tgz';
+		$eventDownloadUrl = 'https://bitbucket.org/osmanov/pecl-event/downloads/event-1.2.0.tgz';
 
 		if (!Daemon::loadModuleIfAbsent('event') || !class_exists('EventListener')) {
 			Daemon::log('[EMERG] event extension not found. You have to install it. `pecl install ' . $eventDownloadUrl . '`');
