@@ -23,8 +23,7 @@ ini_set('include_path', get_include_path()
 	. ':/usr/share/phpdaemon:/etc/phpdaemon'
 );
 
-spl_autoload_register(function($classname) {
-	
+$autoloader = function($classname) {
 	$parts = explode('\\', $classname);
 	if (sizeof($parts) > 1 && ('PHPDaemon' == $parts[0])) {
 		// namespaces support (remove first "PHPDaemon\" part)
@@ -36,14 +35,14 @@ spl_autoload_register(function($classname) {
 	foreach ($pathes as $path) {
 		if (file_exists($path)) {
 			require $path;
-			return;
+			return true;
 		}
 	}
 	if (class_exists('Daemon', false) && isset(Daemon::$config->autoload->value)) {
 		$files = glob($g = sprintf(Daemon::$config->autoload->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
 		if (isset($files[0])) {
 			require $files[0];
-			return;
+			return true;
 		}
 	}
 	
@@ -51,10 +50,19 @@ spl_autoload_register(function($classname) {
 		$files = glob($g = sprintf(Daemon::$config->appfilepath->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
 		if (isset($files[0])) {
 			require $files[0];
-			return;
+			return true;
 		}
 	}
-	
+	return false;
+};
+$autoloadCache = [];
+spl_autoload_register(function($classname) use ($autoloader, &$autoloadCache) {
+	if (isset($autoloadCache[$classname])) {
+		return $autoloadCache[$classname];
+	}
+	if ($autoloader($classname) === false) {
+		$autoloadCache[$classname] = false;
+	}
 });
 
 class_exists('Debug');
