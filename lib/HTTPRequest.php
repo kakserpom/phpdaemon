@@ -699,18 +699,17 @@ class HTTPRequest extends Request {
 								if ($this->oldFashionUploadFP) {
 									$this->attrs->files[$name]['fp'] = fopen($this->attrs->files[$name]['tmp_name'], 'c+');
 								} else {
-									$req = $this;
 									if (FS::$supported) {
 										$this->upstream->lockRead();
 									}
-									FS::open($this->attrs->files[$name]['tmp_name'], 'c+', function ($fp) use ($req, $name) {
+									FS::open($this->attrs->files[$name]['tmp_name'], 'c+', function ($fp) use ($name) {
 										if (!$fp) {
-											$req->attrs->files[$name]['error'] = UPLOAD_ERR_CANT_WRITE;
+											$this->attrs->files[$name]['error'] = UPLOAD_ERR_CANT_WRITE;
 										}
-										$req->attrs->files[$name]['fp'] = $fp;
+										$this->attrs->files[$name]['fp'] = $fp;
 										if (FS::$supported) {
-											$req->upstream->unlockRead();
-											$req->stdin('');
+											$this->upstream->unlockRead();
+											$this->stdin('');
 										}
 									});
 								}
@@ -933,7 +932,7 @@ class HTTPRequest extends Request {
 					($f['error'] === UPLOAD_ERR_OK)
 					&& file_exists($f['tmp_name'])
 				) {
-					FS::unlink($f['tmp_name']);
+					//FS::unlink($f['tmp_name']);
 				}
 			}
 		}
