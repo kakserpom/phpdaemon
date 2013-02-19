@@ -16,6 +16,7 @@ class AppInstance {
 	public $config;
 	public $enableRPC = false;
 	public $requestClass;
+	public static $runOnDemand = true;
 
 	const EVENT_CONFIG_UPDATED = 1;
 	const EVENT_GRACEFUL_SHUTDOWN = 2;

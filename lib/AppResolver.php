@@ -40,7 +40,7 @@ class AppResolver {
 				if (isset(Daemon::$appInstances[$appNameLower][$instance])) {
 					continue;
 				}
-				$this->appInstantiate($appName, $instance);
+				$this->appInstantiate($appName, $instance, true);
 			}
 		}
 	}
@@ -92,18 +92,23 @@ class AppResolver {
 	 * Run new application instance	
 	 * @param string Application name
 	 * @param string Name of instance
+	 * @param [boolean = false] Preload?
 	 * @return object AppInstance.
 	 */
-	public function appInstantiate($appName, $instance) {
-		$appNameLower = strtolower($appName);
-		if (class_exists($appName) && is_subclass_of($appName, 'AppInstance')) {
-			$appInstance = new $appName($instance);
-		} else {
-			Daemon::log('appInstantiate(' . $appName . ') failed. Class not exists.');
+	public function appInstantiate($appName, $instance, $preload = false) {
+		$fullname = $this->getAppFullname($appName, $instance);
+		if (!class_exists($appName) || !is_subclass_of($appName, 'AppInstance')) {
 			return false;
 		}
-
-		return $appInstance;
+		if (!$preload) {
+			if (!$appName::$runOnDemand) {
+				return false;
+			}
+			if (isset(Daemon::$config->{$fullname}->limitinstances)) {
+				return false;
+			}
+		}
+		return new $appName($instance);
 	}
 
 	/**
