@@ -252,7 +252,7 @@ class IPCManagerWorkerConnection extends Connection {
 				$fullname .= ':';
 			}
 			list($app, $name) = explode(':', $fullname, 2);
-			Daemon::$appResolver->appInstantiate($app,$name);
+			Daemon::$appResolver->appInstantiate($app, $name, true);
 		}
 		elseif ($p['op'] === 'importFile') {
 			if (!Daemon::$config->autoreimport->value) {
