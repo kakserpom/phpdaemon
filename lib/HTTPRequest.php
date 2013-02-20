@@ -58,7 +58,6 @@ class HTTPRequest extends Request {
 	);
 
 	// @todo phpdoc needed
-	public $oldFashionUploadFP = false; // @TODO: remove it
 	public $answerlen = 0;
 	public $contentLength;
 	private $cookieNum = 0;
@@ -273,16 +272,12 @@ class HTTPRequest extends Request {
 						unset($this->attrs->files[$k]);
 						continue;
 					}
-					if ($this->oldFashionUploadFP) {
-						$file['fp'] = fopen($file['tmp_name'], 'c+');
-					} else {
-						FS::open($file['tmp_name'], 'c+', function ($fp) use (&$file) {
-							if (!$fp) {
-								return;
-							}
-							$file['fp'] = $fp;
-						});
-					}
+					FS::open($file['tmp_name'], 'c+', function ($fp) use (&$file) {
+						if (!$fp) {
+							return;
+						}
+						$file['fp'] = $fp;
+					});
 					unset($file);
 				}
 			}
@@ -634,10 +629,6 @@ class HTTPRequest extends Request {
 	}
 
 	public function writeToUploadFile($fp, $chunk) {
-		if ($this->oldFashionUploadFP) {
-			fwrite($fp, $chunk);
-			return;
-		}
 		$this->upstream->freezeInput();
 		$this->frozenInput = true;
 		$fp->write($chunk, function ($fp, $result) {
@@ -716,25 +707,21 @@ class HTTPRequest extends Request {
 								$this->mpartcurrent['error'] = UPLOAD_ERR_NO_TMP_DIR;
 							} else {
 								$this->mpartcurrent['tmp_name'] = FS::tempnam($tmpdir, 'php');
-								if ($this->oldFashionUploadFP) {
-									$this->mpartcurrent['fp'] = fopen($this->mpartcurrent['tmp_name'], 'c+');
-								} else {
-									if (FS::$supported) {
-										$this->upstream->freezeInput();
-										$this->frozenInput = true;
-									}
-									FS::open($this->mpartcurrent['tmp_name'], 'c+', function ($fp) use ($name) {
-										if (!$fp) {
-											$this->mpartcurrent['error'] = UPLOAD_ERR_CANT_WRITE;
-										}
-										$this->mpartcurrent['fp'] = $fp;
-										if (FS::$supported) {
-											$this->upstream->unfreezeInput();
-											$this->frozenInput = false;
-											$this->stdin('');
-										}
-									});
+								if (FS::$supported) {
+									$this->upstream->freezeInput();
+									$this->frozenInput = true;
 								}
+								FS::open($this->mpartcurrent['tmp_name'], 'c+', function ($fp) use ($name) {
+										if (!$fp) {
+										$this->mpartcurrent['error'] = UPLOAD_ERR_CANT_WRITE;
+									}
+									$this->mpartcurrent['fp'] = $fp;
+									if (FS::$supported) {
+										$this->upstream->unfreezeInput();
+										$this->frozenInput = false;
+										$this->stdin('');
+									}
+								});
 							}
 							$this->mpartstate = self::MPSTATE_UPLOAD;
 						} else {
