@@ -10,7 +10,6 @@ class HTTPServer extends NetworkServer {
 
 	public $variablesOrder;
 	public $WS; // WebSocketServer
-
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -40,6 +39,7 @@ class HTTPServer extends NetworkServer {
 			// disabled by default
 			'enable'     => 0,
 			'wss-name' => '',
+			'upload-max-size' => new Daemon_ConfigEntrySize(ini_get('upload_max_filesize')),
 			//'responder' => default app
 		);
 	}
@@ -57,7 +57,6 @@ class HTTPServer extends NetworkServer {
 		} else {
 			$this->variablesOrder = null;
 		}
-		
 	}
 
 	/**

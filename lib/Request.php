@@ -17,7 +17,6 @@ class Request {
 	public $aborted = FALSE;
 	public $state = self::STATE_WAITING;
 	public $codepoint;
-	public $sendfp;
 	public $attrs;
 	public $shutdownFuncs = array();
 	public $running = false;

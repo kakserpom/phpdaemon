@@ -58,7 +58,7 @@ class HTTPRequest extends Request {
 	);
 
 	// @todo phpdoc needed
-	public $oldFashionUploadFP = false;
+	public $oldFashionUploadFP = false; // @TODO: remove it
 	public $answerlen = 0;
 	public $contentLength;
 	private $cookieNum = 0;
@@ -74,7 +74,9 @@ class HTTPRequest extends Request {
 	private $headers_sent_file;
 	private $headers_sent_line;
 	private $boundary = false;
-	public $sendfp;
+	private $mpartcurrent;
+	private $sendfp;
+	public $maxFileSize = 0;
 
 	protected $frozenInput = false;
 	
@@ -702,28 +704,30 @@ class HTTPRequest extends Request {
 							$this->attrs->files[$name] = array(
 								'name'     => $this->mpartcondisp['filename'],
 								'type'     => '',
-								'tmp_name' => '',
+								'tmp_name' => null,
+								'fp'	   => null,
 								'error'    => UPLOAD_ERR_OK,
 								'size'     => 0,
 							);
+							$this->mpartcurrent = &$this->attrs->files[$name];
 							$tmpdir = ini_get('upload_tmp_dir');
 							if ($tmpdir === false) {
-								$this->attrs->files[$name]['fp'] = false;
-								$this->attrs->files[$name]['error'] = UPLOAD_ERR_NO_TMP_DIR;
+								$this->mpartcurrent['fp'] = false;
+								$this->mpartcurrent['error'] = UPLOAD_ERR_NO_TMP_DIR;
 							} else {
-								$this->attrs->files[$name]['tmp_name'] = FS::tempnam($tmpdir, 'php');
+								$this->mpartcurrent['tmp_name'] = FS::tempnam($tmpdir, 'php');
 								if ($this->oldFashionUploadFP) {
-									$this->attrs->files[$name]['fp'] = fopen($this->attrs->files[$name]['tmp_name'], 'c+');
+									$this->mpartcurrent['fp'] = fopen($this->mpartcurrent['tmp_name'], 'c+');
 								} else {
 									if (FS::$supported) {
 										$this->upstream->freezeInput();
 										$this->frozenInput = true;
 									}
-									FS::open($this->attrs->files[$name]['tmp_name'], 'c+', function ($fp) use ($name) {
+									FS::open($this->mpartcurrent['tmp_name'], 'c+', function ($fp) use ($name) {
 										if (!$fp) {
-											$this->attrs->files[$name]['error'] = UPLOAD_ERR_CANT_WRITE;
+											$this->mpartcurrent['error'] = UPLOAD_ERR_CANT_WRITE;
 										}
-										$this->attrs->files[$name]['fp'] = $fp;
+										$this->mpartcurrent['fp'] = $fp;
 										if (FS::$supported) {
 											$this->upstream->unfreezeInput();
 											$this->frozenInput = false;
@@ -734,7 +738,8 @@ class HTTPRequest extends Request {
 							}
 							$this->mpartstate = self::MPSTATE_UPLOAD;
 						} else {
-							$this->attrs->post[$this->mpartcondisp['name']] = '';
+							$this->mpartcurrent = &$this->attrs->post[$name];
+							$this->mpartcurrent = '';
 						}
 					}
 					elseif (
@@ -745,7 +750,7 @@ class HTTPRequest extends Request {
 							isset($this->mpartcondisp['name'])
 							&& isset($this->mpartcondisp['filename'])
 						) {
-							$this->attrs->files[$this->mpartcondisp['name']]['type'] = $e[1];
+							$this->mpartcurrent['type'] = $e[1];
 						}
 					}
 				}
@@ -774,22 +779,26 @@ class HTTPRequest extends Request {
 					($this->mpartstate === self::MPSTATE_BODY)
 					&& isset($this->mpartcondisp['name'])
 				) {
-					$this->attrs->post[$this->mpartcondisp['name']] .= $chunk;
+					$this->mpartcurrent .= $chunk;
+					if ($this->mpartcondisp['name'] === 'MAX_FILE_SIZE') {
+						$this->maxFileSize = (int) $chunk;
+					}
 				}
 				elseif (
 					($this->mpartstate === self::MPSTATE_UPLOAD)
 					&& isset($this->mpartcondisp['filename'])
 				) {
 
-					if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
+					if (!isset($this->mpartcurrent['fp'])) {
 						return; // fd is not ready yet, interrupt
 					}
-
-					if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-						$this->writeToUploadFile($fp, $chunk);
+					if ($this->mpartcurrent['error'] == UPLOAD_ERR_OK) {
+						if ($fp = $this->mpartcurrent['fp']) {
+							$this->writeToUploadFile($fp, $chunk);
+						}
 					}
 
-					$this->attrs->files[$this->mpartcondisp['name']]['size'] += strlen($chunk);
+					$this->mpartcurrent['size'] += strlen($chunk);
 				}
 				if ($ndl === "\r\n--" . $this->boundary . "--\r\n") { // end of whole message
 					$this->mpartoffset = $p + strlen($ndl);
@@ -811,7 +820,7 @@ class HTTPRequest extends Request {
 						($this->mpartstate === self::MPSTATE_BODY)
 						&& isset($this->mpartcondisp['name'])
 					) {
-						$this->attrs->post[$this->mpartcondisp['name']] .= $chunk;
+						$this->mpartcurrent .= $chunk;
 					}
 					elseif (
 						($this->mpartstate === self::MPSTATE_UPLOAD)
@@ -820,20 +829,19 @@ class HTTPRequest extends Request {
 						if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
 							return; // fd is not ready yet, interrupt
 						}
-						if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-							$this->writeToUploadFile($fp, $chunk);
+						if ($this->mpartcurrent['error'] === UPLOAD_ERR_OK) {
+							if ($fp = $this->mpartcurrent['fp']) {
+								$this->writeToUploadFile($fp, $chunk);
+							}
 						}
-						$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
+						$this->mpartcurrent['size'] += $p - $this->mpartoffset;
 
-						if ($this->parseSize(ini_get('upload_max_filesize')) < $this->attrs->files[$this->mpartcondisp['name']]['size']) {
-							$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_INI_SIZE;
+						if ($this->upstream->pool->config->uploadmaxsize->value < $this->attrs->files[$this->mpartcondisp['name']]['size']) {
+							$this->mpartcurrent['error'] = UPLOAD_ERR_INI_SIZE;
 						}
 
-						if (
-							isset($this->attrs->post['MAX_FILE_SIZE'])
-							&& ($this->attrs->post['MAX_FILE_SIZE'] < $this->attrs->files[$this->mpartcondisp['name']]['size'])
-						) {
-							$this->attrs->files[$this->mpartcondisp['name']]['error'] = UPLOAD_ERR_FORM_SIZE;
+						if ($this->maxFileSize && ($this->maxFileSize < $this->mpartcurrent['size'])) {
+							$this->mpartcurrent['error'] = UPLOAD_ERR_FORM_SIZE;
 						}
 					}
 
@@ -937,11 +945,8 @@ class HTTPRequest extends Request {
 		}
 		$this->sendfp = null;
 		if (isset($this->attrs->files)) {
-			foreach ($this->attrs->files as &$f) {
-				if (
-					($f['error'] === UPLOAD_ERR_OK)
-					&& file_exists($f['tmp_name'])
-				) {
+			foreach ($this->attrs->files as $f) {
+				if (isset($f['tmp_name'])) {
 					FS::unlink($f['tmp_name']);
 				}
 			}

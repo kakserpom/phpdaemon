@@ -140,18 +140,16 @@ class Encoding {
    *
    */
 
-    if(is_array($text))
-    {
-      foreach($text as $k => $v)
-      {
+    if (is_array($text)) {
+      foreach($text as $k => $v) {
         $text[$k] = self::toUTF8($v);
       }
       return $text;
-    } elseif(is_string($text)) {
+    } elseif (is_string($text)) {
     
       $max = strlen($text);
-      $buf = "";
-      for($i = 0; $i < $max; $i++){
+      $buf = '';
+      for($i = 0; $i < $max; ++$i){
           $c1 = $text{$i};
           if($c1>="\xc0"){ //Should be converted to UTF8, if it's not UTF8 already
             $c2 = $i+1 >= $max? "\x00" : $text{$i+1};
@@ -189,7 +187,7 @@ class Encoding {
                       $cc2 = (($c1 & "\x3f") | "\x80");
                       $buf .= $cc1 . $cc2;
               }
-          } elseif(($c1 & "\xc0") == "\x80"){ // needs conversion
+          } elseif(($c1 & "\xc0") === "\x80"){ // needs conversion
                 if(isset(self::$win1252ToUtf8[ord($c1)])) { //found in Windows-1252 special cases
                     $buf .= self::$win1252ToUtf8[ord($c1)];
                 } else {

@@ -29,6 +29,7 @@ class FastCGIServer extends NetworkServer {
 			'keepalive'               => new Daemon_ConfigEntryTime('0s'),
 			'chunksize'               => new Daemon_ConfigEntrySize('8k'),
 			'defaultcharset'		=> 'utf-8',
+			'upload-max-size'		=> new Daemon_ConfigEntrySize(ini_get('upload_max_filesize')),
 		);
 	}
 	
