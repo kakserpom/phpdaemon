@@ -62,11 +62,10 @@ class FastCGIServerConnection extends Connection {
 	 * @return void
 	 */
 	
-	public function stdin($buf) {
-		$this->buf .= $buf;
+	public function onRead() {
 		start:
 		if ($this->state === self::STATE_ROOT) {
-			$header = $this->readFromBufExact(8);
+			$header = $this->readExact(8);
 
 			if ($header === false) {
 				return;
@@ -87,7 +86,7 @@ class FastCGIServerConnection extends Connection {
 			$rid = $this->header['reqid'];
 		}
 		if ($this->state === self::STATE_CONTENT) {
-			$this->content = $this->readFromBufExact($this->header['conlen']);
+			$this->content = $this->readExact($this->header['conlen']);
 
 			if ($this->content === false) {
 				$this->setWatermark($this->header['conlen']);
@@ -102,7 +101,7 @@ class FastCGIServerConnection extends Connection {
 		}
 
 		if ($this->state === self::STATE_PADDING) {
-			$pad = $this->readFromBufExact($this->header['padlen']);
+			$pad = $this->readExact($this->header['padlen']);
 
 			if ($pad === false) {
 				return;

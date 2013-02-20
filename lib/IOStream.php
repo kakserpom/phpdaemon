@@ -131,7 +131,7 @@ abstract class IOStream {
 	 * Read a first line ended with \n from buffer, removes it from buffer and returns the line
 	 * @return string Line. Returns false when failed to get a line
 	 */
-	public function gets() {
+	public function gets() { // @TODO: deprecate in favor of readln
 		$p = strpos($this->buf, $this->EOL);
 
 		if ($p === false) {
@@ -145,7 +145,7 @@ abstract class IOStream {
 		return $r;
 	}
 
-	public function readFromBufExact($n) {
+	public function readFromBufExact($n) { // @TODO: deprecate
 		if ($n === 0) {
 			return '';
 		}
@@ -155,6 +155,17 @@ abstract class IOStream {
 			$r = binarySubstr($this->buf, 0, $n);
 			$this->buf = binarySubstr($this->buf, $n);
 			return $r;
+		}
+	}
+
+	public function readExact($n) {
+		if ($n === 0) {
+			return '';
+		}
+		if ($this->bev->getInput()->length < $n) {
+			return false;
+		} else {
+			return $this->read($n);
 		}
 	}
 
