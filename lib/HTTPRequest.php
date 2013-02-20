@@ -75,6 +75,8 @@ class HTTPRequest extends Request {
 	private $headers_sent_line;
 	private $boundary = false;
 	public $sendfp;
+
+	protected $frozenInput = false;
 	
 	const MPSTATE_SEEKBOUNDARY = 0;
 	const MPSTATE_HEADERS = 1;
@@ -634,9 +636,11 @@ class HTTPRequest extends Request {
 			fwrite($fp, $chunk);
 			return;
 		}
-		$this->upstream->lockRead();
+		$this->upstream->freezeInput();
+		$this->frozenInput = true;
 		$fp->write($chunk, function ($fp, $result) {
-			$this->upstream->unlockRead();
+			$this->upstream->unfreezeInput();
+			$this->frozenInput = false;
 			$this->stdin('');
 		});
 	}
@@ -712,7 +716,8 @@ class HTTPRequest extends Request {
 									$this->attrs->files[$name]['fp'] = fopen($this->attrs->files[$name]['tmp_name'], 'c+');
 								} else {
 									if (FS::$supported) {
-										$this->upstream->lockRead();
+										$this->upstream->freezeInput();
+										$this->frozenInput = true;
 									}
 									FS::open($this->attrs->files[$name]['tmp_name'], 'c+', function ($fp) use ($name) {
 										if (!$fp) {
@@ -720,7 +725,8 @@ class HTTPRequest extends Request {
 										}
 										$this->attrs->files[$name]['fp'] = $fp;
 										if (FS::$supported) {
-											$this->upstream->unlockRead();
+											$this->upstream->unfreezeInput();
+											$this->frozenInput = false;
 											$this->stdin('');
 										}
 									});
@@ -747,7 +753,7 @@ class HTTPRequest extends Request {
 					$this->mpartstate = self::MPSTATE_BODY;
 				}
 
-				if ($this->upstream->readLocked) {
+				if ($this->frozenInput) {
 					return;
 				}
 

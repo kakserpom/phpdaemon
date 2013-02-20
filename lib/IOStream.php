@@ -17,7 +17,6 @@ abstract class IOStream {
 	public $fd;
 	public $finished = false;
 	public $ready = false;
-	public $readLocked = false;
 	public $sending = true;
 	public $reading = false;
 	protected $lowMark  = 1;         // initial value of the minimal amout of bytes in buffer
@@ -63,11 +62,11 @@ abstract class IOStream {
 	}
 	
 	public function setOnRead($cb) {
-		$this->onRead = Closure::bind($cb, $this);
+		$this->onRead = $cb;
 		return $this;
 	}
 	public function setOnWrite($cb) {
-		$this->onWrite = Closure::bind($cb, $this);
+		$this->onWrite = $cb;
 		return $this;
 	}
 	
@@ -179,27 +178,52 @@ abstract class IOStream {
 		return true;
 	}
 
-	/** 
-	 * Lock read
-	 * @todo add more description
+	/**
+	 * Freeze input
+	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
 	 * @return void
 	 */
-	public function lockRead() {
-		$this->readLocked = true;
+	public function freezeInput($at_front = false) {
+		if (isset($this->bev)) {
+			return 0 === $this->bev->getInput()->freeze($at_front);
+		}
+		return false;
 	}
 
 	/**
-	 * Lock read
-	 * @todo more description
+	 * Unfreeze input
+	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
 	 * @return void
 	 */
-	public function unlockRead() {
-		if (!$this->readLocked) {
-			return;
+	public function unfreezeInput($at_front = false) {
+		if (isset($this->bev)) {
+			return 0 === $this->bev->getInput()->unfreeze($at_front);
 		}
+		return false;
+	}
 
-		$this->readLocked = false;
-		$this->onReadEvent(null);
+	/**
+	 * Freeze output
+	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
+	 * @return void
+	 */
+	public function freezeOutput($at_front = true) {
+		if (isset($this->bev)) {
+			return 0 === $this->bev->getOutput()->unfreeze($at_front);
+		}
+		return false;
+	}
+
+	/**
+	 * Unfreeze output
+	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
+	 * @return void
+	 */
+	public function unfreezeOutput($at_front = true) {
+		if (isset($this->bev)) {
+			return 0 === $this->bev->getOutput()->unfreeze($at_front);
+		}
+		return false;
 	}
 
 	/**
@@ -315,9 +339,6 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onReadEvent($bev) {
-		if ($this->readLocked) {
-			return;
-		}
 		try {
 			if (isset($this->onRead)) {
 				$this->reading = !call_user_func($this->onRead);
@@ -332,9 +353,6 @@ abstract class IOStream {
 	public function onRead() {
 		while (($buf = $this->read($this->readPacketSize)) !== false) {
 			$this->stdin($buf);
-			if ($this->readLocked) {
-				return true;
-			}
 		}
 		return true;
 	}
