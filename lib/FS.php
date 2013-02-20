@@ -26,7 +26,7 @@ class FS {
 	public static $eioVer = '1.2.1';
 	public static function init() {
 		if (!self::$supported =	Daemon::loadModuleIfAbsent('eio', self::$eioVer)) {
-			Daemon::log('FS: missing pecl-eio >= ' . self::$eioVer . '. Filesystem I/O performance compromised. Consider installing pecl-eio.');
+			Daemon::log('FS: missing pecl-eio >= ' . self::$eioVer . '. Filesystem I/O performance compromised. Consider installing pecl-eio. `pecl install http://pecl.php.net/get/eio-' . self::$eioVer . '.tgz`');
 			return;
 		}
 		self::$fdCache = new CappedCacheStorageHits(self::$fdCacheSize);
