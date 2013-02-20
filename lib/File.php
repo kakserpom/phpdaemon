@@ -172,7 +172,7 @@ class File extends IOStream {
 			$offset = $this->offset;
 			$this->offset += $l;
 		}
-		$res = eio_write($this->fd, $data, $l, $offset, $pri, function ($file, $result) use ($log) {
+		$res = eio_write($this->fd, $data, $l, $offset, $pri, function ($file, $result) {
 			$this->onWriteOnce->executeAll($file, $result);
 		}, $this);
 		return $res;
