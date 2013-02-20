@@ -297,11 +297,6 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	public function stdin($c) {
-		/*Daemon::log(Debug::dump([
-			$this->attrs->server['REQUEST_METHOD'],
-			$this->attrs->server,
-			$c
-		]));*/
 		if ($c !== '') {
 			$this->attrs->stdinbuf .= $c;
 			$this->attrs->stdinlen += strlen($c);
@@ -847,7 +842,6 @@ class HTTPRequest extends Request {
 	 * @return boolean Whether if this is uploaded file.
 	 */
 	public function isUploadedFile($path) {
-		$path = realpath($path);
 		if (!$path) {
 			return false;
 		}
@@ -872,7 +866,7 @@ class HTTPRequest extends Request {
 		if (!$this->isUploadedFile($filename)) {
 			return false;
 		}
-		return rename($filename, $dest);
+		return FS::rename($filename, $dest);
 	 }
 
 	/**

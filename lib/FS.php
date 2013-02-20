@@ -105,6 +105,17 @@ class FS {
 		}
 		return eio_unlink($path, $pri, $cb, $path);
 	}
+
+	public static function rename($path, $newpath, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		if (!self::$supported) {
+			$r = rename($path, $newpath);
+			if ($cb) {
+				call_user_func($cb, $path, $newpath, $r);
+			}
+			return;
+		}
+		return eio_rename($path, $newpath, $pri, $cb, $path);
+	}
 	
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
@@ -263,8 +274,16 @@ class FS {
 		}, null, $pri);
 	}
 	
-	public static function tempnam($dir, $prefix) {
-		return tempnam($dir, $prefix);
+	public static function tempnam($dir, $prefix, $sync = false) {
+		if ($sync) {
+			return tempnam($dir, $prefix);
+		}
+		static $n = 0;
+		return $dir . '/' . $prefix . str_shuffle(md5(str_shuffle(
+				  microtime(true) . chr(mt_rand(0, 0xFF))
+				. Daemon::$process->pid . chr(mt_rand(0, 0xFF))
+				. $n . mt_rand(0, mt_getrandmax()))
+		));
 	}
 	
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
