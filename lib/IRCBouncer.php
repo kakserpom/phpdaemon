@@ -56,22 +56,21 @@ class IRCBouncer extends NetworkServer {
 	}
 
 	public function getConnection($url) {
-		$pool = $this;
-		$this->client->getConnection($url, function ($conn) use ($pool, $url) {
-			$pool->conn = $conn;
+		$this->client->getConnection($url, function ($conn) use ($url) {
+			$this->conn = $conn;
 			$conn->attachedClients = new ObjectStorage;
 			if ($conn->connected) {
 				Daemon::log('IRC bot connected at '.$url);
-				$conn->join($pool->config->defaultchannels->value);
+				$conn->join($this->config->defaultchannels->value);
 				$conn->bind('motd', function($conn) {
 					//Daemon::log($conn->motd);
 				});
-				foreach ($pool as $bouncerConn) {
+				foreach ($this as $bouncerConn) {
 					if (!$bouncerConn->attachedServer) {
 						$bouncerConn->attachTo($conn);
 					}
 				}
-				$conn->bind('command', function($conn, $from, $cmd, $args) use ($pool) {
+				$conn->bind('command', function($conn, $from, $cmd, $args) {
 					if ($cmd === 'PONG') {
 						return;
 					}
@@ -79,25 +78,25 @@ class IRCBouncer extends NetworkServer {
 						return;
 					}
 					if ($from['orig'] === $conn->servername) {
-						$from['orig'] = $pool->config->servername->value;
+						$from['orig'] = $this->config->servername->value;
 					}
 					$conn->attachedClients->each('commandArr', $from['orig'], $cmd, $args);
 				});
 				$conn->bind('privateMsg', function($conn, $msg) {
 					Daemon::log('IRCBouncer: got private message \''.$msg['body'].'\' from \''.$msg['from']['orig'].'\'');
 				});
-				$conn->bind('msg', function($conn, $msg) use ($pool) {
+				$conn->bind('msg', function($conn, $msg) {
 					$msg['ts'] = microtime(true);
 					$msg['dir'] = 'i';
-					$pool->messages->insert($msg);
+					$this->messages->insert($msg);
 				});
-				$conn->bind('disconnect', function($conn) use ($pool, $url) {
-					foreach ($pool as $bouncerConn) {
+				$conn->bind('disconnect', function($conn) use ($url) {
+					foreach ($this as $bouncerConn) {
 						if ($bouncerConn->attachedServer === $conn) {
 							$bouncerConn->detach();
 						}
 					}
-					$pool->getConnection($url);
+					$this->getConnection($url);
 				});
 			}
 			else {

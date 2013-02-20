@@ -23,9 +23,10 @@ class FS {
  	public static $badFDttl = 5;
 	public static $fdCache;
 	public static $fdCacheSize = 128;
+	public static $eioVer = '1.2.1';
 	public static function init() {
-		if (!self::$supported =	Daemon::loadModuleIfAbsent('eio')) {
-			Daemon::log('FS: missing pecl-eio, Filesystem I/O performance compromised. Consider installing pecl-eio.');
+		if (!self::$supported =	Daemon::loadModuleIfAbsent('eio', self::$eioVer)) {
+			Daemon::log('FS: missing pecl-eio >= ' . self::$eioVer . '. Filesystem I/O performance compromised. Consider installing pecl-eio.');
 			return;
 		}
 		self::$fdCache = new CappedCacheStorageHits(self::$fdCacheSize);

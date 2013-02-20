@@ -629,6 +629,18 @@ class HTTPRequest extends Request {
 		return (int) $value;
 	}
 
+	public function writeToUploadFile($fp, $chunk) {
+		if ($this->oldFashionUploadFP) {
+			fwrite($fp, $chunk);
+			return;
+		}
+		$this->upstream->lockRead();
+		$fp->write($chunk, function ($fp, $result) {
+			$this->upstream->unlockRead();
+			$this->stdin('');
+		});
+	}
+
 	/**
 	 * Parse request body
 	 * @return void
@@ -768,11 +780,7 @@ class HTTPRequest extends Request {
 					}
 
 					if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-						if ($this->oldFashionUploadFP) {
-							fwrite($fp, $chunk);
-						} else {
-							$fp->write($chunk);
-						}
+						$this->writeToUploadFile($fp, $chunk);
 					}
 
 					$this->attrs->files[$this->mpartcondisp['name']]['size'] += strlen($chunk);
@@ -791,7 +799,7 @@ class HTTPRequest extends Request {
 				$this->mpartoffset = 0;
 			} else { // we have only piece of Part in buffer
 				$p = strlen($this->attrs->stdinbuf) - strlen($ndl);
-				if ($p !== false) {
+				if ($p > 0) {
 					$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
 					if (
 						($this->mpartstate === self::MPSTATE_BODY)
@@ -807,11 +815,7 @@ class HTTPRequest extends Request {
 							return; // fd is not ready yet, interrupt
 						}
 						if ($fp = $this->attrs->files[$this->mpartcondisp['name']]['fp']) {
-							if ($this->oldFashionUploadFP) {
-								fwrite($fp, $chunk);
-							} else {
-								$fp->write($chunk);
-							}
+							$this->writeToUploadFile($fp, $chunk);
 						}
 						$this->attrs->files[$this->mpartcondisp['name']]['size'] += $p - $this->mpartoffset;
 

@@ -10,7 +10,7 @@ class File extends IOStream {
 	public $priority = 10; // low priority
 	public $chunkSize = 4096;
 	public $stat;
-	public $offset;
+	public $offset = 0;
 	public $fdCacheKey;
 	public $append;
 	public $path;
@@ -163,7 +163,19 @@ class File extends IOStream {
 			}
 			return false;
 		}
-		return eio_write($this->fd, $data, null, $offset, $pri, $cb, $this);
+		$this->sending = true;
+		if ($cb !== null) {
+			$this->onWriteOnce->push($cb);
+		}
+		$l = strlen($data);
+		if ($offset === null) {
+			$offset = $this->offset;
+			$this->offset += $l;
+		}
+		$res = eio_write($this->fd, $data, $l, $offset, $pri, function ($file, $result) use ($log) {
+			$this->onWriteOnce->executeAll($file, $result);
+		}, $this);
+		return $res;
 	}
 	
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {

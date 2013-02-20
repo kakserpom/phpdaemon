@@ -82,14 +82,24 @@ class Daemon {
 		    define("SO_REUSEPORT", 0x200);	// FIXME: this is a BSD-only hack
 	}
 
-	public static function loadModuleIfAbsent($mod) {
-		if (extension_loaded($mod)) {
+	public static function loadModuleIfAbsent($mod, $version = null, $compare = '>=') {
+		if (!extension_loaded($mod)) {
+			if (!get_cfg_var('enable_dl')) {
+				return false;
+			}
+			if (!@dl(basename($mod) . '.so')) {
+				return false;
+			}
+		}
+		if (!$version) {
 			return true;
 		}
-		if (!get_cfg_var('enable_dl')) {
+		try {
+			$ext = new ReflectionExtension($mod);
+			return version_compare($ext->getVersion(), $version, $compare);
+		} catch (ReflectionException $e) {
 			return false;
 		}
-		return @dl(basename($mod) . '.so');
 	}
 
 	public static function callAutoGC() {
