@@ -936,7 +936,7 @@ class HTTPRequest extends Request {
 					($f['error'] === UPLOAD_ERR_OK)
 					&& file_exists($f['tmp_name'])
 				) {
-					//FS::unlink($f['tmp_name']);
+					FS::unlink($f['tmp_name']);
 				}
 			}
 		}
