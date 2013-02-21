@@ -263,11 +263,12 @@ class HTTPRequest extends Request {
 						$this->attrs->files[$e[0]][$e[1]] = $v;
 					}
 				}
+				$uploadTmp = $this->getUploadTempDir();
 				foreach ($this->attrs->files as $k => &$file) {
 					if (!isset($file['tmp_name'])
 						|| !isset($file['name'])
 						|| !ctype_digit(basename($file['tmp_name']))
-						|| pathinfo($file['tmp_name'], PATHINFO_DIRNAME) !== ini_get('upload_tmp_dir'))
+						|| pathinfo($file['tmp_name'], PATHINFO_DIRNAME) !== $uploadTmp)
 					{
 						unset($this->attrs->files[$k]);
 						continue;
@@ -834,6 +835,12 @@ class HTTPRequest extends Request {
 		}
 	}
 
+	public function getUploadTempDir() {
+		if ($r = ini_get('upload_tmp_dir')) {
+			return $r;
+		}
+		return sys_get_temp_dir();
+	}
 
 	/**
 	 * Tells whether the file was uploaded via HTTP POST
@@ -844,7 +851,7 @@ class HTTPRequest extends Request {
 		if (!$path) {
 			return false;
 		}
-		if (strpos($path, ini_get('upload_tmp_dir') . '/') !== 0) {
+		if (strpos($path, $this->getUploadTempDir() . '/') !== 0) {
 			return false;
 		}
 		foreach ($this->attrs->files as $file) {
