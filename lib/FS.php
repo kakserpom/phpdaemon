@@ -278,6 +278,9 @@ class FS {
 		if ($sync) {
 			return tempnam($dir, $prefix);
 		}
+		if (!$dir) {
+			$dir = sys_get_temp_dir();
+		}
 		static $n = 0;
 		return $dir . '/' . $prefix . str_shuffle(md5(str_shuffle(
 				  microtime(true) . chr(mt_rand(0, 0xFF))
