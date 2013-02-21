@@ -274,10 +274,7 @@ class FS {
 		}, null, $pri);
 	}
 	
-	public static function tempnam($dir, $prefix, $sync = false) {
-		if ($sync) {
-			return tempnam($dir, $prefix);
-		}
+	public static function genRndTempnam($dir, $prefix) {
 		if (!$dir) {
 			$dir = sys_get_temp_dir();
 		}
@@ -287,6 +284,26 @@ class FS {
 				. Daemon::$process->pid . chr(mt_rand(0, 0xFF))
 				. (++$n) . mt_rand(0, mt_getrandmax()))
 		));
+	} 
+	public static function tempnam($dir, $prefix, $cb) {
+		if (!FS::$supported) {
+			FS::open(tempnam($dir, $prefix), 'w!', $cb);
+		}
+		$tries = 0;
+		$handler = function() use ($dir, $prefix, &$handler, $cb, &$tries) {
+			if (++$tries >= 3) {
+				call_user_func($cb, false);
+				return;
+			}
+			$path = FS::genRndTempnam($dir, $prefix);
+			FS::open($path, 'x!', function($file) use ($handler, $cb) {
+				if (!$file) {
+					$handler();
+				}
+				call_user_func($cb, $file);
+			});
+		};
+		$handler();
 	}
 	
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {

@@ -625,24 +625,20 @@ class HTTPRequest extends Request {
 	}
 
 	public function startUploadFile() {
-		$tempnam = FS::tempnam(ini_get('upload_tmp_dir'), 'php');
-		if ($tempnam === false) {
+		$this->upstream->freezeInput();
+		$this->frozenInput = true;
+		FS::tempnam(ini_get('upload_tmp_dir'), 'php', function ($fp) {
+			if (!$fp) {
 				$this->mpartcurrent['fp'] = false;
 				$this->mpartcurrent['error'] = UPLOAD_ERR_NO_TMP_DIR;
-		} else {
-			$this->mpartcurrent['tmp_name'] = $tempnam;
-			$this->upstream->freezeInput();
-			$this->frozenInput = true;
-			FS::open($this->mpartcurrent['tmp_name'], 'c+!', function ($fp) {
-				if (!$fp) {
-					$this->mpartcurrent['error'] = UPLOAD_ERR_CANT_WRITE;
-				}
+			} else {
 				$this->mpartcurrent['fp'] = $fp;
-				$this->upstream->unfreezeInput();
-				$this->frozenInput = false;
-				$this->stdin('');
-			});
-		}
+				$this->mpartcurrent['tmp_name'] = $fp->path;
+			}
+			$this->upstream->unfreezeInput();
+			$this->frozenInput = false;
+			$this->stdin('');
+		});
 	}
 	public function writeUploadChunk($chunk, $last = false) {
 		if ($this->mpartcurrent['error'] !== UPLOAD_ERR_OK) {
