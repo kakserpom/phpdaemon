@@ -643,7 +643,7 @@ class HTTPRequest extends Request {
 			});
 		}
 	}
-	public function writeUploadChunk($chunk) {
+	public function writeUploadChunk($chunk, $last = false) {
 		if ($this->mpartcurrent['error'] !== UPLOAD_ERR_OK) {
 			// just drop the chunk
 			return;
@@ -778,7 +778,7 @@ class HTTPRequest extends Request {
 						return; // fd is not ready yet, interrupt
 					}
 					if ($this->mpartcurrent['error'] == UPLOAD_ERR_OK) {
-						$this->writeUploadChunk($chunk);
+						$this->writeUploadChunk($chunk, true);
 					}
 
 					$this->mpartcurrent['size'] += strlen($chunk);
