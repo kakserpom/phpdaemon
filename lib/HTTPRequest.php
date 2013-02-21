@@ -272,7 +272,7 @@ class HTTPRequest extends Request {
 						unset($this->attrs->files[$k]);
 						continue;
 					}
-					FS::open($file['tmp_name'], 'c+', function ($fp) use (&$file) {
+					FS::open($file['tmp_name'], 'c+!', function ($fp) use (&$file) {
 						if (!$fp) {
 							return;
 						}
@@ -706,7 +706,7 @@ class HTTPRequest extends Request {
 									$this->upstream->freezeInput();
 									$this->frozenInput = true;
 								}
-								FS::open($this->mpartcurrent['tmp_name'], 'c+', function ($fp) use ($name) {
+								FS::open($this->mpartcurrent['tmp_name'], 'c+!', function ($fp) use ($name) {
 										if (!$fp) {
 										$this->mpartcurrent['error'] = UPLOAD_ERR_CANT_WRITE;
 									}
