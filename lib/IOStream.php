@@ -34,8 +34,8 @@ abstract class IOStream {
 
 	/**
 	 * IOStream constructor
- 	 * @param resource File descriptor.
-	 * @param object AppInstance
+ 	 * @param resource File descriptor. Optional.
+	 * @param object Pool. Optional.
 	 * @return void
 	 */
 	public function __construct($fd = null, $pool = null) {

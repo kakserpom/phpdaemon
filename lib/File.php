@@ -6,7 +6,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class File extends IOStream {
+class File {
 	public $priority = 10; // low priority
 	public $chunkSize = 4096;
 	public $stat;
@@ -14,6 +14,16 @@ class File extends IOStream {
 	public $fdCacheKey;
 	public $append;
 	public $path;
+
+	/**
+	 * File constructor
+ 	 * @param resource File descriptor
+	 * @return void
+	 */
+	public function __construct($fd) {
+		$this->setFd($fd);
+		$this->onWriteOnce = new StackCallbacks;
+	}
 
 	public static function convertFlags($mode, $text = false) {
 		$plus = strpos($mode, '+') !== false;
@@ -386,10 +396,6 @@ class File extends IOStream {
 	
 	public function setFd($fd) {
 		$this->fd = $fd;
-		if (!$this->inited) {
-			$this->inited = true;
-			$this->init();
-		}
 	}
 	
 	public function seek($offset, $cb, $pri) {
