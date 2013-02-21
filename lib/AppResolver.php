@@ -130,10 +130,10 @@ class AppResolver {
 		else {
 			$appName = $defaultApp;
 		}
-		if (strpos($appName,'-') === false) {
-			$appName .= '-';
+		if (strpos($appName,':') === false) {
+			$appName .= ':';
 		}
-		list($app, $instance) = explode('-', $appName, 2);
+		list($app, $instance) = explode(':', $appName, 2);
 
 		$appInstance = $this->getInstanceByAppName($app, $instance);
 

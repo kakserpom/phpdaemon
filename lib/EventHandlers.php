@@ -20,11 +20,11 @@ trait EventHandlers {
 		}
 	}
 
-	public function addEventHandler($event, $cb) {
+	public function addEventHandler($event, $cb) { // @todo: remove in 1.0
 		return $this->bind($event, $cb);
 	}
 
-	public function removeEventHandler($event, $cb = null) {
+	public function removeEventHandler($event, $cb = null) { // @todo: remove in 1.0
 		return $this->unbind($event, $cb);
 	}
 

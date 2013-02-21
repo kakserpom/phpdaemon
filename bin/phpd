@@ -55,7 +55,7 @@ $autoloader = function($classname) {
 	}
 	return false;
 };
-$autoloadCache = [];
+$autoloadCache = array();
 spl_autoload_register(function($classname) use ($autoloader, &$autoloadCache) {
 	if (isset($autoloadCache[$classname])) {
 		return $autoloadCache[$classname];
