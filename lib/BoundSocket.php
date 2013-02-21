@@ -124,7 +124,7 @@ abstract class BoundSocket {
 	 * Bind given addreess
 	 * @return boolean Success.
 	 */
-	abstract public function bind();
+	abstract public function bindSocket();
 
 	/**
 	 * Called when new connections is waiting for accept

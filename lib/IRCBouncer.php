@@ -107,47 +107,15 @@ class IRCBouncer extends NetworkServer {
 }
 
 class IRCBouncerConnection extends Connection {
+	use EventHandlers;
+
 	public $EOL = "\r\n";
 	public $attachedServer;
 	public $usermask;
 	public $latency;
 	public $lastPingTS;
 	public $timeout = 180;
-	public $eventHandlers = array();
 	public $protologging = false;
-
-	public function bind($event, $cb) {
-		if (!isset($this->eventHandlers[$event])) {
-			$this->eventHandlers[$event] = array();
-		}
-		$this->eventHandlers[$event][] = $cb;
-	}
-
-	public function unbind($event, $cb = null) {
-		if (!isset($this->eventHandlers[$event])) {
-			return false;
-		}
-		if ($cb === null) {
-			unset($this->eventHandlers[$event]);
-			return true;
-		}
-		if (($p = array_search($cb, $this->eventHandlers[$event], true)) === false) {
-			return false;
-		}
-		unset($this->eventHandlers[$event][$p]);
-		return true;
-	}
-
-	public function event() {
-		$args = func_get_args();
-		$name = array_shift($args);
-		array_unshift($args, $this);
-		if (isset($this->eventHandlers[$name])) {
-			foreach ($this->eventHandlers[$name] as $cb) {
-				call_user_func_array($cb, $args);
-			}
-		}
-	}
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data

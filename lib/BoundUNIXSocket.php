@@ -13,7 +13,7 @@ class BoundUNIXSocket extends BoundSocket {
 	 * Bind socket
 	 * @return boolean Success.
 	 */
-	 public function bind() {
+	 public function bindSocket() {
 		$e = explode(':', $this->addr, 4);
 		if (sizeof($e) == 3) {
 			$user = $e[0];

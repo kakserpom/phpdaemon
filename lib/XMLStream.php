@@ -24,10 +24,10 @@ class XMLStream {
 
 	public function finish() {
 		$this->xml_depth = 0;
-		$this->current_ns = array();
-		$this->idhandlers = array();
-		$this->xpathhandlers = array();
-		$this->eventHandlers = array();	
+		$this->current_ns = [];
+		$this->idhandlers = [];
+		$this->xpathhandlers = [];
+		$this->eventHandlers = [];
 	}
 
 	public function __destroy() {

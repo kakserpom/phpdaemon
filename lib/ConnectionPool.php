@@ -29,7 +29,7 @@ class ConnectionPool extends ObjectStorage {
 			$this->connectionClass = get_class($this) . 'Connection';
 		}
 		if (isset($this->config->listen)) {
-			$this->bind($this->config->listen->value);
+			$this->bindSockets($this->config->listen->value);
 		}
 		$this->init();
 	}
@@ -251,7 +251,7 @@ class ConnectionPool extends ObjectStorage {
 	 * @param boolean SO_REUSE. Default is true
 	 * @return void
 	 */
-	public function bind($addrs = array(), $reuse = true, $max = 0) {
+	public function bindSockets($addrs = array(), $reuse = true, $max = 0) {
 		if (is_string($addrs)) {
 			$addrs = explode(',', $addrs);
 		}
@@ -280,7 +280,7 @@ class ConnectionPool extends ObjectStorage {
 					$socket->setDefaultPort($this->config->port->value);
 				}
 			}
-			if ($socket->bind()) {
+			if ($socket->bindSocket()) {
 				$socket->attachTo($this);
 				if ($this->enabled) {
 					$socket->enable();

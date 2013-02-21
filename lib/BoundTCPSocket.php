@@ -24,7 +24,7 @@ class BoundTCPSocket extends BoundSocket {
 	 * Bind given addreess
 	 * @return boolean Success.
 	 */
-	 public function bind() {
+	 public function bindSocket() {
 		$hp = explode(':', $this->addr, 2);
 		if (!isset($hp[1])) {
 			$hp[1] = $this->defaultPort;
