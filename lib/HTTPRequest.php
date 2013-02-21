@@ -623,10 +623,34 @@ class HTTPRequest extends Request {
 		return (int) $value;
 	}
 
-	public function writeToUploadFile($fp, $chunk) {
+	public function startUploadFile() {
+		$tempnam = FS::tempnam(ini_get('upload_tmp_dir'), 'php');
+		if ($tempnam === false) {
+				$this->mpartcurrent['fp'] = false;
+				$this->mpartcurrent['error'] = UPLOAD_ERR_NO_TMP_DIR;
+		} else {
+			$this->mpartcurrent['tmp_name'] = $tempnam;
+			$this->upstream->freezeInput();
+			$this->frozenInput = true;
+			FS::open($this->mpartcurrent['tmp_name'], 'c+!', function ($fp) {
+				if (!$fp) {
+					$this->mpartcurrent['error'] = UPLOAD_ERR_CANT_WRITE;
+				}
+				$this->mpartcurrent['fp'] = $fp;
+				$this->upstream->unfreezeInput();
+				$this->frozenInput = false;
+				$this->stdin('');
+			});
+		}
+	}
+	public function writeUploadChunk($chunk) {
+		if ($this->mpartcurrent['error'] !== UPLOAD_ERR_OK) {
+			// just drop the chunk
+			return;
+		}
 		$this->upstream->freezeInput();
 		$this->frozenInput = true;
-		$fp->write($chunk, function ($fp, $result) {
+		$this->mpartcurrent['fp']->write($chunk, function ($fp, $result) {
 			$this->upstream->unfreezeInput();
 			$this->frozenInput = false;
 			$this->stdin('');
@@ -696,28 +720,7 @@ class HTTPRequest extends Request {
 								'size'     => 0,
 							);
 							$this->mpartcurrent = &$this->attrs->files[$name];
-							$tmpdir = ini_get('upload_tmp_dir');
-							if ($tmpdir === false) {
-								$this->mpartcurrent['fp'] = false;
-								$this->mpartcurrent['error'] = UPLOAD_ERR_NO_TMP_DIR;
-							} else {
-								$this->mpartcurrent['tmp_name'] = FS::tempnam($tmpdir, 'php');
-								if (FS::$supported) {
-									$this->upstream->freezeInput();
-									$this->frozenInput = true;
-								}
-								FS::open($this->mpartcurrent['tmp_name'], 'c+!', function ($fp) use ($name) {
-										if (!$fp) {
-										$this->mpartcurrent['error'] = UPLOAD_ERR_CANT_WRITE;
-									}
-									$this->mpartcurrent['fp'] = $fp;
-									if (FS::$supported) {
-										$this->upstream->unfreezeInput();
-										$this->frozenInput = false;
-										$this->stdin('');
-									}
-								});
-							}
+							$this->startUploadFile();
 							$this->mpartstate = self::MPSTATE_UPLOAD;
 						} else {
 							$this->mpartcurrent = &$this->attrs->post[$name];
@@ -775,9 +778,7 @@ class HTTPRequest extends Request {
 						return; // fd is not ready yet, interrupt
 					}
 					if ($this->mpartcurrent['error'] == UPLOAD_ERR_OK) {
-						if ($fp = $this->mpartcurrent['fp']) {
-							$this->writeToUploadFile($fp, $chunk);
-						}
+						$this->writeUploadChunk($chunk);
 					}
 
 					$this->mpartcurrent['size'] += strlen($chunk);
@@ -812,13 +813,11 @@ class HTTPRequest extends Request {
 							return; // fd is not ready yet, interrupt
 						}
 						if ($this->mpartcurrent['error'] === UPLOAD_ERR_OK) {
-							if ($fp = $this->mpartcurrent['fp']) {
-								$this->writeToUploadFile($fp, $chunk);
-							}
+							$this->writeUploadChunk($chunk);
 						}
 						$this->mpartcurrent['size'] += $p - $this->mpartoffset;
 
-						if ($this->upstream->pool->config->uploadmaxsize->value < $this->attrs->files[$this->mpartcondisp['name']]['size']) {
+						if ($this->upstream->pool->config->uploadmaxsize->value < $this->mpartcurrent['size']) {
 							$this->mpartcurrent['error'] = UPLOAD_ERR_INI_SIZE;
 						}
 

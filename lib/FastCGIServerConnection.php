@@ -111,9 +111,9 @@ class FastCGIServerConnection extends Connection {
 		$this->state = self::STATE_ROOT;
 
 		
-		if (0) Daemon::log('[DEBUG] FastCGI-record ' . $this->header['ttype'] . '). Request ID: ' . $rid 
+		/*Daemon::log('[DEBUG] FastCGI-record ' . $this->header['ttype'] . '). Request ID: ' . $rid 
 				. '. Content length: ' . $this->header['conlen'] . ' (' . strlen($this->content) . ') Padding length: ' . $this->header['padlen'] 
-				. ' (' . strlen($pad) . ')');
+				. ' (' . strlen($pad) . ')');*/
 		
 
 		if ($type == self::FCGI_BEGIN_REQUEST) {
