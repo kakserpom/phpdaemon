@@ -296,7 +296,7 @@ class FS {
 				return;
 			}
 			$path = FS::genRndTempnam($dir, $prefix);
-			FS::open($path, 'x!', function($file) use ($handler, $cb) {
+			FS::open($path, 'x+!', function($file) use ($handler, $cb) {
 				if (!$file) {
 					$handler();
 				}
