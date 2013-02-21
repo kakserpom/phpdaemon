@@ -21,6 +21,8 @@ class XMPPClient extends NetworkClient {
 }
 
 class XMPPClientConnection extends NetworkClientConnection {
+	use EventHandlers;
+
 	public $use_encryption = false;
 	public $authorized;
 	public $lastId = 0;
@@ -208,23 +210,6 @@ class XMPPClientConnection extends NetworkClientConnection {
 		});
 	}
 
-	public function addEventHandler($event, $cb) {
-		if (!isset($this->eventHandlers[$event])) {
-			$this->eventHandlers[$event] = array();
-		}
-		$this->eventHandlers[$event][] = $cb;
-	}
-
-	public function event() {
-		$args = func_get_args();
-		$name = array_shift($args);
-		if (isset($this->eventHandlers[$name])) {
-			foreach ($this->eventHandlers[$name] as $cb) {
-				call_user_func_array($cb, $args);
-			}
-		}
-	}
-
 	/**
 	 * Send XMPP Message
 	 *
@@ -327,7 +312,6 @@ class XMPPClientConnection extends NetworkClientConnection {
 	*/
 	public function stdin($buf) {
 		Timer::setTimeout($this->keepaliveTimer);
-		//Daemon::log(Debug::dump(['read', $buf]));
 		if (isset($this->xml)) {
 			$this->xml->feed($buf);
 		}

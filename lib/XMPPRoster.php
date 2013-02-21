@@ -1,7 +1,8 @@
 <?php
 class XMPPRoster {
+	use EventHandlers;
+
 	public $xmpp;
-	public $eventHandlers;
 	public $roster_array = array();
 	public $track_presence = true;
 	public $auto_subscribe = true;
@@ -83,24 +84,7 @@ class XMPPRoster {
 		});
 	}
 
-	public function addEventHandler($event, $cb) {
-		if (!isset($this->eventHandlers[$event])) {
-			$this->eventHandlers[$event] = array();
-		}
-		$this->eventHandlers[$event][] = $cb;
-	}
-
-	public function event() {
-		$args = func_get_args();
-		$name = array_shift($args);
-		if (isset($this->eventHandlers[$name])) {
-			foreach ($this->eventHandlers[$name] as $cb) {
-				call_user_func($cb, $args);
-			}
-		}
-	}
-
-		/**
+	/**
 	 *
 	 * Add given contact to roster
 	 *

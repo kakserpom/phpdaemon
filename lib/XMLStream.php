@@ -1,11 +1,12 @@
 <?php
 class XMLStream {
+	use EventHandlers;
+
 	protected $parser;
 	protected $xml_depth = 0;
 	protected $current_ns = array();
 	protected $idhandlers = array();
 	protected $xpathhandlers = array();
-	protected $eventHandlers = array();
 	protected $default_ns;
 
 	public function __construct() {
@@ -172,24 +173,6 @@ class XMLStream {
 			return;
 		}
 		$this->idhandlers[$id] = $cb;
-	}
-
-	public function addEventHandler($event, $cb) {
-		if (!isset($this->eventHandlers[$event])) {
-			$this->eventHandlers[$event] = array();
-		}
-		$this->eventHandlers[$event][] = $cb;
-	}
-
-	public function event() {
-		$args = func_get_args();
-		$name = array_shift($args);
-		if (isset($this->eventHandlers[$name])) {
-			foreach ($this->eventHandlers[$name] as $cb) {
-				call_user_func($cb, $args);
-			}
-			
-		}
 	}
 
 	/**

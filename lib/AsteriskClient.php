@@ -25,6 +25,8 @@ class AsteriskClient extends NetworkClient {
  */
 class AsteriskClientConnection extends NetworkClientConnection {
 
+	use EventHandlers;
+
 	const CONN_STATE_START                                  = 0;
 	const CONN_STATE_GOT_INITIAL_PACKET                     = 0.1;
 	const CONN_STATE_AUTH                                   = 1;
@@ -107,7 +109,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public $safeCaseValues = ['dialstring', 'callerid'];
 	
-	public $eventHandlers = [];
 	
 	/**
 	 * Execute the given callback when/if the connection is handshaked.
@@ -174,26 +175,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		
 		$this->event('disconnect');
 	}
-	
-	public function addEventHandler($event, $cb) {
-		if (!isset($this->eventHandlers[$event])) {
-			$this->eventHandlers[$event] = [];
-		}
-		
-		$this->eventHandlers[$event][] = $cb;
-	}
 
-	public function event() {
-		$args = func_get_args();
-		$name = array_shift($args);
-		
-		if (isset($this->eventHandlers[$name])) {
-			foreach ($this->eventHandlers[$name] as $cb) {
-				call_user_func_array($cb, $args);
-			}
-		}
-	}
-	
 	/**
 	 * Extract key and value pair from line.
 	 * @param string $line
