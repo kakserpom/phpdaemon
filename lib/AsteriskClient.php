@@ -16,20 +16,6 @@ class AsteriskClient extends NetworkClient {
 	 * @var array
 	 */
 	public $amiVersions = [];
-
-	/**
-	 * Setting default config options
-	 * Overriden from ConnectionPool::getConfigDefaults
-	 * @return array|false
-	 */
-	protected function getConfigDefaults() {
-		return [
-			// default server
-			'server' => 'tcp://127.0.0.1',
-			// default port
-			'port'   => 5038,
-		];
-	}
 	
 }
 
@@ -116,36 +102,37 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	public $onChallenge;
 	
 	/**
-	 * Callback. Called when connection's handshaked.
-	 * @var callback
-	 */
-	public $onConnected;
-	
-	/**
-	 * Callback. Called when asterisk send event.
-	 * @var callback
-	 */
-	public $onEvent;
-	
-	/**
-	 * Callback. Called when error occured.
-	 * @var callback
-	 */
-	public $onError;
-	
-	/**
 	 * Beginning of the string in the header or value that indicates whether the save value case.
 	 * @var array
 	 */
 	public $safeCaseValues = ['dialstring', 'callerid'];
+	
+	public $eventHandlers = [];
+	
+	/**
+	 * Execute the given callback when/if the connection is handshaked.
+	 * @param Callback
+	 * @return void
+	 */
+	public function onConnected($cb) {
+		if ($this->state === self::CONN_STATE_HANDSHAKED_ERROR) {
+			call_user_func($cb, $this);
+		} elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
+			call_user_func($cb, $this);
+		} else {
+			if (!$this->onConnected) {
+				$this->onConnected = new StackCallbacks;
+			}
+			
+			$this->onConnected->push($cb);
+		}
+	}
 	
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
 	 */
 	public function onReady() {
-		parent::onReady();
-		
 		if ($this->url === null) {
 			return;
 		}
@@ -154,8 +141,10 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			$this->pool->servConnFree[$this->url]->attach($this);
 		}
 		
-		$this->username = $this->pool->config->username->value;
-		$this->secret = $this->pool->config->secret->value;
+		$url = parse_url($this->url);
+		
+		$this->username = $url['user'];
+		$this->secret = $url['pass'];
 	}
 	
 	/**
@@ -172,6 +161,37 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		$this->finish();
 		
 		return false;
+	}
+	
+	/**
+	 * Called when session finishes
+	 * @return void
+	 */
+	public function onFinish() {
+		$this->state = self::CONN_STATE_START;
+		
+		parent::onFinish();
+		
+		$this->event('disconnect');
+	}
+	
+	public function addEventHandler($event, $cb) {
+		if (!isset($this->eventHandlers[$event])) {
+			$this->eventHandlers[$event] = [];
+		}
+		
+		$this->eventHandlers[$event][] = $cb;
+	}
+
+	public function event() {
+		$args = func_get_args();
+		$name = array_shift($args);
+		
+		if (isset($this->eventHandlers[$name])) {
+			foreach ($this->eventHandlers[$name] as $cb) {
+				call_user_func_array($cb, $args);
+			}
+		}
 	}
 	
 	/**
@@ -216,6 +236,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			$this->state = self::CONN_STATE_GOT_INITIAL_PACKET;
 			$this->pool->amiVersions[$this->addr] = trim($this->buf);
 			$this->auth();
+			
 			return;
 		}
 		
@@ -247,9 +268,13 @@ class AsteriskClientConnection extends NetworkClientConnection {
 								
 								Daemon::$process->log(__METHOD__ . ': Authentication ok. Connected to ' . parse_url($this->addr, PHP_URL_HOST));
 								
-								if (is_callable($this->onConnected)) {
-									call_user_func($this->onConnected, $this, true);
+								if ($this->onConnected) {
+									$this->connected = true;
+									$this->onConnected->executeAll($this);
+									$this->onConnected = null;
 								}
+								
+								$this->event('connected');
 							}
 						}
 					} else {
@@ -257,8 +282,10 @@ class AsteriskClientConnection extends NetworkClientConnection {
 						
 						Daemon::$process->log(__METHOD__ . ': Authentication failed. Connection to ' . parse_url($this->addr, PHP_URL_HOST) . ' failed.');
 						
-						if (is_callable($this->onConnected)) {
-							call_user_func($this->onConnected, $this, false);
+						if ($this->onConnected) {
+							$this->connected = false;
+							$this->onConnected->executeAll($this);
+							$this->onConnected = null;
 						}
 						
 						$this->finish();
@@ -266,14 +293,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 					
 					$this->packets = [];
 				}
-			}
-			elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
+			} elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
 				if ($this->instate == self::INPUT_STATE_END_OF_PACKET) {
 					// Event
 					if (isset($packet['event']) && !isset($packet['actionid'])) {
-						if (is_callable($this->onEvent)) {
-							call_user_func($this->onEvent, $this, $packet);
-						}
+						$this->event('event_' . $packet['event'], $packet);
 					}
 					// Response
 					elseif (isset($packet['actionid'])) {
@@ -309,25 +333,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	}
 
 	/**
-	 * Execute the given callback when/if the connection is handshaked.
-	 * @param Callback
-	 * @return void
-	 */
-	public function onConnected($cb) {
-		if ($this->state === self::CONN_STATE_HANDSHAKED_ERROR) {
-			call_user_func($cb, $this, false);
-		} elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
-			call_user_func($cb, $this, true);
-		} else {
-			if (!$this->onConnected) {
-				$this->onConnected = new StackCallbacks;
-			}
-			
-			$this->onConnected->push($cb);
-		}
-	}
-
-	/**
 	 * Send authentication packet
 	 * @return void
 	 */
@@ -346,6 +351,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 				. "\r\n";
 				
 				$this->state = self::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
+				
 				$this->write($packet);
 			});
 		} else {
@@ -362,6 +368,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	protected function login() {
 		$this->state = self::CONN_STATE_LOGIN_PACKET_SENT;
+		
 		$this->write(
 			"Action: login\r\n"
 			. "Username: " . $this->username . "\r\n"
@@ -470,8 +477,8 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		}
 		
 		if (isset($variable, $value)) {
-			$cmd .= "Variable: " . trim($variable) . "\r\n";
-			$cmd .= "Value: " . trim($value) . "\r\n";
+			$cmd .= "Variable: " . trim($variable) . "\r\n"
+			. "Value: " . trim($value) . "\r\n";
 			
 			$this->command($cmd, $callback);
 		}
@@ -575,7 +582,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	public function logoff($callback = null) {
 		$this->command("Action: Logoff\r\n", $callback);
 	}
-
+	
 	/**
 	 * Called when event occured.
 	 * @param $callback
@@ -583,15 +590,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public function onEvent($callback) {
 		$this->onEvent = $callback;
-	}
-
-	/**
-	 * Called when error occured.
-	 * @param $callback
-	 * @return void
-	 */
-	public function onError($callback) {
-		$this->onError = $callback;
 	}
 
 	/**
@@ -623,7 +621,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			$callback = false;
 		}
 		
-		$this->callbacks[$action_id] = $callback;
+		$this->callbacks[$action_id] = CallbackWrapper::wrap($callback);
 
 		if ($assertion !== null) {
 			$this->assertions[$action_id] = $assertion;
