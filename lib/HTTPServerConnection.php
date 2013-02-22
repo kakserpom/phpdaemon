@@ -97,6 +97,9 @@ class HTTPServerConnection extends Connection {
 					$this->badRequest($req);
 					return;
 				}
+				if (!isset($u['path'])) {
+					$u['path'] = null;
+				}
 
 				$req->attrs->server['REQUEST_METHOD'] = $command[0];
 				$req->attrs->server['REQUEST_TIME'] = time();

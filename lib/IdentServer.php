@@ -56,20 +56,14 @@ class IdentServer extends NetworkServer {
 
 class IdentServerConnection extends Connection {
 	public $EOL = "\r\n";
-	protected $highMark = 64;
+	protected $highMark = 32;
 	/**
 	 * Called when new data received.
-	 * @param string New data.
 	 * @return void
 	 */
-	public function stdin($buf) {
-		$this->buf .= $buf;
-		if (strlen($this->buf) > 64) {
-			$this->finish();
-			return;
-		}
-		while (($line = $this->gets()) !== false) {
-			$e = explode(',', str_replace("\x20", '', $line = trim($line)));
+	public function onRead() {
+		while (($line = $this->readline()) !== null) {
+			$e = explode(' , ', $line);
 			if ((sizeof($e) <> 2) || !ctype_digit($e[0]) || !ctype_digit($e[1])) {
 				$this->writeln($line. ' : ERROR : INVALID-PORT');
 				$this->finish();
@@ -79,7 +73,6 @@ class IdentServerConnection extends Connection {
 			$foreign = (int) $e[1];
 			if ($user = $this->pool->findPair($local, $foreign)) {
 				$this->writeln($line. ' : USERID : ' . $user);
-
 			} else {
 				$this->writeln($line. ' : ERROR : NO-USER');	
 			}

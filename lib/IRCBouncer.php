@@ -302,14 +302,12 @@ class IRCBouncerConnection extends Connection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
 	 * @return void
 	*/
-	public function stdin($buf) {
+	public function onRead() {
 		Timer::setTimeout($this->keepaliveTimer);
-		$this->buf .= $buf;
-		while (($line = $this->gets()) !== false) {
-			if ($line === $this->EOL) {
+		while (($line = $this->readline()) !== null) {
+			if ($line === '') {
 				continue;
 			}
 			if (strlen($line) > 512) {

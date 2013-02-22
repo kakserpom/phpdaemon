@@ -258,10 +258,12 @@ class IRCClientConnection extends NetworkClientConnection {
 				$channel = null;
 				list ($target, $mode) = $args;
 			}
-			if ($mode[0] === '+') {
-				$this->addMode($channel, $target, binarySubstr($mode, 1));
-			} elseif ($mode[0] === '-') {
-				$this->removeMode($channel, $target, binarySubstr($mode, 1));
+			if (strlen($mode)) {
+				if ($mode[0] === '+') {
+					$this->addMode($channel, $target, binarySubstr($mode, 1));
+				} elseif ($mode[0] === '-') {
+					$this->removeMode($channel, $target, binarySubstr($mode, 1));
+				}
 			}
 		}
 		elseif ($cmd === 'RPL_CREATED') {
@@ -301,13 +303,11 @@ class IRCClientConnection extends NetworkClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
 	 * @return void
 	*/
-	public function stdin($buf) {
-		$this->buf .= $buf;
-		while (($line = $this->gets()) !== false) {
-			if ($line === $this->EOL) {
+	public function onRead() {
+		while (($line = $this->readline()) !== null) {
+			if ($line === '') {
 				continue;
 			}
 			if (strlen($line) > 512) {

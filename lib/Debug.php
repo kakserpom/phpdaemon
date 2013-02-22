@@ -59,15 +59,22 @@ class Debug {
 			try {
 				throw new Exception;
 			} catch (Exception $e) {
-				return $e->getTraceAsString();
+				$trace = $e->getTraceAsString();
+				$e = explode("\n", $trace);
+				array_shift($e);
+				array_shift($e);
+				return implode("\n", $e);
 			}
 		}
 		ob_start();
 		debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-		$dump = ob_get_contents();
+		$trace = ob_get_contents();
 		ob_end_clean();
 
-		return $dump;
+		$e = explode("\n", $trace);
+		array_shift($e);
+		array_shift($e);
+		return implode("\n", $e);
 	}
 
 }

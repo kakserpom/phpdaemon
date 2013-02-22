@@ -182,7 +182,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @return array
 	 */
 	protected function extract($line) {
-		$e = explode(': ', rtrim($line, "\r\n"), 2);
+		$e = explode(': ', $line, 2);
 		$header = strtolower(trim($e[0]));
 		$value = isset($e[1]) ? trim($e[1]) : null;
 		$safe = false;
@@ -208,26 +208,20 @@ class AsteriskClientConnection extends NetworkClientConnection {
 
 	/**
 	 * Called when new data received.
-	 * @param string $buf New received data.
 	 * @return void
 	 */
-	public function stdin($buf) {
-		$this->buf .= $buf;
+	public function onRead() {
 		
 		if ($this->state === self::CONN_STATE_START) {
+			if (($this->pool->amiVersions[$this->addr] = $this->readline()) === null) {
+				return;
+			}
 			$this->state = self::CONN_STATE_GOT_INITIAL_PACKET;
-			$this->pool->amiVersions[$this->addr] = trim($this->buf);
 			$this->auth();
-			
-			return;
 		}
-		
-		if (strlen($this->buf) < 4) {
-			return; // Not enough data buffered yet
-		}
-		
-		while(($line = $this->gets()) !== false) {
-			if ($line == "\r\n") {
+				
+		while(($line = $this->readline()) !== null) {
+			if ($line === '') {
 				$this->instate = self::INPUT_STATE_END_OF_PACKET;
 				$packet =& $this->packets[$this->cnt];
 				++$this->cnt;

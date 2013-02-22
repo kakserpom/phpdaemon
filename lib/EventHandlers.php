@@ -10,9 +10,13 @@
 
 trait EventHandlers {
 	private $eventHandlers = [];
+	protected $addThisToEvents = true;
 	public function event() {
 		$args = func_get_args();
-		$name = array_shift($args);		
+		$name = array_shift($args);
+		if ($this->addThisToEvents) {
+			array_unshift($args, $this);
+		}
 		if (isset($this->eventHandlers[$name])) {
 			foreach ($this->eventHandlers[$name] as $cb) {
 				call_user_func_array($cb, $args);
