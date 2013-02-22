@@ -203,7 +203,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			$value = strtolower($value);
 		}
 
-		return array($header, $value);
+		return [$header, $value];
 	}
 
 	/**

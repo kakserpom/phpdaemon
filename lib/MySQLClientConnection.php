@@ -10,6 +10,9 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $user          = 'root';     // Username
 	public $password      = '';         // Password
 	public $state        = 0;          // Connection's state. 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
+	public $pstate = 0;
+	const PSTATE_STANDBY = 0;
+	const PSTATE_BODY = 1;
 	const STATE_GOT_INIT = 1;
 	const STATE_AUTH_SENT = 2;
 	const STATE_AUTH_ERR = 3;
@@ -18,8 +21,9 @@ class MySQLClientConnection extends NetworkClientConnection {
 	const INSTATE_HEADER = 0;
 	const INSTATE_FIELD = 1;
 	const INSTATE_ROW = 2;
-	public $resultRows    = array();    // Resulting rows
-	public $resultFields  = array();    // Resulting fields
+	public $pctSize = 0;		 // Packet size
+	public $resultRows    = [];    // Resulting rows
+	public $resultFields  = [];    // Resulting fields
 	public $context;                    // Property holds a reference to user's object
 	public $insertId;                   // INSERT_ID()
 	public $affectedRows;               // Affected rows number
@@ -27,6 +31,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $timeout = 120;
 	public $errno = 0;
 	public $errmsg = '';
+	protected $lowMark = 4;
 	
 	/**
 	 * Executes the given callback when/if the connection is handshaked
@@ -314,34 +319,34 @@ class MySQLClientConnection extends NetworkClientConnection {
 		
 		return TRUE;
 	}
-	
+	public $counter = 0;
 	/**
 	 * Called when new data received
-	 * @param string New data
 	 * @return void
 	 */
-	public function stdin($buf) {
-		$this->buf .= $buf;
+	public function onRead() {
 		start:
-		
-		$this->buflen = strlen($this->buf);
-		
-		if ($this->buflen < 4) {
-			return;
+		if ($this->pstate === self::PSTATE_STANDBY) {
+			if (false === ($hdr = $this->readExact(4))) {
+					return; //we do not have a whole packet
+			}
+			$this->pctSize = $this->bytes2int(binarySubstr($hdr, 0, 3));
+			$this->setWatermark($this->pctSize);
+			$this->pstate = self::PSTATE_BODY;
+			$this->seq = ord(binarySubstr($hdr, 3, 1)) + 1;
 		}
-		
-		$packet = array($this->bytes2int(binarySubstr($this->buf, 0, 3)), ord(binarySubstr($this->buf, 3, 1)));
-		$this->seq = $packet[1] + 1;
-		if ($this->buflen < 4 + $packet[0]) {
-			// not whole packet yet
-			return;
+		// PSTATE_BODY
+		if (false === ($pct = $this->readExact($this->pctSize))) {
+				return; //we do not have a whole packet
 		}
-		$p = 4;
+		$this->pstate = self::PSTATE_STANDBY;
+		$this->setWatermark(4);
+		$p = 0;
 		if ($this->state === self::STATE_ROOT) {
 			$this->state = self::STATE_GOT_INIT;
-			$p = 4;
+			$p = 0;
 
-			$this->protover = ord(binarySubstr($this->buf, $p++, 1));
+			$this->protover = ord(binarySubstr($pct, $p++, 1));
 			if ($this->protover === 0xFF) { // error
 				$fieldCount = $this->protover;
 				$this->protover = 0;
@@ -356,8 +361,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 			}
 			$this->serverver = '';
 
-			while ($p < $this->buflen) {
-				$c = binarySubstr($this->buf, $p++, 1);
+			while ($p < $this->pctSize) {
+				$c = binarySubstr($pct, $p++, 1);
 
 				if ($c === "\x00") {
 					break;
@@ -366,38 +371,38 @@ class MySQLClientConnection extends NetworkClientConnection {
 				$this->serverver .= $c;
 			}
 		
-			$this->threadId = $this->bytes2int(binarySubstr($this->buf, $p, 4));
+			$this->threadId = $this->bytes2int(binarySubstr($pct, $p, 4));
 			$p += 4;
 	
-			$this->scramble = binarySubstr($this->buf, $p, 8);
+			$this->scramble = binarySubstr($pct, $p, 8);
 			$p += 9;
 	
-			$this->serverCaps = $this->bytes2int(binarySubstr($this->buf, $p, 2));
+			$this->serverCaps = $this->bytes2int(binarySubstr($pct, $p, 2));
 			$p += 2;
 	
-			$this->serverLang = ord(binarySubstr($this->buf, $p++, 1));
-			$this->serverStatus = $this->bytes2int(binarySubstr($this->buf, $p, 2));
+			$this->serverLang = ord(binarySubstr($pct, $p++, 1));
+			$this->serverStatus = $this->bytes2int(binarySubstr($pct, $p, 2));
 			$p += 2;
 			$p += 13;
 
-			$restScramble = binarySubstr($this->buf, $p, 12);
+			$restScramble = binarySubstr($pct, $p, 12);
 			$this->scramble .= $restScramble;
 			$p += 13;
 	
 			$this->auth();
 		} else {
-			$fieldCount = ord(binarySubstr($this->buf, $p++, 1));
+			$fieldCount = ord(binarySubstr($pct, $p++, 1));
 			field:
 			if ($fieldCount === 0xFF) {
 				// Error packet
-				$u = unpack('v', binarySubstr($this->buf, $p, 2));
+				$u = unpack('v', binarySubstr($pct, $p, 2));
 				$p += 2;
 				
 				$this->errno = $u[1];
-				$state = binarySubstr($this->buf, $p, 6);
+				$state = binarySubstr($pct, $p, 6);
 				$p =+ 6;
 
-				$this->errmsg = binarySubstr($this->buf, $p, $packet[0] + 4 - $p);
+				$this->errmsg = binarySubstr($pct, $p, $this->pctSize - $p);
 				$this->onError();
 				$this->errno = 0;
 				$this->errmsg = '';
@@ -412,21 +417,21 @@ class MySQLClientConnection extends NetworkClientConnection {
 					}
 				}
 		
-				$this->affectedRows = $this->parseEncodedBinary($this->buf, $p);
+				$this->affectedRows = $this->parseEncodedBinary($pct, $p);
 
-				$this->insertId = $this->parseEncodedBinary($this->buf, $p);
+				$this->insertId = $this->parseEncodedBinary($pct, $p);
 
-				$u = unpack('v', binarySubstr($this->buf, $p, 2));
+				$u = unpack('v', binarySubstr($pct, $p, 2));
 				$p += 2;
 				
 				$this->serverStatus = $u[1];
 
-				$u = unpack('v',binarySubstr($this->buf, $p, 2));
+				$u = unpack('v',binarySubstr($pct, $p, 2));
 				$p += 2;
 				
 				$this->warnCount = $u[1];
 
-				$this->message = binarySubstr($this->buf, $p, $packet[0] + 4 - $p);
+				$this->message = binarySubstr($pct, $p, $this->pctSize - $p);
 				$this->onResultDone();
 			}
 			elseif ($fieldCount === 0xFE) { 
@@ -443,38 +448,38 @@ class MySQLClientConnection extends NetworkClientConnection {
 		
 				if ($this->instate === self::INSTATE_HEADER) {
 					// Result Set Header Packet
-					$extra = $this->parseEncodedBinary($this->buf, $p);
+					$extra = $this->parseEncodedBinary($pct, $p);
 					$this->instate = self::INSTATE_FIELD;
 				}
 				elseif ($this->instate === self::INSTATE_FIELD) {
 					// Field Packet
 					$field = array(
-						'catalog'    => $this->parseEncodedString($this->buf, $p),
-						'db'         => $this->parseEncodedString($this->buf, $p),
-						'table'      => $this->parseEncodedString($this->buf, $p),
-						'org_table'  => $this->parseEncodedString($this->buf, $p),
-						'name'       => $this->parseEncodedString($this->buf, $p),
-						'org_name'   => $this->parseEncodedString($this->buf, $p)
+						'catalog'    => $this->parseEncodedString($pct, $p),
+						'db'         => $this->parseEncodedString($pct, $p),
+						'table'      => $this->parseEncodedString($pct, $p),
+						'org_table'  => $this->parseEncodedString($pct, $p),
+						'name'       => $this->parseEncodedString($pct, $p),
+						'org_name'   => $this->parseEncodedString($pct, $p)
 					);
 
 					++$p; // filler
 
-					$u = unpack('v', binarySubstr($this->buf, $p, 2));
+					$u = unpack('v', binarySubstr($pct, $p, 2));
 					$p += 2;
 
 					$field['charset'] = $u[1];
-					$u = unpack('V', binarySubstr($this->buf, $p, 4));
+					$u = unpack('V', binarySubstr($pct, $p, 4));
 					$p += 4;
 					$field['length'] = $u[1];
 
-					$field['type'] = ord(binarySubstr($this->buf, $p, 1));
+					$field['type'] = ord(binarySubstr($pct, $p, 1));
 					++$p;
 
-					$u = unpack('v', binarySubstr($this->buf, $p, 2));
+					$u = unpack('v', binarySubstr($pct, $p, 2));
 					$p += 2;
 					$field['flags'] = $u[1];
 
-					$field['decimals'] = ord(binarySubstr($this->buf, $p, 1));
+					$field['decimals'] = ord(binarySubstr($pct, $p, 1));
 					++$p;
 
 					$this->resultFields[] = $field;
@@ -484,15 +489,13 @@ class MySQLClientConnection extends NetworkClientConnection {
 					$row = array();
 
 					for ($i = 0,$nf = sizeof($this->resultFields); $i < $nf; ++$i) {
-						$row[$this->resultFields[$i]['name']] = $this->parseEncodedString($this->buf, $p);
+						$row[$this->resultFields[$i]['name']] = $this->parseEncodedString($pct, $p);
 					}
 		
 					$this->resultRows[] = $row;
 				}
 			}
 		}
-		
-		$this->buf = binarySubstr($this->buf, 4 + $packet[0]);
 
 		goto start;
 	}

@@ -90,7 +90,7 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 <?php
 if ($r = $this->job->getResult('showvar')) {
 	echo '<h1>It works! Be happy! ;-)</h1>Result of SHOW VARIABLES: <pre>';
-	var_dump(array_slice($r, 0, 5));
+	var_dump($r);
 	echo '</pre>';
 
 	echo '<br />Result of SHOW DATABASES: <pre>';
