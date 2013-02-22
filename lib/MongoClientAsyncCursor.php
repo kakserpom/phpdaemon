@@ -9,6 +9,7 @@ class MongoClientAsyncCursor {
 	public $failure = false;    // Is this query failured?
 	public $await = false;      // awaitCapable?
 	public $destroyed = false;  // Is this cursor destroyed?
+	public $parseOplog = false;
 
 	/**
 	 * Constructor

@@ -5,6 +5,10 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 	public $password;          // Password
 	public $dbname;            // Database name
 	public $busy = false;      // Is this session busy?
+	protected $lowMark  = 16;         // initial value of the minimal amout of bytes in buffer
+	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
+	private $curPacket;
+	const STATE_PACKET = 1;
 
 	public function onReady() {
 		$conn = $this;
@@ -33,120 +37,98 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 	}
 	/**
 	 * Called when new data received
-	 * @param string New data
 	 * @return void
 	 */
-	public function stdin($buf) {
-		$this->buf .= $buf;
-
+	public function onRead() {
 		start:
-
-		$l = strlen($this->buf);
-
-		if ($l < 16) {
-			// we have not enough data yet
-			return;
-		}
-		
-		$h = unpack('Vlen/VreqId/VresponseTo/VopCode', binarySubstr($this->buf, 0, 16));
-		$plen = (int) $h['len'];
-		
-		if ($plen > $l) {
-			// we have not enough data yet
-			return;
-		} 
-		
-		if ($h['opCode'] === MongoClientAsync::OP_REPLY) {
-			$r = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', binarySubstr($this->buf, 16, 20));
-					//Daemon::log(array($r,$h));
-			$r['cursorId'] = binarySubstr($this->buf, 20, 8);
-			$id = (int) $h['responseTo'];
-			$flagBits = str_pad(strrev(decbin($r['flag'])), 8, '0', STR_PAD_LEFT);
-			$cur = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00"?'c' . $r['cursorId'] : 'r' . $h['responseTo']);
-
-			if (
-				isset($this->pool->requests[$id][2]) 
-				&& ($this->pool->requests[$id][2] === false) 
-				&& !isset($this->pool->cursors[$cur])
-			) {
-				$this->pool->cursors[$cur] = new MongoClientAsyncCursor($cur, $this->pool->requests[$id][0], $this);
-				$this->pool->cursors[$cur]->failure = $flagBits[1] === '1';
-				$this->pool->cursors[$cur]->await = $flagBits[3] === '1';
-				$this->pool->cursors[$cur]->callback = $this->pool->requests[$id][1];
-				$this->pool->cursors[$cur]->parseOplog = 
-					isset($this->pool->requests[$id][3]) 
-					&& $this->pool->requests[$id][3];
-				$this->pool->cursors[$cur]->tailable = 
-					isset($this->pool->requests[$id][4]) 
-					&& $this->pool->requests[$id][4];
+		if ($this->state === self::STATE_ROOT) {
+			if (false === ($hdr = $this->readExact(16))) {
+				return; // we do not have a header
 			}
-			//Daemon::log(array(Debug::exportBytes($cur),get_Class($this->pool->cursors[$cur])));
-			
-			if (
-				isset($this->pool->cursors[$cur]) 
-				&& (
-					($r['length'] === 0) 
-					|| (binarySubstr($cur, 0, 1) === 'r')
-				)
-			) {
-
-				if ($this->pool->cursors[$cur]->tailable) {
-					if ($this->pool->cursors[$cur]->finished = ($flagBits[0] == '1')) {
-						$this->pool->cursors[$cur]->destroy();
-					}
+			$this->curPacket = unpack('Vlen/VreqId/VresponseTo/VopCode', $hdr);
+			$this->curPacket['blen'] = $this->curPacket['len'] - 16;
+			$this->setWatermark($this->curPacket['blen']);
+			$this->state = self::STATE_PACKET;
+		}
+		if ($this->state === self::STATE_PACKET) {
+			if (false === ($pct = $this->readExact($this->curPacket['blen']))) {
+				return; //we do not have a whole packet
+			}
+			$this->state = self::STATE_ROOT;
+			$this->setWatermark(16);
+			if ($this->curPacket['opCode'] === MongoClientAsync::OP_REPLY) {
+				$r = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', binarySubstr($pct, 0, 20));
+				$r['cursorId'] = binarySubstr($pct, 20, 8);
+				$id = (int) $this->curPacket['responseTo'];
+				if (isset($this->pool->requests[$id])) {
+					$req =& $this->pool->requests[$id];
 				} else {
-					$this->pool->cursors[$cur]->finished = true;
+					$req = false;
 				}
-			}
-			
-			$p = 36;			
-			while ($p < $plen) {
-				$dl = unpack('Vlen', binarySubstr($this->buf, $p, 4));
-				$doc = bson_decode(binarySubstr($this->buf, $p, $dl['len']));
+				$flagBits = str_pad(strrev(decbin($r['flag'])), 8, '0', STR_PAD_LEFT);
+				$curId = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00"?'c' . $r['cursorId'] : 'r' . $this->curPacket['responseTo']);
 
-				if (
-					isset($this->pool->cursors[$cur]) 
-					&& @$this->pool->cursors[$cur]->parseOplog 
-					&& isset($doc['ts'])
-				) {
-					$tsdata = unpack('Vsec/Vinc', binarySubstr($this->buf, $p + 1 + 4 + 3, 8));
-					$doc['ts'] = $tsdata['sec'] . ' ' . $tsdata['inc'];
+				if ($req && ($req[2] === false) && !isset($this->pool->cursors[$curId])) {
+					$cur = new MongoClientAsyncCursor($curId, $req[0], $this);
+					$this->pool->cursors[$curId] = $cur;
+					$cur->failure = $flagBits[1] === '1';
+					$cur->await = $flagBits[3] === '1';
+					$cur->callback = $req[1];
+					$cur->parseOplog = isset($req[3]) && $req[3];
+					$cur->tailable = isset($req[4]) && $req[4];
+				} else {
+					$cur = isset($this->pool->cursors[$curId]) ? $this->pool->cursors[$curId] : false;
 				}
-
-				$this->pool->cursors[$cur]->items[] = $doc;
-				$p += $dl['len'];
-			}
-			
-			$this->setFree(true);
-			
-			if (
-				isset($this->pool->requests[$id][2]) 
-				&& $this->pool->requests[$id][2]
-				&& $this->pool->requests[$id][1]
-			) {
-				call_user_func(
-					$this->pool->requests[$id][1], 
-					isset($this->pool->cursors[$cur]->items[0]) ? $this->pool->cursors[$cur]->items[0] : false
-				);
-
-				if (isset($this->pool->cursors[$cur])) {
-					if ($this->pool->cursors[$cur] instanceof MongoClientAsyncCursor) {
-						$this->pool->cursors[$cur]->destroy();
+				//Daemon::log(array(Debug::exportBytes($curId),get_Class($this->pool->cursors[$curId])));		
+				if ($cur && (($r['length'] === 0) || (binarySubstr($curId, 0, 1) === 'r'))) {
+					if ($cur->tailable) {
+						if ($cur->finished = ($flagBits[0] == '1')) {
+							$cur->destroy();
+						}
 					} else {
-						unset($this->pool->cursors[$cur]);
+						$cur->finished = true;
 					}
 				}
-			} 
-			elseif (isset($this->pool->cursors[$cur])) {
-				call_user_func($this->pool->cursors[$cur]->callback, $this->pool->cursors[$cur]);
-			}
 			
-			unset($this->pool->requests[$id]);
+				$p = 20;			
+				$items = [];
+				while ($p < $this->curPacket['blen']) {
+					$dl = unpack('Vlen', binarySubstr($pct, $p, 4));
+					$doc = bson_decode(binarySubstr($pct, $p, $dl['len']));
+
+					if ($cur) {
+						if ($cur->parseOplog && isset($doc['ts'])) {
+							$tsdata = unpack('Vsec/Vinc', binarySubstr($pct, $p + 1 + 4 + 3, 8));
+							$doc['ts'] = $tsdata['sec'] . ' ' . $tsdata['inc'];
+						}
+						$cur->items = $items;
+					}
+					else {
+						$items[] = $doc;
+					}
+					$p += $dl['len'];
+				}
+				$this->setFree(true);
+				if (isset($req[2]) && $req[2] && $req[1]) {
+					call_user_func(
+						$req[1], 
+						sizeof($items) ? $items[0] : false
+					);
+
+					if ($cur) {
+						if ($cur instanceof MongoClientAsyncCursor) {
+							$cur->destroy();
+						} else {
+							unset($this->pool->cursors[$curId]);
+						}
+					}
+				} 
+				elseif ($cur) {
+					call_user_func($cur->callback, $cur);
+				}
+				unset($this->pool->requests[$id], $req);
+			}
 		}
-		
-		$this->buf = binarySubstr($this->buf, $plen);
-		
 		goto start;
 	}
-	
 }
