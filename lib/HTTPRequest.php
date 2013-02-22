@@ -942,5 +942,4 @@ class HTTPRequest extends Request {
 	public function sessionCommit() {
 		session_commit();
 	}
-
 }

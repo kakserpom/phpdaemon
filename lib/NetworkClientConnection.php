@@ -10,6 +10,7 @@
 class NetworkClientConnection extends Connection {
 	public $busy = false;
 	public $timeout = 60;
+	public $noSAF = true;
 	
 	public $onResponse;  // stack of onResponse callbacks
 	
