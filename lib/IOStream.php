@@ -155,7 +155,7 @@ abstract class IOStream {
 	}
 
 	public function readLine($eol = null) {
-		return $this->bev->getInput()->readLine($eol ?: $this->EOLS);
+		return $this->bev->input->readLine($eol ?: $this->EOLS);
 	}
 
 	public function readFromBufExact($n) { // @TODO: deprecate
@@ -175,7 +175,7 @@ abstract class IOStream {
 		if ($n === 0) {
 			return '';
 		}
-		if ($this->bev->getInput()->length < $n) {
+		if ($this->bev->input->length < $n) {
 			return false;
 		} else {
 			return $this->read($n);
@@ -199,7 +199,7 @@ abstract class IOStream {
 	 */
 	public function freezeInput($at_front = false) {
 		if (isset($this->bev)) {
-			return 0 === $this->bev->getInput()->freeze($at_front);
+			return $this->bev->input->freeze($at_front);
 		}
 		return false;
 	}
@@ -211,7 +211,7 @@ abstract class IOStream {
 	 */
 	public function unfreezeInput($at_front = false) {
 		if (isset($this->bev)) {
-			return 0 === $this->bev->getInput()->unfreeze($at_front);
+			return $this->bev->input->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -223,7 +223,7 @@ abstract class IOStream {
 	 */
 	public function freezeOutput($at_front = true) {
 		if (isset($this->bev)) {
-			return 0 === $this->bev->getOutput()->unfreeze($at_front);
+			return $this->bev->output->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -235,7 +235,7 @@ abstract class IOStream {
 	 */
 	public function unfreezeOutput($at_front = true) {
 		if (isset($this->bev)) {
-			return 0 === $this->bev->getOutput()->unfreeze($at_front);
+			return $this->bev->output->unfreeze($at_front);
 		}
 		return false;
 	}
