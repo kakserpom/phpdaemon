@@ -51,7 +51,7 @@ class ExampleWithMongoRequest extends HTTPRequest {
 		$collection = $this->appInstance->mongo->{'testdb.testcollection'};
 		$collection->insert(array('a' => microtime(true))); // just pushing something
 		
-		$job('testquery', function($name, $job) use ($collection) { // registering job named 'testquery'
+		/*$job('testquery', function($name, $job) use ($collection) { // registering job named 'testquery'
 		
 		 	$collection->findOne(function($result) use ($name, $job) { // calling Mongo findOne
 				
@@ -59,6 +59,18 @@ class ExampleWithMongoRequest extends HTTPRequest {
 				
 			}, array('sort' => array('$natural' => -1)));
 		});
+		*/
+		
+		$job('testquery', function($name, $job) use ($collection) { // registering job named 'testquery'
+
+			Daemon::log('run');
+			$this->appInstance->mongo->{'WakePHP.blocks'}->find(function ($cursor) use ($name, $job) {
+				Daemon::log('cursor finished = '.Debug::dump($cursor->finished));
+				$job->setResult($name, 'very true'); 
+			}, array('limit' => -2));
+
+		});
+
 		
 		$job(); // let the fun begin
 		

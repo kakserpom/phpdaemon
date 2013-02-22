@@ -74,7 +74,7 @@ class FastCGIServerConnection extends Connection {
 			$this->header = unpack('Cver/Ctype/nreqid/nconlen/Cpadlen/Creserved', $header);
 
 			if ($this->header['conlen'] > 0) {
-				$this->setWatermark($this->header['conlen']);
+				$this->setWatermark($this->header['conlen'], $this->header['conlen']);
 			}
 			$type = $this->header['type'];
 			$this->header['ttype'] = isset(self::$requestTypes[$type]) ? self::$requestTypes[$type] : $type;
@@ -89,12 +89,12 @@ class FastCGIServerConnection extends Connection {
 			$this->content = $this->readExact($this->header['conlen']);
 
 			if ($this->content === false) {
-				$this->setWatermark($this->header['conlen']);
+				$this->setWatermark($this->header['conlen'], $this->header['conlen']);
 				return;
 			}
 
 			if ($this->header['padlen'] > 0) {
-				$this->setWatermark($this->header['padlen']);
+				$this->setWatermark($this->header['padlen'], $this->header['padlen']);
 			}
 
 			$this->state = self::STATE_PADDING;
@@ -107,7 +107,7 @@ class FastCGIServerConnection extends Connection {
 				return;
 			}
 		}
-		$this->setWatermark(8);
+		$this->setWatermark(8, 0xFFFFFF);
 		$this->state = self::STATE_ROOT;
 
 		

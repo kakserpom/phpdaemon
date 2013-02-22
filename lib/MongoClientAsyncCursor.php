@@ -2,7 +2,7 @@
 class MongoClientAsyncCursor {
 	public $id;                 // Cursor's ID.
 	public $col;                // Collection's name.
-	public $items = array();    // Array of objects
+	public $items = [];    // Array of objects
 	public $item;               // Current object
 	public $conn;     	        // Network connection
 	public $finished = false;   // Is this cursor finished?
