@@ -50,13 +50,13 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 
 		});
 		
-		$job('showvar', function($name, $job) use ($req) { // registering job named 'showvar'
+		$job('select', function($name, $job) use ($req) { // registering job named 'showvar'
 		
 			$req->appInstance->sql->getConnection(function($sql) use ($name, $job) {
 				if (!$sql->connected) {
 					return $job->setResult($name, null);
 				}
-				$sql->query('SHOW VARIABLES', function($sql, $success) use ($job, $name) {
+				$sql->query('SELECT 123, "string"', function($sql, $success) use ($job, $name) {
 					
 					$job('showdbs', function($name, $job) use ($sql) { // registering job named 'showdbs'
 						$sql->query('SHOW DATABASES', function($sql, $t) use ($job, $name) {
@@ -88,8 +88,8 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 </head>
 <body>
 <?php
-if ($r = $this->job->getResult('showvar')) {
-	echo '<h1>It works! Be happy! ;-)</h1>Result of SHOW VARIABLES: <pre>';
+if ($r = $this->job->getResult('select')) {
+	echo '<h1>It works! Be happy! ;-)</h1>Result of SELECT 123, "string": <pre>';
 	var_dump($r);
 	echo '</pre>';
 
