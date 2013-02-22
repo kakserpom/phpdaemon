@@ -49,11 +49,10 @@ class FlashPolicyServerConnection extends Connection {
 	protected $highMark = 23;
 	/**
 	 * Called when new data received.
-	 * @param string New data.
 	 * @return void
 	 */
-	public function stdin($buf) {
-		if ($buf === "<policy-file-request/>\x00") {
+	public function onRead() {
+		if ($this->read($this->lowMark) === "<policy-file-request/>\x00") {
 			if ($this->pool->policyData) {
 				$this->write($this->pool->policyData . "\x00");
 			} else {

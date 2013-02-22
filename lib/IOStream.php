@@ -11,6 +11,7 @@ abstract class IOStream {
 
 	public $buf = '';
 	public $EOL = "\n";
+	public $EOLS;
 
 	public $readPacketSize  = 8192;
 	public $bev;
@@ -46,6 +47,15 @@ abstract class IOStream {
 	
 		if ($fd !== null) {
 			$this->setFd($fd);
+		}
+
+		if ($this->EOL === "\n") {
+			$this->EOLS = EventBuffer::EOL_LF;
+		}
+		elseif ($this->EOL === "\r\n") {
+			$this->EOLS = EventBuffer::EOL_CRLF;
+		} else {
+			$this->EOLS = EventBuffer::EOL_ANY;	
 		}
 
 		$this->onWriteOnce = new StackCallbacks;
@@ -142,6 +152,10 @@ abstract class IOStream {
 		$this->buf = binarySubstr($this->buf, $p + $sEOL);
 
 		return $r;
+	}
+
+	public function readLine($eol = null) {
+		return $this->bev->getInput()->readLine($eol ?: $this->EOLS);
 	}
 
 	public function readFromBufExact($n) { // @TODO: deprecate

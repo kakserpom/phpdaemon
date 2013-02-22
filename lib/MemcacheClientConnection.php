@@ -11,7 +11,6 @@ class MemcacheClientConnection extends NetworkClientConnection {
 	public $result;                // current result
 	public $valueFlags;            // flags of incoming value
 	public $valueLength;           // length of incoming value
-	public $valueSize = 0;         // size of received part of the value
 	public $error;                 // error message
 	public $key;                   // current incoming key
 	const STATE_DATA = 1;
@@ -19,23 +18,20 @@ class MemcacheClientConnection extends NetworkClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
 	 * @return void
 	*/
-	public function stdin($buf) {
-		$this->buf .= $buf;
-
+	public function onRead() {
 		start:
-
 		if ($this->state === self::STATE_ROOT) {
-			while (($l = $this->gets()) !== FALSE) {
-				$e = explode(' ', rtrim($l, "\r\n"));
+			while (($l = $this->readLine()) !== null) {
+				$e = explode(' ', $l);
 
 				if ($e[0] == 'VALUE') {
 					$this->key = $e[1];
 					$this->valueFlags = $e[2];
 					$this->valueLength = $e[3];
 					$this->result = '';
+					$this->setWatermark($this->valueLength);
 					$this->state = self::STATE_DATA;
 					break;
 				}
@@ -58,37 +54,20 @@ class MemcacheClientConnection extends NetworkClientConnection {
 						$this->result = FALSE;
 						$this->error = isset($e[1]) ? $e[1] : NULL;
 					}
-
 					$this->onResponse->executeOne($this);
 					$this->checkFree();
-
-					$this->valueSize = 0;
 					$this->result = NULL;
 				}
 			}
 		}
 
 		if ($this->state === self::STATE_DATA) {
-			if ($this->valueSize < $this->valueLength) {
-				$n = $this->valueLength-$this->valueSize;
-				$buflen = strlen($this->buf);
-
-				if ($buflen > $n) {
-					$this->result .= binarySubstr($this->buf, 0, $n);
-					$this->buf = binarySubstr($this->buf, $n);
-				} else {
-					$this->result .= $this->buf;
-					$n = $buflen;
-					$this->buf = '';
-				}
-
-				$this->valueSize += $n;
-
-				if ($this->valueSize >= $this->valueLength) {
-					$this->state = self::STATE_ROOT;
-					goto start;
-				}
+			if (false === ($this->result = $this->readExact($this->valueLength))) {
+				return; //we do not have a whole packet
 			}
+			$this->state = self::STATE_ROOT;
+			$this->setWatermark(0);
+			goto start;
 		}
 	}
 }
