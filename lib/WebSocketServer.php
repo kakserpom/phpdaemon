@@ -21,6 +21,7 @@ class WebSocketServer extends NetworkServer
 			'listen'                  =>  '0.0.0.0',
 			'port' 	 		          => 8047,
 			'max-allowed-packet'  	  => new Daemon_ConfigEntrySize('16k'),
+			'fps-name' => '',
 		);
 	}
 	
