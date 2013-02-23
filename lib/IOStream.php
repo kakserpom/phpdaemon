@@ -399,9 +399,7 @@ abstract class IOStream {
 				Daemon::uncaughtExceptionHandler($e);
 			}
 		} else {
-			while (!$this->onWriteOnce->isEmpty()) {
-				$this->onWriteOnce->executeOne($this);
-			}
+			$this->onWriteOnce->executeAll($this);
 		}
 		try {
 			$this->onWrite();
