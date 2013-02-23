@@ -419,7 +419,7 @@ abstract class IOStream {
 	 */
 	public function onEvent($bev, $events) {
 		if ($events & EventBufferEvent::CONNECTED) {
-			$this->onWriteEvent($bev);
+			$this->onWriteEv($bev);
 		}
   		elseif ($events & (EventBufferEvent::ERROR | EventBufferEvent::EOF)) {
 			try {
