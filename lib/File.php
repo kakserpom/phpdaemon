@@ -173,7 +173,6 @@ class File {
 			}
 			return false;
 		}
-		$this->sending = true;
 		if ($cb !== null) {
 			$this->onWriteOnce->push($cb);
 		}

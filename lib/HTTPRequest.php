@@ -279,8 +279,8 @@ class HTTPRequest extends Request {
 						}
 						$file['fp'] = $fp;
 					});
-					unset($file);
 				}
+				unset($file);
 			}
 
 			if (
