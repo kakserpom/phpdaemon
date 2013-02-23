@@ -76,14 +76,13 @@ class Connection extends IOStream {
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onFailureEvent($stream, $arg = null) {
+	public function onFailureEv($bev = null) {
 		try {
 			if (!$this->connected && !$this->failed) {
 				$this->failed = true;
 				$this->onFailure();
 			}
-			$this->connected = false;
-			parent::onFailureEvent($stream, $arg);
+			$this->connected = false;;
 		} catch (Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
@@ -173,7 +172,7 @@ class Connection extends IOStream {
 				DNSClient::getInstance()->resolve($host, function($result) use ($host) {
 					if ($result === false) {
 						Daemon::log(get_class($this).'->connectTo (raw) : enable to resolve hostname: '.$host);
-						$this->onFailureEvent(null);
+						$this->onFailureEv();
 						return;
 					}
 					// @todo stack of addrs
@@ -322,13 +321,5 @@ class Connection extends IOStream {
 			socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 		}
-	}
-	
-	
-	public function closeFd() {
-		if (is_resource($this->fd)) {
-			socket_close($this->fd);
-		}
-		$this->fd = null;
 	}
 }

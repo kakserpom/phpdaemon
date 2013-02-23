@@ -7,11 +7,10 @@
  */
 class MongoClientAsync extends NetworkClient {
 	public $noSAF = true;
-	
-	public $requests    = array(); // Pending requests
-	public $cursors     = array(); // Active cursors
+	public $requests    = []; // Pending requests
+	public $cursors     = []; // Active cursors
 	public $lastReqId   = 0;       // ID of the last request
-	public $collections = array(); // Objects of MongoClientAsyncCollection
+	public $collections = []; // Objects of MongoClientAsyncCollection
 	public $dbname      = '';      // Current database
 	public $lastRequestConnection;    // Holds last used MongoClientAsyncConnection object.
 

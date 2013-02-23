@@ -18,9 +18,9 @@ class GameMonitor extends AppInstance {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			'dbname' => 'gamemonitor',
-		);
+		];
 	}
 	/**
 	 * Constructor.
@@ -44,7 +44,7 @@ class GameMonitor extends AppInstance {
 		return new GameMonitorHTTPRequest($this, $upstream, $req);
 	}
 
-	public $jobMap = array();
+	public $jobMap = [];
 	public function updateServer($server) {
 		if (!isset($server['address'])) {
 			return;
@@ -69,10 +69,10 @@ class GameMonitor extends AppInstance {
 				  : ' =---= '.json_encode($server))
 			);
 			try {
-				$app->servers->upsert(array('_id' => $server['_id']), array('$set' => $set));
+				$app->servers->upsert(['_id' => $server['_id']], ['$set' => $set]);
 			} catch (MongoException $e) {
 				Daemon::uncaughtExceptionHandler($e);
-				$app->servers->upsert(array('_id' => $server['_id']), array('$set' => array('atime' => time())));
+				$app->servers->upsert(['_id' => $server['_id']], ['$set' => array('atime' => time())]);
 			}
 		});
 		$app->jobMap[$server['address']] = $job;
@@ -129,18 +129,18 @@ class GameMonitor extends AppInstance {
 				$app->updateServer($server);
 			}
 			$cursor->destroy();
-		}, array(
-			'where' => array('$or' => array(
-				array('atime' => array('$lte' => time() - 30), 'latency' => array('$ne' => false)),
-				array('atime' => array('$lte' => time() - 120), 'latency' => false),
-				array('atime' => null),
-				//array('address' => 'dimon4ik.no-ip.org:27016',)
+		}, [
+			'where' => ['$or' => [
+				['atime' => ['$lte' => time() - 30], 'latency' => ['$ne' => false]],
+				['atime' => array('$lte' => time() - 120), 'latency' => false],
+				['atime' => null],
+				//['address' => 'dimon4ik.no-ip.org:27016'],
 
-			)),
+			]],
 			//'fields' => '_id,atime,address',
 			'limit' => - max($amount, 100),
-			'sort' => array('atime' => 1),
-		));
+			'sort' => ['atime' => 1],
+		]);
 	}
 
 	/**

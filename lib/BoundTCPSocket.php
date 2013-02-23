@@ -9,10 +9,10 @@
  */
 class BoundTCPSocket extends BoundSocket {
 	public $defaultPort = 0;
-	public $reuse = true;
+	public $reuse = false;
 	public $host;
 	public $port;
-	public $listenerMode = false;
+	public $listenerMode = true;
 
 	public function setDefaultPort($n) {
 		$this->defaultPort = (int) $n;
@@ -21,7 +21,7 @@ class BoundTCPSocket extends BoundSocket {
 		$this->reuse = $reuse;
 	}
 	/**
-	 * Bind given addreess
+	 * Bind the socket
 	 * @return boolean Success.
 	 */
 	 public function bindSocket() {
@@ -32,6 +32,10 @@ class BoundTCPSocket extends BoundSocket {
 		$host = $hp[0];
 		$port = (int) $hp[1];
 		$addr = $host . ':' . $port;
+		if ($this->listenerMode) {
+			$this->setFd($addr);
+			return true;
+		}
 		$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		if (!$sock) {
 			$errno = socket_last_error();

@@ -52,9 +52,12 @@ class FlashPolicyServerConnection extends Connection {
 	 * @return void
 	 */
 	public function onRead() {
-		if ($this->read($this->lowMark) === "<policy-file-request/>\x00") {
+		if (false === ($pct = $this->readExact($this->lowMark))) {
+			return; // not readed yet
+		}
+		if ($pct === "<policy-file-request/>\x00") {
 			if ($this->pool->policyData) {
-				$this->write($this->pool->policyData . "\x00");
+				$this->write($p = $this->pool->policyData . "\x00");
 			} else {
 				$this->write("<error/>\x00");
 			}

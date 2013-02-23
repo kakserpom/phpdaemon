@@ -13,6 +13,8 @@ abstract class IOStream {
 	public $EOL = "\n";
 	public $EOLS;
 
+
+	public $listenerMode = false;
 	public $readPacketSize  = 8192;
 	public $bev;
 	public $fd;
@@ -82,11 +84,13 @@ abstract class IOStream {
 	
 	public function setFd($fd) {
 		$this->fd = $fd;
-		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, EventBufferEvent::OPT_CLOSE_ON_FREE | EventBufferEvent::OPT_DEFER_CALLBACKS);
+		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd,
+			EventBufferEvent::OPT_CLOSE_ON_FREE /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
+			[$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onEvent']
+		);
 		if (!$this->bev) {
 			return;
 		}
-		$this->bev->setCallbacks([$this, 'onReadEvent'], [$this, 'onWriteEvent'], [$this, 'onStateEvent']);
 		if ($this->priority !== null) {
 			$this->bev->priority = $this->priority;
 		}
@@ -336,23 +340,19 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if ($this->bev !== null) {
+		if ($this->bev instanceof EventBufferEvent) {
 			$this->bev->free();
 			$this->bev = null;
 		}
-		if (isset($this->fd)) {
-			$this->closeFd();
-		}
+		$this->fd = null;
 	}
-	
-	public function closeFd() {}
 	
 	/**
 	 * Called when the connection has got new data
 	 * @param resource Bufferevent
 	 * @return void
 	 */
-	public function onReadEvent($bev) {
+	public function onReadEv($bev) {
 		try {
 			if (isset($this->onRead)) {
 				$this->reading = !call_user_func($this->onRead);
@@ -391,7 +391,7 @@ abstract class IOStream {
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onWriteEvent($bev) {
+	public function onWriteEv($bev) {
 		$this->sending = false;
 		if ($this->finished) {
 			$this->close();
@@ -435,13 +435,13 @@ abstract class IOStream {
 	}
 	
 	/**
-	 * Called when the connection failed
+	 * Called when the connection state changed
 	 * @param resource Bufferevent
 	 * @param int Events
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onStateEvent($bev, $events) {
+	public function onEvent($bev, $events) {
 		if ($events & EventBufferEvent::CONNECTED) {
 			$this->onWriteEvent($bev);
 		}
