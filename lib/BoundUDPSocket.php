@@ -113,10 +113,10 @@ class BoundUDPSocket extends BoundSocket {
  						$conn->finish();
  						$timer->finish();
  					}, $conn->timeout * 1e6);
- 					 $conn->stdin($buf);
+ 					 $conn->onUdpPacket($buf);
 				} else {
 					$conn = $this->portsMap[$key];
-					$conn->stdin($buf);
+					$conn->onUdpPacket($buf);
 					Timer::setTimeout($conn->timeoutRef);
 				}
 			}

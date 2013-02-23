@@ -165,82 +165,24 @@ class DNSClient extends NetworkClient {
 				call_user_func($cb, false);
 				return false;
 			}
-			$conn->onResponse->push($cb);
-			$conn->setFree(false);
-			$e = explode(':', $hostname, 3);
-			$hostname = $e[0];
-			$qtype = isset($e[1]) ? $e[1] : 'A';
-			$qclass = isset($e[2]) ? $e[2] : 'IN';
-			$QD = array();
-			$qtypeInt = array_search($qtype, DNSClient::$type, true);
-			$qclassInt = array_search($qclass, DNSClient::$class, true);
-			if (($qtypeInt === false) || ($qclassInt === false)) {
-				call_user_func($cb, false);
-				return;
-			}
-			$q =	Binary::labels($hostname) .  // domain
-					Binary::word($qtypeInt) . 
-					Binary::word($qclassInt);
-			$QD[] = $q;
-			$packet = 
-				Binary::word(++$conn->seq) . // Query ID
-				Binary::bitmap2bytes(
-					'0' . // QR = 0
-					'0000' . // OPCODE = 0000 (standard query)
-					'0' . // AA = 0
-					'0' . // TC = 0
-					'1' . // RD = 1
-
-					'0' . // RA = 0, 
-					'000' . // reserved
-					'0000' // RCODE
-				, 2) . 
-				Binary::word(sizeof($QD)) . // QDCOUNT
-				Binary::word(0) . // ANCOUNT
-				Binary::word(0) . // NSCOUNT
-				Binary::word(0) . // ARCOUNT
-				implode('', $QD);
-			if ($conn->type === 'udp') {
-				$conn->write($packet);
-			} else {
-				$conn->write(Binary::word(strlen($packet)) . $packet);
-			}
+			$conn->get($hostname, $cb);
 		});
 	}
 }
 class DNSClientConnection extends NetworkClientConnection {
+	protected $seq = 0;
+	protected $keepalive = true;
+	protected $response = array();
+	const STATE_PACKET = 1;
+	protected $pctSize = 0;
 	protected $lowMark = 2;
-	public $seq = 0;
-	public $keepalive = true;
-	public $response = array();
+	protected $highMark = 512;
 
-	/**
-	 * Called when new data received
-	 * @param string New data
-	 * @return void
-	 */
-	public function stdin($buf) {
-		$this->buf .= $buf;
-		start:
-		$l = strlen($this->buf);
-		if ($l < 2) {
-			return; // not enough data yet
-		}
-		if ($this->type === 'udp') {
-			$packet = $this->buf;
-			$this->buf = '';
-		} else {
-			$length = Binary::bytes2int(binarySubstr($this->buf, 0, 2));
-			if ($length > $l + 2) {
-				return; // not enough data yet
-			}
-			$packet = binarySubstr($this->buf, 2, $length);
-			$this->buf = binarySubstr($this->buf, $length + 2);
-		}
-		$orig = $packet;
+	public function onUdpPacket($pct) {
+		$orig = $pct;
 		$this->response = array();
-		$id = Binary::getWord($packet);
-		$bitmap = Binary::getBitmap(Binary::getByte($packet)) . Binary::getBitmap(Binary::getByte($packet));
+		$id = Binary::getWord($pct);
+		$bitmap = Binary::getBitmap(Binary::getByte($pct)) . Binary::getBitmap(Binary::getByte($pct));
 		$qr = (int) $bitmap[0];
 		$opcode = bindec(substr($bitmap, 1, 4));
 		$aa = (int) $bitmap[5];
@@ -249,15 +191,15 @@ class DNSClientConnection extends NetworkClientConnection {
 		$ra = (int) $bitmap[8];
 		$z = bindec(substr($bitmap, 9, 3));
 		$rcode = bindec(substr($bitmap, 12));
-		$qdcount = Binary::getWord($packet);
-		$ancount = Binary::getWord($packet);
-		$nscount = Binary::getWord($packet);
-		$arcount = Binary::getWord($packet);
+		$qdcount = Binary::getWord($pct);
+		$ancount = Binary::getWord($pct);
+		$nscount = Binary::getWord($pct);
+		$arcount = Binary::getWord($pct);
 		for ($i = 0; $i < $qdcount; ++$i) {
-			$name = Binary::parseLabels($packet, $orig);
-			$typeInt = Binary::getWord($packet);
+			$name = Binary::parseLabels($pct, $orig);
+			$typeInt = Binary::getWord($pct);
 			$type = isset(DNSClient::$type[$typeInt]) ? DNSClient::$type[$typeInt] : 'UNK(' . $typeInt . ')';
-			$classInt = Binary::getWord($packet);
+			$classInt = Binary::getWord($pct);
 			$class = isset(DNSClient::$class[$classInt]) ? DNSClient::$class[$classInt] : 'UNK(' . $classInt . ')';
 			if (!isset($this->response[$type])) {
 				$this->response[$type] = array();
@@ -269,16 +211,16 @@ class DNSClientConnection extends NetworkClientConnection {
 			);
 			$this->response['query'][] = $record;
 		}
-		$getResRecord = function(&$packet) use ($orig) {
-			$name = Binary::parseLabels($packet, $orig);
-			$typeInt = Binary::getWord($packet);
+		$getResRecord = function(&$pct) use ($orig) {
+			$name = Binary::parseLabels($pct, $orig);
+			$typeInt = Binary::getWord($pct);
 			$type = isset(DNSClient::$type[$typeInt]) ? DNSClient::$type[$typeInt] : 'UNK(' . $typeInt . ')';
-			$classInt = Binary::getWord($packet);
+			$classInt = Binary::getWord($pct);
 			$class = isset(DNSClient::$class[$classInt]) ? DNSClient::$class[$classInt] : 'UNK(' . $classInt . ')';
-			$ttl = Binary::getDWord($packet);
-			$length = Binary::getWord($packet);
-			$data = binarySubstr($packet, 0, $length);
-			$packet = binarySubstr($packet, $length);
+			$ttl = Binary::getDWord($pct);
+			$length = Binary::getWord($pct);
+			$data = binarySubstr($pct, 0, $length);
+			$pct = binarySubstr($pct, $length);
 
 			$record = array(
 				'name' => $name,
@@ -305,21 +247,21 @@ class DNSClientConnection extends NetworkClientConnection {
 			return $record;
 		};
 		for ($i = 0; $i < $ancount; ++$i) {
-			$record = $getResRecord($packet);
+			$record = $getResRecord($pct);
 			if (!isset($this->response[$record['type']])) {
 				$this->response[$record['type']] = array();
 			}
 			$this->response[$record['type']][] = $record;
 		}
 		for ($i = 0; $i < $nscount; ++$i) {
-			$record = $getResRecord($packet);
+			$record = $getResRecord($pct);
 			if (!isset($this->response[$record['type']])) {
 				$this->response[$record['type']] = array();
 			}
 			$this->response[$record['type']][] = $record;
 		}
 		for ($i = 0; $i < $arcount; ++$i) {
-			$record = $getResRecord($packet);
+			$record = $getResRecord($pct);
 			if (!isset($this->response[$record['type']])) {
 				$this->response[$record['type']] = array();
 			}
@@ -332,9 +274,78 @@ class DNSClientConnection extends NetworkClientConnection {
 		} else {
 			$this->checkFree();
 		}
+	}
+
+	/**
+	 * Called when new data received
+	 * @return void
+	 */
+	public function onRead() {
+		start:
+		if ($this->type === 'udp') {
+			$this->onUdpPacket($this->read($this->highMark));
+		}
+		if ($this->state === self::STATE_ROOT) {
+			if (false === ($hdr = $this->readExact(2))) {
+				return; // not enough data
+			}
+			$this->pctSize = Binary::bytes2int($hdr, true);
+			$this->setWatermark($this->pctSize);
+			$this->state = self::STATE_PACKET;
+		}
+		if ($this->state === self::STATE_PACKET) {
+			if (false === ($pct = $this->readExact($this->pctSize))) {
+				return; // not enough data
+			}
+			$this->state = self::STATE_ROOT;
+			$this->setWatermark(2);
+			$this->onUdpPacket($pct);
+		}
 		goto start;
 	}
 
+	public function get($hostname, $cb) {
+		$this->onResponse->push($cb);
+		$this->setFree(false);
+		$e = explode(':', $hostname, 3);
+		$hostname = $e[0];
+		$qtype = isset($e[1]) ? $e[1] : 'A';
+		$qclass = isset($e[2]) ? $e[2] : 'IN';
+		$QD = array();
+		$qtypeInt = array_search($qtype, DNSClient::$type, true);
+		$qclassInt = array_search($qclass, DNSClient::$class, true);
+		if (($qtypeInt === false) || ($qclassInt === false)) {
+			call_user_func($cb, false);
+			return;
+		}
+		$q =	Binary::labels($hostname) .  // domain
+				Binary::word($qtypeInt) . 
+				Binary::word($qclassInt);
+		$QD[] = $q;
+		$packet = 
+			Binary::word(++$this->seq) . // Query ID
+			Binary::bitmap2bytes(
+				'0' . // QR = 0
+				'0000' . // OPCODE = 0000 (standard query)
+				'0' . // AA = 0
+				'0' . // TC = 0
+				'1' . // RD = 1
+
+				'0' . // RA = 0, 
+				'000' . // reserved
+				'0000' // RCODE
+			, 2) . 
+			Binary::word(sizeof($QD)) . // QDCOUNT
+			Binary::word(0) . // ANCOUNT
+			Binary::word(0) . // NSCOUNT
+			Binary::word(0) . // ARCOUNT
+			implode('', $QD);
+		if ($this->type === 'udp') {
+			$this->write($packet);
+		} else {
+			$this->write(Binary::word(strlen($packet)) . $packet);
+		}
+	}
 	/**
 	 * Called when connection finishes
 	 * @return void

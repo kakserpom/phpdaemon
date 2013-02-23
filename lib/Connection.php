@@ -18,7 +18,7 @@ class Connection extends IOStream {
 	public $timeout = 120;
 	public $locAddr;
 	public $locPort;
-	public $keepaliveMode = false;
+	protected $keepalive = false;
 	public $type;
 	public $parentSocket;
 	public $dgram = false;
@@ -44,6 +44,8 @@ class Connection extends IOStream {
 		}
 		return $u;
 	}
+
+	public function onUdpPacket($pct) {}
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
@@ -299,7 +301,7 @@ class Connection extends IOStream {
 				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
 			}
-			if ($this->keepaliveMode) {
+			if ($this->keepalive) {
 				if (!$this->bevConnect) {
 					socket_set_option($fd, SOL_SOCKET, SO_KEEPALIVE, 1);
 				}

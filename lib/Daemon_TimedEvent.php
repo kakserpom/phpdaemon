@@ -8,14 +8,3 @@
  */
 class Daemon_TimedEvent extends Timer { // @TODO: remove in 1.0
 }
-
-
-
-
-
-
-
-
-
-
-

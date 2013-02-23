@@ -8,8 +8,6 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 abstract class IOStream {
-
-	public $buf = '';
 	public $EOL = "\n";
 	public $EOLS;
 
@@ -28,6 +26,7 @@ abstract class IOStream {
 	public $inited = false;
 	public $state = 0;             // stream state of the connection (application protocol level)
 	const STATE_ROOT = 0;
+	const STATE_STANDBY = 0;
 	public $onWriteOnce;
 	public $timeout = null;
 	public $url;
@@ -263,30 +262,25 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Send data and appending \n to connection. Note that it just writes to buffer that flushes at every baseloop
+	 * Send data and appending \n to connection. Note that it just writes to buffer flushed at every baseloop
 	 * @param string Data to send.
 	 * @return boolean Success.
 	 */
 	public function writeln($s) {
-		return $this->write($s . $this->EOL);
-	}
-	
-	/**
-	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
-	 * @param string Data to send.
-	 * @return boolean Success.
-	 */
-	public function send($s) {
-		return $this->write($s);
-	}
-
-	/**
-	 * Send data and appending \n to connection. Note that it just writes to buffer that flushes at every baseloop
-	 * @param string Data to send.
-	 * @return boolean Success.
-	 */
-	public function sendln($s) {
-		return $this->writeln($s);
+		if (!$this->alive) {
+			Daemon::log('Attempt to write to dead IOStream ('.get_class($this).')');
+			return false;
+		}
+		if (!isset($this->bev)) {
+			return false;
+		}
+		if (!strlen($data)) {
+			return true;
+		}
+ 		$this->writing = true;
+		$this->bev->write($data);
+		$this->bev->write($this->EOL);
+		return true;
 	}
 
 	/**
