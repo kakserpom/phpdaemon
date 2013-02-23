@@ -154,7 +154,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public function gracefulShutdown() {
 		if ($this->finished) {
-			return !$this->sending;
+			return !$this->writing;
 		}
 		
 		$this->logoff();
