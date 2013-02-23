@@ -181,7 +181,9 @@ class File {
 			$offset = $this->offset;
 			$this->offset += $l;
 		}
+		$this->writing = true;
 		$res = eio_write($this->fd, $data, $l, $offset, $pri, function ($file, $result) {
+			$this->writing = false;
 			$this->onWriteOnce->executeAll($file, $result);
 		}, $this);
 		return $res;

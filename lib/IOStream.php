@@ -20,7 +20,7 @@ abstract class IOStream {
 	public $fd;
 	public $finished = false;
 	public $ready = false;
-	public $sending = true;
+	public $writing = true;
 	public $reading = false;
 	protected $lowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
@@ -72,16 +72,6 @@ abstract class IOStream {
 		$this->readPacketSize = $n;
 		return $this;
 	}
-	
-	public function setOnRead($cb) {
-		$this->onRead = $cb;
-		return $this;
-	}
-	public function setOnWrite($cb) {
-		$this->onWrite = $cb;
-		return $this;
-	}
-	
 	public function setFd($fd) {
 		$this->fd = $fd;
 		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd,
@@ -249,7 +239,7 @@ abstract class IOStream {
 	 * @todo protected?
 	 * @return void
 	 */
-	public function onWrite() { }
+	public function onWrite() {}
 
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
@@ -267,7 +257,7 @@ abstract class IOStream {
 		if (!strlen($data)) {
 			return true;
 		}
- 		$this->sending = true;
+ 		$this->writing = true;
 		$this->bev->write($data);
 		return true;
 	}
@@ -312,7 +302,7 @@ abstract class IOStream {
 		if ($this->pool) {
 			$this->pool->detach($this);
 		}
-		if (!$this->sending) {
+		if (!$this->writing) {
 			$this->close();
 		}
 		return true;
@@ -354,11 +344,7 @@ abstract class IOStream {
 	 */
 	public function onReadEv($bev) {
 		try {
-			if (isset($this->onRead)) {
-				$this->reading = !call_user_func($this->onRead);
-			} else {
-				$this->reading = !$this->onRead();
-			}
+			$this->reading = !$this->onRead();
 		} catch (Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
@@ -379,7 +365,7 @@ abstract class IOStream {
 	}
 	
 	public function onWriteOnce($cb) {
-		if (!$this->sending) {
+		if (!$this->writing) {
 			call_user_func($cb, $this);
 			return;
 		}
@@ -392,7 +378,7 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onWriteEv($bev) {
-		$this->sending = false;
+		$this->writing = false;
 		if ($this->finished) {
 			$this->close();
 			return;
@@ -424,11 +410,7 @@ abstract class IOStream {
 			}
 		}
 		try {
-			if (isset($this->onWrite)) {
-				call_user_func($this->onWrite, $this);
-			} else {
-				$this->onWrite();
-			}
+			$this->onWrite();
 		} catch (Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
