@@ -203,9 +203,8 @@ class WebSocketServerConnection extends Connection {
 	public function stdin($buf) {
 		$this->buf .= $buf;
 		if ($this->state === self::STATE_ROOT)	{
-			if (strpos($this->buf, "<policy-file-request/>\x00") !== false) {
-				$FP = FlashPolicyServer::getInstance();
-				if ($FP && $FP->policyData) {
+			if (strpos($this->buf, "<policy-file-request/>\x00") === 0) {
+				if (($FP = FlashPolicyServer::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();

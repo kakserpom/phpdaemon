@@ -47,11 +47,8 @@ class HTTPServerConnection extends Connection {
 				return;
 			}
 
-			if (strpos($buf, "<policy-file-request/>\x00") !== false) {
-				if (
-					($FP = FlashPolicyServer::getInstance()) 
-					&& $FP->policyData
-				) {
+			if (strpos($buf, "<policy-file-request/>\x00") === 0) {
+				if (($FP = FlashPolicyServer::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();
