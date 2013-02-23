@@ -39,6 +39,7 @@ class HTTPServer extends NetworkServer {
 			// disabled by default
 			'enable'     => 0,
 			'wss-name' => '',
+			'fps-name' => '',
 			'upload-max-size' => new Daemon_ConfigEntrySize(ini_get('upload_max_filesize')),
 			//'responder' => default app
 		);
