@@ -83,13 +83,13 @@ class Daemon_MasterThread extends Thread {
 				$state = Daemon::getStateOfWorkers($self);
 				
 				if ($state) {
-					$n = max(
-						/*min(
-							Daemon::$config->minspareworkers->value - $state['idle'], 
-							Daemon::$config->maxworkers->value - $state['alive']
-						)*/0,
-						Daemon::$config->minworkers->value - $state['alive']
-					);
+					$upToMinWorkers = Daemon::$config->minworkers->value - $state['alive'];
+					$upToMaxWorkers = Daemon::$config->maxworkers->value - $state['alive'];
+					$upToMinSpareWorkers = Daemon::$config->minspareworkers->value - $state['idle'];
+					if ($upToMinSpareWorkers > $upToMaxWorkers) {
+						$upToMinSpareWorkers = $upToMaxWorkers;
+					}
+					$n = max($upToMinSpareWorkers, $upToMinWorkers);
 
 					if ($n > 0) {
 						Daemon::log('Spawning ' . $n . ' worker(s).');
@@ -99,10 +99,9 @@ class Daemon_MasterThread extends Thread {
 						}
 					}
 
-					$n = min(
-						$state['idle'] - Daemon::$config->maxspareworkers->value,
-						$state['alive'] - Daemon::$config->minworkers->value
-					);
+					$downToMaxSpareWorkers = $state['idle'] - Daemon::$config->maxspareworkers->value;
+					$downToMaxWorkers = $state['alive'] - Daemon::$config->maxworkers->value;
+					$n = max($downToMaxSpareWorkers, $downToMaxWorkers);
 					
 					if ($n > 0) {
 						Daemon::log('Stopping ' . $n . ' worker(s).');
