@@ -59,7 +59,7 @@ abstract class BoundSocket {
 			);
 		} else {
 			if ($this->ev === null) {
-				$this->ev = new Event(Daemon::$process->eventBase, $this->fd, Event::READ | Event::PERSIST, array($this, 'onAcceptEvent'));
+				$this->ev = new Event(Daemon::$process->eventBase, $this->fd, Event::READ | Event::PERSIST, array($this, 'onAcceptEv'));
 				if (!$this->ev) {
 					Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($this->fd));
 					return;
@@ -135,7 +135,7 @@ abstract class BoundSocket {
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
+	public function onAcceptEv($stream = null, $events = 0, $arg = null) {
 		$this->accept();
 	}
 

@@ -71,10 +71,16 @@ abstract class IOStream {
 		$this->readPacketSize = $n;
 		return $this;
 	}
+	public static function logFd($fd, $where) {
+		$fdNo = @EventUtil::testfd($fd, false);
+		$fdOk = EventUtil::testfd($fd, true);
+		Daemon::$process->log(microtime(true) .'::' . $where. ' FD #' . $fdNo .' ('.Debug::dump($fd).') -- '.($fdOk ? 'OK' : 'BAD <<<========') . "\n" . Debug::backtrace());
+	} // IOStream::logFd($this->fd, get_class($this).'::'.__METHOD__.':'.__LINE__);
+
 	public function setFd($fd) {
 		$this->fd = $fd;
 		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd,
-			EventBufferEvent::OPT_CLOSE_ON_FREE /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
+			EventBufferEvent::OPT_CLOSE_ON_FREE/* | EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
 			[$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onEvent']
 		);
 		if (!$this->bev) {
@@ -324,11 +330,10 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if ($this->bev instanceof EventBufferEvent) {
+		if ($this->bev instanceof EventBufferEvent) { // @TODO: refactoring of this check
 			$this->bev->free();
 			$this->bev = null;
 		}
-		$this->fd = null;
 	}
 	
 	/**
@@ -443,7 +448,7 @@ abstract class IOStream {
 	 * @return string Readed data
 	 */
 	public function read($n) {
-		if ($this->bev === null) {
+		if (!$this->bev instanceof EventBufferEvent) {
 			return false;
 		}
 		$r = $this->bev->read($read, $n);
@@ -456,9 +461,5 @@ abstract class IOStream {
 			return false;
 		}
 		return $read;
-	}
-	
-	public function __destruct() {
-		$this->close();
 	}
 }

@@ -39,24 +39,24 @@ class BoundTCPSocket extends BoundSocket {
 		$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 		if (!$sock) {
 			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			Daemon::$process->log(get_class($this->pool) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}
 		if ($this->reuse) {
 			if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
 				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 				return false;
 			}
 			if (Daemon::$reusePort && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
 				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 				return false;
 			}
 		}
 		if (!@socket_bind($sock, $hp[0], $hp[1])) {
 			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			Daemon::$process->log(get_class($this->pool) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}
 		socket_getsockname($sock, $this->host, $this->port);
@@ -65,7 +65,7 @@ class BoundTCPSocket extends BoundSocket {
 		if (!$this->listenerMode) {
 			if (!socket_listen($sock, SOMAXCONN)) {
 				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
+				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
 				return false;
 			}
 		}
@@ -81,7 +81,7 @@ class BoundTCPSocket extends BoundSocket {
 	 * @param mixed Attached variable
 	 * @return boolean Success.
 	 */
-	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
+	public function onAcceptEv($stream = null, $events = 0, $arg = null) {
 		$conn = $this->accept();
 		if (!$conn) {
 			return false;

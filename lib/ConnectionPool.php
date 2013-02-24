@@ -280,8 +280,8 @@ class ConnectionPool extends ObjectStorage {
 					$socket->setDefaultPort($this->config->port->value);
 				}
 			}
+			$socket->attachTo($this);
 			if ($socket->bindSocket()) {
-				$socket->attachTo($this);
 				if ($this->enabled) {
 					$socket->enable();
 				}

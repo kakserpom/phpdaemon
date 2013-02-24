@@ -190,14 +190,9 @@ div.foot { font: 90% monospace; color: #787878; padding-top: 4px;}
 		$this->finish();
 	}
 
-	public function __destruct() {
-		parent::__destruct();
-	}
-
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
-	public function run() {
-	}	
+	public function run() {}	
 }

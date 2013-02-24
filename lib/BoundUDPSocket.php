@@ -70,7 +70,7 @@ class BoundUDPSocket extends BoundSocket {
 	 * @param mixed Attached variable
 	 * @return boolean Success.
 	 */
-	public function onAcceptEvent($stream = null, $events = 0, $arg = null) {
+	public function onAcceptEv($stream = null, $events = 0, $arg = null) {
 		if (Daemon::$config->logevents->value) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
 		}
