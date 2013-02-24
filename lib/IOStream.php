@@ -79,10 +79,9 @@ abstract class IOStream {
 
 	public function setFd($fd) {
 		$this->fd = $fd;
-		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd,
-			EventBufferEvent::OPT_CLOSE_ON_FREE/* | EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
-			[$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onEvent']
-		);
+		$flags = is_resource($fd) ? 0 : EventBufferEvent::OPT_CLOSE_ON_FREE;
+		//$flags =| EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
+		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onEvent']);
 		if (!$this->bev) {
 			return;
 		}
@@ -461,5 +460,11 @@ abstract class IOStream {
 			return false;
 		}
 		return $read;
+	}
+
+	public function __destruct() {
+		if (is_resource($this->fd)) {
+			socket_close($this->fd);
+		}
 	}
 }

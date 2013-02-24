@@ -84,10 +84,10 @@ class Daemon_MasterThread extends Thread {
 				
 				if ($state) {
 					$n = max(
-						min(
+						/*min(
 							Daemon::$config->minspareworkers->value - $state['idle'], 
 							Daemon::$config->maxworkers->value - $state['alive']
-						),
+						)*/0,
 						Daemon::$config->minworkers->value - $state['alive']
 					);
 
