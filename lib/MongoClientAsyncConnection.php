@@ -9,6 +9,7 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 	protected $highMark = 1e6;  	// initial value of the maximum amout of bytes in buffer
 	private $hdr;
 	const STATE_PACKET = 1;
+	public $cursors     = []; // Active cursors
 
 	public function onReady() {
 		$conn = $this;
@@ -68,16 +69,16 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 				$flagBits = str_pad(strrev(decbin($r['flag'])), 8, '0', STR_PAD_LEFT);
 				$curId = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00"?'c' . $r['cursorId'] : 'r' . $this->hdr['responseTo']);
 
-				if ($req && isset($req[2]) && ($req[2] === false) && !isset($this->pool->cursors[$curId])) {
+				if ($req && isset($req[2]) && ($req[2] === false) && !isset($this->cursors[$curId])) {
 					$cur = new MongoClientAsyncCursor($curId, $req[0], $this);
-					$this->pool->cursors[$curId] = $cur;
+					$this->cursors[$curId] = $cur;
 					$cur->failure = $flagBits[1] === '1';
 					$cur->await = $flagBits[3] === '1';
 					$cur->callback = $req[1];
 					$cur->parseOplog = isset($req[3]) && $req[3];
 					$cur->tailable = isset($req[4]) && $req[4];
 				} else {
-					$cur = isset($this->pool->cursors[$curId]) ? $this->pool->cursors[$curId] : false;
+					$cur = isset($this->cursors[$curId]) ? $this->cursors[$curId] : false;
 				}
 				if ($cur && (($r['length'] === 0) || (binarySubstr($curId, 0, 1) === 'r'))) {
 					if ($cur->tailable) {
@@ -118,7 +119,7 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 						if ($cur instanceof MongoClientAsyncCursor) {
 							$cur->destroy();
 						} else {
-							unset($this->pool->cursors[$curId]);
+							unset($this->cursors[$curId]);
 						}
 					}
 				} 

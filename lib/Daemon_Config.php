@@ -24,11 +24,11 @@ class Daemon_Config implements ArrayAccess {
 			
 	// Master-related
 	public $mpmdelay        = '0.1s';
-	public $startworkers    = 20;
-	public $minworkers      = 20;
-	public $maxworkers      = 80;
-	public $minspareworkers = 20;
-	public $maxspareworkers = 50;
+	public $startworkers    = 4;
+	public $minworkers      = 4;
+	public $maxworkers      = 8;
+	public $minspareworkers = 2;
+	public $maxspareworkers = 4;
 	public $masterpriority  = 100;
 	public $ipcthreadpriority = 100;
 			 
