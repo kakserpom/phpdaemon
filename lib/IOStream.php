@@ -80,7 +80,7 @@ abstract class IOStream {
 		$this->fd = $fd;
 		$flags = is_resource($fd) ? 0 : EventBufferEvent::OPT_CLOSE_ON_FREE;
 		//$flags =| EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
-		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onEvent']);
+		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
 		if (!$this->bev) {
 			return;
 		}
@@ -418,7 +418,7 @@ abstract class IOStream {
 	 * @param mixed Attached variable
 	 * @return void
 	 */
-	public function onEvent($bev, $events) {
+	public function onStateEv($bev, $events) {
 		if ($events & EventBufferEvent::CONNECTED) {
 			$this->onWriteEv($bev);
 		}
