@@ -218,17 +218,17 @@ class FS {
 		return eio_truncate($path, $offset, $pri, $cb, $path);
 	}
 
-	public static function sendfile($outfd, $path, $cb, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
+	public static function sendfile($outfd, $path, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, $path, false);
 			return;
 		}
-		FS::open($path, 'r', function ($file) use ($cb, $path, $pri, $outfd, $offset, $length) {
+		FS::open($path, 'r', function ($file) use ($cb, $startCb, $path, $pri, $outfd, $offset, $length) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
 			}
-			$file->sendfile($outfd, $cb, $offset, $length, $pri);
+			$file->sendfile($outfd, $cb, $startCb, $offset, $length, $pri);
 
 		}, $pri);
 	}

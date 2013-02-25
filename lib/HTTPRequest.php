@@ -109,32 +109,35 @@ class HTTPRequest extends Request {
 	}
 	
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
-		$req = $this;
-		if ($req->state === self::STATE_FINISHED) {
+		if ($this->state === self::STATE_FINISHED) {
 			return;
 		}
 		try {
-			$req->header('Content-Type: ' . MIME::get($path));
+			$this->header('Content-Type: ' . MIME::get($path));
 		} catch (RequestHeadersAlreadySent $e) {}
-		if ($req->upstream->sendfileCap) {
-			$req->ensureSentHeaders();
-			$req->upstream->onWriteOnce(function($conn) use ($req, $path, $cb, $pri) {
-				FS::sendfile($req->upstream->fd, $path, $cb, 0, null, $pri);
-			});
+		if ($this->upstream->sendfileCap) {
+			FS::sendfile($this->upstream->fd, $path, $cb, function ($file, $length, $handler) {
+				try {
+					$this->header('Content-Length: ' . $length);
+					$this->ensureSentHeaders();
+					$this->upstream->onWriteOnce(function($conn) use ($handler, $file) {
+						$handler($file);
+					});
+					return true;
+				} catch (RequestHeadersAlreadySent $e) {}
+			}, 0, null, $pri);
 			return;
 		}
 		$first = true;
-		FS::readfileChunked($path, $cb,
-			function($file, $chunk) use ($req, &$first) { // readed chunk
-				if ($first) {
-					try {
-						$req->header('Content-Length: ' . $file->stat['size']);
-					} catch (RequestHeadersAlreadySent $e) {}
-					$first = false;
-				}
-				$req->out($chunk);
+		FS::readfileChunked($path, $cb, function($file, $chunk) use (&$first) { // readed chunk
+			if ($first) {
+				try {
+					$this->header('Content-Length: ' . $file->stat['size']);
+				} catch (RequestHeadersAlreadySent $e) {}
+				$first = false;
 			}
-		);
+			$req->out($chunk);
+		});
 	}
 	
 	/**
@@ -642,9 +645,11 @@ class HTTPRequest extends Request {
 	}
 	public function writeUploadChunk($chunk, $last = false) {
 		if ($this->mpartcurrent['error'] !== UPLOAD_ERR_OK) {
+			Daemon::log('writeUploadChunk(): drop the chunk');
 			// just drop the chunk
 			return;
 		}
+		Daemon::log('writeUploadChunk(): '. (!$last ? 'not' : '') . ' last ');
 		$this->upstream->freezeInput();
 		$this->frozenInput = true;
 		$this->mpartcurrent['fp']->write($chunk, function ($fp, $result) {
@@ -770,7 +775,7 @@ class HTTPRequest extends Request {
 					($this->mpartstate === self::MPSTATE_UPLOAD)
 					&& isset($this->mpartcondisp['filename'])
 				) {
-
+					Daemon::log('File end. Error:'.$this->mpartcurrent['error']);
 					if (!isset($this->mpartcurrent['fp'])) {
 						return; // fd is not ready yet, interrupt
 					}

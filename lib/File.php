@@ -258,7 +258,7 @@ class File {
 		return true;
 	}
 
-	public function sendfile($outfd, $cb, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
+	public function sendfile($outfd, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -273,8 +273,7 @@ class File {
 		}
 		static $chunkSize = 1024;
 		$ret = true;
-		$holder = new stdClass;
-		$holder->handler = function ($file, $sent) use (&$ret, $outfd, $cb, $holder, &$offset, &$length, $pri, $chunkSize) {
+		$handler = function ($file, $sent = -1) use (&$ret, $outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
 			if (!$ret) {
 				call_user_func($cb, $file, false);
 				return;
@@ -292,15 +291,27 @@ class File {
 				call_user_func($cb, $file, false);
 				return;
 			}
-			$ret = eio_sendfile($outfd, $file->fd, intval($offset), min($chunkSize, $length), $pri, $holder->handler, $file);
+			$ret = eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $file);
 		};
 		if ($length !== null) {
-			call_user_func($holder->handler, $this, -1);
+			if ($startCb !== null) {
+				if (!call_user_func($startCb, $file, $length, $handler)) {
+					$handler($this);
+				}
+			} else {
+				$handler($this);
+			}
 			return;
 		}
-		$this->statRefresh(function ($file, $stat) use ($holder, &$length) {
+		$this->statRefresh(function ($file, $stat) use ($startCb, $handler, &$length) {
 			$length = $stat['size'];
-			call_user_func($holder->handler, $file, -1);
+			if ($startCb !== null) {
+				if (!call_user_func($startCb, $file, $length, $handler)) {
+					$handler($file);
+				}
+			} else {
+				$handler($file);
+			}
 		}, $pri);
 	}
 
