@@ -39,7 +39,6 @@ class Request {
 		if ($this->priority !== null) {
 			$this->ev = $this->priority;
 		}
-		$this->ev->add(0);				
 		$this->preinit($parent);
 		$this->onWakeup();
 		$this->init();
@@ -69,10 +68,8 @@ class Request {
 				$this->finish();
 				return;
 			}
-			if (!$this->checkIfReady()) {
-				if ($this->state === Request::STATE_FINISHED) {
-					$this->free();
-				}
+			if ($this->state === Request::STATE_FINISHED) { // @TODO: ???
+				$this->free();
 				return;
 			}
 			$this->state = Request::STATE_RUNNING;
