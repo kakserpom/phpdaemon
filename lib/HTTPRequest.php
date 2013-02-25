@@ -141,25 +141,28 @@ class HTTPRequest extends Request {
 	}
 	
 	/**
-	 * Called by call() to check if ready
+	 * Called to check if ready
 	 * @todo protected?
 	 * @return void
 	 */
 	public function checkIfReady() {
-		if (
-			!$this->attrs->params_done
-			|| !$this->attrs->stdin_done
-		) {
+		if (!$this->attrs->params_done || !$this->attrs->stdin_done) {
 			return false;
-		} else {
-			if (isset($this->appInstance->passphrase)) {
-				if (
-					!isset($this->attrs->server['PASSPHRASE'])
-					|| ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
-				) {
-					$this->finish();
-				}
+		}
+		if (isset($this->appInstance->passphrase)) {
+			if (
+				!isset($this->attrs->server['PASSPHRASE'])
+				|| ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
+			) {
+				$this->finish();
 			}
+			return false;
+		}
+		if ($this->frozenInput) {
+			return false;
+		}
+		if ($this->sleepTime === 0) {
+			$this->wakeup();
 		}
 		return true;
 	}
@@ -311,11 +314,9 @@ class HTTPRequest extends Request {
 		) {
 			$this->attrs->stdin_done = true;
 			$this->postPrepare();
-			if ($this->sleepTime === 0) {
-				$this->wakeup();
-			}
 		}
 		$this->parseStdin();
+		$this->checkIfReady();
 	}
 
 	public function ensureSentHeaders() {
@@ -645,14 +646,15 @@ class HTTPRequest extends Request {
 	}
 	public function writeUploadChunk($chunk, $last = false) {
 		if ($this->mpartcurrent['error'] !== UPLOAD_ERR_OK) {
-			Daemon::log('writeUploadChunk(): drop the chunk');
 			// just drop the chunk
 			return;
 		}
-		Daemon::log('writeUploadChunk(): '. (!$last ? 'not' : '') . ' last ');
 		$this->upstream->freezeInput();
 		$this->frozenInput = true;
-		$this->mpartcurrent['fp']->write($chunk, function ($fp, $result) {
+		$this->mpartcurrent['fp']->write($chunk, function ($fp, $result) use ($last) {
+			if ($last) {
+				unset($this->mpartcurrent['fp']);
+			}
 			$this->upstream->unfreezeInput();
 			$this->frozenInput = false;
 			$this->stdin('');
@@ -668,6 +670,9 @@ class HTTPRequest extends Request {
 			return;
 		}
 		start:
+		if ($this->frozenInput) {
+			return;
+		}
 		if ($this->mpartstate === self::MPSTATE_SEEKBOUNDARY) {
 			// seek to the nearest boundary
 			if (($p = strpos($this->attrs->stdinbuf, $ndl = '--' . $this->boundary . "\r\n", $this->mpartoffset)) !== false) {
@@ -745,10 +750,6 @@ class HTTPRequest extends Request {
 					$this->mpartstate = self::MPSTATE_BODY;
 				}
 
-				if ($this->frozenInput) {
-					return;
-				}
-
 				goto start;
 			}
 		}
@@ -762,6 +763,10 @@ class HTTPRequest extends Request {
 				|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== false)
 			) { // we have the whole Part in buffer
 				$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
+				$this->mpartoffset = $p;
+
+				$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
+				$this->mpartoffset = 0;
 				if (
 					($this->mpartstate === self::MPSTATE_BODY)
 					&& isset($this->mpartcondisp['name'])
@@ -775,25 +780,21 @@ class HTTPRequest extends Request {
 					($this->mpartstate === self::MPSTATE_UPLOAD)
 					&& isset($this->mpartcondisp['filename'])
 				) {
-					Daemon::log('File end. Error:'.$this->mpartcurrent['error']);
 					if (!isset($this->mpartcurrent['fp'])) {
 						return; // fd is not ready yet, interrupt
 					}
 					$this->writeUploadChunk($chunk, true);
 					$this->mpartcurrent['size'] += strlen($chunk);
 				}
+
 				if ($ndl === "\r\n--" . $this->boundary . "--\r\n") { // end of whole message
-					$this->mpartoffset = $p + strlen($ndl);
+					$this->mpartoffset += strlen($ndl);
 					$this->mpartstate = self::MPSTATE_SEEKBOUNDARY;
 					$this->stdin_done = true;
 				} else {
-					$this->mpartoffset = $p;
 					$this->mpartstate = self::MPSTATE_HEADERS; // let's read the next part
 					goto start;
 				}
-
-				$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-				$this->mpartoffset = 0;
 			} else { // we have only piece of Part in buffer
 				$p = strlen($this->attrs->stdinbuf) - strlen($ndl);
 				if ($p > 0) {
@@ -811,7 +812,6 @@ class HTTPRequest extends Request {
 						if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
 							return; // fd is not ready yet, interrupt
 						}
-						$this->writeUploadChunk($chunk);
 						$this->mpartcurrent['size'] += $p - $this->mpartoffset;
 
 						if ($this->upstream->pool->config->uploadmaxsize->value < $this->mpartcurrent['size']) {
@@ -821,6 +821,8 @@ class HTTPRequest extends Request {
 						if ($this->maxFileSize && ($this->maxFileSize < $this->mpartcurrent['size'])) {
 							$this->mpartcurrent['error'] = UPLOAD_ERR_FORM_SIZE;
 						}
+
+						$this->writeUploadChunk($chunk);
 					}
 
 					$this->mpartoffset = $p;
