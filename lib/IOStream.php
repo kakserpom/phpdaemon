@@ -1,7 +1,6 @@
 <?php
-// @todo Make it more abstract
 /**
- * IOStram
+ * IOStream
  * 
  * @package Core
  *

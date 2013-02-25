@@ -774,10 +774,7 @@ class HTTPRequest extends Request {
 					if (!isset($this->mpartcurrent['fp'])) {
 						return; // fd is not ready yet, interrupt
 					}
-					if ($this->mpartcurrent['error'] == UPLOAD_ERR_OK) {
-						$this->writeUploadChunk($chunk, true);
-					}
-
+					$this->writeUploadChunk($chunk, true);
 					$this->mpartcurrent['size'] += strlen($chunk);
 				}
 				if ($ndl === "\r\n--" . $this->boundary . "--\r\n") { // end of whole message
@@ -809,9 +806,7 @@ class HTTPRequest extends Request {
 						if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
 							return; // fd is not ready yet, interrupt
 						}
-						if ($this->mpartcurrent['error'] === UPLOAD_ERR_OK) {
-							$this->writeUploadChunk($chunk);
-						}
+						$this->writeUploadChunk($chunk);
 						$this->mpartcurrent['size'] += $p - $this->mpartoffset;
 
 						if ($this->upstream->pool->config->uploadmaxsize->value < $this->mpartcurrent['size']) {
