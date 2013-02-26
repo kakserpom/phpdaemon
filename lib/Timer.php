@@ -35,6 +35,7 @@ class Timer {
 	}
 	public function eventCall($arg) {
 		try {
+			//Daemon::log('cb - '.Debug::zdump($this->cb));
 			call_user_func($this->cb, $this);
 		} catch (Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);

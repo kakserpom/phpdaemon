@@ -44,7 +44,7 @@ class MongoClientAsyncCursor {
 	 */
 	public function destroy() {
 		$this->destroyed = true;
-		unset($this->conn->pool->cursors[$this->id]);
+		unset($this->conn->cursors[$this->id]);
 	
 		return true;
 	}

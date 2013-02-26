@@ -42,6 +42,8 @@ class ExampleWithMemcacheRequest extends HTTPRequest {
 		
 			$memcache->stats(function($memcache) use ($name, $job) { // calling 'stats'
 
+Daemon::log(Debug::dump($memcache->result));
+
 				$job->setResult($name, $memcache->result); // setting job result
 
 			});

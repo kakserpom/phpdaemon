@@ -49,6 +49,23 @@ class Debug {
 
 		return $dump;
 	}
+
+	/**
+	 * Wrapper of debug_zval_dump
+	 * @return string Result of debug_zval_dump()
+	 */
+	public static function zdump() {
+		ob_start();
+
+		foreach (func_get_args() as $v) {
+			debug_zval_dump($v);
+		}
+
+		$dump = ob_get_contents();
+		ob_end_clean();
+
+		return $dump;
+	}
 	
 	/**
 	 * Returns textual backtrace.

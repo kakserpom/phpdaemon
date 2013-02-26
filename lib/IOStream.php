@@ -78,7 +78,8 @@ abstract class IOStream {
 
 	public function setFd($fd) {
 		$this->fd = $fd;
-		if (!$this->fd) {
+		if ($this->fd === false) {
+			$this->finish();
 			return;
 		}
 		$flags = is_resource($fd) ? 0 : EventBufferEvent::OPT_CLOSE_ON_FREE;
