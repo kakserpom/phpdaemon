@@ -63,6 +63,7 @@ class Daemon {
 	public static $appResolverPath;
 	public static $restrictErrorControl = false;
 	public static $defaultErrorLevel;
+	public static $runworkerMode = false; // @TODO: refactoring
 
 	public static $obInStack = false; // whether if the current execution stack contains ob-filter
 	/**
@@ -495,6 +496,16 @@ class Daemon {
 		}
 
 		return $thread->pid;
+	}
+
+	public static function runWorker() {
+		Daemon::$runworkerMode = true;
+		$thread = new Daemon_WorkerThread;
+
+		Daemon::$appResolver = require Daemon::$appResolverPath;
+
+		$thread->run();
+		$thread->shutdown();
 	}
 
 	/**

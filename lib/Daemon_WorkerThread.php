@@ -40,7 +40,7 @@ class Daemon_WorkerThread extends Thread {
 		if (Daemon::$process instanceof Daemon_MasterThread) {
 			Daemon::$process->unregisterSignals();
 		}
-		if (Daemon::$process->eventBase) {
+		if (Daemon::$process && Daemon::$process->eventBase) {
 			Daemon::$process->eventBase->reinit();
 			$this->eventBase = Daemon::$process->eventBase;
 		} else {
@@ -95,7 +95,9 @@ class Daemon_WorkerThread extends Thread {
 		Timer::add(function($event) {
 			$self = Daemon::$process;
 
-			$self->IPCManager->ensureConnection();
+			if (!Daemon::$runworkerMode) {
+				$self->IPCManager->ensureConnection();
+			}
 
 			$self->breakMainLoopCheck();
 			if ($self->breakMainLoop) {

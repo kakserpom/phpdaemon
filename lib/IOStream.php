@@ -78,6 +78,9 @@ abstract class IOStream {
 
 	public function setFd($fd) {
 		$this->fd = $fd;
+		if (!$this->fd) {
+			return;
+		}
 		$flags = is_resource($fd) ? 0 : EventBufferEvent::OPT_CLOSE_ON_FREE;
 		//$flags =| EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
 		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
@@ -152,7 +155,7 @@ abstract class IOStream {
 	}
 
 	public function readLine($eol = null) {
-		return $this->bev->input->readLine($eol ?: $this->EOLS);
+		return $this->bev->getInput()->readLine($eol ?: $this->EOLS);
 	}
 
 	public function readFromBufExact($n) { // @TODO: deprecate
@@ -172,7 +175,7 @@ abstract class IOStream {
 		if ($n === 0) {
 			return '';
 		}
-		if ($this->bev->input->length < $n) {
+		if ($this->bev->getInput()->length < $n) {
 			return false;
 		} else {
 			return $this->read($n);
@@ -196,7 +199,7 @@ abstract class IOStream {
 	 */
 	public function freezeInput($at_front = false) {
 		if (isset($this->bev)) {
-			return $this->bev->input->freeze($at_front);
+			return $this->bev->getInput()->freeze($at_front);
 		}
 		return false;
 	}
@@ -208,7 +211,7 @@ abstract class IOStream {
 	 */
 	public function unfreezeInput($at_front = false) {
 		if (isset($this->bev)) {
-			return $this->bev->input->unfreeze($at_front);
+			return $this->bev->getInput()->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -220,7 +223,7 @@ abstract class IOStream {
 	 */
 	public function freezeOutput($at_front = true) {
 		if (isset($this->bev)) {
-			return $this->bev->output->unfreeze($at_front);
+			return $this->bev->getOutput()->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -232,7 +235,7 @@ abstract class IOStream {
 	 */
 	public function unfreezeOutput($at_front = true) {
 		if (isset($this->bev)) {
-			return $this->bev->output->unfreeze($at_front);
+			return $this->bev->getOutput()->unfreeze($at_front);
 		}
 		return false;
 	}

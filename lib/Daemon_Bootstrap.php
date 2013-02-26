@@ -12,7 +12,7 @@ class Daemon_Bootstrap {
 	public static $pid;
 
 	private static $commands = array(
-		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log'
+		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker'
 	);
 
 	/**
@@ -285,9 +285,17 @@ class Daemon_Bootstrap {
 				exit(6);
 			}
 		}
+		elseif ($runmode === 'runworker') {
+			if ($error === FALSE) {
+				Daemon_Bootstrap::runworker();
+			}
+			else {
+				exit(6);
+			}
+		}
 		elseif (
-			$runmode == 'status' 
-			|| $runmode == 'fullstatus'
+			$runmode === 'status' 
+			|| $runmode === 'fullstatus'
 		) {
 			$status = Daemon_Bootstrap::$pid && Thread::ifExistsByPid(Daemon_Bootstrap::$pid);
 			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon::$config->pidfile->value . ").\n";
@@ -421,7 +429,7 @@ class Daemon_Bootstrap {
 	}
 
 	private static function printUsage() {
-		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|help) ...\n";
+		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
 	}
 
 	private static function printHelp() {
@@ -452,7 +460,7 @@ class Daemon_Bootstrap {
 	}
 	
 	/**
-	 * Start script.
+	 * Start master.
 	 * @return void
 	 */
 	public static function start() {
@@ -467,6 +475,16 @@ class Daemon_Bootstrap {
 		Daemon::init();
 		$pid = Daemon::spawnMaster();
 		file_put_contents(Daemon::$config->pidfile->value, $pid);
+	}
+
+	/**
+	 * Runworker.
+	 * @return void
+	 */
+	public static function runworker() {
+		Daemon::log('PLEASE USE runworker COMMAND ONLY FOR DEBUGGING PURPOSES.');
+		Daemon::init();
+		Daemon::runWorker();
 	}
 
 	/**

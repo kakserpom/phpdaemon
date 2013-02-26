@@ -59,32 +59,31 @@ class FileReaderRequest extends HTTPRequest {
 			$this->finish();
 			return;
 		}
-		$req = $this;
-		$job = new ComplexJob(function($job) use ($req) {
-			$req->wakeup();
+		$job = new ComplexJob(function($job) {
+			$this->wakeup();
 		});
 		$this->job = $job;
 		$this->sleep(5, true);
-		$req->attrs->server['FR_PATH'] = FS::sanitizePath($req->attrs->server['FR_PATH']);
-		$job('stat', function($name, $job) use ($req) {
-			FS::stat($req->attrs->server['FR_PATH'], function($path, $stat) use ($job, $req) {
+		$this->attrs->server['FR_PATH'] = FS::sanitizePath($this->attrs->server['FR_PATH']);
+		$job('stat', function($name, $job) {
+			FS::stat($this->attrs->server['FR_PATH'], function($path, $stat) use ($job) {
 				if ($stat === -1) {
-					$req->fileNotFound();
+					$this->fileNotFound();
 					$job->setResult('stat', false);
 					return;
 				}
 				if ($stat['type'] === 'd') {
 					if (!FS::$supported) {
-						$req->file(rtrim($path,'/') . '/index.html');
+						$this->file(rtrim($path,'/') . '/index.html');
 					}
-					else $job('readdir', function ($name, $job) use ($path, $req) {
-						FS::readdir(rtrim($path,'/'), function ($path, $dir) use ($job, $req) {
+					else $job('readdir', function ($name, $job) use ($path) {
+						FS::readdir(rtrim($path,'/'), function ($path, $dir) use ($job) {
 							$found = false;
 							if (is_array($dir)) {
 								foreach ($dir['dents'] as $file) {
 									if ($file['type'] === EIO_DT_REG) { // is file
-										if (in_array($file['name'], $req->appInstance->indexFiles)) {
-											$req->file($path . '/' . $file['name']);
+										if (in_array($file['name'], $this->appInstance->indexFiles)) {
+											$this->file($path . '/' . $file['name']);
 											$found = true;
 											break;
 										}
@@ -92,17 +91,17 @@ class FileReaderRequest extends HTTPRequest {
 								}
 							}
 							if (!$found) {
-								if (isset($req->attrs->server['FR_AUTOINDEX']) && $req->attrs->server['FR_AUTOINDEX']) {
-									$req->autoindex($path, $dir);
+								if (isset($this->attrs->server['FR_AUTOINDEX']) && $this->attrs->server['FR_AUTOINDEX']) {
+									$this->autoindex($path, $dir);
 								} else {
-									$req->fileNotFound();
+									$this->fileNotFound();
 								}
 							}
 							$job->setResult('readdir');
 						},  EIO_READDIR_STAT_ORDER | EIO_READDIR_DENTS);
 					});
 				} elseif ($stat['type'] == 'f') {
-					$req->file($path);
+					$this->file($path);
 				}
 				$job->setResult('stat', $stat);
 			});
@@ -110,12 +109,11 @@ class FileReaderRequest extends HTTPRequest {
 		$job();	
 	}
 	public function fileNotFound() {
-		$req = $this;
 		try {
-			$req->header('404 Not Found');
-			$req->header('Content-Type: text/html');
+			$this->header('404 Not Found');
+			$this->header('Content-Type: text/html');
 		} catch (RequestHeadersAlreadySent $e ) {}
-		$req->out('File not found.');
+		$this->out('File not found.');
 	}
 	public function file($path) {
 		if (!FS::$supported) {
@@ -123,10 +121,9 @@ class FileReaderRequest extends HTTPRequest {
 			$this->wakeup();
 			return;
 		}
-		$req = $this;
 		$job = $this->job;
-		$job('readfile', function ($name, $job) use ($req, $path) {
-			$req->sendfile($path, function($file, $success) use ($job, $name) {
+		$job('readfile', function ($name, $job) use ($path) {
+			$this->sendfile($path, function($file, $success) use ($job, $name) {
 				$job->setResult($name);
 			});
 		});

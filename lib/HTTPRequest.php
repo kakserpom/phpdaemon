@@ -119,12 +119,12 @@ class HTTPRequest extends Request {
 			FS::sendfile($this->upstream->fd, $path, $cb, function ($file, $length, $handler) {
 				try {
 					$this->header('Content-Length: ' . $length);
-					$this->ensureSentHeaders();
-					$this->upstream->onWriteOnce(function($conn) use ($handler, $file) {
-						$handler($file);
-					});
-					return true;
 				} catch (RequestHeadersAlreadySent $e) {}
+				$this->ensureSentHeaders();
+				$this->upstream->onWriteOnce(function($conn) use ($handler, $file) {
+					$handler($file);
+				});
+				return true;
 			}, 0, null, $pri);
 			return;
 		}

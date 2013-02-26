@@ -61,8 +61,11 @@ class ExampleRequest extends HTTPRequest {
 	 * @return integer Status.
 	 */
 	public function run() {
-		$this->header('Content-Type: text/html');
-		$this->setcookie('testcookie', '1');
+		try {
+			$this->header('Content-Type: text/html');
+			$this->setcookie('testcookie', '1');
+		} catch (RequestHeadersAlreadySent $e) {
+		}
 		$this->registerShutdownFunction(function() {
 ?></html><?php
 		});
