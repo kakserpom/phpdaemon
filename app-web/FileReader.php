@@ -175,7 +175,7 @@ div.foot { font: 90% monospace; color: #787878; padding-top: 4px;}
 		<?php } ?>
 </tbody> 
 </table> 
-</div> <?php if ($this->upstream->config->expose->value) {?><div class="foot">phpDaemon/<?php echo Daemon::$version; ?></div><?php } ?>
+</div> <?php if ($this->upstream->pool->config->expose->value) {?><div class="foot">phpDaemon/<?php echo Daemon::$version; ?></div><?php } ?>
 </body> 
 </html><?php
 	}

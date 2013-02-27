@@ -104,14 +104,21 @@ class Daemon {
 	}
 
 	public static function callAutoGC() {
+		if (self::checkAutoGC()) {
+			gc_collect_cycles();
+		}
+	}
+
+	public static function checkAutoGC() {
 		if (
 			(Daemon::$config->autogc->value > 0) 
 			&& (Daemon::$process->counterGC > 0) 
 			&& (Daemon::$process->counterGC >= Daemon::$config->autogc->value)
 		) {
-			gc_collect_cycles();
 			Daemon::$process->counterGC = 0;
+			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -501,9 +508,6 @@ class Daemon {
 	public static function runWorker() {
 		Daemon::$runworkerMode = true;
 		$thread = new Daemon_WorkerThread;
-
-		Daemon::$appResolver = require Daemon::$appResolverPath;
-
 		$thread->run();
 		$thread->shutdown();
 	}

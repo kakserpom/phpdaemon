@@ -32,11 +32,13 @@ class Daemon_WorkerThread extends Thread {
 	public $instancesCount = [];
 	public $connection;
 	public $counterGC = 0;
+	public $callbacks;
 	/**
 	 * Runtime of Worker process.
 	 * @return void
 	 */
 	public function run() {
+		$this->callbacks = new StackCallbacks;
 		if (Daemon::$process instanceof Daemon_MasterThread) {
 			Daemon::$process->unregisterSignals();
 		}
@@ -75,7 +77,11 @@ class Daemon_WorkerThread extends Thread {
 		FS::init();
 		FS::initEvent();
 		Daemon::openLogs();
-
+	
+		if (Daemon::$runworkerMode) {
+			Daemon::$appResolver = require Daemon::$appResolverPath;
+			Daemon::$appResolver->preload(true);
+		}
 
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		
@@ -93,19 +99,23 @@ class Daemon_WorkerThread extends Thread {
 		$this->setState(Daemon::WSTATE_IDLE);
 
 		Timer::add(function($event) {
-			$self = Daemon::$process;
 
 			if (!Daemon::$runworkerMode) {
-				$self->IPCManager->ensureConnection();
+				$this->IPCManager->ensureConnection();
 			}
 
-			$self->breakMainLoopCheck();
-			if ($self->breakMainLoop) {
-				$self->eventBase->exit();
+			$this->breakMainLoopCheck();
+			if ($this->breakMainLoop) {
+				$this->eventBase->exit();
 				return;
 			}
 
-			Daemon::callAutoGC();
+			if (Daemon::checkAutoGC()) {
+				$this->callbacks->push(function($thread) {
+					gc_collect_cycles();
+				});
+				$this->eventBase->exit();
+			}
 
 			$event->timeout();
 		}, 1e6 * 1,	'breakMainLoopCheck');
@@ -127,6 +137,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 
 		while (!$this->breakMainLoop) {
+			$this->callbacks->executeAll($this);
 			if (!$this->eventBase->dispatch()) {
 				break;
 			}

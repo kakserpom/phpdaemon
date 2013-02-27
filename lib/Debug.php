@@ -50,6 +50,15 @@ class Debug {
 		return $dump;
 	}
 
+	public static function refcount(&$var) {
+    	ob_start();
+    	debug_zval_dump(array(&$var));
+    	$c = preg_replace("/^.+?refcount\((\d+)\).+$/ms", '$1', substr(ob_get_contents(), 24), 1) - 4;
+    	ob_end_clean();
+    	return $c;
+	}
+
+
 	/**
 	 * Wrapper of debug_zval_dump
 	 * @return string Result of debug_zval_dump()

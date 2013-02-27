@@ -78,13 +78,15 @@ abstract class IOStream {
 
 	public function setFd($fd) {
 		$this->fd = $fd;
+		$class = get_class($this);
 		if ($this->fd === false) {
 			$this->finish();
 			return;
 		}
-		$flags = is_resource($fd) ? 0 : EventBufferEvent::OPT_CLOSE_ON_FREE;
-		//$flags =| EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
-		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
+		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, 
+			EventBufferEvent::OPT_CLOSE_ON_FREE /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
+			[$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']
+		);
 		if (!$this->bev) {
 			return;
 		}
@@ -95,7 +97,9 @@ abstract class IOStream {
 			$this->bev->setTimeouts($this->timeout, $this->timeout);
 		}
 		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
-		$this->bev->enable(Event::WRITE | Event::TIMEOUT | Event::PERSIST);
+		if (!$this->bev->enable(Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
+			Daemon::log(get_class($this). ' first enable() returned false');
+		}
 		if ($this->bevConnect && ($this->fd === null)) {
 			//$this->bev->connect($this->addr, false);
 			$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
@@ -156,7 +160,7 @@ abstract class IOStream {
 	}
 
 	public function readLine($eol = null) {
-		return $this->bev->getInput()->readLine($eol ?: $this->EOLS);
+		return $this->bev->input->readLine($eol ?: $this->EOLS);
 	}
 
 	public function readFromBufExact($n) { // @TODO: deprecate
@@ -176,7 +180,7 @@ abstract class IOStream {
 		if ($n === 0) {
 			return '';
 		}
-		if ($this->bev->getInput()->length < $n) {
+		if ($this->bev->input->length < $n) {
 			return false;
 		} else {
 			return $this->read($n);
@@ -200,7 +204,7 @@ abstract class IOStream {
 	 */
 	public function freezeInput($at_front = false) {
 		if (isset($this->bev)) {
-			return $this->bev->getInput()->freeze($at_front);
+			return $this->bev->input->freeze($at_front);
 		}
 		return false;
 	}
@@ -212,7 +216,7 @@ abstract class IOStream {
 	 */
 	public function unfreezeInput($at_front = false) {
 		if (isset($this->bev)) {
-			return $this->bev->getInput()->unfreeze($at_front);
+			return $this->bev->input->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -224,7 +228,7 @@ abstract class IOStream {
 	 */
 	public function freezeOutput($at_front = true) {
 		if (isset($this->bev)) {
-			return $this->bev->getOutput()->unfreeze($at_front);
+			return $this->bev->output->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -236,7 +240,7 @@ abstract class IOStream {
 	 */
 	public function unfreezeOutput($at_front = true) {
 		if (isset($this->bev)) {
-			return $this->bev->getOutput()->unfreeze($at_front);
+			return $this->bev->output->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -301,9 +305,6 @@ abstract class IOStream {
 		}
 		$this->finished = true;
 		$this->onFinish();
-		if ($this->pool) {
-			$this->pool->detach($this);
-		}
 		if (!$this->writing) {
 			$this->close();
 		}
@@ -332,9 +333,14 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		if ($this->bev instanceof EventBufferEvent) { // @TODO: refactoring of this check
+		if (isset($this->bev)) { // @TODO: refactoring of this check
+			//Daemon::log(get_class($this) . '-> free(' . spl_object_hash($this) . ')');
 			$this->bev->free();
 			$this->bev = null;
+			Daemon::$process->eventBase->stop();
+		}
+		if ($this->pool) {
+			$this->pool->detach($this);
 		}
 	}
 	
@@ -398,7 +404,9 @@ abstract class IOStream {
 			}
 			$this->alive = true;
 			if (isset($this->bev)) {
-				$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST);
+				if (!$this->bev->enable(Event::READ)) {
+					Daemon::log(get_class($this). ' second enable() returned false');
+				}
 			}
 			try {			
 				$this->onReady();
@@ -428,16 +436,12 @@ abstract class IOStream {
 		}
   		elseif ($events & (EventBufferEvent::ERROR | EventBufferEvent::EOF)) {
 			try {
-				$this->close();
 				if ($this->finished) {
 					return;
 				}
 				$this->finished = true;
 				$this->onFinish();
-				if ($this->pool) {
-					$this->pool->detach($this);
-				}
-				Daemon::$process->eventBase->exit();
+				$this->close();
 			} catch (Exception $e) {
 				Daemon::uncaughtExceptionHandler($e);
 			}
@@ -466,8 +470,6 @@ abstract class IOStream {
 	}
 
 	public function __destruct() {
-		if (is_resource($this->fd)) {
-			socket_close($this->fd);
-		}
+		//Daemon::log(get_class($this) . '-> __destruct()');
 	}
 }
