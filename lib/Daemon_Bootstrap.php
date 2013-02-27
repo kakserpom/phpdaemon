@@ -157,7 +157,7 @@ class Daemon_Bootstrap {
 		}
 
 		$eventVer = '1.2.6';
-		if (!Daemon::loadModuleIfAbsent('event', $eventVer .'-beta')) {
+		if (!Daemon::loadModuleIfAbsent('event', $eventVer .'-alpha')) {
 			Daemon::log('[EMERG] event extension >= ' . $eventVer . ' not found (or OUTDATED). You have to install it. `pecl install http://pecl.php.net/get/event-' . $eventVer . '.tgz`');
 			$error = true;
 		}

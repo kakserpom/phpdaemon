@@ -292,7 +292,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 							if (isset($this->assertions[$action_id])) {
 								$this->packets[$action_id][] = $packet;
 								
-								if (count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) == count($this->assertions[$action_id])) {
+								if (count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) === count($this->assertions[$action_id])) {
 									if (is_callable($this->callbacks[$action_id])) {
 										call_user_func($this->callbacks[$action_id], $this, $this->packets[$action_id]);
 										unset($this->callbacks[$action_id]);
