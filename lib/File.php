@@ -14,6 +14,7 @@ class File {
 	public $fdCacheKey;
 	public $append;
 	public $path;
+	public $writing = false;
 
 	/**
 	 * File constructor
