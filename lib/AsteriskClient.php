@@ -17,6 +17,18 @@ class AsteriskClient extends NetworkClient {
 	 */
 	public $amiVersions = [];
 	
+
+	/**
+	 * Setting default config options
+	 * Overriden from NetworkClient::getConfigDefaults
+	 * @return array|false
+	 */
+	protected function getConfigDefaults() {
+		return [
+			'authtype'	=> 'md5',
+			'port'		=> 5280,
+		];
+	}
 }
 
 /**
@@ -40,6 +52,8 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	const INPUT_STATE_END_OF_PACKET = 1;
 	const INPUT_STATE_PROCESSING    = 2;
 	
+	public $EOL = "\r\n";
+
 	/**
 	 * The username to access the interface.
 	 * @var string
@@ -51,12 +65,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @var string
 	 */
 	public $secret;
-	
-	/**
-	 * Enabling the ability to handle encrypted authentication if set to 'md5'.
-	 * @var string|null
-	 */
-	public $authtype = 'md5';
 	
 	/**
 	 * Connection's state.
@@ -221,6 +229,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		}
 				
 		while(($line = $this->readline()) !== null) {
+			//Daemon::log('>>> '.$line);
 			if ($line === '') {
 				$this->instate = self::INPUT_STATE_END_OF_PACKET;
 				$packet =& $this->packets[$this->cnt];
@@ -317,7 +326,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			return;
 		}
 
-		if (stripos($this->authtype, 'md5') !== false) {
+		if ($this->pool->config->authtype->value === 'md5') {
 			$this->challenge(function($conn, $challenge) {
 				$packet = "Action: Login\r\n"
 				. "AuthType: MD5\r\n"

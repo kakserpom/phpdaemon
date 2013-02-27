@@ -5,7 +5,7 @@
  * @see    http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76
  * @description Deprecated websocket protocol (IETF drafts 'hixie-76' or 'hybi-00')
  */
-
+// @TODO: refactoring
 class WebSocketProtocolVE extends WebSocketProtocol {
     const STRING = 0x00;
     const BINARY = 0x80;
@@ -141,7 +141,7 @@ class WebSocketProtocolVE extends WebSocketProtocol {
             }
             else {
             	if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE) {
-                    if ($this->connection->pool->maxAllowedPacket <= $p - 1) {                   {
+                    if ($this->connection->pool->maxAllowedPacket <= $p - 1) {
                         // Too big packet
                         $this->connection->finish() ;
                         return FALSE ;
@@ -153,8 +153,7 @@ class WebSocketProtocolVE extends WebSocketProtocol {
                     
                 }
                 else {
-                    if ($this->connection->pool->maxAllowedPacket <= strlen($this->connection->buf))
-                    {
+                    if ($this->connection->pool->maxAllowedPacket <= strlen($this->connection->buf)) {
                         // Too big packet
                         $this->connection->finish() ;
                         return FALSE ;
