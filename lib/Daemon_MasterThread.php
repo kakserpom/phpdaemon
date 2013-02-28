@@ -18,6 +18,8 @@ class Daemon_MasterThread extends Thread {
 	public $ipcthreads;
 	public $eventBase;
 	public $eventBaseConfig;
+	public $lastMpmActionTs;
+	public $minMpmActionInterval = 1; // in seconds
 	
 	/**
 	 * Runtime of Master process
@@ -54,8 +56,6 @@ class Daemon_MasterThread extends Thread {
 			Daemon::$config->maxworkers->value
 		));
 		$this->timerCb = function($event) use (&$cbs) {
-			$self = Daemon::$process;
-
 			static $c = 0;
 			
 			++$c;
@@ -65,49 +65,16 @@ class Daemon_MasterThread extends Thread {
 			}
 				
 			if (($c % 10 == 0)) {
-				$self->workers->removeTerminated(true);
-				$self->ipcthreads->removeTerminated(true);
+				$this->workers->removeTerminated(true);
+				$this->ipcthreads->removeTerminated(true);
 				gc_collect_cycles();
 			} else {
-				$self->workers->removeTerminated();
-				$self->ipcthreads->removeTerminated();
+				$this->workers->removeTerminated();
+				$this->ipcthreads->removeTerminated();
 			}
 			
-			if (
-				isset(Daemon::$config->mpm->value) 
-				&& is_callable(Daemon::$config->mpm->value)
-			) {
-				call_user_func(Daemon::$config->mpm->value);
-			} else {
-				// default MPM
-				$state = Daemon::getStateOfWorkers($self);
-				
-				if ($state) {
-					$upToMinWorkers = Daemon::$config->minworkers->value - $state['alive'];
-					$upToMaxWorkers = Daemon::$config->maxworkers->value - $state['alive'];
-					$upToMinSpareWorkers = Daemon::$config->minspareworkers->value - $state['idle'];
-					if ($upToMinSpareWorkers > $upToMaxWorkers) {
-						$upToMinSpareWorkers = $upToMaxWorkers;
-					}
-					$n = max($upToMinSpareWorkers, $upToMinWorkers);
-
-					if ($n > 0) {
-						Daemon::log('Spawning ' . $n . ' worker(s).');
-						$self->spawnWorkers($n);
-						if ($self->eventBase) {
-							$self->eventBase->stop();
-						}
-					}
-
-					$downToMaxSpareWorkers = $state['idle'] - Daemon::$config->maxspareworkers->value;
-					$downToMaxWorkers = $state['alive'] - Daemon::$config->maxworkers->value;
-					$n = max($downToMaxSpareWorkers, $downToMaxWorkers);
-					
-					if ($n > 0) {
-						Daemon::log('Stopping ' . $n . ' worker(s).');
-						$self->stopWorkers($n);
-					}
-				}
+			if (!$this->lastMpmActionTs || ((microtime(true) - $this->lastMpmActionTs) > $this->minMpmActionInterval)) {
+				$this->callMPM();
 			}
 			if ($event) {
 				$event->timeout();
@@ -144,6 +111,44 @@ class Daemon_MasterThread extends Thread {
 		Daemon::log('M#' . $this->pid . ' ' . $message);
 	}
 
+
+	public function callMPM() {
+		$state = Daemon::getStateOfWorkers($this);
+		if (isset(Daemon::$config->mpm->value) && is_callable(Daemon::$config->mpm->value)) {
+			return call_user_func(Daemon::$config->mpm->value, $this, $state);
+		}
+
+		$upToMinWorkers = Daemon::$config->minworkers->value - $state['alive'];
+		$upToMaxWorkers = Daemon::$config->maxworkers->value - $state['alive'];
+		$upToMinSpareWorkers = Daemon::$config->minspareworkers->value - $state['idle'];
+		if ($upToMinSpareWorkers > $upToMaxWorkers) {
+			$upToMinSpareWorkers = $upToMaxWorkers;
+		}
+		$n = max($upToMinSpareWorkers, $upToMinWorkers);
+		if ($n > 0) {
+			//Daemon::log('minspareworkers = '.Daemon::$config->minspareworkers->value);
+			//Daemon::log('maxworkers = '.Daemon::$config->maxworkers->value);
+			//Daemon::log('maxspareworkers = '.Daemon::$config->maxspareworkers->value);
+			//Daemon::log(json_encode($state));
+			//Daemon::log('upToMinSpareWorkers = ' . $upToMinSpareWorkers . '   upToMinWorkers = ' . $upToMinWorker);
+			Daemon::log('Spawning ' . $n . ' worker(s)');
+			$this->spawnWorkers($n);
+			return $n;
+		}
+
+		$downToMaxSpareWorkers = $state['idle'] - Daemon::$config->maxspareworkers->value;
+		$downToMaxWorkers = $state['alive'] - Daemon::$config->maxworkers->value;
+		$n = max($downToMaxSpareWorkers, $downToMaxWorkers);
+		if ($n > 0) {
+			//Daemon::log('downToMaxWorkers = '.$downToMaxWorkers);
+			//Daemon::log('downToMaxSpareWorkers = '.$downToMaxSpareWorkers);
+			//Daemon::log(json_encode($state));
+			Daemon::log('Stopping ' . $n . ' worker(s)');
+			$this->stopWorkers($n);
+			return -$n;
+		}
+		return 0;
+	}
 
 	/**
 	 * Setup settings on start.
@@ -203,6 +208,7 @@ class Daemon_MasterThread extends Thread {
 
 		}
 		if ($n > 0) {
+			$this->lastMpmActionTs = microtime(true);
 			if ($this->eventBase) {
 				$this->eventBase->stop();
 			}
@@ -258,7 +264,8 @@ class Daemon_MasterThread extends Thread {
 			$w->stop();
 			++$i;
 		}
-		
+
+		$this->lastMpmActionTs = microtime(true);		
 		return true;
 	}
 	

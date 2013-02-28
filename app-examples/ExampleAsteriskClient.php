@@ -11,9 +11,7 @@ class ExampleAsteriskClient extends AppInstance {
 	public $asteriskclient;
 	
 	public $asteriskconn;
-	
-	public $incomming_calls = [];
-	
+
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults

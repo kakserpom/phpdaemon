@@ -514,14 +514,14 @@ class Daemon_WorkerThread extends Thread {
 			return false;
 		}
 
+		if (Daemon::$config->logworkersetstate->value) {
+			$this->log('state is ' . Daemon::$wstateRev[$int]);
+		}
+
 		$this->state = $int;
 
 		if ($this->reload) {
 			$int += 100;
-		}
-
-		if (Daemon::$config->logworkersetstate->value) {
-			$this->log('state is ' . $int);
 		}
 
 		return Daemon::$shm_wstate->write(chr($int), $this->id - 1);

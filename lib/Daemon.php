@@ -19,6 +19,14 @@ class Daemon {
 	const WSTATE_PREINIT = 4;
 	const WSTATE_WAITINIT = 5;
 	const WSTATE_INIT = 6;
+	public static $wstateRev = [
+		1 => 'IDLE',
+		2 => 'BUSY',
+		3 => 'SHUTDOWN',
+		4 => 'PREINIT',
+		5 => 'WAITINIT',
+		6 => 'INIT',
+	];
 	const SHM_WSTATE_SIZE = 1024;
 
 	/**
