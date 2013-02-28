@@ -19,6 +19,7 @@ class HTTPServerConnection extends Connection {
 
 	
 	public $sendfileCap = true; // we can use sendfile() with this kind of connection
+	public $chunkedEncCap = true;
 	public $bufHead = '';
 	public $prevState;
 

@@ -326,7 +326,7 @@ class HTTPRequest extends Request {
 			} else {
 				$h = '';
 			}
-			if ($this->contentLength === null) {
+			if ($this->contentLength === null && $this->upstream->chunkedEncCap) {
 				$this->attrs->chunked = true;
 			}
 			if ($this->attrs->chunked) {

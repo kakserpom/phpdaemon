@@ -14,6 +14,7 @@ class FastCGIServerConnection extends Connection {
 	protected $requests = array();
 	
 	public $sendfileCap = false;
+	public $chunkedEncCap = false;
 
 	const FCGI_BEGIN_REQUEST     = 1;
 	const FCGI_ABORT_REQUEST     = 2;
@@ -254,8 +255,8 @@ class FastCGIServerConnection extends Connection {
 	 * @param string The output.
 	 * @return void
 	 */
-	public function requestOut($req, $output) {
-		if ($this->sendChunk($req, $chunk) === false) {
+	public function requestOut($req, $out) {
+		if ($this->sendChunk($req, $out) === false) {
 			$req->abort();
 			return false;
 		}
