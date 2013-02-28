@@ -223,7 +223,7 @@ class FS {
 			call_user_func($cb, $path, false);
 			return;
 		}
-		FS::open($path, 'r', function ($file) use ($cb, $startCb, $path, $pri, $outfd, $offset, $length) {
+		FS::open($path, 'r!', function ($file) use ($cb, $startCb, $path, $pri, $outfd, $offset, $length) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
@@ -265,7 +265,7 @@ class FS {
 			call_user_func($cb, $r !== false);
 			return;
 		}
-		FS::open($path, 'r', function ($file) use ($cb, $chunkcb, $pri) {
+		FS::open($path, 'r!', function ($file) use ($cb, $chunkcb, $pri) {
 			if (!$file) {
 				call_user_func($cb, $file->path, false);
 				return;

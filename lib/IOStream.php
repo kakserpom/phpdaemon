@@ -278,7 +278,7 @@ abstract class IOStream {
 	 * @param string Data to send.
 	 * @return boolean Success.
 	 */
-	public function writeln($s) {
+	public function writeln($data) {
 		if (!$this->alive) {
 			Daemon::log('Attempt to write to dead IOStream ('.get_class($this).')');
 			return false;
