@@ -326,7 +326,9 @@ class HTTPRequest extends Request {
 			} else {
 				$h = '';
 			}
-
+			if ($this->contentLength === null) {
+				$this->attrs->chunked = true;
+			}
 			if ($this->attrs->chunked) {
 				$this->header('Transfer-Encoding: chunked');
 			}
