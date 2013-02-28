@@ -260,7 +260,9 @@ class Daemon_Bootstrap {
 		
 		if (
 			isset(Daemon::$config->minspareworkers->value) 
+			&& Daemon::$config->minspareworkers->value > 0
 			&& isset(Daemon::$config->maxspareworkers->value)
+			&& Daemon::$config->maxspareworkers->value > 0
 		) {
 			if (Daemon::$config->minspareworkers->value > Daemon::$config->maxspareworkers->value) {
 				Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');

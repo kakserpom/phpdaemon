@@ -28,7 +28,7 @@ class Daemon_Config implements ArrayAccess {
 	public $minworkers      = 4;
 	public $maxworkers      = 8;
 	public $minspareworkers = 2;
-	public $maxspareworkers = 4;
+	public $maxspareworkers = 0;
 	public $masterpriority  = 100;
 	public $ipcthreadpriority = 100;
 			 
@@ -111,10 +111,12 @@ class Daemon_Config implements ArrayAccess {
 	public function onLoad() {
 		if (
 			isset($this->minspareworkers->value) 
+			&& $this->minspareworkers->value > 0
 			&& isset($this->maxspareworkers->value)
+			&& $this->maxspareworkers->value > 0
 		) {
 			if ($this->minspareworkers->value > $this->maxspareworkers->value) {
-				Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
+				Daemon::log('\'minspareworkers\' ('.$this->minspareworkers->value.')  cannot be greater than \'maxspareworkers\' ('.$this->maxspareworkers->value.').');
 				$this->minspareworkers->value = $this->maxspareworkers->value;
 			}
 		}

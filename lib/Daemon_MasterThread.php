@@ -136,9 +136,16 @@ class Daemon_MasterThread extends Thread {
 			return $n;
 		}
 
-		$downToMaxSpareWorkers = $state['idle'] - Daemon::$config->maxspareworkers->value;
-		$downToMaxWorkers = $state['alive'] - Daemon::$config->maxworkers->value;
-		$n = max($downToMaxSpareWorkers, $downToMaxWorkers);
+		$a = ['default' => 0];
+		if (Daemon::$config->maxspareworkers->value > 0) {
+			// if MaxSpareWorkers enabled, we have to stop idle workers, keeping in mind the MinWorkers
+			$a['downToMaxSpareWorkers'] = min(
+					$state['idle'] - Daemon::$config->maxspareworkers->value, // downToMaxSpareWorkers
+					$state['alive'] - Daemon::$config->minworkers->value //downToMinWorkers
+			);
+		}
+		$a['downToMaxWorkers'] = $state['alive'] - Daemon::$config->maxworkers->value;
+		$n = max($a);
 		if ($n > 0) {
 			//Daemon::log('downToMaxWorkers = '.$downToMaxWorkers);
 			//Daemon::log('downToMaxSpareWorkers = '.$downToMaxSpareWorkers);

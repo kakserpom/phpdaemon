@@ -254,76 +254,22 @@ class FastCGIServerConnection extends Connection {
 	 * @param string The output.
 	 * @return void
 	 */
-	public function requestOut($req, $output) {		
-		$outlen = strlen($output);
-		
-		/* 
-		* Iterate over every character in the string, 
-		* escaping with a slash or encoding to UTF-8 where necessary 
-		*/ 
-		// string bytes counter 
-		$d = 0; 
-		while($d < $outlen){ 
-		  
-		  $ord_var_c = ord($output{$d}); 
-		  
-		  switch (true) { 
-			  case (($ord_var_c >= 0x20) && ($ord_var_c <= 0x7F)): 
-				  // characters U-00000000 - U-0000007F (same as ASCII) 
-				  $d++; 
-				  break; 
-			  
-			  case (($ord_var_c & 0xE0) == 0xC0): 
-				  // characters U-00000080 - U-000007FF, mask 110XXXXX 
-				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
-				  $d+=2; 
-				  break; 
-
-			  case (($ord_var_c & 0xF0) == 0xE0): 
-				  // characters U-00000800 - U-0000FFFF, mask 1110XXXX 
-				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
-				  $d+=3; 
-				  break; 
-
-			  case (($ord_var_c & 0xF8) == 0xF0): 
-				  // characters U-00010000 - U-001FFFFF, mask 11110XXX 
-				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
-				  $d+=4; 
-				  break; 
-
-			  case (($ord_var_c & 0xFC) == 0xF8): 
-				  // characters U-00200000 - U-03FFFFFF, mask 111110XX 
-				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
-				  $d+=5; 
-				  break; 
-
-			  case (($ord_var_c & 0xFE) == 0xFC): 
-				  // characters U-04000000 - U-7FFFFFFF, mask 1111110X 
-				  // see http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8 
-				  $d+=6; 
-				  break; 
-			  default: 
-				$d++;    
-		  } 
-		} 
-
-		for ($o = 0; $o < $d;) {
-			$c = min($this->pool->config->chunksize->value, $d - $o);
-			$w = $this->write(
-				  "\x01"												// protocol version
-				. "\x06"												// record type (STDOUT)
-				. pack('nn', $req->attrs->id, $c)					// id, content length
-				. "\x00" 												// padding length
-				. "\x00"												// reserved 
-				. ($c === $d ? $output : substr($output, $o, $c)) // content
-			);
-			if ($w === false) {
-				$req->abort();
-				return false;
-			}
-			$o += $c;
+	public function requestOut($req, $output) {
+		if ($this->sendChunk($req, $chunk) === false) {
+			$req->abort();
+			return false;
 		}
 		return true;
+	}
+
+	public function sendChunk($req, $chunk) {
+		return $this->write(
+				  "\x01"												// protocol version
+				. "\x06"												// record type (STDOUT)
+				. pack('nn', $req->attrs->id, strlen($chunk))			// id, content length
+				. "\x00" 												// padding length
+				. "\x00"												// reserved 
+		) && $this->write($chunk);										// content
 	}
 	public function freeRequest($req) {
 		unset($this->requests[$req->attrs->id]);
