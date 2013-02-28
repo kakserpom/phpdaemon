@@ -50,7 +50,7 @@ class ExampleJabberbot extends AppInstance {
 			if ($conn->connected) {
 				Daemon::log('Jabberbot connected at '.$this->config->url->value);
 				$conn->presence('I\'m a robot.', 'chat');
-				$conn->bind('message', function($msg) use ($conn) {
+				$conn->bind('message', function($conn, $msg) {
 					Daemon::log('JabberBot: got message \''.$msg['body'].'\'');
 					$conn->message($msg['from'], 'You just wrote: '.$msg['body']); // send the message back
 				});
