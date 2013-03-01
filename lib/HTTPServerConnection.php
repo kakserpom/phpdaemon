@@ -8,7 +8,7 @@
  */
 
 class HTTPServerConnection extends Connection {
-	protected $initialLowMark  = 23;         // initial value of the minimal amout of bytes in buffer
+	protected $initialHighMark = 1;
 	protected $initialHighMark = 8192;  // initial value of the maximum amout of bytes in buffer
 	public $timeout = 45;
 
