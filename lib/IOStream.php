@@ -160,8 +160,57 @@ abstract class IOStream {
 	}
 
 	public function readLine($eol = null) {
-		return $this->bev->input->readLine($eol ?: $this->EOLS);
+		if (!isset($this->bev)) {
+			return null;
+		}
+		return $this->bev->getInput()->readLine($eol ?: $this->EOLS);
 	}
+
+	public function drainIfMatch($str) {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		$l = strlen($str);
+		$ll = $this->bev->getInput()->length;
+		if ($ll < $l) {
+			$read = $this->read($ll);
+			return strncmp($read, $str, $ll);
+		}
+		$read = $this->read($l);
+		if ($read === $str) {
+			return true;
+		}
+		$this->bev->getInput()->prepend($read);
+		return false;
+	}
+
+	public function lookExact($n) {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		if ($this->bev->getInput()->length < $n) {
+			return false;
+		}
+		$data = $this->read($n);
+		$this->bev->getInput()->prepend($data);
+		return $data;
+	}
+
+	public function look($n) {
+		$data = $this->read($n);
+		$this->bev->getInput()->prepend($data);
+		return $data;
+	}
+
+	/*public function search($what, $start = null, $end = null) {
+		// @TODO: cache of EventBufferPosition
+		if (is_integer($start)) {
+			$s = $start;
+			$start = new EventBufferPosition;
+		}
+		return $this->bev->input->search($what, $start, $end);
+
+	}*/
 
 	public function readFromBufExact($n) { // @TODO: deprecate
 		if ($n === 0) {

@@ -8,20 +8,21 @@
  */
 
 class HTTPServerConnection extends Connection {
-	protected $initialLowMark  = 1;         // initial value of the minimal amout of bytes in buffer
-	protected $initialHighMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
+	protected $initialLowMark  = 23;         // initial value of the minimal amout of bytes in buffer
+	protected $initialHighMark = 8192;  // initial value of the maximum amout of bytes in buffer
 	public $timeout = 45;
 
 	public $req;
 	
-	const STATE_HEADERS = 1;
-	const STATE_CONTENT = 2;
+	const STATE_FIRSTLINE = 1;
+	const STATE_HEADERS = 2;
+	const STATE_CONTENT = 3;
 
 	
 	public $sendfileCap = true; // we can use sendfile() with this kind of connection
 	public $chunkedEncCap = true;
-	public $bufHead = '';
-	public $prevState;
+
+	public $EOL = "\r\n";
 
 	/**
 	 * Called when new data received.
@@ -30,41 +31,32 @@ class HTTPServerConnection extends Connection {
 	
 	public function onRead() {
 		start:
-		$readed = $this->read($this->readPacketSize);
-		if ($this->state === $this->prevState) {
-			if (strlen($readed) === 0) {
-				return;
-			}
-		} else {
-			$this->prevState = $this->state;
+		if ($this->finished) {
+			return;
 		}
-
-		$buf = $this->bufHead . $readed;
-		$this->bufHead = '';
-
 		if ($this->state === self::STATE_ROOT) {
 			if ($this->req !== null) { // we have to wait the current request.
-				$this->bufHead = $buf;
 				return;
 			}
-
-			if (strpos($buf, "<policy-file-request/>\x00") === 0) {
+			if (($d = $this->drainIfMatch("<policy-file-request/>\x00")) === null) { // partially match
+				return;
+			}
+			if ($d) {
 				if (($FP = FlashPolicyServer::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();
 				return;
 			}
-			$this->state = self::STATE_HEADERS;
-
-			$req = new stdClass();
+			$this->state = self::STATE_FIRSTLINE;
+			$req = new stdClass;
 			$req->attrs = new stdClass();
-			$req->attrs->request = array();
-			$req->attrs->get = array();
-			$req->attrs->post = array();
-			$req->attrs->cookie = array();
-			$req->attrs->server = array();
-			$req->attrs->files = array();
+			$req->attrs->request = [];
+			$req->attrs->get = [];
+			$req->attrs->post = [];
+			$req->attrs->cookie = [];
+			$req->attrs->server = [];
+			$req->attrs->files = [];
 			$req->attrs->session = null;
 			$req->attrs->params_done = false;
 			$req->attrs->stdin_done = false;
@@ -76,118 +68,107 @@ class HTTPServerConnection extends Connection {
 
 		} else {
 			if (!$this->req) {
-				if ($buf !== '') {
-					Daemon::log('Unexpected input (HTTP request): '.Debug::dump($buf));
+				if ($this->bev->input->length > 0) {
+					Daemon::log('Unexpected input (HTTP request): '.json_encode($this->read($this->bev->input->length)));
 				}
 				return;
 			}
 			$req = $this->req;
 		}
 
+		if ($this->state === self::STATE_FIRSTLINE) {
+			if (($l = $this->readline()) === null) {
+				return;
+			}
+			$e = explode(' ', $l);
+			$u = isset($e[1]) ? parse_url($e[1]) : false;
+			if ($u === false) {
+				$this->badRequest($req);
+				return;
+			}
+			if (!isset($u['path'])) {
+				$u['path'] = null;
+			}
+			$req->attrs->server['REQUEST_METHOD'] = $e[0];
+			$req->attrs->server['REQUEST_TIME'] = time();
+			$req->attrs->server['REQUEST_TIME_FLOAT'] = microtime(true);
+			$req->attrs->server['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
+			$req->attrs->server['DOCUMENT_URI'] = $u['path'];
+			$req->attrs->server['PHP_SELF'] = $u['path'];
+			$req->attrs->server['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
+			$req->attrs->server['SCRIPT_NAME'] = $req->attrs->server['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
+			$req->attrs->server['SERVER_PROTOCOL'] = isset($e[2]) ? $e[2] : 'HTTP/1.1';
+
+			$req->attrs->server['REMOTE_ADDR'] = $this->addr;
+			$req->attrs->server['REMOTE_PORT'] = $this->port;
+
+			$this->state = self::STATE_HEADERS;
+		}		
+
 		if ($this->state === self::STATE_HEADERS) {
-			if (($p = strpos($buf, "\r\n\r\n")) !== false) {
-				$headers = binarySubstr($buf, 0, $p);
-				$headersArray = explode("\r\n", $headers);
-				$buf = binarySubstr($buf, $p + 4);
-				$command = explode(' ', $headersArray[0]);
-				$u = isset($command[1]) ? parse_url($command[1]) : false;
-				if ($u === false) {
+			while (($l = $this->readLine()) !== null) {
+				if ($l === '') {
+					goto processHeaders;
+				}
+				$e = explode(': ', $l);
+				if (isset($e[1])) {
+					$currentHeader = 'HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr));
+					$req->attrs->server[$currentHeader] = $e[1];
+				}
+				elseif ($e[0][0] === "\t" || $e[0][0] === "\x20") {
+					 // multiline header continued
+						$req->attrs->server[$currentHeader] .= $e[0];
+				}
+				else {
+					// whatever client speaks is not HTTP anymore
 					$this->badRequest($req);
 					return;
 				}
-				if (!isset($u['path'])) {
-					$u['path'] = null;
-				}
-
-				$req->attrs->server['REQUEST_METHOD'] = $command[0];
-				$req->attrs->server['REQUEST_TIME'] = time();
-				$req->attrs->server['REQUEST_TIME_FLOAT'] = microtime(true);
-				$req->attrs->server['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
-				$req->attrs->server['DOCUMENT_URI'] = $u['path'];
-				$req->attrs->server['PHP_SELF'] = $u['path'];
-				$req->attrs->server['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
-				$req->attrs->server['SCRIPT_NAME'] = $req->attrs->server['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
-				$req->attrs->server['SERVER_PROTOCOL'] = isset($command[2]) ? $command[2] : 'HTTP/1.1';
-
-				$req->attrs->server['REMOTE_ADDR'] = $this->addr;
-				$req->attrs->server['REMOTE_PORT'] = $this->port;
-
-				for ($i = 1, $n = sizeof($headersArray); $i < $n; ++$i) {
-					$e = explode(': ', $headersArray[$i]);
-					if (isset($e[1])) {
-						$currentHeader = 'HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr));
-						$req->attrs->server[$currentHeader] = $e[1];
-					}
-					elseif ($e[0][0] === "\t" || $e[0][0] === "\x20")
-					{ // multiline header continued
-						$req->attrs->server[$currentHeader] .= $e[0];
-					}
-					else
-					{ // whatever client speaks is not HTTP anymore
-						$this->finish();
-						return;
-					}
-				}
-				if (!isset($req->attrs->server['HTTP_CONTENT_LENGTH'])) {
-					$req->attrs->server['HTTP_CONTENT_LENGTH'] = 0;
-				}
-				if (isset($u['host'])) {
-					$req->attrs->server['HTTP_HOST'] = $u['host'];	
-				}
-
-				$req->attrs->params_done = true;
-
-				if (
-					isset($req->attrs->server['HTTP_CONNECTION']) 
-					&& preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $req->attrs->server['HTTP_CONNECTION'])
-					&& isset($req->attrs->server['HTTP_UPGRADE'])
-					&& (strtolower($req->attrs->server['HTTP_UPGRADE']) === 'websocket')
-				) {
-					if ($this->pool->WS) {
-						$this->pool->WS->inheritFromRequest($req, $this->pool);
-						return;
-					} else {
-						$this->finish();
-						return;
-					}
-				} else {
-					$req = Daemon::$appResolver->getRequest($req, $this, isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null);
-					$this->req = $req;
-				}
-
-				if ($req instanceof stdClass) {
-					$this->endRequest($req, 0, 0);
-				} else {
-					if ($this->pool->config->sendfile->value && (!$this->pool->config->sendfileonlybycommand->value	|| isset($req->attrs->server['USE_SENDFILE'])) 
-						&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
-					) {
-						$fn = FS::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value);
-						FS::open($fn, 'wb', function ($file) use ($req) {
-							$req->sendfp = $file;
-						});
-						$req->header('X-Sendfile: ' . $fn);
-					}
-					$this->state = self::STATE_CONTENT;
-				}
 			}
-			else {
-				$this->bufHead = $buf;
-				goto start;
+			return;
+			processHeaders:
+
+			if (!isset($req->attrs->server['HTTP_CONTENT_LENGTH'])) {
+				$req->attrs->server['HTTP_CONTENT_LENGTH'] = 0;
+			}
+			if (isset($u['host'])) {
+				$req->attrs->server['HTTP_HOST'] = $u['host'];	
+			}
+
+			$req->attrs->params_done = true;
+			if (isset($req->attrs->server['HTTP_CONNECTION']) && preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $req->attrs->server['HTTP_CONNECTION'])
+			&& isset($req->attrs->server['HTTP_UPGRADE']) && (strtolower($req->attrs->server['HTTP_UPGRADE']) === 'websocket')) {
+				if ($this->pool->WS) {
+					$this->pool->WS->inheritFromRequest($req, $this->pool);
+				} else {
+					$this->finish();
+				}
+				return;
+			}
+			$req = Daemon::$appResolver->getRequest($req, $this, isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null);
+			$this->req = $req;
+			
+			if ($req instanceof stdClass) {
+				$this->endRequest($req, 0, 0);
+			} else {
+				if ($this->pool->config->sendfile->value && (!$this->pool->config->sendfileonlybycommand->value	|| isset($req->attrs->server['USE_SENDFILE'])) 
+					&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
+				) {
+					$fn = FS::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value);
+					FS::open($fn, 'wb', function ($file) use ($req) {
+						$req->sendfp = $file;
+					});
+					$req->header('X-Sendfile: ' . $fn);
+				}
+				$this->state = self::STATE_CONTENT;
 			}
 		}
 		if ($this->state === self::STATE_CONTENT) {
-			$e = $req->attrs->server['HTTP_CONTENT_LENGTH'] - strlen($buf) - $req->attrs->stdinlen;
-			if ($e < 0) {
-				$this->bufHead = binarySubstr($buf, $e);
-				$buf = binarySubstr($buf, 0, $e);
+			$req->stdin($this->read($req->attrs->server['HTTP_CONTENT_LENGTH'] - $req->attrs->stdinlen));
+			if (!$req->attrs->stdin_done) {
+				return;
 			}
-			$req->stdin($buf);
-			$buf = '';
-			if ($req->attrs->stdin_done) {
-				$this->state = self::STATE_ROOT;
-			} else {
-				goto start;
-			}
+			$this->state = self::STATE_ROOT;
 		}
 
 		if ($req->attrs->stdin_done && $req->attrs->params_done) {
@@ -209,8 +190,6 @@ class HTTPServerConnection extends Connection {
 			}
 			Daemon::$process->timeLastReq = time();
 		}
-		
-		goto start;
 	}
 
 	/**
@@ -258,6 +237,7 @@ class HTTPServerConnection extends Connection {
 		$timer->free();
 	}
 	public function badRequest($req) {
+		$this->state = self::STATE_ROOT;
 		$this->write("400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor=\"white\"><center><h1>400 Bad Request</h1></center></body></html>");
 		$this->finish();
 	}
