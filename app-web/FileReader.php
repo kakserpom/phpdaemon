@@ -121,6 +121,11 @@ class FileReaderRequest extends HTTPRequest {
 			$this->wakeup();
 			return;
 		}
+		static $warn = false;
+		if ($warn) {
+			Daemon::log('BEWARE! You are using FileReader with EIO enabled. Maybe this is still buggy.');
+			$warn = true;
+		}
 		$job = $this->job;
 		$job('readfile', function ($name, $job) use ($path) {
 			$this->sendfile($path, function($file, $success) use ($job, $name) {

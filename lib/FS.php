@@ -25,6 +25,10 @@ class FS {
 	public static $fdCacheSize = 128;
 	public static $eioVer = '1.2.1';
 	public static function init() {
+		if (!Daemon::$config->eioenabled->value) {
+			self::$supported = false;
+			return;
+		}
 		if (!self::$supported =	Daemon::loadModuleIfAbsent('eio', self::$eioVer)) {
 			Daemon::log('FS: missing pecl-eio >= ' . self::$eioVer . '. Filesystem I/O performance compromised. Consider installing pecl-eio. `pecl install http://pecl.php.net/get/eio-' . self::$eioVer . '.tgz`');
 			return;
@@ -223,12 +227,18 @@ class FS {
 			call_user_func($cb, $path, false);
 			return;
 		}
-		FS::open($path, 'r!', function ($file) use ($cb, $startCb, $path, $pri, $outfd, $offset, $length) {
+		$noncache = true;
+		FS::open($path, 'r!', function ($file) use ($cb, $noncache, $startCb, $path, $pri, $outfd, $offset, $length) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
 			}
-			$file->sendfile($outfd, $cb, $startCb, $offset, $length, $pri);
+			$file->sendfile($outfd, function ($file, $success) use ($cb, $noncache) {
+				call_user_func($cb, $file->path, $success);
+				if ($noncache) {
+					$file->close();
+				}
+			}, $startCb, $offset, $length, $pri);
 
 		}, $pri);
 	}
@@ -250,7 +260,7 @@ class FS {
 			call_user_func($cb, $path, file_get_contents($path));
 			return;
 		}
-		FS::open($path, 'r', function ($file) use ($cb, $pri, $path) {
+		FS::open($path, 'r!', function ($file) use ($cb, $pri, $path) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
@@ -324,9 +334,8 @@ class FS {
 				$item->addListener($cb);
 			}
 			return eio_open($path, $flags , $mode,
-			  $pri, function ($arg, $fd) use ($cb, $path, $flags, $fdCacheKey, $noncache) {
-			  	
-				if (!$fd) {
+			  $pri, function ($path, $fd) use ($cb, $flags, $fdCacheKey, $noncache) {
+				if ($fd === -1) {
 					if ($noncache) {
 						call_user_func($cb, false);
 					} else {

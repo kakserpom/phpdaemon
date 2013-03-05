@@ -13,7 +13,7 @@ class RedisClientConnection extends NetworkClientConnection {
 	public $resultLength = 0;
 	public $error;                 // error message
 	public $key;                   // current incoming key
-	public $EOL = "\r\n";		    // EOL for gets() and writeln()
+	public $EOL = "\r\n";		    // EOL for readln() and writeln()
 	const STATE_BINARY = 1;
 	public $noSAF = true;
 

@@ -12,6 +12,7 @@ class Connection extends IOStream {
 	public $host;
 	public $hostReal;
 	public $port;
+	public $addr;
 	public $onConnected = null;
 	public $connected = false;
 	public $failed = false;

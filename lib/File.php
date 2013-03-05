@@ -22,7 +22,7 @@ class File {
 	 * @return void
 	 */
 	public function __construct($fd) {
-		$this->setFd($fd);
+		$this->fd = $fd;
 		$this->onWriteOnce = new StackCallbacks;
 	}
 
@@ -275,6 +275,15 @@ class File {
 		static $chunkSize = 1024;
 		$ret = true;
 		$handler = function ($file, $sent = -1) use (&$ret, $outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
+			if ($outfd instanceof IOStream) {
+				if ($outfd->freed) {
+					call_user_func($cb, $file, false);
+					return;
+				}
+				$ofd = $outfd->fd;
+			} else {
+				$ofd = $outfd;
+			}
 			if (!$ret) {
 				call_user_func($cb, $file, false);
 				return;
@@ -288,11 +297,12 @@ class File {
 				call_user_func($cb, $file, true);
 				return;
 			}
-			if (!is_resource($outfd)) {
+			if (!$ofd) {
 				call_user_func($cb, $file, false);
 				return;
 			}
-			$ret = eio_sendfile($outfd, $file->fd, $offset, min($chunkSize, $length), $pri, $handler, $file);
+			$c = min($chunkSize, $length);
+			$ret = eio_sendfile($ofd, $file->fd, $offset, $c, $pri, $handler, $file);
 		};
 		if ($length !== null) {
 			if ($startCb !== null) {
@@ -406,12 +416,7 @@ class File {
 	}
 	public function setChunkSize($n) {
 		$this->chunkSize = $n;
-	}
-	
-	public function setFd($fd) {
-		$this->fd = $fd;
-	}
-	
+	}	
 	public function seek($offset, $cb, $pri) {
 		if (!EIO::$supported) {
 			fseek($this->fd, $offset);
@@ -427,9 +432,6 @@ class File {
 	}
 	
 	public function close() {
-		$this->closeFd();
-	}
-	public function closeFd() {
 		if ($this->fdCacheKey !== null) {
 			FS::$fdCache->invalidate($this->fdCacheKey);
 		}
@@ -441,9 +443,8 @@ class File {
 			fclose($this->fd);
 			return;
 		}
-
-		$r = eio_close($this->fd);
-		$this->fd = null;
-		return $r;
+		//$r = eio_close($this->fd, EIO_PRI_MAX);
+		//$this->fd = null;
+		//return $r;
 	}
 }

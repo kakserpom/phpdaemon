@@ -67,5 +67,20 @@ class HTTPServer extends NetworkServer {
 	public function onReady() {
 		parent::onReady();
 		$this->WS = WebSocketServer::getInstance($this->config->wssname->value, false);
+		/*setTimeout(function($timer) {
+			$a = '';
+			foreach ($this as $conn) {
+				$a .= "----------------------\n";
+				$secs = microtime(true) - $conn->ctime;
+				if ($secs < 3) {
+					continue;
+				}
+				$a .= $conn->logLine . ' -- '. $secs. ' -- '.json_encode([$conn->state, $conn->allReaded, $conn->copyout])."\n\n";
+				$a .= implode("\n",$conn->eventLog)."\n\n";
+				$a .= "----------------------\n\n";
+			}
+			file_put_contents('/tmp/httpd.watch', $a);
+			$timer->timeout();
+		}, 1e6);*/
 	}
 }

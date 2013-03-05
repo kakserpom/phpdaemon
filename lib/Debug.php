@@ -99,7 +99,6 @@ class Debug {
 
 		$e = explode("\n", $trace);
 		array_shift($e);
-		array_shift($e);
 		return implode("\n", $e);
 	}
 

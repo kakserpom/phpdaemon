@@ -29,6 +29,52 @@ class AsteriskClient extends NetworkClient {
 			'port'		=> 5280,
 		];
 	}
+
+	/**
+	 * Beginning of the string in the header or value that indicates whether the save value case.
+	 * @var array
+	 */
+	public static $safeCaseValues = ['dialstring', 'callerid'];
+
+	public static function prepareEnv($data) {
+		$result = [];
+		$rows = explode("\n", $data);
+		for ($i = 0, $s = sizeof($rows); $i < $s; ++$i) {
+			$e = self::extract($rows[$i]);
+			$result[$e[0]] = $e[1];
+		}
+		return $result;
+	}
+
+
+	/**
+	 * Extract key and value pair from line.
+	 * @param string $line
+	 * @return array
+	 */
+	public static function extract($line) {
+		$e = explode(': ', $line, 2);
+		$header = strtolower(trim($e[0]));
+		$value = isset($e[1]) ? trim($e[1]) : null;
+		$safe = false;
+
+		foreach (self::$safeCaseValues as $item) {
+			if (strncasecmp($header, $item, strlen($item)) === 0) {
+				$safe = true;
+				break;
+			}
+			if (strncasecmp($value, $item, strlen($item)) === 0) {
+				$safe = true;
+				break;
+			}
+		}
+
+		if (!$safe) {
+			$value = strtolower($value);
+		}
+
+		return [$header, $value];
+	}
 }
 
 /**
@@ -111,13 +157,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	public $onChallenge;
 	
-	/**
-	 * Beginning of the string in the header or value that indicates whether the save value case.
-	 * @var array
-	 */
-	public $safeCaseValues = ['dialstring', 'callerid'];
-	
-	
+
 	/**
 	 * Execute the given callback when/if the connection is handshaked.
 	 * @param Callback
@@ -136,7 +176,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			$this->onConnected->push($cb);
 		}
 	}
-	
+
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
@@ -171,7 +211,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		
 		return false;
 	}
-	
+
 	/**
 	 * Called when session finishes
 	 * @return void
@@ -182,36 +222,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		parent::onFinish();
 		
 		$this->event('disconnect');
-	}
-
-	/**
-	 * Extract key and value pair from line.
-	 * @param string $line
-	 * @return array
-	 */
-	protected function extract($line) {
-		$e = explode(': ', $line, 2);
-		$header = strtolower(trim($e[0]));
-		$value = isset($e[1]) ? trim($e[1]) : null;
-		$safe = false;
-
-		foreach ($this->safeCaseValues as $item) {
-			if (stripos($header, $item) === 0) {
-				$safe = true;
-				break;
-			}
-
-			if (stripos($value, $item) === 0) {
-				$safe = true;
-				break;
-			}
-		}
-
-		if (!$safe) {
-			$value = strtolower($value);
-		}
-
-		return [$header, $value];
 	}
 
 	/**
@@ -236,7 +246,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 				++$this->cnt;
 			} else {
 				$this->instate = self::INPUT_STATE_PROCESSING;
-				list($header, $value) = $this->extract($line);
+				list($header, $value) = AsteriskClient::extract($line);
 				$this->packets[$this->cnt][$header] = $value;
 			}
 
@@ -291,7 +301,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 						if (isset($this->callbacks[$action_id])) {
 							if (isset($this->assertions[$action_id])) {
 								$this->packets[$action_id][] = $packet;
-								
+								Daemon::log('array_uintersect_uassoc');
 								if (count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) === count($this->assertions[$action_id])) {
 									if (is_callable($this->callbacks[$action_id])) {
 										call_user_func($this->callbacks[$action_id], $this, $this->packets[$action_id]);
@@ -582,7 +592,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * @return Returns the unique identifier, as a string. 
 	 */
 	protected function uniqid() {
-		return uniqid(Daemon::$process->pid, true);
+		static $n = 0;
+		return str_shuffle(md5(str_shuffle(
+				  microtime(true) . chr(mt_rand(0, 0xFF))
+				. Daemon::$process->pid . chr(mt_rand(0, 0xFF))
+				. (++$n) . mt_rand(0, mt_getrandmax()))));
 	}
 		
 	/**
@@ -600,19 +614,20 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			return;
 		}
 
-		$action_id = $this->uniqid();
+		$actionId = $this->uniqid();
 		
 		if (!is_callable($callback, true)) {
 			$callback = false;
 		}
 		
-		$this->callbacks[$action_id] = CallbackWrapper::wrap($callback);
+		$this->callbacks[$actionId] = CallbackWrapper::wrap($callback);
 
 		if ($assertion !== null) {
-			$this->assertions[$action_id] = $assertion;
+			$this->assertions[$actionId] = $assertion;
 		}
 
-		$this->write($packet . "ActionID: {$action_id}\r\n\r\n");
+		$this->write($packet);
+		$this->write('ActionID: ' . $actionId . "\r\n\r\n");
 	}
 
 	/**
@@ -628,6 +643,10 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		}
 		
 		return $s;
+	}
+
+	public function __destruct() {
+		Daemon::log(get_class($this) . '->__destruct');
 	}
 }
 

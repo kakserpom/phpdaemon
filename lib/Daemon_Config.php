@@ -62,6 +62,7 @@ class Daemon_Config implements ArrayAccess {
 	public $verbosetty = 0;
 	
 	// eio
+	public $eioenabled = 1;
 	public $eiosetmaxidle = null;
 	public $eiosetmaxparallel = null;
 	public $eiosetmaxpollreqs = null;

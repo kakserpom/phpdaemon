@@ -13,7 +13,7 @@ class HTTPRequest extends Request {
 	 * Status codes
 	 * @var array
 	 */
-	private static $codes = array (
+	protected static $codes = array (
 		100 => 'Continue',
 		101 => 'Switching Protocols',
 		200 => 'OK',
@@ -58,25 +58,24 @@ class HTTPRequest extends Request {
 	);
 
 	// @todo phpdoc needed
-	public $answerlen = 0;
-	public $contentLength;
-	private $cookieNum = 0;
+	public $responseLength = 0;
+	protected $contentLength;
+	protected $cookieNum = 0;
 
 	public static $hvaltr = array(';' => '&', ' ' => '');
 	public static $htr = array('-' => '_');
 
-	public $mpartstate = 0;
-	public $mpartoffset = 0;
-	public $mpartcondisp = false;
-	public $headers = array('STATUS' => '200 OK');
-	public $headers_sent = false; // @todo make private
-	private $headers_sent_file;
-	private $headers_sent_line;
-	private $boundary = false;
-	private $mpartcurrent;
-	private $sendfp;
-	public $maxFileSize = 0;
-
+	protected $mpartstate = 0;
+	protected $mpartoffset = 0;
+	protected $mpartcondisp = false;
+	protected $headers = array('STATUS' => '200 OK');
+	protected $headers_sent = false;
+	protected $headers_sent_file;
+	protected $headers_sent_line;
+	protected $boundary = false;
+	protected $mpartcurrent;
+	protected $sendfp;
+	protected $maxFileSize = 0;
 	protected $frozenInput = false;
 	
 	const MPSTATE_SEEKBOUNDARY = 0;
@@ -115,8 +114,8 @@ class HTTPRequest extends Request {
 		try {
 			$this->header('Content-Type: ' . MIME::get($path));
 		} catch (RequestHeadersAlreadySent $e) {}
-		if ($this->upstream->sendfileCap) {
-			FS::sendfile($this->upstream->fd, $path, $cb, function ($file, $length, $handler) {
+		if ($this->upstream->sendfileCap && 0) {
+			FS::sendfile($this->upstream, $path, $cb, function ($file, $length, $handler) {
 				try {
 					$this->header('Content-Length: ' . $length);
 				} catch (RequestHeadersAlreadySent $e) {}
@@ -130,13 +129,17 @@ class HTTPRequest extends Request {
 		}
 		$first = true;
 		FS::readfileChunked($path, $cb, function($file, $chunk) use (&$first) { // readed chunk
+			if ($this->upstream->freed) {
+				return false;
+			}
 			if ($first) {
 				try {
 					$this->header('Content-Length: ' . $file->stat['size']);
 				} catch (RequestHeadersAlreadySent $e) {}
 				$first = false;
 			}
-			$req->out($chunk);
+			$this->out($chunk);
+			return true;
 		});
 	}
 	
@@ -332,6 +335,9 @@ class HTTPRequest extends Request {
 			if ($this->attrs->chunked) {
 				$this->header('Transfer-Encoding: chunked');
 			}
+			if ($this->upstream instanceof HTTPServerConnection) {
+				$this->header('Connection: close');
+			}
 
 			foreach ($this->headers as $k => $line) {
 				if ($k !== 'STATUS') {
@@ -369,7 +375,7 @@ class HTTPRequest extends Request {
 		}
 		
 		$l = strlen($s);
-		$this->answerlen += $l;
+		$this->responseLength += $l;
 
 		$this->ensureSentHeaders();
 		
@@ -630,7 +636,7 @@ class HTTPRequest extends Request {
 		return (int) $value;
 	}
 
-	public function startUploadFile() {
+	protected function startUploadFile() {
 		$this->upstream->freezeInput();
 		$this->frozenInput = true;
 		FS::tempnam(ini_get('upload_tmp_dir'), 'php', function ($fp) {
@@ -646,7 +652,7 @@ class HTTPRequest extends Request {
 			$this->stdin('');
 		});
 	}
-	public function writeUploadChunk($chunk, $last = false) {
+	protected function writeUploadChunk($chunk, $last = false) {
 		if ($this->mpartcurrent['error'] !== UPLOAD_ERR_OK) {
 			// just drop the chunk
 			return;

@@ -74,6 +74,8 @@ class Daemon {
 	public static $runworkerMode = false; // @TODO: refactoring
 
 	public static $obInStack = false; // whether if the current execution stack contains ob-filter
+
+	public static $noError = false;
 	/**
 	 * Loads default setting.
 	 * @return void
@@ -165,6 +167,7 @@ class Daemon {
 	}
 
 	public static function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
+		Daemon::$noError = 0;
 		$l = error_reporting();
 		if ($l === 0) {
 			if (!Daemon::$restrictErrorControl) {

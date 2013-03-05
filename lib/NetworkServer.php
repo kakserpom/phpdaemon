@@ -14,11 +14,7 @@ class NetworkServer extends ConnectionPool {
 	 * @return void
 	 */
 
-	public function inheritFromRequest($req, $pool) {
-		$oldConn = $req->upstream;
-		if ($req instanceof Request) {
-			$req->free();
-		}
+	public function inheritFromRequest($req, $oldConn) {
 		if (!$oldConn) {
 			return false;
 		}
@@ -28,13 +24,21 @@ class NetworkServer extends ConnectionPool {
 		$this->attach($conn);
 		$conn->bev = $oldConn->bev;
 		$conn->fd = $oldConn->fd;
+
 		$oldConn->bev = null; // to prevent freeing the buffer
 		$oldConn->fd = null; // to prevent closing the socket
-		$pool->detach($oldConn);
+
+		$oldConn->pool->detach($oldConn);
+
 		$conn->bev->setCallbacks([$conn, 'onReadEv'], [$conn, 'onWriteEv'], [$conn, 'onStateEv']);
+
 		$conn->addr = $req->attrs->server['REMOTE_ADDR'];
 		$conn->server = $req->attrs->server;
 		$conn->firstline = true;
+
 		$conn->onInheritanceFromRequest($req);
+		if ($req instanceof Request) {
+			$req->free();
+		}
 	}
 }

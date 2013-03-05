@@ -16,6 +16,7 @@ class WebSocketServerConnection extends Connection {
 	public $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
 	const STATE_HANDSHAKING = 1;
 	const STATE_HANDSHAKED = 2;
+	public $buf = '';
 
 	public $protocol; // Related WebSocket protocol
 
@@ -23,7 +24,12 @@ class WebSocketServerConnection extends Connection {
 	}
 	
 	public function onInheritanceFromRequest($req) {
-		$this->stdin("\r\n" . $req->upstream->bufHead);
+		Daemon::log(json_encode([
+			$this->bev->input->length,
+			$this->look(1024),
+		]));
+		$this->prependInput("\r\n");
+		$this->onRead();
 	}
 	
 	/**
@@ -36,22 +42,20 @@ class WebSocketServerConnection extends Connection {
 
 	public function sendFrame($data, $type = NULL, $cb = null)
 	{
-		if (!$this->handshaked)
-		{
-			return FALSE;
+		if (!$this->handshaked) {
+			return false;
 		}
 
-        if (!isset($this->protocol))
-        {
+        if (!isset($this->protocol)) {
             Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client ' . $this->addr) ;
-            return FALSE ;
+            return false;
         }
 
         $this->protocol->sendFrame($data, $type) ;
         if ($cb) {
         	$this->onWriteOnce($cb);
         }
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -65,7 +69,7 @@ class WebSocketServerConnection extends Connection {
 		}
 		$this->upstream = null;
 		if ($this->protocol) {
-			$this->protocol->connection = null;
+			$this->protocol->conn = null;
 			$this->protocol = null;
 		}
 	}
@@ -201,15 +205,16 @@ class WebSocketServerConnection extends Connection {
 	 */
 
 	public function stdin($buf) {
+		//Daemon::log(Debug::dump($buf));
 		$this->buf .= $buf;
 		if ($this->state === self::STATE_ROOT)	{
-			if (strpos($this->buf, "<policy-file-request/>\x00") === 0) {
+			/*if (strpos($this->buf, "<policy-file-request/>\x00") === 0) {
 				if (($FP = FlashPolicyServer::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();
 				return;
-			}
+			}*/
 
 			$i = 0;
 

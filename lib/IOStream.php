@@ -32,6 +32,8 @@ abstract class IOStream {
 	public $alive = false; // alive?
 	public $pool;
 	public $bevConnect = false;
+	public $wRead = false;
+	public $freed = false;
 
 	/**
 	 * IOStream constructor
@@ -97,7 +99,7 @@ abstract class IOStream {
 			$this->bev->setTimeouts($this->timeout, $this->timeout);
 		}
 		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
-		if (!$this->bev->enable(Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
+		if (!$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
 			Daemon::log(get_class($this). ' first enable() returned false');
 		}
 		if ($this->bevConnect && ($this->fd === null)) {
@@ -163,7 +165,7 @@ abstract class IOStream {
 		if (!isset($this->bev)) {
 			return null;
 		}
-		return $this->bev->getInput()->readLine($eol ?: $this->EOLS);
+		return $this->bev->input->readLine($eol ?: $this->EOLS);
 	}
 
 	public function drainIfMatch($str) {
@@ -171,7 +173,7 @@ abstract class IOStream {
 			return false;
 		}
 		$l = strlen($str);
-		$ll = $this->bev->getInput()->length;
+		$ll = $this->bev->input->length;
 		if ($ll < $l) {
 			$read = $this->read($ll);
 			return strncmp($read, $str, $ll);
@@ -180,7 +182,7 @@ abstract class IOStream {
 		if ($read === $str) {
 			return true;
 		}
-		$this->bev->getInput()->prepend($read);
+		$this->bev->input->prepend($read);
 		return false;
 	}
 
@@ -188,17 +190,31 @@ abstract class IOStream {
 		if (!isset($this->bev)) {
 			return false;
 		}
-		if ($this->bev->getInput()->length < $n) {
+		if ($this->bev->input->length < $n) {
 			return false;
 		}
 		$data = $this->read($n);
-		$this->bev->getInput()->prepend($data);
+		$this->bev->input->prepend($data);
 		return $data;
+	}
+
+	public function prependInput($str) {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		return $this->bev->input->prepend($str);
+	}
+
+	public function prependOutput($str) {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		return $this->bev->output->prepend($str);
 	}
 
 	public function look($n) {
 		$data = $this->read($n);
-		$this->bev->getInput()->prepend($data);
+		$this->bev->input->prepend($data);
 		return $data;
 	}
 
@@ -229,7 +245,7 @@ abstract class IOStream {
 		if ($n === 0) {
 			return '';
 		}
-		if ($this->bev->getInput()->length < $n) {
+		if ($this->bev->input->length < $n) {
 			return false;
 		} else {
 			return $this->read($n);
@@ -253,7 +269,7 @@ abstract class IOStream {
 	 */
 	public function freezeInput($at_front = false) {
 		if (isset($this->bev)) {
-			return $this->bev->getInput()->freeze($at_front);
+			return $this->bev->input->freeze($at_front);
 		}
 		return false;
 	}
@@ -265,7 +281,7 @@ abstract class IOStream {
 	 */
 	public function unfreezeInput($at_front = false) {
 		if (isset($this->bev)) {
-			return $this->bev->getInput()->unfreeze($at_front);
+			return $this->bev->input->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -277,7 +293,7 @@ abstract class IOStream {
 	 */
 	public function freezeOutput($at_front = true) {
 		if (isset($this->bev)) {
-			return $this->bev->getOutput()->unfreeze($at_front);
+			return $this->bev->output->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -289,7 +305,7 @@ abstract class IOStream {
 	 */
 	public function unfreezeOutput($at_front = true) {
 		if (isset($this->bev)) {
-			return $this->bev->getOutput()->unfreeze($at_front);
+			return $this->bev->output->unfreeze($at_front);
 		}
 		return false;
 	}
@@ -318,7 +334,16 @@ abstract class IOStream {
 			return true;
 		}
  		$this->writing = true;
-		$this->bev->write($data);
+ 		Daemon::$noError = true;
+		if (!$this->bev->write($data) || !Daemon::$noError) {
+			/*Daemon::log('~~~~~~~~~~~~~~~~~~~ ' . @$this->logLine);
+			Daemon::log('finished = '.($this->finished?1:0));
+			Daemon::log('writing = '.($this->writing?1:0));
+			Daemon::log('freed = '.($this->freed?1:0));
+			@Daemon::log(implode("\n", $this->eventLog));
+			Daemon::log('~~~~~~~~~~~~~~~~~~~');*/
+			$this->close();
+		}
 		return true;
 	}
 
@@ -374,7 +399,7 @@ abstract class IOStream {
 	 * @param string New received data
 	 * @return void
 	 */
-	public function stdin($buf) {}
+	public function stdin($buf) {} // @TODO: deprecate
 	
 	/**
 	 * Close the connection
@@ -382,10 +407,12 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
+		//if (isset($this->eventLog)) {$this->eventLog[] = 'close()';}
 		if (isset($this->bev)) { // @TODO: refactoring of this check
 			//Daemon::log(get_class($this) . '-> free(' . spl_object_hash($this) . ')');
 			$this->bev->free();
 			$this->bev = null;
+			$this->freed = true;
 			Daemon::$process->eventBase->stop();
 		}
 		if ($this->pool) {
@@ -399,6 +426,11 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onReadEv($bev) {
+		if (isset($this->eventLog)) {$this->eventLog[] = 'onReadEv()';}
+		if (!$this->ready) {
+			$this->wRead = true;
+			return;
+		}
 		try {
 			$this->reading = !$this->onRead();
 		} catch (Exception $e) {
@@ -434,6 +466,7 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onWriteEv($bev) {
+		//if (isset($this->eventLog)) {$this->eventLog[] = 'onWriteEv()';}
 		$this->writing = false;
 		if ($this->finished) {
 			$this->close();
@@ -452,13 +485,17 @@ abstract class IOStream {
 				}
 			}
 			$this->alive = true;
-			if (isset($this->bev)) {
+			/*if (isset($this->bev)) {
 				if (!$this->bev->enable(Event::READ)) {
 					Daemon::log(get_class($this). ' second enable() returned false');
 				}
-			}
+			}*/
 			try {			
 				$this->onReady();
+				if ($this->wRead) {
+					$this->wRead = false;
+					$this->onRead();
+				}
 			} catch (Exception $e) {
 				Daemon::uncaughtExceptionHandler($e);
 			}
@@ -480,6 +517,7 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onStateEv($bev, $events) {
+		//if (isset($this->eventLog)) {$this->eventLog[] = 'onStateEv('.$events.')';}
 		if ($events & EventBufferEvent::CONNECTED) {
 			$this->onWriteEv($bev);
 		}
@@ -515,10 +553,7 @@ abstract class IOStream {
 			$this->reading = false;
 			return false;
 		}
+		//if (isset($this->allReaded)) $this->allReaded .= $read;
 		return $read;
-	}
-
-	public function __destruct() {
-		//Daemon::log(get_class($this) . '-> __destruct()');
 	}
 }

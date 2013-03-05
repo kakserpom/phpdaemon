@@ -7,13 +7,13 @@
 class WebSocketProtocol {
 	
 	public $description;
-	public $connection;
+	public $conn;
 
 	const STRING = NULL;
 	const BINARY = NULL;
 	
-	public function __construct($connection) {
-		$this->connection = $connection;
+	public function __construct($conn) {
+		$this->conn = $conn;
 	}
 
 	public function getFrameType($type) {
@@ -35,11 +35,11 @@ class WebSocketProtocol {
 	}
 
 	public function sendFrame($data, $type) {
-		$this->connection->write($this->encodeFrame($data, $type)) ;
+		$this->conn->write($this->encodeFrame($data, $type)) ;
 	}
 
 	public function onRead() {
-		$this->connection->buf = "" ;
+		$this->conn->buf = "" ;
 	}
 	
     /**
