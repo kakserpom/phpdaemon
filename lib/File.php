@@ -443,8 +443,8 @@ class File {
 			fclose($this->fd);
 			return;
 		}
-		//$r = eio_close($this->fd, EIO_PRI_MAX);
-		//$this->fd = null;
-		//return $r;
+		$r = eio_close($this->fd, EIO_PRI_MAX);
+		$this->fd = null;
+		return $r;
 	}
 }
