@@ -10,7 +10,6 @@ abstract class IOStream {
 	public $EOL = "\n";
 	public $EOLS;
 
-
 	public $listenerMode = false;
 	public $readPacketSize  = 8192;
 	public $bev;
@@ -72,11 +71,6 @@ abstract class IOStream {
 		$this->readPacketSize = $n;
 		return $this;
 	}
-	public static function logFd($fd, $where) {
-		$fdNo = @EventUtil::testfd($fd, false);
-		$fdOk = EventUtil::testfd($fd, true);
-		Daemon::$process->log(microtime(true) .'::' . $where. ' FD #' . $fdNo .' ('.Debug::dump($fd).') -- '.($fdOk ? 'OK' : 'BAD <<<========') . "\n" . Debug::backtrace());
-	} // IOStream::logFd($this->fd, get_class($this).'::'.__METHOD__.':'.__LINE__);
 
 	public function setFd($fd) {
 		$this->fd = $fd;
@@ -86,7 +80,7 @@ abstract class IOStream {
 			return;
 		}
 		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, 
-			EventBufferEvent::OPT_CLOSE_ON_FREE /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
+			!is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0 /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
 			[$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']
 		);
 		if (!$this->bev) {
@@ -100,7 +94,7 @@ abstract class IOStream {
 		}
 		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
 		if (!$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
-			Daemon::log(get_class($this). ' first enable() returned false');
+			Daemon::log(get_class($this). ' enable() returned false');
 		}
 		if ($this->bevConnect && ($this->fd === null)) {
 			//$this->bev->connect($this->addr, false);
@@ -336,12 +330,6 @@ abstract class IOStream {
  		$this->writing = true;
  		Daemon::$noError = true;
 		if (!$this->bev->write($data) || !Daemon::$noError) {
-			/*Daemon::log('~~~~~~~~~~~~~~~~~~~ ' . @$this->logLine);
-			Daemon::log('finished = '.($this->finished?1:0));
-			Daemon::log('writing = '.($this->writing?1:0));
-			Daemon::log('freed = '.($this->freed?1:0));
-			@Daemon::log(implode("\n", $this->eventLog));
-			Daemon::log('~~~~~~~~~~~~~~~~~~~');*/
 			$this->close();
 		}
 		return true;
@@ -378,6 +366,10 @@ abstract class IOStream {
 			return;
 		}
 		$this->finished = true;
+		/// 
+	
+		// if (!Daemon::$process->eventBase->gotStop())
+		Daemon::$process->eventBase->stop();
 		$this->onFinish();
 		if (!$this->writing) {
 			$this->close();
@@ -407,13 +399,15 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function close() {
-		//if (isset($this->eventLog)) {$this->eventLog[] = 'close()';}
-		if (isset($this->bev)) { // @TODO: refactoring of this check
+		if (!$this->freed) {
+			$this->freed = true;
 			//Daemon::log(get_class($this) . '-> free(' . spl_object_hash($this) . ')');
 			$this->bev->free();
 			$this->bev = null;
-			$this->freed = true;
-			Daemon::$process->eventBase->stop();
+			if (is_resource($this->fd)) {
+				socket_close($this->fd);
+			}
+			//Daemon::$process->eventBase->stop();
 		}
 		if ($this->pool) {
 			$this->pool->detach($this);
@@ -426,7 +420,6 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onReadEv($bev) {
-		if (isset($this->eventLog)) {$this->eventLog[] = 'onReadEv()';}
 		if (!$this->ready) {
 			$this->wRead = true;
 			return;
@@ -466,7 +459,6 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onWriteEv($bev) {
-		//if (isset($this->eventLog)) {$this->eventLog[] = 'onWriteEv()';}
 		$this->writing = false;
 		if ($this->finished) {
 			$this->close();
@@ -517,14 +509,17 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onStateEv($bev, $events) {
-		//if (isset($this->eventLog)) {$this->eventLog[] = 'onStateEv('.$events.')';}
 		if ($events & EventBufferEvent::CONNECTED) {
 			$this->onWriteEv($bev);
-		}
-  		elseif ($events & (EventBufferEvent::ERROR | EventBufferEvent::EOF)) {
+		} elseif ($events & (EventBufferEvent::ERROR | EventBufferEvent::EOF)) {
 			try {
 				if ($this->finished) {
 					return;
+				}
+				if ($events & EventBufferEvent::ERROR) {
+					trigger_error("Socket error #"
+						.EventUtil::getLastSocketErrno()
+						.":".EventUtil::getLastSocketError(), E_USER_WARNING);
 				}
 				$this->finished = true;
 				$this->onFinish();
@@ -553,7 +548,6 @@ abstract class IOStream {
 			$this->reading = false;
 			return false;
 		}
-		//if (isset($this->allReaded)) $this->allReaded .= $read;
 		return $read;
 	}
 }

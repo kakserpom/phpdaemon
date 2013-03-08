@@ -15,6 +15,7 @@ class File {
 	public $append;
 	public $path;
 	public $writing = false;
+	public $closed = false;
 
 	/**
 	 * File constructor
@@ -432,6 +433,10 @@ class File {
 	}
 	
 	public function close() {
+		if ($this->closed) {
+			return;
+		}
+		$this->closed = true;
 		if ($this->fdCacheKey !== null) {
 			FS::$fdCache->invalidate($this->fdCacheKey);
 		}
@@ -446,5 +451,9 @@ class File {
 		$r = eio_close($this->fd, EIO_PRI_MAX);
 		$this->fd = null;
 		return $r;
+	}
+
+	public function __destruct() {
+		$this->close();
 	}
 }

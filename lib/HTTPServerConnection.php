@@ -18,9 +18,7 @@ class HTTPServerConnection extends Connection {
 	const STATE_HEADERS = 2;
 	const STATE_CONTENT = 3;
 	const STATE_PROCESSING = 4;
-	
-	public $allReaded = '';
-	
+		
 	public $sendfileCap = true; // we can use sendfile() with this kind of connection
 	public $chunkedEncCap = true;
 
@@ -28,18 +26,13 @@ class HTTPServerConnection extends Connection {
 
 	public $currentHeader;
 	public $copyout = null;
-	public $logLine;
-	public $eventLog = [];
-
 	public function init() {
 		$this->ctime = microtime(true);
-		$this->logLine = sha1(spl_object_hash($this));
 	}
 	public function httpReadFirstline() {
 		if (($l = $this->readline()) === null) {
 			return false;
 		}
-		$this->logLine = trim($this->logLine). ': ('.$l.')';
 		$e = explode(' ', $l);
 		$u = isset($e[1]) ? parse_url($e[1]) : false;
 		if ($u === false) {
@@ -149,11 +142,9 @@ class HTTPServerConnection extends Connection {
 	 */
 	
 	public function onRead() {
-		$this->eventLog[] = 'onRead()';
 		$this->bev->input->copyout($this->copyout, 1024);
 		start:
 		if ($this->finished) {
-			$this->eventLog[] = __LINE__.' (return if finished)';
 			return;
 		}
 		if ($this->state === self::STATE_ROOT) {
@@ -180,8 +171,6 @@ class HTTPServerConnection extends Connection {
 			if (!$this->req || $this->state === self::STATE_PROCESSING) {
 				if (isset($this->bev) && ($this->bev->input->length > 0)) {
 					$eventMsg = 'Unexpected input (HTTP request, '.$this->state.'): '.json_encode($this->read($this->bev->input->length));
-					if ($this->logLine) Daemon::log($this->logLine . $eventMsg);
-					$this->eventLog[] = $eventMsg;
 				}
 				return;
 			}
@@ -189,28 +178,19 @@ class HTTPServerConnection extends Connection {
 
 		if ($this->state === self::STATE_FIRSTLINE) {
 			if (!$this->httpReadFirstline()) {
-				if ($this->logLine) Daemon::log($this->logLine. ' httpReadFirstline returned false');
-				$this->eventLog[] = $eventMsg;
 				return;
 			}
-			$this->eventLog[] = 'set STATE_HEADERS';
 			$this->state = self::STATE_HEADERS;
 		}		
 
 		if ($this->state === self::STATE_HEADERS) {
 			if (!$this->httpReadHeaders()) {
-				if ($this->logLine) Daemon::log($this->logLine. ' httpReadHeaders returned false');	
-				$this->eventLog[] = 'httpReadHeaders returned false';
 				return;
 			}
 			if (!$this->httpProcessHeaders()) {
-				//if ($this->logLine) Daemon::log($this->logLine. ' httpProcessHeaders returned false');	
-				$this->eventLog[] = 'httpProcessHeaders returned false';
 				$this->finish();
 				return;
 			}
-			//if ($this->logLine) Daemon::log($this->logLine. ' set STATE_CONTENT');
-			$this->eventLog[] = 'set STATE_CONTENT';
 			$this->state = self::STATE_CONTENT;
 		}
 		if ($this->state === self::STATE_CONTENT) {
@@ -218,8 +198,6 @@ class HTTPServerConnection extends Connection {
 			if (!$this->req->attrs->stdin_done) {
 				return;
 			}
-			//if ($this->logLine) Daemon::log($this->logLine. ' set STATE_PROCESSING.');
-			$this->eventLog[] = 'set STATE_PROCESSING';
 			$this->state = self::STATE_PROCESSING;
 			$this->freezeInput();
 			if ($this->req->attrs->stdin_done && $this->req->attrs->params_done) {
@@ -288,18 +266,12 @@ class HTTPServerConnection extends Connection {
 			return;
 		}
 		$this->req = null;
-		//if ($this->logLine) Daemon::log($this->logLine. ' set STATE_ROOT (freeRequest)');
 		$this->state = self::STATE_ROOT;
 		$this->unfreezeInput();
 	}
 	public function badRequest($req) {
-		if ($this->logLine) Daemon::log($this->logLine. ' set STATE_ROOT (badRequest)');
 		$this->state = self::STATE_ROOT;
 		$this->write("400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor=\"white\"><center><h1>400 Bad Request</h1></center></body></html>");
 		$this->finish();
-	}
-	public function __destruct() {
-		if (isset($this->ololo))
-			Daemon::log(json_encode($this->req->attrs->server));
 	}
 }

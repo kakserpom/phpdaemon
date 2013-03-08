@@ -260,7 +260,7 @@ class FS {
 			call_user_func($cb, $path, file_get_contents($path));
 			return;
 		}
-		FS::open($path, 'r!', function ($file) use ($cb, $pri, $path) {
+		FS::open($path, 'r!', function ($file) use ($path, $cb, $pri, $path) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
@@ -275,9 +275,9 @@ class FS {
 			call_user_func($cb, $r !== false);
 			return;
 		}
-		FS::open($path, 'r!', function ($file) use ($cb, $chunkcb, $pri) {
+		FS::open($path, 'r!', function ($file) use ($path, $cb, $chunkcb, $pri) {
 			if (!$file) {
-				call_user_func($cb, $file->path, false);
+				call_user_func($cb, $path, false);
 				return;
 			}
 			$file->readAllChunked($cb, $chunkcb, $pri);

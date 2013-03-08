@@ -195,7 +195,6 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 
     public function onRead() {
 		$data = '';
-		//Daemon::log(Debug::exportBytes($this->conn->buf));
 		while ($this->conn && (($buflen = strlen($this->conn->buf)) >= 1)) {
 			$p = 0; // offset
 			$first = ord(binarySubstr($this->conn->buf, $p++, 1)); // first byte integer (fin, opcode)
@@ -208,7 +207,12 @@ class WebSocketProtocolV13 extends WebSocketProtocol
         		$this->conn->finish();
             	return;
 			}
-			$opcodeName = $this->opcodes[$opcode];
+			$opcodeName = isset($this->opcodes[$opcode]) ? $this->opcodes[$opcode] : false;
+			if (!$opcodeName) {
+				Daemon::log(Debug::exportBytes($this->conn->buf));
+				$this->conn->finish();
+				return;
+			}
 			$second = ord(binarySubstr($this->conn->buf, $p++, 1)); // second byte integer (masked, payload length)
 			$fin =	(bool) ($first >> 7);
         	$isMasked   = (bool) ($second >> 7);
@@ -220,12 +224,12 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 				$dataLength = $this->bytes2int(binarySubstr($this->conn->buf, $p, 2), false);
 				$p += 2;
 			}
-			elseif ($dataLength === 0x7f) { // 4 bytes-length
-				if ($buflen < $p + 4) {
+			elseif ($dataLength === 0x7f) { // 8 bytes-length
+				if ($buflen < $p + 8) {
 					return; // not enough data yet
 				}
-            	$dataLength = $this->bytes2int(binarySubstr($this->conn->buf, $p, 4));
-            	$p += 4;
+            	$dataLength = $this->bytes2int(binarySubstr($this->conn->buf, $p, 8));
+            	$p += 8;
             }
 			if ($this->conn->pool->maxAllowedPacket <= $dataLength) {
 				// Too big packet

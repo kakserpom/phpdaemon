@@ -86,7 +86,7 @@ class MongoClientAsync extends NetworkClient {
 		$reqId = ++$this->lastReqId;
 		$cb = function ($conn) use ($opcode, $data, $reply, $reqId) {
 			if (!$conn->connected) {
-				throw new MongoClientConnectionAsyncFinished;
+				throw new MongoClientAsyncConnectionFinished;
 			}
 			$conn->pool->lastRequestConnection = $conn;
 			$conn->write(pack('VVVV', strlen($data) + 16, $reqId, 0, $opcode) . $data);

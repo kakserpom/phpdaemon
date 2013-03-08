@@ -20,7 +20,7 @@ class MyAppResolver extends AppResolver {
 			This method should return application name to handle incoming request ($req).
 		*/
 
-		if (preg_match('~^/(WebSocketOverCOMET|Example)/~', $req->attrs->server['DOCUMENT_URI'], $m)) {
+		if (preg_match('~^/(WebSocketOverCOMET|Example|ExampleWithMongo)/~', $req->attrs->server['DOCUMENT_URI'], $m)) {
 			return $m[1];
 		}
   
