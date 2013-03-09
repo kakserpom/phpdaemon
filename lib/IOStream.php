@@ -401,7 +401,6 @@ abstract class IOStream {
 	public function close() {
 		if (!$this->freed) {
 			$this->freed = true;
-			//Daemon::log(get_class($this) . '-> free(' . spl_object_hash($this) . ')');
 			$this->bev->free();
 			$this->bev = null;
 			if (is_resource($this->fd)) {

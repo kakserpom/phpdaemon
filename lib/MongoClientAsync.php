@@ -85,11 +85,12 @@ class MongoClientAsync extends NetworkClient {
 	public function request($key, $opcode, $data, $reply = false) {
 		$reqId = ++$this->lastReqId;
 		$cb = function ($conn) use ($opcode, $data, $reply, $reqId) {
-			if (!$conn->connected) {
+			if ($conn->finished) {
 				throw new MongoClientAsyncConnectionFinished;
 			}
 			$conn->pool->lastRequestConnection = $conn;
-			$conn->write(pack('VVVV', strlen($data) + 16, $reqId, 0, $opcode) . $data);
+			$conn->write(pack('VVVV', strlen($data) + 16, $reqId, 0, $opcode));
+			$conn->write($data);
 			if ($reply) {
 				$conn->setFree(false);
 			}
@@ -392,7 +393,7 @@ class MongoClientAsync extends NetworkClient {
 			'authenticate' => 1, 
 			'user' => $p['user'], 
 			'nonce' => $p['nonce'], 
-			'key' => MongoClientAsync::getAuthKey($p['user'], $p['password'], $p['nonce']), 
+			'key' => self::getAuthKey($p['user'], $p['password'], $p['nonce']), 
 		];
 
 		$packet = pack('V', $p['opts'])
@@ -423,7 +424,6 @@ class MongoClientAsync extends NetworkClient {
 			. pack('VV', 0, -1)
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
-
 		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
 		$this->requests[$reqId] = [$p['dbname'], $callback, true];
 	}

@@ -12,29 +12,37 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 	public $cursors     = []; // Active cursors
 
 	public function onReady() {
-		$conn = $this;
-		if ($conn->user !== NULL) {
-			$this->pool->getNonce(array(
-				'dbname' => $conn->dbname), 
-				function($result) use ($conn) {
-					$conn->appInstance->auth(
-						array(
-							'user'     => $conn->user, 
-							'password' => $conn->password, 
-							'nonce'    => $result['nonce'], 
-							'dbname'   => $conn->dbname, 
-						), 
-						function($result) use ($conn) {
-							if (!$result['ok']) {
-								Daemon::log('MongoClient: authentication error with ' . $conn->url . ': ' . $result['errmsg']);
-							}
-						}, 
-						$conn
-					);
-				}, $conn
-			);
+		if ($this->user === null) {
+			$this->connected = true;
 		}
-		parent::onReady();
+		if ($this->connected) {
+			parent::onReady();
+			return;
+		}
+		$this->dbname = $this->path;
+		$this->pool->getNonce(['dbname' => $this->dbname],
+			function($result)  {
+				if (isset($result['$err'])) {
+					Daemon::log('MongoClient: getNonce() error with ' . $this->url . ': ' . $result['$err']);
+					$this->finish();
+				}
+				$this->pool->auth([
+					'user'     => $this->user, 
+					'password' => $this->password, 
+					'nonce'    => $result['nonce'], 
+					'dbname'   => $this->dbname, 
+				], 
+				function($result) {
+					if (!isset($result['ok']) || !$result['ok']) {
+						Daemon::log('MongoClient: authentication error with ' . $this->url . ': ' . $result['errmsg']);
+						$this->finish();
+						return;
+					}
+					$this->connected = true;
+					$this->onReady();
+				}, $this);
+			}, $this
+		);
 	}
 	/**
 	 * Called when new data received
@@ -42,6 +50,9 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 	 */
 	public function onRead() {
 		start:
+		if ($this->freed) {
+			return;
+		}
 		if ($this->state === self::STATE_ROOT) {
 			if (false === ($hdr = $this->readExact(16))) {
 				return; // we do not have a header
