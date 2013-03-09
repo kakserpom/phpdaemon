@@ -12,22 +12,15 @@ class WebSocketServerConnection extends Connection {
 	public $writeReady = TRUE;
 	public $extensions = array();
 	public $framebuf = '';
-	public $alive = true; // HACK
 	public $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
 	const STATE_HANDSHAKING = 1;
 	const STATE_HANDSHAKED = 2;
 	public $buf = '';
-
 	public $protocol; // Related WebSocket protocol
 
-	public function init() {
-	}
+	public function init() {}
 	
 	public function onInheritanceFromRequest($req) {
-		Daemon::log(json_encode([
-			$this->bev->input->length,
-			$this->look(1024),
-		]));
 		$this->prependInput("\r\n");
 		$this->onRead();
 	}
