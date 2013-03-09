@@ -201,13 +201,13 @@ class WebSocketServerConnection extends Connection {
 		//Daemon::log(Debug::dump($buf));
 		$this->buf .= $buf;
 		if ($this->state === self::STATE_ROOT)	{
-			/*if (strpos($this->buf, "<policy-file-request/>\x00") === 0) {
+			if (strpos($this->buf, "<policy-file-request/>\x00") === 0) {
 				if (($FP = FlashPolicyServer::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();
 				return;
-			}*/
+			}
 
 			$i = 0;
 
@@ -300,10 +300,8 @@ class WebSocketServerConnection extends Connection {
 			$this->buf = '';
 			$this->state = self::STATE_HANDSHAKED;
 		}
-		if ($this->state === self::STATE_HANDSHAKED)
-		{
-	        if (!isset($this->protocol))
-    	    {
+		if ($this->state === self::STATE_HANDSHAKED) {
+	        if (!isset($this->protocol)) {
         	    Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client "' . $this->addr . '"');
             	$this->finish();
             	return;

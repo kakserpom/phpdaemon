@@ -559,6 +559,7 @@ class HTTPRequest extends Request {
 			throw new RequestHeadersAlreadySent();
 			return false;
 		}
+		$s = strtr($s, "\r\n", '  ');
 
 		$e = explode(':', $s, 2);
 
