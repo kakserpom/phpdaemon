@@ -10,7 +10,7 @@
 class NetworkServer extends ConnectionPool {
 
 	/**
-	 * Called when a request to HTTP-server looks like WebSocket handshake query.
+	 * Called when a request to HTTP-server looks like another connection.
 	 * @return void
 	 */
 

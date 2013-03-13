@@ -25,6 +25,9 @@ class Daemon_ConfigParser {
 	private $result;
 	public $errorneus = FALSE;
 
+	public static function parse($file, $config, $included = false) {
+		return new self($file, $config, $included);
+	}
 	/**
 	 * Constructor
 	 * @return void
@@ -105,7 +108,7 @@ class Daemon_ConfigParser {
 						$prePoint = array($this->line, $this->col - 1);
 						$c = $this->getCurrentChar();
 
-						if (ctype_space($c) || $c === '=') {
+						if (ctype_space($c) || $c === '=' || $c === ',') {
 							if ($c === "\n") {
 								$newLineDetected = $prePoint;
 							}
@@ -183,38 +186,37 @@ class Daemon_ConfigParser {
 					}
 					elseif ($tokenType === Daemon_ConfigParser::T_VAR) {
 						$name = str_replace('-', '', strtolower($elements[0]));
+						if (sizeof($elements) > 2) {
+							$value = array_slice($elements, 1);
+						} else {
+							$value = isset($elements[1]) ? $elements[1] : null;
+						}
 						$scope = $this->getCurrentScope();
 						
 						if ($name === 'include') {
-							$path = $elements[1];
-							if (substr($path,0,1) !== '/') {
-								$path = 'conf/'.$path;
-							}
-							$files = glob($path);
-							if ($files) {
-								foreach ($files as $fn) {
-									$parser = new Daemon_ConfigParser($fn, $scope, true);
+							foreach ($value as $path) {
+								if (substr($path, 0, 1) !== '/') {
+									$path = 'conf/' . $path;
+								}
+								$files = glob($path);
+								if ($files) foreach ($files as $fn) {
+									Daemon_ConfigParser::parse($fn, $scope, true);
 								}
 							}
-						} elseif (substr(strtolower($elements[0]),0,4) === 'mod-') { // @TODO: remove in 1.0
+						} elseif (substr(strtolower($name),0, 4) === 'mod-') { // @TODO: remove this if-block of code in version 1.0
 							$this->raiseError('Variable started with \'mod-\'. This style is deprecated. You should replace it with block.');
 						} else {
-							if (sizeof($elements) > 2) {
-								$this->raiseError('Too many arguments.');
+							if ($value === null) {
+								$value = true;
+							 	$elements[1] = true;
+							 	$elTypes[1] = Daemon_ConfigParser::T_CVALUE;
 							}
 							if (isset($scope->{$name})) {
 								if ($scope->{$name}->source !== 'cmdline')	{
-									if (!isset($elements[1])) {
-										$elements[1] = true;
-										$elTypes[1] = Daemon_ConfigParser::T_CVALUE;
-									}
-									if (
-										($elTypes[1] === Daemon_ConfigParser::T_CVALUE) 
-										&& is_string($elements[1])
-									) {
-										$scope->{$name}->setHumanValue($elements[1]);
+									if (($elTypes[1] === Daemon_ConfigParser::T_CVALUE) && is_string($value)) {
+										$scope->{$name}->setHumanValue($value);
 									} else {
-										$scope->{$name}->setValue($elements[1]);
+										$scope->{$name}->setValue($value);
 									}
 									$scope->{$name}->source = 'config';
 									$scope->{$name}->revision = $this->revision;
@@ -223,14 +225,12 @@ class Daemon_ConfigParser {
 								$scope->{$name} = new Daemon_ConfigEntry();
 								$scope->{$name}->source = 'config';
 								$scope->{$name}->revision = $this->revision;
-								if (!isset($elements[1])) {
-							 		$elements[1] = true;
-							 		$elTypes[1] = Daemon_ConfigParser::T_CVALUE;
-								}
-								$scope->{$name}->setValue($elements[1]);
-								$scope->{$name}->setValueType($elTypes[1]);
+								$scope->{$name}->setValue($value);
+								$scope->{$name}->setValueType($value);
 							}
-							else {$this->raiseError('Unrecognized parameter \''.$name.'\'');}
+							else {
+								$this->raiseError('Unrecognized parameter \''.$name.'\'');
+							}
 						}
 					}
 					elseif ($tokenType === Daemon_ConfigParser::T_BLOCK) {

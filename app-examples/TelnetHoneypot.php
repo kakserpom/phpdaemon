@@ -16,7 +16,7 @@ class TelnetHoneypot extends NetworkServer {
 		return array(
 			// @todo add description strings
 			'listen'                  =>  '0.0.0.0',
-			'listen-port'             => 23,
+			'port'		             => 23,
 		);
 	}
 }

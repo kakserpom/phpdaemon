@@ -151,7 +151,7 @@ class HTTPServerConnection extends Connection {
 			if ($this->req !== null) { // we have to wait the current request.
 				return;
 			}
-			/*if (($d = $this->drainIfMatch("<policy-file-request/>\x00")) === null) { // partially match
+			if (($d = $this->drainIfMatch("<policy-file-request/>\x00")) === null) { // partially match
 				return;
 			}
 			if ($d) {
@@ -160,7 +160,7 @@ class HTTPServerConnection extends Connection {
 				}
 				$this->finish();
 				return;
-			}*/
+			}
 			if (!$this->req = $this->newRequest()) {
 				$this->finish();
 				return;

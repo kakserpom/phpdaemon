@@ -4,12 +4,12 @@ class WebSocketServerConnection extends Connection {
 	public $timeout = 120;
 	public $secprotocol;
 	public $resultKey;
-	public $handshaked = FALSE;
+	public $handshaked = false;
 	public $upstream;
 	public $server = array();
 	public $cookie = array();
-	public $firstline = FALSE;
-	public $writeReady = TRUE;
+	public $firstline = false;
+	public $writeReady = true;
 	public $extensions = array();
 	public $framebuf = '';
 	public $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';

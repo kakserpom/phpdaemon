@@ -12,7 +12,7 @@ class BoundTCPSocket extends BoundSocket {
 	public $reuse = false;
 	public $host;
 	public $port;
-	public $listenerMode = false;
+	public $listenerMode = true;
 
 	public function setDefaultPort($n) {
 		$this->defaultPort = (int) $n;
