@@ -194,6 +194,9 @@ class Daemon_ConfigParser {
 						$scope = $this->getCurrentScope();
 						
 						if ($name === 'include') {
+							if (!is_array($value)) {
+								$value = [$value];
+							}
 							foreach ($value as $path) {
 								if (substr($path, 0, 1) !== '/') {
 									$path = 'conf/' . $path;
