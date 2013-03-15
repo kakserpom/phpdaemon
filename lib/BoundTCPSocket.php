@@ -61,7 +61,7 @@ class BoundTCPSocket extends BoundSocket {
 		}
 		socket_getsockname($sock, $this->host, $this->port);
 		$addr = $this->host . ':' . $this->port;
-		//socket_set_nonblock($sock);
+		socket_set_nonblock($sock);
 		if (!$this->listenerMode) {
 			if (!socket_listen($sock, SOMAXCONN)) {
 				$errno = socket_last_error();

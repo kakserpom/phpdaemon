@@ -7,6 +7,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
+// @TODO: respawning IPCThread on unexpected failures
 class Daemon_IPCThread extends Thread {
 	public $eventBase;
 	public $timeoutEvent;

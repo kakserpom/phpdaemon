@@ -72,12 +72,20 @@ abstract class IOStream {
 		return $this;
 	}
 
-	public function setFd($fd) {
+	public function setFd($fd, $bev = null) {
 		$this->fd = $fd;
-		$class = get_class($this);
 		if ($this->fd === false) {
 			$this->finish();
 			return;
+		}
+		if ($bev !== null) {
+			$bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
+			$this->bev = $bev;
+			if (!$this->bev) {
+				return;
+			}
+			$this->ready = true;
+			$this->alive = true;
 		}
 		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, 
 			!is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0 /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
@@ -100,6 +108,7 @@ abstract class IOStream {
 			//$this->bev->connect($this->addr, false);
 			$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
 		}
+		init:
 		if (!$this->inited) {
 			$this->inited = true;
 			$this->init();
@@ -414,6 +423,11 @@ abstract class IOStream {
 			$this->pool->detach($this);
 		}
 	}
+
+	public function unsetFd() {
+		$this->bev = null;
+		$this->fd = null;
+	}
 	
 	/**
 	 * Called when the connection has got new data
@@ -478,12 +492,7 @@ abstract class IOStream {
 				}
 			}
 			$this->alive = true;
-			/*if (isset($this->bev)) {
-				if (!$this->bev->enable(Event::READ)) {
-					Daemon::log(get_class($this). ' second enable() returned false');
-				}
-			}*/
-			try {			
+			try {
 				$this->onReady();
 				if ($this->wRead) {
 					$this->wRead = false;
@@ -520,7 +529,7 @@ abstract class IOStream {
 				if ($events & EventBufferEvent::ERROR) {
 					trigger_error("Socket error #"
 						.EventUtil::getLastSocketErrno()
-						.":".EventUtil::getLastSocketError(), E_USER_WARNING);
+						.":".EventUtil::getLastSocketError(), E_USER_NOTICE);
 				}
 				$this->finished = true;
 				$this->onFinish();

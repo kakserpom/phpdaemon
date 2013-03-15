@@ -21,6 +21,9 @@ class WebSocketServerConnection extends Connection {
 	public function init() {}
 	
 	public function onInheritanceFromRequest($req) {
+		$this->firstline = true;
+		$this->addr = $req->attrs->server['REMOTE_ADDR'];
+		$this->server = $req->attrs->server;
 		$this->prependInput("\r\n");
 		$this->onRead();
 	}
