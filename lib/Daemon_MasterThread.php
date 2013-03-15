@@ -339,7 +339,6 @@ class Daemon_MasterThread extends Thread {
 		foreach ($this->collections as $col) {
 			$col->signal($signo);
 		}
-
 	}
 	/**
 	 * Handler for the SIGTERM (shutdown) signal in master process
@@ -409,7 +408,6 @@ class Daemon_MasterThread extends Thread {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('Caught SIGUSR2 (graceful restart all workers).');
 		}
-
 		$this->signalToChildren(SIGUSR2);
 	}
 

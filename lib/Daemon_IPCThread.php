@@ -194,7 +194,7 @@ class Daemon_IPCThread extends Thread {
 		if ($hard) {
 			exit(0);
 		}
-		//FS::waitAllEvents(); // ensure that all I/O events completed before suicide
+		FS::waitAllEvents(); // ensure that all I/O events completed before suicide
 		posix_kill(posix_getppid(), SIGCHLD); // praying to Master
 		exit(0); // R.I.P.
 	}
@@ -271,7 +271,6 @@ class Daemon_IPCThread extends Thread {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGUSR2 (graceful shutdown for update).');
 		}
-		$this->sigterm();
 	}
 
 	/**
