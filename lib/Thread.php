@@ -288,7 +288,7 @@ abstract class Thread {
 			}
 		}
 
-		return FALSE;
+		return false;
 	}
 
 	/**

@@ -47,8 +47,8 @@ class Daemon_IPCThread extends Thread {
 		}
 		$this->prepareSystemEnv();
 		$this->registerEventSignals();
-		//FS::init(); // re-init
-		//FS::initEvent();
+		FS::init(); // re-init
+		FS::initEvent();
 		Daemon::openLogs();
 
 		$this->fileWatcher = new FileWatcher;
