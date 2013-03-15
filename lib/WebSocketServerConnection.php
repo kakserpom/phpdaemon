@@ -197,7 +197,7 @@ class WebSocketServerConnection extends Connection {
 	 * @return void
 	 */
 
-	public function stdin($buf) {
+	public function stdin($buf) { // @TODO: refactoring to onRead, stateful machine
 		//Daemon::log(Debug::dump($buf));
 		$this->buf .= $buf;
 		if ($this->state === self::STATE_ROOT)	{

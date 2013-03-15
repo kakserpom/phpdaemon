@@ -401,7 +401,9 @@ abstract class IOStream {
 	public function close() {
 		if (!$this->freed) {
 			$this->freed = true;
-			$this->bev->free();
+			if (isset($this->bev)) {
+				$this->bev->free();
+			}
 			$this->bev = null;
 			if (is_resource($this->fd)) {
 				socket_close($this->fd);

@@ -35,6 +35,8 @@ class NetworkServer extends ConnectionPool {
 		$conn->addr = $req->attrs->server['REMOTE_ADDR'];
 		$conn->server = $req->attrs->server;
 		$conn->firstline = true;
+		$conn->ready = true;
+		$conn->alive = true;
 
 		$conn->onInheritanceFromRequest($req);
 		if ($req instanceof Request) {
