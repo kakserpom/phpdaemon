@@ -67,6 +67,11 @@ class Daemon_WorkerThread extends Thread {
 			gc_disable();
 		}
 
+		if (Daemon::$runworkerMode) {
+			Daemon::$appResolver = require Daemon::$appResolverPath;
+			Daemon::$appResolver->preload(true);
+		}
+
 		$this->prepareSystemEnv();
 		$this->overrideNativeFuncs();
 
@@ -78,11 +83,6 @@ class Daemon_WorkerThread extends Thread {
 		FS::initEvent();
 		Daemon::openLogs();
 	
-		if (Daemon::$runworkerMode) {
-			Daemon::$appResolver = require Daemon::$appResolverPath;
-			Daemon::$appResolver->preload(true);
-		}
-
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 		
 		Daemon::$appResolver->preload();

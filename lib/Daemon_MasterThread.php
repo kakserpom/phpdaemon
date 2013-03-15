@@ -50,7 +50,7 @@ class Daemon_MasterThread extends Thread {
 		Daemon::$appResolver->preload(true); 
 
 		$this->callbacks = new StackCallbacks;
-		//$this->spawnIPCThread();
+		$this->spawnIPCThread();
 		$this->spawnWorkers(min(
 			Daemon::$config->startworkers->value,
 			Daemon::$config->maxworkers->value
