@@ -13,7 +13,6 @@ abstract class BoundSocket {
 	public $fd;
 	public $ev;
 	public $pid;
-	public $overload = false;
 	public $pool;
 	public $addr;
 	public $reuse;
@@ -51,14 +50,18 @@ abstract class BoundSocket {
 		}
 		$this->enabled = true;
 		if ($this->listenerMode) {
-			$this->ev = new EventListener(
-				Daemon::$process->eventBase,
-				array($this, 'onListenerAcceptedEvent'),
-				null,
-				EventListener::OPT_CLOSE_ON_FREE | EventListener::OPT_REUSEABLE,
-				-1,
-				$this->fd
-			);
+			if ($this->ev === null) {
+				$this->ev = new EventListener(
+					Daemon::$process->eventBase,
+					[$this, 'onListenerAcceptedEvent'],
+					null,
+					EventListener::OPT_CLOSE_ON_FREE | EventListener::OPT_REUSEABLE,
+					-1,
+					$this->fd
+				);
+			} else {
+				// @TODO: enable EventListener
+			}
 		} else {
 			if ($this->ev === null) {
 				$this->ev = new Event(Daemon::$process->eventBase, $this->fd, Event::READ | Event::PERSIST, array($this, 'onAcceptEv'));
@@ -66,6 +69,8 @@ abstract class BoundSocket {
 					Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($this->fd));
 					return;
 				}
+			} else {
+				$this->onAcceptEv();
 			}
 			$this->ev->add();
 		}
@@ -90,12 +95,11 @@ abstract class BoundSocket {
 			return;
 		}
 		$this->enabled = false;
-		if ($this->ev) {
-			return;
+		if ($this->ev instanceof Event) {
+			$this->ev->del();
+		} elseif ($this->ev instanceof EventListener) {
+			// @TODO: disable EventListener
 		}
-		event_del($this->ev);
-		event_free($this->ev);
-		$this->ev = null;
 	}
 
 	/**
@@ -106,7 +110,14 @@ abstract class BoundSocket {
 		if ($this->pid != posix_getpid()) {
 			return;
 		}
-
+		if ($this->ev instanceof Event) {
+			$this->ev->del();
+			$this->ev->free();
+			$this->ev = null;
+		} elseif ($this->ev instanceof EventListener) {
+			$this->ev->free();
+			$this->ev = null;
+		}
 		if ($this->fd !== null) {
 			if ($this->listenerMode) {
 				//$this->fd->free();
@@ -146,16 +157,10 @@ abstract class BoundSocket {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
 		}
 		
-		if (Daemon::$process->reload) {
+		if (!$this->enabled) {
 			return;
 		}
 
-		if ($this->pool->maxConcurrency) {
-			if ($this->pool->count() >= $this->pool->maxConcurrency) {
-				$this->overload = true;
-				return;
-			}
-		}
 		$fd = @socket_accept($this->fd);
 		if (!$fd) {
 			return;

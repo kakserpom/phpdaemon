@@ -91,9 +91,7 @@ class BoundTCPSocket extends BoundSocket {
 			$r = @socket_getpeername($conn->fd, $host, $port);
 			if ($r === false) {
    				if (109 === socket_last_error()) { // interrupt
-   					if ($conn->allowedClients !== null) {
-   						Daemon::log('lockwait');
-   						if (isset($conn->eventLog)) {$conn->eventLog[] = 'lockWait';}
+   					if ($conn->pool->allowedClients !== null) {
    						$conn->ready = false; // lockwait
    					}
    					$conn->onWriteOnce($getpeername);

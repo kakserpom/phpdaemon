@@ -10,7 +10,7 @@ class MongoNode extends AppInstance {
 	
 	public $db; // MongoClient
 	public $cache; // MemcacheClient
-	public $RTEPClient; // RTEPClient
+	//public $RTEPClient; // RTEPClient
 	public $LockClient; // LockClient
 	public $cursor; // Tailable cursor
 
@@ -35,7 +35,7 @@ class MongoNode extends AppInstance {
 			$this->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
 			$this->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
 			$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
-			$this->RTEPClient = Daemon::$appResolver->getInstanceByAppName('RTEPClient');
+			//$this->RTEPClient = Daemon::$appResolver->getInstanceByAppName('RTEPClient');
 		}
 	}
 
@@ -77,10 +77,10 @@ class MongoNode extends AppInstance {
 				Daemon::log('MongoNode send event ' . $o['name']);
 			}
 
-			$this->RTEPClient->client->request(array(
+			/*$this->RTEPClient->client->request(array(
 				'op'    => 'event',
 				'event' => $o,
-			));
+			));*/
 		}
 	}
 

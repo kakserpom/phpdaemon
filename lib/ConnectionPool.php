@@ -13,15 +13,14 @@ class ConnectionPool extends ObjectStorage {
 	public $connectionClass;
 	public $name;
 	public $config;
-	public static $instances = array();
+	public static $instances = [];
 	public $maxConcurrency = 0;
 	public $finished = false;
-	public $bound;
+	private $bound;
 	public $enabled = false;
-	public $appInstance;
+	public $overload = false;
 	
-	public function __construct($config = array(), $appInstance = null) {
-		$this->appInstance = $appInstance;
+	public function __construct($config = []) {
 		$this->bound = new ObjectStorage;
 		$this->config = $config;
 		$this->onConfigUpdated();
@@ -93,7 +92,7 @@ class ConnectionPool extends ObjectStorage {
 		return false;
 	}
 	
-	public static function getInstance($arg = '', $spawn = true, $appInstance = null) {
+	public static function getInstance($arg = '', $spawn = true) {
 		if ($arg === 'default') {
 			$arg = '';
 		}
@@ -109,11 +108,11 @@ class ConnectionPool extends ObjectStorage {
 			$k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '' );
 			
 			$config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k}: new Daemon_ConfigSection;			
-			$obj = self::$instances[$key] = new $class($config, $appInstance);
+			$obj = self::$instances[$key] = new $class($config);
 			$obj->name = $arg;
 			return $obj;
 		} elseif ($arg instanceof Daemon_ConfigSection) {
-			return new static($arg, $appInstance);
+			return new static($arg);
 
 		} else {
 			return new static(new Daemon_ConfigSection($arg));
@@ -124,10 +123,10 @@ class ConnectionPool extends ObjectStorage {
  	/**
 	 * Process default config
 	 * @todo move it to Daemon_Config class
-	 * @param array {"setting": "value"}
+	 * @param ["setting" => "value", ...]
 	 * @return void
 	 */
-	public function processDefaultConfig($settings = array()) {
+	public function processDefaultConfig($settings = []) {
 		foreach ($settings as $k => $v) {
 			$k = strtolower(str_replace('-', '', $k));
 
@@ -223,24 +222,34 @@ class ConnectionPool extends ObjectStorage {
 		return $result;
 	}
 
-	public function attachBound($bound) {
-		$this->bound->attach($bound);
+	public function attachBound($bound, $inf = null) {
+		$this->bound->attach($bound, $inf);
 	}
 
 	public function detachBound($bound) {
 		$this->bound->detach($bound);
 	}
 
-	public function attachConn($conn) {
-		$this->attach($conn);
+	public function attach($conn, $inf = null) {
+		parent::attach($conn, $inf);
+		if ($this->maxConcurrency && !$this->overload) {
+			if ($this->count() >= $this->maxConcurrency) {
+				$this->overload = true;
+				$this->disable();
+				return;
+			}
+		}
 	}
 
-	public function detachConn($conn) {
-		$this->detach($conn);
+	public function detach($conn) {
+		parent::detach($conn);
 		if ($conn->parentSocket) {
 			unset($conn->parentSocket->portsMap[$conn->addr]);
-			if ($conn->parentSocket->overload) {
-				$conn->parentSocket->onAcceptEvent();
+		}
+		if ($this->overload) {
+			if (!$this->maxConcurrency || ($this->count() < $this->maxConcurrency)) {
+				$this->overload = false;
+				$this->enable();
 			}
 		}
 	}
@@ -251,7 +260,7 @@ class ConnectionPool extends ObjectStorage {
 	 * @param boolean SO_REUSE. Default is true
 	 * @return void
 	 */
-	public function bindSockets($addrs = array(), $reuse = true, $max = 0) {
+	public function bindSockets($addrs = [], $reuse = true, $max = 0) {
 		if (is_string($addrs)) {
 			$addrs = explode(',', $addrs);
 		}
