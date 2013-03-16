@@ -129,7 +129,7 @@ class HTTPRequest extends Request {
 		}
 		$first = true;
 		FS::readfileChunked($path, $cb, function($file, $chunk) use (&$first) { // readed chunk
-			if ($this->upstream->freed) {
+			if ($this->upstream->isFreed()) {
 				return false;
 			}
 			if ($first) {

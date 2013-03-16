@@ -9,23 +9,28 @@
  */
 class Connection extends IOStream {
 
-	public $host;
-	public $hostReal;
-	public $port;
-	public $addr;
-	public $onConnected = null;
-	public $connected = false;
-	public $failed = false;
-	public $timeout = 120;
-	public $locAddr;
-	public $locPort;
+	protected $host;
+	protected $hostReal;
+	protected $port;
+	protected $addr;
+	protected $onConnected = null;
+	protected $connected = false;
+	protected $failed = false;
+	protected $timeout = 120;
+	protected $locAddr;
+	protected $locPort;
 	protected $keepalive = false;
-	public $type;
-	public $parentSocket;
-	public $dgram = false;
-	public $timer;
-	public $bevConnectEnabled = true;
-	public $bevConnect = false;
+	protected $type;
+	protected $parentSocket;
+	protected $dgram = false;
+	protected $timer;
+	protected $bevConnectEnabled = true;
+	protected $bevConnect = false;
+
+	public function isConnected() {
+		return $this->connected;
+	}
+
 	public function parseUrl($url) {
 		if (strpos($url, '://') !== false) { // URL
 			$u = parse_url($url);
@@ -44,6 +49,40 @@ class Connection extends IOStream {
 			);
 		}
 		return $u;
+	}
+
+	public function getpeername() {
+		if (false === socket_getpeername($this->fd, $this->host, $this->port)) {
+			if (109 === socket_last_error()) {
+				return null;
+			}
+			return false;
+		}
+		$this->addr = $this->host . ':' . $this->port;
+		return true;
+	}
+
+	public function setParentSocket(BoundSocket $sock) {
+		$this->parentSocket = $sock;
+	}
+	public function checkPeername() {
+		$r = $this->getPeername();
+		if ($r === false) {
+	   		return;
+   		}
+   		if ($r === null) { // interrupt
+   			if ($conn->pool->allowedClients !== null) {
+   				$conn->ready = false; // lockwait
+   			}
+   			$conn->onWriteOnce([$this, 'checkPeername']);
+   		}
+		if ($this->pool->allowedClients !== null) {
+			if (!BoundTCPSocket::netMatch($this->pool->allowedClients, $host)) {
+				Daemon::log('Connection is not allowed (' . $host . ')');
+				$this->ready = false;
+				$this->finish();
+			}
+		}
 	}
 
 	public function onUdpPacket($pct) {}
@@ -88,6 +127,12 @@ class Connection extends IOStream {
 			$this->connected = false;;
 		} catch (Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
+		}
+	}
+
+	public function __destruct() {
+		if ($this->dgram && $this->parentSocket) {
+			$this->parentSocket->unassignAddr($this->addr);
 		}
 	}
 

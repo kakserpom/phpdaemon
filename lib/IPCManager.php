@@ -103,7 +103,7 @@ class IPCManager extends AppInstance {
 	}
 
 	public function sendPacket($packet = null) {
-		if ($this->conn && $this->conn->connected) {
+		if ($this->conn && $this->conn->isConnected()) {
 			$this->conn->sendPacket($packet);
 			return;
 		}

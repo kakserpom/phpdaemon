@@ -9,15 +9,15 @@
  */
 class NetworkClient extends ConnectionPool {
 	
-	public $servers = array();      // Array of servers 
-	public $dtags_enabled = false;   // Enables tags for distribution
-	public $servConn = array();      // Active connections
-	public $servConnFree = array();
-	public $prefix = '';             // Prefix for all keys
-	public $maxConnPerServ = 32;
-	public $acquireOnGet = false;
-	public $noSAF = false;
-	public $pending = array();
+	protected $servers = array();      // Array of servers 
+	protected $dtags_enabled = false;   // Enables tags for distribution
+	protected $servConn = [];      // Active connections
+	protected $servConnFree = [];
+	protected $prefix = '';             // Prefix for all keys
+	protected $maxConnPerServ = 32;
+	protected $acquireOnGet = false;
+	protected $noSAF = false;
+	protected $pending = [];
 	
 	/**
 	 * Setting default config options
@@ -111,7 +111,7 @@ class NetworkClient extends ConnectionPool {
 		}
 		$conn = $this->connect($url, $cb);
 
-		if (!$conn || $conn->finished) {
+		if (!$conn || $conn->isFinished()) {
 			return false;
 		}
 		$this->servConn[$url]->attach($conn);
@@ -121,6 +121,28 @@ class NetworkClient extends ConnectionPool {
 	public function detachConn($conn) {
 		parent::detachConn($conn);
 		$this->touchPending($conn->url);
+	}
+
+	public function markConnFree($conn, $url) {
+		if (!isset($this->servConnFree[$url])) {
+			return;
+		}
+		$this->servConnFree[$url]->attach($conn);
+	}
+
+	public function markConnBusy($conn, $url) {
+		if (!isset($this->servConnFree[$url])) {
+			return;
+		}
+		$this->servConnFree[$url]->detach($conn);
+	}
+
+	public function detachConnFromUrl($conn, $url) {
+		if (!isset($this->servConnFree[$url]) || !isset($this->servConn[$url]))	 {
+			return;
+		}
+		$this->servConnFree[$url]->detach($conn);
+		$this->servConn[$url]->detach($conn);
 	}
 
 	public function touchPending($url) {

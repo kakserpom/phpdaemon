@@ -7,32 +7,31 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 abstract class IOStream {
-	public $EOL = "\n";
-	public $EOLS;
+	public $pool;
 
-	public $listenerMode = false;
-	public $readPacketSize  = 8192;
-	public $bev;
-	public $fd;
-	public $finished = false;
-	public $ready = false;
-	public $writing = true;
-	public $reading = false;
+	protected $EOL = "\n";
+	protected $EOLS;
+	protected $readPacketSize  = 8192;
+	protected $bev;
+	protected $fd;
+	protected $finished = false;
+	protected $ready = false;
+	protected $writing = true;
+	protected $reading = false;
 	protected $lowMark  = 1;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
-	public $priority;
-	public $inited = false;
-	public $state = 0;             // stream state of the connection (application protocol level)
+	protected $priority;
+	protected $inited = false;
+	protected $state = 0;             // stream state of the connection (application protocol level)
 	const STATE_ROOT = 0;
 	const STATE_STANDBY = 0;
-	public $onWriteOnce;
-	public $timeout = null;
-	public $url;
-	public $alive = false; // alive?
-	public $pool;
-	public $bevConnect = false;
-	public $wRead = false;
-	public $freed = false;
+	protected $onWriteOnce;
+	protected $timeout = null;
+	protected $url;
+	protected $alive = false; // alive?
+	protected $bevConnect = false;
+	protected $wRead = false;
+	protected $freed = false;
 
 	/**
 	 * IOStream constructor
@@ -62,6 +61,14 @@ abstract class IOStream {
 		$this->onWriteOnce = new StackCallbacks;
 	}
 	
+	public function isFreed() {
+		return $this->freed;
+	}
+
+	public function isFinished() {
+		return $this->finished;
+	}
+
 	/**
 	 * Set the size of data to read at each reading
 	 * @param integer Size

@@ -12,8 +12,11 @@ class BoundUDPSocket extends BoundSocket {
 	public $reuse = true;
 	public $host;
 	public $port;
-	public $portsMap = array();
+	public $portsMap = [];
 
+	public function unassignAddr($addr) {
+		unset($this->portsMap[$addr]);
+	}
 	public function setDefaultPort($n) {
 		$this->defaultPort = (int) $n;
 	}
@@ -89,39 +92,37 @@ class BoundUDPSocket extends BoundSocket {
 		$host = null;
 		do {
 			$l = @socket_recvfrom($this->fd, $buf, 10240, MSG_DONTWAIT, $host, $port);
-			if ($l) {
-				$key = '['.$host . ']:' . $port;
-				if (!isset($this->portsMap[$key])) {
-
-					if ($this->pool->allowedClients !== null) {
-						if (!self::netMatch($conn->pool->allowedClients, $host)) {
-							Daemon::log('Connection is not allowed (' . $host . ')');
-						}
-						continue;
-					}
-
-					$class = $this->pool->connectionClass;
- 					$conn = new $class(null, $this->pool);
- 					$conn->dgram = true;
- 					$conn->onWriteEvent();
- 					$conn->host = $host;
- 					$conn->port = $port;
- 					$conn->addr = $key;
- 					$conn->parentSocket = $this;
- 					$this->portsMap[$key] = $conn;
- 					$conn->timeoutRef = setTimeout(function($timer) use ($conn) {
- 						$conn->finish();
- 						$timer->finish();
- 					}, $conn->timeout * 1e6);
- 					 $conn->onUdpPacket($buf);
-				} else {
-					$conn = $this->portsMap[$key];
-					$conn->onUdpPacket($buf);
-					Timer::setTimeout($conn->timeoutRef);
-				}
+			if (!$l) {
+				break;
 			}
-		} while ($l);
-
+			$key = '['.$host . ']:' . $port;
+			if (!isset($this->portsMap[$key])) {
+				if ($this->pool->allowedClients !== null) {
+					if (!self::netMatch($conn->pool->allowedClients, $host)) {
+						Daemon::log('Connection is not allowed (' . $host . ')');
+					}
+					continue;
+				}
+				$class = $this->pool->connectionClass;
+				$conn = new $class(null, $this->pool);
+				$conn->dgram = true;
+				$conn->onWriteEv();
+				$conn->host = $host;
+				$conn->port = $port;
+				$conn->addr = $key;
+ 				$conn->parentSocket = $this;
+ 				$this->portsMap[$key] = $conn;
+ 				$conn->timeoutRef = setTimeout(function($timer) use ($conn) {
+ 					$conn->finish();
+ 					$timer->finish();
+ 				}, $conn->timeout * 1e6);
+ 				 $conn->onUdpPacket($buf);
+			} else {
+				$conn = $this->portsMap[$key];
+				$conn->onUdpPacket($buf);
+				Timer::setTimeout($conn->timeoutRef);
+			}
+		} while (true);
 		return $host !== null;
 	}
 }

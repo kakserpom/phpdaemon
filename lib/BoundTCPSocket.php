@@ -60,11 +60,11 @@ class BoundTCPSocket extends BoundSocket {
 			return false;
 		}
 		socket_getsockname($sock, $this->host, $this->port);
-		$addr = $this->host . ':' . $this->port;
 		socket_set_nonblock($sock);
 		if (!$this->listenerMode) {
 			if (!socket_listen($sock, SOMAXCONN)) {
 				$errno = socket_last_error();
+				$addr = $this->host . ':' . $this->port;
 				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t listen TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
 				return false;
 			}
@@ -86,31 +86,8 @@ class BoundTCPSocket extends BoundSocket {
 		if (!$conn) {
 			return false;
 		}
-		$socket = $this;
-		$getpeername = function($conn) use (&$getpeername, $socket) { 
-			$r = @socket_getpeername($conn->fd, $host, $port);
-			if ($r === false) {
-   				if (109 === socket_last_error()) { // interrupt
-   					if ($conn->pool->allowedClients !== null) {
-   						$conn->ready = false; // lockwait
-   					}
-   					$conn->onWriteOnce($getpeername);
-   					return;
-   				}
-   			}
-			$conn->addr = $host.':'.$port;
-			$conn->host = $host;
-			$conn->port = $port;
-			$conn->parentSocket = $socket;
-			if ($conn->pool->allowedClients !== null) {
-				if (!BoundTCPSocket::netMatch($conn->pool->allowedClients, $host)) {
-					Daemon::log('Connection is not allowed (' . $host . ')');
-					$conn->ready = false;
-					$conn->finish();
-				}
-			}
-		};
-		$getpeername($conn);
+		$conn->setParentSocket($this);
+		$conn->checkPeername();
 		return $conn;
 	}
 }

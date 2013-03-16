@@ -243,9 +243,6 @@ class ConnectionPool extends ObjectStorage {
 
 	public function detach($conn) {
 		parent::detach($conn);
-		if ($conn->parentSocket) {
-			unset($conn->parentSocket->portsMap[$conn->addr]);
-		}
 		if ($this->overload) {
 			if (!$this->maxConcurrency || ($this->count() < $this->maxConcurrency)) {
 				$this->overload = false;

@@ -8,13 +8,11 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class NetworkClientConnection extends Connection {
-	public $busy = false;
-	public $timeout = 60;
-	public $noSAF = true;
-	
-	public $onResponse;  // stack of onResponse callbacks
-	
-	public $alive = true;
+	protected $busy = false;
+	protected $timeout = 60;
+	protected $noSAF = true;
+	protected $onResponse;  // stack of onResponse callbacks
+	protected $alive = true;
 
 	public function __construct($fd, $pool = null) {
 		parent::__construct($fd, $pool);
@@ -31,31 +29,29 @@ class NetworkClientConnection extends Connection {
 			return;
 		}
 		if ($this->connected && !$this->busy) {
-			$this->pool->servConnFree[$this->url]->attach($this);
+			$this->pool->markConnFree($this, $this->url);
 		}
 	}
 
-	public function setFree($isFree = true) {
-		$this->busy = !$isFree;
+	public function setFree($bool = true) {
+		$this->busy = !$bool;
 		if ($this->url === null) {
 			return;
 		}
+		if ($this->pool === null) {
+			return;
+		}
 		if ($this->busy) {
-			$this->pool->servConnFree[$this->url]->detach($this);
+			$this->pool->markConnBusy($this, $this->url);
 		}
 		else {
-			$this->pool->servConnFree[$this->url]->attach($this);
-			$this->release();
+			$this->pool->markConnFree($this, $this->url);
+			$this->pool->touchPending($this->url);
 		}
 	}
 
 	public function release() {
-		if ($this->url === null) {
-			return;
-		}
-		if ($this->pool && !$this->busy) {
-			$this->pool->touchPending($this->url);
-		}
+		$this->setFree(true);
 	}
 
 	public function checkFree() {
@@ -70,8 +66,7 @@ class NetworkClientConnection extends Connection {
 		$this->onResponse->executeAll($this, false);
 		unset($this->onResponse);
 		if ($this->pool && ($this->url !== null)) {
-			$this->pool->servConnFree[$this->url]->detach($this);
-			$this->pool->servConn[$this->url]->detach($this);
+			$this->pool->detachConnFromUrl($this, $this->url);
 		}
 		parent::onFinish();
 	}

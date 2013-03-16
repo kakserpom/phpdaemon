@@ -61,11 +61,8 @@ class FlashPolicyServerConnection extends Connection {
 			} else {
 				$this->write("<error/>\x00");
 			}
-			$this->finish();
 		}
-		else {
-			$this->finish();
-		}
+		$this->finish();
 	}
 	
 }

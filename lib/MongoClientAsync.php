@@ -85,7 +85,7 @@ class MongoClientAsync extends NetworkClient {
 	public function request($key, $opcode, $data, $reply = false) {
 		$reqId = ++$this->lastReqId;
 		$cb = function ($conn) use ($opcode, $data, $reply, $reqId) {
-			if ($conn->finished) {
+			if ($conn->isFinished()) {
 				throw new MongoClientAsyncConnectionFinished;
 			}
 			$conn->pool->lastRequestConnection = $conn;
