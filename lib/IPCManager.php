@@ -40,7 +40,7 @@ class IPCManager extends AppInstance {
 
 	public function updatedWorkers() {
 		$perWorker = 1;
-		$instancesCount = array();
+		$instancesCount = [];
 		foreach (Daemon::$config as $name => $section)
 		{
 		 if (
@@ -148,8 +148,8 @@ class IPCManagerMasterPool extends NetworkServer {
 	public $workers = array();
 }
 class IPCManagerMasterPoolConnection extends Connection {
+	public $instancesCount = [];
 	protected $timeout = null;
-	protected $instancesCount = array();
 	protected $lowMark  = 4;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
 	protected $workerId;

@@ -47,6 +47,9 @@ class HTTPServerConnection extends Connection {
 		if (!isset($u['path'])) {
 			$u['path'] = null;
 		}
+		if (isset($u['host'])) {
+			$this->req->attrs->server['HTTP_HOST'] = $u['host'];	
+		}
 		$this->req->attrs->server['REQUEST_METHOD'] = $e[0];
 		$this->req->attrs->server['REQUEST_TIME'] = time();
 		$this->req->attrs->server['REQUEST_TIME_FLOAT'] = microtime(true);
@@ -105,9 +108,6 @@ class HTTPServerConnection extends Connection {
 	protected function httpProcessHeaders() {
 		if (!isset($this->req->attrs->server['HTTP_CONTENT_LENGTH'])) {
 			$this->req->attrs->server['HTTP_CONTENT_LENGTH'] = 0;
-		}
-		if (isset($u['host'])) {
-			$this->req->attrs->server['HTTP_HOST'] = $u['host'];	
 		}
 		$this->req->attrs->params_done = true;
 		if (

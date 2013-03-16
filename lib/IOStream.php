@@ -111,10 +111,11 @@ abstract class IOStream {
 		if ($this->timeout !== null) {
 			$this->bev->setTimeouts($this->timeout, $this->timeout);
 		}
-		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
 		if (!$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
-			Daemon::log(get_class($this). ' enable() returned false');
+			$this->finish();
+			return;
 		}
+		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
 		if ($this->bevConnect && ($this->fd === null)) {
 			//$this->bev->connect($this->addr, false);
 			$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
@@ -233,13 +234,7 @@ abstract class IOStream {
 	}
 
 	/*public function search($what, $start = null, $end = null) {
-		// @TODO: cache of EventBufferPosition
-		if (is_integer($start)) {
-			$s = $start;
-			$start = new EventBufferPosition;
-		}
 		return $this->bev->input->search($what, $start, $end);
-
 	}*/
 
 	public function readFromBufExact($n) { // @TODO: deprecate

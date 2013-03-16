@@ -100,7 +100,7 @@ class Daemon_WorkerThread extends Thread {
 
 		Timer::add(function($event) {
 
-			if (!Daemon::$runworkerMode) {
+			if (!Daemon::$runworkerMode || 1) {
 				$this->IPCManager->ensureConnection();
 			}
 

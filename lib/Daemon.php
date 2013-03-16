@@ -519,8 +519,7 @@ class Daemon {
 	public static function runWorker() {
 		Daemon::$runworkerMode = true;
 		$thread = new Daemon_WorkerThread;
-		$thread->run();
-		$thread->shutdown();
+		$thread();
 	}
 
 	/**

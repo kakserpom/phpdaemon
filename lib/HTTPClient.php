@@ -21,7 +21,7 @@ class HTTPClient extends NetworkClient {
 
 	public function get($url, $params) {
 		if (is_callable($params)) {
-			$params = array('resultcb' => $params);
+			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
 			list ($params['host'], $params['uri'], $params['port']) = HTTPClient::prepareUrl($url);
@@ -34,9 +34,9 @@ class HTTPClient extends NetworkClient {
 		);
 	}
 
-	public function post($url, $data = array(), $params) {
+	public function post($url, $data = [, $params) {
 		if (is_callable($params)) {
-			$params = array('resultcb' => $params);
+			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
 			list ($params['host'], $params['uri'], $params['port']) = HTTPClient::prepareUrl($url);
@@ -56,7 +56,7 @@ class HTTPClient extends NetworkClient {
 		}
 		elseif (is_array($mixed)) {
 			$url = '';
-			$buf = array();
+			$buf = [];
 			$queryDelimiter = '?';
 			$mixed[] = '';
 			foreach ($mixed as $k => $v) {
@@ -83,18 +83,18 @@ class HTTPClient extends NetworkClient {
 				$uri .= '?'.$u['query'];
 			}
 		}
-		return array($u['host'], $uri, isset($u['port']) ? $u['port'] : null);
+		return [$u['host'], $uri, isset($u['port']) ? $u['port'] : null];
 	}
 }
 class HTTPClientConnection extends NetworkClientConnection {
 
 	const STATE_HEADERS = 1;
 	const STATE_BODY = 2;
-	public $headers = array();
+	public $headers = [];
 	public $contentLength = -1;
 	public $body = '';
 	public $EOL = "\r\n";
-	public $cookie = array();
+	public $cookie = [];
 	public $keepalive = false;
 	public $curChunkSize;
 	public $curChunk;
@@ -103,7 +103,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 	
 	public function get($url, $params = null) {
 		if (!is_array($params)) {
-			$params = array('resultcb' => $params);
+			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
 			$prepared = HTTPClient::prepareUrl($url);
@@ -130,7 +130,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 			$this->customRequestHeaders($params['headers']);
 		}
 		$this->writeln('');
-		$this->headers = array();
+		$this->headers = [];
 		$this->body = '';
 		$this->onResponse->push($params['resultcb']);
 		$this->checkFree();
@@ -152,9 +152,9 @@ class HTTPClientConnection extends NetworkClientConnection {
 		}
 	}
 
-	public function post($url, $data = array(), $params = null) {
+	public function post($url, $data = [], $params = null) {
 		if (!is_array($params)) {
-			$params = array('resultcb' => $params);
+			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
 			$prepared = HTTPClient::prepareUrl($url);
@@ -194,7 +194,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 		}
 		$this->writeln('');
 		$this->write($body);
-		$this->headers = array();
+		$this->headers = [];
 		$this->body = '';
 		$this->onResponse->push($params['resultcb']);
 		$this->checkFree();
@@ -323,7 +323,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 		$this->contentLength = -1;
 		$this->curChunkSize = null;
 		$this->chunked = false;
-		$this->headers = array();
+		$this->headers = [];
 		$this->body = '';
 		if (!$this->keepalive) {
 			$this->finish();

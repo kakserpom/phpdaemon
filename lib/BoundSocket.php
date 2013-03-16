@@ -161,7 +161,7 @@ abstract class BoundSocket {
 		if (!$fd) {
 			return;
 		}
-		socket_set_nonblock($fd);	
+		socket_set_nonblock($fd);
 		$class = $this->pool->connectionClass;
  		return new $class($fd, $this->pool);
 	}

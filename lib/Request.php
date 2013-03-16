@@ -75,9 +75,6 @@ class Request {
 		try {
 			if ($this->state === Request::STATE_FINISHED) {
 				$this->finish();
-				return;
-			}
-			if ($this->state === Request::STATE_FINISHED) { // @TODO: ???
 				$this->free();
 				return;
 			}

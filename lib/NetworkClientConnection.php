@@ -19,6 +19,10 @@ class NetworkClientConnection extends Connection {
 		$this->onResponse = new StackCallbacks;
 	}
 
+	public function isBusy() {
+		return $this->busy;
+	}
+
 	public function onResponse($m) {
 		$this->onResponse->push($m);
 	}
