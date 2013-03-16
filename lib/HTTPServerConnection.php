@@ -10,26 +10,31 @@
 class HTTPServerConnection extends Connection {
 	protected $initialLowMark = 1;
 	protected $initialHighMark = 8192;  // initial value of the maximum amout of bytes in buffer
-	public $timeout = 45;
+	protected $timeout = 45;
 
-	public $req;
+	protected $req;
 	
 	const STATE_FIRSTLINE = 1;
 	const STATE_HEADERS = 2;
 	const STATE_CONTENT = 3;
 	const STATE_PROCESSING = 4;
 		
-	public $sendfileCap = true; // we can use sendfile() with this kind of connection
-	public $chunkedEncCap = true;
+	protected $sendfileCap = true; // we can use sendfile() with this kind of connection
+	protected $chunkedEncCap = true;
 
-	public $EOL = "\r\n";
+	protected $EOL = "\r\n";
+	protected $currentHeader;
 
-	public $currentHeader;
-	public $copyout = null;
-	public function init() {
+	public function checkSendfileCap() { // @DISCUSS
+		return $this->sendfileCap;
+	}
+	public function checkChunkedEncCap() { // @DISCUSS
+		return $this->chunkedEncCap;
+	}
+	protected function init() {
 		$this->ctime = microtime(true);
 	}
-	public function httpReadFirstline() {
+	protected function httpReadFirstline() {
 		if (($l = $this->readline()) === null) {
 			return false;
 		}
@@ -56,7 +61,7 @@ class HTTPServerConnection extends Connection {
 		return true;
 	}
 
-	public function httpReadHeaders() {
+	protected function httpReadHeaders() {
 		while (($l = $this->readLine()) !== null) {
 			if ($l === '') {
 				return true;
@@ -78,7 +83,7 @@ class HTTPServerConnection extends Connection {
 		}
 	}
 
-	public function newRequest() {
+	protected function newRequest() {
 		$req = new stdClass;
 		$req->attrs = new stdClass();
 		$req->attrs->request = [];
@@ -97,7 +102,7 @@ class HTTPServerConnection extends Connection {
 		return $req;
 	}
 
-	public function httpProcessHeaders() {
+	protected function httpProcessHeaders() {
 		if (!isset($this->req->attrs->server['HTTP_CONTENT_LENGTH'])) {
 			$this->req->attrs->server['HTTP_CONTENT_LENGTH'] = 0;
 		}
@@ -141,8 +146,7 @@ class HTTPServerConnection extends Connection {
 	 * @return void
 	 */
 	
-	public function onRead() {
-		$this->bev->input->copyout($this->copyout, 1024);
+	protected function onRead() {
 		start:
 		if ($this->finished) {
 			return;

@@ -151,7 +151,7 @@ abstract class IOStream {
 	 * @todo +on & -> protected?
 	 * @return void
 	 */
-	public function init() {}
+	protected function init() {}
 
 	/**
 	 * Read a first line ended with \n from buffer, removes it from buffer and returns the line
@@ -453,7 +453,7 @@ abstract class IOStream {
 		}
 	}
 	
-	public function onRead() {
+	protected function onRead() {
 		while (($buf = $this->read($this->readPacketSize)) !== false) {
 			$this->stdin($buf);
 		}
@@ -464,7 +464,7 @@ abstract class IOStream {
 	 * Called when the stream is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
 	 */
-	public function onReady() {
+	protected function onReady() {
 	}
 	
 	public function onWriteOnce($cb) {

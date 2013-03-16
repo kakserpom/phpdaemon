@@ -114,7 +114,7 @@ class HTTPRequest extends Request {
 		try {
 			$this->header('Content-Type: ' . MIME::get($path));
 		} catch (RequestHeadersAlreadySent $e) {}
-		if ($this->upstream->sendfileCap && 0) {
+		if ($this->upstream->checkSendfileCap()) {
 			FS::sendfile($this->upstream, $path, $cb, function ($file, $length, $handler) {
 				try {
 					$this->header('Content-Length: ' . $length);
@@ -329,7 +329,7 @@ class HTTPRequest extends Request {
 			} else {
 				$h = '';
 			}
-			if ($this->contentLength === null && $this->upstream->chunkedEncCap) {
+			if ($this->contentLength === null && $this->upstream->checkChunkedEncCap()) {
 				$this->attrs->chunked = true;
 			}
 			if ($this->attrs->chunked) {

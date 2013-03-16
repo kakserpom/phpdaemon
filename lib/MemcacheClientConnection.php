@@ -20,7 +20,7 @@ class MemcacheClientConnection extends NetworkClientConnection {
 	 * Called when new data received
 	 * @return void
 	*/
-	public function onRead() {
+	protected function onRead() {
 		start:
 		if ($this->state === self::STATE_ROOT) {
 			while (($l = $this->readLine()) !== null) {

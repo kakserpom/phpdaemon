@@ -162,7 +162,17 @@ class Daemon_MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function prepareSystemEnv() {
-		register_shutdown_function([$this,'onShutdown']);
+		register_shutdown_function(function () {
+			if ($this->pid != posix_getpid()) {
+				return;
+			}
+			if ($this->shutdown === true) {
+				return;
+			}	
+			$this->log('Unexcepted shutdown.'); 
+			$this->shutdown(SIGTERM);
+		});
+	
 		posix_setsid();
 		proc_nice(Daemon::$config->masterpriority->value);
 		if (!Daemon::$config->verbosetty->value) {
@@ -276,25 +286,6 @@ class Daemon_MasterThread extends Thread {
 		return true;
 	}
 	
-	/**
-	 * Called when master is going to shutdown
-	 * @todo -> protected?
-	 * @return void
-	 */
-	public function onShutdown() {
-		if ($this->pid != posix_getpid()) {
-			return;
-		}
-
-		if ($this->shutdown === true) {
-			return;
-		}
-
-		$this->log('Unexcepted shutdown.'); 
-
-		$this->shutdown(SIGTERM);
-	}
-
 	/**
 	 * Called when master is going to shutdown
 	 * @param integer System singal's number

@@ -275,7 +275,9 @@ class Daemon_WorkerThread extends Thread {
 	protected function prepareSystemEnv() {
 		proc_nice(Daemon::$config->workerpriority->value);
 		
-		register_shutdown_function(array($this,'shutdown'));
+		register_shutdown_function(function () {
+			$this->shutdown();
+		});
 		
 		$this->setproctitle(
 			Daemon::$runName . ': worker process'
@@ -556,7 +558,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Handler of the SIGQUIT (graceful shutdown) signal in worker process.
 	 * @return void
 	 */
-	public function sigquit() {
+	protected function sigquit() {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGQUIT.');
 		}
@@ -568,7 +570,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Handler of the SIGHUP (reload config) signal in worker process.
 	 * @return void
 	 */
-	public function sighup() {
+	protected function sighup() {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGHUP (reload config).');
 		}
@@ -584,7 +586,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Handler of the SIGUSR1 (re-open log-file) signal in worker process.
 	 * @return void
 	 */
-	public function sigusr1() {
+	protected function sigusr1() {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGUSR1 (re-open log-file).');
 		}
@@ -596,7 +598,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Handler of the SIGUSR2 (graceful shutdown for update) signal in worker process.
 	 * @return void
 	 */
-	public function sigusr2() {
+	protected function sigusr2() {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('caught SIGUSR2 (graceful shutdown for update).');
 		}
@@ -610,19 +612,19 @@ class Daemon_WorkerThread extends Thread {
 	 * Handler of the SIGTTIN signal in worker process.
 	 * @return void
 	 */
-	public function sigttin() {}
+	protected function sigttin() {}
 
 	/**
 	 * Handler of the SIGPIPE signal in worker process.
 	 * @return void
 	 */
-	public function sigpipe() {}
+	protected function sigpipe() {}
 
 	/**
 	 * Handler of non-known signals.
 	 * @return void
 	 */
-	public function sigunknown($signo) {
+	protected function sigunknown($signo) {
 		if (isset(Thread::$signals[$signo])) {
 			$sig = Thread::$signals[$signo];
 		} else {
