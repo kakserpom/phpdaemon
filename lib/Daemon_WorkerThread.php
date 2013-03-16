@@ -9,26 +9,26 @@
  */
 class Daemon_WorkerThread extends Thread {
 
-	public $update = FALSE;
-	public $reload = FALSE;
+	public $update = false;
+	public $reload = false;
 	public $reloadTime = 0;
-	private $reloadDelay = 2;
-	public $reloaded = FALSE;
+	protected $reloadDelay = 2;
+	public $reloaded = false;
 
 	/**
 	 * Map connnection id to application which created this connection
 	 * @var string
 	 */
 	public $timeLastActivity = 0;
-	private $autoReloadLast = 0;
-	private $currentStatus = 0;
+	protected $autoReloadLast = 0;
+	protected $currentStatus = 0;
 	public $eventBase;
 	public $dnsBase;
 	public $timeoutEvent;
 	public $state = 0;
-	public $breakMainLoop = FALSE;
-	public $reloadReady = FALSE;
-	public $delayedSigReg = TRUE;
+	public $breakMainLoop = false;
+	public $reloadReady = false;
+	public $delayedSigReg = false;
 	public $instancesCount = [];
 	public $connection;
 	public $counterGC = 0;
@@ -37,7 +37,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Runtime of Worker process.
 	 * @return void
 	 */
-	public function run() {
+	protected function run() {
 		$this->callbacks = new StackCallbacks;
 		if (Daemon::$process instanceof Daemon_MasterThread) {
 			Daemon::$process->unregisterSignals();
@@ -149,7 +149,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Overrides native PHP functions.
 	 * @return void
 	 */
-	public function overrideNativeFuncs() {
+	protected function overrideNativeFuncs() {
 		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
 
 
@@ -272,7 +272,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Setup settings on start.
 	 * @return void
 	 */
-	public function prepareSystemEnv() {
+	protected function prepareSystemEnv() {
 		proc_nice(Daemon::$config->workerpriority->value);
 		
 		register_shutdown_function(array($this,'shutdown'));
@@ -350,7 +350,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Reloads additional config-files on-the-fly.
 	 * @return void
 	 */
-	private function update() {
+	protected function update() {
 		FS::updateConfig();
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {
@@ -359,7 +359,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 	}
 
-	public function breakMainLoopCheck() {
+	protected function breakMainLoopCheck() {
 		$time = microtime(true);
 
 		if ($this->terminated || $this->breakMainLoop) {
@@ -403,7 +403,7 @@ class Daemon_WorkerThread extends Thread {
 		}
 	}
 
-	public function initReload() {
+	protected function initReload() {
 		$this->reload = true;
 		$this->reloadTime = microtime(true) + $this->reloadDelay;
 		$this->setState($this->state);
@@ -413,7 +413,7 @@ class Daemon_WorkerThread extends Thread {
 	 * Asks the running applications the whether we can go to shutdown current (old) worker.
 	 * @return boolean - Ready?
 	 */
-	public function appInstancesReloadReady() {
+	protected function appInstancesReloadReady() {
 		$ready = TRUE;
 
 		foreach (Daemon::$appInstances as $k => $app) {
@@ -432,7 +432,7 @@ class Daemon_WorkerThread extends Thread {
 	 * @param boolean - Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
 	 * @return boolean - Ready?
 	 */
-	public function shutdown($hard = FALSE) {
+	protected function shutdown($hard = FALSE) {
 		$error = error_get_last(); 
 		if ($error) {
 			if ($error['type'] === E_ERROR) {

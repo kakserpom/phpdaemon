@@ -9,42 +9,42 @@
  */
 abstract class Thread {
 
-	public $id;
+	protected $id;
 
 	/**
 	 * Process identificator
 	 * @var int
 	 */
-	public $pid;
+	protected $pid;
 
 	/**
 	 * @todo Add a description
 	 * @var boolean
 	 */
-	public $shutdown = FALSE;
+	protected $shutdown = false;
 
 	/**
 	 * @todo Add a description
 	 * @var boolean
 	 */
-	public $terminated = FALSE;
+	protected $terminated = false;
 
 	/**
 	 * @todo Add a description
 	 * @var array
 	 */
-	public $collections = array();
+	protected $collections = [];
 
-	public $timeouts = array();
+	protected $timeouts = [];
 
-	private static $signalsno = array(
+	private static $signalsno = [
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
 		18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
-	);
+	];
 	
-	public $sigEvents = array();
+	public $sigEvents = [];
 	
-	public static $signals = array(
+	public static $signals = [
 		SIGHUP    => 'SIGHUP',
 		SIGSYS    => 'SIGSYS',
 		SIGPIPE   => 'SIGPIPE',
@@ -62,14 +62,33 @@ abstract class Thread {
 		SIGWINCH  => 'SIGWINCH',
 		SIGUSR1   => 'SIGUSR1',
 		SIGUSR2   => 'SIGUSR2',
-	);
+	];
 	
-	
+	public function getPid() {
+		return $this->pid;
+	}
+
+	public function setId($id) {
+		$this->id = $id;
+	}
+
+	public function getId() {
+		return $this->id;
+	}
+
+	public function isTerminated() {
+		return $this->terminated;
+	}
+
+	public function __invoke() {
+		$this->run();
+		$this->shutdown();
+	}
 	/**
 	 * Register signals.
 	 * @return void
 	 */
-	public function registerEventSignals() {
+	protected function registerEventSignals() {
 		if (!$this->eventBase) {
 			return;
 		}
@@ -89,7 +108,7 @@ abstract class Thread {
 		}
 	}
 
-	public function unregisterSignals() {
+	protected function unregisterSignals() {
 		foreach ($this->sigEvents as $no => $ev) {
 			$ev->free();
 			unset($this->sigEvents[$no]);
@@ -111,7 +130,7 @@ abstract class Thread {
 	 * Run thread process
 	 * @return void
 	 */
-	public function run() { }
+	protected function run() { }
 
 	/**
 	 * @todo Add a description
@@ -123,7 +142,7 @@ abstract class Thread {
 	 * Registers signals
 	 * @return void
 	 */
-	public function registerSignals()
+	protected function registerSignals()
 	{
 		foreach (self::$signals as $no => $name) {
 			if (
@@ -185,7 +204,7 @@ abstract class Thread {
 	 * Shutdowns the current process properly
 	 * @return void
 	 */
-	public function shutdown() {
+	protected function shutdown() {
 		posix_kill(posix_getppid(), SIGCHLD);
 		exit(0);
 	}
@@ -195,7 +214,7 @@ abstract class Thread {
 	 * @param integer Signal's number
 	 * @return void
 	 */
-	private function backsig($sig) {
+	protected function backsig($sig) {
 		return posix_kill(posix_getppid(), $sig);
 	}
 

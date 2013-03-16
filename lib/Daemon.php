@@ -53,16 +53,16 @@ class Daemon {
 	 * Supported things array	
 	 * @var string	
 	 */	
-	private static $support = array();
+	protected static $support = array();
 	
 	public static $process;
 	public static $appResolver;
 	public static $appInstances = array();
 	public static $req;
 	public static $context;
-	private static $workers;
-	private static $masters;
-	private static $initservervar;
+	protected static $workers;
+	protected static $masters;
+	protected static $initservervar;
 	public static $shm_wstate;
 	public static $reusePort;
 	public static $compatMode = FALSE;
@@ -234,7 +234,7 @@ class Daemon {
 	 * Method to fill $support array
 	 * @return void
 	 */
-	private static function checkSupports() {
+	protected static function checkSupports() {
 		if (is_callable('runkit_lint_file')) {
 			self::$support[self::SUPPORT_RUNKIT_SANDBOX] = true;
 		}
@@ -508,12 +508,12 @@ class Daemon {
 		Daemon::$masters->push($thread = new Daemon_MasterThread);
 		$thread->start();
 
-		if (-1 === $thread->pid) {
+		if (-1 === $thread->getPid()) {
 			Daemon::log('could not start master');
 			exit(0);
 		}
 
-		return $thread->pid;
+		return $thread->getPid();
 	}
 
 	public static function runWorker() {

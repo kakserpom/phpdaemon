@@ -75,8 +75,7 @@ try {
 	if ($e) {
 		$thread = $e->thread;
 	    $e = null;
-		$thread->run();
-		$thread->shutdown();
+		$thread();
 	}
 	else {
 	    Daemon_Bootstrap::init(isset($configFile) ? $configFile : null);

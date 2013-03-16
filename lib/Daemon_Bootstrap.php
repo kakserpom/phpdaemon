@@ -11,7 +11,7 @@ class Daemon_Bootstrap {
 
 	public static $pid;
 
-	private static $commands = array(
+	protected static $commands = array(
 		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker'
 	);
 
@@ -19,7 +19,7 @@ class Daemon_Bootstrap {
 	 * Command-line params
 	 * @var array
 	 */
-	private static $params = array(
+	protected static $params = array(
 		'pid-file' => array(
 			'val' => '/path/to/pid-file',
 			'desc' => 'Pid file'
@@ -430,11 +430,11 @@ class Daemon_Bootstrap {
 		
 	}
 
-	private static function printUsage() {
+	protected static function printUsage() {
 		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
 	}
 
-	private static function printHelp() {
+	protected static function printHelp() {
 		$term = new Terminal();
 
 		echo 'phpDaemon ' . Daemon::$version . ". http://phpdaemon.net\n";

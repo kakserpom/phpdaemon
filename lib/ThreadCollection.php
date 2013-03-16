@@ -32,8 +32,9 @@ class ThreadCollection {
 	 * @return void
 	 */
 	public function push($thread) {
-		$thread->id = ++$this->spawnCounter;
-		$this->threads[$thread->id] = $thread;
+		$id = ++$this->spawnCounter;
+		$thread->setId($id);
+		$this->threads[$id] = $thread;
 	}
 
 	/**
@@ -72,19 +73,12 @@ class ThreadCollection {
 	 */
 	public function removeTerminated($check = FALSE) {
 		$n = 0;
-
-		foreach ($this->threads as $k => &$t) {
-			if (
-				$t->terminated || !$t->pid
-				|| (
-					$check
-					&& !$t->ifExists()
-				)
-			) {
-				unset($this->threads[$k]);
-			} else {
-				++$n;
+		foreach ($this->threads as $id => $thread) {
+			if ($thread->isTerminated() || !$thread->getPid() || ($check && !$thread->ifExists())) {
+				unset($this->threads[$id]);
+				continue;
 			}
+			++$n;
 		}
 
 		return $n;

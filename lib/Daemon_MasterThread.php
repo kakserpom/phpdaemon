@@ -25,7 +25,7 @@ class Daemon_MasterThread extends Thread {
 	 * Runtime of Master process
 	 * @return void
 	 */
-	public function run() {
+	protected function run() {
 
 		Daemon::$process = $this;
 		
@@ -112,7 +112,7 @@ class Daemon_MasterThread extends Thread {
 	}
 
 
-	public function callMPM() {
+	protected function callMPM() {
 		$state = Daemon::getStateOfWorkers($this);
 		if (isset(Daemon::$config->mpm->value) && is_callable(Daemon::$config->mpm->value)) {
 			return call_user_func(Daemon::$config->mpm->value, $this, $state);
@@ -161,8 +161,8 @@ class Daemon_MasterThread extends Thread {
 	 * Setup settings on start.
 	 * @return void
 	 */
-	public function prepareSystemEnv() {
-		register_shutdown_function(array($this,'onShutdown'));
+	protected function prepareSystemEnv() {
+		register_shutdown_function([$this,'onShutdown']);
 		posix_setsid();
 		proc_nice(Daemon::$config->masterpriority->value);
 		if (!Daemon::$config->verbosetty->value) {
@@ -179,7 +179,7 @@ class Daemon_MasterThread extends Thread {
 	/**
 	 * @todo description missed
 	 */	
-	public function reloadWorker($id) {
+	protected function reloadWorker($id) {
 		if (isset($this->workers->threads[$id])) {
 			if (!$this->workers->threads[$id]->reloaded) {
 				Daemon::$process->log('Spawning worker-replacer for reloaded worker #' . $id);
@@ -194,7 +194,7 @@ class Daemon_MasterThread extends Thread {
 	 * @param $n - integer - number of workers to spawn
 	 * @return boolean - success
 	 */
-	public function spawnWorkers($n) {
+	protected function spawnWorkers($n) {
 		if (FS::$supported) {
 			eio_event_loop();
 		}
@@ -228,7 +228,7 @@ class Daemon_MasterThread extends Thread {
 	 * @param $n - integer - number of workers to spawn
 	 * @return boolean - success
 	 */
-	public function spawnIPCThread() {
+	protected function spawnIPCThread() {
 		if (FS::$supported) {
 			eio_event_loop();
 		}
@@ -255,7 +255,7 @@ class Daemon_MasterThread extends Thread {
 	 * @param $n - integer - number of workers to stop
 	 * @return boolean - success
 	 */
-	public function stopWorkers($n = 1) {
+	protected function stopWorkers($n = 1) {
 		$n = (int) $n;
 		$i = 0;
 
@@ -300,7 +300,7 @@ class Daemon_MasterThread extends Thread {
 	 * @param integer System singal's number
 	 * @return void
 	 */
-	public function shutdown($signo = false) {
+	protected function shutdown($signo = false) {
 		$this->shutdown = true;
 		$this->waitAll(true);
 		Daemon::$shm_wstate->delete();		

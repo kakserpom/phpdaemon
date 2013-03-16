@@ -242,8 +242,8 @@ class IPCManagerWorkerConnection extends Connection {
 	public function onReady() {
 		$this->sendPacket(array(
 			'op' => 'start',
-			'pid' => Daemon::$process->pid,
-			'workerId' => Daemon::$process->id)
+			'pid' => Daemon::$process->getPid(),
+			'workerId' => Daemon::$process->getId())
 		);
 		parent::onReady();
 	}
