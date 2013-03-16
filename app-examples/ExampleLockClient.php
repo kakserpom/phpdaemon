@@ -35,7 +35,7 @@ class ExampleLockClientRequest extends HTTPRequest {
 					false, //wait?
 					function($command,$jobname,$client) use ($req) {
 						if ($command === 'RUN') {
-							Daemon_TimedEvent::add(function($event) use ($req, $jobname, $client) {
+							Timer::add(function($event) use ($req, $jobname, $client) {
 							Daemon::log('done');
 								$client->done($jobname);
 								$req->out(':-)');

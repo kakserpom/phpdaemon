@@ -39,7 +39,6 @@ class Daemon_IPCThread extends Thread {
 			Daemon::$logpointerAsync = null;
 		}
 		class_exists('Timer');
-		class_exists('Daemon_TimedEvent');
 
 		if (Daemon::$config->autogc->value > 0) {
 			gc_enable();

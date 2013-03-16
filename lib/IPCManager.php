@@ -263,7 +263,7 @@ class IPCManagerWorkerConnection extends Connection {
 				return;
 			}
 			$path = $p['path'];
-			Daemon_TimedEvent::add(function($event) use ($path) {
+			TImer::add(function($event) use ($path) {
 				$self = Daemon::$process;
 				
 				if (Daemon::supported(Daemon::SUPPORT_RUNKIT_IMPORT)) {

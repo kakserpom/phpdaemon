@@ -55,7 +55,6 @@ class Daemon_WorkerThread extends Thread {
 			Daemon::$logpointerAsync = null;
 		}
 		class_exists('Timer');
-		class_exists('Daemon_TimedEvent');
 		$this->autoReloadLast = time();
 		$this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
 		$this->setState(Daemon::WSTATE_PREINIT);
