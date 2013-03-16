@@ -27,7 +27,7 @@ class DebugConsole extends NetworkServer {
 	 * Constructor.
 	 * @return void
 	 */
-	public function init() {
+	protected function init() {
 		Daemon::log('CAUTION: Danger! DebugConsole is up. Potential security breach.');
 	}
 }
@@ -40,13 +40,13 @@ class DebugConsoleConnection extends Connection {
 	 * Are we authorized?
 	 * @var boolean
 	 */
-	private $auth = false;
+	protected $auth = false;
 
 	/**
 	 * How much time to try before disconnect
 	 * @var integer
 	 */
-	private $authTries = 3;
+	protected $authTries = 3;
 
 	/**
 	 * Constructor.
@@ -61,7 +61,7 @@ Please enter the password or type "exit": ');
 	/**
 	 * Disconnecting
 	 */
-	private function disconnect() {
+	protected function disconnect() {
 		$this->writeln('Disconnecting...');
 		$this->finish();
 	}
@@ -71,7 +71,7 @@ Please enter the password or type "exit": ');
 	 * @param string Password
 	 * @return boolean
 	 */
-	private function checkPassword($pass = '') {
+	protected function checkPassword($pass = '') {
 		if ($pass != $this->pool->config->passphrase->value) {
 			--$this->authTries;
 			
@@ -92,7 +92,7 @@ Please enter the password or type "exit": ');
 	 * @param string Argument
 	 * @return void
 	 */
-	private function processCommand($command = '', $argument = '') {
+	protected function processCommand($command = '', $argument = '') {
 		switch ($command) {
 			case 'help':
 				$this->writeln('

@@ -55,13 +55,13 @@ class IdentServer extends NetworkServer {
 }
 
 class IdentServerConnection extends Connection {
-	public $EOL = "\r\n";
+	protected $EOL = "\r\n";
 	protected $highMark = 32;
 	/**
 	 * Called when new data received.
 	 * @return void
 	 */
-	public function onRead() {
+	protected function onRead() {
 		while (($line = $this->readline()) !== null) {
 			$e = explode(' , ', $line);
 			if ((sizeof($e) <> 2) || !ctype_digit($e[0]) || !ctype_digit($e[1])) {

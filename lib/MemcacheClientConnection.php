@@ -14,7 +14,7 @@ class MemcacheClientConnection extends NetworkClientConnection {
 	public $error;                 // error message
 	public $key;                   // current incoming key
 	const STATE_DATA = 1;
-	public $EOL = "\r\n";
+	protected $EOL = "\r\n";
 
 	/**
 	 * Called when new data received
@@ -36,8 +36,8 @@ class MemcacheClientConnection extends NetworkClientConnection {
 					break;
 				}
 				elseif ($e[0] == 'STAT') {
-					if ($this->result === NULL) {
-						$this->result = array();
+					if ($this->result === null) {
+						$this->result = [];
 					}
 
 					$this->result[$e[1]] = $e[2];
@@ -52,11 +52,11 @@ class MemcacheClientConnection extends NetworkClientConnection {
 				) {
 					if ($e[0] !== 'END') {
 						$this->result = FALSE;
-						$this->error = isset($e[1]) ? $e[1] : NULL;
+						$this->error = isset($e[1]) ? $e[1] : null;
 					}
 					$this->onResponse->executeOne($this);
 					$this->checkFree();
-					$this->result = NULL;
+					$this->result = null;
 				}
 			}
 		}

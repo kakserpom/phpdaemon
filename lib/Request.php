@@ -14,16 +14,17 @@ class Request {
 	const STATE_RUNNING  = 3;
 
 	public $appInstance;
-	public $aborted = FALSE;
-	public $state = self::STATE_WAITING;
-	public $codepoint;
+	protected $aborted = false;
+	protected $state = self::STATE_WAITING;
 	public $attrs;
-	public $shutdownFuncs = array();
-	public $running = false;
-	public $upstream;
-	private $ev;
-	public $sleepTime = 0;
-	public $priority = null;
+	protected $shutdownFuncs = [];
+	protected $running = false;
+	protected $upstream;
+	protected $ev;
+	protected $sleepTime = 0;
+	protected $priority = null;
+
+	protected $codepoint;
  
 	/**
 	 * Constructor
@@ -45,6 +46,14 @@ class Request {
 		$this->onSleep();
 	}
  	
+ 	public function isAborted() {
+ 		return $this->aborted;
+ 	}
+
+ 	public function isRunning() {
+ 		return $this->running;
+ 	}
+
  	/**
 	 * Output some data
 	 * @param string String to out

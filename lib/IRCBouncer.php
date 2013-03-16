@@ -14,7 +14,7 @@ class IRCBouncer extends NetworkServer {
 	public $messages;
 	public $channels;
 
-	public function init() {
+	protected function init() {
 		$this->client = IRCClient::getInstance();
 		$this->client->protologging = $this->protologging;
 		$this->db = MongoClientAsync::getInstance();

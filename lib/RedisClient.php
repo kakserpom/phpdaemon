@@ -8,8 +8,7 @@
  */
 
 class RedisClient extends NetworkClient {
-	public $noSAF = true; // Send-And-Forget queries are not present in the protocol
-	public $subscribeCb = []; // subscriptions callbacks
+	protected $subscribeCb = []; // subscriptions callbacks
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults

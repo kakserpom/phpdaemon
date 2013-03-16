@@ -17,14 +17,17 @@ class Daemon_ConfigParser {
 	const T_BLOCK = 5;
 	const T_CVALUE = 5;
 
-	private $file;
-	private $line = 1;
-	private $col = 1;
-	public $p = 0;
-	public $state = [];
-	private $result;
-	public $errorneus = FALSE;
+	protected $file;
+	protected $line = 1;
+	protected $col = 1;
+	protected $p = 0;
+	protected $state = [];
+	protected $result;
+	protected $errorneus = false;
 
+	public function isErrorneus() {
+		return $this->errorneus;
+	}
 	public static function parse($file, $config, $included = false) {
 		return new self($file, $config, $included);
 	}
@@ -38,7 +41,7 @@ class Daemon_ConfigParser {
 		$this->revision = ++Daemon_Config::$lastRevision;
 		$this->data = file_get_contents($file);
 		
-		if (substr($this->data,0,2) === '#!') 	{
+		if (substr($this->data, 0, 2) === '#!') {
 			if (!is_executable($file)) {
 				$this->raiseError('Shebang (#!) detected in the first line, but file hasn\'t +x mode.');
 				return;
@@ -48,7 +51,7 @@ class Daemon_ConfigParser {
 		
 		$this->data = str_replace("\r", '', $this->data);
 		$this->len = strlen($this->data);
-		$this->state[] = array(self::T_ALL, $this->result);
+		$this->state[] = [self::T_ALL, $this->result];
 		$this->tokens = array(
 			self::T_COMMENT => function($c) {
 				if ($c === "\n") {
@@ -59,7 +62,7 @@ class Daemon_ConfigParser {
 				$str = '';
 				++$this->p;
 
-				for (;$this->p < $this->len;++$this->p) {
+				for (; $this->p < $this->len; ++$this->p) {
 					$c = $this->getCurrentChar();
 
 					if ($c === $q) {
@@ -98,8 +101,8 @@ class Daemon_ConfigParser {
 					}
 				}
 				elseif (ctype_alnum($c)) {
-					$elements = array('');
-					$elTypes = array(NULL);
+					$elements = [''];
+					$elTypes = [null];
 					$i = 0;
 					$tokenType = 0;
 					$newLineDetected = null;
@@ -112,23 +115,23 @@ class Daemon_ConfigParser {
 							if ($c === "\n") {
 								$newLineDetected = $prePoint;
 							}
-							if ($elTypes[$i] !== NULL)	{
+							if ($elTypes[$i] !== null)	{
 								++$i;
-								$elTypes[$i] = NULL;
+								$elTypes[$i] = null;
 							}
 						}
 						elseif (
 							($c === '"') 
 							|| ($c === '\'')
 						) {
-							if ($elTypes[$i] != NULL)	 {
+							if ($elTypes[$i] != null)	 {
 								$this->raiseError('Unexpected T_STRING.');
 							}
 
 							$string = $this->token(Daemon_ConfigParser::T_STRING, $c);
 							--$this->p;
 
-							if ($elTypes[$i] === NULL)	 {
+							if ($elTypes[$i] === null)	 {
 								$elements[$i] = $string;
 								$elTypes[$i] = Daemon_ConfigParser::T_STRING;
 							}
@@ -268,7 +271,7 @@ class Daemon_ConfigParser {
 	 * Removes old config parts after updating.
 	 * @return void
 	 */
-	public function purgeScope($scope) {
+	protected function purgeScope($scope) {
 		foreach ($scope as $name => $obj) {
 			if ($obj instanceof Daemon_ConfigEntry) {
 					if ($obj->source === 'config' && ($obj->revision < $this->revision))	{

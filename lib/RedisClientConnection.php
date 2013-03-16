@@ -9,13 +9,13 @@
 
 class RedisClientConnection extends NetworkClientConnection {
 
-	public $result = null;      	// current result (array)
+	public $result = null;      // current result (array)
 	public $resultLength = 0;
-	public $error;                 // error message
-	public $key;                   // current incoming key
-	public $EOL = "\r\n";		    // EOL for readln() and writeln()
+	public $error;              // error message
+	public $key;                // current incoming key
+	protected $EOL = "\r\n";	// EOL for readln() and writeln()
 	const STATE_BINARY = 1;
-	public $noSAF = true;
+	protected $noSAF = true;
 
 	/**
 	 * Check if arrived data is message from subscription
@@ -36,7 +36,7 @@ class RedisClientConnection extends NetworkClientConnection {
 	 * Called when new data received
 	 * @return void
 	*/
-	public function onRead() {
+	protected function onRead() {
 		start:
 		if (($this->result !== null) && (sizeof($this->result) >= $this->resultLength)) {
 			if ($this->isSubMessage()) { // sub callback

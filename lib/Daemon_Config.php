@@ -106,10 +106,10 @@ class Daemon_Config implements ArrayAccess {
 	public function loadFile($path) {
 		$parser = new Daemon_ConfigParser($path,$this);
 		$this->onLoad();
-		return !$parser->errorneus;
+		return !$parser->isErrorneus();
 	}
 	
-	public function onLoad() {
+	protected function onLoad() {
 		if (
 			isset($this->minspareworkers->value) 
 			&& $this->minspareworkers->value > 0
