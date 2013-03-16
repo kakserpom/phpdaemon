@@ -60,7 +60,7 @@ abstract class BoundSocket {
 					$this->fd
 				);
 			} else {
-				// @TODO: enable EventListener
+				$this->ev->enable();
 			}
 		} else {
 			if ($this->ev === null) {
@@ -94,7 +94,7 @@ abstract class BoundSocket {
 		if ($this->ev instanceof Event) {
 			$this->ev->del();
 		} elseif ($this->ev instanceof EventListener) {
-			// @TODO: disable EventListener
+			$this->ev->disable();
 		}
 	}
 

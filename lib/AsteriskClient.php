@@ -7,7 +7,8 @@
  * 
  * @version 2.0
  * @author Ponomarev Dmitry <ponomarev.base@gmail.com> (original code)
- * @author TyShkan <denis@tyshkan.ru> (updated code)
+ * @author TyShkan <denis@tyshkan.ru> (2.0)
+ * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com> (2.0)
  */
 class AsteriskClient extends NetworkClient {
 	
@@ -15,7 +16,7 @@ class AsteriskClient extends NetworkClient {
 	 * Asterisk Call Manager Interface versions for each session.
 	 * @var array
 	 */
-	public $amiVersions = [];
+	protected $amiVersions = [];
 	
 
 	/**
@@ -36,6 +37,9 @@ class AsteriskClient extends NetworkClient {
 	 */
 	public static $safeCaseValues = ['dialstring', 'callerid'];
 
+	public function setAmiVersion($addr, $ver) {
+		$this->amiVersions[$addr] = $ver;
+	}
 	public static function prepareEnv($data) {
 		$result = [];
 		$rows = explode("\n", $data);
@@ -231,9 +235,10 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	public function onRead() {
 		
 		if ($this->state === self::CONN_STATE_START) {
-			if (($this->pool->amiVersions[$this->addr] = $this->readline()) === null) {
+			if (($ver = $this->readline()) === null) {
 				return;
 			}
+			$this->pool->setAmiVersion($this->$addr, $ver);
 			$this->state = self::CONN_STATE_GOT_INITIAL_PACKET;
 			$this->auth();
 		}
@@ -381,13 +386,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	protected function challenge($callback) {
 		$this->onChallenge = $callback;
-		
-		$packet = "Action: Challenge\r\n"
-		. "AuthType: MD5\r\n"
-		. "\r\n";
-		
 		$this->state = self::CONN_STATE_CHALLENGE_PACKET_SENT;
-		$this->write($packet);
+		$this->write(
+		  "Action: Challenge\r\n"
+		. "AuthType: MD5\r\n"
+		. "\r\n");
 	}
 
 	/**
@@ -488,7 +491,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 *        ActionID: Optional Action id for message matching.
 	 */
 	public function coreShowChannels($callback) {
-		$this->command("Action: CoreShowChannels\r\n", $callback, array('event' => 'coreshowchannelscomplete', 'eventlist' => 'complete'));
+		$this->command("Action: CoreShowChannels\r\n", $callback, ['event' => 'coreshowchannelscomplete', 'eventlist' => 'complete']);
 	}
 
 	/**
@@ -507,7 +510,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		$cmd = "Action: Status\r\n";
 		
 		if ($channel !== null) {
-			$cmd .= "Channel: " . trim($channel) . "\r\n";
+			$cmd .= 'Channel: ' . trim($channel) . "\r\n";
 		}
 		
 		$this->command($cmd, $callback, ['event' => 'statuscomplete']);
@@ -642,10 +645,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		}
 		
 		return $s;
-	}
-
-	public function __destruct() {
-		Daemon::log(get_class($this) . '->__destruct');
 	}
 }
 
