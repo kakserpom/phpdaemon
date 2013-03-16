@@ -15,9 +15,9 @@ class IRCClientConnection extends NetworkClientConnection {
 	public $nick;
 	public $realname;
 	public $mode = '';
-	public $buffers = array();
+	public $buffers = [];
 	public $servername;
-	public $channels = array();
+	public $channels = [];
 	public $latency;
 	public $lastPingTS;
 	public $timeout = 300;
@@ -60,7 +60,7 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 	}
 
-	public function commandArr($cmd, $args = array()) {
+	public function commandArr($cmd, $args = []) {
 		if (!is_array($args)) {
 			return false;
 		}
@@ -78,7 +78,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			$line .= $args[$i];
 		}
 		$this->writeln($line);
-		if ($this->pool->protologging && !in_array($cmd, array('PONG'))) {
+		if ($this->pool->protologging && !in_array($cmd, ['PONG'])) {
 			Daemon::log('->->->-> '.$line);
 		}
 	}
@@ -199,7 +199,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			list($myNick, $chanType, $channelName) = $args;
 			$this->channel($channelName)->setChanType($chanType);
 			if (!isset($this->buffers[$bufName])) {
-				$this->buffers[$bufName] = array();
+				$this->buffers[$bufName] = [];
 			}
 			if (!isset($this->buffers[$bufName][$channelName])) {
 				$this->buffers[$bufName][$channelName] = new SplStack;
@@ -274,12 +274,12 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		elseif ($cmd === 'PRIVMSG') {
 			list ($target, $body) = $args;
-			$msg = array(
+			$msg = [
 				'from' => $from,
 				'to' => $target,
 				'body' => $body,
 				'private' => substr($target, 0, 1) !== '#',
-			);
+			];
 			$this->event($msg['private'] ? 'privateMsg' : 'channelMsg', $msg);
 			$this->event('msg', $msg);
 			if (!$msg['private']) {
@@ -322,7 +322,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			$i = 0;
 			$from = IRC::parseUsermask($e[$i]{0} === ':' ? binarySubstr($e[$i++], 1) : null);
 			$cmd = $e[$i++];
-			$args = array();
+			$args = [];
 
 			for ($s = min(sizeof($e), 14); $i < $s; ++$i) {
 				if ($e[$i][0] === ':') {

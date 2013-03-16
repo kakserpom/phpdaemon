@@ -41,11 +41,11 @@ class Connection extends IOStream {
 			}
 		} else {
 			$e = explode(':', $url, 2);
-			$u = array(
+			$u = [
 				'scheme' => 'tcp',
 				'host' => $e[0],
 				'port' => isset($e[1]) ? $e[1] : $this->pool->config->port->value,
-			);
+			];
 		}
 		return $u;
 	}
@@ -211,8 +211,8 @@ class Connection extends IOStream {
 				return false;
 			}
 			socket_set_nonblock($fd);
-			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 			@socket_connect($fd, $e[1], 0);
 		} 
 		elseif (stripos($addr, 'raw:') === 0) {
@@ -248,8 +248,8 @@ class Connection extends IOStream {
 			if (!$fd) {
 				return false;
 			}
-			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 			socket_set_nonblock($fd);
 			@socket_connect($fd, $host, 0);
 		}
@@ -296,8 +296,8 @@ class Connection extends IOStream {
 			if (!$fd) {
 				return false;
 			}
-			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 			socket_set_nonblock($fd);
 			@socket_connect($fd, $host, $port);
 			socket_getsockname($fd, $this->locAddr, $this->locPort);
@@ -349,8 +349,8 @@ class Connection extends IOStream {
 			}
 			if (!$this->bevConnectEnabled) {
 				socket_set_nonblock($fd);
-				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+				socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+				socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 			}
 			if ($this->keepalive) {
 				if (!$this->bevConnect) {
@@ -371,8 +371,8 @@ class Connection extends IOStream {
 	public function setTimeout($timeout) {
 		parent::setTimeout($timeout);
 		if ($this->fd !== null) {
-			socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $this->timeout, 'usec' => 0));
-			socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $this->timeout, 'usec' => 0));
+			socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 		}
 	}
 }

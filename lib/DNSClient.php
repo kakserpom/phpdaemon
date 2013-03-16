@@ -6,7 +6,7 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class DNSClient extends NetworkClient {
-	public static $type = array(
+	public static $type = [
  		1 => 'A', 2 => 'NS',  3 => 'MD', 4 => 'MF', 5 => 'CNAME',
  		6 => 'SOA', 7 => 'MB', 8 => 'MG', 9 => 'MR', 10 => 'RR',
  		11 => 'WKS', 12 => 'PTR', 13 => 'HINFO', 14 => 'MINFO',
@@ -23,9 +23,9 @@ class DNSClient extends NetworkClient {
  		103 => 'UNSPEC', 249 => 'TKEY', 250 => 'TSIG', 251 => 'IXFR',
  		252 => 'AXFR', 253 => 'MAILB', 254 => 'MAILA', 255 => 'ALL',
  		32768 => 'TA', 32769 => 'DLV',
-	);
+	];
 
-	public $hosts = array();
+	public $hosts = [];
 	public $preloading;
 	public $resolveCache;
 
@@ -33,11 +33,11 @@ class DNSClient extends NetworkClient {
 		$this->resolveCache = new CappedCacheStorageHits($this->config->resolvecachesize->value);
 	}
 
-	public static $class = array(
+	public static $class = [
  		1 => 'IN',
  		3 => 'CH',
  		255 => 'ANY',
-	);
+	];
 
 	public $ns;
 
@@ -47,7 +47,7 @@ class DNSClient extends NetworkClient {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'port' => 53,
 			'resolvecachesize' => 128,
@@ -55,7 +55,7 @@ class DNSClient extends NetworkClient {
 			'hostsfile' => '/etc/hosts',
 			'resolvfile' => '/etc/resolv.conf',
 			'expose' => 1,
-		);
+		];
 	}
 
 	public function applyConfig() {
@@ -81,7 +81,7 @@ class DNSClient extends NetworkClient {
 			FS::readfile($pool->config->hostsfile->value, function($file, $data) use ($pool, $job, $jobname) {
 				if ($file) {
 					preg_match_all('~^(\S+)\s+([^\r\n]+)\s*~m', $data, $m, PREG_SET_ORDER);
-					$pool->hosts = array();
+					$pool->hosts = [];
 					foreach ($m as $h) {
 						$hosts = preg_split('~\s+~', $h[2]);
 						$ip = $h[1];
@@ -136,7 +136,7 @@ class DNSClient extends NetworkClient {
 				call_user_func($cb, false);
 				return;
 			}
-			$addrs = array();
+			$addrs = [];
 			$ttl = 0;
 			foreach ($response['A'] as $r) {
 				$addrs[] = $r['ip'];
@@ -172,7 +172,7 @@ class DNSClient extends NetworkClient {
 class DNSClientConnection extends NetworkClientConnection {
 	protected $seq = 0;
 	protected $keepalive = true;
-	protected $response = array();
+	protected $response = [];
 	const STATE_PACKET = 1;
 	protected $pctSize = 0;
 	protected $lowMark = 2;
@@ -180,7 +180,7 @@ class DNSClientConnection extends NetworkClientConnection {
 
 	public function onUdpPacket($pct) {
 		$orig = $pct;
-		$this->response = array();
+		$this->response = [];
 		$id = Binary::getWord($pct);
 		$bitmap = Binary::getBitmap(Binary::getByte($pct)) . Binary::getBitmap(Binary::getByte($pct));
 		$qr = (int) $bitmap[0];
@@ -202,13 +202,13 @@ class DNSClientConnection extends NetworkClientConnection {
 			$classInt = Binary::getWord($pct);
 			$class = isset(DNSClient::$class[$classInt]) ? DNSClient::$class[$classInt] : 'UNK(' . $classInt . ')';
 			if (!isset($this->response[$type])) {
-				$this->response[$type] = array();
+				$this->response[$type] = [];
 			}
-			$record = array(
+			$record = [
 				'name' => $name,
 				'type' => $type,
 				'class' => $class,
-			);
+			];
 			$this->response['query'][] = $record;
 		}
 		$getResRecord = function(&$pct) use ($orig) {
@@ -222,12 +222,12 @@ class DNSClientConnection extends NetworkClientConnection {
 			$data = binarySubstr($pct, 0, $length);
 			$pct = binarySubstr($pct, $length);
 
-			$record = array(
+			$record = [
 				'name' => $name,
 				'type' => $type,
 				'class' => $class,
 				'ttl' => $ttl,
-			);
+			];
 
 			if ($type === 'A') {
 				if ($data === "\x00") {
@@ -249,21 +249,21 @@ class DNSClientConnection extends NetworkClientConnection {
 		for ($i = 0; $i < $ancount; ++$i) {
 			$record = $getResRecord($pct);
 			if (!isset($this->response[$record['type']])) {
-				$this->response[$record['type']] = array();
+				$this->response[$record['type']] = [];
 			}
 			$this->response[$record['type']][] = $record;
 		}
 		for ($i = 0; $i < $nscount; ++$i) {
 			$record = $getResRecord($pct);
 			if (!isset($this->response[$record['type']])) {
-				$this->response[$record['type']] = array();
+				$this->response[$record['type']] = [];
 			}
 			$this->response[$record['type']][] = $record;
 		}
 		for ($i = 0; $i < $arcount; ++$i) {
 			$record = $getResRecord($pct);
 			if (!isset($this->response[$record['type']])) {
-				$this->response[$record['type']] = array();
+				$this->response[$record['type']] = [];
 			}
 			$this->response[$record['type']][] = $record;
 		}
@@ -311,7 +311,7 @@ class DNSClientConnection extends NetworkClientConnection {
 		$hostname = $e[0];
 		$qtype = isset($e[1]) ? $e[1] : 'A';
 		$qclass = isset($e[2]) ? $e[2] : 'IN';
-		$QD = array();
+		$QD = [];
 		$qtypeInt = array_search($qtype, DNSClient::$type, true);
 		$qclassInt = array_search($qclass, DNSClient::$class, true);
 		if (($qtypeInt === false) || ($qclassInt === false)) {

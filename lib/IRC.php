@@ -1,6 +1,6 @@
 <?php
 class IRC {
-	public static $codes = array (
+	public static $codes = [
   		'1' => 'RPL_WELCOME',  2 => 'RPL_YOURHOST',
 		3 => 'RPL_CREATED', 4 => 'RPL_MYINFO',
 		5 => 'RPL_BOUNCE', 200 => 'RPL_TRACELINK',
@@ -73,7 +73,7 @@ class IRC {
   		484 => 'ERR_RESTRICTED',  		485 => 'ERR_UNIQOPPRIVSNEEDED',
   		491 => 'ERR_NOOPERHOST',  		501 => 'ERR_UMODEUNKNOWNFLAG',
   		502 => 'ERR_USERSDONTMATCH',
-	);
+	];
   public static $codesFlip;
   public static function getCommandByCode($code) {
     if (isset(self::$codes[$code])) {
@@ -93,13 +93,13 @@ class IRC {
   }
 	public static function parseUsermask($mask) {
 		preg_match('~^(?:(.*?)!(\~?)(.*?)@)?(.*)$~D', $mask, $m);
-		return array(
+		return [
 			'nick' => $m[1],
 			'unverified' => $m[2] === '~',
 			'user' => $m[3],
 			'host' => $m[4],
 			'orig' => $mask,
-		);
+		];
 	}
 }
 

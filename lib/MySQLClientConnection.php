@@ -4,20 +4,20 @@ class MySQLClientConnection extends NetworkClientConnection {
 	public $url;                        // Connection's URL.
 	public $seq           = 0;          // Pointer of packet sequence.
 	public $clientFlags   = 239237;     // Flags of this MySQL client.
-	public $maxPacketSize = 0x1000000;  // Maximum packet size.
+	protected $maxPacketSize = 0x1000000;  // Maximum packet size.
 	public $charsetNumber = 0x21;       // Charset number.
 	public $path        = ''; 	        // Default database name.
 	public $user          = 'root';     // Username
 	public $password      = '';         // Password
-	public $state        = 0;          // Connection's state. 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
-	public $pstate = 0;
+	protected $state     = 0;          // Connection's state. 0 - start, 1 - got initial packet, 2 - auth. packet sent, 3 - auth. error, 4 - handshaked OK
+	protected $pstate	= 0;
 	const PSTATE_STANDBY = 0;
 	const PSTATE_BODY = 1;
 	const STATE_GOT_INIT = 1;
 	const STATE_AUTH_SENT = 2;
 	const STATE_AUTH_ERR = 3;
 	const STATE_HANDSHAKED = 4;
-	public $instate       = 0;          // State of pointer of incoming data. 0 - Result Set Header Packet, 1 - Field Packet, 2 - Row Packet
+	protected $instate       = 0;          // State of pointer of incoming data. 0 - Result Set Header Packet, 1 - Field Packet, 2 - Row Packet
 	const INSTATE_HEADER = 0;
 	const INSTATE_FIELD = 1;
 	const INSTATE_ROW = 2;
@@ -453,14 +453,14 @@ class MySQLClientConnection extends NetworkClientConnection {
 				}
 				elseif ($this->instate === self::INSTATE_FIELD) {
 					// Field Packet
-					$field = array(
+					$field = [
 						'catalog'    => $this->parseEncodedString($pct, $p),
 						'db'         => $this->parseEncodedString($pct, $p),
 						'table'      => $this->parseEncodedString($pct, $p),
 						'org_table'  => $this->parseEncodedString($pct, $p),
 						'name'       => $this->parseEncodedString($pct, $p),
 						'org_name'   => $this->parseEncodedString($pct, $p)
-					);
+					];
 
 					++$p; // filler
 
@@ -486,9 +486,9 @@ class MySQLClientConnection extends NetworkClientConnection {
 				}
 				elseif ($this->instate === self::INSTATE_ROW) {
 					// Row Packet
-					$row = array();
+					$row = [];
 
-					for ($i = 0,$nf = sizeof($this->resultFields); $i < $nf; ++$i) {
+					for ($i = 0, $nf = sizeof($this->resultFields); $i < $nf; ++$i) {
 						$row[$this->resultFields[$i]['name']] = $this->parseEncodedString($pct, $p);
 					}
 		
@@ -508,8 +508,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 		$this->instate = self::INSTATE_HEADER;
 		$this->onResponse->executeOne($this, true);
 		$this->checkFree();
-		$this->resultRows = array();
-		$this->resultFields = array();
+		$this->resultRows = [];
+		$this->resultFields = [];
 	}
 
 	/**
@@ -520,8 +520,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 		$this->instate = self::INSTATE_HEADER;
 		$this->onResponse->executeOne($this, false);
 		$this->checkFree();
-		$this->resultRows = array();
-		$this->resultFields = array();
+		$this->resultRows = [];
+		$this->resultFields = [];
 
 		if (($this->state === self::STATE_AUTH_SENT) || ($this->state == self::STATE_GOT_INIT)) {
 			// in case of auth error

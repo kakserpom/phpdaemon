@@ -65,12 +65,12 @@ class ValveClient extends NetworkClient {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'servers'               =>  '127.0.0.1',
 			'port'					=> 27015,
 			'maxconnperserv'		=> 32,
-		);
+		];
 	}
 }
 class ValveClientConnection extends NetworkClientConnection {
@@ -155,7 +155,7 @@ class ValveClientConnection extends NetworkClientConnection {
 
 	public function parsePlayers(&$st) {
 		$playersn = Binary::getByte($st);
-		$players = array();
+		$players = [];
 		for ($i = 1; $i < $playersn; ++$i) {
 			$n = Binary::getByte($st);
 			$name = Binary::getString($st);
@@ -169,19 +169,19 @@ class ValveClientConnection extends NetworkClientConnection {
 			if ($seconds == -1) {
 				continue;
 			}
-			$players[] = array(
+			$players[] = [
 				'name' => Encoding::toUTF8($name),
 				'score' => $score,
 				'seconds' => $seconds,
 				'joinedts' => microtime(true) - $seconds,
 				'spm' => $score / ($seconds / 60),
-			);
+			];
 		}
 		return $players;
 	}
 
 	public function parseInfo(&$st, $type) {
-		$info = array();
+		$info = [];
 		if ($type === ValveClient::S2A_INFO) {
 			$info['proto'] = Binary::getByte($st);
 			$info['hostname'] = Binary::getString($st);

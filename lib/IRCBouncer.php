@@ -28,7 +28,7 @@ class IRCBouncer extends NetworkServer {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'listen'				=> '0.0.0.0',
 			'port' 			        => 6667,
@@ -38,7 +38,7 @@ class IRCBouncer extends NetworkServer {
 			'protologging' => 0,
 			'dbname' => 'bnc',
 			'password' => 'SecretPwd',
-		);
+		];
 	}
 
 	public function applyConfig() {
@@ -158,7 +158,7 @@ class IRCBouncerConnection extends Connection {
 			$line .= $arg;
 		}
 		$this->writeln($line);
-		if ($this->pool->protologging && !in_array($cmd, array('PONG'))) {
+		if ($this->pool->protologging && !in_array($cmd, ['PONG'])) {
 			Daemon::log('=>=>=>=> '.json_encode($line));
 		}
 	}
@@ -182,7 +182,7 @@ class IRCBouncerConnection extends Connection {
 			$line .= $args[$i];
 		}
 		$this->writeln($line);
-		if ($this->pool->protologging && !in_array($cmd, array('PONG'))) {
+		if ($this->pool->protologging && !in_array($cmd, ['PONG'])) {
 			Daemon::log('=>=>=>=> '.json_encode($line));
 		}
 	}
@@ -277,13 +277,13 @@ class IRCBouncerConnection extends Connection {
 				}
 				return;
 			}
-			$this->pool->messages->insert(array(
+			$this->pool->messages->insert([
 				'from' => $this->usermask,
 				'to' => $target,
 				'body' => $msg,
 				'ts' => microtime(true),
 				'dir' => 'o',
-			));
+			]);
 		}
 		if ($this->attachedServer) {
 			$this->attachedServer->commandArr($cmd, $args);
@@ -321,7 +321,7 @@ class IRCBouncerConnection extends Connection {
 			$e = explode("\x20", $line, $max);
 			$i = 0;
 			$cmd = $e[$i++];
-			$args = array();
+			$args = [];
 
 			for ($s = min(sizeof($e), 14); $i < $s; ++$i) {
 				if ($e[$i][0] === ':') {

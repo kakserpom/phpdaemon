@@ -9,10 +9,10 @@ class ComplexJob {
 	const STATE_RUNNING = 2;
 	const STATE_DONE = 3;
 	
-	public $listeners = array();
-	public $results = array();
+	public $listeners = [];
+	public $results = [];
 	public $state;
-	public $jobs = array();
+	public $jobs = [];
 	public $resultsNum = 0;
 	public $jobsNum = 0;
 
@@ -42,7 +42,7 @@ class ComplexJob {
 	
 	public function checkIfAllReady() {
 		if ($this->resultsNum >= $this->jobsNum) {
-			$this->jobs = array();
+			$this->jobs = [];
 			$this->state = self::STATE_DONE;
 			while ($cb = array_pop($this->listeners)) {
 				call_user_func($cb, $this);
@@ -63,9 +63,9 @@ class ComplexJob {
 	}
 	
 	public function cleanup() {
-		$this->listeners = array();
-		$this->results = array();
-		$this->jobs = array();
+		$this->listeners = [];
+		$this->results = [];
+		$this->jobs = [];
 	}
 	
 	public function addListener($cb) {

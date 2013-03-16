@@ -202,9 +202,9 @@ class Binary {
 
 	public static function bitmap2bytes($bitmap, $check_len = 0) {
  		$r = '';
- 		$bitmap = str_pad($bitmap,ceil(strlen($bitmap)/8)*8,'0',STR_PAD_LEFT);
- 		for ($i = 0, $n = strlen($bitmap)/8; $i < $n; ++$i) {
-  			$r .= chr((int) bindec(binarySubstr($bitmap,$i*8,8)));
+ 		$bitmap = str_pad($bitmap, ceil(strlen($bitmap) / 8) * 8,'0',STR_PAD_LEFT);
+ 		for ($i = 0, $n = strlen($bitmap) / 8; $i < $n; ++$i) {
+  			$r .= chr((int) bindec(binarySubstr($bitmap, $i * 8, 8)));
  		}
  		if ($check_len && (strlen($r) != $check_len)) {
  			echo "Warning! Bitmap incorrect.\n";
