@@ -19,6 +19,9 @@ class NetworkClientConnection extends Connection {
 		$this->onResponse = new StackCallbacks;
 	}
 
+	public function onResponse($m) {
+		$this->onResponse->push($m);
+	}
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void

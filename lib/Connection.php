@@ -23,7 +23,6 @@ class Connection extends IOStream {
 	protected $type;
 	protected $parentSocket;
 	protected $dgram = false;
-	protected $timer;
 	protected $bevConnectEnabled = true;
 	protected $bevConnect = false;
 

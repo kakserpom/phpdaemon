@@ -192,14 +192,14 @@ class NetworkClient extends ConnectionPool {
 			$server = array_rand($this->servers);
 		}
 		$this->getConnection($server, function ($conn) use ($data, $onResponse) {
-			if (!$conn->connected) {
+			if (!$conn->isConnected()) {
 				return;
 			}
 			if ($onResponse !== null) {
-				$conn->onResponse->push($onResponse);
+				$conn->onResponse($onResponse);
 				$conn->setFree(false);
 			} elseif ($conn->noSAF) {
-				$conn->onResponse->push(null);
+				$conn->onResponse(null);
 			}
 			$conn->write($data);
 		});
@@ -215,7 +215,7 @@ class NetworkClient extends ConnectionPool {
 	 */
 	public function requestByKey($key, $data, $onResponse = null) {
 		 $this->getConnectionByKey($key, function ($conn) use ($data, $onResponse) {
-		 	if (!$conn->connected) {
+		 	if (!$conn->isConnected()) {
 				return;
 			}
 			if ($onResponse !== NULL) {
