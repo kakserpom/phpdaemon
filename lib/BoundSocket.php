@@ -77,12 +77,9 @@ abstract class BoundSocket {
 	}
 	
 	public function onListenerAcceptedEvent($listener, $fd, $addrPort, $ctx)  {
-		//Daemon::log('new connection - '.Debug::dump([$addrPort, $fd]));
 		$class = $this->pool->connectionClass;
 		$conn = new $class($fd, $this->pool);
-		$conn->addr = $addrPort[0].':'.$addrPort[1];
-		$conn->host = $addrPort[0];
-		$conn->port = $addrPort[1];
+		$conn->setPeername($addrPort[0], $addrPort[1]);
 	}
 
 	/**

@@ -51,22 +51,28 @@ class Connection extends IOStream {
 		return $u;
 	}
 
-	public function getpeername() {
+	public function fetchPeername() {
 		if (false === socket_getpeername($this->fd, $this->host, $this->port)) {
 			if (109 === socket_last_error()) {
 				return null;
 			}
 			return false;
 		}
-		$this->addr = $this->host . ':' . $this->port;
+		$this->addr = '[' . $this->host . ']:' . $this->port;
 		return true;
+	}
+
+	public function setPeername($host, $port) {
+		$this->host = $host;
+		$this->port = $port;
+		$this->addr = '[' . $this->host . ']:' . $this->port;
 	}
 
 	public function setParentSocket(BoundSocket $sock) {
 		$this->parentSocket = $sock;
 	}
 	public function checkPeername() {
-		$r = $this->getPeername();
+		$r = $this->fetchPeername();
 		if ($r === false) {
 	   		return;
    		}
@@ -77,8 +83,8 @@ class Connection extends IOStream {
    			$conn->onWriteOnce([$this, 'checkPeername']);
    		}
 		if ($this->pool->allowedClients !== null) {
-			if (!BoundTCPSocket::netMatch($this->pool->allowedClients, $host)) {
-				Daemon::log('Connection is not allowed (' . $host . ')');
+			if (!BoundTCPSocket::netMatch($this->pool->allowedClients, $this->host)) {
+				Daemon::log('Connection is not allowed (' . $this->host . ')');
 				$this->ready = false;
 				$this->finish();
 			}
