@@ -29,7 +29,7 @@ class DNSClient extends NetworkClient {
 	public $preloading;
 	public $resolveCache;
 
-	public function init() {
+	protected function init() {
 		$this->resolveCache = new CappedCacheStorageHits($this->config->resolvecachesize->value);
 	}
 

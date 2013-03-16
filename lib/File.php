@@ -277,11 +277,11 @@ class File {
 		$ret = true;
 		$handler = function ($file, $sent = -1) use (&$ret, $outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
 			if ($outfd instanceof IOStream) {
-				if ($outfd->freed) {
+				if ($outfd->isFreed()) {
 					call_user_func($cb, $file, false);
 					return;
 				}
-				$ofd = $outfd->fd;
+				$ofd = $outfd->getFd();
 			} else {
 				$ofd = $outfd;
 			}

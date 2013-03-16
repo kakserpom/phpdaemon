@@ -69,6 +69,10 @@ abstract class IOStream {
 		return $this->finished;
 	}
 
+	public function getFd() {
+		return $this->fd;
+	}
+
 	/**
 	 * Set the size of data to read at each reading
 	 * @param integer Size

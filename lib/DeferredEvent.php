@@ -9,11 +9,11 @@ class DeferredEvent {
 	const STATE_RUNNING = 2;
 	const STATE_DONE = 3;
 	
-	public $listeners;
-	public $result;
-	public $state;
-	public $args;
-	public $onRun;
+	protected $listeners;
+	protected $result;
+	protected $state;
+	protected $args;
+	protected $onRun;
 
 	public function __construct($cb) {
 		$this->state = self::STATE_WAITING;
@@ -25,16 +25,16 @@ class DeferredEvent {
 		$this->onRun = $cb;
 	}
 	
-	public function setResult($result = NULL) {
+	public function setResult($result = null) {
 		$this->result = $result;
 		$this->state = self::STATE_DONE;
 		$this->listeners->executeAll($this->result);
 	}
 	
 	public function cleanup() {
-		$this->listeners = array();
-		$this->onRun = NULL;
-		$this->args = array();
+		$this->listeners = [];
+		$this->onRun = null;
+		$this->args = [];
 	}
 	
 	public function addListener($cb) {

@@ -23,7 +23,7 @@ class Pool extends AppInstance {
 	 * Constructor.
 	 * @return void
 	 */
-	public function init() {
+	protected function init() {
 		if ($this->isEnabled()) {
 			list ($class, $name) = explode(':', $this->name . ':');
 			if (!class_exists($class)) {

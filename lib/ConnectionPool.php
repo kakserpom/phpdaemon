@@ -13,12 +13,12 @@ class ConnectionPool extends ObjectStorage {
 	public $connectionClass;
 	public $name;
 	public $config;
-	public static $instances = [];
+	protected static $instances = [];
 	public $maxConcurrency = 0;
-	public $finished = false;
-	private $bound;
-	public $enabled = false;
-	public $overload = false;
+	protected $finished = false;
+	protected $bound;
+	protected $enabled = false;
+	protected $overload = false;
 	
 	public function __construct($config = []) {
 		$this->bound = new ObjectStorage;
@@ -33,7 +33,7 @@ class ConnectionPool extends ObjectStorage {
 		$this->init();
 	}
 	
-	public function init() {}
+	protected function init() {}
 	
 	/**
 	 * Called when the worker is ready to go.
@@ -61,7 +61,7 @@ class ConnectionPool extends ObjectStorage {
 		$this->applyConfig();
 	}
 	
-	public function applyConfig() {
+	protected function applyConfig() {
 		foreach ($this->config as $k => $v) {
 			if (is_object($v) && $v instanceof Daemon_ConfigEntry) {
 				$v = $v->value;

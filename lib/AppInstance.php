@@ -168,7 +168,7 @@ class AppInstance {
 	 * @param array {"setting": "value"}
 	 * @return void
 	 */
-	public function processDefaultConfig($settings = []) {
+	protected function processDefaultConfig($settings = []) {
 		foreach ($settings as $k => $v) {
 			$k = strtolower(str_replace('-', '', $k));
 
@@ -206,7 +206,7 @@ class AppInstance {
 	 * Called when creates instance of the application
 	 * @return void
 	 */
-	public function init() {}
+	protected function init() {}
  
 	/**
 	 * Called when worker is going to update configuration
