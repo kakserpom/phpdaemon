@@ -10,7 +10,6 @@ class MongoNode extends AppInstance {
 	
 	public $db; // MongoClient
 	public $cache; // MemcacheClient
-	//public $RTEPClient; // RTEPClient
 	public $LockClient; // LockClient
 	public $cursor; // Tailable cursor
 
@@ -20,10 +19,11 @@ class MongoNode extends AppInstance {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
-			// disabled by default
-			'enable'     => 0
-		);
+		return [
+			'lockclientname' => '',
+			'mongoclientname' => '',
+			'memcacheclientname' => '',
+		];
 	}
 
 	/**
@@ -32,10 +32,9 @@ class MongoNode extends AppInstance {
 	 */
 	public function init() {
 		if ($this->config->enable->value) {
-			$this->LockClient = Daemon::$appResolver->getInstanceByAppName('LockClient');
-			$this->db = Daemon::$appResolver->getInstanceByAppName('MongoClient');
-			$this->cache = Daemon::$appResolver->getInstanceByAppName('MemcacheClient');
-			//$this->RTEPClient = Daemon::$appResolver->getInstanceByAppName('RTEPClient');
+			$this->LockClient = LockClient::getInstance($this->config->lockclientname->value);
+			$this->db = MongoClientAsync::getInstance($this->config->mongoclientname->value);
+			$this->cache = MemcacheClient::getInstance($this->config->memcacheclientname->value);
 		}
 	}
 
@@ -76,11 +75,6 @@ class MongoNode extends AppInstance {
 			if (Daemon::$config->logevents->value) {
 				Daemon::log('MongoNode send event ' . $o['name']);
 			}
-
-			/*$this->RTEPClient->client->request(array(
-				'op'    => 'event',
-				'event' => $o,
-			));*/
 		}
 	}
 

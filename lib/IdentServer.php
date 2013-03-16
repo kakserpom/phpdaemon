@@ -7,7 +7,7 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class IdentServer extends NetworkServer {
-	public $pairs = [];
+	protected $pairs = [];
 
 	/**
 	 * Setting default config options
@@ -47,9 +47,10 @@ class IdentServer extends NetworkServer {
 		$this->appInstance->broadcastCall('unregisterPair', [$local, $foreign]);
 	}
 	public function findPair($local, $foreign) {
+		$k = $local . ':' . $foreign;
 		return
-			isset($this->pairs[$local . ':' .$foreign])
-		 	? $this->pairs[$local . ':' .$foreign]
+			isset($this->pairs[$k])
+		 	? $this->pairs[$k]
 		 	: false;
 	}
 }
