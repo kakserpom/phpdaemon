@@ -14,7 +14,7 @@ class Daemon_IPCThread extends Thread {
 	public $breakMainLoop = FALSE;
 	public $reloadReady = FALSE;
 	public $delayedSigReg = TRUE;
-	public $instancesCount = array();
+	public $instancesCount = [];
 	public $connection;
 	public $fileWatcher;
 	public $reload = false;
@@ -22,7 +22,7 @@ class Daemon_IPCThread extends Thread {
 	 * Runtime of Worker process.
 	 * @return void
 	 */
-	public function run() {
+	protected function run() {
 		if (Daemon::$process instanceof Daemon_MasterThread) {
 			Daemon::$process->unregisterSignals();
 		}
@@ -65,7 +65,7 @@ class Daemon_IPCThread extends Thread {
 	 * Setup settings on start.
 	 * @return void
 	 */
-	public function prepareSystemEnv() {
+	protected function prepareSystemEnv() {
 		proc_nice(Daemon::$config->ipcthreadpriority->value);
 		register_shutdown_function(array($this,'shutdown'));
 		
@@ -146,17 +146,9 @@ class Daemon_IPCThread extends Thread {
 		FS::updateConfig();
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {
-				$appInstance->handleStatus(2);
+				$appInstance->handleStatus(AppInstance::EVENT_CONFIG_UPDATED);
 			}
 		}
-	}
-
-	/**
-	 * Asks the running applications the whether we can go to shutdown current (old) worker.
-	 * @return boolean - Ready?
-	 */
-	public function appInstancesReloadReady() {
-		return true;
 	}
 
 	/**

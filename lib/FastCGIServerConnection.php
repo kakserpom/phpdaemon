@@ -11,10 +11,7 @@ class FastCGIServerConnection extends Connection {
 	protected $highMark = 0xFFFFFF;  // initial value of the maximum amout of bytes in buffer
 	public $timeout = 180;
 
-	protected $requests = array();
-	
-	public $sendfileCap = false;
-	public $chunkedEncCap = false;
+	protected $requests = [];
 
 	const FCGI_BEGIN_REQUEST     = 1;
 	const FCGI_ABORT_REQUEST     = 2;
@@ -57,6 +54,15 @@ class FastCGIServerConnection extends Connection {
 	
 	protected $header;
 	protected $content;
+
+
+	public function checkSendfileCap() { // @DISCUSS
+		return false;
+	}
+
+	public function checkChunkedEncCap() { // @DISCUSS
+		return false;
+	}
 
 	/**
 	 * Called when new data received.

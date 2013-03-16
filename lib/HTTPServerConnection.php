@@ -19,18 +19,17 @@ class HTTPServerConnection extends Connection {
 	const STATE_CONTENT = 3;
 	const STATE_PROCESSING = 4;
 		
-	protected $sendfileCap = true; // we can use sendfile() with this kind of connection
-	protected $chunkedEncCap = true;
 
 	protected $EOL = "\r\n";
 	protected $currentHeader;
 
 	public function checkSendfileCap() { // @DISCUSS
-		return $this->sendfileCap;
+		return true;
 	}
 	public function checkChunkedEncCap() { // @DISCUSS
-		return $this->chunkedEncCap;
+		return true;
 	}
+	
 	protected function init() {
 		$this->ctime = microtime(true);
 	}
