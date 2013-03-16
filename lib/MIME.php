@@ -5,7 +5,7 @@
  */
 class MIME {
 	
-	private static $fileTypes = array(
+	protected static $fileTypes = [
 		'txt'  => 'text/plain',
 		'htm'  => 'text/html',
 		'html' => 'text/html',
@@ -58,7 +58,7 @@ class MIME {
 		// open office
 		'odt' => 'application/vnd.oasis.opendocument.text',
 		'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
-	);
+	];
 	
 	/**
 	 * Returns MIME type of the given file.	

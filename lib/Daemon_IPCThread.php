@@ -143,7 +143,7 @@ class Daemon_IPCThread extends Thread {
 	 * Reloads additional config-files on-the-fly.
 	 * @return void
 	 */
-	private function update() {
+	protected function update() {
 		FS::updateConfig();
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {

@@ -148,14 +148,14 @@ class IPCManagerMasterPool extends NetworkServer {
 	public $workers = array();
 }
 class IPCManagerMasterPoolConnection extends Connection {
-	public $timeout = null;
-	public $instancesCount = array();
+	protected $timeout = null;
+	protected $instancesCount = array();
 	protected $lowMark  = 4;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
-	public $workerId;
+	protected $workerId;
 	const STATE_CONTENT = 1;
-	private $packetLength;
-	public function onPacket($p) {
+	protected $packetLength;
+	protected function onPacket($p) {
 		if (!is_array($p)) {
 			return;
 		}
@@ -234,11 +234,11 @@ class IPCManagerMasterPoolConnection extends Connection {
 	}
 }
 class IPCManagerWorkerConnection extends Connection {
-	public $timeout = null;
+	protected $timeout = null;
 	protected $lowMark  = 4;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
 	const STATE_CONTENT = 1;
-	private $packetLength;
+	protected $packetLength;
 	public function onReady() {
 		$this->sendPacket(array(
 			'op' => 'start',
@@ -247,7 +247,7 @@ class IPCManagerWorkerConnection extends Connection {
 		);
 		parent::onReady();
 	}
-	public function onPacket($p) {
+	protected function onPacket($p) {
 		if ($p['op'] === 'spawnInstance') {
 			$fullname = $p['appfullname'];
 			$fullname = str_replace('-', ':', $fullname);

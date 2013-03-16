@@ -52,7 +52,7 @@ class Daemon_ConfigParser {
 		$this->data = str_replace("\r", '', $this->data);
 		$this->len = strlen($this->data);
 		$this->state[] = [self::T_ALL, $this->result];
-		$this->tokens = array(
+		$this->tokens = [
 			self::T_COMMENT => function($c) {
 				if ($c === "\n") {
 					array_pop($this->state);
@@ -124,14 +124,14 @@ class Daemon_ConfigParser {
 							($c === '"') 
 							|| ($c === '\'')
 						) {
-							if ($elTypes[$i] != null)	 {
+							if ($elTypes[$i] != null) {
 								$this->raiseError('Unexpected T_STRING.');
 							}
 
 							$string = $this->token(Daemon_ConfigParser::T_STRING, $c);
 							--$this->p;
 
-							if ($elTypes[$i] === null)	 {
+							if ($elTypes[$i] === null) {
 								$elements[$i] = $string;
 								$elTypes[$i] = Daemon_ConfigParser::T_STRING;
 							}
@@ -257,14 +257,16 @@ class Daemon_ConfigParser {
 					$this->raiseError('Unexpected char \''.Debug::exportBytes($c).'\'');
 				}
 			}
-		);
+		];
 
 		for (;$this->p < $this->len; ++$this->p) {
 			$c = $this->getCurrentChar();
 			$e = end($this->state);
 			$this->token($e[0], $c);
 		}
-		if (!$included) {$this->purgeScope($this->result);}
+		if (!$included) {
+			$this->purgeScope($this->result);
+		}
 	}
 	
 	/**

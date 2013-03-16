@@ -13,7 +13,7 @@ class AsyncProcess extends AsyncStream {
 	 * Command string
 	 * @var string
 	 */
-	private $cmd;
+	protected $cmd;
 
 	/**
 	 * Executable path

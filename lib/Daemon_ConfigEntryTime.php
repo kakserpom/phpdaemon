@@ -14,14 +14,11 @@ class Daemon_ConfigEntryTime extends Daemon_ConfigEntry {
 		$time = 0;
 
 		preg_replace_callback('~(\d+(\.\d+)?)\s*([smhd])\s*|(.+)~i', function($m) use (&$time) {
-			if (
-				isset($m[4]) 
-				&& ($m[4] !== '')
-			) {
-				$time = FALSE;
+			if (isset($m[4]) && ($m[4] !== '')) {
+				$time = false;
 			}
 
-			if ($time === FALSE) {
+			if ($time === false) {
 				return;
 			}
 

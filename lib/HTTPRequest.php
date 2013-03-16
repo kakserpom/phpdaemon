@@ -172,10 +172,9 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Parses GET-query string and other request's headers
-	 * @todo private?
 	 * @return void
 	 */
-	public function parseParams() {
+	protected function parseParams() {
 		if (
 			isset($this->attrs->server['CONTENT_TYPE'])
 			&& !isset($this->attrs->server['HTTP_CONTENT_TYPE'])

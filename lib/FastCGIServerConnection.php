@@ -35,13 +35,13 @@ class FastCGIServerConnection extends Connection {
 	const STATE_CONTENT = 1;
 	const STATE_PADDING = 2;
 	
-	private static $roles = array(
+	protected static $roles = array(
 		self::FCGI_RESPONDER         => 'FCGI_RESPONDER',
 		self::FCGI_AUTHORIZER        => 'FCGI_AUTHORIZER',
 		self::FCGI_FILTER            => 'FCGI_FILTER',
 	);
 
-	private static $requestTypes = array(
+	protected static $requestTypes = array(
 		self::FCGI_BEGIN_REQUEST     => 'FCGI_BEGIN_REQUEST',
 		self::FCGI_ABORT_REQUEST     => 'FCGI_ABORT_REQUEST',
 		self::FCGI_END_REQUEST       => 'FCGI_END_REQUEST',
@@ -55,8 +55,8 @@ class FastCGIServerConnection extends Connection {
 		self::FCGI_UNKNOWN_TYPE      => 'FCGI_UNKNOWN_TYPE',
 	);
 	
-	private $header;
-	private $content;
+	protected $header;
+	protected $content;
 
 	/**
 	 * Called when new data received.

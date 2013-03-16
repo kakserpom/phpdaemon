@@ -13,20 +13,19 @@ class Terminal {
 	 * Is color allowed in terminal?
 	 * @var boolean
 	 */
-	public $enable_color = false;
+	protected $enableColor = false;
 
 	/**
 	 * Maximum terminal width
 	 * @var int
 	 */
-	private $columns = 80;
+	protected $columns = 80;
 
 	/**
 	 * Constructor
 	 * @return void
 	 */
 	public function __construct() {
-		// get terminal char width
 		$this->columns = $this->getMaxColumns();
 	}
 
@@ -71,7 +70,7 @@ class Terminal {
 	 * Counting terminal char width
 	 * @return int
 	 */
-	private function getMaxColumns() {
+	protected function getMaxColumns() {
 		if (
 			preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
 			&& 2 == sizeof($output)
@@ -168,7 +167,7 @@ class Terminal {
 	 * @return void
 	 */
 	public function drawTable($rows) {
-		$pad = array();
+		$pad = [];
 
 		foreach ($rows as $row) {
 			foreach ($row as $k => $v) {
@@ -176,10 +175,7 @@ class Terminal {
 					continue;
 				} 
 
-				if (
-					!isset($pad[$k]) 
-					|| (strlen($v) > $pad[$k])
-				) {
+				if (!isset($pad[$k]) || (strlen($v) > $pad[$k])) {
 					$pad[$k] = strlen($v);
 				}
 			}
@@ -200,7 +196,7 @@ class Terminal {
 				$i = 0;
 
 				foreach ($row as $k => $v) {
-					if (substr($k, 0, 1) == '_') {
+					if (substr($k, 0, 1) === '_') {
 						continue;
 					}
 

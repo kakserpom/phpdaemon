@@ -9,7 +9,7 @@
  */
 
 trait EventHandlers {
-	private $eventHandlers = [];
+	protected $eventHandlers = [];
 	protected $addThisToEvents = true;
 	public function event() {
 		$args = func_get_args();
@@ -34,7 +34,7 @@ trait EventHandlers {
 
 	public function bind($event, $cb) {
 		if (!isset($this->eventHandlers[$event])) {
-			$this->eventHandlers[$event] = array();
+			$this->eventHandlers[$event] = [];
 		}
 		$this->eventHandlers[$event][] = $cb;
 	}

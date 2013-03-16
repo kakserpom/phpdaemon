@@ -4,10 +4,9 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 	public $user;              // Username
 	public $password;          // Password
 	public $dbname;            // Database name
-	public $busy = false;      // Is this session busy?
 	protected $lowMark  = 16;         // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 1e6;  	// initial value of the maximum amout of bytes in buffer
-	private $hdr;
+	protected $hdr;
 	const STATE_PACKET = 1;
 	public $cursors     = []; // Active cursors
 
