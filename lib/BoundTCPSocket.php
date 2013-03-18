@@ -23,7 +23,7 @@ class BoundTCPSocket extends BoundSocket {
 	 * @return boolean Success.
 	 */
 	 public function bindSocket() {
-	 	if ($this->erroneous) {
+	 	if ($this->errorneous) {
 	 		return false;
 	 	}
 	 	$port = isset($this->uri['port']) ? $this->uri['port'] : $this->defaultPort;

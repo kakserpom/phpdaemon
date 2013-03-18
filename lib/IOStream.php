@@ -537,9 +537,10 @@ abstract class IOStream {
 					return;
 				}
 				if ($events & EventBufferEvent::ERROR) {
-					trigger_error("Socket error #"
-						.EventUtil::getLastSocketErrno()
-						.":".EventUtil::getLastSocketError(), E_USER_NOTICE);
+					$errno = EventUtil::getLastSocketErrno();
+					if ($errno !== 0) {
+						trigger_error('Socket error #' . $errno . ':' . EventUtil::getLastSocketError(), E_USER_NOTICE);
+					}
 				}
 				$this->finished = true;
 				$this->onFinish();

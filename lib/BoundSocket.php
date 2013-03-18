@@ -54,7 +54,6 @@ abstract class BoundSocket {
 			}
 			$this->{$key} = $val;
 		}
-		//Daemon::log(Debug::dump([$this->ctxname, $this->uri, TransportContext::getInstance($this->ctxname, false)]));
 		if (!$this->ctxname) {
 			return;
 		}
