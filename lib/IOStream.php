@@ -90,20 +90,24 @@ abstract class IOStream {
 			return;
 		}
 		if ($bev !== null) {
-			$bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
 			$this->bev = $bev;
+			$this->bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
 			if (!$this->bev) {
 				return;
 			}
 			$this->ready = true;
 			$this->alive = true;
-		}
-		$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, 
-			!is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0 /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */,
-			[$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']
-		);
-		if (!$this->bev) {
-			return;
+		} else {
+			$flags = !is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0 /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */;
+			if (isset($this->parentSocket->ctx)) {
+				$this->bev = EventBufferEvent::sslSocket(Daemon::$process->eventBase, $this->fd,$this->parentSocket->ctx, EventBufferEvent::SSL_ACCEPTING, $flags);
+				$this->bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
+			} else {
+				$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
+			}
+			if (!$this->bev) {
+				return;
+			}
 		}
 		if ($this->priority !== null) {
 			$this->bev->priority = $this->priority;
@@ -117,8 +121,8 @@ abstract class IOStream {
 		}
 		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
 		if ($this->bevConnect && ($this->fd === null)) {
-			//$this->bev->connect($this->addr, false);
-			$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
+			$this->bev->connect($this->addr, false);
+			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
 		}
 		init:
 		if (!$this->inited) {
@@ -191,7 +195,7 @@ abstract class IOStream {
 		$ll = $this->bev->input->length;
 		if ($ll < $l) {
 			$read = $this->read($ll);
-			return strncmp($read, $str, $ll);
+			return strncmp($read, $str, $ll) === 0;
 		}
 		$read = $this->read($l);
 		if ($read === $str) {
@@ -363,7 +367,7 @@ abstract class IOStream {
 		if (!isset($this->bev)) {
 			return false;
 		}
-		if (!strlen($data)) {
+		if (!strlen($data) && !strlen($this->EOL)) {
 			return true;
 		}
  		$this->writing = true;

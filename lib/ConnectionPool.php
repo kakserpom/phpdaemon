@@ -254,43 +254,15 @@ class ConnectionPool extends ObjectStorage {
 	/**
 	 * Bind given sockets
 	 * @param mixed Addresses to bind
-	 * @param boolean SO_REUSE. Default is true
-	 * @return void
+	 * @return integer Number of bound.
 	 */
-	public function bindSockets($addrs = [], $reuse = true, $max = 0) {
-		if (is_string($addrs)) {
-			$addrs = explode(',', $addrs);
+	public function bindSockets($addrs = [], $max = 0) {
+		if (is_string($addrs)) { // @TODO: remove in 1.0
+			$addrs = array_map('trim', explode(',', $addrs));
 		}
 		$n = 0;
-		for ($i = 0, $s = sizeof($addrs); $i < $s; ++$i) {
-			$addr = trim($addrs[$i]);
-			if (stripos($addr, 'unix:') === 0) {
-				$addr = substr($addr, 5);
-				$socket = new BoundUNIXSocket($addr, $reuse);
-				
-			} elseif (stripos($addr, 'udp:') === 0) {
-				$addr = substr($addr, 4);
-				$socket = new BoundUDPSocket($addr, $reuse);
-				if (isset($this->config->port->value)) {
-					$socket->setDefaultPort($this->config->port->value);
-				}
-			} else {
-				if (stripos($addr,'tcp://') === 0) {
-					$addr = substr($addr, 6);
-				}
-				elseif (stripos($addr,'tcp:') === 0) {
-					$addr = substr($addr, 4);
-				}
-				$socket = new BoundTCPSocket($addr, $reuse);
-				if (isset($this->config->port->value)) {
-					$socket->setDefaultPort($this->config->port->value);
-				}
-			}
-			$socket->attachTo($this);
-			if ($socket->bindSocket()) {
-				if ($this->enabled) {
-					$socket->enable();
-				}
+		foreach ($addrs as $addr) {
+			if ($this->bindSocket($addr)) {
 				++$n;
 			}
 			if ($max > 0 && ($n >= $max)) {
@@ -300,6 +272,36 @@ class ConnectionPool extends ObjectStorage {
 		return $n;
 	}
 
+	public function bindSocket($uri) {
+		$u = Daemon_Config::parseSocketUri($uri);
+		$scheme = $u['scheme'];
+		if ($scheme === 'unix') {
+			$socket = new BoundUNIXSocket($u);
+				
+		} elseif ($scheme === 'udp') {
+			$socket = new BoundUDPSocket($u);
+			if (isset($this->config->port->value)) {
+				$socket->setDefaultPort($this->config->port->value);
+			}
+		} elseif ($scheme === 'tcp') {
+			$socket = new BoundTCPSocket($u);
+			if (isset($this->config->port->value)) {
+				$socket->setDefaultPort($this->config->port->value);
+			}
+		}
+		else {
+		 	Daemon::log(get_class($this).': enable to bind \''.$uri.'\': scheme \''.$scheme.'\' is not supported');
+		 	return false;
+		}
+		$socket->attachTo($this);
+		if ($socket->bindSocket()) {
+			if ($this->enabled) {
+				$socket->enable();
+			}
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * Establish a connection with remote peer
 	 * @param string URL

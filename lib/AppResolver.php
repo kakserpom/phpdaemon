@@ -50,9 +50,12 @@ class AppResolver {
 	 * @param string Application name.	 
 	 * @return object AppInstance.
 	 */
-	public function getInstanceByAppName($appName, $instance = '') {
+	public function getInstanceByAppName($appName, $instance = '', $spawn = true) {
 		$appNameLower = strtolower($appName);
 		if (!isset(Daemon::$appInstances[$appNameLower][$instance])) {
+			if (!$spawn) {
+				return false;
+			}
 			return $this->appInstantiate($appName, $instance);
 		}
 		return Daemon::$appInstances[$appNameLower][$instance];

@@ -75,7 +75,7 @@ class Daemon_WorkerThread extends Thread {
 		$this->overrideNativeFuncs();
 
 		$this->setState(Daemon::WSTATE_INIT);;
-		$this->dnsBase = new EventDnsBase($this->eventBase, true); 
+		$this->dnsBase = new EventDnsBase($this->eventBase, false); // @TODO: test with true
 		$this->registerEventSignals();
 
 		FS::init();
@@ -99,7 +99,7 @@ class Daemon_WorkerThread extends Thread {
 
 		Timer::add(function($event) {
 
-			if (!Daemon::$runworkerMode || 1) {
+			if (!Daemon::$runworkerMode) {
 				$this->IPCManager->ensureConnection();
 			}
 

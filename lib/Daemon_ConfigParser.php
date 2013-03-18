@@ -23,10 +23,10 @@ class Daemon_ConfigParser {
 	protected $p = 0;
 	protected $state = [];
 	protected $result;
-	protected $errorneus = false;
+	protected $erroneous = false;
 
-	public function isErrorneus() {
-		return $this->errorneus;
+	public function isErrorneous() {
+		return $this->erroneous;
 	}
 	public static function parse($file, $config, $included = false) {
 		return new self($file, $config, $included);
@@ -209,8 +209,6 @@ class Daemon_ConfigParser {
 									Daemon_ConfigParser::parse($fn, $scope, true);
 								}
 							}
-						} elseif (substr(strtolower($name),0, 4) === 'mod-') { // @TODO: remove this if-block of code in version 1.0
-							$this->raiseError('Variable started with \'mod-\'. This style is deprecated. You should replace it with block.');
 						} else {
 							if ($value === null) {
 								$value = true;
@@ -314,7 +312,7 @@ class Daemon_ConfigParser {
 	 */
 	public function raiseError($msg, $level = 'emerg', $line = null, $col = null) {
 		if ($level === 'emerg') {
-			$this->errorneus = true;
+			$this->errorneous = true;
 		}
 		if ($line === null) {
 			$line = $this->line;

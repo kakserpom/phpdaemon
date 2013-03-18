@@ -9,17 +9,87 @@
  */
 abstract class BoundSocket {
 
-	public $enabled = false;
-	public $fd;
-	public $ev;
-	public $pid;
-	public $pool;
-	public $addr;
-	public $reuse;
-	public $listenerMode = false;
-	public function __construct($addr, $reuse = true) {
-		$this->addr = $addr;
-		$this->reuse = $reuse;
+	protected $enabled = false;
+	protected $fd;
+	protected $ev;
+	protected $pid;
+	protected $pool;
+	protected $listenerMode = false;
+	public $ctx; // @TODO: make it protected
+	protected $uri;
+	protected $ctxname;
+	protected $reuse = true;
+	protected $ssl = false;
+	protected $errorneous = false;
+
+	protected $pkfile;
+	protected $certfile;
+	protected $passphrase;
+	protected $verifypeer = false;
+	protected $allowselfsigned = true;
+
+	protected $source;
+	protected $revision;
+	public function __construct($uri) {
+		$this->uri = is_array($uri) ? $uri : Daemon_Config::parseSocketUri($uri);
+		if (!$this->uri) {
+			return;
+		}
+		$this->importParams();
+		if ($this->ssl) {
+			$this->initSSLContext();
+		}
+	}
+
+	protected function importParams() {
+
+		foreach ($this->uri['params'] as $key => $val) {
+			if (isset($this->{$key}) && is_bool($this->{$key})) {
+				$this->{$key} = (bool) $val;
+				continue;
+			}
+			if (!property_exists($this, $key)) {
+				Daemon::log(get_class($this).': unrecognized setting \'' . $key . '\'');
+				continue;
+			}
+			$this->{$key} = $val;
+		}
+		//Daemon::log(Debug::dump([$this->ctxname, $this->uri, TransportContext::getInstance($this->ctxname, false)]));
+		if (!$this->ctxname) {
+			return;
+		}
+		if (!isset(Daemon::$config->{'TransportContext:' . $this->ctxname})) {
+			Daemon::log(get_class($this).': undefined transport context \'' . $this->ctxname . '\'');
+			return;
+		}
+		$ctx = Daemon::$config->{'TransportContext:' . $this->ctxname};
+		foreach ($ctx as $key => $entry) {
+			$value = ($entry instanceof Daemon_ConfigEntry) ? $entry->value : $entry;
+			if (isset($this->{$key}) && is_bool($this->{$key})) {
+			$this->{$key} = (bool) $value;
+				continue;
+			}
+			if (!property_exists($this, $key)) {
+				Daemon::log(get_class($this).': unrecognized setting in transport context \'' . $this->ctxname . '\': \'' . $key . '\'');
+				continue;
+			}
+			$this->{$key} = $value;	
+		}
+
+	}
+	protected function initSSLContext() {
+		if (!EventUtil::sslRandPoll()) {
+	 		Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
+	 		$this->errorneous = true;
+	 		return false;
+	 	}
+	 	$this->ctx = new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, $a = [
+ 			EventSslContext::OPT_LOCAL_CERT  => $this->certfile,
+ 			EventSslContext::OPT_LOCAL_PK    => $this->pkfile,
+ 			EventSslContext::OPT_PASSPHRASE  => $this->passphrase,
+ 			EventSslContext::OPT_VERIFY_PEER => $this->verifypeer,
+ 			EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
+		]);
 	}
 
 	public function attachTo($pool) {
@@ -53,7 +123,7 @@ abstract class BoundSocket {
 			if ($this->ev === null) {
 				$this->ev = new EventListener(
 					Daemon::$process->eventBase,
-					[$this, 'onListenerAcceptedEvent'],
+					[$this, 'onListenerAcceptEv'],
 					null,
 					EventListener::OPT_CLOSE_ON_FREE | EventListener::OPT_REUSEABLE,
 					-1,
@@ -76,10 +146,12 @@ abstract class BoundSocket {
 		}
 	}
 	
-	public function onListenerAcceptedEvent($listener, $fd, $addrPort, $ctx)  {
+	public function onListenerAcceptEv($listener, $fd, $addrPort, $ctx)  {
 		$class = $this->pool->connectionClass;
-		$conn = new $class($fd, $this->pool);
+		$conn = new $class(null, $this->pool);
+		$conn->setParentSocket($this);
 		$conn->setPeername($addrPort[0], $addrPort[1]);
+		$conn->setFd($fd);
 	}
 
 	/**

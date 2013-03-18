@@ -8,11 +8,9 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class AppInstance {
-
-	public $status = 0;        // runtime status
 	public $passphrase;        // optional passphrase
-	public $ready = FALSE;     // ready to start?
-	public $name;              // name of instance
+	public $ready = false;     // ready to start?
+	protected $name;           // name of instance
 	public $config;
 	public $enableRPC = false;
 	public $requestClass;
@@ -54,7 +52,7 @@ class AppInstance {
 				&& !isset(Daemon::$config->{$fullname}->disable)
 			) {
 				Daemon::$config->{$fullname}->enable = new Daemon_ConfigEntry;
-				Daemon::$config->{$fullname}->enable->setValue(TRUE);
+				Daemon::$config->{$fullname}->enable->setValue(true);
 			}
 		}
 
@@ -78,8 +76,8 @@ class AppInstance {
 		}
 	}
 	
-	public static function getInstance($name) {
-		return Daemon::$appResolver->getInstanceByAppName(get_called_class(), $name);
+	public static function getInstance($name, $spawn = true) {
+		return Daemon::$appResolver->getInstanceByAppName(get_called_class(), $name, $spawn);
 	}
 	
 	public function isEnabled() {
@@ -107,7 +105,14 @@ class AppInstance {
 		}
 	}
 	
-	
+	public function getConfig() {
+		return $this->config;	
+	}
+
+	public function getName() {
+		return $this->name;
+	}
+
 	/**
 	 * Send broadcast RPC.
 	 * You can override it
@@ -221,7 +226,7 @@ class AppInstance {
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown($graceful = false) {
-		return TRUE;
+		return true;
 	}
  
 	/**
@@ -265,12 +270,7 @@ class AppInstance {
 	 */
 	public function handleRequest($parent, $upstream) {
 		$req = $this->beginRequest($parent, $upstream);
-
-		if (!$req) {
-			return $parent;
-		}
-
-		return $req;
+		return $req ?: $parent;
 	}
  
 	/**

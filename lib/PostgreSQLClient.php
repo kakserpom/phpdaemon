@@ -39,12 +39,10 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	public $instate       = 0;         // State of pointer of incoming data. 0 - Result Set Header Packet,  1 - Field Packet,  2 - Row Packet
 	public $resultRows    = [];   // Resulting rows.
 	public $resultFields  = [];   // Resulting fields
-	public $onConnected   = [];   // Callback. Called when connection's handshaked.
-	public $context;                   // Property holds a reference to user's object.
-	public $insertId;                  // Equals with INSERT_ID().
+	public $context;               // Property holds a reference to user's object.
+	public $insertId;              // Equals with INSERT_ID().
 	public $insertNum;                 // Equals with INSERT_ID().
 	public $affectedRows;              // Number of affected rows.
-	public $ready         = FALSE;
 	public $parameters    = [];   // Runtime parameters from server
 	public $backendKey;
 	const STATE_AUTH_ERROR = 3;

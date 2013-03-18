@@ -106,7 +106,7 @@ class Daemon_Config implements ArrayAccess {
 	public function loadFile($path) {
 		$parser = new Daemon_ConfigParser($path,$this);
 		$this->onLoad();
-		return !$parser->isErrorneus();
+		return !$parser->isErrorneous();
 	}
 	
 	protected function onLoad() {
@@ -154,6 +154,56 @@ class Daemon_Config implements ArrayAccess {
 
 	public function offsetUnset($offset) {
 		unset($this->{$this->getRealOffsetName($offset)});
+	}
+
+	public static function parseSocketUri($uri, $source = null) {
+		if (strpos($uri, '://') === false) {
+			if (strncmp($uri, 'unix:', 5) === 0) {
+				$e = explode(':', $uri);
+				if (sizeof($e) === 4) {
+					$uri = 'unix://'.$e[1].':'.$e[2].'@localhost'.$e[3];
+				} elseif (sizeof($e) === 3) {
+					$uri = 'unix://'.$e[1].'@localhost'.$e[2];
+				} else {
+					$uri = 'unix://localhost'.$e[1];
+				}
+			} else {
+				$uri = 'tcp://' . $uri;
+			}
+		}
+		$u = parse_url($uri);
+		$u['uri'] = $uri;
+		if (!isset($u['scheme'])) {
+			$u['scheme'] = '';
+		}
+		$u['params'] = [];
+		if (!isset($u['fragment'])) {
+			return $u;
+		}
+		$hash = '#' . $u['fragment'];
+		$error = false;
+		preg_replace_callback('~(#+)(.+?)(?=#|$)|(.+)~', function($m) use (&$u, &$error, $uri) { // @TODO: refactoring
+			if ($error) {
+				return;
+			}
+			list (, $type, $value) = $m;
+			if ($type === '#') { // standard value
+				$e = explode('=', $value, 2);
+				if (sizeof($e) === 2) {
+					list ($key, $value) = $e;
+				} else {
+					$key = $value;
+					$value = true;
+				}
+				$u['params'][$key] = $value;
+			} elseif ($type === '##') { // Context name
+				$u['params']['ctxname'] = $value;
+			} else {
+				Daemon::log('Malformed URI: '.var_export($uri, true).', unexpected token \'' . $type . '\'');
+				$error = true;
+			}
+		}, $hash);
+		return $error ? false : $u;
 	}
 	
 	/**

@@ -70,6 +70,7 @@ class Connection extends IOStream {
 	public function setParentSocket(BoundSocket $sock) {
 		$this->parentSocket = $sock;
 	}
+	
 	public function checkPeername() {
 		$r = $this->fetchPeername();
 		if ($r === false) {

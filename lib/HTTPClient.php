@@ -27,14 +27,14 @@ class HTTPClient extends NetworkClient {
 			list ($params['host'], $params['uri'], $params['port']) = HTTPClient::prepareUrl($url);
 		}
 		$this->getConnection(
-			$addr = $params['host'] . (isset($params['port']) ? $params['port'] : null),
+			$params['host'] . (isset($params['port']) ? $params['port'] : null),
 			function($conn) use ($url, $params) {
 				$conn->get($url, $params);
 			}
 		);
 	}
 
-	public function post($url, $data = [, $params) {
+	public function post($url, $data = [], $params) {
 		if (is_callable($params)) {
 			$params = ['resultcb' => $params];
 		}
@@ -42,7 +42,7 @@ class HTTPClient extends NetworkClient {
 			list ($params['host'], $params['uri'], $params['port']) = HTTPClient::prepareUrl($url);
 		}
 		$this->getConnection(
-			$addr = $params['host'] . (isset($params['port']) ? $params['port'] : null),
+			$params['host'] . (isset($params['port']) ? $params['port'] : null),
 			function($conn) use ($url, $data, $params) {
 				$conn->post($url, $data, $params);
 			}
@@ -93,7 +93,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 	public $headers = [];
 	public $contentLength = -1;
 	public $body = '';
-	public $EOL = "\r\n";
+	protected $EOL = "\r\n";
 	public $cookie = [];
 	public $keepalive = false;
 	public $curChunkSize;
@@ -351,4 +351,3 @@ class HTTPClientUpload {
 		return $this;
 	}
 }
-
