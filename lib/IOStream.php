@@ -195,6 +195,7 @@ abstract class IOStream {
 		$ll = $this->bev->input->length;
 		if ($ll < $l) {
 			$read = $this->read($ll);
+			$this->bev->input->prepend($read);
 			return strncmp($read, $str, $ll) === 0;
 		}
 		$read = $this->read($l);
@@ -447,6 +448,9 @@ abstract class IOStream {
 	public function onReadEv($bev) {
 		if (!$this->ready) {
 			$this->wRead = true;
+			return;
+		}
+		if ($this->finished) {
 			return;
 		}
 		try {
