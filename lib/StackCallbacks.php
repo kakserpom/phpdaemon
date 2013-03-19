@@ -1,11 +1,25 @@
 <?php
 class StackCallbacks extends SplStack {
+	/**
+	 * Push callback to the bottom of stack
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function push($cb) {
 		parent::push(CallbackWrapper::wrap($cb));
 	}
+
+	/* Push callback to the top of stack
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function unshift($cb) {
 		parent::unshift(CallbackWrapper::wrap($cb));
 	}
+
+	/* Executes one callback from the top with given arguments.
+	 * @return void
+	 */
 	public function executeOne() {
 		if ($this->isEmpty()) {
 			return false;
@@ -16,6 +30,10 @@ class StackCallbacks extends SplStack {
 		}
 		return true;
 	}
+
+	/* Executes all callbacks with given arguments.
+	 * @return void
+	 */
 	public function executeAll() {
 		if ($this->isEmpty()) {
 			return 0;
