@@ -24,10 +24,11 @@ class HTTPClient extends NetworkClient {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			list ($params['host'], $params['uri'], $params['port']) = HTTPClient::prepareUrl($url);
+			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = self::prepareUrl($url);
 		}
+		$ssl = $params['scheme'] === 'https';
 		$this->getConnection(
-			$params['host'] . (isset($params['port']) ? $params['port'] : null),
+			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null),
 			function($conn) use ($url, $params) {
 				$conn->get($url, $params);
 			}
@@ -39,10 +40,11 @@ class HTTPClient extends NetworkClient {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			list ($params['host'], $params['uri'], $params['port']) = HTTPClient::prepareUrl($url);
+			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = self::prepareUrl($url);
 		}
+		$ssl = $params['scheme'] === 'https';
 		$this->getConnection(
-			$params['host'] . (isset($params['port']) ? $params['port'] : null),
+			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($ssl ? '#ssl' : ''),
 			function($conn) use ($url, $data, $params) {
 				$conn->post($url, $data, $params);
 			}
@@ -83,7 +85,7 @@ class HTTPClient extends NetworkClient {
 				$uri .= '?'.$u['query'];
 			}
 		}
-		return [$u['host'], $uri, isset($u['port']) ? $u['port'] : null];
+		return [$u['scheme'], $u['host'], $uri, isset($u['port']) ? $u['port'] : null];
 	}
 }
 class HTTPClientConnection extends NetworkClientConnection {

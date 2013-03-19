@@ -63,7 +63,7 @@ class AppInstance {
 
 		$defaults = $this->getConfigDefaults();
 		if ($defaults) {
-			$this->processDefaultConfig($defaults);
+			$this->config->imposeDefault($defaults);
 		}
 
 		$this->init();
@@ -166,46 +166,11 @@ class AppInstance {
 		);
 	}
 	
-
- 	/**
-	 * Process default config
-	 * @todo move it to Daemon_Config class
-	 * @param array {"setting": "value"}
-	 * @return void
-	 */
-	protected function processDefaultConfig($settings = []) {
-		foreach ($settings as $k => $v) {
-			$k = strtolower(str_replace('-', '', $k));
-
-			if (!isset($this->config->{$k})) {
-			  if (is_scalar($v))	{
-					$this->config->{$k} = new Daemon_ConfigEntry($v);
-				} else {
-					$this->config->{$k} = $v;
-				}
-			} elseif ($v instanceof Daemon_ConfigSection) {
-			// @todo
-			}	else {
-				$current = $this->config->{$k};
-			  if (is_scalar($v))	{
-					$this->config->{$k} = new Daemon_ConfigEntry($v);
-				} else {
-					$this->config->{$k} = $v;
-				}
-				
-				$this->config->{$k}->setHumanValue($current->value);
-				$this->config->{$k}->source = $current->source;
-				$this->config->{$k}->revision = $current->revision;
-			}
-		}
-	}
-	
 	/**
 	 * Called when the worker is ready to go
-	 * @todo -> protected?
 	 * @return void
 	 */
-	public function onReady() { }
+	protected function onReady() {}
  
 	/**
 	 * Called when creates instance of the application

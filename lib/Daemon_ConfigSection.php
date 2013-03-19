@@ -66,4 +66,34 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 		unset($this->{$this->getRealOffsetName($offset)});
 	}
 
+ 	/**
+	 * Impose default config
+	 * @param array {"setting": "value"}
+	 * @return void
+	 */
+	public function imposeDefault($settings = []) {
+		foreach ($settings as $name => $value) {
+			$name = strtolower(str_replace('-', '', $name));
+			if (!isset($this->{$name})) {
+				if (is_scalar($value))	{
+					$this->{$name} = new Daemon_ConfigEntry($value);
+				} else {
+					$this->{$name} = $value;
+				}
+			} elseif ($value instanceof Daemon_ConfigSection) {
+				$value->imposeDefault($value);
+			}	else {
+				$current = $this->{$name};
+			  if (is_scalar($value))	{
+					$this->{$name} = new Daemon_ConfigEntry($value);
+				} else {
+					$this->{$name} = $value;
+				}
+				
+				$this->{$name}->setHumanValue($current->value);
+				$this->{$name}->source = $current->source;
+				$this->{$name}->revision = $current->revision;
+			}
+		}
+	}
 }

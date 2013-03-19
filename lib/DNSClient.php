@@ -70,8 +70,8 @@ class DNSClient extends NetworkClient {
 				if ($file) {
 					preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
 					foreach ($m[1] as $s) {
-						$pool->addServer('dns://[udp:' . $s . ']');
-						//$pool->addServer('dns://[' . $s . ']');
+						$pool->addServer('udp://' . $s);
+						//$pool->addServer('tcp://' . $s);
 					}
 				}
 				$job->setResult($jobname);

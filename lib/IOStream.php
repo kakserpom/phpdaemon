@@ -157,7 +157,6 @@ abstract class IOStream {
 	
 	/**
 	 * Called when the session constructed
-	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	protected function init() {}
@@ -326,10 +325,9 @@ abstract class IOStream {
 
 	/**
 	 * Called when the connection is ready to accept new data
-	 * @todo protected?
 	 * @return void
 	 */
-	public function onWrite() {}
+	protected function onWrite() {}
 
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
@@ -399,19 +397,17 @@ abstract class IOStream {
 
 	/**
 	 * Called when the session finished
-	 * @todo protected?
 	 * @return void
 	 */
-	public function onFinish() {
+	protected function onFinish() {
 	}
 
 	/**
 	 * Called when new data received
-	 * @todo +on & -> protected?
 	 * @param string New received data
 	 * @return void
 	 */
-	public function stdin($buf) {} // @TODO: deprecate
+	protected function stdin($buf) {} // @TODO: deprecate
 	
 	/**
 	 * Close the connection

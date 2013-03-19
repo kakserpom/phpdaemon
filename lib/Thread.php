@@ -18,32 +18,42 @@ abstract class Thread {
 	protected $pid;
 
 	/**
-	 * @todo Add a description
+	 * Is this thread shutdown?
 	 * @var boolean
 	 */
 	protected $shutdown = false;
 
 	/**
-	 * @todo Add a description
+	 * Is this thread terminated?
 	 * @var boolean
 	 */
 	protected $terminated = false;
 
 	/**
-	 * @todo Add a description
+	 * Collections of childrens
 	 * @var array
 	 */
 	protected $collections = [];
 
-	protected $timeouts = [];
-
+	/**
+	 * Array of known signal numbers
+	 * @var array
+	 */
 	protected static $signalsno = [
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
 		18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
 	];
 	
-	public $sigEvents = [];
+	/**
+	 * Storage of signal handler events
+	 * @var array
+	 */
+	protected $sigEvents = [];
 	
+	/**
+	 * Hash of known signal [no => name, ...]
+	 * @var array
+	 */
 	public static $signals = [
 		SIGHUP    => 'SIGHUP',
 		SIGSYS    => 'SIGSYS',
@@ -64,21 +74,44 @@ abstract class Thread {
 		SIGUSR2   => 'SIGUSR2',
 	];
 	
+	/**
+	 * Get PID of this Thread
+	 * @return integer
+	 */
 	public function getPid() {
 		return $this->pid;
 	}
 
+
+	/**
+	 * Set ID of this Thread
+	 * @param integer Id
+	 * @return void
+	 */
 	public function setId($id) {
 		$this->id = $id;
 	}
 
+	/**
+	 * Get ID of this Thread
+	 * @return integer
+	 */
 	public function getId() {
 		return $this->id;
 	}
 
+	/**
+	 * Is this thread terminated?
+	 * @return boolean
+	 */
 	public function isTerminated() {
 		return $this->terminated;
 	}
+
+	/**
+	 * Invoke magic method
+	 * @return void
+	 */
 
 	public function __invoke() {
 		$this->run();
@@ -108,6 +141,10 @@ abstract class Thread {
 		}
 	}
 
+	/**
+	 * Unregister signals.
+	 * @return void
+	 */
 	protected function unregisterSignals() {
 		foreach ($this->sigEvents as $no => $ev) {
 			$ev->free();
@@ -133,10 +170,10 @@ abstract class Thread {
 	protected function run() { }
 
 	/**
-	 * @todo Add a description
+	 * If true, we do not register signals automatically at start
 	 * @var boolean
 	 */
-	public $delayedSigReg = FALSE;
+	protected $delayedSigReg = false;
 
 	/**
 	 * Registers signals
@@ -388,7 +425,6 @@ abstract class Thread {
 }
 
 if (!function_exists('pcntl_sigtimedwait')) {
-	// @todo $signals or Thread::$signals?
 	function pcntl_sigtimedwait($signals, $siginfo, $sec, $nano) {
 		pcntl_signal_dispatch();
 

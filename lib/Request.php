@@ -428,7 +428,6 @@ class Request {
  
 		if ($status !== -1) {
 			$this->postFinishHandler();
-			// $status: 0 - FCGI_REQUEST_COMPLETE, 1 - FCGI_CANT_MPX_CONN, 2 - FCGI_OVERLOADED, 3 - FCGI_UNKNOWN_ROLE  @todo what is -1 ? where is the constant for it?
 			$appStatus = 0;
 			if (isset($this->upstream)) {
 				$this->upstream->endRequest($this, $appStatus, $status);

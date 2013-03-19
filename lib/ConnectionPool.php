@@ -56,7 +56,7 @@ class ConnectionPool extends ObjectStorage {
 			}
 		}
 		if ($defaults = $this->getConfigDefaults()) {
-			$this->processDefaultConfig($defaults);
+			$this->config->imposeDefault($defaults);
 		}
 		$this->applyConfig();
 	}
@@ -116,40 +116,6 @@ class ConnectionPool extends ObjectStorage {
 
 		} else {
 			return new static(new Daemon_ConfigSection($arg));
-		}
-	}
-	
-	
- 	/**
-	 * Process default config
-	 * @todo move it to Daemon_Config class
-	 * @param ["setting" => "value", ...]
-	 * @return void
-	 */
-	public function processDefaultConfig($settings = []) {
-		foreach ($settings as $k => $v) {
-			$k = strtolower(str_replace('-', '', $k));
-
-			if (!isset($this->config->{$k})) {
-			  if (is_scalar($v))	{
-					$this->config->{$k} = new Daemon_ConfigEntry($v);
-				} else {
-					$this->config->{$k} = $v;
-				}
-			} elseif ($v instanceof Daemon_ConfigSection) {
-			// @todo
-			}	else {
-				$current = $this->config->{$k};
-			  if (is_scalar($v))	{
-					$this->config->{$k} = new Daemon_ConfigEntry($v);
-				} else {
-					$this->config->{$k} = $v;
-				}
-				
-				$this->config->{$k}->setHumanValue($current->value);
-				$this->config->{$k}->source = $current->source;
-				$this->config->{$k}->revision = $current->revision;
-			}
 		}
 	}
 	

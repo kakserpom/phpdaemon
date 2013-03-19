@@ -57,7 +57,7 @@ class ExampleHTTPClientRequest extends HTTPRequest {
 		try {$this->header('Content-Type: text/html');} catch (Exception $e) {}
 
 			$this->appInstance->httpclient->post(
-				['http://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
+				['https://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
 				function($conn, $success) {
 					echo $conn->body;
 					Daemon::$req->finish();
