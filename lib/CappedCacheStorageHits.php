@@ -8,6 +8,12 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class CappedCacheStorageHits extends CappedCacheStorage {	
+
+	/**
+	 * Constructor
+	 * @param [integer Maximum number of cached elements]
+	 * @return object
+	 */
 	public function __construct($max = null) {
 		if ($max !== null) {
 			$this->maxCacheSize = $max;
