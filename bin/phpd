@@ -73,7 +73,7 @@ $e = null;
 execute:
 try {
 	if ($e) {
-		$thread = $e->thread;
+		$thread = $e->getThread();
 	    $e = null;
 		$thread();
 	}
