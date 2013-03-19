@@ -9,30 +9,114 @@
  */
 class Daemon_WorkerThread extends Thread {
 
+	/**
+	 * Update?
+	 * @var boolean
+	 */
 	public $update = false;
+
+	/**
+	 * Reload?
+	 * @var boolean
+	 */
 	public $reload = false;
-	public $reloadTime = 0;
+
+	/**
+	 * Reload time
+	 * @var integer
+	 */
+	protected $reloadTime = 0;
+
+	/**
+	 * Reload delay
+	 * @var integer
+	 */
 	protected $reloadDelay = 2;
+
+	/**
+	 * Reloaded?
+	 * @var boolean
+	 */
 	public $reloaded = false;
 
 	/**
-	 * Map connnection id to application which created this connection
-	 * @var string
+	 * Time of last activity
+	 * @var integer
 	 */
 	public $timeLastActivity = 0;
+
+	/**
+	 * Last time of auto reload
+	 * @var integer
+	 */
 	protected $autoReloadLast = 0;
+
+	/**
+	 * Current status
+	 * @var integer
+	 */
 	protected $currentStatus = 0;
+
+	/**
+	 * Event base
+	 * @var EventBase
+	 */
 	public $eventBase;
+
+	/**
+	 * DNS base
+	 * @var EventDnsBase
+	 */
 	public $dnsBase;
-	public $timeoutEvent;
+
+	/**
+	 * State
+	 * @var integer
+	 */
 	public $state = 0;
+
+	/**
+	 * Break main loop?
+	 * @var boolean
+	 */
 	public $breakMainLoop = false;
+
+	/**
+	 * Reload ready?
+	 * @var boolean
+	 */
 	public $reloadReady = false;
-	public $delayedSigReg = false;
+
+	/**
+	 * If true, we do not register signals automatically at start
+	 * @var boolean
+	 */
+	protected $delayedSigReg = false;
+
+	/**
+	 * Instances count
+	 * @var hash
+	 */
 	public $instancesCount = [];
+
+	/**
+	 * Connection
+	 * @var Connection
+	 */
 	public $connection;
+
+	/**
+	 * Counter GC
+	 * @var integer
+	 */
 	public $counterGC = 0;
+
+	/**
+	 * Stack of callbacks to execute
+	 * @var StackCallbacks
+	 */
 	public $callbacks;
+
 	/**
 	 * Runtime of Worker process.
 	 * @return void
@@ -360,6 +444,10 @@ class Daemon_WorkerThread extends Thread {
 		}
 	}
 
+	/**
+	 * Check if we should break main loop
+	 * @return void
+	 */
 	protected function breakMainLoopCheck() {
 		$time = microtime(true);
 
@@ -404,6 +492,10 @@ class Daemon_WorkerThread extends Thread {
 		}
 	}
 
+	/**
+	 * Start reloading procedure
+	 * @var Connection
+	 */
 	protected function initReload() {
 		$this->reload = true;
 		$this->reloadTime = microtime(true) + $this->reloadDelay;

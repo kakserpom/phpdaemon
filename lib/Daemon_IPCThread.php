@@ -9,15 +9,48 @@
  */
 // @TODO: respawning IPCThread on unexpected failures
 class Daemon_IPCThread extends Thread {
+	/**
+	 * Event base
+	 * @var EventBase
+	 */
 	public $eventBase;
-	public $timeoutEvent;
-	public $breakMainLoop = FALSE;
-	public $reloadReady = FALSE;
-	public $delayedSigReg = TRUE;
+
+	/**
+	 * Break main loop?
+	 * @var boolean
+	 */
+	protected $breakMainLoop = false;
+
+	/**
+	 * Reload ready?
+	 * @var boolean
+	 */
+	protected $reloadReady = false;
+
+	/**
+	 * If true, we do not register signals automatically at start
+	 * @var boolean
+	 */
+	protected $delayedSigReg = true;
+
+	/**
+	 * Instances count
+	 * @var hash
+	 */
 	public $instancesCount = [];
-	public $connection;
+	
+	/**
+	 * File watcher
+	 * @var FileWatcher
+	 */
 	public $fileWatcher;
+
+	/**
+	 * If true, we do not register signals automatically at start
+	 * @var boolean
+	 */
 	public $reload = false;
+	
 	/**
 	 * Runtime of Worker process.
 	 * @return void
