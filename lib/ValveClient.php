@@ -16,21 +16,33 @@ class ValveClient extends NetworkClient {
 	const S2A_SERVERQUERY_GETCHALLENGE = "\x41";
 	const A2A_PING = "\x69";
 	const S2A_PONG = "\x6A";
-	
-	public static $zombie = 0;
 
-	public function request($addr, $name, $data,  $cb) {
+	/**
+	 * Sends a request
+	 * @param string Address
+	 * @param string Type of request
+	 * @param string Data
+	 * @param callable Callback
+	 * @return void
+	 */
+	public function request($addr, $type, $data,  $cb) {
 		$e = explode(':', $addr);
 		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':'.$e[1] : '') . '/', function($conn) use ($cb, $addr, $data, $name) {
 			if (!$conn->connected) {
 				call_user_func($cb, $conn, false);
 				return;
 			}
-			$conn->request($name, $data, $cb);
+			$conn->request($type, $data, $cb);
 		});
 	}
 	
 
+	/**
+	 * Sends echo-request
+	 * @param string Address
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function ping($addr, $cb) {
 		$e = explode(':', $addr);
 		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':'.$e[1] : '') . '/ping', function($conn) use ($cb) {
@@ -45,10 +57,23 @@ class ValveClient extends NetworkClient {
 		});
 	}
 
+	/**
+	 * Sends a request of type 'info'
+	 * @param string Address
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function requestInfo($addr, $cb) {
 		$this->request($addr, 'info', null, $cb);
 	}
 
+
+	/**
+	 * Sends a request of type 'players'
+	 * @param string Address
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function requestPlayers($addr, $cb) {
 		$this->request($addr, 'challenge', null, function ($conn, $result) use ($cb) {
 			if (is_array($result)) {
@@ -76,6 +101,11 @@ class ValveClient extends NetworkClient {
 class ValveClientConnection extends NetworkClientConnection {
 	public $timeout = 1;
 
+	/**
+	 * Sends a request of type 'players'
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function requestPlayers($cb) {
 		$this->request('challenge', null, function ($conn, $result) use ($cb) {
 			if (is_array($result)) {
@@ -86,21 +116,33 @@ class ValveClientConnection extends NetworkClientConnection {
 		});
 	}
 	
+	/**
+	 * Sends a request of type 'info'
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function requestInfo($cb) {
 		$this->request('info', null, $cb);
 	}
 
-	public function request($name, $data = null, $cb = null) {
+	/**
+	 * Sends a request
+	 * @param string Type of request
+	 * @param string Data
+	 * @param callable Callback
+	 * @return void
+	 */
+	public function request($type, $data = null, $cb = null) {
 		$packet = "\xFF\xFF\xFF\xFF";
-		if ($name === 'ping') {
+		if ($type === 'ping') {
 			$packet .= ValveClient::A2A_PING;
-		} elseif ($name === 'challenge') {
+		} elseif ($type === 'challenge') {
 			//$packet .= ValveClient::A2S_SERVERQUERY_GETCHALLENGE;
 			$packet .= ValveClient::A2S_PLAYER . "\xFF\xFF\xFF\xFF";
-		} elseif ($name === 'info') {
+		} elseif ($type === 'info') {
 			$packet .= ValveClient::A2S_INFO . "Source Engine Query\x00";
 			//"\xFF\xFF\xFF\xFFdetails\x00"
-		} elseif ($name === 'players') {
+		} elseif ($type === 'players') {
 			if ($data === null) {
 				$data = "\xFF\xFF\xFF\xFF";
 			}
@@ -119,7 +161,7 @@ class ValveClientConnection extends NetworkClientConnection {
 	 * @param string New data
 	 * @return void
 	 */
-	public function stdin($buf) {
+	protected function stdin($buf) {
 		//Daemon::log('stdin: '.Debug::exportBytes($buf, true));
 		$this->buf .= $buf;
 		start:
@@ -133,10 +175,10 @@ class ValveClientConnection extends NetworkClientConnection {
 		}
 		$type = Binary::getChar($this->buf);
 		if (($type === ValveClient::S2A_INFO) || ($type === ValveClient::S2A_INFO_SOURCE)) {
-			$result = $this->parseInfo($this->buf, $type);
+			$result = self::parseInfo($this->buf, $type);
 		}
 		elseif ($type === ValveClient::S2A_PLAYER) {
-			$result = $this->parsePlayers($this->buf);
+			$result = self::parsePlayers($this->buf);
 		}
 		elseif ($type === ValveClient::S2A_SERVERQUERY_GETCHALLENGE) {
 			$result = binarySubstr($this->buf, 0, 4);
@@ -153,7 +195,12 @@ class ValveClientConnection extends NetworkClientConnection {
 		goto start;
 	}
 
-	public function parsePlayers(&$st) {
+	/**
+	 * Parses response to 'players' command into structure
+	 * @param &string Data
+	 * @return array Structure
+	 */
+	public static function parsePlayers(&$st) {
 		$playersn = Binary::getByte($st);
 		$players = [];
 		for ($i = 1; $i < $playersn; ++$i) {
@@ -180,7 +227,12 @@ class ValveClientConnection extends NetworkClientConnection {
 		return $players;
 	}
 
-	public function parseInfo(&$st, $type) {
+	/**
+	 * Parses response to 'info' command into structure
+	 * @param &string Data
+	 * @return array Structure
+	 */
+	public static function parseInfo(&$st, $type) {
 		$info = [];
 		if ($type === ValveClient::S2A_INFO) {
 			$info['proto'] = Binary::getByte($st);
