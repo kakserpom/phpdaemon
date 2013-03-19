@@ -85,11 +85,10 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Preparing before init
-	 * @todo protected?
 	 * @param object Source request
 	 * @return void
 	 */
-	public function preinit($req) {
+	protected function preinit($req) {
 		if ($req === null) {
 			$req = new \stdClass;
 			$req->attrs = new \stdClass;
@@ -145,10 +144,9 @@ class HTTPRequest extends Request {
 	
 	/**
 	 * Called to check if ready
-	 * @todo protected?
 	 * @return void
 	 */
-	public function checkIfReady() {
+	protected function checkIfReady() {
 		if (!$this->attrs->params_done || !$this->attrs->stdin_done) {
 			return false;
 		}
@@ -417,8 +415,7 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Outputs data with headers (split by \r\n\r\n)
-	 * @todo description missed (what is the difference between this and out()) ?
-	 * @param string String to out
+	 * @param string
 	 * @return boolean Success.
 	 */
 	public function combinedOut($s) {
@@ -613,30 +610,48 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @todo description missing
+	 * Converts human-readable representation of size to number of bytes
+	 * @return integer
 	 */
-	public function parseSize($value) {
-		$l = strtolower(substr($value, -1));
+	public static function parseSize($value) {
+		$l = substr($value, -1);
 
-		if ($l === 'b') {
+		if ($l === 'b' || $l === 'B') {
 			return ((int) substr($value, 0, -1));
 		}
 
 		if ($l === 'k') {
+			return ((int) substr($value, 0, -1) * 1000);
+		}
+
+		if ($l === 'K') {
 			return ((int) substr($value, 0, -1) * 1024);
 		}
 
 		if ($l === 'm') {
+			return ((int) substr($value, 0, -1) * 1000 * 1000);
+		}
+
+		if ($l === 'M') {
 			return ((int) substr($value, 0, -1) * 1024 * 1024);
 		}
 
 		if ($l === 'g') {
+			return ((int) substr($value, 0, -1) * 1000 * 1000 * 1000);
+		}
+
+		if ($l === 'G') {
 			return ((int) substr($value, 0, -1) * 1024 * 1024 * 1024);
 		}
+
 		return (int) $value;
 	}
 
-	protected function startUploadFile() {
+	/**
+	 * Called when file upload started.
+	 * @return void
+	 */
+	protected function onUploadFileStart() {
 		$this->upstream->freezeInput();
 		$this->frozenInput = true;
 		FS::tempnam(ini_get('upload_tmp_dir'), 'php', function ($fp) {
@@ -652,7 +667,31 @@ class HTTPRequest extends Request {
 			$this->stdin('');
 		});
 	}
-	protected function writeUploadChunk($chunk, $last = false) {
+
+	/**
+	 * Alias of onUploadFileStart. To be removed in 1.0.
+	 * @return void
+	 */
+	protected function startUploadFile() {
+		$this->onUploadFileStart();
+	}
+
+	/**
+	 * Alias of onUploadFileChunk. To be removed in 1.0.
+	 * @return void
+	 */
+	protected function writeUploadChunk() {
+		$this->onUploadFileChunk();
+
+	}
+
+	/**
+	 * Called when chunk of incoming file has arrived.
+	 * @param string Chunk data
+	 * @param boolean Last?
+	 * @return void
+	 */
+	protected function onUploadFileChunk($chunk, $last = false) {
 		if ($this->mpartcurrent['error'] !== UPLOAD_ERR_OK) {
 			// just drop the chunk
 			return;
@@ -735,7 +774,7 @@ class HTTPRequest extends Request {
 								'size'     => 0,
 							);
 							$this->mpartcurrent = &$this->attrs->files[$name];
-							$this->startUploadFile();
+							$this->onUploadFileStart();
 							$this->mpartstate = self::MPSTATE_UPLOAD;
 						} else {
 							$this->mpartcurrent = &$this->attrs->post[$name];
@@ -791,7 +830,7 @@ class HTTPRequest extends Request {
 					if (!isset($this->mpartcurrent['fp'])) {
 						return; // fd is not ready yet, interrupt
 					}
-					$this->writeUploadChunk($chunk, true);
+					$this->onUploadFileChunk($chunk, true);
 					$this->mpartcurrent['size'] += strlen($chunk);
 				}
 
@@ -830,7 +869,7 @@ class HTTPRequest extends Request {
 							$this->mpartcurrent['error'] = UPLOAD_ERR_FORM_SIZE;
 						}
 
-						$this->writeUploadChunk($chunk);
+						$this->onUploadFileChunk($chunk);
 					}
 
 					$this->mpartoffset = $p;
@@ -929,10 +968,10 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @todo description missing
-	 * @todo protected?
+	 * Called after request finish
+	 * @return void
 	 */
-	public function postFinishHandler() {
+	protected function postFinishHandler() {
 		if (!$this->headers_sent) {
 			$this->out('');
 		}
@@ -949,7 +988,11 @@ class HTTPRequest extends Request {
 		}
 	}
 
-	public function sessionCommit() {
+	/**
+	 * Commits the session
+	 * @return void
+	 */
+	protected function sessionCommit() {
 		session_commit();
 	}
 }

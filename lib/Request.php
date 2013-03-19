@@ -138,7 +138,7 @@ class Request {
 	 * @param object Source request
 	 * @return void
 	 */
-	public function preinit($req)
+	protected function preinit($req)
 	{
 		if ($req === NULL) {
 			$req = new stdClass;
@@ -309,8 +309,8 @@ class Request {
 	 * Called by call() to check if ready
 	 * @return boolean Ready?
 	 */
-	public function checkIfReady() {
-		return TRUE;
+	protected function checkIfReady() {
+		return true;
 	}
  
 	/**
@@ -435,14 +435,13 @@ class Request {
  
 		}
 	}
- 
-	public function postFinishHandler() { }
-	
-	public function onDestruct() {}
-	
-	public function __destruct() {
-		$this->onDestruct();
-	}
+
+	/**
+	 * Called after request finish
+	 * @return void
+	 */
+	protected function postFinishHandler() { }
+
 }
  
 class RequestSleepException extends Exception {}
