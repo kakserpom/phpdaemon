@@ -33,7 +33,7 @@ class ICMPClientConnection extends NetworkClientConnection {
 			8, // type (c)
 			0, // code (c)
 			0, // checksum (n)
-			Daemon::$process->pid, // pid (n)
+			Daemon::$process->getPid(), // pid (n)
 			$this->seq  // seq (n)
 		) . $data;
 		$packet = substr_replace($packet, self::checksum($packet), 2, 2);

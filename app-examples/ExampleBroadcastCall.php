@@ -22,7 +22,7 @@ class ExampleBroadcastCall extends AppInstance {
 		
 		setTimeout(function($event) use ($appInstance) {
 			
-			$appInstance->broadcastCall('hello', array(Daemon::$process->pid));
+			$appInstance->broadcastCall('hello', array(Daemon::$process->getPid()));
 
 			$event->finish();
 			

@@ -597,7 +597,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 		static $n = 0;
 		return str_shuffle(md5(str_shuffle(
 				  microtime(true) . chr(mt_rand(0, 0xFF))
-				. Daemon::$process->pid . chr(mt_rand(0, 0xFF))
+				. Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
 				. (++$n) . mt_rand(0, mt_getrandmax()))));
 	}
 		

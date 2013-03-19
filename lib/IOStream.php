@@ -238,9 +238,9 @@ abstract class IOStream {
 		return $data;
 	}
 
-	/*public function search($what, $start = null, $end = null) {
+	public function search($what, $start = null, $end = null) {
 		return $this->bev->input->search($what, $start, $end);
-	}*/
+	}
 
 	public function readFromBufExact($n) { // @TODO: deprecate
 		if ($n === 0) {
