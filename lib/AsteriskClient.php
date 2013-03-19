@@ -37,9 +37,20 @@ class AsteriskClient extends NetworkClient {
 	 */
 	public static $safeCaseValues = ['dialstring', 'callerid'];
 
+	/* Sets AMI version
+	 * @param string Address
+	 * @param string Version
+	 * @return void
+	 */
+
 	public function setAmiVersion($addr, $ver) {
 		$this->amiVersions[$addr] = $ver;
 	}
+
+	/* Prepares environment scope
+	 * @param string Address
+	 * @return array
+	 */
 	public static function prepareEnv($data) {
 		$result = [];
 		$rows = explode("\n", $data);

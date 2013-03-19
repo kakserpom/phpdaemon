@@ -7,6 +7,10 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class IdentServer extends NetworkServer {
+
+	/* Pairs
+	 * @var hash ["$local:$foreign" => "$user", ...]
+	 */
 	protected $pairs = [];
 
 	/**
@@ -40,12 +44,31 @@ class IdentServer extends NetworkServer {
 		}
 	}
 
+	/* Register pair
+	 * @param integer Local
+	 * @param integer Foreign
+	 * @param string  User
+	 * @return void
+	 */
+
 	public function registerPair($local, $foreign, $user) {
 		$this->appInstance->broadcastCall('registerPair', [$local, $foreign, $user]);
 	}
+
+	/* Unregister pair
+	 * @param integer Local
+	 * @param integer Foreign
+	 * @return void
+	 */
 	public function unregisterPair($local, $foreign) {
 		$this->appInstance->broadcastCall('unregisterPair', [$local, $foreign]);
 	}
+
+	/* Find pair
+	 * @param integer Local
+	 * @param integer Foreign
+	 * @return string User
+	 */
 	public function findPair($local, $foreign) {
 		$k = $local . ':' . $foreign;
 		return
@@ -56,8 +79,19 @@ class IdentServer extends NetworkServer {
 }
 
 class IdentServerConnection extends Connection {
+
+	/**
+	 * EOL
+	 * @var string "\n"
+	 */	
 	protected $EOL = "\r\n";
+
+	/**
+	 * Default high mark. Maximum number of bytes in buffer.
+	 * @var integer
+	 */	
 	protected $highMark = 32;
+	
 	/**
 	 * Called when new data received.
 	 * @return void

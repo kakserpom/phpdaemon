@@ -8,8 +8,15 @@
  */
 class HTTPServer extends NetworkServer {
 
+	/* Variables order
+	 * @var string "GPC"
+	 */
 	public $variablesOrder;
-	public $WS; // WebSocketServer
+
+	/* WebSocketServer instance
+	 * @var WebSocketServer
+	 */
+	public $WS;
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults

@@ -7,6 +7,10 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class FastCGIServer extends NetworkServer {
+
+	/* Variables order
+	 * @var string "GPC"
+	 */
 	public $variablesOrder;
 	
 	/**
