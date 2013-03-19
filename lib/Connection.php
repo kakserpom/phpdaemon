@@ -9,29 +9,127 @@
  */
 class Connection extends IOStream {
 
+	/**
+	 * Hostname
+	 * @var string
+	 */
 	protected $host;
+
+	/**
+	 * Real host
+	 * @var string
+	 */
 	protected $hostReal;
+
+	/**
+	 * Port number
+	 * @var integer
+	 */
 	protected $port;
+
+	/**
+	 * Address
+	 * @var string
+	 */
 	protected $addr;
+
+	/**
+	 * Stack of callbacks called when connection is established
+	 * @var object StackCallbacks
+	 */
 	protected $onConnected = null;
+
+	/**
+	 * Connected?
+	 * @var boolean
+	 */
 	protected $connected = false;
+
+	/**
+	 * Failed?
+	 * @var boolean
+	 */
 	protected $failed = false;
+
+	/**
+	 * Timeout
+	 * @var integer
+	 */
 	protected $timeout = 120;
+
+	/**
+	 * Local address
+	 * @var string
+	 */
 	protected $locAddr;
+
+	/**
+	 * Local port
+	 * @var integer
+	 */
 	protected $locPort;
+
+	/**
+	 * Keepalive?
+	 * @var boolean
+	 */
 	protected $keepalive = false;
+
+	/**
+	 * Type
+	 * @var string
+	 */
 	protected $type;
+
+	/**
+	 * Parent socket
+	 * @var BoundSocket
+	 */
 	protected $parentSocket;
+
+	/**
+	 * Dgram connection?
+	 * @var boolean
+	 */
 	protected $dgram = false;
+
+	/**
+	 * Enable bevConnect?
+	 * @var boolean
+	 */
 	protected $bevConnectEnabled = true;
+
+	/**
+	 * bevConnect used?
+	 * @var boolean
+	 */
 	protected $bevConnect = false;
+
+	/**
+	 * URL
+	 * @var string
+	 */
 	protected $url;
+
+	/**
+	 * Scheme
+	 * @var string
+	 */
 	protected $scheme;
 
+	/**
+	 * Connected?
+	 * @return boolean
+	 */
 	public function isConnected() {
 		return $this->connected;
 	}
 
+
+	/**
+	 * Parses URL
+	 * @return hash URL info.
+	 */
 	public function parseUrl($url) {
 		$u = Daemon_Config::parseCfgUri($url);
 		if (!$u) {
@@ -43,6 +141,10 @@ class Connection extends IOStream {
 		return $u;
 	}
 
+	/**
+	 * Tries to obtain peer name.
+	 * @return boolean Success
+	 */
 	public function fetchPeername() {
 		if (false === socket_getpeername($this->fd, $this->host, $this->port)) {
 			if (109 === socket_last_error()) {
@@ -54,16 +156,31 @@ class Connection extends IOStream {
 		return true;
 	}
 
+	/**
+	 * Sets peer name.
+	 * @param string Hostname
+	 * @param integer Port
+	 * @return void
+	 */
 	public function setPeername($host, $port) {
 		$this->host = $host;
 		$this->port = $port;
 		$this->addr = '[' . $this->host . ']:' . $this->port;
 	}
 
+	/**
+	 * Sets parent socket
+	 * @param BoundSocket
+	 * @return boolean Success
+	 */
 	public function setParentSocket(BoundSocket $sock) {
 		$this->parentSocket = $sock;
 	}
 	
+	/**
+	 * Check peer name
+	 * @return void
+	 */
 	public function checkPeername() {
 		$r = $this->fetchPeername();
 		if ($r === false) {
@@ -84,6 +201,10 @@ class Connection extends IOStream {
 		}
 	}
 
+	/**
+	 * Called when new UDP packet received
+	 * @return void
+	 */
 	public function onUdpPacket($pct) {}
 
 	/**
@@ -98,6 +219,12 @@ class Connection extends IOStream {
 		}
 	}
 	
+
+	/**
+	 * Called if we inherit connection from request
+	 * @param Request Parent Request.
+	 * @return void
+	 */
 	public function onInheritanceFromRequest($req) {
 	}
 	
@@ -128,6 +255,11 @@ class Connection extends IOStream {
 			Daemon::uncaughtExceptionHandler($e);
 		}
 	}
+
+	/**
+	 * Destructor
+	 * @return void
+	 */
 
 	public function __destruct() {
 		if ($this->dgram && $this->parentSocket) {
@@ -164,6 +296,12 @@ class Connection extends IOStream {
 	}
 	
 
+	/**
+	 * Connects to URL
+	 * @param string URL
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function connect($url, $cb = null) {
 		$u = $this->parseUrl($url);
 		if (isset($u['user'])) {
@@ -201,9 +339,12 @@ class Connection extends IOStream {
 		}
 	}
 
+	/* Establish UNIX socket connection
+	 * @param string Path
+	 * @return boolean Success
+	 */
 	public function connectUnix($path) {
 		$this->type = 'unix';
-		// Unix-socket
 		$fd = socket_create(AF_UNIX, SOCK_STREAM, 0);
 		if (!$fd) {
 			return false;
@@ -215,9 +356,14 @@ class Connection extends IOStream {
 		$this->setFd($fd);
 		return true;
 	}
+
+
+	/* Establish raw socket connection
+	 * @param string Path
+	 * @return boolean Success
+	 */
 	public function connectRaw($host) {
 		$this->type = 'raw';
-		// Raw-socket
 		if (@inet_pton($host) === false) { // dirty check
 			DNSClient::getInstance()->resolve($host, function($result) use ($host) {
 				if ($result === false) {
@@ -252,9 +398,14 @@ class Connection extends IOStream {
 		$this->setFd($fd);
 		return true;
 	}
+
+	/* Establish UDP connection
+	 * @param string Hostname
+	 * @param integer Port
+	 * @return boolean Success
+	 */
 	public function connectUdp($host, $port) {
 		$this->type = 'udp';
-		// UDP-socket
 		$pton = @inet_pton($host);
 		if ($pton === false) { // dirty check
 			DNSClient::getInstance()->resolve($host, function($result) use ($host, $port) {
@@ -300,6 +451,12 @@ class Connection extends IOStream {
 		$this->setFd($fd);
 		return true;
 	}
+
+	/* Establish TCP connection
+	 * @param string Hostname
+	 * @param integer Port
+	 * @return boolean Success
+	 */
 	public function connectTcp($host, $port) {
 		$this->type = 'tcp';
 		$pton = @inet_pton($host);
@@ -365,6 +522,11 @@ class Connection extends IOStream {
 		$this->setFd($fd);
 		return true;
 	}
+
+	/* Sets timeout
+	 * @param integer Timeout in seconds
+	 * @return void
+	 */
 	public function setTimeout($timeout) {
 		parent::setTimeout($timeout);
 		if ($this->fd !== null) {
