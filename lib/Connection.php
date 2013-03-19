@@ -260,7 +260,7 @@ class Connection extends IOStream {
 			DNSClient::getInstance()->resolve($host, function($result) use ($host, $port) {
 				if ($result === false) {
 					Daemon::log(get_class($this).'->connectUdp : enable to resolve hostname: '.$host);
-					$this->onStateEvent($this->bev, EventBufferEvent::ERROR);
+					$this->onStateEv($this->bev, EventBufferEvent::ERROR);
 					return;
 				}
 				// @todo stack of addrs
@@ -308,7 +308,7 @@ class Connection extends IOStream {
 			DNSClient::getInstance()->resolve($this->host, function($result) use ($host, $port) {
 				if ($result === false) {
 					Daemon::log(get_class($this).'->connectTcp : enable to resolve hostname: '.$host);
-					$this->onStateEvent($this->bev, EventBufferEvent::ERROR);
+					$this->onStateEv($this->bev, EventBufferEvent::ERROR);
 					return;
 				}
 				// @todo stack of addrs

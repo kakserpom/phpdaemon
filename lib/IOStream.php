@@ -7,30 +7,142 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 abstract class IOStream {
+
+	/**
+	 * Associated pool
+	 * @var object ConnectionPool
+	 */	
 	public $pool;
 
+	/**
+	 * EOL
+	 * @var string "\n"
+	 */	
 	protected $EOL = "\n";
+
+	/**
+	 * EOLS_* switch
+	 * @var integer
+	 */	
 	protected $EOLS;
+
+	/**
+	 * Number of bytes on each read() in default onRead() implementation
+	 * @deprecated Remove in 1.0 or earlier
+	 * @var integer 8192
+	 */	
 	protected $readPacketSize  = 8192;
+
+	/**
+	 * EventBufferEvent
+	 * @var object EventBufferEvent
+	 */	
 	protected $bev;
+
+	/**
+	 * File descriptor
+	 * @var resource|integer
+	 */	
 	protected $fd;
+
+	/**
+	 * Finished?
+	 * @var boolean
+	 */	
 	protected $finished = false;
+
+	/**
+	 * Ready? 
+	 * @var boolean
+	 */	
 	protected $ready = false;
+
+	/**
+	 * Writing?
+	 * @var boolean
+	 */	
 	protected $writing = true;
+
+	/**
+	 * Reading?
+	 * @deprecated May be removed at any moment
+	 * @var boolean
+	 */	
+
 	protected $reading = false;
-	protected $lowMark  = 1;         // initial value of the minimal amout of bytes in buffer
+
+	/**
+	 * Default low mark. Minimum number of bytes in buffer.
+	 * @var integer
+	 */	
+	protected $lowMark  = 1;
+
+	/**
+	 * Default high mark. Maximum number of bytes in buffer.
+	 * @var integer
+	 */	
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
+
+	/**
+	 * Priority
+	 * @var integer
+	 */
 	protected $priority;
+
+	/**
+	 * Initialized?
+	 * @var boolean
+	 */	
 	protected $inited = false;
+
+	/**
+	 * Current state
+	 * @var integer
+	 */	
 	protected $state = 0;             // stream state of the connection (application protocol level)
 	const STATE_ROOT = 0;
 	const STATE_STANDBY = 0;
+
+	/**
+	 * Stack of callbacks called when writing is done
+	 * @var object StackCallbacks
+	 */	
 	protected $onWriteOnce;
+
+	/**
+	 * Timeout
+	 * @var integer
+	 */	
 	protected $timeout = null;
+
+	/**
+	 * URL
+	 * @var string
+	 */	
 	protected $url;
-	protected $alive = false; // alive?
+
+	/**
+	 * Alive?
+	 * @var boolean
+	 */	
+	protected $alive = false;
+
+	/**
+	 * Is bevConnect used?
+	 * @var boolean
+	 */	
 	protected $bevConnect = false;
+
+	/**
+	 * Should we can onReadEv() in next onWriteEv()?
+	 * @var boolean
+	 */	
 	protected $wRead = false;
+
+	/**
+	 * Freed?
+	 * @var boolean
+	 */	
 	protected $freed = false;
 
 	/**
@@ -61,14 +173,26 @@ abstract class IOStream {
 		$this->onWriteOnce = new StackCallbacks;
 	}
 	
+	/**
+	 * Freed?
+	 * @return boolean
+	 */	
 	public function isFreed() {
 		return $this->freed;
 	}
 
+	/**
+	 * Finished?
+	 * @return boolean
+	 */	
 	public function isFinished() {
 		return $this->finished;
 	}
 
+	/**
+	 * Get file descriptor
+	 * @return mixed File descriptr
+	 */	
 	public function getFd() {
 		return $this->fd;
 	}
@@ -82,6 +206,13 @@ abstract class IOStream {
 		$this->readPacketSize = $n;
 		return $this;
 	}
+
+	/**
+	 * Sets fd
+	 * @param mixed File descriptor
+	 * @param [object EventBufferEvent]
+	 * @return void
+	 */	
 
 	public function setFd($fd, $bev = null) {
 		$this->fd = $fd;
@@ -131,6 +262,11 @@ abstract class IOStream {
 		}
 	}
 
+	/**
+	 * Sets timeout
+	 * @param integer Timeout
+	 * @return void
+	 */
 	public function setTimeout($timeout) {
 		$this->timeout = $timeout;
 		if ($this->timeout !== null) {
@@ -140,11 +276,20 @@ abstract class IOStream {
 		}
 	}
 	
+	/* Sets priority
+	 * @param integer Priority
+	 * @return void
+	 */
 	public function setPriority($p) {
 		$this->priority = $p;
 		$this->bev->priority = $p;
 	}
 	
+	/* Sets watermark
+	 * @param integer|null Low
+	 * @param integer|null High
+	 * @return void
+	 */
 	public function setWatermark($low = null, $high = null) {
 		if ($low != null) {
 			$this->lowMark = $low;
@@ -179,6 +324,10 @@ abstract class IOStream {
 		return $r;
 	}
 
+	/* Reads line from buffer
+	 * @param [integer EOLS_*]
+	 * @return string|null
+	 */
 	public function readLine($eol = null) {
 		if (!isset($this->bev)) {
 			return null;
@@ -186,6 +335,10 @@ abstract class IOStream {
 		return $this->bev->input->readLine($eol ?: $this->EOLS);
 	}
 
+	/* Drains buffer it matches the string
+	 * @param string String
+	 * @return boolean|null Success
+	 */
 	public function drainIfMatch($str) {
 		if (!isset($this->bev)) {
 			return false;
@@ -205,6 +358,11 @@ abstract class IOStream {
 		return false;
 	}
 
+
+	/* Reads exact $n bytes of buffer without draining
+	 * @param integer Number of bytes to read
+	 * @return string|false
+	 */
 	public function lookExact($n) {
 		if (!isset($this->bev)) {
 			return false;
@@ -217,6 +375,11 @@ abstract class IOStream {
 		return $data;
 	}
 
+
+	/* Prepends data to input buffer
+	 * @param string Data
+	 * @return boolean Success
+	 */
 	public function prependInput($str) {
 		if (!isset($this->bev)) {
 			return false;
@@ -224,6 +387,10 @@ abstract class IOStream {
 		return $this->bev->input->prepend($str);
 	}
 
+	/* Prepends data to output buffer
+	 * @param string Data
+	 * @return boolean Success
+	 */
 	public function prependOutput($str) {
 		if (!isset($this->bev)) {
 			return false;
@@ -231,12 +398,23 @@ abstract class IOStream {
 		return $this->bev->output->prepend($str);
 	}
 
+	/* Reads maximum $n bytes of buffer without draining
+	 * @param integer Number of bytes to read
+	 * @return string|false
+	 */
 	public function look($n) {
 		$data = $this->read($n);
 		$this->bev->input->prepend($data);
 		return $data;
 	}
 
+
+	/* Searches first occurence of the string in input buffer
+	 * @param string Needle
+	 * @param [integer Offset start]
+	 * @param [integer Offset end]
+	 * @return integer Position
+	 */
 	public function search($what, $start = null, $end = null) {
 		return $this->bev->input->search($what, $start, $end);
 	}
@@ -253,6 +431,11 @@ abstract class IOStream {
 			return $r;
 		}
 	}
+
+	/* Reads exact $n bytes from buffer
+	 * @param integer Number of bytes to read
+	 * @return string|false
+	 */
 
 	public function readExact($n) {
 		if ($n === 0) {
@@ -407,7 +590,7 @@ abstract class IOStream {
 	 * @param string New received data
 	 * @return void
 	 */
-	protected function stdin($buf) {} // @TODO: deprecate
+	protected function stdin($buf) {} // @TODO: deprecated, remove in 1.0
 	
 	/**
 	 * Close the connection
@@ -431,6 +614,11 @@ abstract class IOStream {
 		}
 	}
 
+
+	/**
+	 * Unsets pointers of associated EventBufferEvent and File descriptr
+	 * @return void
+	 */
 	public function unsetFd() {
 		$this->bev = null;
 		$this->fd = null;
@@ -455,8 +643,12 @@ abstract class IOStream {
 			Daemon::uncaughtExceptionHandler($e);
 		}
 	}
-	
-	protected function onRead() {
+
+	/**
+	 * Called when new data received
+	 * @return void
+	 */
+	protected function onRead() { // @todo: remove this default implementation in 1.0
 		while (($buf = $this->read($this->readPacketSize)) !== false) {
 			$this->stdin($buf);
 		}
