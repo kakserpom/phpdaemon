@@ -16,7 +16,7 @@ class MemcacheClient extends NetworkClient {
 	protected function getConfigDefaults() {
 		return array(
 			// @todo add description strings
-			'servers'               =>  '127.0.0.1',
+			'servers'               =>  'tcp://127.0.0.1',
 			'port'					=> 11211,
 			'maxconnperserv'		=> 32
 		);

@@ -99,7 +99,7 @@ abstract class IOStream {
 			$this->alive = true;
 		} else {
 			$flags = !is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0 /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */;
-			if (isset($this->parentSocket->ctx)) {
+			if (isset($this->parentSocket->ctx) && $this->parentSocket->ctx instanceof EventSslContext) {
 				$this->bev = EventBufferEvent::sslSocket(Daemon::$process->eventBase, $this->fd,$this->parentSocket->ctx, EventBufferEvent::SSL_ACCEPTING, $flags);
 				$this->bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
 			} else {

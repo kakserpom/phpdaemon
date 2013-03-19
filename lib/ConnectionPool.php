@@ -273,7 +273,7 @@ class ConnectionPool extends ObjectStorage {
 	}
 
 	public function bindSocket($uri) {
-		$u = Daemon_Config::parseSocketUri($uri);
+		$u = Daemon_Config::parseCfgUri($uri);
 		$scheme = $u['scheme'];
 		if ($scheme === 'unix') {
 			$socket = new BoundUNIXSocket($u);
@@ -315,27 +315,6 @@ class ConnectionPool extends ObjectStorage {
 		}
 		$conn = new $class(null, $this);
 		$conn->connect($url, $cb);
-		return $conn;
-	}
-
-
-	/**
-	 * Establish a connection with remote peer
-	 * @param string Address
-	 * @param string Optional. Default port
-	 * @param callback Optional. Callback.
-	 * @param string Optional. Connection class name.
-	 * @return integer Connection's ID. Boolean false when failed.
-	 */
-	public function connectTo($addr, $port = 0, $cb = null, $class = null) {
-		if ($class === null) {
-			$class = $this->connectionClass;
-		}
-		$conn = new $class(null, $this);
-		$conn->connectTo($addr, $port);
-		if ($cb !== null) {
-			$conn->onConnected($cb);
-		}
 		return $conn;
 	}
 }

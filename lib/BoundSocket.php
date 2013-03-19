@@ -31,7 +31,7 @@ abstract class BoundSocket {
 	protected $source;
 	protected $revision;
 	public function __construct($uri) {
-		$this->uri = is_array($uri) ? $uri : Daemon_Config::parseSocketUri($uri);
+		$this->uri = is_array($uri) ? $uri : Daemon_Config::parseCfgUri($uri);
 		if (!$this->uri) {
 			return;
 		}

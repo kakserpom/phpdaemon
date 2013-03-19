@@ -15,7 +15,7 @@ class ICMPClient extends NetworkClient {
 	 */
 	
 	public function sendPing($host, $cb) {
-		$this->connectTo('raw:' . $host, 0, function($conn) use ($cb) {
+		$this->connect('raw://' . $host, function($conn) use ($cb) {
 			$conn->sendEcho($cb);
 		});
 	}	
@@ -23,7 +23,7 @@ class ICMPClient extends NetworkClient {
 
 class ICMPClientConnection extends NetworkClientConnection {
 	public $seq = 0;
-	public $bevConnect = false;
+	public $bevConnectEnabled = false;
 	public function sendEcho($cb, $data = 'phpdaemon') {
 		++$this->seq;
 		if (strlen($data) % 2 !== 0) {

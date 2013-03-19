@@ -156,7 +156,7 @@ class Daemon_Config implements ArrayAccess {
 		unset($this->{$this->getRealOffsetName($offset)});
 	}
 
-	public static function parseSocketUri($uri, $source = null) {
+	public static function parseCfgUri($uri, $source = null) {
 		if (strpos($uri, '://') === false) {
 			if (strncmp($uri, 'unix:', 5) === 0) {
 				$e = explode(':', $uri);
@@ -170,6 +170,9 @@ class Daemon_Config implements ArrayAccess {
 			} else {
 				$uri = 'tcp://' . $uri;
 			}
+		}
+		if (stripos($uri, 'unix:///') === 0) {
+			$uri = 'unix://localhost/' . substr($uri, 8);
 		}
 		$u = parse_url($uri);
 		$u['uri'] = $uri;

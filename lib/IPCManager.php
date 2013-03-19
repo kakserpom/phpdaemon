@@ -20,7 +20,7 @@ class IPCManager extends AppInstance {
 	protected function getConfigDefaults() {
 		return array(
 			// listen to
-			'mastersocket'     => 'unix:/tmp/phpDaemon-ipc-%x.sock',
+			'mastersocket'     => 'unix:///tmp/phpDaemon-ipc-%x.sock',
 		);
 	}
 
@@ -113,7 +113,7 @@ class IPCManager extends AppInstance {
 		};
 		if (!$this->conn) {
 			$this->conn = new IPCManagerWorkerConnection(null, null, null);
-			$this->conn->connectTo($this->socketurl);
+			$this->conn->connect($this->socketurl);
 		}
 		$this->conn->onConnected($cb);
  	}

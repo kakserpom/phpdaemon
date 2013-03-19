@@ -187,7 +187,9 @@ class Daemon_MasterThread extends Thread {
 		);
 	}
 	/**
-	 * @todo description missed
+	 * Reload worker by internal id
+	 * @param integer - Id of worker
+	 * @return void
 	 */	
 	protected function reloadWorker($id) {
 		if (isset($this->workers->threads[$id])) {
@@ -301,7 +303,6 @@ class Daemon_MasterThread extends Thread {
 	
 	/**
 	 * Handler for the SIGCHLD (child is dead) signal in master process.
-	 * @todo +on?
 	 * @return void
 	 */
 	protected function sigchld() {
@@ -314,7 +315,6 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGINT (shutdown) signal in master process. Shutdown.
-	 * @todo +on ?
 	 * @return void
 	 */
 	protected function sigint() {
@@ -333,7 +333,6 @@ class Daemon_MasterThread extends Thread {
 	}
 	/**
 	 * Handler for the SIGTERM (shutdown) signal in master process
-	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	protected function sigterm() {
@@ -347,7 +346,6 @@ class Daemon_MasterThread extends Thread {
 	
 	/**
 	 * Handler for the SIGQUIT signal in master process
-	 * @todo +on & -> protected?
 	 * @return void
 	 */
 	protected function sigquit() {
@@ -361,10 +359,9 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGHUP (reload config) signal in master process
-	 * @todo +on & -> protected?
 	 * @return void
 	 */
-	public function sighup() {
+	protected function sighup() {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('Caught SIGHUP (reload config).');
 		}
@@ -378,10 +375,9 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGUSR1 (re-open log-file) signal in master process
-	 * @todo +on & -> protected?
 	 * @return void
 	 */
-	public function sigusr1() {
+	protected function sigusr1() {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('Caught SIGUSR1 (re-open log-file).');
 		}
@@ -392,10 +388,9 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGUSR2 (graceful restart all workers) signal in master process
-	 * @todo +on & -> protected?
 	 * @return void
 	 */
-	public function sigusr2() {
+	protected function sigusr2() {
 		if (Daemon::$config->logsignals->value) {
 			$this->log('Caught SIGUSR2 (graceful restart all workers).');
 		}
@@ -404,26 +399,24 @@ class Daemon_MasterThread extends Thread {
 
 	/**
 	 * Handler for the SIGTTIN signal in master process
-	 * @todo not used or -> protected?
+	 * Used as "ping" signal
 	 * @return void
 	 */
-	public function sigttin() { }
+	protected function sigttin() {}
 
 	/**
 	 * Handler for the SIGXSFZ signal in master process
-	 * @todo +on & -> protected?
 	 * @return void
 	 */
-	public function sigxfsz() {
+	protected function sigxfsz() {
 		$this->log('Caught SIGXFSZ.');
 	}
 	
 	/**
 	 * Handler for non-known signals
-	 * @todo +on & -> protected?
 	 * @return void
 	 */
-	public function sigunknown($signo) {
+	protected function sigunknown($signo) {
 		if (isset(Thread::$signals[$signo])) {
 			$sig = Thread::$signals[$signo];
 		} else {
