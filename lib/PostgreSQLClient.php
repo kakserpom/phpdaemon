@@ -27,24 +27,108 @@ class PostgreSQLClient extends NetworkClient {
 }
 
 class PostgreSQLClientConnection extends NetworkClientConnection {
-	public $url;                       // Connection's URL.
-	public $protover      = '3.0';
-	public $maxPacketSize = 0x1000000; // Maximum packet size.
-	public $charsetNumber = 0x08;      // Charset number.
-	public $dbname        = '';        // Default database name.
-	public $user          = 'root';    // Username
-	public $password      = '';        // Password
-	public $options       = '';        // Default options
-	public $state        = 0;         // Connection's state. 0 - start,  1 - got initial packet,  2 - auth. packet sent,  3 - auth. error,  4 - handshaked OK
-	public $instate       = 0;         // State of pointer of incoming data. 0 - Result Set Header Packet,  1 - Field Packet,  2 - Row Packet
-	public $resultRows    = [];   // Resulting rows.
-	public $resultFields  = [];   // Resulting fields
-	public $context;               // Property holds a reference to user's object.
-	public $insertId;              // Equals with INSERT_ID().
-	public $insertNum;                 // Equals with INSERT_ID().
-	public $affectedRows;              // Number of affected rows.
-	public $parameters    = [];   // Runtime parameters from server
+	/**
+	 * URL
+	 * @var string
+	 */
+	public $url;
+
+	/**
+	 * Protocol version
+	 * @var string
+	 */
+	public $protover = '3.0';
+
+	/**
+	 * Maximum packet size
+	 * @var integer
+	 */
+	public $maxPacketSize = 0x1000000;
+
+	/**
+	 * Charset number
+	 * @var integer
+	 */
+	public $charsetNumber = 0x08;
+
+	/**
+	 * Database name
+	 * @var string
+	 */
+	public $dbname = '';
+
+	/**
+	 * Username
+	 * @var string
+	 */
+	public $user = 'root';
+
+	/**
+	 * Password
+	 * @var string
+	 */
+	public $password = '';
+
+	/**
+	 * Default options
+	 * @var string
+	 */
+	public $options = '';
+
+	/**
+	 * Connection's state. 0 - start,  1 - got initial packet,  2 - auth. packet sent,  3 - auth. error,  4 - handshaked OK
+	 * @var integer
+	 */
+	public $state = 0;
+
+	/**
+	 * State of pointer of incoming data. 0 - Result Set Header Packet,  1 - Field Packet,  2 - Row Packet
+	 * @var string
+	 */
+	public $instate = 0; 
+
+	/**
+	 * Resulting rows
+	 * @var array
+	 */
+	public $resultRows = [];
+
+	/**
+	 * Resulting fields
+	 * @var array
+	 */
+	public $resultFields = [];
+
+	/**
+	 * Equals to INSERT_ID().
+	 * @var string
+	 */
+	public $insertId;
+
+	/**
+	 * Inserted rows number
+	 * @var integer
+	 */
+	public $insertNum;
+
+	/**
+	 * Number of affected rows
+	 * @var integer
+	 */
+	public $affectedRows;
+
+	/**
+	 * Runtime parameters from server
+	 * @var array
+	 */
+	public $parameters = [];
+
+	/**
+	 * Backend key
+	 * @var string
+	 */
 	public $backendKey;
+
 	const STATE_AUTH_ERROR = 3;
 	const STATE_AUTH_OK = 4;
 	const STATE_AUTH_PACKET_SENT = 2;

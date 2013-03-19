@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Asynchronous process
+ * Process
  *
  * @package Core
  *
@@ -29,13 +29,12 @@ class AsyncProcess extends AsyncStream {
 
 	/**
 	 * Process descriptor
-	 * @var resource Resource? @todo resource?
+	 * @var resource
 	 */
 	public $pd;
 
 	/**
 	 * Output errors? 
-	 * @todo used only in this module without any changes
 	 * @var boolean
 	 */
 	public $outputErrors = false;
