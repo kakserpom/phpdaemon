@@ -8,12 +8,35 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class BoundTCPSocket extends BoundSocket {
+	/**
+	 * Hostname
+	 * @var string
+	 */
 	protected $host;
+
+	/**
+	 * Port
+	 * @var integer
+	 */
 	protected $port;
+
+	/**
+	 * Listener mode?
+	 * @var boolean
+	 */
 	protected $listenerMode = true;
+
+	/**
+	 * Default port
+	 * @var integer
+	 */
 	protected $defaultPort;
 
-
+	/**
+	 * Sets default port
+	 * @param integer Port
+	 * @return void
+	 */
 	public function setDefaultPort($port) {
 		$this->defaultPort = $port;
 	}
@@ -66,7 +89,6 @@ class BoundTCPSocket extends BoundSocket {
 		$this->setFd($sock);
 		return true;
 	}
-
 
 	/**
 	 * Called when new connections is waiting for accept

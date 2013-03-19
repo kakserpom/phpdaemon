@@ -9,17 +9,71 @@
  */
 class ConnectionPool extends ObjectStorage {
 
+	/**
+	 * Allowed clients
+	 * @var array|null
+	 */
 	public $allowedClients  = null;
+
+	/**
+	 * Default connection class
+	 * @var string
+	 */
 	public $connectionClass;
+
+	/**
+	 * Name
+	 * @var string
+	 */
 	public $name;
+
+	/**
+	 * Configuration
+	 * @var Daemon_ConfigSection
+	 */
 	public $config;
+
+	/**
+	 * Instances storage
+	 * @var hash ['name' => ConnectionPool, ...]
+	 */
 	protected static $instances = [];
+
+	/**
+	 * Max concurrency 
+	 * @var integer
+	 */
 	public $maxConcurrency = 0;
+
+	/**
+	 * Is finished?
+	 * @var boolean
+	 */
 	protected $finished = false;
+
+	/**
+	 * Bound sockets
+	 * @var ObjectStorage
+	 */
 	protected $bound;
+
+	/**
+	 * Is enabled?
+	 * @var boolean
+	 */
 	protected $enabled = false;
+
+	/**
+	 * Is overloaded?
+	 * @var boolean
+	 */
 	protected $overload = false;
 	
+	/**
+	 * Constructor
+	 * @param array Config variables
+	 * @return object
+	 */
 	public function __construct($config = []) {
 		$this->bound = new ObjectStorage;
 		$this->config = $config;
@@ -33,6 +87,10 @@ class ConnectionPool extends ObjectStorage {
 		$this->init();
 	}
 	
+	/**
+	 * Constructor
+	 * @return void
+	 */
 	protected function init() {}
 	
 	/**
@@ -61,6 +119,10 @@ class ConnectionPool extends ObjectStorage {
 		$this->applyConfig();
 	}
 	
+	/**
+	 * Applies config
+	 * @return void
+	 */
 	protected function applyConfig() {
 		foreach ($this->config as $k => $v) {
 			if (is_object($v) && $v instanceof Daemon_ConfigEntry) {
@@ -92,6 +154,12 @@ class ConnectionPool extends ObjectStorage {
 		return false;
 	}
 	
+	/**
+	 * Returns instance object
+	 * @param mixed String name / array config / Daemon_ConfigSection
+	 * @param [boolean Spawn? Default is true]
+	 * @return object
+	 */
 	public static function getInstance($arg = '', $spawn = true) {
 		if ($arg === 'default') {
 			$arg = '';
@@ -119,6 +187,12 @@ class ConnectionPool extends ObjectStorage {
 		}
 	}
 	
+
+	/**
+	 * Sets default connection class
+	 * @param string String name
+	 * @return void
+	 */
 	public function setConnectionClass($class) {
 		$this->connectionClass = $class;
 	}
@@ -159,7 +233,11 @@ class ConnectionPool extends ObjectStorage {
 		return $this->finish();
 	}
 
-	public function onFinish() {}
+	/**
+	 * Called when ConnectionPool is finished]
+	 * @return void
+	 */
+	protected function onFinish() {}
 
 	/**
 	 * Close each of binded sockets.
@@ -168,7 +246,10 @@ class ConnectionPool extends ObjectStorage {
 	public function closeBound() {
 		$this->bound->each('close');
 	}
-
+	/**
+	 * Returns instance object
+	 * @return void
+	 */
 
 	public function finish() {
 		$this->disable(); 
@@ -188,14 +269,31 @@ class ConnectionPool extends ObjectStorage {
 		return $result;
 	}
 
+	/**
+	 * Attach BoundSocket
+	 * @param BoundSocket
+	 * @param [mixed Info]
+	 * @return void
+	 */
 	public function attachBound($bound, $inf = null) {
 		$this->bound->attach($bound, $inf);
 	}
-
+	
+	/**
+	 * Detach BoundSocket
+	 * @param BoundSocket
+	 * @return void
+	 */
 	public function detachBound($bound) {
 		$this->bound->detach($bound);
 	}
 
+	/**
+	 * Attach Connection
+	 * @param Connection
+	 * @param [mixed Info]
+	 * @return void
+	 */
 	public function attach($conn, $inf = null) {
 		parent::attach($conn, $inf);
 		if ($this->maxConcurrency && !$this->overload) {
@@ -207,6 +305,12 @@ class ConnectionPool extends ObjectStorage {
 		}
 	}
 
+	/**
+	 * Detach Connection
+	 * @param Connection
+	 * @param [mixed Info]
+	 * @return void
+	 */
 	public function detach($conn) {
 		parent::detach($conn);
 		if ($this->overload) {
@@ -238,6 +342,11 @@ class ConnectionPool extends ObjectStorage {
 		return $n;
 	}
 
+	/**
+	 * Bind given socket
+	 * @param string Address to bind
+	 * @return boolean Success
+	 */
 	public function bindSocket($uri) {
 		$u = Daemon_Config::parseCfgUri($uri);
 		$scheme = $u['scheme'];

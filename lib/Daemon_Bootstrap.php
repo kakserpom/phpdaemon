@@ -9,8 +9,16 @@
  */
 class Daemon_Bootstrap {
 
-	public static $pid;
+	/**
+	 * Master process ID
+	 * @var integer
+	 */
+	protected static $pid;
 
+	/**
+	 * List of commands
+	 * @var array
+	 */
 	protected static $commands = array(
 		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker'
 	);
@@ -430,10 +438,18 @@ class Daemon_Bootstrap {
 		
 	}
 
+	/**
+	 * Print ussage
+	 * @return void
+	 */
 	protected static function printUsage() {
 		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
 	}
 
+	/**
+	 * Print help
+	 * @return void
+	 */
 	protected static function printHelp() {
 		$term = new Terminal();
 

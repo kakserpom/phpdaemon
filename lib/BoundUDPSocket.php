@@ -8,18 +8,65 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class BoundUDPSocket extends BoundSocket {
-	public $defaultPort = 0;
-	public $reuse = true;
-	public $host;
-	public $port;
-	public $portsMap = [];
+		/**
+	 * Hostname
+	 * @var string
+	 */
+	protected $host;
 
+	/**
+	 * Port
+	 * @var integer
+	 */
+	protected $port;
+
+	/**
+	 * Listener mode?
+	 * @var boolean
+	 */
+	protected $listenerMode = true;
+
+	/**
+	 * Default port
+	 * @var integer
+	 */
+	protected $defaultPort;
+
+	/**
+	 * Reuse?
+	 * @var boolean
+	 */
+	protected $reuse = true;
+	
+	/**
+	 * Ports map
+	 * @var hash [portNumber => Connection]
+	 */
+	protected $portsMap = [];
+
+	/**
+	 * Sets default port
+	 * @param integer Port
+	 * @return void
+	 */
+	public function setDefaultPort($port) {
+		$this->defaultPort = $port;
+	}
+
+	/**
+	 * Unassigns addr
+	 * @param string Address
+	 * @return void
+	 */
 	public function unassignAddr($addr) {
 		unset($this->portsMap[$addr]);
 	}
-	public function setDefaultPort($n) {
-		$this->defaultPort = (int) $n;
-	}
+
+	/**
+	 * Sets reuse
+	 * @param integer Port
+	 * @return void
+	 */
 	public function setReuse($reuse = true) {
 		$this->reuse = $reuse;
 	}

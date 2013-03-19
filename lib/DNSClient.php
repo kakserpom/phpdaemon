@@ -6,6 +6,10 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class DNSClient extends NetworkClient {
+	/**
+	 * Record Types 
+	 * @var hash [code => "name", ...]
+	 */	
 	public static $type = [
  		1 => 'A', 2 => 'NS',  3 => 'MD', 4 => 'MF', 5 => 'CNAME',
  		6 => 'SOA', 7 => 'MB', 8 => 'MG', 9 => 'MR', 10 => 'RR',
@@ -25,21 +29,41 @@ class DNSClient extends NetworkClient {
  		32768 => 'TA', 32769 => 'DLV',
 	];
 
+	/**
+	 * Hosts file parsed
+	 * @var hash [hostname => [addr, ...], ...]
+	 */	
 	public $hosts = [];
+
+	/**
+	 * Preloading ComplexJob
+	 * @var ComplexJob
+	 */	
 	public $preloading;
+
+	/**
+	 * Resolve cache
+	 * @var CappedCacheStorageHits
+	 */
 	public $resolveCache;
 
-	protected function init() {
-		$this->resolveCache = new CappedCacheStorageHits($this->config->resolvecachesize->value);
-	}
-
+	/**
+	 * Classes
+	 * @var hash [code => "class"]
+	 */
 	public static $class = [
  		1 => 'IN',
  		3 => 'CH',
  		255 => 'ANY',
 	];
 
-	public $ns;
+	/**
+	 * Constructor
+	 * @return object
+	 */	
+	protected function init() {
+		$this->resolveCache = new CappedCacheStorageHits($this->config->resolvecachesize->value);
+	}
 
 	/**
 	 * Setting default config options
@@ -58,6 +82,10 @@ class DNSClient extends NetworkClient {
 		];
 	}
 
+	/**
+	 * Applies config
+	 * @return void
+	 */
 	public function applyConfig() {
 		parent::applyConfig();
 		$pool = $this;
@@ -97,6 +125,13 @@ class DNSClient extends NetworkClient {
 		$job();
 	}
 
+	/**
+	 * Resolves the host
+	 * @param string Hostname
+	 * @param callable Callback
+	 * @param [boolean Noncache?]
+	 * @return void
+	 */
 	public function resolve($hostname, $cb, $noncache = false) {
 		if (!$this->preloading->hasCompleted()) {
 			$pool = $this;
@@ -152,6 +187,14 @@ class DNSClient extends NetworkClient {
 			}
 		});
 	}
+
+	/**
+	 * Gets the host information
+	 * @param string Hostname
+	 * @param callable Callback
+	 * @param [boolean Noncache?]
+	 * @return void
+	 */
 	public function get($hostname, $cb, $noncache = false) {
 		if (!$this->preloading->hasCompleted()) {
 			$pool = $this;
@@ -178,6 +221,11 @@ class DNSClientConnection extends NetworkClientConnection {
 	protected $lowMark = 2;
 	protected $highMark = 512;
 
+
+	/**
+	 * Called when new UDP packet received.
+	 * @return void
+	 */
 	public function onUdpPacket($pct) {
 		$orig = $pct;
 		$this->response = [];
@@ -304,6 +352,12 @@ class DNSClientConnection extends NetworkClientConnection {
 		goto start;
 	}
 
+	/**
+	 * Gets the host information
+	 * @param string Hostname
+	 * @param callable Callback
+	 * @return void
+	 */
 	public function get($hostname, $cb) {
 		$this->onResponse->push($cb);
 		$this->setFree(false);

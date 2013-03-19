@@ -9,27 +9,125 @@
  */
 abstract class BoundSocket {
 
+	/**
+	 * Enabled?
+	 * @var boolean
+	 */
 	protected $enabled = false;
+
+	/**
+	 * File descriptor
+	 * @var mixed
+	 */
 	protected $fd;
+
+	/**
+	 * Event
+	 * @var EventListener/Event
+	 */
 	protected $ev;
+
+	/**
+	 * PID of process which bound this socket
+	 * @var int
+	 */
 	protected $pid;
+
+	/**
+	 * Pool
+	 * @var ConnectionPool
+	 */
 	protected $pool;
+
+	/**
+	 * Listener mode?
+	 * @var boolean
+	 */
 	protected $listenerMode = false;
+
+	/**
+	 * Context
+	 * @var mixed
+	 */
 	public $ctx; // @TODO: make it protected
+
+	/**
+	 * URI
+	 * @var string
+	 */
 	protected $uri;
+
+	/**
+	 * Context name
+	 * @var string
+	 */
 	protected $ctxname;
+
+	/**
+	 * Reuse?
+	 * @var boolean
+	 */
 	protected $reuse = true;
+
+	/**
+	 * SSL?
+	 * @var boolean
+	 */
 	protected $ssl = false;
+
+	/**
+	 * Errorneous?
+	 * @var boolean
+	 */
 	protected $errorneous = false;
 
+	/**
+	 * Private key file
+	 * @var string
+	 */
 	protected $pkfile;
+
+	/**
+	 * Certificate file
+	 * @var string
+	 */
 	protected $certfile;
+
+	/**
+	 * Passphrase
+	 * @var string
+	 */
 	protected $passphrase;
+
+	/**
+	 * Verify peer?
+	 * @var boolean
+	 */
 	protected $verifypeer = false;
+
+	/**
+	 * Allow self-signed?
+	 * @var boolean
+	 */
 	protected $allowselfsigned = true;
 
+	/**
+	 * Source
+	 * @var string
+	 */
 	protected $source;
+
+	/**
+	 * Revision
+	 * @var integer
+	 */
 	protected $revision;
+
+	/**
+	 * Constructor
+	 * @param string URI
+	 * @return object
+	 */
 	public function __construct($uri) {
 		$this->uri = is_array($uri) ? $uri : Daemon_Config::parseCfgUri($uri);
 		if (!$this->uri) {
@@ -41,6 +139,10 @@ abstract class BoundSocket {
 		}
 	}
 
+	/**
+	 * Import parameters
+	 * @return void
+	 */
 	protected function importParams() {
 
 		foreach ($this->uri['params'] as $key => $val) {
@@ -76,6 +178,11 @@ abstract class BoundSocket {
 		}
 
 	}
+
+	/**
+	 * Initialize SSL context
+	 * @return void
+	 */
 	protected function initSSLContext() {
 		if (!EventUtil::sslRandPoll()) {
 	 		Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
@@ -91,6 +198,11 @@ abstract class BoundSocket {
 		]);
 	}
 
+	/**
+	 * Attach to ConnectionPool
+	 * @param ConnectionPool
+	 * @return void
+	 */
 	public function attachTo($pool) {
 		$this->pool = $pool;
 		$this->pool->attachBound($this);
@@ -195,7 +307,10 @@ abstract class BoundSocket {
 		}
 	}
 
-
+	/**
+	 * Finishes BoundSocket
+	 * @return void
+	 */
 	public function finish() {
 		$this->disable(); 
 		$this->close();
@@ -219,6 +334,10 @@ abstract class BoundSocket {
 		$this->accept();
 	}
 
+	/**
+	 * Tries to accept new connection
+	 * @return Connection|null
+	 */
 	public function accept() {
 		if (Daemon::$config->logevents->value) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
