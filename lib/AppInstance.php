@@ -195,8 +195,7 @@ class AppInstance {
 	}
  
 	/**
-	 * Create Request
-	 * @todo more description needed
+	 * Create Request instance
 	 * @param object Request
 	 * @param object Upstream application instance
 	 * @return object Request
@@ -240,21 +239,17 @@ class AppInstance {
  
 	/**
 	 * Handle the worker status
-	 * @param int Status code @todo use constants in method
+	 * @param int Status code
 	 * @return boolean Result
 	 */
 	public function handleStatus($ret) {
 		if ($ret === self::EVENT_CONFIG_UPDATED) {
-			// script update
 			return  $this->onConfigUpdated();
 		} elseif ($ret === self::EVENT_GRACEFUL_SHUTDOWN) {
-			 // graceful worker shutdown for restart
 			return $this->shutdown(true);
 		} elseif ($ret === self::EVENT_HARD_SHUTDOWN) {
-			// shutdown worker
 			return $this->shutdown();
-		} else {
-			return true;
 		}
+		return true;
 	}
 }
