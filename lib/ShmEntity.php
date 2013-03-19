@@ -1,10 +1,34 @@
 <?php
 class ShmEntity {
-	public $path;
-	public $segments = array();
-	public $segsize = 1024;
-	public $name;
-	public $key;
+	/**
+	 * Path
+	 * @var string
+	 */
+	protected $path;
+
+	/**
+	 * Segments
+	 * @var array
+	 */
+	protected $segments = [];
+
+	/**
+	 * Segment size
+	 * @var integer
+	 */
+	protected $segsize = 1024;
+
+	/**
+	 * Name
+	 * @var string
+	 */
+	protected $name;
+
+	/**
+	 * Key
+	 * @var integer
+	 */
+	protected $key;
 
 	public function __construct($path, $segsize, $name, $create = false) {
 		$this->path = $path;
@@ -49,6 +73,9 @@ class ShmEntity {
 		return $shm;
 	}
 
+	public function getSegments() {
+		return $this->segments;
+	}
 	public function openall() {
 		do {
 			$r = $this->open(sizeof($this->segments));

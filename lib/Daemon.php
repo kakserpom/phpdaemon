@@ -417,7 +417,7 @@ class Daemon {
 
 		Daemon::$shm_wstate->openAll();
 		$c = 0;
-		foreach (Daemon::$shm_wstate->segments as $shm) {
+		foreach (Daemon::$shm_wstate->getSegments() as $shm) {
 			while ($offset < Daemon::SHM_WSTATE_SIZE) {
 				$buf = shmop_read($shm, $offset, $bufsize);
 				for ($i = 0, $buflen = strlen($buf); $i < $buflen; ++$i) {

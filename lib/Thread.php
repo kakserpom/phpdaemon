@@ -8,11 +8,15 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 abstract class Thread {
-
+	
+	/**
+	 * Process identificator
+	 * @var int
+	 */
 	protected $id;
 
 	/**
-	 * Process identificator
+	 * PID
 	 * @var int
 	 */
 	protected $pid;
