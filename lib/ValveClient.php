@@ -161,7 +161,7 @@ class ValveClientConnection extends NetworkClientConnection {
 	 * @param string New data
 	 * @return void
 	 */
-	protected function stdin($buf) {
+	protected function stdin($buf) { // @TODO: refactoring to onRead
 		//Daemon::log('stdin: '.Debug::exportBytes($buf, true));
 		$this->buf .= $buf;
 		start:
