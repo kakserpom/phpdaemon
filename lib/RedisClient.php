@@ -17,7 +17,7 @@ class RedisClient extends NetworkClient {
 	protected function getConfigDefaults() {
 		return [
 			// @todo add description strings
-			'servers'               =>  '127.0.0.1',
+			'servers'               =>  'tcp://127.0.0.1',
 			'port'					=> 6379,
 			'maxconnperserv'		=> 32,
 		];

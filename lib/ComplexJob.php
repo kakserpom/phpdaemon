@@ -103,7 +103,7 @@ class ComplexJob {
 	 * Checks if all jobs are ready
 	 * @return void
 	 */	
-	protecte function checkIfAllReady() {
+	protected function checkIfAllReady() {
 		if ($this->resultsNum >= $this->jobsNum) {
 			$this->jobs = [];
 			$this->state = self::STATE_DONE;

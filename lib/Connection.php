@@ -336,6 +336,8 @@ class Connection extends IOStream {
 		}
 		elseif ($this->scheme === 'tcp') {
 			$this->connectTcp($this->host, $this->port);
+		} else {
+			Daemon::log(get_class($this).': connect(): unrecoginized scheme \''.$this->scheme.'\' (not unix/raw/udp/tcp) in URL: '.$url);
 		}
 	}
 

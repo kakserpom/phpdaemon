@@ -33,7 +33,7 @@ class MongoClientAsync extends NetworkClient {
 	protected function getConfigDefaults() {
 		return array(
 			// default server list
-			'servers' => 'mongo://127.0.0.1',
+			'servers' => 'tcp://127.0.0.1',
 			// default port
 			'port'    => 27017,
 			'maxconnperserv' => 32,
