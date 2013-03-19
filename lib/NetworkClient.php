@@ -219,10 +219,10 @@ class NetworkClient extends ConnectionPool {
 				return;
 			}
 			if ($onResponse !== NULL) {
-				$conn->onResponse->push($onResponse);
+				$conn->onResponse($onResponse);
 				$conn->setFree(false);
 			} elseif ($conn->noSAF) {
-				$conn->onResponse->push(null);
+				$conn->onResponse(null);
 			}
 			$conn->write($data);
 		 });

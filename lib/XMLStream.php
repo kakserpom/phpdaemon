@@ -314,7 +314,7 @@ class XMLStream_Object {
 	 * @param string $ns
 	 */
 	public function sub($name, $attrs = null, $ns = null) {
-		#TODO attrs is ignored
+		//@TODO: attrs is ignored
 		foreach($this->subs as $sub) {
 			if($sub->name == $name and ($ns == null or $sub->ns == $ns)) {
 				return $sub;
