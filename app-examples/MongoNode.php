@@ -13,6 +13,7 @@ class MongoNode extends AppInstance {
 	public $LockClient; // LockClient
 	public $cursor; // Tailable cursor
 	public $timer;
+	protected $inited = false;
 
 	/**
 	 * Setting default config options
