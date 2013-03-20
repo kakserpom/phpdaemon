@@ -10,7 +10,7 @@
  */
 class Daemon_ConfigEntryNumber extends Daemon_ConfigEntry {
 
-	public function HumanToPlain($value) {
+	public static function HumanToPlain($value) {
 		if ($value === null) {
 			return null;
 		}

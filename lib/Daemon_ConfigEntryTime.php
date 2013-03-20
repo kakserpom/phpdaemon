@@ -10,7 +10,7 @@
  */
 class Daemon_ConfigEntryTime extends Daemon_ConfigEntry {
 
-	public function HumanToPlain($value) {
+	public static function HumanToPlain($value) {
 		$time = 0;
 
 		preg_replace_callback('~(\d+(\.\d+)?)\s*([smhd])\s*|(.+)~i', function($m) use (&$time) {

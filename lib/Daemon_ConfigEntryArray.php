@@ -10,7 +10,7 @@
  */
 class Daemon_ConfigEntryArray extends Daemon_ConfigEntry {
 
-	public function HumanToPlain($value) {
+	public static function HumanToPlain($value) {
 		if (is_array($value)) {
 			return $value;
 		}

@@ -10,7 +10,7 @@
  */
 class Daemon_ConfigEntrySize extends Daemon_ConfigEntry {
 
-	public function HumanToPlain($value) {
+	public static function HumanToPlain($value) {
 		$l = substr($value, -1);
 
 		if ($l === 'b' || $l === 'B') {
