@@ -99,6 +99,15 @@ class FS {
 		self::$ev->add();
 	}
 	
+	/**
+	 * Checks if file exists and readable
+	 * @param string Path
+	 * @return boolean Exists and readable?
+	 */
+	public static function checkFileReadable($path) {
+		return is_file($path) && is_readable($path);
+
+	}
 
 	/**
 	 * Block until all FS events are completed

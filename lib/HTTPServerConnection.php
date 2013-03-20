@@ -51,17 +51,18 @@ class HTTPServerConnection extends Connection {
 		if (isset($u['host'])) {
 			$this->req->attrs->server['HTTP_HOST'] = $u['host'];	
 		}
-		$this->req->attrs->server['REQUEST_METHOD'] = $e[0];
-		$this->req->attrs->server['REQUEST_TIME'] = time();
-		$this->req->attrs->server['REQUEST_TIME_FLOAT'] = microtime(true);
-		$this->req->attrs->server['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
-		$this->req->attrs->server['DOCUMENT_URI'] = $u['path'];
-		$this->req->attrs->server['PHP_SELF'] = $u['path'];
-		$this->req->attrs->server['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
-		$this->req->attrs->server['SCRIPT_NAME'] = $this->req->attrs->server['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
-		$this->req->attrs->server['SERVER_PROTOCOL'] = isset($e[2]) ? $e[2] : 'HTTP/1.1';
-		$this->req->attrs->server['REMOTE_ADDR'] = $this->addr;
-		$this->req->attrs->server['REMOTE_PORT'] = $this->port;
+		$srv = &$this->req->attrs->server;
+		$srv['REQUEST_METHOD'] = $e[0];
+		$srv['REQUEST_TIME'] = time();
+		$srv['REQUEST_TIME_FLOAT'] = microtime(true);
+		$srv['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
+		$srv['DOCUMENT_URI'] = $u['path'];
+		$srv['PHP_SELF'] = $u['path'];
+		$srv['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
+		$srv['SCRIPT_NAME'] = $srv['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
+		$srv['SERVER_PROTOCOL'] = isset($e[2]) ? $e[2] : 'HTTP/1.1';
+		$srv['REMOTE_ADDR'] = $this->addr;
+		$srv['REMOTE_PORT'] = $this->port;
 		return true;
 	}
 

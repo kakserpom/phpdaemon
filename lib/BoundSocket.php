@@ -189,6 +189,16 @@ abstract class BoundSocket {
 	 		$this->errorneous = true;
 	 		return false;
 	 	}
+		if (!FS::checkFileReadable($this->certfile) || !FS::checkFileReadable($this->pkfile)) {
+			Daemon::log('Couldn\'t read ' . $this->certfile . ' or ' . $this->pkfile . ' file.  To generate a key' . PHP_EOL
+				. 'and self-signed certificate, run' . PHP_EOL
+				. '  openssl genrsa -out '.escapeshellarg($this->pkfile).' 2048' . PHP_EOL
+				. '  openssl req -new -key '.escapeshellarg($this->pkfile).'  -out cert.req' . PHP_EOL
+				. '  openssl x509 -req -days 365 -in cert.req -signkey '.escapeshellarg($this->pkfile).'  -out '.escapeshellarg($this->certfile));
+
+			return;
+		}
+
 	 	$this->ctx = new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, [
  			EventSslContext::OPT_LOCAL_CERT  => $this->certfile,
  			EventSslContext::OPT_LOCAL_PK    => $this->pkfile,
@@ -203,7 +213,7 @@ abstract class BoundSocket {
 	 * @param ConnectionPool
 	 * @return void
 	 */
-	public function attachTo($pool) {
+	public function attachTo(ConnectionPool $pool) {
 		$this->pool = $pool;
 		$this->pool->attachBound($this);
 	}
@@ -240,7 +250,9 @@ abstract class BoundSocket {
 					-1,
 					$this->fd
 				);
-				//EventUtil::getSocketName($this->ev, $this->locHost, $this->locPort);
+				if ($this->ev) {
+					$this->ev->getSocketName($this->locHost, $this->locPort);
+				}
 			} else {
 				$this->ev->enable();
 			}
@@ -258,7 +270,7 @@ abstract class BoundSocket {
 		}
 	}
 	
-	public function onListenerAcceptEv($listener, $fd, $addrPort, $ctx)  {
+	public function onListenerAcceptEv(EventListener $listener, $fd, $addrPort, $ctx)  {
 		$class = $this->pool->connectionClass;
 		$conn = new $class(null, $this->pool);
 		$conn->setParentSocket($this);
@@ -303,7 +315,6 @@ abstract class BoundSocket {
 		}
 		if ($this->fd !== null) {
 			if ($this->listenerMode) {
-				//$this->fd->free();
 				$this->fd = null;
 			} else {
 				socket_close($this->fd);

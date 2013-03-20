@@ -148,7 +148,7 @@ class NetworkClient extends ConnectionPool {
 	 */
 	public function detach($conn) {
 		parent::detach($conn);
-		$this->touchPending($conn->url);
+		$this->touchPending($conn->getUrl());
 	}
 
 	/**

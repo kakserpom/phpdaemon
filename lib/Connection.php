@@ -155,6 +155,17 @@ class Connection extends IOStream {
 	protected $allowselfsigned = true;
 
 	/**
+	 * Context cache
+	 * @var CappedCacheStorage
+	 */
+	protected static $contextCache;
+
+	/**
+	 * Context cache size
+	 * @var number
+	 */
+	protected static $contextCacheSize = 64;
+	/**
 	 * Connected?
 	 * @return boolean
 	 */
@@ -162,6 +173,9 @@ class Connection extends IOStream {
 		return $this->connected;
 	}
 
+	protected static function initContextCache() {
+
+	}
 	/**
 	 * Tries to obtain peer name.
 	 * @return boolean Success
@@ -365,16 +379,28 @@ class Connection extends IOStream {
  			EventSslContext::OPT_VERIFY_PEER => $this->verifypeer,
  			EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
 		];
-		 if ($this->certfile !== null) {
-		 	$params[EventSslContext::OPT_LOCAL_CERT] = $this->certfile;
-		 }
-		 if ($this->pkfile !== null) {
-		 	$params[EventSslContext::OPT_LOCAL_PK] = $this->pkfile;
-		 }
-		 if ($this->passphrase !== null) {
-		 	$params[EventSslContext::OPT_PASSPHRASE] = $this->passphrase;
-		 }
-	 	return new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, $params);
+		if ($this->certfile !== null) {
+			$params[EventSslContext::OPT_LOCAL_CERT] = $this->certfile;
+		}
+		if ($this->pkfile !== null) {
+			$params[EventSslContext::OPT_LOCAL_PK] = $this->pkfile;
+		}
+		if ($this->passphrase !== null) {
+			$params[EventSslContext::OPT_PASSPHRASE] = $this->passphrase;
+		}
+		$hash = igbinary_serialize($params);
+		if (!self::$contextCache) {
+			self::$contextCache = new CappedCacheStorageHits(self::$contextCacheSize);
+		} elseif ($ctx = self::$contextCache->getValue($hash)) {
+			return $ctx;
+		}
+		$ctx = new EventSslContext(EventSslContext::SSLv3_CLIENT_METHOD, $params);
+		self::$contextCache->put($hash, $ctx);
+		return $ctx;
+	}
+
+	public function getUrl() {
+		return $this->url;
 	}
 
 	/**
@@ -389,13 +415,21 @@ class Connection extends IOStream {
 		if (!$u) {
 			return false;
 		}
-		if (!isset($u['port']) && isset($this->pool->config->port->value)) {
-			$u['port'] = $this->pool->config->port->value;
+		$this->importParams();
+		if (!isset($u['port'])) {
+			if ($this->ssl) {
+				if (isset($this->pool->config->sslport->value)) {
+					$u['port'] = $this->pool->config->sslport->value;
+ 				}
+			} else {
+				if (isset($this->pool->config->port->value)) {
+					$u['port'] = $this->pool->config->port->value;
+ 				}
+			}
 		}
 		if (isset($u['user'])) {
 			$this->user = $u['user'];
 		}
-		$this->importParams();
 
 		if ($this->ssl) {
 			$this->setContext($this->initSSLContext(), EventBufferEvent::SSL_CONNECTING);

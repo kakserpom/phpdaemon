@@ -12,11 +12,25 @@ class HTTPClient extends NetworkClient {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
-			// @todo add description strings
+		return [
+			/**
+			 * Default port
+			 * @var integer
+			 */
 			'port' => 80,
+
+			/**
+			 * Default SSL port
+			 * @var integer
+			 */
+			'sslport' => 443,
+
+			/**
+			 * Send User-Agent header?
+			 * @var boolean
+			 */
 			'expose' => 1,
-		);
+		];
 	}
 
 	public function get($url, $params) {
@@ -28,9 +42,9 @@ class HTTPClient extends NetworkClient {
 		}
 		$ssl = $params['scheme'] === 'https';
 		$this->getConnection(
-			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null),
-			function($conn) use ($url, $params) {
-				$conn->get($url, $params);
+			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($ssl ? '#ssl' : ''),
+			function($conn) use ($url, $data, $params) {
+				$conn->get($url, $data, $params);
 			}
 		);
 	}

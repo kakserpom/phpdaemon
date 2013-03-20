@@ -164,6 +164,12 @@ abstract class IOStream {
 	protected $ctxMode;
 
 	/**
+	 * SSL?
+	 * @var boolean
+	 */
+	protected $ssl = false;
+
+	/**
 	 * IOStream constructor
  	 * @param resource File descriptor. Optional.
 	 * @param object Pool. Optional.
@@ -285,15 +291,15 @@ abstract class IOStream {
 		if ($this->timeout !== null) {
 			$this->bev->setTimeouts($this->timeout, $this->timeout);
 		}
+		if ($this->bevConnect && ($this->fd === null)) {
+			$this->bev->connect($this->addr, false);
+			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
+		}
 		if (!$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
 			$this->finish();
 			return;
 		}
 		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
-		if ($this->bevConnect && ($this->fd === null)) {
-			$this->bev->connect($this->addr, false);
-			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
-		}
 		init:
 		if (!$this->inited) {
 			$this->inited = true;
@@ -661,6 +667,10 @@ abstract class IOStream {
 		$this->bev = null;
 		$this->fd = null;
 	}
+
+	protected function log($m) {
+		Daemon::log(get_class().': '.$m);
+	}
 	
 	/**
 	 * Called when the connection has got new data
@@ -668,6 +678,9 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onReadEv($bev) {
+		if (Daemon::$config->logevents->value) {
+			$this->log(' onReadEv called');
+		}
 		if (!$this->ready) {
 			$this->wRead = true;
 			return;
@@ -714,6 +727,9 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onWriteEv($bev) {
+		if (Daemon::$config->logevents->value) {
+			Daemon::log(get_class().' onWriteEv called');
+		}
 		$this->writing = false;
 		if ($this->finished) {
 			$this->close();
@@ -770,6 +786,11 @@ abstract class IOStream {
 					$errno = EventUtil::getLastSocketErrno();
 					if ($errno !== 0) {
 						trigger_error('Socket error #' . $errno . ':' . EventUtil::getLastSocketError(), E_USER_NOTICE);
+					}
+					if ($this->ssl) {
+						while ($err = $bev->sslError()) {
+							trigger_error('EventBufferEvent SSL error: ' . $err . PHP_EOL, E_USER_NOTICE);
+						}
 					}
 				}
 				$this->finished = true;
