@@ -42,6 +42,15 @@ class BoundTCPSocket extends BoundSocket {
 	}
 
 	/**
+	 * toString handler
+	 * @return string
+	 */
+	public function __toString() {
+		$port = isset($this->uri['port']) ? $this->uri['port'] : $this->defaultPort;
+		return $this->uri['host'] . ':' . $port;
+	}
+
+	/**
 	 * Bind the socket
 	 * @return boolean Success.
 	 */
@@ -50,6 +59,9 @@ class BoundTCPSocket extends BoundSocket {
 	 		return false;
 	 	}
 	 	$port = isset($this->uri['port']) ? $this->uri['port'] : $this->defaultPort;
+	 	if (($port < 1024) && Daemon::$config->user !== 'root') {
+	 		$this->listenerMode = false;
+	 	}
 		if ($this->listenerMode) {
 			$this->setFd($this->uri['host'] . ':' . $port);
 			return true;
@@ -60,7 +72,7 @@ class BoundTCPSocket extends BoundSocket {
 			Daemon::$process->log(get_class($this->pool) . ': Couldn\'t create TCP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}
-		if (isset($this->uri['reuse']) && $this->uri['reuse']) {
+		if ($this->reuse) {
 			if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
 				$errno = socket_last_error();
 				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');

@@ -8,9 +8,31 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class BoundUNIXSocket extends BoundSocket {
+	/**
+	 * Group
+	 * @var string
+	 */
 	protected $group;
+
+	/**
+	 * User
+	 * @var string
+	 */
 	protected $user;
 
+	/**
+	 * Path
+	 * @var string
+	 */
+	protected $path;
+
+	/**
+	 * toString handler
+	 * @return string
+	 */
+	public function __toString() {
+		return $this->path;
+	}
 	/**
 	 * Bind socket
 	 * @return boolean Success.
@@ -20,13 +42,17 @@ class BoundUNIXSocket extends BoundSocket {
 	 		return false;
 	 	}
 
-		if (pathinfo($this->uri['path'], PATHINFO_EXTENSION) !== 'sock') {
-			Daemon::$process->log('Unix-socket \'' . $this->uri['path'] . '\' must has \'.sock\' extension.');
-			return;
+		if ($this->path === null && isset($this->uri['path'])) {
+			$this->path = $this->uri['path'];
 		}
 
-		if (file_exists($this->uri['path'])) {
-			unlink($this->uri['path']);
+		if (pathinfo($this->path, PATHINFO_EXTENSION) !== 'sock') {
+			Daemon::$process->log('Unix-socket \'' . $this->path . '\' must has \'.sock\' extension.');
+			return;
+		}
+	
+		if (file_exists($this->path)) {
+			unlink($this->path);
 		}
 
 		$sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
@@ -37,17 +63,17 @@ class BoundUNIXSocket extends BoundSocket {
 		}
 
 		// SO_REUSEADDR is meaningless in AF_UNIX context
-		if (!@socket_bind($sock, $this->uri['path'])) {
+		if (!@socket_bind($sock, $this->path)) {
 			if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
 				return false;
 			}
 			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $this->uri['path'] . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $this->path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return;
 		}
 		if (!socket_listen($sock, SOMAXCONN)) {
 			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $this->uri['path'] . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
+			Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $this->path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
 		}
 		socket_set_nonblock($sock);
 		chmod($this->uri['path'], 0770);
@@ -58,9 +84,9 @@ class BoundUNIXSocket extends BoundSocket {
 			$this->group = Daemon::$config->group->value;
 		}
 		if ($this->group !== null) {
-			if (!@chgrp($this->uri['path'], $this->group)) {
-				unlink($this->uri['path']);
-				Daemon::log('Couldn\'t change group of the socket \'' . $this->uri['path'] . '\' to \'' . $this->group . '\'.');
+			if (!@chgrp($this->path, $this->group)) {
+				unlink($this->path);
+				Daemon::log('Couldn\'t change group of the socket \'' . $this->path . '\' to \'' . $this->group . '\'.');
 				return false;
 			}
 		}
@@ -73,7 +99,7 @@ class BoundUNIXSocket extends BoundSocket {
 		if ($this->user !== null) {
 			if (!@chown($this->uri['path'], $this->user)) {
 				unlink($this->uri['path']);
-				Daemon::log('Couldn\'t change owner of the socket \'' . $this->uri['path'] . '\' to \'' . $this->user . '\'.');
+				Daemon::log('Couldn\'t change owner of the socket \'' . $this->path . '\' to \'' . $this->user . '\'.');
 				return false;
 			}
 		}

@@ -250,7 +250,7 @@ abstract class BoundSocket {
 					-1,
 					$this->fd
 				);
-				if ($this->ev) {
+				if ($this->ev and is_callable([$this->ev, 'getSocketName'])) {
 					$this->ev->getSocketName($this->locHost, $this->locPort);
 				}
 			} else {
@@ -302,7 +302,7 @@ abstract class BoundSocket {
 	 * @return void
 	 */
 	public function close() {
-		if ($this->pid != posix_getpid()) {
+		if ($this->pid !== posix_getpid()) {
 			return;
 		}
 		if ($this->ev instanceof Event) {
@@ -330,6 +330,14 @@ abstract class BoundSocket {
 		$this->disable(); 
 		$this->close();
 		$this->pool->detachBound($this);
+	}
+
+	/**
+	 * Destructor
+	 * @return void
+	 */
+	public function __destruct() {
+		$this->close();
 	}
 	
 	/**

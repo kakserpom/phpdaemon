@@ -787,8 +787,8 @@ abstract class IOStream {
 					if ($errno !== 0) {
 						trigger_error('Socket error #' . $errno . ':' . EventUtil::getLastSocketError(), E_USER_NOTICE);
 					}
-					if ($this->ssl) {
-						while ($err = $bev->sslError()) {
+					if ($this->ssl && $this->bev) {
+						while ($err = $this->bev->sslError()) {
 							trigger_error('EventBufferEvent SSL error: ' . $err . PHP_EOL, E_USER_NOTICE);
 						}
 					}
