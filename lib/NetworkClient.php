@@ -25,16 +25,38 @@ class NetworkClient extends ConnectionPool {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
-			// @todo add description strings
+		return [
+			/**
+			 * Expose?
+			 * @var boolean
+			 */
 			'expose'                => 1,
+
+			/**
+			 * Default servers
+			 * @var boolean
+			 */
 			'servers'               =>  '127.0.0.1',
+
+			/**
+			 * Default server
+			 * @var boolean
+			 */
 			'server'               =>  '127.0.0.1',
+
+			/**
+			 * Maximum connections per server
+			 * @var boolean
+			 */
 			'maxconnperserv'		=> 32
-		);
+		];
 	}
 
-	public function applyConfig() {
+	/**
+	 * Applies config
+	 * @return void
+	 */
+	protected function applyConfig() {
 		parent::applyConfig();
 		if (isset($this->config->servers)) {
 			$servers = array_filter(array_map('trim',explode(',', $this->config->servers->value)), 'strlen');
@@ -118,26 +140,51 @@ class NetworkClient extends ConnectionPool {
 		return true;
 	}
 
-	public function detachConn($conn) {
-		parent::detachConn($conn);
+	/**
+	 * Detach Connection
+	 * @param Connection
+	 * @param [mixed Info]
+	 * @return void
+	 */
+	public function detach($conn) {
+		parent::detach($conn);
 		$this->touchPending($conn->url);
 	}
 
-	public function markConnFree($conn, $url) {
+	/**
+	 * Mark connection as free
+	 * @param Connection
+	 * @param URL
+	 * @return void
+	 */
+	public function markConnFree(NetworkClientConnection $conn, $url) {
 		if (!isset($this->servConnFree[$url])) {
 			return;
 		}
 		$this->servConnFree[$url]->attach($conn);
 	}
 
-	public function markConnBusy($conn, $url) {
+
+	/**
+	 * Mark connection as busy
+	 * @param Connection
+	 * @param URL
+	 * @return void
+	 */
+	public function markConnBusy(NetworkClientConnection $conn, $url) {
 		if (!isset($this->servConnFree[$url])) {
 			return;
 		}
 		$this->servConnFree[$url]->detach($conn);
 	}
 
-	public function detachConnFromUrl($conn, $url) {
+	/**
+	 * Detaches connection from URL
+	 * @param Connection
+	 * @param URL
+	 * @return void
+	 */
+	public function detachConnFromUrl(NetworkClientConnection $conn, $url) {
 		if (!isset($this->servConnFree[$url]) || !isset($this->servConn[$url]))	 {
 			return;
 		}
@@ -145,10 +192,15 @@ class NetworkClient extends ConnectionPool {
 		$this->servConn[$url]->detach($conn);
 	}
 
+
+	/**
+	 * Touch pending "requests for connection"
+	 * @param URL
+	 * @return void
+	 */
 	public function touchPending($url) {
 		while (isset($this->pending[$url]) && !$this->pending[$url]->isEmpty()) {
-			$r = $this->getConnection($url, $this->pending[$url]->dequeue());
-			if ($r === true) {
+			if (true === $this->getConnection($url, $this->pending[$url]->dequeue())) {
 				return;
 			}
 		}

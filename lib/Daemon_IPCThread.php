@@ -185,7 +185,7 @@ class Daemon_IPCThread extends Thread {
 	}
 
 	/**
-	 * @todo description?
+	 * Shutdown thread
 	 * @param boolean - Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
 	 * @return boolean - Ready?
 	 */
