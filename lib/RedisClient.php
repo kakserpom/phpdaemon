@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @package Applications
+ * @package NetworkClients
  * @subpackage RedisClient
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>

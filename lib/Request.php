@@ -423,8 +423,8 @@ class Request {
 		}
  
 		if (!Daemon::$obInStack) { // preventing recursion
-				ob_flush();
-			}
+			ob_flush();
+		}
  
 		if ($status !== -1) {
 			$this->postFinishHandler();
