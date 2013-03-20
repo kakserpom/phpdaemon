@@ -19,6 +19,7 @@ class Daemon {
 	const WSTATE_PREINIT = 4;
 	const WSTATE_WAITINIT = 5;
 	const WSTATE_INIT = 6;
+
 	public static $wstateRev = [
 		1 => 'IDLE',
 		2 => 'BUSY',
@@ -64,7 +65,13 @@ class Daemon {
 	protected static $masters;
 	protected static $initservervar;
 	public static $shm_wstate;
-	public static $reusePort;
+
+	/**
+	 * Сurrently re-using bound ports across multiple processes is available
+	 * only in BSD flavour operating systems via SO_REUSEPORT socket option
+	 * @var boolean
+	 */
+	public static $reusePort = false;
 	public static $compatMode = FALSE;
 	public static $runName = 'phpdaemon';
 	public static $config;
@@ -85,12 +92,12 @@ class Daemon {
 
 		Daemon::$config = new Daemon_Config;
 
-		// currently re-using listener ports across multiple processes is available
-		// only in BSD flavour operating systems via SO_REUSEPORT socket option
-		Daemon::$reusePort = 1 === preg_match("~BSD~i", php_uname('s'));
+		if (preg_match('~BSD~i', php_uname('s'))) {
+			Daemon::$reusePort = true;
+		}
 		
 		if (Daemon::$reusePort && !defined("SO_REUSEPORT"))
-		    define("SO_REUSEPORT", 0x200);	// FIXME: this is a BSD-only hack
+		    define("SO_REUSEPORT", 0x200);	// @TODO: FIXME: this is a BSD-only hack
 	}
 
 	public static function loadModuleIfAbsent($mod, $version = null, $compare = '>=') {

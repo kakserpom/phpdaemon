@@ -59,7 +59,7 @@ class BoundTCPSocket extends BoundSocket {
 	 		return false;
 	 	}
 	 	$port = isset($this->uri['port']) ? $this->uri['port'] : $this->defaultPort;
-	 	if (($port < 1024) && Daemon::$config->user !== 'root') {
+	 	if (($port < 1024) && Daemon::$config->user->value !== 'root') {
 	 		$this->listenerMode = false;
 	 	}
 		if ($this->listenerMode) {
