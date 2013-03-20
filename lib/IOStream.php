@@ -74,13 +74,13 @@ abstract class IOStream {
 	/**
 	 * Default low mark. Minimum number of bytes in buffer.
 	 * @var integer
-	 */	
+	 */
 	protected $lowMark  = 1;
 
 	/**
 	 * Default high mark. Maximum number of bytes in buffer.
 	 * @var integer
-	 */	
+	 */
 	protected $highMark = 0xFFFF;  	// initial value of the maximum amout of bytes in buffer
 
 	/**

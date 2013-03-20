@@ -213,14 +213,44 @@ class DNSClient extends NetworkClient {
 	}
 }
 class DNSClientConnection extends NetworkClientConnection {
-	protected $seq = 0;
-	protected $keepalive = true;
-	protected $response = [];
-	const STATE_PACKET = 1;
-	protected $pctSize = 0;
-	protected $lowMark = 2;
-	protected $highMark = 512;
 
+	/**
+	 * Sequence
+	 * @var integer
+	 */
+	protected $seq = 0;
+
+	/**
+	 * Keepalive?
+	 * @var boolean
+	 */
+	protected $keepalive = true;
+
+	/**
+	 * Response
+	 * @var hash
+	 */
+	public $response = [];
+
+	const STATE_PACKET = 1;
+
+	/**
+	 * Current packet sie
+	 * @var boolean
+	 */
+	protected $pctSize = 0;
+
+	/**
+	 * Default low mark. Minimum number of bytes in buffer.
+	 * @var integer
+	 */	
+	protected $lowMark = 2;
+
+	/**
+	 * Default high mark. Maximum number of bytes in buffer.
+	 * @var integer
+	 */
+	protected $highMark = 512;
 
 	/**
 	 * Called when new UDP packet received.
@@ -400,6 +430,7 @@ class DNSClientConnection extends NetworkClientConnection {
 			$this->write(Binary::word(strlen($packet)) . $packet);
 		}
 	}
+
 	/**
 	 * Called when connection finishes
 	 * @return void
