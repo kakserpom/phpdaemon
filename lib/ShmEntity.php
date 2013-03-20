@@ -73,16 +73,31 @@ class ShmEntity {
 		return $shm;
 	}
 
+	/**
+	 * Get open segments
+	 * @return array
+	 */
 	public function getSegments() {
 		return $this->segments;
 	}
+
+	/**
+	 * Open all segments
+	 * @return void
+	 */
 	public function openall() {
 		do {
 			$r = $this->open(sizeof($this->segments));
 		} while ($r);
 	}
 
-	public function write($data, $offset) {
+	/**
+	 * Write to shared memory
+	 * @param string Data
+	 * @param integer Offset
+	 * @return void
+	 */
+	public function write($data, $offset) { // @TODO: prevent overflow
 		$segno = floor($offset / $this->segsize);
 		if (!isset($this->segments[$segno])) {
 			$this->open($segno, true);
@@ -90,6 +105,10 @@ class ShmEntity {
 		shmop_write($this->segments[$segno], $data, $offset % $this->segsize);
 	}
 
+	/**
+	 * Deletes all segments
+	 * @return void
+	 */
 	public function delete() {
 		foreach ($this->segments as $shm) {
 			shmop_delete($shm);
