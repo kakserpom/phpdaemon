@@ -8,7 +8,12 @@
  */
 class FlashPolicyServer extends NetworkServer {
 
-	public $policyData;          // Cached policy-file.
+	/**
+	 * Cached policy file contents
+	 * @var string
+	 */
+	public $policyData;
+
 	/**
 	 * Setting default config options
 	 * Overriden from ConnectionPool::getConfigDefaults
