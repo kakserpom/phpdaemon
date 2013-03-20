@@ -9,13 +9,47 @@
 
 class RedisClientConnection extends NetworkClientConnection {
 
-	public $result = null;      // current result (array)
-	public $resultLength = 0;
-	public $error;              // error message
-	public $key;                // current incoming key
-	protected $EOL = "\r\n";	// EOL for readln() and writeln()
-	const STATE_BINARY = 1;
+	/**
+	 * Current result
+	 * @var array|null
+	 */
+	public $result = null; 
+
+	/**
+	 * Current error message
+	 * @var string
+	 */
+	public $error;
+	
+	/**
+	 * Current incoming key
+	 * @var string
+	 */
+	protected $key;
+
+	/**
+	 * Current result length
+	 * @var integer
+	 */
+	protected $resultLength = 0;
+
+	/**
+	 * EOL
+	 * @var string "\r\n"
+	 */
+	protected $EOL = "\r\n";
+
+	/**
+	 * No Send-and-Forget?
+	 * @var boolean
+	 */
 	protected $noSAF = true;
+
+	/**
+	 * In the middle of binary response part
+	 * @const integer
+	 */
+	const STATE_BINARY = 1;
 
 	/**
 	 * Check if arrived data is message from subscription

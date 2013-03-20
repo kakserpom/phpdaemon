@@ -34,19 +34,19 @@ class NetworkClient extends ConnectionPool {
 
 			/**
 			 * Default servers
-			 * @var boolean
+			 * @var string|array
 			 */
 			'servers'               =>  '127.0.0.1',
 
 			/**
 			 * Default server
-			 * @var boolean
+			 * @var string
 			 */
 			'server'               =>  '127.0.0.1',
 
 			/**
 			 * Maximum connections per server
-			 * @var boolean
+			 * @var integer
 			 */
 			'maxconnperserv'		=> 32
 		];

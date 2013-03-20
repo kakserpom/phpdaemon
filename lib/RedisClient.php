@@ -8,7 +8,13 @@
  */
 
 class RedisClient extends NetworkClient {
-	protected $subscribeCb = []; // subscriptions callbacks
+
+	/**
+	 * Subcriptions
+	 * @var hash
+	 */
+	protected $subscribeCb = [];
+
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -16,14 +22,34 @@ class RedisClient extends NetworkClient {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// @todo add description strings
+			/**
+			 * Default servers
+			 * @var string|array
+			 */
 			'servers'               =>  'tcp://127.0.0.1',
+
+			/**
+			 * Default port
+			 * @var integer
+			 */
 			'port'					=> 6379,
+
+			/**
+			 * Maximum connections per server
+			 * @var integer
+			 */
 			'maxconnperserv'		=> 32,
 		];
 	}
 
-
+	/**
+	 * Magic __call.
+	 * @method Command name
+	 * @param .. Command-dependent set of arguments ..
+	 * @param [callback Callback. Optional.
+	 * @example $redis->lpush('mylist', microtime(true));
+	 * @return void
+	 */
 	public function __call($name, $args) {
 		$onResponse = null;		
 		if (($e = end($args)) && (is_array($e) || is_object($e)) &&	is_callable($e)) {
@@ -43,7 +69,7 @@ class RedisClient extends NetworkClient {
 		if (($name === 'SUBSCRIBE') || ($name === 'PSUBSCRIBE')) {
 			for ($i = 1; $i < $s; ++$i) {
 				$arg = $args[$i];
-				// TODO: check if $onResponse already in subscribeCb[$arg]?
+				// @TODO: check if $onResponse already in subscribeCb[$arg]?
 				$this->subscribeCb[$arg][] = CallbackWrapper::wrap($onResponse);
 			}
 		}

@@ -52,7 +52,11 @@ class IdentServer extends NetworkServer {
 	 */
 
 	public function registerPair($local, $foreign, $user) {
-		$this->appInstance->broadcastCall('registerPair', [$local, $foreign, $user]);
+		$this->appInstance->broadcastCall('registerPair', [
+				$local,
+				$foreign,
+				is_array($user) ? implode(' : ', $user) : $user
+		]);
 	}
 
 	/* Unregister pair
