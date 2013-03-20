@@ -90,7 +90,7 @@ class Daemon_ConfigParser {
 			self::T_ALL => function($c) {
 				if (ctype_space($c)) { }
 				elseif ($c === '#') {
-					$this->state[] = array(Daemon_ConfigParser::T_COMMENT);
+					$this->state[] = [Daemon_ConfigParser::T_COMMENT];
 				}
 				elseif ($c === '}') {
 					if (sizeof($this->state) > 1) {
@@ -108,7 +108,7 @@ class Daemon_ConfigParser {
 					$newLineDetected = null;
 
 					for (;$this->p < $this->len; ++$this->p) {
-						$prePoint = array($this->line, $this->col - 1);
+						$prePoint = [$this->line, $this->col - 1];
 						$c = $this->getCurrentChar();
 
 						if (ctype_space($c) || $c === '=' || $c === ',') {
@@ -246,10 +246,10 @@ class Daemon_ConfigParser {
 						}
 						$scope->{$sectionName}->source = 'config';
 						$scope->{$sectionName}->revision = $this->revision;
-						$this->state[] = array(
+						$this->state[] = [
 							Daemon_ConfigParser::T_ALL,
 							$scope->{$sectionName},
-						);
+						];
 					}
 				} else {
 					$this->raiseError('Unexpected char \''.Debug::exportBytes($c).'\'');

@@ -100,10 +100,10 @@ class Connection extends IOStream {
 	protected $bevConnectEnabled = true;
 
 	/**
-	 * bevConnect used?
+	 * SSL?
 	 * @var boolean
 	 */
-	protected $bevConnect = false;
+	protected $ssl = false;
 
 	/**
 	 * URL
@@ -112,10 +112,47 @@ class Connection extends IOStream {
 	protected $url;
 
 	/**
+	 * URI information
+	 * @var hash
+	 */
+	protected $uri;
+
+	/**
 	 * Scheme
 	 * @var string
 	 */
 	protected $scheme;
+
+
+	/**
+	 * Private key file
+	 * @var string
+	 */
+	protected $pkfile;
+
+	/**
+	 * Certificate file
+	 * @var string
+	 */
+	protected $certfile;
+
+	/**
+	 * Passphrase
+	 * @var string
+	 */
+	protected $passphrase;
+
+	/**
+	 * Verify peer?
+	 * @var boolean
+	 */
+	protected $verifypeer = false;
+
+	/**
+	 * Allow self-signed?
+	 * @var boolean
+	 */
+	protected $allowselfsigned = true;
 
 	/**
 	 * Connected?
@@ -123,22 +160,6 @@ class Connection extends IOStream {
 	 */
 	public function isConnected() {
 		return $this->connected;
-	}
-
-
-	/**
-	 * Parses URL
-	 * @return hash URL info.
-	 */
-	public function parseUrl($url) {
-		$u = Daemon_Config::parseCfgUri($url);
-		if (!$u) {
-			return false;
-		}
-		if (!isset($u['port']) && isset($this->pool->config->port->value)) {
-			$u['port'] = $this->pool->config->port->value;
-		}
-		return $u;
 	}
 
 	/**
@@ -293,8 +314,68 @@ class Connection extends IOStream {
 			}
 			$this->onConnected->push($cb);
 		}
+	}	
+
+	protected function importParams() {
+
+		foreach ($this->uri['params'] as $key => $val) {
+			if (isset($this->{$key}) && is_bool($this->{$key})) {
+				$this->{$key} = (bool) $val;
+				continue;
+			}
+			if (!property_exists($this, $key)) {
+				Daemon::log(get_class($this).': unrecognized setting \'' . $key . '\'');
+				continue;
+			}
+			$this->{$key} = $val;
+		}
+		if (!$this->ctxname) {
+			return;
+		}
+		if (!isset(Daemon::$config->{'TransportContext:' . $this->ctxname})) {
+			Daemon::log(get_class($this).': undefined transport context \'' . $this->ctxname . '\'');
+			return;
+		}
+		$ctx = Daemon::$config->{'TransportContext:' . $this->ctxname};
+		foreach ($ctx as $key => $entry) {
+			$value = ($entry instanceof Daemon_ConfigEntry) ? $entry->value : $entry;
+			if (isset($this->{$key}) && is_bool($this->{$key})) {
+			$this->{$key} = (bool) $value;
+				continue;
+			}
+			if (!property_exists($this, $key)) {
+				Daemon::log(get_class($this).': unrecognized setting in transport context \'' . $this->ctxname . '\': \'' . $key . '\'');
+				continue;
+			}
+			$this->{$key} = $value;	
+		}
+
 	}
-	
+
+	/**
+	 * Initialize SSL context
+	 * @return object|false Context
+	 */
+	protected function initSSLContext() {
+		if (!EventUtil::sslRandPoll()) {
+	 		Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
+	 		return false;
+	 	}
+	 	$params = [
+ 			EventSslContext::OPT_VERIFY_PEER => $this->verifypeer,
+ 			EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
+		];
+		 if ($this->certfile !== null) {
+		 	$params[EventSslContext::OPT_LOCAL_CERT] = $this->certfile;
+		 }
+		 if ($this->pkfile !== null) {
+		 	$params[EventSslContext::OPT_LOCAL_PK] = $this->pkfile;
+		 }
+		 if ($this->passphrase !== null) {
+		 	$params[EventSslContext::OPT_PASSPHRASE] = $this->passphrase;
+		 }
+	 	return new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, $params);
+	}
 
 	/**
 	 * Connects to URL
@@ -303,9 +384,21 @@ class Connection extends IOStream {
 	 * @return void
 	 */
 	public function connect($url, $cb = null) {
-		$u = $this->parseUrl($url);
+		$this->uri = Daemon_Config::parseCfgUri($url);
+		$u =& $this->uri;
+		if (!$u) {
+			return false;
+		}
+		if (!isset($u['port']) && isset($this->pool->config->port->value)) {
+			$u['port'] = $this->pool->config->port->value;
+		}
 		if (isset($u['user'])) {
 			$this->user = $u['user'];
+		}
+		$this->importParams();
+
+		if ($this->ssl) {
+			$this->setContext($this->initSSLContext(), EventBufferEvent::SSL_CONNECTING);
 		}
 			
 		$this->url = $url;

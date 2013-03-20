@@ -23,6 +23,8 @@ class HTTPServerConnection extends Connection {
 	protected $EOL = "\r\n";
 	protected $currentHeader;
 
+	protected $policyReqNotFound = false;
+
 	public function checkSendfileCap() { // @DISCUSS
 		return true;
 	}
@@ -146,15 +148,9 @@ class HTTPServerConnection extends Connection {
 	 */
 	
 	protected function onRead() {
-		start:
-		if ($this->finished) {
-			return;
-		}
-		if ($this->state === self::STATE_ROOT) {
-			if ($this->req !== null) { // we have to wait the current request.
-				return;
-			}
-			if (($d = $this->drainIfMatch("<policy-file-request/>\x00")) === null) { // partially match
+		if (!$this->policyReqNotFound) {
+			$d = $this->drainIfMatch("<policy-file-request/>\x00");
+			if ($d === null) { // partially match
 				return;
 			}
 			if ($d) {
@@ -162,6 +158,17 @@ class HTTPServerConnection extends Connection {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();
+				return;
+			} else {
+				$this->policyReqNotFound = true;
+			}
+		}
+		start:
+		if ($this->finished) {
+			return;
+		}
+		if ($this->state === self::STATE_ROOT) {
+			if ($this->req !== null) { // we have to wait the current request.
 				return;
 			}
 			if (!$this->req = $this->newRequest()) {

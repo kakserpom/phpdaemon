@@ -13,7 +13,7 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 	public $source;
 	public $revision;
 	
-	public function __construct($arr = array()) {
+	public function __construct($arr = []) {
 		foreach ($arr as $k => $v) {
 			if (!is_object($v)) {
 				$e = new Daemon_ConfigEntry;
@@ -36,7 +36,7 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 	}
 	
 	public function toArray() {
-		$arr = array();
+		$arr = [];
 		foreach ($this as $k => $entry) {
 			if (!$entry instanceof Daemon_ConfigEntry)	{
 				continue;
@@ -51,7 +51,7 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 	}
 
 	public function offsetExists($offset) {
-		return $this->offsetGet($offset) !== NULL;
+		return $this->offsetGet($offset) !== null;
 	}
 
 	public function offsetGet($offset) {

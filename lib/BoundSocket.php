@@ -49,7 +49,7 @@ abstract class BoundSocket {
 	 * Context
 	 * @var mixed
 	 */
-	public $ctx; // @TODO: make it protected
+	protected $ctx;
 
 	/**
 	 * URI
@@ -189,7 +189,7 @@ abstract class BoundSocket {
 	 		$this->errorneous = true;
 	 		return false;
 	 	}
-	 	$this->ctx = new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, $a = [
+	 	$this->ctx = new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, [
  			EventSslContext::OPT_LOCAL_CERT  => $this->certfile,
  			EventSslContext::OPT_LOCAL_PK    => $this->pkfile,
  			EventSslContext::OPT_PASSPHRASE  => $this->passphrase,
@@ -240,6 +240,7 @@ abstract class BoundSocket {
 					-1,
 					$this->fd
 				);
+				//EventUtil::getSocketName($this->ev, $this->locHost, $this->locPort);
 			} else {
 				$this->ev->enable();
 			}
@@ -262,6 +263,9 @@ abstract class BoundSocket {
 		$conn = new $class(null, $this->pool);
 		$conn->setParentSocket($this);
 		$conn->setPeername($addrPort[0], $addrPort[1]);
+		if ($this->ctx) {
+			$conn->setContext($this->ctx, EventBufferEvent::SSL_ACCEPTING);
+		}
 		$conn->setFd($fd);
 	}
 
@@ -353,7 +357,12 @@ abstract class BoundSocket {
 		}
 		socket_set_nonblock($fd);
 		$class = $this->pool->connectionClass;
- 		return new $class($fd, $this->pool);
+ 		$conn = new $class(null, $this->pool);
+ 		if ($this->ctx) {
+			$conn->setContext($this->ctx, EventBufferEvent::SSL_ACCEPTING);
+		}
+		$conn->setFd($fd);
+		return $conn;
 	}
 
 	/**

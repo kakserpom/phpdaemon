@@ -139,7 +139,7 @@ class Daemon_Bootstrap {
 		}
 		
 		if (isset(Daemon::$config->locale->value) && Daemon::$config->locale->value !== '') {
-			setlocale(LC_ALL,explode(',', Daemon::$config->locale->value));
+			setlocale(LC_ALL,array_map('trim', explode(',', Daemon::$config->locale->value)));
 		}
 		
 		if (

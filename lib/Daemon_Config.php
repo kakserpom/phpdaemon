@@ -10,76 +10,268 @@
  */
 class Daemon_Config implements ArrayAccess {
 
-	// Worker graceful restarting:
+	/**
+	 * Maximum memory usage
+	 * @var size
+	 */
 	public $maxmemoryusage = '0b';
+
+	/**
+	 * Maximum idle time
+	 * @var time
+	 */
 	public $maxidle        = '0s';
 			
-	// Main Pathes
+	/**
+	 * PID file
+	 * @var path
+	 */
 	public $pidfile        = '/var/run/phpd.pid';
+
+	/**
+	 * Default PID file
+	 * @var path
+	 */
 	public $defaultpidfile = '/var/run/phpd.pid';
+
+	/**
+	 * Config file
+	 * @var path
+	 */
 	public $configfile     = '/etc/phpdaemon/phpd.conf;/etc/phpd/phpd.conf;./conf/phpd.conf';
+
+	/**
+	 * Application resolver
+	 * @var path
+	 */
 	public $path           = '/etc/phpdaemon/AppResolver.php;./conf/AppResolver.php';
+
+	/**
+	 * Path to applications
+	 * @var path
+	 */
 	public $appfilepath    = '{app-*,applications}/%s.php';
-	public $autoload   	 	= NULL;
+
+	/**
+	 * Autoload path
+	 * @var path
+	 */
+	public $autoload   	 	= null;
 			
-	// Master-related
+	/**
+	 * Multi-Process Manager delay
+	 * @var time
+	 */
 	public $mpmdelay        = '0.1s';
+
+	/**
+	 * Start workers
+	 * @var number
+	 */
 	public $startworkers    = 4;
+
+	/**
+	 * Minimum number of workers
+	 * @var number
+	 */
 	public $minworkers      = 4;
+
+	/**
+	 * Maximum number of workers
+	 * @var number
+	 */
 	public $maxworkers      = 8;
+
+	/**
+	 * Minimum number of spare workes
+	 * @var number
+	 */
 	public $minspareworkers = 2;
+
+	/**
+	 * Maximum number of spare workes
+	 * @var number
+	 */
 	public $maxspareworkers = 0;
+
+	/**
+	 * Master thread priority
+	 * @var integer
+	 */
 	public $masterpriority  = 100;
+
+	/**
+	 * IPC thread priority
+	 * @var integer
+	 */
 	public $ipcthreadpriority = 100;
 			 
-	// Requests
+	/**
+	 * IPC thread priority
+	 * @var boolean
+	 */
 	public $obfilterauto                   = 1;
-	public $maxconcurrentrequestsperworker = 1000;
 			
-	// Worker-related
-	public $user                     = NULL;
-	public $group                    = NULL;
+	/**
+	 * System user (setuid)
+	 * @var string
+	 */	
+	public $user                     = null;
+
+	/**
+	 * System group (setgid)
+	 * @var string
+	 */	
+	public $group                    = null;
+
+	/**
+	 * Automatic garbage collector, number of iterations between GC call
+	 * @var number
+	 */	
 	public $autogc                   = '1k';
+
+	/**
+	 * Chroot
+	 * @var string
+	 */	
 	public $chroot                   = '/';
+
+	/**
+	 * Current directory
+	 * @var string
+	 */	
 	public $cwd                      = '.';
+
+	/**
+	 * Autoreload interval. Time interval between checks.
+	 * @var time
+	 */	
 	public $autoreload               = '0s';
+
+	/**
+	 * Try to import updated code (runkit required)
+	 * @var boolean
+	 */	
 	public $autoreimport             = 0;
+
+	/**
+	 * Worker thread priority
+	 * @var integer
+	 */	
 	public $workerpriority           = 4;
+
+	/**
+	 * Throw exception on shutdown?
+	 * @var boolean
+	 */	
 	public $throwexceptiononshutdown = 0;
+
+	/**
+	 * Comma-separated list of locales
+	 * @var string
+	 */	
 	public $locale                   = '';
+
+	/**
+	 * Restrict usage of error-control functions (like @ operator), useful in debugging
+	 * @var boolean
+	 */	
 	public $restricterrorcontrol = false; 
 			
 	// Logging-related
+
+	/**
+	 * Logging?
+	 * @var boolean
+	 */	
 	public $logging            = 1;
+	
+	/**
+	 * Log storage
+	 * @var boolean
+	 */	
 	public $logstorage         = '/var/log/phpdaemon.log';
+
+	/**
+	 * Log errors?
+	 * @var boolean
+	 */	
 	public $logerrors          = 1;
+
+	/**
+	 * Log Worker->setState() ?
+	 * @var boolean
+	 */	
 	public $logworkersetstate = 0;
+
+	/**
+	 * Log events?
+	 * @var boolean
+	 */	
 	public $logevents          = 0;
-	public $logqueue           = 0;
-	public $logreads           = 0;
+
+	/**
+	 * Log signals?
+	 * @var boolean
+	 */	
 	public $logsignals         = 0;
-	public $verbose = 0;
+
+	/**
+	 * Do not close STDOUT and STDERR pipes and send log messages there
+	 * @var boolean
+	 */	
 	public $verbosetty = 0;
 	
-	// eio
+	/**
+	 * EIO enabled?
+	 * @var boolean
+	 */	
 	public $eioenabled = 1;
+
+	/**
+	 * EIO maximum idle time
+	 * @var time
+	 */	
 	public $eiosetmaxidle = null;
+
+	/**
+	 * EIO maximum parallel threads
+	 * @var number
+	 */	
 	public $eiosetmaxparallel = null;
+
+	/**
+	 * EIO maximum poll requests
+	 * @var number
+	 */
 	public $eiosetmaxpollreqs = null;
+
+	/**
+	 * EIO maximum poll time
+	 * @var time
+	 */
 	public $eiosetmaxpolltime = null;
+
+	/**
+	 * EIO minimum parallel threads
+	 * @var number
+	 */
 	public $eiosetminparallel = null;
 	
 	public static $lastRevision = 0;
 	
-	// @todo phpdoc missed
+	/**
+	 * Constructor
+	 * @return object
+	 */
 	
 	public function __construct() {
-		static $sizes = array('maxmemoryusage');
-		static $times = array('maxidle', 'autoreload', 'mpmdelay', 'eiosetmaxpolltime');
-		static $numbers = array(
+		static $sizes = ['maxmemoryusage'];
+		static $times = ['maxidle', 'autoreload', 'mpmdelay', 'eiosetmaxpolltime'];
+		static $numbers = [
 			'maxrequests', 'autogc','minworkers','maxworkers','minspareworkers','maxspareworkers','masterpriority', 'ipcthreadpriority',
 			'eiosetmaxidle', 'eiosetmaxparallel', 'eiosetmaxpollreqs', 'eiosetminparallel', 'verbose', 'verbosetty'
-		);
+		];
 
 		foreach ($this as $name => $value) {
 			if (in_array($name, $sizes)) {
@@ -103,12 +295,21 @@ class Daemon_Config implements ArrayAccess {
 		}
 	}
 
+	/**
+	 * Load config file
+	 * @param string Path
+	 * @return boolean Success
+	 */
 	public function loadFile($path) {
 		$parser = new Daemon_ConfigParser($path,$this);
 		$this->onLoad();
 		return !$parser->isErrorneous();
 	}
-	
+
+	/**
+	 * Called when config is loaded
+	 * @return void
+	 */	
 	protected function onLoad() {
 		if (
 			isset($this->minspareworkers->value) 
@@ -132,30 +333,63 @@ class Daemon_Config implements ArrayAccess {
 		}
 	}
 
-	public function getRealOffsetName($offset) {
+
+	/**
+	 * Get real property name
+	 * @param string Property name
+	 * @return string Real property name
+	 */
+	public function getRealPropertyName($prop) {
 		return str_replace('-', '', strtolower($offset));
 	}
+
+	/**
+	 * Checks if property exists
+	 * @param string Property name
+	 * @return boolean Exists?
+	 */
 	
-	public function offsetExists($offset) {
-		return $this->offsetGet($offset) !== NULL;
+	public function offsetExists($prop) {
+		$prop = $this->getRealPropertyName($prop);
+		return propery_exists($this, $prop);
 	}
 
-	public function offsetGet($offset) {
-		$offset = $this->getRealOffsetName($offset);
-
-		return isset($this->{$offset}) ? $this->{$offset}->value : NULL;
-	}
-	
-	public function offsetSet($offset,$value) {
-		$offset = $this->getRealOffsetName($offset);
-
-		$this->{$offset} = $value;
+	/**
+	 * Get property by name
+	 * @param string Property name
+	 * @return mixed
+	 */
+	public function offsetGet($prop) {
+		$prop = $this->getRealPropertyName($prop);
+		return isset($this->{$prop}) ? $this->{$prop}->value : null;
 	}
 
-	public function offsetUnset($offset) {
-		unset($this->{$this->getRealOffsetName($offset)});
+	/**
+	 * Set property
+	 * @param string Property name
+	 * @param mixed Value
+	 * @return void
+	 */
+	public function offsetSet($prop,$value) {
+		$prop = $this->getRealPropertyName($prop);
+		$this->{$prop} = $value;
 	}
 
+	/**
+	 * Unset property
+	 * @param string Property name
+	 * @return void
+	 */
+	public function offsetUnset($prop) {
+		$prop = $this->getRealPropertyName($prop);
+		unset($this->{$prop});
+	}
+
+	/**
+	 * Checks if property exists
+	 * @param string Property name
+	 * @return boolean Exists?
+	 */
 	public static function parseCfgUri($uri, $source = null) {
 		if (strpos($uri, '://') === false) {
 			if (strncmp($uri, 'unix:', 5) === 0) {

@@ -146,6 +146,24 @@ abstract class IOStream {
 	protected $freed = false;
 
 	/**
+	 * Context
+	 * @var object
+	 */
+	protected $ctx;
+
+	/**
+	 * Context name
+	 * @var object
+	 */
+	protected $ctxname;
+
+	/**
+	 * Defines context-related flag
+	 * @var integer
+	 */
+	protected $ctxMode;
+
+	/**
 	 * IOStream constructor
  	 * @param resource File descriptor. Optional.
 	 * @param object Pool. Optional.
@@ -207,6 +225,19 @@ abstract class IOStream {
 		return $this;
 	}
 
+
+	/**
+	 * Sets context mode
+	 * @param object Context
+	 * @param integer Mode
+	 * @return void
+	 */
+
+	public function setContext($ctx, $mode) {
+		$this->ctx = $ctx;
+		$this->ctxMode = $mode;
+	}
+
 	/**
 	 * Sets fd
 	 * @param mixed File descriptor
@@ -230,9 +261,17 @@ abstract class IOStream {
 			$this->alive = true;
 		} else {
 			$flags = !is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0 /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */;
-			if (isset($this->parentSocket->ctx) && $this->parentSocket->ctx instanceof EventSslContext) {
-				$this->bev = EventBufferEvent::sslSocket(Daemon::$process->eventBase, $this->fd,$this->parentSocket->ctx, EventBufferEvent::SSL_ACCEPTING, $flags);
-				$this->bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
+			if ($this->ctx) {
+				if ($this->ctx instanceof EventSslContext) {
+					$this->bev = EventBufferEvent::sslSocket(Daemon::$process->eventBase, $this->fd, $this->ctx, $this->ctxMode, $flags);
+					if ($this->bev) {
+						$this->bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
+					}
+					$this->ssl = true;
+				} else {
+					$this->log('unsupported type of context: '.($this->ctx ? get_class($this->ctx) : 'undefined'));
+					return;
+				}
 			} else {
 				$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
 			}
@@ -336,25 +375,24 @@ abstract class IOStream {
 	}
 
 	/* Drains buffer it matches the string
-	 * @param string String
+	 * @param string Data
 	 * @return boolean|null Success
 	 */
 	public function drainIfMatch($str) {
 		if (!isset($this->bev)) {
 			return false;
 		}
+		$in = $this->bev->input;
 		$l = strlen($str);
-		$ll = $this->bev->input->length;
+		$ll = $in->length;
+		// @TODO: add End to search()
 		if ($ll < $l) {
-			$read = $this->read($ll);
-			$this->bev->input->prepend($read);
-			return strncmp($read, $str, $ll) === 0;
+			return $in->search(substr($str, 0, $ll), 0) === 0 ? null : false;
 		}
-		$read = $this->read($l);
-		if ($read === $str) {
+		if ($in->search($str, 0) === 0) {
+			$in->drain($l);
 			return true;
 		}
-		$this->bev->input->prepend($read);
 		return false;
 	}
 

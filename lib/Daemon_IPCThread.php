@@ -128,7 +128,7 @@ class Daemon_IPCThread extends Thread {
 		}
 
 		if (isset(Daemon::$config->group->value)) {
-			if ($sg === FALSE) {
+			if ($sg === false) {
 				$this->log('Couldn\'t change group to \'' . Daemon::$config->group->value . '\'. You must replace config-variable \'group\' with existing group.');
 				exit(0);
 			}
@@ -142,7 +142,7 @@ class Daemon_IPCThread extends Thread {
 		}
 
 		if (isset(Daemon::$config->user->value)) {
-			if ($su === FALSE) {
+			if ($su === false) {
 				$this->log('Couldn\'t change user to \'' . Daemon::$config->user->value . '\', user not found. You must replace config-variable \'user\' with existing username.');
 				exit(0);
 			}
@@ -189,7 +189,7 @@ class Daemon_IPCThread extends Thread {
 	 * @param boolean - Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
 	 * @return boolean - Ready?
 	 */
-	public function shutdown($hard = FALSE) {
+	public function shutdown($hard = false) {
 		$error = error_get_last(); 
 		if ($error) {
 			if ($error['type'] === E_ERROR) {
@@ -207,7 +207,7 @@ class Daemon_IPCThread extends Thread {
 
 		@ob_flush();
 
-		if ($this->terminated === TRUE) {
+		if ($this->terminated === true) {
 			if ($hard) {
 				exit(0);
 			}
@@ -215,7 +215,7 @@ class Daemon_IPCThread extends Thread {
 			return;
 		}
 
-		$this->terminated = TRUE;
+		$this->terminated = true;
 		if ($hard) {
 			exit(0);
 		}
@@ -233,7 +233,7 @@ class Daemon_IPCThread extends Thread {
 			$this->log('caught SIGINT.');
 		}
 
-		$this->shutdown(TRUE);
+		$this->shutdown(true);
 	}
 
 	/**
@@ -273,7 +273,7 @@ class Daemon_IPCThread extends Thread {
 			Daemon::loadConfig(Daemon::$config->configfile->value);
 		}
 
-		$this->update = TRUE;
+		$this->update = true;
 	}
 
 	/**
