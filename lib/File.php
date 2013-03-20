@@ -7,14 +7,59 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class File {
-	public $priority = 10; // low priority
+
+	/**
+	 * Priority
+	 * @var integer
+	 */
+	public $priority = 10;
+
+	/**
+	 * Chunk size
+	 * @var integer
+	 */
 	public $chunkSize = 4096;
+
+	/**
+	 * Stat
+	 * @var hash
+	 */
 	public $stat;
+
+	/**
+	 * Current offset 
+	 * @var integer
+	 */
 	public $offset = 0;
+
+	/**
+	 * Cache key
+	 * @var string
+	 */
 	public $fdCacheKey;
+
+	/**
+	 * Append?
+	 * @var boolean
+	 */
 	public $append;
+
+	/**
+	 * Path
+	 * @var string
+	 */
 	public $path;
+
+	/**
+	 * Writing?
+	 * @var boolean
+	 */
 	public $writing = false;
+
+	/**
+	 * Closed?
+	 * @var boolean
+	 */
 	public $closed = false;
 
 	/**
@@ -27,6 +72,13 @@ class File {
 		$this->onWriteOnce = new StackCallbacks;
 	}
 
+	/**
+	 * Converts string of flags to integer or standard text representation
+ 	 * @param string Mode
+ 	 * @param boolean Text?
+ 	 * @param priority
+	 * @return mixed
+	 */
 	public static function convertFlags($mode, $text = false) {
 		$plus = strpos($mode, '+') !== false;
 		$sync = strpos($mode, 's') !== false;
@@ -49,6 +101,13 @@ class File {
 	}
 
 
+	/**
+	 * Truncates this file
+ 	 * @param integer Offset, default is 0
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */
 	public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
@@ -66,7 +125,13 @@ class File {
 		}
 		eio_ftruncate($this->fd, $offset, $pri, $cb, $this);
 	}
-	
+
+	/**
+	 * Stat()
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */	
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
@@ -89,6 +154,12 @@ class File {
 		}
 	}
 
+	/**
+	 * Stat() non-cached
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */	
 	public function statRefresh($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
@@ -107,6 +178,12 @@ class File {
 		}, $this);
 	}
 	
+	/**
+	 * Statvfs()
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */	
 	public function statvfs($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -130,6 +207,12 @@ class File {
 		}
 	}
 
+	/**
+	 * Sync()
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */	
 	public function sync($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -144,6 +227,13 @@ class File {
 		return eio_fsync($this->fd, $pri, $cb, $this);
 	}
 	
+
+	/**
+	 * Datasync()
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */	
 	public function datasync($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -157,7 +247,15 @@ class File {
 		}
 		return eio_fdatasync($this->fd, $pri, $cb, $this);
 	}
-	
+
+	/**
+	 * Writes data to file
+	 * @param string Data
+ 	 * @param callable Callback
+ 	 * @param [integer Offset
+ 	 * @param priority
+	 * @return resource
+	 */		
 	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -191,6 +289,15 @@ class File {
 		return $res;
 	}
 	
+
+	/**
+	 * Changes ownership of this file
+	 * @param integer User ID
+	 * @param integer Group ID
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -211,6 +318,14 @@ class File {
 		return eio_fchown($this->fd, $uid, $gid, $pri, $cb, $this);
 	}
 	
+	/**
+	 * touch()
+	 * @param integer Last modification time
+	 * @param integer Last access time
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */
 	public function touch($mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -228,12 +343,23 @@ class File {
 		eio_futime($this->fd, $atime, $mtime, $pri, $cb, $this);
 	}
 	
-
+	/**
+	 * Clears cache of stat() and statvfs()
+	 * @return void
+	 */
 	public function clearStatCache() {
 		$this->stat = null;
 		$this->statvfs = null;
 	}
 	
+	/**
+	 * Reads data from file
+	 * @param integer Length
+	 * @param [integer Offset
+ 	 * @param callable Callback
+ 	 * @param priority
+	 * @return resource
+	 */
 	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -260,6 +386,16 @@ class File {
 		return true;
 	}
 
+
+	/**
+	 * sendfile()
+	 * @param mixed File descriptor
+	 * @param callable Start callback
+	 * @param integer Offset
+	 * @param integer Length
+	 * @param priority
+	 * @return resource
+	 */
 	public function sendfile($outfd, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -327,6 +463,14 @@ class File {
 		}, $pri);
 	}
 
+	/**
+	 * readahead()
+	 * @param integer Length
+	 * @param integer Offset
+	 * @param callable Callback
+	 * @param priority
+	 * @return resource
+	 */
 	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -352,6 +496,13 @@ class File {
 		return true;
 	}
 
+
+	/**
+	 * Reads whole file
+	 * @param callable Callback
+	 * @param priority
+	 * @return resource
+	 */
 	public function readAll($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -385,6 +536,12 @@ class File {
 		}, $pri);
 	}
 	
+	/**
+	 * Reads file chunk-by-chunk
+	 * @param callable Callback
+	 * @param priority
+	 * @return resource
+	 */
 	public function readAllChunked($cb = null, $chunkcb = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
 			if ($cb) {
@@ -412,19 +569,44 @@ class File {
 			eio_read($file->fd, min($file->chunkSize, $size), $offset, $pri, $handler, $file);
 		}, $pri);
 	}
+
+	/**
+	 * toString handler
+	 * @return string
+	 */
 	public function __toString() {
 		return $this->path;
 	}
+
+	/**
+	 * Set chunk size
+	 * @param integer Chunk size
+	 * @return void
+	 */
 	public function setChunkSize($n) {
 		$this->chunkSize = $n;
 	}	
-	public function seek($offset, $cb, $pri) {
+
+	/**
+	 * Move pointer to arbitrary position
+	 * @param integer offset
+	 * @param callable Callback
+	 * @param priority
+	 * @return resource
+	 */
+	public function seek($offset, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!EIO::$supported) {
 			fseek($this->fd, $offset);
 			return;
 		}
 		return eio_seek($this->fd, $offset, $pri, $cb, $this);
 	}
+
+
+	/**
+	 * Get current pointer position
+	 * @return integer
+	 */
 	public function tell() {
 		if (EIO::$supported) {
 			return $this->pos;
@@ -432,6 +614,12 @@ class File {
 		return ftell($this->fd);
 	}
 	
+
+
+	/**
+	 * Close the file
+	 * @return void
+	 */
 	public function close() {
 		if ($this->closed) {
 			return;
@@ -453,6 +641,10 @@ class File {
 		return $r;
 	}
 
+	/**
+	 * Destructor
+	 * @return void
+	 */
 	public function __destruct() {
 		$this->close();
 	}
