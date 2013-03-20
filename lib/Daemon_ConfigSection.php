@@ -13,6 +13,11 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 	public $source;
 	public $revision;
 	
+	/**
+	 * Constructor
+	 * @param hash
+	 * @return object
+	 */
 	public function __construct($arr = []) {
 		foreach ($arr as $k => $v) {
 			if (!is_object($v)) {
@@ -25,6 +30,10 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 		}
 	}
 
+	/**
+	 * Count elements
+	 * @return number 
+	 */
 	public function count() {
 		$c = 0;
 
@@ -35,6 +44,10 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 		return $c;
 	}
 	
+	/**
+	 * toArray handler
+	 * @return hash
+	 */
 	public function toArray() {
 		$arr = [];
 		foreach ($this as $k => $entry) {
@@ -46,24 +59,55 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 		return $arr;
 	}
 
-	public function getRealOffsetName($offset) {
+	/**
+	 * Get real property name
+	 * @param string Property name
+	 * @return string Real property name
+	 */
+	public function getRealPropertyName($prop) {
 		return str_replace('-', '', strtolower($offset));
 	}
 
-	public function offsetExists($offset) {
-		return $this->offsetGet($offset) !== null;
+	/**
+	 * Checks if property exists
+	 * @param string Property name
+	 * @return boolean Exists?
+	 */
+	
+	public function offsetExists($prop) {
+		$prop = $this->getRealPropertyName($prop);
+		return propery_exists($this, $prop);
 	}
 
-	public function offsetGet($offset) {
-		return $this->{$this->getRealOffsetName($offset)}->value;
+	/**
+	 * Get property by name
+	 * @param string Property name
+	 * @return mixed
+	 */
+	public function offsetGet($prop) {
+		$prop = $this->getRealPropertyName($prop);
+		return isset($this->{$prop}) ? $this->{$prop}->value : null;
 	}
 
-	public function offsetSet($offset,$value) {
-		$this->{$this->getRealOffsetName($offset)} = $value;
+	/**
+	 * Set property
+	 * @param string Property name
+	 * @param mixed Value
+	 * @return void
+	 */
+	public function offsetSet($prop,$value) {
+		$prop = $this->getRealPropertyName($prop);
+		$this->{$prop} = $value;
 	}
 
-	public function offsetUnset($offset) {
-		unset($this->{$this->getRealOffsetName($offset)});
+	/**
+	 * Unset property
+	 * @param string Property name
+	 * @return void
+	 */
+	public function offsetUnset($prop) {
+		$prop = $this->getRealPropertyName($prop);
+		unset($this->{$prop});
 	}
 
  	/**

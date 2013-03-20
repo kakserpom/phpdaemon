@@ -17,27 +17,74 @@ class Daemon_ConfigParser {
 	const T_BLOCK = 5;
 	const T_CVALUE = 5;
 
+	/**
+	 * Config file path
+	 * @var string
+	 */
 	protected $file;
+
+	/**
+	 * Current line number
+	 * @var number
+	 */
 	protected $line = 1;
+
+	/**
+	 * Current column number
+	 * @var number
+	 */
 	protected $col = 1;
+
+	/**
+	 * Pointer (current offset)
+	 * @var integer
+	 */
 	protected $p = 0;
+
+	/**
+	 * State stack
+	 * @var array
+	 */
 	protected $state = [];
-	protected $result;
+
+	/**
+	 * Target object
+	 * @var object
+	 */
+	protected $target;
+
+	/**
+	 * Errorneous?
+	 * @var boolean
+	 */
 	protected $erroneous = false;
 
+	/**
+	 * Errorneous?
+	 * @return boolean
+	 */
 	public function isErrorneous() {
 		return $this->erroneous;
 	}
-	public static function parse($file, $config, $included = false) {
-		return new self($file, $config, $included);
+
+	/**
+	 * Parse config file
+	 * @param string File path
+	 * @param object Target
+	 * @param boolean Included? Default is false
+	 * @return Daemon_ConfigParser
+	 */
+	public static function parse($file, $target, $included = false) {
+		return new self($file, $target, $included);
 	}
+
 	/**
 	 * Constructor
 	 * @return void
 	 */
-	public function __construct($file, $config, $included = false) {
+	public function __construct($file, $target, $included = false) {
 		$this->file = $file;
-		$this->result = $config;
+		$this->target = $target;
 		$this->revision = ++Daemon_Config::$lastRevision;
 		$this->data = file_get_contents($file);
 		
@@ -51,7 +98,7 @@ class Daemon_ConfigParser {
 		
 		$this->data = str_replace("\r", '', $this->data);
 		$this->len = strlen($this->data);
-		$this->state[] = [self::T_ALL, $this->result];
+		$this->state[] = [self::T_ALL, $this->target];
 		$this->tokens = [
 			self::T_COMMENT => function($c) {
 				if ($c === "\n") {
@@ -263,7 +310,7 @@ class Daemon_ConfigParser {
 			$this->token($e[0], $c);
 		}
 		if (!$included) {
-			$this->purgeScope($this->result);
+			$this->purgeScope($this->target);
 		}
 	}
 	
@@ -328,7 +375,7 @@ class Daemon_ConfigParser {
 	 * Executes token server.
 	 * @return mixed|void
 	 */
-	public function token($token, $c) {
+	protected function token($token, $c) {
 		return call_user_func($this->tokens[$token], $c);
 	}
 	
@@ -336,7 +383,7 @@ class Daemon_ConfigParser {
 	 * Current character.
 	 * @return string Character.
 	 */
-	public function getCurrentChar() {
+	protected function getCurrentChar() {
 		$c = substr($this->data, $this->p, 1);
 
 		if ($c === "\n") {
@@ -353,7 +400,7 @@ class Daemon_ConfigParser {
 	 * Returns next character.
 	 * @return string Character.
 	 */
-	public function getNextChar() {
+	protected function getNextChar() {
 		return substr($this->data, $this->p + 1, 1);
 	}
 
@@ -362,7 +409,7 @@ class Daemon_ConfigParser {
 	 * @param integer Number of characters to rewind back.
 	 * @return void
 	 */
-	public function rewind($n) {
+	protected function rewind($n) {
 		$this->p -= $n;
 	}
 }

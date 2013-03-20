@@ -275,7 +275,7 @@ class ConnectionPool extends ObjectStorage {
 	 * @param [mixed Info]
 	 * @return void
 	 */
-	public function attachBound($bound, $inf = null) {
+	public function attachBound(BoundSocket $bound, $inf = null) {
 		$this->bound->attach($bound, $inf);
 	}
 	
@@ -284,7 +284,7 @@ class ConnectionPool extends ObjectStorage {
 	 * @param BoundSocket
 	 * @return void
 	 */
-	public function detachBound($bound) {
+	public function detachBound(BoundSocket $bound) {
 		$this->bound->detach($bound);
 	}
 
