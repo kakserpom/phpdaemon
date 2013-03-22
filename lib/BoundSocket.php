@@ -248,7 +248,6 @@ abstract class BoundSocket {
 		$this->enabled = true;
 		if ($this->listenerMode) {
 			if ($this->ev === null) {
-				Daemon::$process->log('new EventListener('.$this->fd.')');
 				$this->ev = new EventListener(
 					Daemon::$process->eventBase,
 					[$this, 'onListenerAcceptEv'],
