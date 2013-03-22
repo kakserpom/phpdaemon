@@ -35,13 +35,17 @@ class BoundTCPSocket extends BoundSocket {
 		$this->defaultPort = $port;
 	}
 
+
 	/**
-	 * toString handler
-	 * @return string
+	 * Called when socket is bound
+	 * @return boolean Success
 	 */
-	public function __toString() {
-		$port = isset($this->uri['port']) ? $this->uri['port'] : $this->defaultPort;
-		return $this->uri['host'] . ':' . $port;
+	protected function onBound() {
+		if ($this->ev) {
+			$this->ev->getSocketName($this->locHost, $this->locPort);
+		} else {
+			Daemon::log('Unable to bind TCP-socket ' . $this->host . ':' . $this->port);
+		}
 	}
 
 	/**
@@ -52,12 +56,11 @@ class BoundTCPSocket extends BoundSocket {
 	 	if ($this->errorneous) {
 	 		return false;
 	 	}
-	 	$port = isset($this->uri['port']) ? $this->uri['port'] : $this->defaultPort;
-	 	if (($port < 1024) && Daemon::$config->user->value !== 'root') {
+	 	if (($this->port < 1024) && Daemon::$config->user->value !== 'root') {
 	 		$this->listenerMode = false;
 	 	}
 		if ($this->listenerMode) {
-			$this->setFd($this->uri['host'] . ':' . $port);
+			$this->setFd($this->host . ':' . $this->port);
 			return true;
 		}
 		$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -78,9 +81,9 @@ class BoundTCPSocket extends BoundSocket {
 				return false;
 			}
 		}
-		if (!@socket_bind($sock, $this->uri['host'], $this->uri['port'])) {
+		if (!@socket_bind($sock, $this->host, $this->port)) {
 			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this->pool) . ': Couldn\'t bind TCP-socket \'' . $this->uri['host'] . ':' . $this->uri['port'] . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			Daemon::$process->log(get_class($this->pool) . ': Couldn\'t bind TCP-socket \'' . $this->host . ':' . $this->uri['port'] . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}
 		socket_getsockname($sock, $this->host, $this->port);
@@ -88,28 +91,11 @@ class BoundTCPSocket extends BoundSocket {
 		if (!$this->listenerMode) {
 			if (!socket_listen($sock, SOMAXCONN)) {
 				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t listen TCP-socket \'' . $this->uri['host'] . ':' . $this->uri['port'] . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
+				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t listen TCP-socket \'' . $this->host . ':' . $this->uri['port'] . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
 				return false;
 			}
 		}
 		$this->setFd($sock);
 		return true;
-	}
-
-	/**
-	 * Called when new connections is waiting for accept
-	 * @param resource Descriptor
-	 * @param integer Events
-	 * @param mixed Attached variable
-	 * @return boolean Success.
-	 */
-	public function onAcceptEv($stream = null, $events = 0, $arg = null) {
-		$conn = $this->accept();
-		if (!$conn) {
-			return false;
-		}
-		$conn->setParentSocket($this);
-		$conn->checkPeername();
-		return $conn;
 	}
 }

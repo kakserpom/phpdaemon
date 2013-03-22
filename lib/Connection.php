@@ -217,6 +217,9 @@ class Connection extends IOStream {
 	 * @return void
 	 */
 	public function checkPeername() {
+		if (isset($this->host)) {
+			goto check;
+		}
 		$r = $this->fetchPeername();
 		if ($r === false) {
 	   		return;
@@ -227,6 +230,7 @@ class Connection extends IOStream {
    			}
    			$conn->onWriteOnce([$this, 'checkPeername']);
    		}
+   		check:
 		if ($this->pool->allowedClients !== null) {
 			if (!BoundTCPSocket::netMatch($this->pool->allowedClients, $this->host)) {
 				Daemon::log('Connection is not allowed (' . $this->host . ')');

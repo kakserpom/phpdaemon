@@ -112,6 +112,39 @@ class BoundUDPSocket extends BoundSocket {
 		return true;
 	}
 
+	/**
+	 * Called when socket is bound
+	 * @return boolean Success
+	 */
+	protected function onBound() {
+		if (!$this->ev) {
+			Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($this->fd));
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Enable socket events
+	 * @return void
+	*/
+	public function enable() {
+		if ($this->enabled) {
+			return;
+		}
+		if (!$this->fd) {
+			return;
+		}
+		$this->enabled = true;
+
+		if ($this->ev === null) {
+			$this->ev = new Event(Daemon::$process->eventBase, $this->fd, Event::READ | Event::PERSIST, [$this, 'onReadUdp']);
+			$this->onBound();
+		} else {
+			$this->onAcceptEv();
+		}
+		$this->ev->add();
+	}
 
 	/**
 	 * Called when we got UDP packet
@@ -120,7 +153,7 @@ class BoundUDPSocket extends BoundSocket {
 	 * @param mixed Attached variable
 	 * @return boolean Success.
 	 */
-	public function onAcceptEv($stream = null, $events = 0, $arg = null) {
+	public function onReadUdp($stream = null, $events = 0, $arg = null) {
 		if (Daemon::$config->logevents->value) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
 		}

@@ -138,6 +138,14 @@ abstract class BoundSocket {
 			$this->initSSLContext();
 		}
 	}
+	
+	/**
+	 * toString handler
+	 * @return string
+	 */
+	public function __toString() {
+		return $this->addr;
+	}
 
 	/**
 	 * Import parameters
@@ -155,6 +163,18 @@ abstract class BoundSocket {
 				continue;
 			}
 			$this->{$key} = $val;
+		}
+		if (property_exists($this, 'port') && !isset($this->port)) {
+			if (isset($this->uri['port'])) {
+				$this->port = $this->uri['port'];
+			} elseif ($this->defaultPort) {
+				$this->port = $this->defaultPort;
+			}
+		}
+		if (property_exists($this, 'host') && !isset($this->host)) {
+			if (isset($this->uri['host'])) {
+				$this->host = $this->uri['host'];
+			}
 		}
 		if (!$this->ctxname) {
 			return;
@@ -246,42 +266,29 @@ abstract class BoundSocket {
 			return;
 		}
 		$this->enabled = true;
-		if ($this->listenerMode) {
-			if ($this->ev === null) {
-				$this->ev = new EventListener(
-					Daemon::$process->eventBase,
-					[$this, 'onListenerAcceptEv'],
-					null,
-					EventListener::OPT_CLOSE_ON_FREE | EventListener::OPT_REUSEABLE,
-					-1,
-					$this->fd
-				);
-				if ($this->ev and is_callable([$this->ev, 'getSocketName'])) {
-					$this->ev->getSocketName($this->locHost, $this->locPort);
-				}
-				$this->onBound();
-			} else {
-				$this->ev->enable();
-			}
+		if ($this->ev === null) {
+			$this->ev = new EventListener(
+				Daemon::$process->eventBase,
+				[$this, 'onAcceptEv'],
+				null,
+				EventListener::OPT_CLOSE_ON_FREE | EventListener::OPT_REUSEABLE,
+				-1,
+				$this->fd
+			);
+			$this->onBound();
 		} else {
-			if ($this->ev === null) {
-				$this->ev = new Event(Daemon::$process->eventBase, $this->fd, Event::READ | Event::PERSIST, array($this, 'onAcceptEv'));
-				if (!$this->ev) {
-					Daemon::log(get_class($this) . '::' . __METHOD__ . ': Couldn\'t set event on bound socket: ' . Debug::dump($this->fd));
-					return;
-				}
-			} else {
-				$this->onAcceptEv();
-			}
-			$this->ev->add();
+			$this->ev->enable();
 		}
 	}
 	
-	public function onListenerAcceptEv(EventListener $listener, $fd, $addrPort, $ctx)  {
+	public function onAcceptEv(EventListener $listener, $fd, $addrPort, $ctx)  {
 		$class = $this->pool->connectionClass;
 		$conn = new $class(null, $this->pool);
 		$conn->setParentSocket($this);
-		$conn->setPeername($addrPort[0], $addrPort[1]);
+		if (sizeof($addrPort) === 2) { // @TODO: remove this hack
+			$conn->setPeername($addrPort[0], $addrPort[1]);
+			$conn->checkPeername();
+		}
 		if ($this->ctx) {
 			$conn->setContext($this->ctx, EventBufferEvent::SSL_ACCEPTING);
 		}
@@ -309,23 +316,14 @@ abstract class BoundSocket {
 	 * @return void
 	 */
 	public function close() {
-		if ($this->pid !== posix_getpid()) {
+		if (isset($this->ev)) {
+			$this->ev = null;
+		}
+		if ($this->pid !== posix_getpid()) { // preventing closing pre-bound sockets in workers
 			return;
 		}
-		if ($this->ev instanceof Event) {
-			$this->ev->del();
-			$this->ev->free();
-			$this->ev = null;
-		} elseif ($this->ev instanceof EventListener) {
-			$this->ev->free();
-			$this->ev = null;
-		}
-		if ($this->fd !== null) {
-			if ($this->listenerMode) {
-				$this->fd = null;
-			} else {
-				socket_close($this->fd);
-			}
+		if (is_resource($this->fd)) {
+			socket_close($this->fd);
 		}
 	}
 
@@ -352,44 +350,6 @@ abstract class BoundSocket {
 	 * @return boolean Success.
 	 */
 	abstract public function bindSocket();
-
-	/**
-	 * Called when new connections is waiting for accept
-	 * @param resource Descriptor
-	 * @param integer Events
-	 * @param mixed Attached variable
-	 * @return void
-	 */
-	public function onAcceptEv($stream = null, $events = 0, $arg = null) {
-		$this->accept();
-	}
-
-	/**
-	 * Tries to accept new connection
-	 * @return Connection|null
-	 */
-	public function accept() {
-		if (Daemon::$config->logevents->value) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
-		}
-		
-		if (!$this->enabled) {
-			return;
-		}
-
-		$fd = @socket_accept($this->fd);
-		if (!$fd) {
-			return;
-		}
-		socket_set_nonblock($fd);
-		$class = $this->pool->connectionClass;
- 		$conn = new $class(null, $this->pool);
- 		if ($this->ctx) {
-			$conn->setContext($this->ctx, EventBufferEvent::SSL_ACCEPTING);
-		}
-		$conn->setFd($fd);
-		return $conn;
-	}
 
 	/**
 	 * Checks if the CIDR-mask matches the IP
