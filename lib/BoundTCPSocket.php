@@ -21,12 +21,6 @@ class BoundTCPSocket extends BoundSocket {
 	protected $port;
 
 	/**
-	 * Listener mode?
-	 * @var boolean
-	 */
-	protected $listenerMode = true;
-
-	/**
 	 * Default port
 	 * @var integer
 	 */

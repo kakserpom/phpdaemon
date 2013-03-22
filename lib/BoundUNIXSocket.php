@@ -33,50 +33,20 @@ class BoundUNIXSocket extends BoundSocket {
 	public function __toString() {
 		return $this->path;
 	}
+
 	/**
-	 * Bind socket
-	 * @return boolean Success.
+	 * Listener mode?
+	 * @var boolean
 	 */
-	 public function bindSocket() {
-	 	if ($this->errorneous) {
-	 		return false;
-	 	}
+	protected $listenerMode = false;	
 
-		if ($this->path === null && isset($this->uri['path'])) {
-			$this->path = $this->uri['path'];
-		}
-
-		if (pathinfo($this->path, PATHINFO_EXTENSION) !== 'sock') {
-			Daemon::$process->log('Unix-socket \'' . $this->path . '\' must has \'.sock\' extension.');
-			return;
-		}
-	
-		if (file_exists($this->path)) {
-			unlink($this->path);
-		}
-
-		$sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
-		if (!$sock) {
-			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t create UNIX-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
-			return false;
-		}
-
-		// SO_REUSEADDR is meaningless in AF_UNIX context
-		if (!@socket_bind($sock, $this->path)) {
-			if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
-				return false;
-			}
-			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $this->path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
-			return;
-		}
-		if (!socket_listen($sock, SOMAXCONN)) {
-			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $this->path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
-		}
-		socket_set_nonblock($sock);
-		chmod($this->uri['path'], 0770);
+	/**
+	 * Called when socket is bound
+	 * @return boolean Success
+	 */
+	protected function onBound() {
+		touch($this->path);
+		chmod($this->path, 0770);
 		if ($this->group === null && !empty($this->uri['pass'])) {
 			$this->group = $this->uri['pass'];
 		}
@@ -97,11 +67,61 @@ class BoundUNIXSocket extends BoundSocket {
 			$this->user = Daemon::$config->user->value;
 		}
 		if ($this->user !== null) {
-			if (!@chown($this->uri['path'], $this->user)) {
-				unlink($this->uri['path']);
+			if (!@chown($this->path, $this->user)) {
+				unlink($this->path);
 				Daemon::log('Couldn\'t change owner of the socket \'' . $this->path . '\' to \'' . $this->user . '\'.');
 				return false;
 			}
+		}
+	}
+
+	/**
+	 * Bind socket
+	 * @return boolean Success.
+	 */
+	 public function bindSocket() {
+	 	if ($this->errorneous) {
+	 		return false;
+	 	}
+
+		if ($this->path === null && isset($this->uri['path'])) {
+			$this->path = $this->uri['path'];
+		}
+
+		if (pathinfo($this->path, PATHINFO_EXTENSION) !== 'sock') {
+			Daemon::$process->log('Unix-socket \'' . $this->path . '\' must has \'.sock\' extension.');
+			return;
+		}
+
+		if (file_exists($this->path)) {
+			unlink($this->path);
+		}
+
+		if ($this->listenerMode) {
+			$this->setFd('unix:' . $this->path);
+			return true;
+		}
+		$sock = socket_create(AF_UNIX, SOCK_STREAM, 0);
+		if (!$sock) {
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t create UNIX-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			return false;
+		}
+
+		// SO_REUSEADDR is meaningless in AF_UNIX context
+		if (!@socket_bind($sock, $this->path)) {
+			if (isset($this->config->maxboundsockets->value)) { // no error-messages when maxboundsockets defined
+				return false;
+			}
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $this->path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			return;
+		}
+		socket_set_nonblock($sock);
+		$this->onBound();
+		if (!socket_listen($sock, SOMAXCONN)) {
+			$errno = socket_last_error();
+			Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $this->path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
 		}
 		$this->setFd($sock);
 		return true;	

@@ -292,8 +292,12 @@ abstract class IOStream {
 			$this->bev->setTimeouts($this->timeout, $this->timeout);
 		}
 		if ($this->bevConnect && ($this->fd === null)) {
-			$this->bev->connect($this->addr, false);
-			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port, EventUtil::AF_UNSPEC);
+			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port);
+			$this->bev->connect($this->addr);
+		}
+		if (!$this->bev) {
+			$this->finish();
+			return false;
 		}
 		if (!$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
 			$this->finish();
@@ -669,7 +673,7 @@ abstract class IOStream {
 	}
 
 	protected function log($m) {
-		Daemon::log(get_class().': '.$m);
+		Daemon::log(get_class($this).': '.$m);
 	}
 	
 	/**

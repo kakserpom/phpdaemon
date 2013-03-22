@@ -183,7 +183,7 @@ class Daemon_WorkerThread extends Thread {
 
 		Timer::add(function($event) {
 
-			if (!Daemon::$runworkerMode) {
+			if (!Daemon::$runworkerMode || 1) {
 				$this->IPCManager->ensureConnection();
 			}
 
@@ -694,8 +694,16 @@ class Daemon_WorkerThread extends Thread {
 			$this->log('caught SIGUSR2 (graceful shutdown for update).');
 		}
 
-		$this->reload = TRUE;
-		$this->reloadTime = microtime(TRUE) + $this->reloadDelay;
+		$this->gracefulRestart();
+	}
+
+	/**
+	 * Graceful restart
+	 * @return void
+	 */
+	public function gracefulRestart() {
+		$this->reload = true;
+		$this->reloadTime = microtime(true) + $this->reloadDelay;
 		$this->setState($this->state);
 	}
 

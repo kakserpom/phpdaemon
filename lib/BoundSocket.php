@@ -43,7 +43,7 @@ abstract class BoundSocket {
 	 * Listener mode?
 	 * @var boolean
 	 */
-	protected $listenerMode = false;
+	protected $listenerMode = true;
 
 	/**
 	 * Context
@@ -227,6 +227,12 @@ abstract class BoundSocket {
 		$this->fd = $fd;
 		$this->pid = posix_getpid();
 	}
+
+	/**
+	 * Called when socket is bound
+	 * @return boolean Success
+	 */
+	protected function onBound() {}
 	
 	/**
 	 * Enable socket events
@@ -242,6 +248,7 @@ abstract class BoundSocket {
 		$this->enabled = true;
 		if ($this->listenerMode) {
 			if ($this->ev === null) {
+				Daemon::$process->log('new EventListener('.$this->fd.')');
 				$this->ev = new EventListener(
 					Daemon::$process->eventBase,
 					[$this, 'onListenerAcceptEv'],
@@ -253,6 +260,7 @@ abstract class BoundSocket {
 				if ($this->ev and is_callable([$this->ev, 'getSocketName'])) {
 					$this->ev->getSocketName($this->locHost, $this->locPort);
 				}
+				$this->onBound();
 			} else {
 				$this->ev->enable();
 			}

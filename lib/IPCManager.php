@@ -159,6 +159,7 @@ class IPCManagerMasterPoolConnection extends Connection {
 		if (!is_array($p)) {
 			return;
 		}
+		//Daemon::log(Debug::dump($p));;
 		if ($p['op'] === 'start') {
 			$this->workerId = $p['workerId'];
 			$this->pool->workers[$this->workerId] = $this;
@@ -240,11 +241,11 @@ class IPCManagerWorkerConnection extends Connection {
 	const STATE_CONTENT = 1;
 	protected $packetLength;
 	public function onReady() {
-		$this->sendPacket(array(
+		$this->sendPacket([
 			'op' => 'start',
 			'pid' => Daemon::$process->getPid(),
-			'workerId' => Daemon::$process->getId())
-		);
+			'workerId' => Daemon::$process->getId()
+		]);
 		parent::onReady();
 	}
 	protected function onPacket($p) {
@@ -259,7 +260,7 @@ class IPCManagerWorkerConnection extends Connection {
 		}
 		elseif ($p['op'] === 'importFile') {
 			if (!Daemon::$config->autoreimport->value) {
-				Daemon::$process->sigusr2(); // graceful restart
+				Daemon::$process->gracefulRestart();
 				return;
 			}
 			$path = $p['path'];

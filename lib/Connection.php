@@ -474,15 +474,22 @@ class Connection extends IOStream {
 	 */
 	public function connectUnix($path) {
 		$this->type = 'unix';
-		$fd = socket_create(AF_UNIX, SOCK_STREAM, 0);
-		if (!$fd) {
-			return false;
+
+		if (!$this->bevConnectEnabled) {
+			$fd = socket_create(AF_UNIX, SOCK_STREAM, 0);
+			if (!$fd) {
+				return false;
+			}
+			socket_set_nonblock($fd);
+			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			@socket_connect($fd, $path, 0);
+			$this->setFd($fd);
+			return true;
 		}
-		socket_set_nonblock($fd);
-		socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-		socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-		@socket_connect($fd, $path, 0);
-		$this->setFd($fd);
+		$this->bevConnect = true;
+		$this->addr = 'unix:' . $path;
+		$this->setFd(null);
 		return true;
 	}
 
@@ -516,6 +523,7 @@ class Connection extends IOStream {
 		if ($this->host === null) {
 			$this->host = $this->hostReal;
 		}
+		$this->addr = $this->hostReal . ':raw';
 		$fd = socket_create(AF_INET, SOCK_RAW, 1);
 		if (!$fd) {
 			return false;
