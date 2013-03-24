@@ -181,7 +181,7 @@ class Daemon_MasterThread extends Thread {
         	fclose(STDERR);
         }
 		
-		$this->setproctitle(
+		$this->setTitle(
 			Daemon::$runName . ': master process' 
 			. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
 		);

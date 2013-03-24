@@ -102,7 +102,7 @@ class Daemon_IPCThread extends Thread {
 		proc_nice(Daemon::$config->ipcthreadpriority->value);
 		register_shutdown_function(array($this,'shutdown'));
 		
-		$this->setproctitle(
+		$this->setTitle(
 			Daemon::$runName . ': IPC process'
 			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
 				? ' (' . Daemon::$config->pidfile->value . ')' : '')

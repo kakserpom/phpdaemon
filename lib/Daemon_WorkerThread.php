@@ -362,7 +362,7 @@ class Daemon_WorkerThread extends Thread {
 			$this->shutdown();
 		});
 		
-		$this->setproctitle(
+		$this->setTitle(
 			Daemon::$runName . ': worker process'
 			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
 				? ' (' . Daemon::$config->pidfile->value . ')' : '')

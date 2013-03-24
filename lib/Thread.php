@@ -396,7 +396,10 @@ abstract class Thread {
 	 * @param string Title
 	 * @return void
 	 */
-	protected function setproctitle($title) {
+	protected function setTitle($title) {
+		if (is_callable('cli_set_process_title')) {
+			return cli_set_process_title($title);
+		}
 		if (Daemon::loadModuleIfAbsent('proctitle')) {
 			return setproctitle($title);
 		}
