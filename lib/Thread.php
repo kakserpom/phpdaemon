@@ -326,7 +326,6 @@ abstract class Thread {
 	 */
 	public function stop($kill = false) {
 		$this->shutdown = true;
-
 		return posix_kill($this->pid, $kill ? SIGKILL : SIGTERM);
 	}
 
@@ -360,6 +359,10 @@ abstract class Thread {
 		return posix_kill($this->pid, $sig);
 	}
 
+	/**
+	 * Checks if this process does exist
+	 * @return boolean Success
+	 */
 	public function ifExists() {
 		if (file_exists('/proc')) {
 			return file_exists('/proc/' . $this->pid);
@@ -367,6 +370,13 @@ abstract class Thread {
 		return posix_signal($this->pid, SIGTTIN);
 	}
 
+
+	/**
+	 * Checks if given process ID does exist
+	 * @static
+	 * @param integer PID
+	 * @return boolean Success
+	 */
 	public static function ifExistsByPid($pid) {
 		if (file_exists('/proc')) {
 			return file_exists('/proc/' . $pid);
@@ -394,7 +404,7 @@ abstract class Thread {
 	/**
 	 * Sets a title of the current process
 	 * @param string Title
-	 * @return void
+	 * @return boolean Success
 	 */
 	protected function setTitle($title) {
 		if (is_callable('cli_set_process_title')) {
@@ -403,8 +413,18 @@ abstract class Thread {
 		if (Daemon::loadModuleIfAbsent('proctitle')) {
 			return setproctitle($title);
 		}
+		return false;
+	}
 
-		return FALSE;
+	/**
+	 * Returns a title of the current process
+	 * @return string
+	 */
+	protected function getTitle() {
+		if (is_callable('cli_get_process_title')) {
+			return cli_get_process_title();
+		}
+		return false;
 	}
 
 	/**
@@ -414,7 +434,7 @@ abstract class Thread {
 	 * @return void
 	 */
 	protected function sigwait($sec = 0, $nano = 0.3e9) {
-		$siginfo = NULL;
+		$siginfo = null;
 		$signo = @pcntl_sigtimedwait(self::$signalsno, $siginfo, $sec, $nano);
 
 		if (is_bool($signo)) {
@@ -424,23 +444,20 @@ abstract class Thread {
 		if ($signo > 0) {
 			$this->sighandler($signo);
 
-			return TRUE;
+			return true;
 		}
 
-		return FALSE;
+		return false;
 	}
 }
 
-if (!function_exists('pcntl_sigtimedwait')) {
+if (!function_exists('pcntl_sigtimedwait')) { // For Mac OS where missing the orignal function
 	function pcntl_sigtimedwait($signals, $siginfo, $sec, $nano) {
 		pcntl_signal_dispatch();
-
-		if (time_nanosleep($sec, $nano) === TRUE) {
-			return FALSE;
+		if (time_nanosleep($sec, $nano) === true) {
+			return false;
 		}
-
 		pcntl_signal_dispatch();
-
-		return TRUE;
+		return true;
 	}
 }
