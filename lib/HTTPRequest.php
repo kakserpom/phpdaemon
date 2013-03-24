@@ -57,25 +57,107 @@ class HTTPRequest extends Request {
 		505 => 'HTTP Version Not Supported',
 	);
 
-	// @todo phpdoc needed
+	/**
+	 * Current response length
+	 * @var integer
+	 */
 	public $responseLength = 0;
+
+	/**
+	 * Content length from header() method
+	 * @var integer
+	 */
 	protected $contentLength;
+
+	/**
+	 * Number of outgoing cookie-headers
+	 * @var integer
+	 */
 	protected $cookieNum = 0;
 
-	public static $hvaltr = array(';' => '&', ' ' => '');
-	public static $htr = array('-' => '_');
+	/**
+	 * Replacement pairs for processing some header values in parse_str()
+	 * @var hash
+	 */
+	public static $hvaltr = [';' => '&', ' ' => ''];
 
+	/**
+	 * State
+	 * @var hash
+	 */
+	public static $htr = ['-' => '_'];
+
+
+	/**
+	 * State of multi-part processor
+	 * @var integer (self::MPSTATE_*)
+	 */
 	protected $mpartstate = 0;
+
+	/**
+	 * Current offset of multi--part processor
+	 * @var integer (self::MPSTATE_*)
+	 */
 	protected $mpartoffset = 0;
+
+	/**
+	 * Content dispostion of current Part
+	 * @var array
+	 */
 	protected $mpartcondisp = false;
-	protected $headers = array('STATUS' => '200 OK');
+
+	/**
+	 * Outgoing headers
+	 * @var hash
+	 */
+	protected $headers = ['STATUS' => '200 OK'];
+
+	/**
+	 * Headers sent?
+	 * @var boolean
+	 */
 	protected $headers_sent = false;
+
+	/**
+	 * File name where output started in the file and line variables.
+	 * @var boolean
+	 */
 	protected $headers_sent_file;
+
+	/**
+	 * Line number where output started in the file and line variables.
+	 * @var boolean
+	 */
 	protected $headers_sent_line;
+
+	/**
+	 * Boundary
+	 * @var string
+	 */
 	protected $boundary = false;
+
+	/**
+	 * Current Part
+	 * @var hash
+	 */
 	protected $mpartcurrent;
+
+	/**
+	 * File pointer to send output (X-Sendfile)
+	 * @var File
+	 */
 	protected $sendfp;
+
+	/**
+	 * Maxinum file size from multi-part query
+	 * @var integer
+	 */
 	protected $maxFileSize = 0;
+
+	/**
+	 * Frozen input?
+	 * @var boolean
+	 */
 	protected $frozenInput = false;
 	
 	const MPSTATE_SEEKBOUNDARY = 0;
@@ -105,10 +187,18 @@ class HTTPRequest extends Request {
 
 		$this->parseParams();
 	}
-	
+
+
+	/**
+	 * Output whole contents of file
+	 * @param string Path
+	 * @param callable Callback
+	 * @param priority
+	 * @return boolean Success
+	 */
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if ($this->state === self::STATE_FINISHED) {
-			return;
+			return false;
 		}
 		try {
 			$this->header('Content-Type: ' . MIME::get($path));
@@ -124,7 +214,7 @@ class HTTPRequest extends Request {
 				});
 				return true;
 			}, 0, null, $pri);
-			return;
+			return true;
 		}
 		$first = true;
 		FS::readfileChunked($path, $cb, function($file, $chunk) use (&$first) { // readed chunk
@@ -299,7 +389,7 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * @description Called when new piece of request's body is received
+	 * Called when new piece of request's body is received
 	 * @param string Piece of request body
 	 * @return void
 	 */
@@ -319,6 +409,10 @@ class HTTPRequest extends Request {
 		$this->checkIfReady();
 	}
 
+	/**
+	 * Ensure that headers are sent
+	 * @return void
+	 */
 	public function ensureSentHeaders() {
 		if (!$this->headers_sent) {
 			if (isset($this->headers['STATUS'])) {
@@ -500,7 +594,9 @@ class HTTPRequest extends Request {
 	}
 
 	/**
-	 * Analog of standard PHP function headers_sent
+	 * Checks if headers have been sent
+	 * @var boolean
+	 */
 	 * @return boolean Success
 	 */
 	public function headers_sent(&$file, &$line) {

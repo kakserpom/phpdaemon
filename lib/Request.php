@@ -1,3 +1,4 @@
+
 <?php
  
 /**
@@ -13,17 +14,71 @@ class Request {
 	const STATE_WAITING  = 2;
 	const STATE_RUNNING  = 3;
 
+	/**
+	 * Related Application instance
+	 * @var AppInstance
+	 */
 	public $appInstance;
+
+	/**
+	 * Is this request aborted?
+	 * @var boolean
+	 */
 	protected $aborted = false;
+
+	/**
+	 * State
+	 * @var integer (self::STATE_*)
+	 */
 	protected $state = self::STATE_WAITING;
+
+	/**
+	 * Attributes
+	 * @var StdCLass
+	 */
 	public $attrs;
+
+	/**
+	 * Registered shutdown functions
+	 * @var array
+	 */
 	protected $shutdownFuncs = [];
+
+	/**
+	 * Is this request running?
+	 * @var boolean
+	 */
 	protected $running = false;
+
+	/**
+	 * Upstream
+	 * @var object
+	 */
 	protected $upstream;
+
+	/**
+	 * Event
+	 * @var object
+	 */
 	protected $ev;
+
+	/**
+	 * Current sleep() time
+	 * @var float
+	 */
 	protected $sleepTime = 0;
+
+	/**
+	 * Priority
+	 * @var integer
+	 */
 	protected $priority = null;
 
+
+	/**
+	 * Current code point
+	 * @var mixed
+	 */
 	protected $codepoint;
  
 	/**
@@ -46,10 +101,19 @@ class Request {
 		$this->onSleep();
 	}
  	
+
+ 	/**
+	 * Is this request aborted?
+	 * @return boolean
+	 */
  	public function isAborted() {
  		return $this->aborted;
  	}
 
+	/**
+	 * Is this request running?
+	 * @return boolean
+	 */
  	public function isRunning() {
  		return $this->running;
  	}
@@ -69,7 +133,8 @@ class Request {
 	public function run() {}
 	
 	/**
-	 * @todo description is missing
+	 * Event handler of Request, called by Evtimer
+	 * @return void
 	 */
 	public function eventCall($arg) {
 		try {
@@ -117,6 +182,11 @@ class Request {
 			$this->ev->add($this->sleepTime);
 		}
 	}
+
+	/**
+	 * Frees the request
+	 * @return void
+	 */
 	public function free() {
 		if ($this->ev) {
 			$this->ev->free();
@@ -126,6 +196,12 @@ class Request {
 			$this->upstream->freeRequest($this);
 		}
 	}
+
+	/**
+	 * Sets the priority
+	 * @param integer Priority
+	 * @return void
+	 */
 	public function setPriority($p) {
 		$this->priority = $p;
 		if ($this->ev !== null) {
@@ -248,10 +324,10 @@ class Request {
 	public function codepoint($p) {
 		if ($this->codepoint !== $p) {
 			$this->codepoint = $p;
-			return TRUE;
+			return true;
 		}
  
-		return FALSE;
+		return false;
 	}
  
 	/**
@@ -358,7 +434,7 @@ class Request {
 			return;
 		}
  
-		$this->aborted = TRUE;
+		$this->aborted = true;
 		$this->onWakeup();
 		$this->onAbort();
  
@@ -447,3 +523,4 @@ class Request {
 class RequestSleepException extends Exception {}
 class RequestTerminatedException extends Exception {}
 class RequestHeadersAlreadySent extends Exception {}
+
