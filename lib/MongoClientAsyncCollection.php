@@ -1,10 +1,14 @@
 <?php
 class MongoClientAsyncCollection {
-    /**
+    /** Related Pool object
      * @var MongoClient
      */
 	public $pool;
-	public $name; // Name of collection.
+
+	/** Name of collection.
+     * @var string
+     */
+	public $name;
 
 	/**
 	 * Contructor of MongoClientAsyncCollection
@@ -145,9 +149,8 @@ class MongoClientAsyncCollection {
      * @param string Optional. Distribution key
      * @return void
      */
-    public function evaluate($code, $cb, $key = '')
-    {
-        $this->pool->evaluate($code, $cb, $key);
+    public function evaluate($code, $cb, $key = '') {
+		$this->pool->evaluate($code, $cb, $key);
     }
 
     /**
@@ -156,16 +159,10 @@ class MongoClientAsyncCollection {
      * @param string $key Optional. Distribution key
      * @return void
      */
-    public function autoincrement($cb, $key = '')
-    {
-        $this->evaluate(
-            'function () { '
-                . 'return db.autoincrement.findAndModify({ '
-                . 'query: {"_id":"' . $this->name . '"}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',
-            function ($res) use ($cb) {
-                call_user_func($cb, $res);
-            },
-            $key
-        );
+    public function autoincrement($cb, $key = '') {
+		$this->evaluate('function () { '
+			. 'return db.autoincrement.findAndModify({ '
+			. 'query: {"_id":' . json_encode($this->name) . '}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',
+		$cb, $key);
     }
 }
