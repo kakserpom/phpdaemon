@@ -53,7 +53,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol {
             return $reply;
         }
 
-        return FALSE ;
+        return false;
     }
 
 	/**
@@ -65,15 +65,12 @@ class WebSocketProtocolV0 extends WebSocketProtocol {
 	 */
 
 	protected function _computeFinalKey($key1, $key2, $data) {
-		if (strlen($data) < 8)
-		{
+		if (strlen($data) < 8) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->conn->addr . '"') ;
-			return FALSE ;
+			return false;
 		}
-
-		$bodyData = binarySubstr($data, 0, 8) ;
-			
-		return md5($this->_computeKey($key1) . $this->_computeKey($key2) . binarySubstr($data, 0, 8), TRUE) ;
+		$bodyData = binarySubstr($data, 0, 8) ;	
+		return md5($this->_computeKey($key1) . $this->_computeKey($key2) . binarySubstr($data, 0, 8), true);
 	}
 
 	/**
@@ -121,13 +118,11 @@ class WebSocketProtocolV0 extends WebSocketProtocol {
 			$c = $n >> 0 & 0x7F;
 			$n = $n >> 7;
 
-			if ($pos != 1)
-			{
+			if ($pos != 1) {
 				$c += 0x80;
 			}
 			
-			if ($c != 0x80)
-			{
+			if ($c != 0x80) {
 				$len = chr($c) . $len;
 				goto char;
 			};
@@ -135,58 +130,59 @@ class WebSocketProtocolV0 extends WebSocketProtocol {
 			return chr(self::BINARY) . $len . $data ;
 		}
 		// String
-		else
-		{
+		else {
 			return chr(self::STRING) . $data . "\xFF" ;
 		}
     }
 
     public function onRead() {
-		while ($this->conn && (($buflen = strlen($this->conn->buf)) >= 1)) {
-			$frametype = ord(binarySubstr($this->conn->buf, 0, 1)) ;
+		while ($this->conn && (($buflen = $this->conn->getInputLength()) >= 2)) {
+			$hdr = $this->conn->look(10);
+			$frametype = ord(binarySubstr($hdr, 0, 1)) ;
 			if (($frametype & 0x80) === 0x80) {
-				$len = 0 ;
+				$len = 0;
 				$i = 0 ;
-
 				do {
-					$b = ord(binarySubstr($this->conn->buf, ++$i, 1));
-					$n = $b & 0x7F ;
-					$len *= 0x80 ;
-					$len += $n ;
-				} while ($b > 0x80) ;
+					if ($buflen < $i + 1) {
+						// not enough data yet
+						return;
+					}
+					$b = ord(binarySubstr($hdr, ++$i, 1));
+					$n = $b & 0x7F;
+					$len *= 0x80;
+					$len += $n;
+				} while ($b > 0x80);
 
 				if ($this->conn->pool->maxAllowedPacket <= $len) {
 					// Too big packet
 					$this->conn->finish();
-					return FALSE ;
+					return;
 				}
 
-				if ($buflen < $len + 2)	{
+				if ($buflen < $len + $i + 1) {
 					// not enough data yet
-					return FALSE ;
-				} 
-					
-				$decodedData = binarySubstr($this->conn->buf, 2, $len) ;
-				$this->conn->buf = binarySubstr($this->conn->buf, 2 + $len) ;
-				$this->conn->onFrame($decodedData, 'BINARY');
+					return;
+				}
+				$this->conn->drain($i + 1);
+				$this->conn->onFrame($this->conn->read($len), 'BINARY');
 			}
 			else {
-				if (($p = strpos($this->conn->buf, "\xFF")) !== FALSE) {
+				if (($p = $this->conn->search("\xFF")) !== false) {
 					if ($this->conn->pool->maxAllowedPacket <= $p - 1) {
 						// Too big packet
-						$this->conn->finish() ;
-						return FALSE ;
+						$this->conn->finish();
+						return;
 					}
-						
-					$decodedData = binarySubstr($this->conn->buf, 1, $p - 1) ;
-					$this->conn->buf = binarySubstr($this->conn->buf, $p + 1) ;
-					$this->conn->onFrame($decodedData, 'STRING');
+					$this->conn->drain(1);
+					$data = $this->conn->read($p);
+					$this->conn->drain(1);
+					$this->conn->onFrame($data, 'STRING');
 				}
 				else {
-					if ($this->conn->pool->maxAllowedPacket <= $buflen - 1) {
+					if ($this->conn->pool->maxAllowedPacket < $buflen - 1) {
 						// Too big packet
-						$this->conn->finish() ;
-						return FALSE ;
+						$this->conn->finish();
+						return;
 					}
 					// not enough data yet					
 					return;

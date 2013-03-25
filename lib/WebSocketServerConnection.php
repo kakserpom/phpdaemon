@@ -1,27 +1,37 @@
 <?php
 class WebSocketServerConnection extends Connection {
 	
-	public $timeout = 120;
-	public $secprotocol;
-	public $resultKey;
-	public $handshaked = false;
-	public $upstream;
-	public $server = array();
-	public $cookie = array();
-	public $firstline = false;
-	public $writeReady = true;
-	public $extensions = array();
+	/**
+	 * Timeout
+	 * @var integer
+	 */
+	protected $timeout = 120;
+
+	protected $handshaked = false;
+	protected $route;
+	protected $writeReady = true;
+	protected $extensions = [];
+	protected $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
+	protected $buf = '';
+	protected $protocol;
+	protected $policyReqNotFound = false;
+	protected $currentHeader;
+	protected $EOL = "\r\n";
+
+	const STATE_FIRSTLINE = 1;
+	const STATE_HEADERS = 2;
+	const STATE_CONTENT = 3;
+	const STATE_PROCESSING = 5;
+	const STATE_HANDSHAKED = 6;
+
 	public $framebuf = '';
-	public $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
-	const STATE_HANDSHAKING = 1;
-	const STATE_HANDSHAKED = 2;
-	public $buf = '';
-	public $protocol; // Related WebSocket protocol
+	public $server = [];
+	public $cookie = [];
 
 	public function init() {}
 	
 	public function onInheritanceFromRequest($req) {
-		$this->firstline = true;
+		$this->state = self::STATE_HEADERS;
 		$this->addr = $req->attrs->server['REMOTE_ADDR'];
 		$this->server = $req->attrs->server;
 		$this->prependInput("\r\n");
@@ -36,9 +46,12 @@ class WebSocketServerConnection extends Connection {
 	 * @return boolean Success.
 	 */
 
-	public function sendFrame($data, $type = NULL, $cb = null)
-	{
+	public function sendFrame($data, $type = null, $cb = null) {
 		if (!$this->handshaked) {
+			return false;
+		}
+
+		if ($this->finished) {
 			return false;
 		}
 
@@ -60,10 +73,10 @@ class WebSocketServerConnection extends Connection {
 	 */
 
 	public function onFinish() {
-		if (isset($this->upstream)) {
-			$this->upstream->onFinish();
+		if (isset($this->route)) {
+			$this->route->onFinish();
 		}
-		$this->upstream = null;
+		$this->route = null;
 		if ($this->protocol) {
 			$this->protocol->conn = null;
 			$this->protocol = null;
@@ -78,10 +91,10 @@ class WebSocketServerConnection extends Connection {
 	 */
 
 	public function onFrame($data, $type) {
-		if (!isset($this->upstream)) {
+		if (!isset($this->route)) {
 			return false;
 		}
-		$this->upstream->onFrame($data, $type);
+		$this->route->onFrame($data, $type);
 		return true;
 	}
 
@@ -100,7 +113,7 @@ class WebSocketServerConnection extends Connection {
 				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : undefined route "' . $routeName . '" for client "' . $this->addr . '"');
 			}
 
-			return FALSE;
+			return false;
 		}
 		$route = $this->pool->routes[$routeName];
 		if (is_string($route)) { // if we have a class name
@@ -112,8 +125,8 @@ class WebSocketServerConnection extends Connection {
 		} elseif (is_array($route) || is_object($route)) { // if we have a lambda object or callback reference
 			if (is_callable($route)) {
 				$ret = call_user_func($route, $this); // calling the route callback
-				if (is_object($ret) && $ret instanceof WebSocketRoute) {
-					$this->upstream = $ret;
+				if ($ret instanceof WebSocketRoute) {
+					$this->route = $ret;
 				} else {
 					return false;
 				}
@@ -126,14 +139,14 @@ class WebSocketServerConnection extends Connection {
 
         if (!isset($this->protocol)) {
             Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client "' . $this->addr . '"') ;
-            return FALSE ;
+            return false;
         }
 
-		if ($this->protocol->onHandshake() === FALSE) {
-			return FALSE ;
+		if ($this->protocol->onHandshake() === false) {
+			return false;
 		}		
 
-		return TRUE;
+		return true;
 	}
 	
 	/**
@@ -142,9 +155,9 @@ class WebSocketServerConnection extends Connection {
 	 */
 
 	public function gracefulShutdown() {
-		if ((!$this->upstream) || $this->upstream->gracefulShutdown()) {
+		if ((!$this->route) || $this->route->gracefulShutdown()) {
 			$this->finish();
-			return TRUE;
+			return true;
 		}
 		return FALSE;
 	}
@@ -181,8 +194,8 @@ class WebSocketServerConnection extends Connection {
 			return false ;
 		}
 		if ($this->write($handshake)) {
-			if (is_callable(array($this->upstream, 'onHandshake')))	{
-				$this->upstream->onHandshake();
+			if (is_callable(array($this->route, 'onHandshake')))	{
+				$this->route->onHandshake();
 			}
 		}
 		else {
@@ -194,109 +207,116 @@ class WebSocketServerConnection extends Connection {
 		return true;
 	}
 	
+	public function badRequest() {
+		$this->state = self::STATE_ROOT;
+		$this->write("400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor=\"white\"><center><h1>400 Bad Request</h1></center></body></html>");
+		$this->finish();
+	}
+
+	protected function httpReadFirstline() {
+		if (($l = $this->readline()) === null) {
+			return;
+		}
+		$e = explode(' ', $l);
+		$u = isset($e[1]) ? parse_url($e[1]) : false;
+		if ($u === false) {
+			$this->badRequest();
+			return false;
+		}
+		if (!isset($u['path'])) {
+			$u['path'] = null;
+		}
+		if (isset($u['host'])) {
+			$this->server['HTTP_HOST'] = $u['host'];	
+		}
+		$srv = &$this->server;
+		$srv['REQUEST_METHOD'] = $e[0];
+		$srv['REQUEST_TIME'] = time();
+		$srv['REQUEST_TIME_FLOAT'] = microtime(true);
+		$srv['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
+		$srv['DOCUMENT_URI'] = $u['path'];
+		$srv['PHP_SELF'] = $u['path'];
+		$srv['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
+		$srv['SCRIPT_NAME'] = $srv['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
+		$srv['SERVER_PROTOCOL'] = isset($e[2]) ? $e[2] : 'HTTP/1.1';
+		$srv['REMOTE_ADDR'] = $this->addr;
+		$srv['REMOTE_PORT'] = $this->port;
+		return true;
+	}
+
+	protected function httpReadHeaders() {
+		while (($l = $this->readLine()) !== null) {
+			if ($l === '') {
+				return true;
+			}
+			$e = explode(': ', $l);
+			if (isset($e[1])) {
+				$this->currentHeader = 'HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr));
+				$this->server[$this->currentHeader] = $e[1];
+			}
+			elseif (($e[0][0] === "\t" || $e[0][0] === "\x20") && $this->currentHeader) {
+				 // multiline header continued
+					$this->server[$this->currentHeader] .= $e[0];
+			}
+			else {
+				// whatever client speaks is not HTTP anymore
+				$this->badRequest();
+				return false;
+			}
+		}
+	}
+
 	/**
 	 * Called when new data received.
-	 * @param string New received data.
 	 * @return void
 	 */
-
-	public function stdin($buf) { // @TODO: refactoring to onRead, stateful machine
-		//Daemon::log(Debug::dump($buf));
-		$this->buf .= $buf;
-		if ($this->state === self::STATE_ROOT)	{
-			if (strpos($this->buf, "<policy-file-request/>\x00") === 0) {
+	
+	protected function onRead() {
+		if (!$this->policyReqNotFound) {
+			$d = $this->drainIfMatch("<policy-file-request/>\x00");
+			if ($d === null) { // partially match
+				return;
+			}
+			if ($d) {
 				if (($FP = FlashPolicyServer::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();
 				return;
-			}
-
-			$i = 0;
-
-			while (($l = $this->gets()) !== false)
-			{
-				if ($i++ > 100)
-				{
-					break;
-				}
-
-				if ($l === "\r\n") {
-					$this->state = self::STATE_HANDSHAKING;
-					if (isset($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS'])) {
-						$str = strtolower($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS']);
-						$str = preg_replace($this->extensionsCleanRegex, '', $str);
-						$this->extensions = explode(', ', $str);
-					}
-					if (
-							!isset($this->server['HTTP_CONNECTION']) 
-						|| (!preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->server['HTTP_CONNECTION']))  // "Upgrade" is not always alone (ie. "Connection: Keep-alive, Upgrade")
-						||	!isset($this->server['HTTP_UPGRADE']) 
-						|| (strtolower($this->server['HTTP_UPGRADE']) !== 'websocket')    // Lowercase compare important
-					) {
-						$this->finish();
-						return;
-					}
-					if (isset($this->server['HTTP_COOKIE'])) {
-						HTTPRequest::parse_str(strtr($this->server['HTTP_COOKIE'], HTTPRequest::$hvaltr), $this->cookie);
-					}
-
-					// ----------------------------------------------------------
-					// Protocol discovery, based on HTTP headers...
-					// ----------------------------------------------------------
-					if (isset($this->server['HTTP_SEC_WEBSOCKET_VERSION'])) { // HYBI
-						if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '8') { // Version 8 (FF7, Chrome14)
-							$this->protocol = new WebSocketProtocolV13($this) ;
-						}
-						elseif ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '13') { // newest protocol
-							$this->protocol = new WebSocketProtocolV13($this);
-						}
-						else
-						{
-							Daemon::$process->log(get_class($this) . '::' . __METHOD__ . " : Websocket protocol version " . $this->server['HTTP_SEC_WEBSOCKET_VERSION'] . ' is not yet supported for client "' . $this->addr . '"') ;
-
-							$this->finish();
-							return;
-						}
-					}
-					elseif (!isset($this->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
-						$this->protocol = new WebSocketProtocolVE($this);
-					}
-					else {	// Defaulting to HIXIE (Safari5 and many non-browser clients...)
-						$this->protocol = new WebSocketProtocolV0($this) ;
-					}
-					// ----------------------------------------------------------
-					// End of protocol discovery
-					// ----------------------------------------------------------
-				} 
-				elseif (!$this->firstline)
-				{
-					$this->firstline = true;     
-					$e = explode(' ', $l);
-					$u = parse_url(isset($e[1]) ? $e[1] : '');
-
-					$this->server['REQUEST_METHOD'] = $e[0];
-					$this->server['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
-					$this->server['DOCUMENT_URI'] = $u['path'];
-					$this->server['PHP_SELF'] = $u['path'];
-					$this->server['QUERY_STRING'] = isset($u['query']) ? $u['query'] : NULL;
-					$this->server['SCRIPT_NAME'] = $this->server['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
-					$this->server['SERVER_PROTOCOL'] = isset($e[2]) ? trim($e[2]) : '';
-
-					list($this->server['REMOTE_ADDR'],$this->server['REMOTE_PORT']) = explode(':', $this->addr);
-				}
-				else
-				{
-					$e = explode(': ', $l);
-					
-					if (isset($e[1]))
-					{
-						$this->server['HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr))] = rtrim($e[1], "\r\n");
-					}
-				}
+			} else {
+				$this->policyReqNotFound = true;
 			}
 		}
-		if ($this->state === self::STATE_HANDSHAKING) {
+		start:
+		if ($this->finished) {
+			return;
+		}
+		if ($this->state === self::STATE_ROOT) {
+			$this->state = self::STATE_FIRSTLINE;
+		}
+		if ($this->state === self::STATE_FIRSTLINE) {
+			if (!$this->httpReadFirstline()) {
+				return;
+			}
+			$this->state = self::STATE_HEADERS;
+		}		
+
+		if ($this->state === self::STATE_HEADERS) {
+			if (!$this->httpReadHeaders()) {
+				return;
+			}
+			if (!$this->httpProcessHeaders()) {
+				$this->finish();
+				return;
+			}
+			$this->state = self::STATE_CONTENT;
+		}
+		if ($this->state === self::STATE_CONTENT) {
+			$this->state = self::STATE_PROCESSING;
+		}
+
+		if ($this->state === self::STATE_PROCESSING) {
+			$this->buf .= $this->read(1024);
 			if (!$this->handshake($this->buf)) {
 				return;
 			}
@@ -311,5 +331,53 @@ class WebSocketServerConnection extends Connection {
 	        }
 	        $this->protocol->onRead();
 		}
+
+	}
+
+
+	protected function httpProcessHeaders() {
+		$this->state = self::STATE_PROCESSING;
+		if (isset($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS'])) {
+			$str = strtolower($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS']);
+			$str = preg_replace($this->extensionsCleanRegex, '', $str);
+			$this->extensions = explode(', ', $str);
+		}
+		if (!isset($this->server['HTTP_CONNECTION']) 
+			|| (!preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->server['HTTP_CONNECTION']))  // "Upgrade" is not always alone (ie. "Connection: Keep-alive, Upgrade")
+			||	!isset($this->server['HTTP_UPGRADE']) 
+			|| (strtolower($this->server['HTTP_UPGRADE']) !== 'websocket')    // Lowercase compare important
+		) {
+			$this->finish();
+			return false;
+		}
+		if (isset($this->server['HTTP_COOKIE'])) {
+			HTTPRequest::parse_str(strtr($this->server['HTTP_COOKIE'], HTTPRequest::$hvaltr), $this->cookie);
+		}
+		// ----------------------------------------------------------
+		// Protocol discovery, based on HTTP headers...
+		// ----------------------------------------------------------
+		if (isset($this->server['HTTP_SEC_WEBSOCKET_VERSION'])) { // HYBI
+			if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '8') { // Version 8 (FF7, Chrome14)
+				$this->protocol = new WebSocketProtocolV13($this) ;
+			}
+			elseif ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '13') { // newest protocol
+				$this->protocol = new WebSocketProtocolV13($this);
+			}
+			else {
+				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . " : Websocket protocol version " . $this->server['HTTP_SEC_WEBSOCKET_VERSION'] . ' is not yet supported for client "' . $this->addr . '"') ;
+				$this->finish();
+				return false;
+			}
+		}
+		elseif (!isset($this->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
+			$this->protocol = new WebSocketProtocolVE($this);
+		}
+		else {	// Defaulting to HIXIE (Safari5 and many non-browser clients...)
+			$this->protocol = new WebSocketProtocolV0($this) ;
+		}
+		// ----------------------------------------------------------
+		// End of protocol discovery
+		// ----------------------------------------------------------
+		return true;
 	}
 }

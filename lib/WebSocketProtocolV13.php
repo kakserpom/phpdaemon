@@ -4,35 +4,28 @@
  * @see	http://datatracker.ietf.org/doc/rfc6455/?include_text=1
  */
 
-class WebSocketProtocolV13 extends WebSocketProtocol
-{
-	// @todo manage only the 4 last bits (opcode), as described in the draft
+class WebSocketProtocolV13 extends WebSocketProtocol {
 	const CONTINUATION = 0;
 	const STRING = 0x1;
 	const BINARY = 0x2;
 	const CONNCLOSE = 0x8;
 	const PING = 0x9;
 	const PONG = 0xA ;
-	public $opcodes;
-	public $outgoingCompression = 0;
-		
-	public function __construct($conn) {
-		$this->conn = $conn;
-		$this->opcodes = array(
-			0 => 'CONTINUATION',
-			0x1 => 'STRING',
-			0x2 => 'BINARY',
-			0x3 => 'CONNCLOSE',
-			0x9 => 'PING',
-			0xA => 'PONG',													
-		);
-	}
+	protected static $opcodes = [
+		0 => 'CONTINUATION',
+		0x1 => 'STRING',
+		0x2 => 'BINARY',
+		0x3 => 'CONNCLOSE',
+		0x9 => 'PING',
+		0xA => 'PONG',													
+	];
+	protected $outgoingCompression = 0;
 
 	public function onHandshake(){
-        if (!isset($this->conn->server['HTTP_SEC_WEBSOCKET_KEY'])	|| !isset($this->conn->server['HTTP_SEC_WEBSOCKET_VERSION'])) {
+        if (!isset($this->conn->server['HTTP_SEC_WEBSOCKET_KEY']) || !isset($this->conn->server['HTTP_SEC_WEBSOCKET_VERSION'])) {
 			return false;
 		}
-		if ($this->conn->server['HTTP_SEC_WEBSOCKET_VERSION'] != '13' && $this->conn->server['HTTP_SEC_WEBSOCKET_VERSION'] != '8') {
+		if ($this->conn->server['HTTP_SEC_WEBSOCKET_VERSION'] !== '13' && $this->conn->server['HTTP_SEC_WEBSOCKET_VERSION'] !== '8') {
             return false;
         }
 
@@ -89,8 +82,8 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 		$rsv2 = 0;
 		$rsv3 = 0;
 		if (in_array($type, array('STRING', 'BINARY')) && ($this->outgoingCompression > 0) && in_array('deflate-frame', $this->conn->extensions)) {
-			$data = gzcompress($data, $this->outgoingCompression);
-			$rsv1 = 1;
+			//$data = gzcompress($data, $this->outgoingCompression);
+			//$rsv1 = 1;
 		}
 		return $this->encodeFragment($data, $type, $fin, $rsv1, $rsv2, $rsv3);
     }
@@ -195,9 +188,9 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 
     public function onRead() {
 		$data = '';
-		while ($this->conn && (($buflen = strlen($this->conn->buf)) >= 1)) {
-			$p = 0; // offset
-			$first = ord(binarySubstr($this->conn->buf, $p++, 1)); // first byte integer (fin, opcode)
+		while ($this->conn && (($buflen = $this->conn->getInputLength()) >= 2)) {
+			$hdr = $this->conn->look(20);
+			$first = ord(binarySubstr($hdr, 0, 1)); // first byte integer (fin, opcode)
 			$firstBits = decbin($first);
 			$rsv1 = (bool) $firstBits[1];
 			$rsv2 = (bool) $firstBits[2];
@@ -207,28 +200,29 @@ class WebSocketProtocolV13 extends WebSocketProtocol
         		$this->conn->finish();
             	return;
 			}
-			$opcodeName = isset($this->opcodes[$opcode]) ? $this->opcodes[$opcode] : false;
+			$opcodeName = isset(static::$opcodes[$opcode]) ? static::$opcodes[$opcode] : false;
 			if (!$opcodeName) {
-				Daemon::log(Debug::exportBytes($this->conn->buf));
+				Daemon::log(get_class($this) . ': Undefined opcode '.$opcode);
 				$this->conn->finish();
 				return;
 			}
-			$second = ord(binarySubstr($this->conn->buf, $p++, 1)); // second byte integer (masked, payload length)
+			$second = ord(binarySubstr($hdr, 1, 1)); // second byte integer (masked, payload length)
 			$fin =	(bool) ($first >> 7);
         	$isMasked   = (bool) ($second >> 7);
         	$dataLength = $second & 0x7f;
+        	$p = 2;
           	if ($dataLength === 0x7e) { // 2 bytes-length
 				if ($buflen < $p + 2) {
 					return; // not enough data yet
 				}
-				$dataLength = $this->bytes2int(binarySubstr($this->conn->buf, $p, 2), false);
+				$dataLength = $this->bytes2int(binarySubstr($hdr, $p, 2), false);
 				$p += 2;
 			}
 			elseif ($dataLength === 0x7f) { // 8 bytes-length
 				if ($buflen < $p + 8) {
 					return; // not enough data yet
 				}
-            	$dataLength = $this->bytes2int(binarySubstr($this->conn->buf, $p, 8));
+            	$dataLength = $this->bytes2int(binarySubstr($hdr, $p, 8));
             	$p += 8;
             }
 			if ($this->conn->pool->maxAllowedPacket <= $dataLength) {
@@ -236,24 +230,21 @@ class WebSocketProtocolV13 extends WebSocketProtocol
 				$this->conn->finish();
 				return;
 			}
-
 			if ($isMasked) {
 				if ($buflen < $p + 4) {
 					return; // not enough data yet
 				}
-				$mask = binarySubstr($this->conn->buf, $p, 4);
+				$mask = binarySubstr($hdr, $p, 4);
 				$p += 4;
 			}
 			if ($buflen < $p + $dataLength) {
 				return; // not enough data yet
 			}
-			
-			$data = binarySubstr($this->conn->buf, $p, $dataLength);
-			$p += $dataLength;
+			$this->conn->drain($p);
+			$data = $this->conn->read($dataLength);
 			if ($isMasked) {
 				$data = $this->mask($data, $mask);
 			}
-			$this->conn->buf = binarySubstr($this->conn->buf, $p);
 			//Daemon::log(Debug::dump(array('ext' => $this->conn->extensions, 'rsv1' => $rsv1, 'data' => Debug::exportBytes($data))));
 			if ($rsv1 && in_array('deflate-frame', $this->conn->extensions)) { // deflate frame
 				//$data = gzuncompress($data, $this->conn->pool->maxAllowedPacket);

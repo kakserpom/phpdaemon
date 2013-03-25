@@ -22,20 +22,20 @@ class WebSocketProtocolVE extends WebSocketProtocol {
 
     public function getHandshakeReply($data) {
         if ($this->onHandshake()) {
-            if (!isset($this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'])) {
-                $this->connection->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '';
+            if (!isset($this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'])) {
+                $this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '';
             }
 
             $reply = "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
                 . "Upgrade: WebSocket\r\n"
                 . "Connection: Upgrade\r\n"
-                . "Sec-WebSocket-Origin: " . $this->connection->server['HTTP_ORIGIN'] . "\r\n"
-                . "Sec-WebSocket-Location: ws://" . $this->connection->server['HTTP_HOST'] . $this->connection->server['REQUEST_URI'] . "\r\n";
-			if ($this->connection->pool->config->expose->value) {
+                . "Sec-WebSocket-Origin: " . $this->conn->server['HTTP_ORIGIN'] . "\r\n"
+                . "Sec-WebSocket-Location: ws://" . $this->conn->server['HTTP_HOST'] . $this->conn->server['REQUEST_URI'] . "\r\n";
+			if ($this->conn->pool->config->expose->value) {
 				$reply .= 'X-Powered-By: phpDaemon/' . Daemon::$version . "\r\n";
 			}
-            if (isset($this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'])) {
-                $reply .= "Sec-WebSocket-Protocol: " . $this->connection->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n";
+            if (isset($this->conn->server['HTTP_SEC_WEBSOCKET_PROTOCOL'])) {
+                $reply .= "Sec-WebSocket-Protocol: " . $this->conn->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n";
             }
             $reply .= "\r\n";
             return $reply;
@@ -108,55 +108,53 @@ class WebSocketProtocolVE extends WebSocketProtocol {
     }
 
     public function onRead() {
-		while ($this->connection && (($buflen = strlen($this->connection->buf)) >= 2)) {
-			$frametype = ord(binarySubstr($this->connection->buf, 0, 1)); 
+		while ($this->conn && (($buflen = strlen($this->conn->buf)) >= 2)) {
+            $hdr = $this->conn->look(10);
+			$frametype = ord(binarySubstr($this->conn->buf, 0, 1)); 
             if (($frametype & 0x80) === 0x80) {
-                $len = 0 ;
-                $i = 0 ;
-
+                $len = 0;
+                $i = 0;
                 do {
-                    $b = ord(binarySubstr($this->connection->buf, ++$i, 1));
-                    $n = $b & 0x7F ;
-                    $len *= 0x80 ;
-                    $len += $n ;
-                } while ($b > 0x80) ;
+                    if ($buflen < $i + 1) {
+                        return;
+                    }
+                    $b = ord(binarySubstr($hdr, ++$i, 1));
+                    $n = $b & 0x7F;
+                    $len *= 0x80;
+                    $len += $n;
+                } while ($b > 0x80);
 
-                if ($this->connection->pool->maxAllowedPacket <= $len)
-                {
+                if ($this->conn->pool->maxAllowedPacket <= $len) {
                     // Too big packet
-                    $this->connection->finish() ;
-                    return FALSE ;
+                    $this->conn->finish();
+                    return;
                 }
 
-                if ($buflen < $len + 2)
-                {
+                if ($buflen < $len + $i + 1) {
                     // not enough data yet
-                    return FALSE ;
+                    return;
                 } 
                     
-                $decodedData = binarySubstr($this->connection->buf, 2, $len) ;
-                $this->connection->buf = binarySubstr($this->connection->buf, 2 + $len) ;
-                  
-                $this->connection->onFrame($decodedData, $frametype);
+                $this->conn->drain($i + 1);
+                $this->conn->onFrame($this->conn->read($len), $frametype);
             }
             else {
-            	if (($p = strpos($this->connection->buf, "\xFF")) !== FALSE) {
-                    if ($this->connection->pool->maxAllowedPacket <= $p - 1) {
+            	if (($p = $this->conn->search("\xFF")) !== false) {
+                    if ($this->conn->pool->maxAllowedPacket <= $p - 1) {
                         // Too big packet
-                        $this->connection->finish() ;
-                        return FALSE ;
+                        $this->conn->finish();
+                        return;
                     }
-                        
-                    $decodedData = binarySubstr($this->connection->buf, 1, $p - 1) ;                    
-                    $this->connection->buf = binarySubstr($this->connection->buf, $p + 1) ;                    
-                    $this->connection->onFrame($decodedData, $frametype);
-                    
+                    $this->conn->drain(1);
+                    $data = $this->conn->read($p);
+                    $this->conn->drain(1);
+                    $this->conn->onFrame($data, 'STRING');
                 }
                 else {
-                    if ($this->connection->pool->maxAllowedPacket <= strlen($this->connection->buf)) {
+                    if ($this->connection->pool->maxAllowedPacket < $buflen - 1) {
                         // Too big packet
-                        $this->connection->finish() ;
-                        return FALSE ;
+                        $this->connection->finish();
+                        return false;
                     }
                 }
             }

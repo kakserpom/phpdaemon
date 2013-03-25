@@ -409,6 +409,14 @@ abstract class IOStream {
 		return $this->bev->input->readLine($eol ?: $this->EOLS);
 	}
 
+	/* Drains buffer
+	 * @param integer Numbers of bytes to drain
+	 * @return boolean Success
+	 */
+	public function drain($n) {
+		return $this->bev->input->drain($n);
+	}
+
 	/* Drains buffer it matches the string
 	 * @param string Data
 	 * @return boolean|null Success
@@ -476,8 +484,7 @@ abstract class IOStream {
 	 * @return string|false
 	 */
 	public function look($n) {
-		$data = $this->read($n);
-		$this->bev->input->prepend($data);
+		$this->bev->input->copyout($data, $n);
 		return $data;
 	}
 
