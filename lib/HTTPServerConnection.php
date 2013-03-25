@@ -98,20 +98,17 @@ class HTTPServerConnection extends Connection {
 		$req->attrs->server = [];
 		$req->attrs->files = [];
 		$req->attrs->session = null;
-		$req->attrs->params_done = false;
-		$req->attrs->stdin_done = false;
-		$req->attrs->stdinbuf = '';
-		$req->attrs->stdinlen = 0;
+		$req->attrs->paramsDone = false;
+		$req->attrs->bodyDone = false;
+		$req->attrs->bodyBuf = new EventBuffer;
+		$req->attrs->bodyReaded = 0;
 		$req->attrs->chunked = false;
 		$req->upstream = $this;
 		return $req;
 	}
 
 	protected function httpProcessHeaders() {
-		if (!isset($this->req->attrs->server['HTTP_CONTENT_LENGTH'])) {
-			$this->req->attrs->server['HTTP_CONTENT_LENGTH'] = 0;
-		}
-		$this->req->attrs->params_done = true;
+		$this->req->attrs->paramsDone = true;
 		if (
 			isset($this->req->attrs->server['HTTP_CONNECTION']) && preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->req->attrs->server['HTTP_CONNECTION'])
 			&& isset($this->req->attrs->server['HTTP_UPGRADE']) && (strtolower($this->req->attrs->server['HTTP_UPGRADE']) === 'websocket')
@@ -205,13 +202,17 @@ class HTTPServerConnection extends Connection {
 			$this->state = self::STATE_CONTENT;
 		}
 		if ($this->state === self::STATE_CONTENT) {
-			$this->req->stdin($this->read($this->req->attrs->server['HTTP_CONTENT_LENGTH'] - $this->req->attrs->stdinlen));
-			if (!$this->req->attrs->stdin_done) {
+			$n = min($this->req->attrs->contentLength - $this->req->attrs->bodyReaded, $this->getInputLength());
+			if ($n > 0) { // moving data connection's buffer to body buffer
+				$this->req->attrs->bodyReaded += $this->moveInputToBuffer($this->req->attrs->bodyBuf, $n);
+			}
+			$this->req->onReadBody();
+			if (!$this->req->attrs->bodyDone) {
 				return;
 			}
 			$this->state = self::STATE_PROCESSING;
 			$this->freezeInput();
-			if ($this->req->attrs->stdin_done && $this->req->attrs->params_done) {
+			if ($this->req->attrs->bodyDone && $this->req->attrs->paramsDone) {
 				if ($this->pool->variablesOrder === null) {
 					$this->req->attrs->request = $this->req->attrs->get + $this->req->attrs->post + $this->req->attrs->cookie;
 				} else {

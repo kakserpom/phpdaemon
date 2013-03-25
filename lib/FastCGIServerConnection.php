@@ -32,13 +32,13 @@ class FastCGIServerConnection extends Connection {
 	const STATE_CONTENT = 1;
 	const STATE_PADDING = 2;
 	
-	protected static $roles = array(
+	protected static $roles = [
 		self::FCGI_RESPONDER         => 'FCGI_RESPONDER',
 		self::FCGI_AUTHORIZER        => 'FCGI_AUTHORIZER',
 		self::FCGI_FILTER            => 'FCGI_FILTER',
-	);
+	];
 
-	protected static $requestTypes = array(
+	protected static $requestTypes = [
 		self::FCGI_BEGIN_REQUEST     => 'FCGI_BEGIN_REQUEST',
 		self::FCGI_ABORT_REQUEST     => 'FCGI_ABORT_REQUEST',
 		self::FCGI_END_REQUEST       => 'FCGI_END_REQUEST',
@@ -50,7 +50,7 @@ class FastCGIServerConnection extends Connection {
 		self::FCGI_GET_VALUES        => 'FCGI_GET_VALUES',
 		self::FCGI_GET_VALUES_RESULT => 'FCGI_GET_VALUES_RESULT',
 		self::FCGI_UNKNOWN_TYPE      => 'FCGI_UNKNOWN_TYPE',
-	);
+	];
 	
 	protected $header;
 	protected $content;
@@ -128,21 +128,21 @@ class FastCGIServerConnection extends Connection {
 			$u = unpack('nrole/Cflags', $this->content);
 
 			$req = new stdClass();
-			$req->attrs = new stdClass();
-			$req->attrs->request     = array();
-			$req->attrs->get         = array();
-			$req->attrs->post        = array();
-			$req->attrs->cookie      = array();
-			$req->attrs->server      = array();
-			$req->attrs->files       = array();
+			$req->attrs = new stdClass;
+			$req->attrs->request     = [];
+			$req->attrs->get         = [];
+			$req->attrs->post        = [];
+			$req->attrs->cookie      = [];
+			$req->attrs->server      = [];
+			$req->attrs->files       = [];
 			$req->attrs->session     = null;
 			$req->attrs->role       = self::$roles[$u['role']];
 			$req->attrs->flags       = $u['flags'];
 			$req->attrs->id          = $this->header['reqid'];
-			$req->attrs->params_done = false;
-			$req->attrs->stdin_done  = false;
-			$req->attrs->stdinbuf    = '';
-			$req->attrs->stdinlen    = 0;
+			$req->attrs->paramsDone = false;
+			$req->attrs->bodyDone  = false;
+			$req->attrs->bodyBuf    = new EventBuffer;
+			$req->attrs->bodyReaded    = 0;
 			$req->attrs->chunked     = false;
 			$req->attrs->noHttpVer   = true;
 			$req->queueId = $rid;
@@ -167,7 +167,7 @@ class FastCGIServerConnection extends Connection {
 				if (!isset($req->attrs->server['REQUEST_TIME_FLOAT'])) {
 					$req->attrs->server['REQUEST_TIME_FLOAT'] = microtime(true);	
 				}
-				$req->attrs->params_done = true;
+				$req->attrs->paramsDone = true;
 
 				$req = Daemon::$appResolver->getRequest($req, $this);
 				$req->conn = $this;
@@ -222,15 +222,14 @@ class FastCGIServerConnection extends Connection {
 		}
 		elseif ($type === self::FCGI_STDIN) {
 			if ($this->content === '') {
-				$req->attrs->stdin_done = true;
+				$req->attrs->bodyDone = true;
 			}
-
-			$req->stdin($this->content);
+			$req->addToBodyBuf($this->content);
 		}
 
 		if (
-			$req->attrs->stdin_done 
-			&& $req->attrs->params_done
+			$req->attrs->bodyDone 
+			&& $req->attrs->paramsDone
 		) {
 			if ($this->pool->variablesOrder === null) {
 				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;

@@ -5,6 +5,11 @@
  */
 class MIME {
 	
+	/**
+	 * MIME types
+	 * @static
+	 * @var hash
+	 */
 	protected static $fileTypes = [
 		'txt'  => 'text/plain',
 		'htm'  => 'text/html',
@@ -62,8 +67,9 @@ class MIME {
 	
 	/**
 	 * Returns MIME type of the given file.	
-	 * @param string - Path
-	 * @return string - MIME type.
+	 * @static
+	 * @param string Path
+	 * @return string MIME type.
 	 */
 	public static function get($path) {
 		$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));

@@ -373,6 +373,23 @@ abstract class IOStream {
 		return $r;
 	}
 
+
+	public function moveInputToBuffer(EventBuffer $buf, $n) {
+		//return $this->bev->input->removeBuffer($buf, $n); // Commented due to the bug in pecl-event
+		if ($this->bev->input->length < $n) {
+			return false;
+		}
+		$r = 0;
+		while ($r < $n) {
+			$readed = $this->read($n);
+			if ($readed === false) {
+				return false;
+			}
+			$r += strlen($readed);
+			$buf->add($readed);
+		}
+		return $r;
+	}
 	/* Reads line from buffer
 	 * @param [integer EOLS_*]
 	 * @return string|null
@@ -494,6 +511,14 @@ abstract class IOStream {
 		} else {
 			return $this->read($n);
 		}
+	}
+
+	/*
+	 * Returns length of input buffer
+	 * @return integer
+	 */
+	public function getInputLength() {
+		return $this->bev->input->length;
 	}
 
 	/**

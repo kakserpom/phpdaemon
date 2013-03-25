@@ -13,7 +13,7 @@ class HTTPRequest extends Request {
 	 * Status codes
 	 * @var array
 	 */
-	protected static $codes = array (
+	protected static $codes = [
 		100 => 'Continue',
 		101 => 'Switching Protocols',
 		200 => 'OK',
@@ -55,7 +55,7 @@ class HTTPRequest extends Request {
 		503 => 'Service Unavailable',
 		504 => 'Gateway Timeout',
 		505 => 'HTTP Version Not Supported',
-	);
+	];
 
 	/**
 	 * Current response length
@@ -93,12 +93,6 @@ class HTTPRequest extends Request {
 	 * @var integer (self::MPSTATE_*)
 	 */
 	protected $mpartstate = 0;
-
-	/**
-	 * Current offset of multi--part processor
-	 * @var integer (self::MPSTATE_*)
-	 */
-	protected $mpartoffset = 0;
 
 	/**
 	 * Content dispostion of current Part
@@ -174,8 +168,8 @@ class HTTPRequest extends Request {
 		if ($req === null) {
 			$req = new \stdClass;
 			$req->attrs = new \stdClass;
-			$req->attrs->stdin_done = true;
-			$req->attrs->params_done = true;
+			$req->attrs->bodyDone = true;
+			$req->attrs->paramsDone = true;
 			$req->attrs->chunked = false;
 		}
 
@@ -237,7 +231,7 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	protected function checkIfReady() {
-		if (!$this->attrs->params_done || !$this->attrs->stdin_done) {
+		if (!$this->attrs->paramsDone || !$this->attrs->bodyDone) {
 			return false;
 		}
 		if (isset($this->appInstance->passphrase)) {
@@ -263,6 +257,11 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	protected function parseParams() {
+		if (!isset($this->attrs->server['HTTP_CONTENT_LENGTH'])) {
+			$this->attrs->contentLength = 0;
+		} else {
+			$this->attrs->contentLength = (int) $this->attrs->server['HTTP_CONTENT_LENGTH'];
+		}
 		if (
 			isset($this->attrs->server['CONTENT_TYPE'])
 			&& !isset($this->attrs->server['HTTP_CONTENT_TYPE'])
@@ -332,8 +331,8 @@ class HTTPRequest extends Request {
 			isset($this->attrs->server['REQUEST_METHOD'])
 			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
 		) {
-			if (isset($this->contype['application/x-www-form-urlencoded'])) {
-				self::parse_str($this->attrs->stdinbuf, $this->attrs->post);
+			if (isset($this->contype['application/x-www-form-urlencoded']) && $this->attrs->bodyBuf->remove($data, $this->attrs->bodyBuf->length) > -2) {
+				self::parse_str($data, $this->attrs->post);
 			}
 
 			if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] === 'nginx') {
@@ -393,20 +392,26 @@ class HTTPRequest extends Request {
 	 * @param string Piece of request body
 	 * @return void
 	 */
-	public function stdin($c) {
-		if ($c !== '') {
-			$this->attrs->stdinbuf .= $c;
-			$this->attrs->stdinlen += strlen($c);
-		}
-		if (
-			!isset($this->attrs->server['HTTP_CONTENT_LENGTH'])
-			|| ($this->attrs->server['HTTP_CONTENT_LENGTH'] <= $this->attrs->stdinlen)
-		) {
-			$this->attrs->stdin_done = true;
+	public function onReadBody() {
+		if ($this->attrs->contentLength <= $this->attrs->bodyReaded) {
+			$this->attrs->bodyDone = true;
 			$this->postPrepare();
 		}
-		$this->parseStdin();
+		$this->parseBody();
 		$this->checkIfReady();
+	}
+
+	/**
+	 * Add string to body buffer
+	 * @param string Piece of request body
+	 * @param [boolean true Final call is THIS SEQUENCE of calls (not mandatory final in request)?
+	 * @return void
+	 */
+	public function addToBodyBuf($chunk, $final = true) {
+		$this->attrs->bodyBuf->add($chunk);
+		if ($final) {
+			$this->onReadBody();
+		}
 	}
 
 	/**
@@ -596,7 +601,7 @@ class HTTPRequest extends Request {
 	/**
 	 * Checks if headers have been sent
 	 * @var boolean
-	 */
+	 *
 	 * @return boolean Success
 	 */
 	public function headers_sent(&$file, &$line) {
@@ -760,25 +765,8 @@ class HTTPRequest extends Request {
 			}
 			$this->upstream->unfreezeInput();
 			$this->frozenInput = false;
-			$this->stdin('');
+			$this->onReadBody();
 		});
-	}
-
-	/**
-	 * Alias of onUploadFileStart. To be removed in 1.0.
-	 * @return void
-	 */
-	protected function startUploadFile() {
-		$this->onUploadFileStart();
-	}
-
-	/**
-	 * Alias of onUploadFileChunk. To be removed in 1.0.
-	 * @return void
-	 */
-	protected function writeUploadChunk() {
-		$this->onUploadFileChunk();
-
 	}
 
 	/**
@@ -792,23 +780,40 @@ class HTTPRequest extends Request {
 			// just drop the chunk
 			return;
 		}
-		$this->upstream->freezeInput();
-		$this->frozenInput = true;
+		$this->freezeInput();
 		$this->mpartcurrent['fp']->write($chunk, function ($fp, $result) use ($last) {
 			if ($last) {
 				unset($this->mpartcurrent['fp']);
 			}
-			$this->upstream->unfreezeInput();
-			$this->frozenInput = false;
-			$this->stdin('');
+			$this->unfreezeInput();
 		});
 	}
+
+	/**
+	 * Freeze input
+	 * @return void
+	 */
+	protected function freezeInput() {
+		$this->upstream->freezeInput();
+		$this->frozenInput = true;
+	}
+
+	/**
+	 * Unfreeze input
+	 * @return void
+	 */
+	protected function unfreezeInput() {
+		$this->upstream->unfreezeInput();
+		$this->frozenInput = false;
+		$this->onReadBody();
+	}
+
 
 	/**
 	 * Parse request body
 	 * @return void
 	 */
-	public function parseStdin() {
+	public function parseBody() {
 		if (!isset($this->contype['multipart/form-data'])) {
 			return;
 		}
@@ -816,100 +821,117 @@ class HTTPRequest extends Request {
 		if ($this->frozenInput) {
 			return;
 		}
+		$buf = $this->attrs->bodyBuf;
 		if ($this->mpartstate === self::MPSTATE_SEEKBOUNDARY) {
 			// seek to the nearest boundary
-			if (($p = strpos($this->attrs->stdinbuf, $ndl = '--' . $this->boundary . "\r\n", $this->mpartoffset)) !== false) {
-				// we have found the nearest boundary at position $p
-				$this->mpartoffset = $p + strlen($ndl);
-				$this->mpartstate = self::MPSTATE_HEADERS;
-			} else {
+			if (($p = $buf->search('--' . $this->boundary . "\r\n")) === false) {
 				return;
 			}
+			// we have found the nearest boundary at position $p
+			if ($p > 0) {
+				$buf->remove($extra, $p);
+				$this->log('parseBody(): SEEKBOUNDARY: got unexpected data before boundary (length = ' . $p . '): '.Debug::exportBytes($extra));
+			}
+			$buf->drain(strlen($this->boundary) + 4); // drain 
+			$this->mpartstate = self::MPSTATE_HEADERS;
 		}
 		if ($this->mpartstate === self::MPSTATE_HEADERS) {
 			// parse the part's headers
 			$this->mpartcondisp = false;
-			if (($p = strpos($this->attrs->stdinbuf, "\r\n\r\n", $this->mpartoffset)) !== false) {
-				// we got all of the headers
-				$h = explode("\r\n", binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset));
-				$this->mpartoffset = $p + 4;
-				$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-				$this->mpartoffset = 0;
-				for ($i = 0, $s = sizeof($h); $i < $s; ++$i) {
-					$e = explode(':', $h[$i], 2);
-					$e[0] = strtr(strtoupper($e[0]), HTTPRequest::$htr);
-
-					if (isset($e[1])) {
-						$e[1] = ltrim($e[1]);
-					}
-					if (
-						($e[0] == 'CONTENT_DISPOSITION')
-						&& isset($e[1])
-					) {
-						self::parse_str($e[1], $this->mpartcondisp, true);
-						if (!isset($this->mpartcondisp['form-data'])) {
-							break;
-						}
-
-						if (!isset($this->mpartcondisp['name'])) {
-							break;
-						}
-						$this->mpartcondisp['name'] = trim($this->mpartcondisp['name'], '"');
-						$name = $this->mpartcondisp['name'];
-						if (isset($this->mpartcondisp['filename'])) {
-							$this->mpartcondisp['filename'] = trim($this->mpartcondisp['filename'], '"');
-							if (!ini_get('file_uploads')) {
-								break;
-							}
-							$this->attrs->files[$name] = array(
-								'name'     => $this->mpartcondisp['filename'],
-								'type'     => '',
-								'tmp_name' => null,
-								'fp'	   => null,
-								'error'    => UPLOAD_ERR_OK,
-								'size'     => 0,
-							);
-							$this->mpartcurrent = &$this->attrs->files[$name];
-							$this->onUploadFileStart();
-							$this->mpartstate = self::MPSTATE_UPLOAD;
-						} else {
-							$this->mpartcurrent = &$this->attrs->post[$name];
-							$this->mpartcurrent = '';
-						}
-					}
-					elseif (
-						($e[0] == 'CONTENT_TYPE')
-						&& isset($e[1])
-					) {
-						if (
-							isset($this->mpartcondisp['name'])
-							&& isset($this->mpartcondisp['filename'])
-						) {
-							$this->mpartcurrent['type'] = $e[1];
-						}
-					}
-				}
-				if ($this->mpartstate === self::MPSTATE_HEADERS) {
-					$this->mpartstate = self::MPSTATE_BODY;
-				}
-
-				goto start;
+			/* @TODO: The following code should be refactored, should be using readline() */
+			if (($p = $buf->search("\r\n\r\n")) === false) {
+				return;
 			}
+			// we got all of the headers
+			$buf->remove($data, $p);
+			$h = explode("\r\n", $data);
+			$buf->drain(4); // removing \r\n\r\n
+			for ($i = 0, $s = sizeof($h); $i < $s; ++$i) {
+				$e = explode(':', $h[$i], 2);
+				$e[0] = strtr(strtoupper($e[0]), HTTPRequest::$htr);
+				if (isset($e[1])) {
+					$e[1] = ltrim($e[1]);
+				}
+				if (($e[0] == 'CONTENT_DISPOSITION') && isset($e[1])) {
+					self::parse_str($e[1], $this->mpartcondisp, true);
+					if (!isset($this->mpartcondisp['form-data'])) {
+						break;
+					}
+					if (!isset($this->mpartcondisp['name'])) {
+						break;
+					}
+					$this->mpartcondisp['name'] = trim($this->mpartcondisp['name'], '"');
+					$name = $this->mpartcondisp['name'];
+					if (isset($this->mpartcondisp['filename'])) {
+						$this->mpartcondisp['filename'] = trim($this->mpartcondisp['filename'], '"');
+						if (!ini_get('file_uploads')) {
+							break;
+						}
+						$this->attrs->files[$name] = [
+							'name'     => $this->mpartcondisp['filename'],
+							'type'     => '',
+							'tmp_name' => null,
+							'fp'	   => null,
+							'error'    => UPLOAD_ERR_OK,
+							'size'     => 0,
+						];
+						$this->mpartcurrent = &$this->attrs->files[$name];
+						$this->onUploadFileStart();
+						$this->mpartstate = self::MPSTATE_UPLOAD;
+					} else {
+						$this->mpartcurrent = &$this->attrs->post[$name];
+						$this->mpartcurrent = '';
+					}
+				}
+				elseif (($e[0] == 'CONTENT_TYPE') && isset($e[1])) {
+					if (isset($this->mpartcondisp['name']) && isset($this->mpartcondisp['filename'])) {
+						$this->mpartcurrent['type'] = $e[1];
+					}
+				}
+			}
+			if ($this->mpartstate === self::MPSTATE_HEADERS) {
+				$this->mpartstate = self::MPSTATE_BODY;
+			}
+			goto start;
 		}
-		if (
-			($this->mpartstate === self::MPSTATE_BODY)
-			|| ($this->mpartstate === self::MPSTATE_UPLOAD)
-		) {
+		if (($this->mpartstate === self::MPSTATE_BODY) || ($this->mpartstate === self::MPSTATE_UPLOAD)) {
 			 // process the body
-			if (
-				(($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "\r\n", $this->mpartoffset)) !== false)
-				|| (($p = strpos($this->attrs->stdinbuf, $ndl = "\r\n--" . $this->boundary . "--\r\n", $this->mpartoffset)) !== false)
-			) { // we have the whole Part in buffer
-				$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
-				$this->mpartoffset = $p;
-
-				$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-				$this->mpartoffset = 0;
+			$chunkEnd1 = $buf->search("\r\n--" . $this->boundary . "\r\n");
+			$chunkEnd2 = $buf->search("\r\n--" . $this->boundary . "--\r\n");
+			if ($chunkEnd1 === false && $chunkEnd2 === false) {
+				/*  we have only piece of Part in buffer */ 
+				$l = $buf->length - strlen($this->boundary) - 8;
+				if ($l <= 0) {
+					return;
+				}
+				$buf->remove($chunk, $l);
+				if (($this->mpartstate === self::MPSTATE_BODY) && isset($this->mpartcondisp['name'])) {
+					$this->mpartcurrent .= $chunk;
+				}
+				elseif (($this->mpartstate === self::MPSTATE_UPLOAD) && isset($this->mpartcondisp['filename'])) {
+					if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
+						return; // fd is not ready yet, interrupt
+					}
+					$this->mpartcurrent['size'] += $l;
+						if ($this->upstream->pool->config->uploadmaxsize->value < $this->mpartcurrent['size']) {
+						$this->mpartcurrent['error'] = UPLOAD_ERR_INI_SIZE;
+					}
+					if ($this->maxFileSize && ($this->maxFileSize < $this->mpartcurrent['size'])) {
+						$this->mpartcurrent['error'] = UPLOAD_ERR_FORM_SIZE;
+					}
+					$this->onUploadFileChunk($chunk);
+				}
+			}
+			else {
+				if ($chunkEnd1 === false) {
+					$p = $chunkEnd2;
+					$endOfMsg = true;
+				} else {
+					$p = $chunkEnd1;
+					$endOfMsg = false;
+				}
+				/* we have entire Part in buffer */
+				$buf->remove($chunk, $p);
 				if (
 					($this->mpartstate === self::MPSTATE_BODY)
 					&& isset($this->mpartcondisp['name'])
@@ -926,51 +948,16 @@ class HTTPRequest extends Request {
 					if (!isset($this->mpartcurrent['fp'])) {
 						return; // fd is not ready yet, interrupt
 					}
+					$this->mpartcurrent['size'] += $p;
 					$this->onUploadFileChunk($chunk, true);
-					$this->mpartcurrent['size'] += strlen($chunk);
 				}
 
-				if ($ndl === "\r\n--" . $this->boundary . "--\r\n") { // end of whole message
-					$this->mpartoffset += strlen($ndl);
+				if ($endOfMsg) { // end of whole message
 					$this->mpartstate = self::MPSTATE_SEEKBOUNDARY;
-					$this->stdin_done = true;
+					$this->bodyDone = true;
 				} else {
 					$this->mpartstate = self::MPSTATE_HEADERS; // let's read the next part
 					goto start;
-				}
-			} else { // we have only piece of Part in buffer
-				$p = strlen($this->attrs->stdinbuf) - strlen($ndl);
-				if ($p > 0) {
-					$chunk = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset, $p - $this->mpartoffset);
-					if (
-						($this->mpartstate === self::MPSTATE_BODY)
-						&& isset($this->mpartcondisp['name'])
-					) {
-						$this->mpartcurrent .= $chunk;
-					}
-					elseif (
-						($this->mpartstate === self::MPSTATE_UPLOAD)
-						&& isset($this->mpartcondisp['filename'])
-					) {
-						if (!isset($this->attrs->files[$this->mpartcondisp['name']]['fp'])) {
-							return; // fd is not ready yet, interrupt
-						}
-						$this->mpartcurrent['size'] += $p - $this->mpartoffset;
-
-						if ($this->upstream->pool->config->uploadmaxsize->value < $this->mpartcurrent['size']) {
-							$this->mpartcurrent['error'] = UPLOAD_ERR_INI_SIZE;
-						}
-
-						if ($this->maxFileSize && ($this->maxFileSize < $this->mpartcurrent['size'])) {
-							$this->mpartcurrent['error'] = UPLOAD_ERR_FORM_SIZE;
-						}
-
-						$this->onUploadFileChunk($chunk);
-					}
-
-					$this->mpartoffset = $p;
-					$this->attrs->stdinbuf = binarySubstr($this->attrs->stdinbuf, $this->mpartoffset);
-					$this->mpartoffset = 0;
 				}
 			}
 		}
@@ -1026,7 +1013,7 @@ class HTTPRequest extends Request {
 		}
 		FS::readfileChunked($this->attrs->server['REQUEST_BODY_FILE'],
 			function ($file, $success) {
-				$this->attrs->stdin_done = true;
+				$this->attrs->bodyDone = true;
 				if ($this->sleepTime === 0) {
 					$this->wakeup();
 				}

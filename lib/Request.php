@@ -1,4 +1,3 @@
-
 <?php
  
 /**
@@ -80,6 +79,15 @@ class Request {
 	 * @var mixed
 	 */
 	protected $codepoint;
+
+	/**
+	 * Log
+	 * @param string Message
+	 * @return void
+	 */
+	public function log($msg) {
+		Daemon::log(get_class($this) . ': ' . $msg);
+	}
  
 	/**
 	 * Constructor
