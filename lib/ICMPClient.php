@@ -22,8 +22,24 @@ class ICMPClient extends NetworkClient {
 }
 
 class ICMPClientConnection extends NetworkClientConnection {
+	/**
+	 * Packet sequence
+	 * @var integer
+	 */
 	public $seq = 0;
+
+	/**
+	 * Enable bevConnect?
+	 * @var boolean
+	 */
 	public $bevConnectEnabled = false;
+
+	/**
+	 * Send echo-request
+	 * @param callable Callback
+	 * @param [string Data
+	 * @return void
+	 */
 	public function sendEcho($cb, $data = 'phpdaemon') {
 		++$this->seq;
 		if (strlen($data) % 2 !== 0) {
@@ -41,7 +57,13 @@ class ICMPClientConnection extends NetworkClientConnection {
 		$this->onResponse->push(array($cb, microtime(true)));
 	}
 		
-	public static function checksum($data) {
+	/**
+	 * Build checksum
+	 * @static
+	 * @param string Source
+	 * @return string Checksum
+	 */
+	protected static function checksum($data) {
 		$bit = unpack('n*', $data);
 		$sum = array_sum($bit);
 		if (strlen($data) % 2) {
@@ -59,7 +81,8 @@ class ICMPClientConnection extends NetworkClientConnection {
 	 * @param string New data
 	 * @return void
 	 */
-	public function stdin($packet) {
+	public function onRead() {
+		$packet = $this->read(1024);
 		$type = Binary::getByte($packet);
 		$code = Binary::getByte($packet);
 		$checksum = Binary::getStrWord($packet);
