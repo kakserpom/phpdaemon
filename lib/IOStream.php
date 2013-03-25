@@ -214,8 +214,16 @@ abstract class IOStream {
 	}
 
 	/**
+	 * Get EventBufferEvent
+	 * @return  EventBufferEvent
+	 */
+	public function getBev() {
+		return $this->bev;
+	}
+
+	/**
 	 * Get file descriptor
-	 * @return mixed File descriptr
+	 * @return mixed File descriptor
 	 */	
 	public function getFd() {
 		return $this->fd;

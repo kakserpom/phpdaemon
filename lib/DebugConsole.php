@@ -16,9 +16,8 @@ class DebugConsole extends NetworkServer {
 		return array(
 			// listen to
 			'listen'     => 'tcp://127.0.0.1',
-			// listen port
-			'listenport' => 8818,
-			
+			// port
+			'port' => 8818,
 			'passphrase' => 'secret',
 		);
 	}

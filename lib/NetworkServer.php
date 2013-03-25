@@ -20,9 +20,8 @@ class NetworkServer extends ConnectionPool {
 		}
 		$class = $this->connectionClass;
 		$conn = new $class(null, $this);
-		$conn->fd = $oldConn->fd;
 		$this->attach($conn);
-		$conn->setFd($olConn->fd, $oldConn->bev);
+		$conn->setFd($oldConn->getFd(), $oldConn->getBev());
 		$oldConn->unsetFd();
 		$oldConn->pool->detach($oldConn);
 		$conn->onInheritanceFromRequest($req);

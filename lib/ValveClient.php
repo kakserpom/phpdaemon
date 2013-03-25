@@ -158,31 +158,30 @@ class ValveClientConnection extends NetworkClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
 	 * @return void
 	 */
-	protected function stdin($buf) { // @TODO: refactoring to onRead
-		//Daemon::log('stdin: '.Debug::exportBytes($buf, true));
-		$this->buf .= $buf;
+	protected function onRead() {
 		start:
-		if (strlen($this->buf) < 5) {
+		if ($this->getInputLength() < 5) {
 			return;
 		}
-		$h = Binary::getDWord($this->buf);
+		/* @TODO: refactoring Binary::* to support direct buffer calls */
+		$pct = $this->read(4096);
+		$h = Binary::getDWord($pct);
 		if ($h !== 0xFFFFFFFF) {
 			$this->finish();
 			return;
 		}
-		$type = Binary::getChar($this->buf);
+		$type = Binary::getChar($pct);
 		if (($type === ValveClient::S2A_INFO) || ($type === ValveClient::S2A_INFO_SOURCE)) {
-			$result = self::parseInfo($this->buf, $type);
+			$result = self::parseInfo($pct, $type);
 		}
 		elseif ($type === ValveClient::S2A_PLAYER) {
-			$result = self::parsePlayers($this->buf);
+			$result = self::parsePlayers($pct);
 		}
 		elseif ($type === ValveClient::S2A_SERVERQUERY_GETCHALLENGE) {
-			$result = binarySubstr($this->buf, 0, 4);
-			$this->buf = binarySubstr($this->buf, 5);
+			$result = binarySubstr($pct, 0, 4);
+			$pct = binarySubstr($pct, 5);
 		}
 		elseif ($type === ValveClient::S2A_PONG) {
 			$result = true;

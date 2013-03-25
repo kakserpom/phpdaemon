@@ -78,7 +78,6 @@ class ICMPClientConnection extends NetworkClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
 	 * @return void
 	 */
 	public function onRead() {
