@@ -140,9 +140,9 @@ class FastCGIServerConnection extends Connection {
 			$req->attrs->flags       = $u['flags'];
 			$req->attrs->id          = $this->header['reqid'];
 			$req->attrs->paramsDone = false;
-			$req->attrs->bodyDone  = false;
-			$req->attrs->bodyBuf    = new EventBuffer;
-			$req->attrs->bodyReaded    = 0;
+			$req->attrs->inputDone  = false;
+			$req->attrs->input = new HTTPRequestInput;
+			$req->attrs->inputReaded    = 0;
 			$req->attrs->chunked     = false;
 			$req->attrs->noHttpVer   = true;
 			$req->queueId = $rid;
@@ -224,7 +224,7 @@ class FastCGIServerConnection extends Connection {
 			if ($this->content === '') {
 				$req->attrs->bodyDone = true;
 			}
-			$req->addToBodyBuf($this->content);
+			$req->appendToInput($this->content);
 		}
 
 		if (

@@ -38,16 +38,18 @@ class WebSocketProtocol {
 		$this->conn->write($this->encodeFrame($data, $type)) ;
 	}
 
-	public function onRead() {
-		$this->conn->buf = "" ;
-	}
+
+	/**
+     * Called when new data received
+     * @return void
+     */
+	public function onRead() {}
 	
     /**
      * Returns handshaked data for reply
 	 * @param string Received data (no use in this class)
      * @return string Handshaked data
      */
-
     public function getHandshakeReply($data) {
 		return false;
     }

@@ -56,6 +56,13 @@ class BoundTCPSocket extends BoundSocket {
 	 	if ($this->errorneous) {
 	 		return false;
 	 	}
+	 	if (!isset($this->port)) {
+	 		if (isset($this->defaultPort)) {
+	 			$this->port = $this->defaultPort;
+	 		} else {
+	 			Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): no port defined for \''.$this->uri['uri'].'\'');
+	 		}
+	 	}
 	 	if (($this->port < 1024) && Daemon::$config->user->value !== 'root') {
 	 		$this->listenerMode = false;
 	 	}

@@ -24,7 +24,7 @@ class FastCGIServer extends NetworkServer {
 			'expose'                  => 1,
 			'auto-read-body-file'     => 1,
 			'listen'                  =>  '127.0.0.1,unix:/tmp/phpdaemon.fcgi.sock',
-			'listen-port'             => 9000,
+			'port'      		      => 9000,
 			'allowed-clients'         => '127.0.0.1',
 			'send-file'               => 0,
 			'send-file-dir'           => '/dev/shm',

@@ -203,6 +203,21 @@ class Connection extends IOStream {
 		$this->addr = '[' . $this->host . ']:' . $this->port;
 	}
 
+
+	/**
+	 * Get socket name
+	 * @param &string Addr
+	 * @param &srting Port
+	 * @return void
+	 */
+	public function getSocketName(&$addr, &$port) {
+		if (func_num_args() === 0) {
+			EventUtil::getSocketName($this->bev->fd, $this->locAddr, $this->locPort);
+			return;
+		}
+		EventUtil::getSocketName($this->bev->fd, $addr, $port);
+	}
+
 	/**
 	 * Sets parent socket
 	 * @param BoundSocket

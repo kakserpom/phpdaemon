@@ -29,7 +29,8 @@ class IRCClientConnection extends NetworkClientConnection {
 	 */
 	public function onReady() {
 		if ($this->pool->identd) {
-			$this->pool->identd->registerPair($this->locPort, $this->port, ['UNIX', $this->user]);
+			$this->getSocketName();
+			$this->pool->identd->registerPair($this->locAddr, $this->locPort, ['UNIX', $this->user]);
 		}
 		list($this->nick, $this->realname) = explode('/', $this->path . '/John Doe');
 		$this->command('USER', $this->user, 0, '*', $this->realname);

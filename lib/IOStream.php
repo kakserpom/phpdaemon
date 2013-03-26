@@ -381,23 +381,6 @@ abstract class IOStream {
 		return $r;
 	}
 
-
-	public function moveInputToBuffer(EventBuffer $buf, $n) {
-		//return $this->bev->input->removeBuffer($buf, $n); // Commented due to the bug in pecl-event
-		if ($this->bev->input->length < $n) {
-			return false;
-		}
-		$r = 0;
-		while ($r < $n) {
-			$readed = $this->read($n);
-			if ($readed === false) {
-				return false;
-			}
-			$r += strlen($readed);
-			$buf->add($readed);
-		}
-		return $r;
-	}
 	/* Reads line from buffer
 	 * @param [integer EOLS_*]
 	 * @return string|null
@@ -599,6 +582,7 @@ abstract class IOStream {
 	 * @return void
 	 */
 	protected function onWrite() {}
+
 
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
@@ -845,7 +829,15 @@ abstract class IOStream {
 			}
 		}
 	}
-	
+	/**
+	 * Moves $n bytes from input buffer to arbitrary buffer
+	 * @param EventBuffer Destination nuffer
+	 * @param integer Max. number of bytes to move
+	 * @return integer 
+	 */
+	public function moveInputToBuffer(EventBuffer $buf, $n) {
+		return $buf->removeBuffer($this->bev->input, $n);
+	}
 	/**
 	 * Read data from the connection's buffer
 	 * @param integer Max. number of bytes to read

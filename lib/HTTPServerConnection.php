@@ -99,9 +99,9 @@ class HTTPServerConnection extends Connection {
 		$req->attrs->files = [];
 		$req->attrs->session = null;
 		$req->attrs->paramsDone = false;
-		$req->attrs->bodyDone = false;
-		$req->attrs->bodyBuf = new EventBuffer;
-		$req->attrs->bodyReaded = 0;
+		$req->attrs->inputDone = false;
+		$req->attrs->input = new HTTPRequestInput;
+		$req->attrs->inputReaded = 0;
 		$req->attrs->chunked = false;
 		$req->upstream = $this;
 		return $req;
@@ -202,17 +202,17 @@ class HTTPServerConnection extends Connection {
 			$this->state = self::STATE_CONTENT;
 		}
 		if ($this->state === self::STATE_CONTENT) {
-			$n = min($this->req->attrs->contentLength - $this->req->attrs->bodyReaded, $this->getInputLength());
+			$n = min($this->req->attrs->contentLength - $this->req->attrs->inputReaded, $this->getInputLength());
 			if ($n > 0) { // moving data connection's buffer to body buffer
-				$this->req->attrs->bodyReaded += $this->moveInputToBuffer($this->req->attrs->bodyBuf, $n);
+				$this->req->attrs->inputReaded += $this->moveInputToBuffer($this->req->attrs->input, $n);
 			}
-			$this->req->onReadBody();
-			if (!$this->req->attrs->bodyDone) {
+			$this->req->onReadInput();
+			if (!$this->req->attrs->inputDone) {
 				return;
 			}
 			$this->state = self::STATE_PROCESSING;
 			$this->freezeInput();
-			if ($this->req->attrs->bodyDone && $this->req->attrs->paramsDone) {
+			if ($this->req->attrs->inputDone && $this->req->attrs->paramsDone) {
 				if ($this->pool->variablesOrder === null) {
 					$this->req->attrs->request = $this->req->attrs->get + $this->req->attrs->post + $this->req->attrs->cookie;
 				} else {

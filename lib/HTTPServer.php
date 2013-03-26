@@ -24,31 +24,89 @@ class HTTPServer extends NetworkServer {
 	 */
 	protected function getConfigDefaults() {
 		return array(
-			// listen to
+			/**
+			 * Default servers
+			 * @var string|array
+			 */
 			'listen'     => 'tcp://0.0.0.0',
-			// default port
+			
+			/**
+			 * Default port
+			 * @var integer
+			 */
 			'port' => 80,
-			// log events
-			'log-events' => 0,
-			// log queue
-			'log-queue' => 0,
-			// @todo add description strings
+			
+			/**
+			 * Enable X-Sendfile?
+			 * @var boolean
+			 */
 			'send-file' => 0,
+
+			/**
+			 * Directory for X-Sendfile
+			 * @var string
+			 */
 			'send-file-dir' => '/dev/shm',
+
+			/**
+			 * Prefix for files used for X-Sendfile
+			 * @var string|array
+			 */
 			'send-file-prefix' => 'http-',
+
+			/**
+			 * Use X-Sendfile only if server['USE_SENDFILE'] provided.
+			 * @var boolean
+			 */
 			'send-file-onlybycommand' => 0,
-			// expose your soft by X-Powered-By string
+
+			/**
+			 * Expose PHPDaemon version by X-Powered-By Header
+			 * @var boolean
+			 */
 			'expose' => 1,
-			// @todo add description strings
+			
+			/**
+			 * Keepalive time
+			 * @var time
+			 */
 			'keepalive' => new Daemon_ConfigEntryTime('0s'),
+
+			/**
+			 * Chunk size
+			 * @var size
+			 */
 			'chunksize' => new Daemon_ConfigEntrySize('8k'),
+
+			/**
+			 * Use X-Sendfile only if server['USE_SENDFILE'] provided.
+			 * @var string|array
+			 */
 			'defaultcharset' => 'utf-8',
-			// disabled by default
-			'enable'     => 0,
+
+			/**
+			 * Related WebSocketServer instance name
+			 * @var string
+			 */
 			'wss-name' => '',
+
+			/**
+			 * Related FlashPolicyServer instance name
+			 * @var string
+			 */
 			'fps-name' => '',
+
+			/**
+			 * Maximum uploading file size.
+			 * @var size
+			 */
 			'upload-max-size' => new Daemon_ConfigEntrySize(ini_get('upload_max_filesize')),
-			//'responder' => default app
+
+			/**
+			 * Reponder application (if you do not want to use AppResolver)
+			 * @var string
+			 */
+			'responder' => null,
 		);
 	}
 	/**

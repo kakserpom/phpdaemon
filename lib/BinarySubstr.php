@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Binary substring function
  *

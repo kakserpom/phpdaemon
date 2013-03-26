@@ -390,7 +390,7 @@ class Request {
 	}
 	
 	/**
-	 * Called by call() to check if ready
+	 * Called to check if Request is ready
 	 * @return boolean Ready?
 	 */
 	protected function checkIfReady() {
