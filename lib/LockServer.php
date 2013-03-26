@@ -39,7 +39,7 @@ class LockServerConnection extends Connection {
 	 * Called when client is trying to acquire lock.	
 	 * @param string Name of job.
 	 * @param boolean Wait if already acquired?
-	 * @return string Result.
+	 * @return string Result
 	 */
 	public function acquireLock($name, $wait = FALSE) {
 		if (!isset($this->pool->lockState[$name])) {
@@ -60,6 +60,8 @@ class LockServerConnection extends Connection {
 
 			return 'FAILED';
 		}
+	
+		return null;
 	}
 
 	/**

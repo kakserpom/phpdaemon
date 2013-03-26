@@ -112,6 +112,7 @@ class XMPPRoster {
 		if ($this->isContact($jid)) {
 			return $this->roster_array[$jid]['contact'];
 		}
+		return null;
 	}
 
 	/**
@@ -121,7 +122,7 @@ class XMPPRoster {
 	 * @param string $jid
 	 */
 	public function isContact($jid) {
-		return (array_key_exists($jid, $this->roster_array));
+		return array_key_exists($jid, $this->roster_array);
 	}
 
 	/**
@@ -139,7 +140,7 @@ class XMPPRoster {
 			if (!$this->isContact($jid)) {
 				$this->_addContact($jid, 'not-in-roster');
 			}
-			$this->roster_array[$jid]['presence'][$resource] = array('priority' => $priority, 'show' => $show, 'status' => $status);
+			$this->roster_array[$jid]['presence'][$resource] = ['priority' => $priority, 'show' => $show, 'status' => $status];
 		} else { //Nuke unavailable resources to save memory
 			unset($this->roster_array[$jid]['resource'][$resource]);
 		}
@@ -150,20 +151,22 @@ class XMPPRoster {
 	 * Return best presence for jid
 	 *
 	 * @param string $jid
+	 * @param array
 	 */
 	public function getPresence($jid) {
 		$split = split("/", $jid);
 		$jid = $split[0];
-		if($this->isContact($jid)) {
-			$current = array('resource' => '', 'active' => '', 'priority' => -129, 'show' => '', 'status' => ''); //Priorities can only be -128 = 127
-			foreach($this->roster_array[$jid]['presence'] as $resource => $presence) {
-				//Highest available priority or just highest priority
-				if ($presence['priority'] > $current['priority'] and (($presence['show'] == "chat" or $presence['show'] == "available") or ($current['show'] != "chat" or $current['show'] != "available"))) {
-					$current = $presence;
-					$current['resource'] = $resource;
-				}
-			}
-			return $current;
+		if (!$this->isContact($jid)) {
+			return false;
 		}
+		$current = ['resource' => '', 'active' => '', 'priority' => -129, 'show' => '', 'status' => '']; //Priorities can only be -128 = 127
+		foreach ($this->roster_array[$jid]['presence'] as $resource => $presence) {
+			//Highest available priority or just highest priority
+			if ($presence['priority'] > $current['priority'] && (($presence['show'] == "chat" || $presence['show'] == "available") or ($current['show'] != "chat" or $current['show'] != "available"))) {
+				$current = $presence;
+				$current['resource'] = $resource;
+			}
+		}
+		return $current;
 	}
 }

@@ -148,7 +148,7 @@ class ValveClientConnection extends NetworkClientConnection {
 			}
 			$packet .= ValveClient::A2S_PLAYER . $data;
 		} else {
-			return false;
+			return null;
 		}
 		$this->onResponse->push($cb);
 		$this->setFree(false);

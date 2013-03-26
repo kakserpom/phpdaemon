@@ -258,7 +258,7 @@ class FastCGIServerConnection extends Connection {
 	 * Handles the output from downstream requests.
 	 * @param object Request.
 	 * @param string The output.
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function requestOut($req, $out) {
 		if ($this->sendChunk($req, $out) === false) {

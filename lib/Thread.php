@@ -223,7 +223,6 @@ abstract class Thread {
 			}
 		} else { // we are the master
 			$this->pid = $pid;
-			return $pid;
 		}
 	}
 
@@ -262,7 +261,7 @@ abstract class Thread {
 	/**
 	 * Delays the process execution for the given number of seconds
 	 * @param integer Sleep time in seconds
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function sleep($s) {
 		static $interval = 0.2;
@@ -270,13 +269,13 @@ abstract class Thread {
 
 		for ($i = 0; $i < $n; ++$i) {
 			if ($this->shutdown) {
-				return FALSE;
+				return false;
 			}
 
 			usleep($interval * 1000000);
 		}
 
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -326,7 +325,7 @@ abstract class Thread {
 	 */
 	public function stop($kill = false) {
 		$this->shutdown = true;
-		return posix_kill($this->pid, $kill ? SIGKILL : SIGTERM);
+		posix_kill($this->pid, $kill ? SIGKILL : SIGTERM);
 	}
 
 	/**
@@ -431,7 +430,7 @@ abstract class Thread {
 	 * Waits for signals, with a timeout
 	 * @param int Seconds
 	 * @param int Nanoseconds
-	 * @return void
+	 * @return boolean Success
 	 */
 	protected function sigwait($sec = 0, $nano = 0.3e9) {
 		$siginfo = null;

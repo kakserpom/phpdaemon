@@ -201,7 +201,7 @@ class DNSClient extends NetworkClient {
 			$this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool) {
 				$pool->get($hostname, $cb, $noncache);
 			});
-			return;
+			return null;
 		}
 		$this->getConnectionByKey($hostname, function($conn) use ($cb, $hostname) {
 			if (!$conn || !$conn->isConnected()) {
@@ -210,6 +210,7 @@ class DNSClient extends NetworkClient {
 			}
 			$conn->get($hostname, $cb);
 		});
+		return null;
 	}
 }
 class DNSClientConnection extends NetworkClientConnection {

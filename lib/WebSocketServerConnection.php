@@ -262,6 +262,12 @@ class WebSocketServerConnection extends Connection {
 		return true;
 	}
 
+
+	/**
+	 * Read headers line-by-line
+	 * @return boolean Success
+	 * @return void
+	 */
 	protected function httpReadHeaders() {
 		while (($l = $this->readLine()) !== null) {
 			if ($l === '') {
@@ -282,6 +288,7 @@ class WebSocketServerConnection extends Connection {
 				return false;
 			}
 		}
+		return null;
 	}
 
 	/**

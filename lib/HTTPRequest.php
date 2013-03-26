@@ -808,7 +808,7 @@ class HTTPRequest extends Request {
 	 *  Moves an uploaded file to a new location
 	 * @param string The filename of the uploaded file.
 	 * @param string The destination of the moved file.
-	 * @return boolean Success.
+	 * @return boolean Success
 	 */
 	public function moveUploadedFile($filename,$dest) {
 		if (!$this->isUploadedFile($filename)) {
@@ -819,7 +819,7 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Read request body from the file given in REQUEST_BODY_FILE parameter.
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function readBodyFile() {
 		if (!isset($this->attrs->server['REQUEST_BODY_FILE'])) {
@@ -836,6 +836,7 @@ class HTTPRequest extends Request {
 				$this->stdin($chunk);
 			}
 		);
+		return true;
 	}
 
 	/**

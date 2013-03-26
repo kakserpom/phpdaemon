@@ -100,7 +100,7 @@ class MongoClientAsyncCollection {
 	 * @return void
 	 */
 	public function update($cond, $data, $flags = 0, $cb = NULL, $key = '') {
-		return $this->pool->update($this->name, $cond, $data, $flags, $cb, $key);
+		$this->pool->update($this->name, $cond, $data, $flags, $cb, $key);
 	}
 
 	/**
@@ -112,7 +112,7 @@ class MongoClientAsyncCollection {
 	 * @return void
 	 */
 	public function updateMulti($cond, $data, $cb = NULL, $key = '') {
-		return $this->pool->updateMulti($this->name, $cond, $data, $cb, $key);
+		$this->pool->updateMulti($this->name, $cond, $data, $cb, $key);
 	}
 
 	/**
@@ -125,7 +125,7 @@ class MongoClientAsyncCollection {
 	 * @return void
 	 */
 	public function upsert($cond, $data, $multi = false, $cb = NULL, $key = '') {
-		return $this->pool->upsert($this->name, $cond, $data, $multi, $cb, $key);
+		$this->pool->upsert($this->name, $cond, $data, $multi, $cb, $key);
 	}
 
 	/**
@@ -136,7 +136,7 @@ class MongoClientAsyncCollection {
 	 * @return void
 	 */
 	public function remove($cond = array(), $cb = NULL, $key = '') {
-		return $this->pool->remove($this->name, $cond, $cb, $key);
+		$this->pool->remove($this->name, $cond, $cb, $key);
 	}
 
     /**

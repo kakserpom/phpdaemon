@@ -64,14 +64,6 @@ abstract class IOStream {
 	protected $writing = true;
 
 	/**
-	 * Reading?
-	 * @deprecated May be removed at any moment
-	 * @var boolean
-	 */	
-
-	protected $reading = false;
-
-	/**
 	 * Default low mark. Minimum number of bytes in buffer.
 	 * @var integer
 	 */
@@ -717,7 +709,7 @@ abstract class IOStream {
 			return;
 		}
 		try {
-			$this->reading = !$this->onRead();
+			$this->onRead();
 		} catch (Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
@@ -725,13 +717,12 @@ abstract class IOStream {
 
 	/**
 	 * Called when new data received
-	 * @return void
+	 * @return boolean
 	 */
 	protected function onRead() { // @todo: remove this default implementation in 1.0
 		while (($buf = $this->read($this->readPacketSize)) !== false) {
 			$this->stdin($buf);
 		}
-		return true;
 	}
 	
 	/**
@@ -853,7 +844,6 @@ abstract class IOStream {
 			|| ($read === null) 
 			|| ($read === false)
 		) {
-			$this->reading = false;
 			return false;
 		}
 		return $read;

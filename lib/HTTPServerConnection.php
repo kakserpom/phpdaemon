@@ -56,7 +56,7 @@ class HTTPServerConnection extends Connection {
 	 */
 	protected function httpReadFirstline() {
 		if (($l = $this->readline()) === null) {
-			return;
+			return null;
 		}
 		$e = explode(' ', $l);
 		$u = isset($e[1]) ? parse_url($e[1]) : false;
@@ -273,7 +273,7 @@ class HTTPServerConnection extends Connection {
 	 * Handles the output from downstream requests.
 	 * @param object Request.
 	 * @param string The output.
-	 * @return boolean Success.
+	 * @return boolean Success
 	 */
 	public function requestOut($req, $s) {
 		if ($this->write($s) === false) {
