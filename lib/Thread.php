@@ -252,7 +252,7 @@ abstract class Thread {
 	/**
 	 * Sends the signal to parent process
 	 * @param integer Signal's number
-	 * @return void
+	 * @return boolean Success
 	 */
 	protected function backsig($sig) {
 		return posix_kill(posix_getppid(), $sig);

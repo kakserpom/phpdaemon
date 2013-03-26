@@ -451,7 +451,7 @@ class FS {
 				$r = $r && chgrp($path, $gid);
 			}
 			call_user_func($cb, $path, $r);
-			return;
+			return $r;
 		}
 		return eio_chown($path, $uid, $gid, $pri, $cb, $path);
 	}
@@ -466,9 +466,9 @@ class FS {
 	public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!FS::$supported) {
 			call_user_func($cb, $path, file_get_contents($path));
-			return;
+			return true;
 		}
-		FS::open($path, 'r!', function ($file) use ($path, $cb, $pri, $path) {
+		return FS::open($path, 'r!', function ($file) use ($path, $cb, $pri, $path) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
@@ -559,63 +559,62 @@ class FS {
 	 * @return resource
 	 */	
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
-		if (self::$supported) {
-			$fdCacheKey = $path . "\x00" . $flags;
-			$noncache = strpos($flags, '!') !== false;
-			$flags = File::convertFlags($flags);
-			if (!$noncache && ($item = FS::$fdCache->get($fdCacheKey))) { // cache hit
-				$file = $item->getValue();
-				if ($file === null) { // operation in progress
-					$item->addListener($cb);
-				} else { // hit
-					call_user_func($cb, $file);
+		if (!FS::$supported) {
+			$mode = File::convertFlags($flags, true);
+			$fd = fopen($path, $mode);
+			if (!$fd) {
+				call_user_func($cb, false);
+				return false;
+			}
+			$file = new File($fd, $path);
+			call_user_func($cb, $file);
+			return true;
+		}
+		$fdCacheKey = $path . "\x00" . $flags;
+		$noncache = strpos($flags, '!') !== false;
+		$flags = File::convertFlags($flags);
+		if (!$noncache && ($item = FS::$fdCache->get($fdCacheKey))) { // cache hit
+			$file = $item->getValue();
+			if ($file === null) { // operation in progress
+				$item->addListener($cb);
+			} else { // hit
+				call_user_func($cb, $file);
+			}
+			return null;
+		} elseif (!$noncache) {
+			$item = FS::$fdCache->put($fdCacheKey, null);
+			$item->addListener($cb);
+		}
+		return eio_open($path, $flags, $mode, $pri, function ($path, $fd) use ($cb, $flags, $fdCacheKey, $noncache) {
+			if ($fd === -1) {
+				if ($noncache) {
+					call_user_func($cb, false);
+				} else {
+					FS::$fdCache->put($fdCacheKey, false, self::$badFDttl);
 				}
 				return;
-			} elseif (!$noncache) {
-				$item = FS::$fdCache->put($fdCacheKey, null);
-				$item->addListener($cb);
 			}
-			return eio_open($path, $flags, $mode, $pri, function ($path, $fd) use ($cb, $flags, $fdCacheKey, $noncache) {
-				if ($fd === -1) {
-					if ($noncache) {
-						call_user_func($cb, false);
-					} else {
-						FS::$fdCache->put($fdCacheKey, false, self::$badFDttl);
-					}
-					return;
-				}
-				$file = new File($fd);
-				$file->append = ($flags | EIO_O_APPEND) === $flags;
-				$file->path = $path;
-				if ($file->append) {
-					$file->stat(function($file, $stat) use ($cb, $noncache, $fdCacheKey) {
-						$file->pos = $stat['size'];
-						if (!$noncache) {
-							$file->fdCacheKey = $fdCacheKey;
-							FS::$fdCache->put($fdCacheKey, $file);
-						} else {
-							call_user_func($cb, $file);
-						}
-					});
-				} else {
+			$file = new File($fd, $path);
+			$file->append = ($flags | EIO_O_APPEND) === $flags;
+			if ($file->append) {
+				$file->stat(function($file, $stat) use ($cb, $noncache, $fdCacheKey) {
+					$file->pos = $stat['size'];
 					if (!$noncache) {
 						$file->fdCacheKey = $fdCacheKey;
 						FS::$fdCache->put($fdCacheKey, $file);
 					} else {
 						call_user_func($cb, $file);
 					}
+				});
+			} else {
+				if (!$noncache) {
+					$file->fdCacheKey = $fdCacheKey;
+					FS::$fdCache->put($fdCacheKey, $file);
+				} else {
+					call_user_func($cb, $file);
 				}
-			}, $path);
-		}
-		$mode = File::convertFlags($flags, true);
-		$fd = fopen($path, $mode);
-		if (!$fd) {
-			call_user_func($cb, false);
-			return;
-		}
-		$file = new File($fd);
-		$file->path = $path;
-		call_user_func($cb, $file);
+			}
+		}, $path);
 	}
 }
 if (!defined('EIO_PRI_DEFAULT')) {

@@ -163,7 +163,7 @@ class WebSocketProtocolVE extends WebSocketProtocol {
                     if ($this->connection->pool->maxAllowedPacket < $buflen - 1) {
                         // Too big packet
                         $this->connection->finish();
-                        return false;
+                        return;
                     }
                 }
             }

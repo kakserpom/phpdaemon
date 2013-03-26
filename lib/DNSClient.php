@@ -206,9 +206,9 @@ class DNSClient extends NetworkClient {
 		$this->getConnectionByKey($hostname, function($conn) use ($cb, $hostname) {
 			if (!$conn || !$conn->isConnected()) {
 				call_user_func($cb, false);
-				return false;
+			} else {
+				$conn->get($hostname, $cb);
 			}
-			$conn->get($hostname, $cb);
 		});
 		return null;
 	}

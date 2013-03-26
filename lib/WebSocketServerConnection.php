@@ -233,7 +233,7 @@ class WebSocketServerConnection extends Connection {
 	 */
 	protected function httpReadFirstline() {
 		if (($l = $this->readline()) === null) {
-			return;
+			return null;
 		}
 		$e = explode(' ', $l);
 		$u = isset($e[1]) ? parse_url($e[1]) : false;

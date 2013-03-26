@@ -297,7 +297,7 @@ abstract class IOStream {
 		}
 		if (!$this->bev) {
 			$this->finish();
-			return false;
+			return;
 		}
 		if (!$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
 			$this->finish();
@@ -517,14 +517,13 @@ abstract class IOStream {
 	 */
 	public function gracefulShutdown() {
 		$this->finish();
-
 		return true;
 	}
 
 	/**
 	 * Freeze input
 	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function freezeInput($at_front = false) {
 		if (isset($this->bev)) {
@@ -536,7 +535,7 @@ abstract class IOStream {
 	/**
 	 * Unfreeze input
 	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function unfreezeInput($at_front = false) {
 		if (isset($this->bev)) {
@@ -548,7 +547,7 @@ abstract class IOStream {
 	/**
 	 * Freeze output
 	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function freezeOutput($at_front = true) {
 		if (isset($this->bev)) {
@@ -560,7 +559,7 @@ abstract class IOStream {
 	/**
 	 * Unfreeze output
 	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function unfreezeOutput($at_front = true) {
 		if (isset($this->bev)) {
@@ -631,15 +630,12 @@ abstract class IOStream {
 			return;
 		}
 		$this->finished = true;
-		/// 
-	
-		// if (!Daemon::$process->eventBase->gotStop())
+		// if (!Daemon::$process->eventBase->gotStop()) /* @TODO: remove/uncomment */
 		Daemon::$process->eventBase->stop();
 		$this->onFinish();
 		if (!$this->writing) {
 			$this->close();
 		}
-		return true;
 	}
 
 	/**

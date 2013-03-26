@@ -315,10 +315,11 @@ class XMLStream_Object {
 	 */
 	public function sub($name, $attrs = null, $ns = null) {
 		//@TODO: attrs is ignored
-		foreach($this->subs as $sub) {
-			if($sub->name == $name and ($ns == null or $sub->ns == $ns)) {
+		foreach ($this->subs as $sub) {
+			if ($sub->name == $name and ($ns == null or $sub->ns == $ns)) {
 				return $sub;
 			}
 		}
+		return null;
 	}
 }

@@ -67,8 +67,9 @@ class File {
  	 * @param resource File descriptor
 	 * @return void
 	 */
-	public function __construct($fd) {
+	public function __construct($fd, $path) {
 		$this->fd = $fd;
+		$this->path = $path;
 		$this->onWriteOnce = new StackCallbacks;
 	}
 
@@ -550,7 +551,7 @@ class File {
 			}
 			return false;
 		}
-		$this->statRefresh(function ($file, $stat) use ($cb, $chunkcb, $pri) {
+		return $this->statRefresh(function ($file, $stat) use ($cb, $chunkcb, $pri) {
 			if (!$stat) {
 				call_user_func($cb, $file, false);
 				return;
