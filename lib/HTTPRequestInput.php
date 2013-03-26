@@ -27,12 +27,6 @@ class HTTPRequestInput extends EventBuffer {
 	protected $frozen = false;
 
 	/**
-	 * State of multi-part processor
-	 * @var integer (self::STATE_*)
-	 */
-	protected $state = self::STATE_SEEKBOUNDARY;
-
-	/**
 	 * Current Part
 	 * @var hash
 	 */
@@ -49,6 +43,13 @@ class HTTPRequestInput extends EventBuffer {
 	 * @var Request
 	 */
 	protected $req;
+
+	/**
+	 * State of multi-part processor
+	 * @var integer (self::STATE_*)
+	 */
+	protected $state = self::STATE_SEEKBOUNDARY;
+
 	const STATE_SEEKBOUNDARY = 0;
 	const STATE_HEADERS = 1;
 	const STATE_BODY = 2;
@@ -99,15 +100,6 @@ class HTTPRequestInput extends EventBuffer {
 	}
 
 	/**
-	 * Set boundary
-	 * @param string
-	 * @return void
-	 */
-	public function getHeader() {
-		return parent::readline(EventBuffer::EOL_CRLF);
-	}
-
-	/**
 	 * Parse request body
 	 * @return void
 	 */
@@ -137,7 +129,7 @@ class HTTPRequestInput extends EventBuffer {
 			$this->curPartDisp = false;
 			$i = 0;
 			do {
-				$l = $this->getHeader();
+				$l = $this->readline(EventBuffer::EOL_CRLF);
 				if ($l === null) {
 					return;
 				}

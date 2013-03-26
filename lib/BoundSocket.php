@@ -285,13 +285,16 @@ abstract class BoundSocket {
 		$class = $this->pool->connectionClass;
 		$conn = new $class(null, $this->pool);
 		$conn->setParentSocket($this);
-		if (sizeof($addrPort) === 2) { // @TODO: remove this hack
+
+		if (!$this instanceof BoundUNIXSocket) {
 			$conn->setPeername($addrPort[0], $addrPort[1]);
 			$conn->checkPeername();
 		}
+
 		if ($this->ctx) {
 			$conn->setContext($this->ctx, EventBufferEvent::SSL_ACCEPTING);
 		}
+
 		$conn->setFd($fd);
 	}
 
