@@ -30,8 +30,7 @@ class MongoClientAsyncCollection {
 	 */
 	public function find($cb, $p = array(), $key = '') {
 		$p['col'] = $this->name;
-
-		return $this->pool->find($p, $cb, $key);
+		$this->pool->find($p, $cb, $key);
 	}
 
 	/**
@@ -43,8 +42,7 @@ class MongoClientAsyncCollection {
  	*/
 	public function findOne($cb, $p = array(), $key = '') {
 		$p['col'] = $this->name;
-
-		return $this->pool->findOne($p, $cb, $key);
+		$this->pool->findOne($p, $cb, $key);
 	}
 
 	/**
@@ -56,7 +54,7 @@ class MongoClientAsyncCollection {
 	 */
 	public function count($cb, $p = array(), $key = '') {
 		$p['col'] = $this->name;
-		return $this->pool->findCount($p, $cb, $key);
+		$this->pool->findCount($p, $cb, $key);
 	}
 
 	/**
@@ -65,10 +63,9 @@ class MongoClientAsyncCollection {
 	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
 	 * @return void
 	 */
-	public function group($cb, $p = array(), $key = '') {
+	public function group($cb, $p = [], $key = '') {
 		$p['col'] = $this->name;
-	
-		return $this->pool->group($p, $cb, $key);
+		$this->pool->group($p, $cb, $key);
 	}
 
 	/**
@@ -76,7 +73,7 @@ class MongoClientAsyncCollection {
 	 * @param array Data
 	 * @param mixed Optional. Callback called when response received.
 	 * @param string Optional. Distribution key.
-	 * @return void
+	 * @return MongoId
 	 */
 	public function insert($doc, $cb = NULL, $key = '') {
 		return $this->pool->insert($this->name, $doc, $cb, $key);
@@ -87,7 +84,7 @@ class MongoClientAsyncCollection {
 	 * @param array Array of docs
 	 * @param mixed Optional. Callback called when response received.
 	 * @param string Optional. Distribution key.
-	 * @return void
+	 * @return array IDs
 	 */
 	public function insertMulti($docs, $cb = NULL, $key = '') {
 		return $this->pool->insertMulti($this->name, $docs, $cb, $key);

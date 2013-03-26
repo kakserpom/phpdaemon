@@ -11,7 +11,7 @@ class NetworkServer extends ConnectionPool {
 
 	/**
 	 * Called when a request to HTTP-server looks like another connection.
-	 * @return void
+	 * @return boolean Success
 	 */
 
 	public function inheritFromRequest($req, $oldConn) {
@@ -28,5 +28,6 @@ class NetworkServer extends ConnectionPool {
 		if ($req instanceof Request) {
 			$req->free();
 		}
+		return true;
 	}
 }

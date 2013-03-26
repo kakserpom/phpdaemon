@@ -28,8 +28,16 @@ class WebSocketServerConnection extends Connection {
 	public $server = [];
 	public $cookie = [];
 
+	/**
+	 * Contructor
+	 * @return void
+	 */
 	public function init() {}
 	
+	/**
+	 * Called when connection is inherited from HTTP request
+	 * @return void
+	 */
 	public function onInheritanceFromRequest($req) {
 		$this->state = self::STATE_HEADERS;
 		$this->addr = $req->attrs->server['REMOTE_ADDR'];
@@ -207,12 +215,22 @@ class WebSocketServerConnection extends Connection {
 		return true;
 	}
 	
+
+	/**
+	 * Send Bad request
+	 * @return void
+	 */
 	public function badRequest() {
 		$this->state = self::STATE_ROOT;
 		$this->write("400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor=\"white\"><center><h1>400 Bad Request</h1></center></body></html>");
 		$this->finish();
 	}
 
+	/**
+	 * Read first line of HTTP request
+	 * @return boolean Success
+	 * @return void
+	 */
 	protected function httpReadFirstline() {
 		if (($l = $this->readline()) === null) {
 			return;

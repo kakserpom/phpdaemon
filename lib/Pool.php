@@ -43,9 +43,10 @@ class Pool extends AppInstance {
 	 * @return mixed Result
 	 */
 	public function RPCall($method, $args) {
-		if (is_callable($f = array($this->pool, 'RPCall'))) {
-			return call_user_func($f, $method, $args);
+		if (!is_callable($f = [$this->pool, 'RPCall'])) {
+			return false;
 		}
+		return call_user_func($f, $method, $args);
 	}
 
 	/**
@@ -65,7 +66,7 @@ class Pool extends AppInstance {
 	public function onConfigUpdated() {
 		if ($this->pool) {
 			$this->pool->config = $this->config;
-			return $this->pool->onConfigUpdated();
+			$this->pool->onConfigUpdated();
 		}
 	}
 

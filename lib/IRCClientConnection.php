@@ -82,6 +82,7 @@ class IRCClientConnection extends NetworkClientConnection {
 		if ($this->pool->protologging && !in_array($cmd, ['PONG'])) {
 			Daemon::log('->->->-> '.$line);
 		}
+		return true;
 	}
 
 

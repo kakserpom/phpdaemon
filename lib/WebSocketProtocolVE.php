@@ -72,6 +72,12 @@ class WebSocketProtocolVE extends WebSocketProtocol {
         return pack('N', $result);
     }
 
+    /**
+     * Encode frame
+     * @param string Data
+     * @param mixed Type
+     * @return string Encoded frame
+     */
     public function encodeFrame($data, $type) {
         // Binary
         $type = $this->getFrameType($type);
@@ -106,6 +112,10 @@ class WebSocketProtocolVE extends WebSocketProtocol {
         }
     }
 
+    /**
+     * Called when new data received
+     * @return void
+     */
     public function onRead() {
 		while ($this->conn && (($buflen = strlen($this->conn->buf)) >= 2)) {
             $hdr = $this->conn->look(10);

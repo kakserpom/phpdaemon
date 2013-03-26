@@ -16,7 +16,7 @@ class PriorityQueueCallbacks extends SplPriorityQueue {
 	 * @return void
 	 */
 	public function enqueue($cb, $pri = 0) {
-		return parent::insert(CallbackWrapper::wrap($cb), $pri);
+		parent::insert(CallbackWrapper::wrap($cb), $pri);
 	}
 
 	/**

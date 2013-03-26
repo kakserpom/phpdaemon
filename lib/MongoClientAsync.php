@@ -31,13 +31,13 @@ class MongoClientAsync extends NetworkClient {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// default server list
 			'servers' => 'tcp://127.0.0.1',
 			// default port
 			'port'    => 27017,
 			'maxconnperserv' => 32,
-		);
+		];
 	}
 
 
@@ -763,7 +763,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Collection's name
 	 * @param array Data
 	 * @param string Optional. Distribution key.
-	 * @return object MongoId
+	 * @return MongoId
 	 */
 	public function insert($col, $doc = [], $cb = NULL, $params = [], $key = '') {
 		if (strpos($col, '.') === false) {
@@ -806,7 +806,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Collection's name
 	 * @param array Array of docs
 	 * @param string Optional. Distribution key.
-	 * @return array
+	 * @return array IDs
 	 */
 	public function insertMulti($col, $docs = [], $cb = NULL, $params = [], $key = '') {
 		if (strpos($col, '.') === false) {

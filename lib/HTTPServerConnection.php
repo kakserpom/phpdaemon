@@ -25,16 +25,35 @@ class HTTPServerConnection extends Connection {
 
 	protected $policyReqNotFound = false;
 
+	/**
+	 * Check if Sendfile is supported here.
+	 * @return boolean Succes
+	 */
 	public function checkSendfileCap() { // @DISCUSS
 		return true;
 	}
+
+	/**
+	 * Check if Chunked encoding is supported here.
+	 * @return boolean Succes
+	 */
 	public function checkChunkedEncCap() { // @DISCUSS
 		return true;
 	}
 	
+	/**
+	 * Constructor
+	 * @return void
+	 */
 	protected function init() {
 		$this->ctime = microtime(true);
 	}
+
+	/**
+	 * Read first line of HTTP request
+	 * @return boolean Success
+	 * @return void
+	 */
 	protected function httpReadFirstline() {
 		if (($l = $this->readline()) === null) {
 			return;
@@ -66,6 +85,11 @@ class HTTPServerConnection extends Connection {
 		return true;
 	}
 
+	/**
+	 * Read headers line-by-line
+	 * @return boolean Success
+	 * @return void
+	 */
 	protected function httpReadHeaders() {
 		while (($l = $this->readLine()) !== null) {
 			if ($l === '') {
@@ -86,8 +110,14 @@ class HTTPServerConnection extends Connection {
 				return false;
 			}
 		}
+		return null;
 	}
 
+
+	/**
+	 * Creates new Request object
+	 * @return object
+	 */
 	protected function newRequest() {
 		$req = new stdClass;
 		$req->attrs = new stdClass();
@@ -107,6 +137,11 @@ class HTTPServerConnection extends Connection {
 		return $req;
 	}
 
+
+	/**
+	 * Process HTTP headers
+	 * @return boolean Success
+	 */
 	protected function httpProcessHeaders() {
 		$this->req->attrs->paramsDone = true;
 		if (
@@ -273,6 +308,11 @@ class HTTPServerConnection extends Connection {
 		}
 		$this->freeRequest($req);
 	}
+
+	/**
+	 * Frees this request
+	 * @return void
+	 */
 	public function freeRequest($req) {
 		if ($this->req === null || $this->req !== $req) {
 			return;
@@ -281,6 +321,11 @@ class HTTPServerConnection extends Connection {
 		$this->state = self::STATE_ROOT;
 		$this->unfreezeInput();
 	}
+
+	/**
+	 * Send Bad request
+	 * @return void
+	 */
 	public function badRequest($req) {
 		$this->state = self::STATE_ROOT;
 		$this->write("400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor=\"white\"><center><h1>400 Bad Request</h1></center></body></html>");

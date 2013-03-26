@@ -30,12 +30,12 @@ class MongoClientAsyncCursor {
 	 * @return void
 	 */
 	public function getMore($number = 0) {
-		//if ($this->tailable && $this->await) {return true;}
+		/*if ($this->tailable && $this->await) {
+			return;
+		}*/
 		if (binarySubstr($this->id, 0, 1) === 'c') {
 			$this->conn->pool->getMore($this->col, binarySubstr($this->id, 1), $number, $this->conn);
 		}
-
-		return true;
 	}
 
 	/**
@@ -45,7 +45,6 @@ class MongoClientAsyncCursor {
 	public function destroy() {
 		$this->destroyed = true;
 		unset($this->conn->cursors[$this->id]);
-	
 		return true;
 	}
 

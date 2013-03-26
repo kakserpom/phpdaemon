@@ -63,11 +63,11 @@ class CallbackWrapper {
 	/**
 	 * Invokes the callback
 	 * @return mixed
-	 * @return null
+	 * @return void
 	 */
 	public function __invoke() {
 		if ($this->cb === null) {
-			return;
+			return null;
 		}
 		if ($this->context === null || Daemon::$context !== null) {
 			return call_user_func_array($this->cb, func_get_args());	

@@ -73,8 +73,9 @@ class MIME {
 	 */
 	public static function get($path) {
 		$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-		if (isset(self::$fileTypes[$ext])) {
-			return self::$fileTypes[$ext];
+		if (!isset(self::$fileTypes[$ext])) {
+			return false;
 		}
+		return self::$fileTypes[$ext];
 	}
 }
