@@ -155,8 +155,6 @@ class HTTPServerConnection extends Connection {
 		}
 
 		$this->req = Daemon::$appResolver->getRequest($this->req, $this, isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null);
-		$this->req = $this->req;
-			
 		if ($this->req instanceof stdClass) {
 			$this->endRequest($this->req, 0, 0);
 			return false;

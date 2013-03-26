@@ -25,17 +25,17 @@ class CGI extends AppInstance {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
-			'allow-override-binpath' => TRUE,
-			'allow-override-cwd' => TRUE,
-			'allow-override-chroot' => TRUE,
-			'allow-override-user' => TRUE,
-			'allow-override-group' => TRUE,
-			'cwd' => NULL,
-			'output-errors' => TRUE,
+			'allow-override-binpath' => true,
+			'allow-override-cwd' => true,
+			'allow-override-chroot' => true,
+			'allow-override-user' => true,
+			'allow-override-group' => true,
+			'cwd' => null,
+			'output-errors' => true,
 			'errlog-file' => __DIR__ . '/cgi-error.log',
-		);
+		];
 	}
 
 	/**
@@ -59,7 +59,7 @@ class CGI extends AppInstance {
 
 class CGIRequest extends HTTPRequest {
 
-	public $terminateOnAbort = FALSE;
+	public $terminateOnAbort = false;
 	public $proc;
 
 	/**
@@ -130,14 +130,12 @@ class CGIRequest extends HTTPRequest {
 	public function run() {
 		if (!$this->proc) {
 			$this->out('Couldn\'t execute CGI proccess.');
-			return 1;
+			$this->finish();
+			return;
 		}
-
 		if (!$this->proc->eof()) {
 			$this->sleep();
 		}
-
-		return 1;
 	}
 
 	/**
@@ -145,10 +143,7 @@ class CGIRequest extends HTTPRequest {
 	 * @return void
 	 */
 	public function onAbort() {
-		if (
-			$this->terminateOnAbort 
-			&& $this->stream
-		) {
+		if ($this->terminateOnAbort && $this->stream) {
 			$this->stream->close();
 		}
 	}
@@ -158,10 +153,7 @@ class CGIRequest extends HTTPRequest {
 	 * @return void
 	 */
 	public function onWrite($process) {
-		if (
-			$this->attrs->stdin_done 
-			&& ($this->proc->writeState === FALSE)
-		) {
+		if ($this->attrs->stdin_done && ($this->proc->writeState === false)) {
 			$this->proc->closeWrite();
 		}
 	}
@@ -183,10 +175,10 @@ class CGIRequest extends HTTPRequest {
 	 */
 	public function stdin($c) {
 		if ($c === '') {
-			return $this->onWrite($this->proc);
+			$this->onWrite($this->proc);
+		} else {
+			$this->proc->write($c);
 		}
-
-		$this->proc->write($c);
 	}
 	
 }

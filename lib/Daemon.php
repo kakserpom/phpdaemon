@@ -534,13 +534,13 @@ class Daemon {
 		$st = explode('-', $st);
 
 		if (
-			(is_int($fin)) 
+			(is_int ($fin)) 
 			|| (ctype_digit($fin))
 		) {
 			$fin = date('d-m-Y-H-i-s', $fin);
 		}
 
-		$fin = explode('-', $fin);
+		$fin = array_map('intval', explode('-', $fin));
 
 		if (($seconds = $fin[5] - $st[5]) < 0) {
 			$fin[4]--; 

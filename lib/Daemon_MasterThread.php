@@ -216,7 +216,8 @@ class Daemon_MasterThread extends Thread {
 			$thread = new Daemon_WorkerThread;
 			$this->workers->push($thread);
 			$this->callbacks->push(function($self) use ($thread) {
-				$pid = $thread->start();
+				$thread->start();
+				$pid = $thread->getPid();
 				if ($pid < 0) {
 					Daemon::$process->log('could not fork worker');
 				} elseif ($pid === 0) { // worker

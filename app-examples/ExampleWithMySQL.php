@@ -26,7 +26,6 @@ class ExampleWithMySQL extends AppInstance {
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		
 		return new ExampleWithMySQLRequest($this, $upstream, $req);
 	}
 	
@@ -54,7 +53,8 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 		
 			$req->appInstance->sql->getConnection(function($sql) use ($name, $job) {
 				if (!$sql->connected) {
-					return $job->setResult($name, null);
+					$job->setResult($name, null);
+					return null;
 				}
 				$sql->query('SELECT 123, "string"', function($sql, $success) use ($job, $name) {
 					
@@ -65,6 +65,7 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 					});				
 					$job->setResult($name, $sql->resultRows);
 				});
+				return null;
 			});
 		});
 		

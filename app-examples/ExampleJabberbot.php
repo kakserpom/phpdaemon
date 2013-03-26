@@ -70,7 +70,7 @@ class ExampleJabberbot extends AppInstance {
 	public function onConfigUpdated() {
 		if ($this->xmppclient) {
 			$this->xmppclient->config = $this->config;
-			return $this->xmppclient->onConfigUpdated();
+			$this->xmppclient->onConfigUpdated();
 		}
 	}
 

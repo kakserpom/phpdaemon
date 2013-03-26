@@ -163,7 +163,7 @@ class GameMonitor extends AppInstance {
 	public function onConfigUpdated() {
 		if ($this->client) {
 			$this->client->config = $this->config;
-			return $this->client->onConfigUpdated();
+			$this->client->onConfigUpdated();
 		}
 	}
 

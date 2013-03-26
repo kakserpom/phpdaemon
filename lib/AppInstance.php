@@ -235,12 +235,13 @@ class AppInstance {
 	 */
 	public function handleStatus($ret) {
 		if ($ret === self::EVENT_CONFIG_UPDATED) {
-			return  $this->onConfigUpdated();
+			$this->onConfigUpdated();
+			return true;
 		} elseif ($ret === self::EVENT_GRACEFUL_SHUTDOWN) {
 			return $this->onShutdown(true);
 		} elseif ($ret === self::EVENT_HARD_SHUTDOWN) {
 			return $this->onShutdown();
 		}
-		return true;
+		return false;
 	}
 }
