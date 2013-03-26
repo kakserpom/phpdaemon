@@ -394,7 +394,7 @@ class File {
 	 * @param integer Offset
 	 * @param integer Length
 	 * @param priority
-	 * @return resource
+	 * @return boolean Success
 	 */
 	public function sendfile($outfd, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
@@ -461,6 +461,7 @@ class File {
 				$handler($file);
 			}
 		}, $pri);
+		return true;
 	}
 
 	/**
