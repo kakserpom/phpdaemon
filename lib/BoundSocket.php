@@ -207,7 +207,7 @@ abstract class BoundSocket {
 		if (!EventUtil::sslRandPoll()) {
 	 		Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
 	 		$this->errorneous = true;
-	 		return false;
+	 		return;
 	 	}
 		if (!FS::checkFileReadable($this->certfile) || !FS::checkFileReadable($this->pkfile)) {
 			Daemon::log('Couldn\'t read ' . $this->certfile . ' or ' . $this->pkfile . ' file.  To generate a key' . PHP_EOL

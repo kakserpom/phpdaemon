@@ -235,81 +235,68 @@ class Daemon_WorkerThread extends Thread {
 	protected function overrideNativeFuncs() {
 		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
 
-
 			runkit_function_rename('header', 'header_native');
 
 			function header() {
-				if (
-					Daemon::$req
-					&& Daemon::$req instanceof HTTPRequest
-				) {
-					return call_user_func_array([Daemon::$req, 'header'], func_get_args());
+				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+					return false;
 				}
+				return call_user_func_array([Daemon::$req, 'header'], func_get_args());
 			}
 
 			runkit_function_rename('is_uploaded_file', 'is_uploaded_file_native');
 
 			function is_uploaded_file() {
-				if (
-					Daemon::$req
-					&& Daemon::$req instanceof HTTPRequest
-				) {
-					return call_user_func_array([Daemon::$req, 'isUploadedFile'], func_get_args());
+				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+					return false;
 				}
+				return call_user_func_array([Daemon::$req, 'isUploadedFile'], func_get_args());
 			}
 
 
 			runkit_function_rename('move_uploaded_file', 'move_uploaded_file_native');
 
 			function move_uploaded_file() {
-				if (
-					Daemon::$req
-					&& Daemon::$req instanceof HTTPRequest
-				) {
-					return call_user_func_array([Daemon::$req, 'moveUploadedFile'], func_get_args());
+				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+					return false;
 				}
+				return call_user_func_array([Daemon::$req, 'moveUploadedFile'], func_get_args());
 			}
-
 
 			runkit_function_rename('headers_sent', 'headers_sent_native');
 
 			function headers_sent(&$file, &$line) {
-				if (
-					Daemon::$req
-					&& Daemon::$req instanceof HTTPRequest
-				) {
-					return Daemon::$req->headers_sent($file, $line);
+				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+					return false;
 				}
+				return Daemon::$req->headers_sent($file, $line);
 			}
 
 			runkit_function_rename('headers_list', 'headers_list_native');
 
 			function headers_list() {
-				if (
-					Daemon::$req
-					&& Daemon::$req instanceof HTTPRequest
-				) {
-					return Daemon::$req->headers_list();
+				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+					return false;
 				}
+				return Daemon::$req->headers_list();
 			}
 
 			runkit_function_rename('setcookie', 'setcookie_native');
 
 			function setcookie() {
-				if (
-					Daemon::$req
-					&& Daemon::$req instanceof HTTPRequest
-				) {
-					return call_user_func_array([Daemon::$req, 'setcookie'], func_get_args());
+				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+					return false;
 				}
+				return call_user_func_array([Daemon::$req, 'setcookie'], func_get_args());
 			}
 
 			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
 
 			function register_shutdown_function($cb) {
-				if (Daemon::$req) {
-					return Daemon::$req->registerShutdownFunction($cb);
+				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+					return false;
 				}
+				return Daemon::$req->registerShutdownFunction($cb);
 			}
 
 			runkit_function_copy('create_function', 'create_function_native');
@@ -507,13 +494,13 @@ class Daemon_WorkerThread extends Thread {
 	 * @return boolean - Ready?
 	 */
 	protected function appInstancesReloadReady() {
-		$ready = TRUE;
+		$ready = true;
 
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $appInstance) {
 				if (!$appInstance->handleStatus(AppInstance::EVENT_GRACEFUL_SHUTDOWN)) {
 					$this->log(__METHOD__ . ': waiting for ' . $k);
-					$ready = FALSE;
+					$ready = false;
 				}
 			}
 		}
@@ -521,11 +508,11 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * @todo description?
-	 * @param boolean - Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
-	 * @return boolean - Ready?
+	 * Shutdown this worker
+	 * @param boolean Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
+	 * @return boolean Ready?
 	 */
-	protected function shutdown($hard = FALSE) {
+	protected function shutdown($hard = false) {
 		$error = error_get_last(); 
 		if ($error) {
 			if ($error['type'] === E_ERROR) {
@@ -597,11 +584,11 @@ class Daemon_WorkerThread extends Thread {
 	/**
 	 * Set wstate.
 	 * @param int Constant.
-	 * @return boolean - Success.
+	 * @return boolean Success.
 	 */
 	public function setState($int) {
 		if (Daemon::$compatMode) {
-			return;
+			return true;
 		}
 		if (!$this->id) {
 			return false;
@@ -616,8 +603,8 @@ class Daemon_WorkerThread extends Thread {
 		if ($this->reload) {
 			$int += 100;
 		}
-
-		return Daemon::$shm_wstate->write(chr($int), $this->id - 1);
+		Daemon::$shm_wstate->write(chr($int), $this->id - 1);
+		return true;
 	}
 
 	/**

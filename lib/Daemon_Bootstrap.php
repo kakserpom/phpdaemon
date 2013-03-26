@@ -532,13 +532,13 @@ class Daemon_Bootstrap {
 	/**
 	 * Parses command-line arguments.
 	 * @param array $_SERVER['argv']
-	 * @return void
+	 * @return array Arguments
 	 */
 	public static function getArgs($args) {
-		$out = array();
+		$out = [];
 		$last_arg = NULL;
 		
-		for($i = 1, $il = sizeof($args); $i < $il; ++$i) {
+		for ($i = 1, $il = sizeof($args); $i < $il; ++$i) {
 			if (preg_match('~^--(.+)~', $args[$i], $match)) {
 				$parts = explode('=', $match[1]);
 				$key = preg_replace('~[^a-z0-9]+~', '', $parts[0]);

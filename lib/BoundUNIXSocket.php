@@ -73,6 +73,7 @@ class BoundUNIXSocket extends BoundSocket {
 				return false;
 			}
 		}
+		return true;
 	}
 
 	/**
@@ -90,7 +91,7 @@ class BoundUNIXSocket extends BoundSocket {
 
 		if (pathinfo($this->path, PATHINFO_EXTENSION) !== 'sock') {
 			Daemon::$process->log('Unix-socket \'' . $this->path . '\' must has \'.sock\' extension.');
-			return;
+			return false;
 		}
 
 		if (file_exists($this->path)) {
@@ -115,7 +116,7 @@ class BoundUNIXSocket extends BoundSocket {
 			}
 			$errno = socket_last_error();
 			Daemon::$process->log(get_class($this) . ': Couldn\'t bind Unix-socket \'' . $this->path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
-			return;
+			return false;
 		}
 		socket_set_nonblock($sock);
 		$this->onBound();

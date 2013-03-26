@@ -247,8 +247,8 @@ class ConnectionPool extends ObjectStorage {
 		$this->bound->each('close');
 	}
 	/**
-	 * Returns instance object
-	 * @return void
+	 * Finishes ConnectionPool
+	 * @return boolean Success
 	 */
 
 	public function finish() {

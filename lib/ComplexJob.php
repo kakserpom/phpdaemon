@@ -175,7 +175,8 @@ class ComplexJob {
 	 */	
 	public function __invoke($name = null, $cb = null) {
 		if (func_num_args() === 0) {
-			return $this->execute();
+			$this->execute();
+			return;
 		}
 		$this->addJob($name, $cb);
 	}

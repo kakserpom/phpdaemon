@@ -159,7 +159,7 @@ class FS {
 	
 	/**
 	 * Prepare value of stat()
-	 * @return void
+	 * @return hash
 	 */
 	public static function statPrepare($stat) {
 		if ($stat === -1 || !$stat) {
@@ -167,7 +167,6 @@ class FS {
 		}
 		$stat['type'] = FS::$modeTypes[$stat['mode'] & 0170000];
 		return $stat;
-		
 	}
 
 	/**
@@ -180,7 +179,7 @@ class FS {
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, $path, FS::statPrepare(@stat($path)));
-			return;
+			return true;
 		}
 		return eio_stat($path, $pri, function($path, $stat) use ($cb) {call_user_func($cb, $path, FS::statPrepare($stat));}, $path);
 	}
@@ -198,7 +197,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, $path, $r);
 			}
-			return;
+			return $r;
 		}
 		return eio_unlink($path, $pri, $cb, $path);
 	}
@@ -218,7 +217,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, $path, $newpath, $r);
 			}
-			return;
+			return $r;
 		}
 		return eio_rename($path, $newpath, $pri, $cb, $path);
 	}
@@ -233,7 +232,7 @@ class FS {
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, $path, false);
-			return;
+			return false;
 		}
 		return eio_statvfs($path, $pri, $cb, $path);
 	}
@@ -248,7 +247,7 @@ class FS {
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, $path, FS::statPrepare(lstat($path)));
-			return;
+			return true;
 		}
 		return eio_lstat($path, $pri, function($path, $stat) use ($cb) {call_user_func($cb, $path, FS::statPrepare($stat));}, $path);
 	}
@@ -264,7 +263,7 @@ class FS {
 	public static function realpath($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, $path, realpath($path));
-			return;
+			return true;
 		}
 		return eio_realpath($path, $pri, $cb, $path);
 	}
@@ -282,7 +281,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, false);
 			}
-			return;
+			return false;
 		}
  		return eio_sync($pri, $cb);
 	}
@@ -300,7 +299,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, false);
 			}
-			return;
+			return false;
 		}
  		return eio_syncfs($pri, $cb);
 	}
@@ -321,7 +320,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, $r);
 			}
-			return;
+			return $r;
 		}
 		return eio_utime($path, $atime, $mtime, $pri, $cb, $path);
 	}
@@ -340,7 +339,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, $path, $r);
 			}
-			return;
+			return $r;
 		}
 		return eio_rmdir($path, $pri, $cb, $path);
 	}
@@ -360,7 +359,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, $path, $r);
 			}
-			return;
+			return $r;
 		}
 		return eio_mkdir($path, $mode, $pri, $cb, $path);
 	}
@@ -380,7 +379,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, $path, $r);
 			}
-			return;
+			return true;
 		}
 		return eio_readdir($path, $flags, $pri, $cb, $path);
 	}
@@ -399,7 +398,7 @@ class FS {
 			if ($cb) {
 				call_user_func($cb, $path, $r);
 			}
-			return;
+			return $r;
 		}
 		return eio_truncate($path, $offset, $pri, $cb, $path);
 	}
@@ -412,12 +411,12 @@ class FS {
 	 * @param integer Offset
 	 * @param integer Length
 	 * @param priority
-	 * @return resource
+	 * @return boolean Success
 	 */
 	public static function sendfile($outfd, $path, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
 			call_user_func($cb, $path, false);
-			return;
+			return false;
 		}
 		$noncache = true;
 		FS::open($path, 'r!', function ($file) use ($cb, $noncache, $startCb, $path, $pri, $outfd, $offset, $length) {
@@ -433,6 +432,7 @@ class FS {
 			}, $startCb, $offset, $length, $pri);
 
 		}, $pri);
+		return true;
 	}
 
 	/**

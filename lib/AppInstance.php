@@ -100,9 +100,10 @@ class AppInstance {
 	 * @return mixed Result
 	 */
 	public function RPCall($method, $args) {
-		if ($this->enableRPC && is_callable([$this, $method])) {
-			return call_user_func_array([$this, $method], $args);
+		if (!$this->enableRPC || !is_callable([$this, $method])) {
+			return;
 		}
+		return call_user_func_array([$this, $method], $args);
 	}
 	
 	public function getConfig() {
@@ -187,10 +188,9 @@ class AppInstance {
  
 	/**
 	 * Called when application instance is going to shutdown
-	 * @todo protected?
 	 * @return boolean Ready to shutdown?
 	 */
-	public function onShutdown($graceful = false) {
+	protected function onShutdown($graceful = false) {
 		return true;
 	}
  
@@ -217,15 +217,6 @@ class AppInstance {
 		Daemon::log(get_class($this) . ': ' . $message);
 	}
 	
-	/** 
-	 * Shutdown the application instance
-	 * @param boolean Graceful?
-	 * @return void
-	 */
-	public function shutdown($graceful = false) {
-		return $this->onShutdown($graceful);
-	}
- 
 	/**
 	 * Handle the request
 	 * @param object Parent request
@@ -246,9 +237,9 @@ class AppInstance {
 		if ($ret === self::EVENT_CONFIG_UPDATED) {
 			return  $this->onConfigUpdated();
 		} elseif ($ret === self::EVENT_GRACEFUL_SHUTDOWN) {
-			return $this->shutdown(true);
+			return $this->onShutdown(true);
 		} elseif ($ret === self::EVENT_HARD_SHUTDOWN) {
-			return $this->shutdown();
+			return $this->onShutdown();
 		}
 		return true;
 	}

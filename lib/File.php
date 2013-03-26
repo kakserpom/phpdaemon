@@ -121,9 +121,9 @@ class File {
 			if ($cb) {
 				call_user_func($cb, $this, $r);
 			}
-			return;
+			return $r;
 		}
-		eio_ftruncate($this->fd, $offset, $pri, $cb, $this);
+		return eio_ftruncate($this->fd, $offset, $pri, $cb, $this);
 	}
 
 	/**
@@ -141,17 +141,17 @@ class File {
 		}
 		if (!FS::$supported) {
 			call_user_func($cb, $this, FS::statPrepare(fstat($this->fd)));
-			return;
+			return false;
 		}
 		if ($this->stat) {
 			call_user_func($cb, $this, $this->stat);
-		} else {
-			eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
-				$stat = FS::statPrepare($stat);
-				$file->stat = $stat;
-				call_user_func($cb, $file, $stat);
-			}, $this);		
+			return true;
 		}
+		return eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
+			$stat = FS::statPrepare($stat);
+			$file->stat = $stat;
+			call_user_func($cb, $file, $stat);
+		}, $this);
 	}
 
 	/**
@@ -169,9 +169,9 @@ class File {
 		}
 		if (!FS::$supported) {
 			call_user_func($cb, $this, FS::statPrepare(fstat($this->fd)));
-			return;
+			return true;
 		}
-		eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
+		return eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
 			$stat = FS::statPrepare($stat);
 			$file->stat = $stat;
 			call_user_func($cb, $file, $stat);
@@ -195,16 +195,16 @@ class File {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
-			return;
+			return false;
 		}
 		if ($this->statvfs) {
 			call_user_func($cb, $this, $this->statvfs);
-		} else {
-			eio_fstatvfs($this->fd, $pri, function ($file, $stat) use ($cb) {
-				$file->statvfs = $stat;
-				call_user_func($cb, $file, $stat);
-			}, $this);		
+			return true;
 		}
+		return eio_fstatvfs($this->fd, $pri, function ($file, $stat) use ($cb) {
+			$file->statvfs = $stat;
+			call_user_func($cb, $file, $stat);
+		}, $this);
 	}
 
 	/**
@@ -340,7 +340,7 @@ class File {
 			}
 			return false;
 		}
-		eio_futime($this->fd, $atime, $mtime, $pri, $cb, $this);
+		return eio_futime($this->fd, $atime, $mtime, $pri, $cb, $this);
 	}
 	
 	/**
@@ -449,7 +449,7 @@ class File {
 			} else {
 				$handler($this);
 			}
-			return;
+			return true;
 		}
 		$this->statRefresh(function ($file, $stat) use ($startCb, $handler, &$length) {
 			$length = $stat['size'];
@@ -482,10 +482,10 @@ class File {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
-			return;
+			return false;
 		}
 		$this->offset += $length;
-		eio_readahead(
+		return eio_readahead(
 			$this->fd,
 			$length,
 			$offset !== null ? $offset : $this->pos,
@@ -493,7 +493,6 @@ class File {
 			$cb,
 			$this
 		);
-		return true;
 	}
 
 
@@ -501,7 +500,7 @@ class File {
 	 * Reads whole file
 	 * @param callable Callback
 	 * @param priority
-	 * @return resource
+	 * @return boolean Success
 	 */
 	public function readAll($cb, $pri = EIO_PRI_DEFAULT) {
 		if (!$this->fd) {
@@ -534,6 +533,7 @@ class File {
 			};
 			eio_read($file->fd, min($file->chunkSize, $size), 0, $pri, $handler, $file);
 		}, $pri);
+		return true;
 	}
 	
 	/**
@@ -597,7 +597,7 @@ class File {
 	public function seek($offset, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!EIO::$supported) {
 			fseek($this->fd, $offset);
-			return;
+			return false;
 		}
 		return eio_seek($this->fd, $offset, $pri, $cb, $this);
 	}
@@ -618,23 +618,23 @@ class File {
 
 	/**
 	 * Close the file
-	 * @return void
+	 * @return resource
 	 */
 	public function close() {
 		if ($this->closed) {
-			return;
+			return false;
 		}
 		$this->closed = true;
 		if ($this->fdCacheKey !== null) {
 			FS::$fdCache->invalidate($this->fdCacheKey);
 		}
 		if ($this->fd === null) {
-			return;
+			return false;
 		}
 
 		if (!FS::$supported) {
 			fclose($this->fd);
-			return;
+			return false;
 		}
 		$r = eio_close($this->fd, EIO_PRI_MAX);
 		$this->fd = null;

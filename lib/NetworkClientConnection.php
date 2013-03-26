@@ -33,12 +33,6 @@ class NetworkClientConnection extends Connection {
 	protected $onResponse;
 
 	/**
-	 * Alive?
-	 * @var boolean
-	 */
-	protected $alive = true; // @TODO: ???
-
-	/**
 	 * Constructor
 	 * @param mixed File descriptor
 	 * @param [ConnectionPool

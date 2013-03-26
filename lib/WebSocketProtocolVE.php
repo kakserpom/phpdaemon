@@ -5,7 +5,6 @@
  * @see    http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76
  * @description Deprecated websocket protocol (IETF drafts 'hixie-76' or 'hybi-00')
  */
-// @TODO: refactoring
 class WebSocketProtocolVE extends WebSocketProtocol {
     const STRING = 0x00;
     const BINARY = 0x80;

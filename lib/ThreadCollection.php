@@ -13,18 +13,13 @@ class ThreadCollection {
 	 * Array of threads
 	 * @var array
 	 */
-	public $threads = array();
+	public $threads = [];
 
 	/**
-	 * @todo Add a description
-	 */
-	public $waitstatus;
-
-	/**
-	 * @todo Add a description
+	 * Counter of spawned threads
 	 * @var int
 	 */
-	public $spawncounter = 0;
+	protected $spawncounter = 0;
 
 	/**
 	 * Pushes certain thread to the collection

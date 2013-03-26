@@ -399,14 +399,12 @@ class Request {
  
 	/**
 	 * Called when the request aborted
-	 * @todo protected?
 	 * @return void
 	 */
 	public function onAbort() { }
  
 	/**
 	 * Called when the request finished
-	 * @todo protected?
 	 * @return void
 	 */
 	public function onFinish() { }

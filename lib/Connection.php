@@ -426,7 +426,7 @@ class Connection extends IOStream {
 	 * Connects to URL
 	 * @param string URL
 	 * @param callable Callback
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function connect($url, $cb = null) {
 		$this->uri = Daemon_Config::parseCfgUri($url);
@@ -472,19 +472,19 @@ class Connection extends IOStream {
 		}
 
 		if ($this->scheme === 'unix') {
-			$this->connectUnix($u['path']);
+			return $this->connectUnix($u['path']);
 		}
-		elseif ($this->scheme === 'raw') {
-			$this->connectRaw($u['host']);
+		if ($this->scheme === 'raw') {
+			return $this->connectRaw($u['host']);
 		}
-		elseif ($this->scheme === 'udp') {
-			$this->connectUdp($this->host, $this->port);
+		if ($this->scheme === 'udp') {
+			return $this->connectUdp($this->host, $this->port);
 		}
-		elseif ($this->scheme === 'tcp') {
-			$this->connectTcp($this->host, $this->port);
-		} else {
-			Daemon::log(get_class($this).': connect(): unrecoginized scheme \''.$this->scheme.'\' (not unix/raw/udp/tcp) in URL: '.$url);
+		if ($this->scheme === 'tcp') {
+			return $this->connectTcp($this->host, $this->port);
 		}
+		Daemon::log(get_class($this).': connect(): unrecoginized scheme \''.$this->scheme.'\' (not unix/raw/udp/tcp) in URL: '.$url);
+		return false;
 	}
 
 	/* Establish UNIX socket connection
@@ -536,7 +536,7 @@ class Connection extends IOStream {
 				}
 				$this->connectRaw($real);
 			});
-			return;
+			return true;
 		}
 		$this->hostReal = $host;
 		if ($this->host === null) {
@@ -580,7 +580,7 @@ class Connection extends IOStream {
 				}
 				$this->connectUdp($real, $port);
 			});
-			return;
+			return true;
 		}
 		$this->hostReal = $host;
 		if ($this->host === null) {
@@ -634,7 +634,7 @@ class Connection extends IOStream {
 				}
 				$this->connectTcp($real, $port);
 			});
-			return;
+			return true;
 		}
 		$this->hostReal = $host;
 		if ($this->host === null) {

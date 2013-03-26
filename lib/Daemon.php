@@ -352,28 +352,18 @@ class Daemon {
 	public static function loadConfig($paths) {
 		$apaths = explode(';', $paths);
 		$found = false;
-
 		foreach($apaths as $path) {
 			if (is_file($p = realpath($path))) {
-				$found = true;
-
 				$ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));
-
-				if ($ext == 'conf') {
+				if ($ext === 'conf') {
 					return Daemon::$config->loadFile($p);
 				} else {
 					Daemon::log('Config file \'' . $p . '\' has unsupported file extension.');
-					return FALSE;
+					return false;
 				}
-
-				return true;
 			}
 		}
-
-		if (!$found) {
-			Daemon::log('Config file not found in \'' . $paths . '\'.');
-		}
-
+		Daemon::log('Config file not found in \'' . $paths . '\'.');
 		return false;
 	}
 

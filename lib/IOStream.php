@@ -411,7 +411,7 @@ abstract class IOStream {
 		$in = $this->bev->input;
 		$l = strlen($str);
 		$ll = $in->length;
-		// @TODO: add End to search()
+		// @TODO: add End to search(). Ruslan Osmanov could say smth
 		if ($ll < $l) {
 			return $in->search(substr($str, 0, $ll), 0) === 0 ? null : false;
 		}

@@ -192,6 +192,7 @@ class HTTPRequest extends Request {
 			$this->out($chunk);
 			return true;
 		});
+		return true;
 	}
 	
 	/**
@@ -391,39 +392,38 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Ensure that headers are sent
-	 * @return void
+	 * @return boolean Were already sent?
 	 */
 	public function ensureSentHeaders() {
-		if (!$this->headers_sent) {
-			if (isset($this->headers['STATUS'])) {
-				$h = (isset($this->attrs->noHttpVer) && ($this->attrs->noHttpVer) ? 'Status: ' : $this->attrs->server['SERVER_PROTOCOL']) . ' ' . $this->headers['STATUS'] . "\r\n";
-			} else {
-				$h = '';
-			}
-			if ($this->contentLength === null && $this->upstream->checkChunkedEncCap()) {
-				$this->attrs->chunked = true;
-			}
-			if ($this->attrs->chunked) {
-				$this->header('Transfer-Encoding: chunked');
-			}
-			if ($this->upstream instanceof HTTPServerConnection) {
-				$this->header('Connection: close');
-			}
-
-			foreach ($this->headers as $k => $line) {
-				if ($k !== 'STATUS') {
-					$h .= $line . "\r\n";
-				}
-			}
-
-			$h .= "\r\n";
-			$this->headers_sent_file = __FILE__;
-			$this->headers_sent_line = __LINE__;
-			$this->headers_sent = true;
-			$this->upstream->requestOut($this, $h);
-			return false;
+		if ($this->headers_sent) {
+			return true;
 		}
-		return true;
+		if (isset($this->headers['STATUS'])) {
+			$h = (isset($this->attrs->noHttpVer) && ($this->attrs->noHttpVer) ? 'Status: ' : $this->attrs->server['SERVER_PROTOCOL']) . ' ' . $this->headers['STATUS'] . "\r\n";
+		} else {
+			$h = '';
+		}
+		if ($this->contentLength === null && $this->upstream->checkChunkedEncCap()) {
+			$this->attrs->chunked = true;
+		}
+		if ($this->attrs->chunked) {
+			$this->header('Transfer-Encoding: chunked');
+		}
+		if ($this->upstream instanceof HTTPServerConnection) {
+			$this->header('Connection: close');
+		}
+
+		foreach ($this->headers as $k => $line) {
+			if ($k !== 'STATUS') {
+				$h .= $line . "\r\n";
+			}
+		}
+		$h .= "\r\n";
+		$this->headers_sent_file = __FILE__;
+		$this->headers_sent_line = __LINE__;
+		$this->headers_sent = true;
+		$this->upstream->requestOut($this, $h);
+		return false;
 	}
 	
 	/**
@@ -442,7 +442,7 @@ class HTTPRequest extends Request {
 			return false;
 		}
 		if (!isset($this->upstream)) {
-				return false;
+			return false;
 		}
 		
 		$l = strlen($s);
@@ -466,6 +466,7 @@ class HTTPRequest extends Request {
 
 				$o += $c;
 			}
+			return true;
 		} else {
 			if ($this->sendfp) {
 				$this->sendfp->write($s);
@@ -561,15 +562,13 @@ class HTTPRequest extends Request {
 	 * Send HTTP-status
 	 * @throws RequestHeadersAlreadySent
 	 * @param int Code
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function status($code = 200) {
 		if (!isset(self::$codes[$code])) {
 			return false;
 		}
-
 		$this->header($code . ' ' . self::$codes[$code]);
-
 		return true;
 	}
 
@@ -619,8 +618,8 @@ class HTTPRequest extends Request {
 	 * @param string Header. Example: 'Location: http://php.net/'
 	 * @param boolean Optional. Replace?
 	 * @param int Optional. HTTP response code.
-	 * @return void
 	 * @throws RequestHeadersAlreadySent
+	 * @return boolean Success
 	 */
 	public function header($s, $replace = true, $code = false) {
 		if ($code !== null) {
@@ -628,8 +627,7 @@ class HTTPRequest extends Request {
 		}
 
 		if ($this->headers_sent) {
-			throw new RequestHeadersAlreadySent();
-			return false;
+			throw new RequestHeadersAlreadySent;
 		}
 		$s = strtr($s, "\r\n", '  ');
 
@@ -662,10 +660,7 @@ class HTTPRequest extends Request {
 		if ($k === 'SET_COOKIE') {
 			$k .= '_'.++$this->cookieNum;
 		}
-		elseif (
-			!$replace
-			&& isset($this->headers[$k])
-		) {
+		elseif (!$replace && isset($this->headers[$k])) {
 			return false;
 		}
 

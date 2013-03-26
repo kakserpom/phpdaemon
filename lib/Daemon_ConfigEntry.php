@@ -51,15 +51,13 @@ class Daemon_ConfigEntry {
 
 	/**
 	 * Reset to default
-	 * @return void
+	 * @return boolean Success
 	 */
 	public function resetToDefault() {
 		if ($this->hasDefaultValue) {
 			$this->setHumanValue($this->defaultValue);
-
 			return true;
 		}
-
 		return false;
 	}
  

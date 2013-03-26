@@ -117,7 +117,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 */
 	public function sendPacket($packet) { 
 		//Daemon::log('Client --> Server: ' . Debug::exportBytes($packet) . "\n\n");
-		return $this->write($this->int2bytes(3, strlen($packet)) . chr($this->seq++) . $packet);;
+		return $this->write($this->int2bytes(3, strlen($packet)) . chr($this->seq++) . $packet);
 	}
 
 	/**

@@ -63,6 +63,7 @@ class CallbackWrapper {
 	/**
 	 * Invokes the callback
 	 * @return mixed
+	 * @return null
 	 */
 	public function __invoke() {
 		if ($this->cb === null) {
