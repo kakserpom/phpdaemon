@@ -71,7 +71,7 @@ class HTTPRequestInput extends EventBuffer {
 	 */
 	public function freeze($at_front = false) {
 		$this->frozen = true;
-		parent::freeze($at_front);
+		//parent::freeze($at_front);
 	}
 
 	/**
@@ -81,7 +81,7 @@ class HTTPRequestInput extends EventBuffer {
 	 */
 	public function unfreeze($at_front = false) {
 		$this->frozen = false;
-		parent::unfreeze($at_front);
+		//parent::unfreeze($at_front);
 	}
 
 	/**

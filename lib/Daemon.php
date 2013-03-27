@@ -410,6 +410,7 @@ class Daemon {
 			'preinit'  => 0,
 			'waitinit' => 0,
 			'init'     => 0,
+			'reloading' => 0,
 		);
 
 		Daemon::$shm_wstate->openAll();
@@ -425,6 +426,8 @@ class Daemon {
 						if ($code !== Daemon::WSTATE_SHUTDOWN) {
 							if (Daemon::$process instanceof Daemon_MasterThread) {
 								Daemon::$process->reloadWorker($offset + $i + 1);
+								++$stat['reloading'];
+								continue;
 							}
 						}
 					}

@@ -9,9 +9,9 @@
  */
 class Daemon_MasterThread extends Thread {
 
-	public $delayedSigReg = TRUE;
-	public $breakMainLoop = FALSE;
-	public $reload = FALSE;
+	public $delayedSigReg = true;
+	public $breakMainLoop = false;
+	public $reload = false;
 	public $connCounter = 0;
 	public $callbacks;
 	public $workers;
