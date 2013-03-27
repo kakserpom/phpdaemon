@@ -59,7 +59,7 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 	 * @return string Real property name
 	 */
 	public function getRealPropertyName($prop) {
-		return str_replace('-', '', strtolower($offset));
+		return str_replace('-', '', strtolower($prop));
 	}
 
 	/**

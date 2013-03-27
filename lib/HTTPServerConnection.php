@@ -333,8 +333,6 @@ class HTTPServerConnection extends Connection {
 		}
 	}
 
-
-
 	/**
 	 * Send Bad request
 	 * @return void
