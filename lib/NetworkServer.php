@@ -7,7 +7,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class NetworkServer extends ConnectionPool {
+abstract class NetworkServer extends ConnectionPool {
 
 	/**
 	 * Called when a request to HTTP-server looks like another connection.

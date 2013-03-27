@@ -54,6 +54,18 @@ class BoundUDPSocket extends BoundSocket {
 	}
 
 	/**
+	 * Send UDP packet
+	 * @param string Data
+	 * @param integer Flags
+	 * @param string Host
+	 * @param integer Port
+	 * @return mixed
+	 */
+	public function sendTo($data, $flags, $host, $port) {
+		return socket_sendto($this->fd, $data, strlen($data), $this->finished ? MSG_EOF : 0, $host, $port);
+	}
+
+	/**
 	 * Unassigns addr
 	 * @param string Address
 	 * @return void

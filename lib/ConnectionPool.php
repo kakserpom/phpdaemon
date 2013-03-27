@@ -7,7 +7,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class ConnectionPool extends ObjectStorage {
+abstract class ConnectionPool extends ObjectStorage {
 
 	/**
 	 * Allowed clients

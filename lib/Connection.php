@@ -328,7 +328,7 @@ class Connection extends IOStream {
 	 */
 	public function write($data) {
 		if ($this->dgram) {
-			return socket_sendto($this->parentSocket->fd, $data, strlen($data), $this->finished ? MSG_EOF : 0, $this->host, $this->port);
+			return $this->parentSocket->sendTo($data, $this->finished ? MSG_EOF : 0, $this->host, $this->port);
 		}
 		return parent::write($data); // @todo
 	}
