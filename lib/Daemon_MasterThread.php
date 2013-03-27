@@ -191,7 +191,7 @@ class Daemon_MasterThread extends Thread {
 	 * @param integer - Id of worker
 	 * @return void
 	 */	
-	protected function reloadWorker($id) {
+	public function reloadWorker($id) {
 		if (isset($this->workers->threads[$id])) {
 			if (!$this->workers->threads[$id]->reloaded) {
 				Daemon::$process->log('Spawning worker-replacer for reloaded worker #' . $id);
