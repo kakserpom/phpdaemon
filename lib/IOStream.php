@@ -403,8 +403,11 @@ abstract class IOStream {
 		$in = $this->bev->input;
 		$l = strlen($str);
 		$ll = $in->length;
+		if ($ll === 0) {
+			return $l === 0 ? true : null;
+		}
 		if ($ll < $l) {
-			return $in->search(substr($str, 0, $ll), 0, $ll) === 0 ? null : false;
+			return $in->search(substr($str, 0, $ll)) === 0 ? null : false;
 		}
 		if ($in->search($str, 0, $l) === 0) {
 			$in->drain($l);
