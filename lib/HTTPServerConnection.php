@@ -211,7 +211,7 @@ class HTTPServerConnection extends Connection {
 		} else {
 			if (!$this->req || $this->state === self::STATE_PROCESSING) {
 				if (isset($this->bev) && ($this->bev->input->length > 0)) {
-					$eventMsg = 'Unexpected input (HTTP request, '.$this->state.'): '.json_encode($this->read($this->bev->input->length));
+					Daemon::log('Unexpected input (HTTP request, '.$this->state.'): '.json_encode($this->read($this->bev->input->length)));
 				}
 				return;
 			}

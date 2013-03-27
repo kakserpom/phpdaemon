@@ -177,7 +177,7 @@ class Daemon_IPCThread extends Thread {
 	 */
 	protected function update() {
 		FS::updateConfig();
-		foreach (Daemon::$appInstances as $k => $app) {
+		foreach (Daemon::$appInstances as $app) {
 			foreach ($app as $appInstance) {
 				$appInstance->handleStatus(AppInstance::EVENT_CONFIG_UPDATED);
 			}

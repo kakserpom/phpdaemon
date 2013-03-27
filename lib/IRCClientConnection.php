@@ -149,7 +149,6 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		elseif ($cmd === 'NOTICE') {
 			list ($target, $text) = $args;
-			$log = true;
 			$this->event('notice', $target, $text);
 		}
 		elseif ($cmd == 'RPL_YOURHOST') {
@@ -198,7 +197,7 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		elseif ($cmd === 'RPL_NAMREPLY') {
 			$bufName = 'RPL_NAMREPLY';
-			list($myNick, $chanType, $channelName) = $args;
+			list(/*$myNick*/, $chanType, $channelName) = $args;
 			$this->channel($channelName)->setChanType($chanType);
 			if (!isset($this->buffers[$bufName])) {
 				$this->buffers[$bufName] = [];
@@ -210,7 +209,7 @@ class IRCClientConnection extends NetworkClientConnection {
 		}
 		elseif ($cmd === 'RPL_ENDOFNAMES') {
 			$bufName = 'RPL_NAMREPLY';
-			list($nick, $channelName, $text) = $args;
+			list(/*$nick*/, $channelName, /*$text*/) = $args;
 			if (!isset($this->buffers[$bufName][$channelName])) {
 				return;
 			}
@@ -236,7 +235,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			if (sizeof($args) < 7) {
 
 			}
-			list($myNick, $channelName, $user, $host, $server, $nick, $mode, $hopCountRealName) = $args;
+			list(/*$myNick*/, $channelName, $user, /*$host*/, $server, $nick, $mode, $hopCountRealName) = $args;
 			list ($hopCount, $realName) = explode("\x20", $hopCountRealName);
 			if ($channel = $this->channelIfExists($channelName)) {
 				IRCClientChannelParticipant::instance($channel, $nick)
@@ -245,13 +244,13 @@ class IRCClientConnection extends NetworkClientConnection {
 			}
 		}
 		elseif ($cmd === 'RPL_TOPIC') {
-			list($myNick, $channelName, $text) = $args;
+			list(/*$myNick*/, $channelName, $text) = $args;
 			if ($channel = $this->channelIfExists($channelName)) {
 				$channel->setTopic($text);
 			}	
 		}
 		elseif ($cmd === 'RPL_ENDOFWHO') {
-			list($myNick, $channelName, $text) = $args;
+			/*list($myNick, $channelName, $text) = $args;*/
 		}
 		elseif ($cmd === 'MODE') {
 			if (sizeof($args) === 3) {
@@ -269,10 +268,10 @@ class IRCClientConnection extends NetworkClientConnection {
 			}
 		}
 		elseif ($cmd === 'RPL_CREATED') {
-			list($to, $this->created) = $args;
+			list(/*$to*/, $this->created) = $args;
 		}
 		elseif ($cmd === 'RPL_MYINFO') {
-			list($to, $this->servername, $this->serverver, $this->availUserModes, $this->availChanModes) = $args;
+			list(/*$to*/, $this->servername, $this->serverver, $this->availUserModes, $this->availChanModes) = $args;
 		}
 		elseif ($cmd === 'PRIVMSG') {
 			list ($target, $body) = $args;

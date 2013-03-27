@@ -375,7 +375,6 @@ class File {
 			return false;
 		}
 		$this->offset += $length;
-		$file = $this;
 		eio_read(
 			$this->fd,
 			$length,

@@ -204,10 +204,7 @@ class Daemon_WorkerThread extends Thread {
 		}, 1e6 * 1,	'breakMainLoopCheck');
 		if (Daemon::$config->autoreload->value > 0) {
 			Timer::add(function($event) {
-				$self = Daemon::$process;
-
 				static $n = 0;
-
 				$list = get_included_files();
 				$s = sizeof($list);
 				if ($s > $n) {
@@ -424,7 +421,7 @@ class Daemon_WorkerThread extends Thread {
 	 */
 	protected function update() {
 		FS::updateConfig();
-		foreach (Daemon::$appInstances as $k => $app) {
+		foreach (Daemon::$appInstances as $app) {
 			foreach ($app as $appInstance) {
 				$appInstance->handleStatus(AppInstance::EVENT_CONFIG_UPDATED);
 			}
@@ -555,11 +552,9 @@ class Daemon_WorkerThread extends Thread {
 			$this->log('reloadReady = ' . Debug::dump($this->reloadReady));
 		}
 
-		$n = 0;
-
 		unset(Timer::$list['breakMainLoopCheck']);
 
-		Timer::add(function($event) 	{
+		Timer::add(function($event) {
 			$self = Daemon::$process;
 
 			$self->reloadReady = $self->appInstancesReloadReady();

@@ -257,7 +257,7 @@ class ConnectionPool extends ObjectStorage {
 		
 		$result = true;
 	
-		foreach ($this as $k => $conn) {
+		foreach ($this as $conn) {
 			if (!$conn->gracefulShutdown()) {
 				$result = false;
 			}

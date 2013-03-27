@@ -76,7 +76,6 @@ class Daemon_Bootstrap {
 	public static function init($configFile = null) {
 		if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
 			Daemon::log('PHP >= 5.4.0 required.');
-			$error = true;
 			return;
 		}
 		Daemon::initSettings();

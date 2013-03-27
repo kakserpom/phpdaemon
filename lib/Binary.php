@@ -51,7 +51,7 @@ class Binary {
 	 * @return binary
 	 */
 	public static function LV($str, $len = 1, $lrev = FALSE) {
-		$l = self::i2b($len, strlen($str));
+		$l = static::i2b($len, strlen($str));
 		if ($lrev) {
 			$l = strrev($l);
 		}
@@ -64,7 +64,7 @@ class Binary {
 	 * @return binary
 	 */
 	public static function LVnull($str) {
-		return self::LV($str."\x00", 2, true);
+		return static::LV($str."\x00", 2, true);
 	}
 
 	/**
@@ -82,7 +82,7 @@ class Binary {
 	 * @return binary
 	 */
 	public static function word($int) {
-		return self::i2b(2, $int);
+		return static::i2b(2, $int);
 	}
 
 	/**
@@ -91,7 +91,7 @@ class Binary {
 	 * @return binary
 	 */
 	public static function wordl($int) {
-		return strrev(self::word($int));
+		return strrev(static::word($int));
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Binary {
 	 * @return binary
 	 */
 	public static function dword($int) {
-		return self::i2b(4,$int);
+		return static::i2b(4,$int);
 	}
 
 	/**
@@ -109,7 +109,7 @@ class Binary {
 	 * @return binary
 	 */
 	public static function dwordl($int) {
-		return strrev(self::dword($int));
+		return strrev(static::dword($int));
 	}
 
 	/**
@@ -118,7 +118,7 @@ class Binary {
 	 * @return binary
 	 */
 	public static function qword($int) {
-		return self::i2b(8, $int);
+		return static::i2b(8, $int);
 	}
 
 	/**
@@ -127,7 +127,7 @@ class Binary {
 	 * @return binary
 	 */
 	public static function qwordl($int) {
-		return strrev(self::qword($int));
+		return strrev(static::qword($int));
 	}
 
 	/**
@@ -136,7 +136,7 @@ class Binary {
 	 * @return integer
 	 */
 	public static function getByte(&$p) {
-		$r = self::bytes2int($p{0});
+		$r = static::bytes2int($p{0});
 		$p = binarySubstr($p, 1);
 		return (int) $r;
 	}
@@ -159,7 +159,7 @@ class Binary {
 	 * @return integer
 	 */	
 	public static function getWord(&$p, $l = false) {
-		$r = self::bytes2int(binarySubstr($p, 0, 2), !!$l);
+		$r = static::bytes2int(binarySubstr($p, 0, 2), !!$l);
 		$p = binarySubstr($p,2);
 		return intval($r);
 	}
@@ -187,7 +187,7 @@ class Binary {
 	 * @return integer
 	 */	
 	public static function getDWord(&$p,$l = false) {
-		$r = self::bytes2int(binarySubstr($p,0,4),!!$l);
+		$r = static::bytes2int(binarySubstr($p,0,4),!!$l);
 		$p = binarySubstr($p,4);
 		return intval($r);
 	}
@@ -199,7 +199,7 @@ class Binary {
 	 * @return integer
 	 */	
 	public static function getQword(&$p, $l = false) {
-		$r = self::bytes2int(binarySubstr($p,0,8),!!$l);
+		$r = static::bytes2int(binarySubstr($p,0,8),!!$l);
 		$p = binarySubstr($p,8);
 		return intval($r);
 	}
@@ -243,7 +243,7 @@ class Binary {
 	 * @return string
 	 */
 	public static function getLV(&$p, $l = 1, $nul = false, $lrev = false) {
- 		$s = self::b2i(binarySubstr($p,0,$l),!!$lrev);
+ 		$s = static::b2i(binarySubstr($p,0,$l),!!$lrev);
  		$p = binarySubstr($p,$l);
 		if ($s == 0) {
 			return '';
@@ -309,14 +309,14 @@ class Binary {
 		foreach($flags as $v) {
 			$ret |= $v;
 		}
-		return self::i2b($len,$ret);
+		return static::i2b($len,$ret);
 	}
 
 	/**
 	 * @alias int2bytes
 	 */
 	public static function i2b($bytes, $val = 0) {
-		return self::int2bytes($bytes, $val);
+		return static::int2bytes($bytes, $val);
 	}
 
 
@@ -342,7 +342,7 @@ class Binary {
 	 * @alias bytes2int
 	 */
 	public static function b2i($hex = 0, $l = false) {
-		return self::bytes2int($hex, $l);
+		return static::bytes2int($hex, $l);
 	}
 
 

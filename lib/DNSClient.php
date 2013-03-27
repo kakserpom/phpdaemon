@@ -260,16 +260,16 @@ class DNSClientConnection extends NetworkClientConnection {
 	public function onUdpPacket($pct) {
 		$orig = $pct;
 		$this->response = [];
-		$id = Binary::getWord($pct);
+		/*$id = */Binary::getWord($pct);
 		$bitmap = Binary::getBitmap(Binary::getByte($pct)) . Binary::getBitmap(Binary::getByte($pct));
-		$qr = (int) $bitmap[0];
+		//$qr = (int) $bitmap[0];
 		$opcode = bindec(substr($bitmap, 1, 4));
-		$aa = (int) $bitmap[5];
-		$tc = (int) $bitmap[6];
-		$rd = (int) $bitmap[7];
-		$ra = (int) $bitmap[8];
-		$z = bindec(substr($bitmap, 9, 3));
-		$rcode = bindec(substr($bitmap, 12));
+		//$aa = (int) $bitmap[5];
+		//$tc = (int) $bitmap[6];
+		//$rd = (int) $bitmap[7];
+		//$ra = (int) $bitmap[8];
+		//$z = bindec(substr($bitmap, 9, 3));
+		//$rcode = bindec(substr($bitmap, 12));
 		$qdcount = Binary::getWord($pct);
 		$ancount = Binary::getWord($pct);
 		$nscount = Binary::getWord($pct);

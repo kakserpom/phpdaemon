@@ -35,13 +35,7 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 	 * @return number 
 	 */
 	public function count() {
-		$c = 0;
-
-		foreach ($this as $prop) {
-			++$c;
-		}
-
-		return $c;
+		return count($this);
 	}
 	
 	/**

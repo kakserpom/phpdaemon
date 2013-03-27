@@ -215,9 +215,8 @@ class IRCBouncerConnection extends Connection {
 		$names = $chan->exportNicksArray();
 		$packet = '';
 		$maxlen = 510 - 7 - strlen($this->pool->config->servername->value) - $chan->irc->nick - 1;
-		$s = sizeof($names);
-		foreach ($names as $i => $name) {
-			$packet .= ($packet !== '' ? ' ' : '') . $name;
+		for ($i = 0, $s = sizeof($names); $i < $s; ++$i) {
+			$packet .= ($packet !== '' ? ' ' : '') . $names[$i];
 			if (!isset($names[$i + 1]) || (strlen($packet) + strlen($names[$i + 1]) + 1 > $maxlen)) {
 				$this->command(null, 'RPL_NAMREPLY', $chan->irc->nick, $chan->type, $chan->name, $packet);
 				$packet = '';
@@ -228,7 +227,7 @@ class IRCBouncerConnection extends Connection {
 
 	public function onCommand($cmd, $args) {
 		if ($cmd === 'USER') {
-			list ($nick) = $args;
+			//list ($nick) = $args;
 			$this->attachTo();
 			return;
 		}

@@ -301,41 +301,42 @@ class Daemon {
 		}
 
 		if (!Daemon::$config->loadCmdLineArgs($args)) {
-			$error = TRUE;
+			$error = true;
 		}
 
-		if (
-			isset(Daemon::$config->configfile->value) 
-			&& !Daemon::loadConfig(Daemon::$config->configfile->value)
-		) {
-			$error = TRUE;
+		if (isset(Daemon::$config->configfile->value) && !Daemon::loadConfig(Daemon::$config->configfile->value)) {
+			$error = true;
 		}
 		
 		if (!isset(Daemon::$config->path->value)) {
 			exit('\'path\' is not defined');
 		}
 
+		if ($error) {
+			exit;
+		}
+
 		$appResolver = require Daemon::$config->path->value;
 		$appResolver->init();
 
-		$req = new stdClass();
-		$req->attrs = new stdClass();
+		$req = new stdClass;
+		$req->attrs = new stdClass;
 		$req->attrs->request = $_REQUEST;
 		$req->attrs->get = $_GET;
 		$req->attrs->post = $_REQUEST;
 		$req->attrs->cookie = $_REQUEST;
 		$req->attrs->server = $_SERVER;
 		$req->attrs->files = $_FILES;
-		$req->attrs->session = isset($_SESSION)?$_SESSION:NULL;
+		$req->attrs->session = isset($_SESSION) ? $_SESSION : null;
 		$req->attrs->connId = 1;
 		$req->attrs->trole = 'RESPONDER';
 		$req->attrs->flags = 0;
 		$req->attrs->id = 1;
-		$req->attrs->params_done = TRUE;
-		$req->attrs->stdin_done = TRUE;
+		$req->attrs->paramsDone = true;
+		$req->attrs->inputDone = true;
 		$req = $appResolver->getRequest($req);
 
-		 while (TRUE) {
+		 while (true) {
 			$ret = $req->call();
 
 			if ($ret === 1) {
@@ -351,7 +352,6 @@ class Daemon {
 	 */
 	public static function loadConfig($paths) {
 		$apaths = explode(';', $paths);
-		$found = false;
 		foreach($apaths as $path) {
 			if (is_file($p = realpath($path))) {
 				$ext = strtolower(pathinfo($p, PATHINFO_EXTENSION));

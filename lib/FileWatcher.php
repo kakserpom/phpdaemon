@@ -63,7 +63,7 @@ class FileWatcher {
 			Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);
 			return;
 		}
-		foreach ($this->files[$path] as $k => $subscriber) {
+		foreach ($this->files[$path] as $subscriber) {
 			if (is_callable($subscriber) || is_array($subscriber)) {
 				call_user_func($subscriber, $path);
 			}

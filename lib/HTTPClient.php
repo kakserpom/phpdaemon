@@ -196,9 +196,8 @@ class HTTPClientConnection extends NetworkClientConnection {
 		if (isset($params['cookie']) && sizeof($params['cookie'])) {
 			$this->writeln('Cookie: '.http_build_query($this->cookie, '', '; '));
 		}
-		$body = '';
-		foreach ($data as $k => $v) {
-			if (is_object($v) && $v instanceof HTTPClientUpload) {
+		foreach ($data as $val) {
+			if (is_object($val) && $val instanceof HTTPClientUpload) {
 				$params['contentType'] = 'multipart/form-data';
 			}
 		}
