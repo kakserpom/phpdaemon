@@ -369,6 +369,9 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	public function onReadInput() {
+		if ($this->state === static::STATE_FINISHED) {
+			return;
+		}
 		if (($this->attrs->contentLength <= $this->attrs->inputReaded) && !$this->attrs->inputDone) {
 			$this->attrs->inputDone = true;
 			$this->postPrepare();

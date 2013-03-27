@@ -103,8 +103,8 @@ class Request {
 		if ($this->priority !== null) {
 			$this->ev->priority = $this->priority;
 		}
-		$this->preinit($parent);
 		$this->onWakeup();
+		$this->preinit($parent);
 		$this->init();
 		$this->onSleep();
 	}
@@ -230,8 +230,7 @@ class Request {
 	 * @param object Source request
 	 * @return void
 	 */
-	protected function preinit($req)
-	{
+	protected function preinit($req) {
 		if ($req === NULL) {
 			$req = new stdClass;
 			$req->attrs = new stdClass;
