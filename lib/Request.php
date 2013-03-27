@@ -118,6 +118,14 @@ class Request {
  		return $this->aborted;
  	}
 
+ 	/**
+	 * Is this request finished?
+	 * @return boolean
+	 */
+ 	public function isFinished() {
+ 		return $this->state === static::STATE_FINISHED;
+ 	}
+
 	/**
 	 * Is this request running?
 	 * @return boolean

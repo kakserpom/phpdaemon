@@ -320,6 +320,21 @@ class HTTPServerConnection extends Connection {
 		$this->unfreezeInput();
 	}
 
+
+	/**
+	 * Called when connection is finished
+	 * @return void
+	 */
+	public function onFinish() {
+		if ($this->req !== null && $this->req instanceof Request) {
+			if (!$this->req->isFinished()) {
+				$this->req->abort();
+			}
+		}
+	}
+
+
+
 	/**
 	 * Send Bad request
 	 * @return void
