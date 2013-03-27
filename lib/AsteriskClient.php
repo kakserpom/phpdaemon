@@ -359,10 +359,8 @@ class AsteriskClientConnection extends NetworkClientConnection {
 				. "Key: " . md5($challenge . $this->secret) . "\r\n"
 				. "Events: on\r\n"
 				. "\r\n";
-				
 				$this->state = self::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
-				
-				$this->write($packet);
+				$conn->write($packet);
 			});
 		} else {
 			$this->login();
@@ -378,7 +376,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	protected function login() {
 		$this->state = self::CONN_STATE_LOGIN_PACKET_SENT;
-		
 		$this->write(
 			"Action: login\r\n"
 			. "Username: " . $this->username . "\r\n"
@@ -395,8 +392,8 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 *
 	 * @return void
 	 */
-	protected function challenge($callback) {
-		$this->onChallenge = $callback;
+	protected function challenge($cb) {
+		$this->onChallenge = $cb;
 		$this->state = self::CONN_STATE_CHALLENGE_PACKET_SENT;
 		$this->write(
 		  "Action: Challenge\r\n"
@@ -414,11 +411,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * Variables:
 	 * ActionID: <id>	Action ID for this transaction. Will be returned.
 	 *
-	 * @param $callback Callback called when response received.
+	 * @param callable Callback called when response received.
 	 * @return void
 	 */
-	public function getSipPeers($callback) {
-		$this->command("Action: SIPpeers\r\n", $callback, ['event' => 'peerlistcomplete']);
+	public function getSipPeers($cb) {
+		$this->command("Action: SIPpeers\r\n", $cb, ['event' => 'peerlistcomplete']);
 	}
 
 	/**
@@ -426,11 +423,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * Synopsis: List IAX Peers
 	 * Privilege: system,reporting,all
 	 *
-	 * @param $callback Callback called when response received.
+	 * @param callable Callback called when response received.
 	 * @return void
 	 */
-	public function getIaxPeers($callback) {
-		$this->command("Action: IAXpeerlist\r\n", $callback, ['event' => 'peerlistcomplete']);
+	public function getIaxPeers($cb) {
+		$this->command("Action: IAXpeerlist\r\n", $cb, ['event' => 'peerlistcomplete']);
 	}
 
 	/**
@@ -443,11 +440,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 *   *Filename: Configuration filename (e.g. foo.conf)
 	 *   Category: Category in configuration file
 	 *
-	 * @param $callback Callback called when response received.
+	 * @param callable Callback called when response received.
 	 * @return void
 	 */
-	public function getConfig($filename, $callback) {
-		$this->command("Action: GetConfig\r\nFilename: " . trim($filename) . "\r\n", $callback);
+	public function getConfig($filename, $cb) {
+		$this->command("Action: GetConfig\r\nFilename: " . trim($filename) . "\r\n", $cb);
 	}
 
 	/**
@@ -460,11 +457,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * Variables:
 	 *    Filename: Configuration filename (e.g. foo.conf)
 	 *
-	 * @param $callback Callback called when response received.
+	 * @param callable Callback called when response received.
 	 * @return void
 	 */
-	public function getConfigJSON($filename, $callback) {
-		$this->command("Action: GetConfigJSON\r\nFilename: " . trim($filename) . "\r\n", $callback);
+	public function getConfigJSON($filename, $cb) {
+		$this->command("Action: GetConfigJSON\r\nFilename: " . trim($filename) . "\r\n", $cb);
 	}
 	
 	/**
@@ -477,7 +474,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 *  *Variable: Variable name
 	 *  *Value: Value
 	 */
-	public function setVar($channel, $variable, $value, $callback) {
+	public function setVar($channel, $variable, $value, $cb) {
 		$cmd = "Action: SetVar\r\n";
 		
 		if ($channel) {
@@ -488,7 +485,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			$cmd .= "Variable: " . trim($variable) . "\r\n"
 			. "Value: " . trim($value) . "\r\n";
 			
-			$this->command($cmd, $callback);
+			$this->command($cmd, $cb);
 		}
 	}
 	
@@ -501,8 +498,10 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * Variables:
 	 *        ActionID: Optional Action id for message matching.
 	 */
-	public function coreShowChannels($callback) {
-		$this->command("Action: CoreShowChannels\r\n", $callback, ['event' => 'coreshowchannelscomplete', 'eventlist' => 'complete']);
+	public function coreShowChannels($cb) {
+		$this->command("Action: CoreShowChannels\r\n", $cb,
+			['event' => 'coreshowchannelscomplete', 'eventlist' => 'complete']
+		);
 	}
 
 	/**
@@ -517,14 +516,14 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * Will return the status information of each channel along with the
 	 * value for the specified channel variables.
 	 */
-	public function status($callback, $channel = null) {
+	public function status($cb, $channel = null) {
 		$cmd = "Action: Status\r\n";
 		
 		if ($channel !== null) {
 			$cmd .= 'Channel: ' . trim($channel) . "\r\n";
 		}
 		
-		$this->command($cmd, $callback, ['event' => 'statuscomplete']);
+		$this->command($cmd, $cb, ['event' => 'statuscomplete']);
 	}
 
 	/**
@@ -541,11 +540,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * ActionID: Optional Action id for message matching.
 	 *
 	 * @param array $params
-	 * @param $callback Callback called when response received.
+	 * @param callable Callback called when response received.
 	 * @return void
 	 */
-	public function redirect(array $params, $callback) {
-		$this->command("Action: Redirect\r\n" . $this->implodeParams($params), $callback);
+	public function redirect(array $params, $cb) {
+		$this->command("Action: Redirect\r\n" . $this->implodeParams($params), $cb);
 	}
 
 	/**
@@ -554,11 +553,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 *   manager connection open.
 	 * Variables: NONE
 	 *
-	 * @param $callback Callback called when response received.
+	 * @param calalble Callback called when response received.
 	 * @return void
 	 */
-	public function ping($callback) {
-		$this->command("Action: Ping\r\n", $callback);
+	public function ping ($cb) {
+		$this->command("Action: Ping\r\n", $cb);
 	}
 
 	/**
@@ -566,15 +565,15 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * Privilege: depends on $action
 	 *
 	 * @param string $action
-	 * @param $callback Callback called when response received.
+	 * @param callable Callback called when response received.
 	 * @param array|null $params
 	 * @param array|null $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent.
 	 * @return void
 	 */
-	public function action($action, $callback, array $params = null, array $assertion = null) {
+	public function action($action, $cb, array $params = null, array $assertion = null) {
 		$action = trim($action);
 		
-		$this->command("Action: {$action}\r\n" . ($params ? $this->implodeParams($params) : ''), $callback, $assertion);
+		$this->command("Action: {$action}\r\n" . ($params ? $this->implodeParams($params) : ''), $cb, $assertion);
 	}
 
 	/**
@@ -584,20 +583,20 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 * Description: Logoff this manager session
 	 * Variables: NONE
 	 *
-	 * @param $callback Optional callback called when response received.
+	 * @param callable Optional callback called when response received
 	 * @return void
 	 */
-	public function logoff($callback = null) {
-		$this->command("Action: Logoff\r\n", $callback);
+	public function logoff ($cb = null) {
+		$this->command("Action: Logoff\r\n", $cb);
 	}
 	
 	/**
 	 * Called when event occured.
-	 * @param $callback
+	 * @param callable Callback
 	 * @return void
 	 */
-	public function onEvent($callback) {
-		$this->onEvent = $callback;
+	public function onEvent($cb) {
+		$this->onEvent = $cb;
 	}
 
 	/**
@@ -615,10 +614,10 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	/**
 	 * Sends arbitrary command.
 	 * @param string $packet A packet for sending by the connected client to Asterisk
-	 * @param $callback Callback called when response received.
+	 * @param callable Callback called when response received.
 	 * @param array $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent. 
 	 */
-	protected function command($packet, $callback, $assertion = null) {
+	protected function command($packet, $cb, $assertion = null) {
 		if ($this->finished) {
 			throw new AsteriskClientConnectionFinished;
 		}
@@ -629,11 +628,11 @@ class AsteriskClientConnection extends NetworkClientConnection {
 
 		$actionId = $this->uniqid();
 		
-		if (!is_callable($callback, true)) {
-			$callback = false;
+		if (!is_callable($cb, true)) {
+			$cb = false;
 		}
 		
-		$this->callbacks[$actionId] = CallbackWrapper::wrap($callback);
+		$this->callbacks[$actionId] = CallbackWrapper::wrap($cb);
 
 		if ($assertion !== null) {
 			$this->assertions[$actionId] = $assertion;

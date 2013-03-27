@@ -577,8 +577,8 @@ class Daemon_WorkerThread extends Thread {
 	}
 
 	/**
-	 * Set wstate.
-	 * @param int Constant.
+	 * Set current status of worker
+	 * @param int Constant
 	 * @return boolean Success.
 	 */
 	public function setState($int) {

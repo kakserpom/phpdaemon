@@ -559,7 +559,7 @@ class Daemon {
 
 		if (($days = $fin[0] - $st[0]) < 0) {
 			$fin[1]--;
-			$days += date('t', mktime(1, 0, 0, $fin[1], $fin[0], $fin[2]));
+			$days += (int) date('t', mktime(1, 0, 0, $fin[1], $fin[0], $fin[2]));
 		}
 
 		if (($months = $fin[1] - $st[1]) < 0) {
@@ -569,7 +569,7 @@ class Daemon {
 
 		$years = $fin[2] - $st[2];
 
-		return array($seconds, $minutes, $hours, $days, $months, $years);
+		return [$seconds, $minutes, $hours, $days, $months, $years];
 	}
 
 	/**

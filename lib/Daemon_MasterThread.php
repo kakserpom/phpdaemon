@@ -249,7 +249,8 @@ class Daemon_MasterThread extends Thread {
 		$this->ipcthreads->push($thread);
 
 		$this->callbacks->push(function($self) use ($thread) {
-			$pid = $thread->start();
+			$thread->start();
+			$pid = $thread->getPid();
 			if ($pid < 0) {
 				Daemon::$process->log('could not fork IPCThread');
 			} elseif ($pid === 0) { // worker

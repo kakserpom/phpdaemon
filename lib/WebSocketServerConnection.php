@@ -126,7 +126,7 @@ class WebSocketServerConnection extends Connection {
 		$route = $this->pool->routes[$routeName];
 		if (is_string($route)) { // if we have a class name
 			if (class_exists($route)) {
-				$ret = new $route($this);
+				new $route($this);
 			} else {
 				return false;
 			}

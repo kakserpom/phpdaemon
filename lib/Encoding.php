@@ -114,7 +114,6 @@ class Encoding {
        "\xc5\xb8"     => "\x9f"
     );
 
-  static function toUTF8($text){
   /**
    * Function Encoding::toUTF8
    *
@@ -139,6 +138,7 @@ class Encoding {
    * @return string  The same string, UTF8 encoded
    *
    */
+  static function toUTF8($text){
 
     if (is_array($text)) {
       foreach($text as $k => $v) {
