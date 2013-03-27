@@ -43,7 +43,7 @@ abstract class BoundSocket {
 	 * Listener mode?
 	 * @var boolean
 	 */
-	protected $listenerMode = true;
+	protected $listenerMode = false;
 
 	/**
 	 * Context

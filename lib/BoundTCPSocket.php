@@ -35,7 +35,6 @@ class BoundTCPSocket extends BoundSocket {
 		$this->defaultPort = $port;
 	}
 
-
 	/**
 	 * Called when socket is bound
 	 * @return boolean Success
