@@ -128,7 +128,10 @@ if ($displaystate) {
 		'_SERVER' => $_SERVER,
 	));
 ?></pre>
-<br />Request took: <?php printf('%f', round(microtime(TRUE) - $_SERVER['REQUEST_TIME_FLOAT'], 6)); ?>
-</body><?php
+<br />Request took: <?php printf('%f', round(microtime(TRUE) - $_SERVER['REQUEST_TIME_FLOAT'], 6));
+echo '<!-- '. str_repeat('x',1024*1024).' --->';
+echo '<!-- '. str_repeat('x',1024*1024).' --->';
+echo '<!-- '. str_repeat('x',1024*1024).' --->';
+?></body><?php
 	}
 }

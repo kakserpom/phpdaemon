@@ -222,13 +222,13 @@ class FastCGIServerConnection extends Connection {
 		}
 		elseif ($type === self::FCGI_STDIN) {
 			if ($this->content === '') {
-				$req->attrs->bodyDone = true;
+				$req->attrs->inputDOne = true;
 			}
 			$req->appendToInput($this->content);
 		}
 
 		if (
-			$req->attrs->bodyDone 
+			$req->attrs->inputDone 
 			&& $req->attrs->paramsDone
 		) {
 			if ($this->pool->variablesOrder === null) {
@@ -261,7 +261,18 @@ class FastCGIServerConnection extends Connection {
 	 * @return boolean Success
 	 */
 	public function requestOut($req, $out) {
-		if ($this->sendChunk($req, $out) === false) {
+		$cs = $this->pool->config->chunksize->value;
+		if (strlen($out) > $cs) {
+			while (($ol = strlen($out)) > 0) {
+				$l = min($cs, $ol);
+				if ($this->sendChunk($req, binarySubstr($out, 0, $l)) === false) {
+					$req->abort();
+					return false;
+				}
+				$out = binarySubstr($out, $l);
+			}
+		}
+		elseif ($this->sendChunk($req, $out) === false) {
 			$req->abort();
 			return false;
 		}
