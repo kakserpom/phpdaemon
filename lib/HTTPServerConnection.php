@@ -80,7 +80,7 @@ class HTTPServerConnection extends Connection {
 		$srv['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
 		$srv['SCRIPT_NAME'] = $srv['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
 		$srv['SERVER_PROTOCOL'] = isset($e[2]) ? $e[2] : 'HTTP/1.1';
-		$srv['REMOTE_ADDR'] = $this->addr;
+		$srv['REMOTE_ADDR'] = $this->host;
 		$srv['REMOTE_PORT'] = $this->port;
 		return true;
 	}
