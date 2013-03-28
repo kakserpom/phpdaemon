@@ -738,7 +738,6 @@ class HTTPRequest extends Request {
 	protected function unfreezeInput() {
 		$this->upstream->unfreezeInput();
 		$this->attrs->input->unfreeze();
-		$this->onReadInput();
 	}
 
 	public function getUploadTempDir() {
