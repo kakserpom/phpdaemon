@@ -94,6 +94,8 @@ class HTTPRequestInput extends EventBuffer {
 	public function unfreeze($at_front = false) {
 		$this->frozen = false;
 		//parent::unfreeze($at_front);
+		$this->onRead();
+		$this->req->checkIfReady();
 	}
 
 	/**
@@ -301,13 +303,13 @@ class HTTPRequestInput extends EventBuffer {
 					if ($this->req->getUploadMaxSize() < $this->curPart['size']) {
 						$this->curPart['error'] = UPLOAD_ERR_INI_SIZE;
 						$this->req->header('413 Request Entity Too Large');
-						$this->req->out('test');
+						$this->req->out('');
 						$this->req->finish();
 					}
 					elseif ($this->maxFileSize && ($this->maxFileSize < $this->curPart['size'])) {
 						$this->curPart['error'] = UPLOAD_ERR_FORM_SIZE;
 						$this->req->header('413 Request Entity Too Large');
-						$this->req->out('test');
+						$this->req->out('');
 						$this->req->finish();
 					}
 					else {
