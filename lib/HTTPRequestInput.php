@@ -201,17 +201,22 @@ class HTTPRequestInput extends EventBuffer {
 					$this->curPart .= $chunk;
 				}
 				elseif (($this->state === self::STATE_UPLOAD) && isset($this->curPartDisp['filename'])) {
-					if (!isset($this->req->attrs->files[$this->curPartDisp['name']]['fp'])) {
-						return; // fd is not ready yet, interrupt
-					}
 					$this->curPart['size'] += $l;
 					if ($this->req->getUploadMaxSize() < $this->curPart['size']) {
 						$this->curPart['error'] = UPLOAD_ERR_INI_SIZE;
+						$this->req->header('413 Request Entity Too Large');
+						$this->req->out('test');
+						$this->req->finish();
 					}
-					if ($this->maxFileSize && ($this->maxFileSize < $this->curPart['size'])) {
+					elseif ($this->maxFileSize && ($this->maxFileSize < $this->curPart['size'])) {
 						$this->curPart['error'] = UPLOAD_ERR_FORM_SIZE;
+						$this->req->header('413 Request Entity Too Large');
+						$this->req->out('test');
+						$this->req->finish();
 					}
-					$this->req->onUploadFileChunk($this->curPart, $chunk);
+					else {
+						$this->req->onUploadFileChunk($this->curPart, $chunk);
+					}
 				}
 			}
 			else {
@@ -237,9 +242,6 @@ class HTTPRequestInput extends EventBuffer {
 					($this->state === self::STATE_UPLOAD)
 					&& isset($this->curPartDisp['filename'])
 				) {
-					if (!isset($this->curPart['fp'])) {
-						return; // fd is not ready yet, interrupt
-					}
 					$this->curPart['size'] += $p;
 					$this->req->onUploadFileChunk($this->curPart, $chunk, true);
 				}

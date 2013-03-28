@@ -242,7 +242,7 @@ class HTTPServerConnection extends Connection {
 				}
 			}
 			$this->req->onReadInput();
-			if (!$this->req->attrs->inputDone) {
+			if (!$this->req || !$this->req->attrs->inputDone) {
 				return;
 			}
 			$this->state = self::STATE_PROCESSING;
