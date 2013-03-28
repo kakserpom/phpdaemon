@@ -400,7 +400,7 @@ class Request {
 	 * Called to check if Request is ready
 	 * @return boolean Ready?
 	 */
-	protected function checkIfReady() {
+	public function checkIfReady() {
 		return true;
 	}
  

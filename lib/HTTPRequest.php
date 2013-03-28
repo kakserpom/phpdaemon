@@ -199,7 +199,7 @@ class HTTPRequest extends Request {
 	 * Called to check if Request is ready
 	 * @return boolean Ready?
 	 */
-	protected function checkIfReady() {
+	public function checkIfReady() {
 		if (!$this->attrs->paramsDone || !$this->attrs->inputDone) {
 			return false;
 		}
@@ -303,93 +303,54 @@ class HTTPRequest extends Request {
 	 * @return void
 	 */
 	public function postPrepare() {
-		if (
-			isset($this->attrs->server['REQUEST_METHOD'])
-			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
-		) {
-			if (isset($this->contype['application/x-www-form-urlencoded']) && $this->attrs->input->remove($data, $this->attrs->input->length) > -2) {
-				self::parse_str($data, $this->attrs->post);
-			}
-
-			if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] === 'nginx') {
-				if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'])) {
-					$URLprefix = $this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'];
-					$l = strlen($URLprefix);
-					foreach (array('PHP_SELF', 'REQUEST_URI', 'SCRIPT_NAME', 'DOCUMENT_URI') as $k) {
-						if (!isset($this->attrs->server[$k])) {continue;}
-						if (strncmp($this->attrs->server[$k], $URLprefix, $l) === 0) {
-							$this->attrs->server[$k] = substr($this->attrs->server[$k], $l - 1);
-						}
-					}
-				}
-
-				$prefix = 'file.';
-				$prefixlen = strlen($prefix);
-				foreach ($this->attrs->post as $k => $v) {
-					if (strncmp($k, $prefix, $prefixlen) === 0) {
-						$e = explode('.', substr($k, $prefixlen));
-						if (!isset($this->attrs->files[$e[0]])) {
-							$this->attrs->files[$e[0]] = array('error' => UPLOAD_ERR_OK);
-						}
-						$this->attrs->files[$e[0]][$e[1]] = $v;
-					}
-				}
-				$uploadTmp = $this->getUploadTempDir();
-				foreach ($this->attrs->files as $k => &$file) {
-					if (!isset($file['tmp_name'])
-						|| !isset($file['name'])
-						|| !ctype_digit(basename($file['tmp_name']))
-						|| pathinfo($file['tmp_name'], PATHINFO_DIRNAME) !== $uploadTmp)
-					{
-						unset($this->attrs->files[$k]);
-						continue;
-					}
-					FS::open($file['tmp_name'], 'c+!', function ($fp) use (&$file) {
-						if (!$fp) {
-							return;
-						}
-						$file['fp'] = $fp;
-					});
-				}
-				unset($file);
-			}
-
-			if (
-				isset($this->attrs->server['REQUEST_BODY_FILE'])
-				&& $this->upstream->pool->config->autoreadbodyfile->value
-			) {
-				$this->readBodyFile();
-			}
-		}
-	}
-
-	/**
-	 * Called when new piece of request's body is received
-	 * @param string Piece of request body
-	 * @return void
-	 */
-	public function onReadInput() {
-		if ($this->state === static::STATE_FINISHED) {
+		if (!isset($this->attrs->server['REQUEST_METHOD']) || ($this->attrs->server['REQUEST_METHOD'] !== 'POST')) {
 			return;
 		}
-		if (($this->attrs->contentLength <= $this->attrs->inputReaded) && !$this->attrs->inputDone) {
-			$this->attrs->inputDone = true;
-			$this->postPrepare();
+		if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] === 'nginx') {
+			if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'])) {
+				$URLprefix = $this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'];
+				$l = strlen($URLprefix);
+				foreach (array('PHP_SELF', 'REQUEST_URI', 'SCRIPT_NAME', 'DOCUMENT_URI') as $k) {
+					if (!isset($this->attrs->server[$k])) {continue;}
+					if (strncmp($this->attrs->server[$k], $URLprefix, $l) === 0) {
+						$this->attrs->server[$k] = substr($this->attrs->server[$k], $l - 1);
+					}
+				}
+			}
+			$prefix = 'file.';
+			$prefixlen = strlen($prefix);
+			foreach ($this->attrs->post as $k => $v) {
+				if (strncmp($k, $prefix, $prefixlen) === 0) {
+					$e = explode('.', substr($k, $prefixlen));
+					if (!isset($this->attrs->files[$e[0]])) {
+						$this->attrs->files[$e[0]] = array('error' => UPLOAD_ERR_OK);
+					}
+					$this->attrs->files[$e[0]][$e[1]] = $v;
+				}
+			}
+			$uploadTmp = $this->getUploadTempDir();
+			foreach ($this->attrs->files as $k => &$file) {
+				if (!isset($file['tmp_name'])
+					|| !isset($file['name'])
+					|| !ctype_digit(basename($file['tmp_name']))
+					|| pathinfo($file['tmp_name'], PATHINFO_DIRNAME) !== $uploadTmp)
+				{
+					unset($this->attrs->files[$k]);
+					continue;
+				}
+				FS::open($file['tmp_name'], 'c+!', function ($fp) use (&$file) {
+					if (!$fp) {
+						return;
+					}
+					$file['fp'] = $fp;
+				});
+			}
+			unset($file);
 		}
-		$this->attrs->input->parse();
-		$this->checkIfReady();
-	}
-
-	/**
-	 * Append string to input buffer
-	 * @param string Piece of request input
-	 * @param [boolean true Final call is THIS SEQUENCE of calls (not mandatory final in request)?
-	 * @return void
-	 */
-	public function appendToInput($chunk, $final = true) {
-		$this->attrs->input->add($chunk);
-		if ($final) {
-			$this->onReadInput();
+		if (isset($this->attrs->server['REQUEST_BODY_FILE'])
+			&& $this->upstream->pool->config->autoreadbodyfile->value
+		) {
+			$this->readBodyFile();
 		}
 	}
 

@@ -235,14 +235,11 @@ class HTTPServerConnection extends Connection {
 			$this->state = self::STATE_CONTENT;
 		}
 		if ($this->state === self::STATE_CONTENT) {
-			$n = min($this->req->attrs->contentLength - $this->req->attrs->inputReaded, $this->getInputLength());
-			if ($n > 0) { // moving data connection's buffer to body buffer
-				if (isset($this->req->attrs->input)) {
-					$this->req->attrs->inputReaded += $this->moveInputToBuffer($this->req->attrs->input, $n);
-				}
+			if (!$this->req->attrs->input) {
+				return;
 			}
-			$this->req->onReadInput();
-			if (!$this->req || !$this->req->attrs->inputDone) {
+			$this->req->attrs->input->readFromBuffer($this->bev->input);
+			if (!$this->req || !$this->req->attrs->input->isEOF()) {
 				return;
 			}
 			$this->state = self::STATE_PROCESSING;

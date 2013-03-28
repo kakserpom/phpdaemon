@@ -818,6 +818,7 @@ abstract class IOStream {
 			}
 		}
 	}
+
 	/**
 	 * Moves $n bytes from input buffer to arbitrary buffer
 	 * @param EventBuffer Destination nuffer
@@ -827,6 +828,7 @@ abstract class IOStream {
 	public function moveInputToBuffer(EventBuffer $buf, $n) {
 		return $buf->removeBuffer($this->bev->input, $n);
 	}
+
 	/**
 	 * Read data from the connection's buffer
 	 * @param integer Max. number of bytes to read

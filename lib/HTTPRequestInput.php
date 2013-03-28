@@ -21,10 +21,22 @@ class HTTPRequestInput extends EventBuffer {
 	protected $maxFileSize = 0;
 
 	/**
+	 * Readed
+	 * @var integer
+	 */
+	protected $readed = 0;
+
+	/**
 	 * Frozen
 	 * @var boolean
 	 */
 	protected $frozen = false;
+
+	/**
+	 * EOF
+	 * @var boolean
+	 */
+	protected $EOF = false;
 
 	/**
 	 * Current Part
@@ -93,6 +105,14 @@ class HTTPRequestInput extends EventBuffer {
 	}
 
 	/**
+	 * Is EOF?
+	 * @return boolean
+	 */
+	public function isEof() {
+		return $this->EOF;
+	}
+
+	/**
 	 * Set request
 	 * @param Request
 	 * @return void
@@ -102,13 +122,89 @@ class HTTPRequestInput extends EventBuffer {
 	}
 
 	/**
-	 * Parse request body
+	 * onEOF
 	 * @return void
 	 */
-	public function parse() {
-		if (empty($this->boundary)) {
+	protected function onEOF() {
+		if (!$this->req) {
 			return;
 		}
+		$this->req->attrs->inputDone = true;
+		if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
+			if ($this->remove($data, $this->length) > 0) {
+				HTTPRequest::parse_str($data, $this->req->attrs->post);
+			}
+		}
+		$this->req->postPrepare();
+		$this->req->checkIfReady();
+	}
+
+	/**
+	 * onRead
+	 * @return void
+	 */
+	protected function onRead() {
+		if (!empty($this->boundary)) {
+			$this->req->attrs->input->parseMultipart();
+		}
+		if (($this->req->attrs->contentLength <= $this->readed) && !$this->EOF) {
+			$this->sendEOF();
+		}
+	}
+
+	/**
+	 * Send EOF
+	 * @return void
+	 */
+	public function sendEOF() {
+		if (!$this->EOF) {
+			$this->EOF = true;
+			$this->onEOF();
+		}
+	}
+
+	/**
+	 * Moves $n bytes from input buffer to arbitrary buffer
+	 * @param EventBuffer Source nuffer
+	 * @return integer 
+	 */
+	public function readFromBuffer(EventBuffer $buf) {
+		if (!$this->req) {
+			return false;
+		}
+		$n = min($this->req->attrs->contentLength - $this->readed, $buf->length);
+		if ($n > 0) {
+			$m = $this->removeBuffer($buf, $n);
+			$this->readed += $m;
+			if ($m > 0) {
+				$this->onRead();
+			}
+		} else {
+			$this->onRead();
+			return 0;
+		}
+		return $m;
+	}
+
+	/**
+	 * Append string to input buffer
+	 * @param string Piece of request input
+	 * @param [boolean true Final call is THIS SEQUENCE of calls (not mandatory final in request)?
+	 * @return void
+	 */
+	public function readFromString($chunk, $final = true) {
+		$this->add($chunk);
+		$this->readed += strlen($chunk);
+		if ($final) {
+			$this->onRead();
+		}
+	}
+
+	/**
+	 * Parses multipart
+	 * @return void
+	 */
+	public function parseMultipart() {
 		start:
 		if ($this->frozen) {
 			return;
