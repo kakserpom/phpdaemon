@@ -1,3 +1,4 @@
+
 <?php
 /**
  * IOStream
@@ -312,15 +313,30 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Sets timeout
+	 * Set timeout
 	 * @param integer Timeout
 	 * @return void
 	 */
-	public function setTimeout($timeout) {
-		$this->timeout = $timeout;
+	public function setTimeout($rw) {
+		$this->setTimeouts($rw, $rw);
+	}
+
+	/**
+	 * Set timeouts
+	 * @param integer Read timeout
+	 * @param integer Write timeout
+	 * @return void
+	 */
+	public function setTimeouts($read, $write) {
+		$this->timeoutRead = $timeout;
+		$this->timeoutWrite = $timeout;
 		if ($this->timeout !== null) {
 			if ($this->bev) {
-				$this->bev->setTimeouts($this->timeout, $this->timeout);
+				$this->bev->setTimeouts($this->timeoutRead, $this->timeoutWrite);
+			}
+			if (is_resource($this->fd)) {
+				socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeoutRead, 'usec' => 0]);
+				socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeoutWrite, 'usec' => 0]);
 			}
 		}
 	}
