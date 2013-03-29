@@ -825,8 +825,19 @@ abstract class IOStream {
 	 * @param integer Max. number of bytes to move
 	 * @return integer 
 	 */
-	public function moveInputToBuffer(EventBuffer $buf, $n) {
+	public function readToBuffer(EventBuffer $buf, $n) {
 		return $buf->removeBuffer($this->bev->input, $n);
+	}
+
+
+	/**
+	 * Moves $n bytes from $buf buffer to output buffer
+	 * @param EventBuffer Destination nuffer
+	 * @param integer Max. number of bytes to move
+	 * @return integer 
+	 */
+	public function writeFromBuffer(EventBuffer $buf, $n) {
+		return $this->bev->output->removeBuffer($buf, $n);
 	}
 
 	/**

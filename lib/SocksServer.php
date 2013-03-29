@@ -31,34 +31,35 @@ class SocksServer extends NetworkServer {
 }
 
 class SocksServerConnection extends Connection {
-	public $ver; // protocol version (X'04' / X'05')
-	public $state = 0; // (0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange)
-	public $slave;
+	protected $ver; // protocol version (X'04' / X'05')
+	protected $state = 0; // (0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange)
+	protected $slave;
 	const STATE_ABORTED = 1;
 	const STATE_HANDSHAKED = 2;
 	const STATE_AUTHORIZED = 3;
 	const STATE_DATAFLOW = 4;
+	protected $lowMark = 2;
+	protected $highMark = 32768;
 
 	/**
 	 * Called when new data received.
-	 * @param string New data.
 	 * @return void
 	 */
-	public function stdin($buf) {
+	public function onRead() {
 		if ($this->state === self::STATE_DATAFLOW) {
 			// Data exchange
 			if ($this->slave) {
-				$this->slave->write($buf);
+				do {
+					$this->slave->writeFromBuffer($this->bev->input, $this->bev->input->length);
+				} while ($this->bev->input->length > 0);
 			}
 
 			return;
 		}
 		
-		$this->buf .= $buf;
-
 		start:
 
-		$l = strlen($this->buf);
+		$l = $this->bev->input->length;
 	
 		if ($this->state === self::STATE_ROOT) {
 			// Start
@@ -67,23 +68,24 @@ class SocksServerConnection extends Connection {
 				return;
 			} 
 			
-			$n = ord(binarySubstr($this->buf, 1, 1));
+			$buf = $this->look(2);
+			$n = ord(binarySubstr($buf, 1, 1));
 
 			if ($l < $n + 2) {
 				// Not enough data yet
 				return;
 			} 
-			
-			$this->ver = binarySubstr($this->buf, 0, 1);
-			$methods = binarySubstr($this->buf, 2, $n);
-			$this->buf = binarySubstr($this->buf, $n + 2);
+			$this->drain(2);
+
+			$this->ver = $buf{0};
+			$methods = $this->read($n);
 
 			if (!$this->pool->config->auth->value) {
 				// No auth
 				$m = "\x00";
 				$this->state = self::STATE_AUTHORIZED;
 			} 
-			elseif (strpos($methods, "\x02") !== FALSE) {
+			elseif (strpos($methods, "\x02") !== false) {
 				// Username/Password authentication
 				$m = "\x02";
 				$this->state = self::STATE_HANDSHAKED;
@@ -108,42 +110,41 @@ class SocksServerConnection extends Connection {
 				return;
 			} 
 
-			$ver = binarySubstr($this->buf, 0, 1);
+			$buf = $this->look(3);
+			$ver = $buf{0};
 
 			if ($ver !== $this->ver) {
 				$this->finish();
 				return;
 			}
 	
-			$ulen = ord(binarySubstr($this->buf, 1, 1));
+			$ulen = ord(binarySubstr($buf, 1, 1));
 
 			if ($l < 3 + $ulen) {
 				// Not enough data yet
 				return;
 			} 
-
-			$username = binarySubstr($this->buf, 2, $ulen);
-			$plen = ord(binarySubstr($this->buf, 1, 1));
+			$buf = $this->look(3 + $ulen);
+			$username = binarySubstr($buf, 2, $ulen);
+			$plen = ord(binarySubstr($buf, 1, 1));
 
 			if ($l < 3 + $ulen + $plen) {
 				// Not enough data yet
 				return;
-			} 
-
-			$password = binarySubstr($this->buf, 2 + $ulen, $plen);
+			}
+			$this->drain(3 + $ulen);
+			$password = $this->read($plen);
 
 			if (
-				($username != $this->pool->config->username->value) 
-				|| ($password != $this->pool->config->password->value)
+				($username !== $this->pool->config->username->value) 
+				|| ($password !== $this->pool->config->password->value)
 			) {
-				$this->state = 1;
+				$this->state = self::STATE_ABORTED;
 				$m = "\x01";
 			} else {
-				$this->state = 3;
+				$this->state = self::STATE_AUTHORIZED;
 				$m = "\x00";
 			}
-			
-			$this->buf = binarySubstr($this->buf, 3 + $ulen + $plen);
 			$this->write($this->ver . $m);
 
 			if ($this->state === self::STATE_ABORTED) {
@@ -158,70 +159,62 @@ class SocksServerConnection extends Connection {
 				// Not enough data yet
 				return;
 			}
-
-			$ver = binarySubstr($this->buf, 0, 1);
+			$ver = $this->read(1);
 
 			if ($ver !== $this->ver) {
 				$this->finish();
 				return;
 			}
 			
-			$cmd = binarySubstr($this->buf, 1, 1);
-			$atype = binarySubstr($this->buf, 3, 1);
-			$pl = 4;
-
+			$cmd = $this->read(1);
+			$this->drain(1);
+			$atype = $this->read(1);
 			if ($atype === "\x01") {
-				$address = inet_ntop(binarySubstr($this->buf, $pl, 4)); 
-				$pl += 4;
+				$address = inet_ntop($this->read(4)); 
 			}
 			elseif ($atype === "\x03") {
-				$len = ord(binarySubstr($this->buf, $pl, 1));
-				++$pl;
-				$address = binarySubstr($this->buf, $pl, $len);
+				$len = ord($this->read(1));
+				$address = $this->read($len);
 				$pl += $len;
 			}
 			elseif ($atype === "\x04") {
-				$address = inet_ntop(binarySubstr($this->buf, $pl, 16)); 
-				$pl += 16;
+				$address = inet_ntop($this->read(16));
 			} else {
 				$this->finish();
 				return;
 			}
 			
-			$u = unpack('nport', $bin = binarySubstr($this->buf, $pl, 2));
+			$u = unpack('nport', $this->read(2));
 			$port = $u['port'];
-			$pl += 2;
-			$this->buf = binarySubstr($this->buf, $pl);
 
-			$conn = $this->pool->connectTo($this->destAddr = $address, $this->destPort = $port, 'SocksServerSlaveConnection');
-
-			if (!$conn) {
-				// Early connection error
-				$this->write($this->ver . "\x05");
-				$this->finish();
-			} else {
-				$this->slave = $conn;
-				$this->slave->client = $this;
-				$this->slave->write($this->buf);
-				$this->buf = '';
-				$this->state = self::STATE_DATAFLOW;
-			}
+			$this->destAddr = $address;
+			$this->destPort = $port;
+			$this->pool->connect('tcp://'.$this->destAddr . ':' . $this->destPort, function ($conn) {
+				if (!$conn) {
+					// Early connection error
+					$this->write($this->ver . "\x05");
+					$this->finish();
+				} else {
+					$conn->setClient($this);
+					$this->state = self::STATE_DATAFLOW;
+					$conn->getSocketName($addr, $port);
+					$this->slave = $conn;
+					$this->onSlaveReady(0x00, $addr, $port);
+					$this->onReadEv(null);
+				}
+			}, 'SocksServerSlaveConnection');
 		}
 	}
 
-	public function onSlaveReady($code) {
+	public function onSlaveReady($code, $addr, $port) {
 		$reply =
-			$this->ver // Version
+			$this->ver   // Version
 			. chr($code) // Status
-			. "\x00"; // Reserved
-
-		if (
-			Daemon::$useSockets 
-			&& socket_getsockname($this->fd, $address, $port)
-		) {
+			. "\x00";    // Reserved
+		if ($addr) {
 			$reply .=
-				(strpos($address, ':') === FALSE ? "\x01" : "\x04") // IPv4/IPv6
-				. inet_pton($address) // Address
+				(strpos($addr, ':') === FALSE ? "\x01" : "\x04") // IPv4/IPv6
+				. inet_pton($addr) // Address
 				. "\x00\x00"; //pack('n',$port) // Port
 		} else {
 			$reply .=
@@ -241,33 +234,32 @@ class SocksServerConnection extends Connection {
 		}
 	}
 }
-class SocksServerSlave extends NetworkServer {}
 class SocksServerSlaveConnection extends Connection {
 
-	public $client;
-	public $ready = false;
-
-	/**
-	 * Called when the connection is ready to accept new data.
-	 * @return void
-	 */
-	public function onWrite() {
-		if (!$this->ready) {
-			$this->ready = TRUE;
-		
-			if (isset($this->client)) {
-				$this->client->onSlaveReady(0x00);
-			}
-		}
-	}
+	protected $client;
+	protected $lowMark = 2;
+	protected $highMark = 32768;
 	
 	/**
-	 * Called when new data received.
-	 * @param string New data.
+	 * Set client
+	 * @param SocksServerConnection
 	 * @return void
 	 */
-	public function stdin($buf) {
-		$this->client->write($buf);
+	public function setClient($client) {
+		$this->client = $client;
+	}
+
+	/**
+	 * Called when new data received.
+	 * @return void
+	 */
+	public function onRead() {
+		if (!$this->client) {
+			return;
+		}
+		do {
+			$this->client->writeFromBuffer($this->bev->input, $this->bev->input->length);
+		} while ($this->bev->input->length > 0);
 	}
 
 	/**
@@ -278,7 +270,6 @@ class SocksServerSlaveConnection extends Connection {
 		if (isset($this->client)) {
 			$this->client->finish();
 		}
-	
 		unset($this->client);
 	}
 }
