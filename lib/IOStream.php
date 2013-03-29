@@ -320,7 +320,7 @@ abstract class IOStream {
 		$this->timeout = $timeout;
 		if ($this->timeout !== null) {
 			if ($this->bev) {
-				$this->bev->setTimeout($this->timeout, $this->timeout);
+				$this->bev->setTimeouts($this->timeout, $this->timeout);
 			}
 		}
 	}
