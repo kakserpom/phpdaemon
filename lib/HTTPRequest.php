@@ -684,18 +684,18 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Called when file upload started.
-	 * @param &hash curPart
+	 * @param HTTPRequestInput
 	 * @return void
 	 */
-	public function onUploadFileStart(&$curPart) {
+	public function onUploadFileStart($in) {
 		$this->freezeInput();
-		FS::tempnam(ini_get('upload_tmp_dir'), 'php', function ($fp) use (&$curPart) {
+		FS::tempnam(ini_get('upload_tmp_dir'), 'php', function ($fp) use ($in) {
 			if (!$fp) {
-				$curPart['fp'] = false;
-				$curPart['error'] = UPLOAD_ERR_NO_TMP_DIR;
+				$in->curPart['fp'] = false;
+				$in->curPart['error'] = UPLOAD_ERR_NO_TMP_DIR;
 			} else {
-				$curPart['fp'] = $fp;
-				$curPart['tmp_name'] = $fp->path;
+				$in->curPart['fp'] = $fp;
+				$in->curPart['tmp_name'] = $fp->path;
 			}
 			$this->unfreezeInput();
 		});
@@ -703,23 +703,32 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Called when chunk of incoming file has arrived.
-	 * @param &hash curPart
-	 * @param string Chunk data
+	 * @param HTTPRequestInput
 	 * @param boolean Last?
 	 * @return void
 	 */
-	public function onUploadFileChunk(&$curPart, $chunk, $last = false) {
-		if ($curPart['error'] !== UPLOAD_ERR_OK) {
+	public function onUploadFileChunk($in, $last = false) {
+		if ($in->curPart['error'] !== UPLOAD_ERR_OK) {
 			// just drop the chunk
 			return;
 		}
-		$this->freezeInput();
-		$curPart['fp']->write($chunk, function ($fp, $result) use ($last, &$curPart) {
+		$cb = function ($fp, $result) use ($last, $in) {
 			if ($last) {
-				unset($curPart['fp']);
+				unset($in->curPart['fp']);
 			}
 			$this->unfreezeInput();
-		});
+		};
+		if ($in->writeChunkToFd($in->curPart['fp']->getFd())) {
+			// We had written via internal method
+			return;
+		}
+		// Internal method is not available, let's get chunk data into $chunk and then use File->write()
+		$chunk = $in->getChunkString();
+		if ($chunk === false) {
+			return;
+		}
+		$this->freezeInput();
+		$in->curPart['fp']->write($chunk, $cb);
 	}
 
 	/**

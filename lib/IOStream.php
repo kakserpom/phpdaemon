@@ -1,4 +1,3 @@
-
 <?php
 /**
  * IOStream
@@ -99,7 +98,7 @@ abstract class IOStream {
 	/**
 	 * Stack of callbacks called when writing is done
 	 * @var object StackCallbacks
-	 */	
+	 */
 	protected $onWriteOnce;
 
 	/**

@@ -42,7 +42,7 @@ class HTTPRequestInput extends EventBuffer {
 	 * Current Part
 	 * @var hash
 	 */
-	protected $curPart;
+	public $curPart;
 
 	/**
 	 * Content dispostion of current Part
@@ -61,6 +61,12 @@ class HTTPRequestInput extends EventBuffer {
 	 * @var integer (self::STATE_*)
 	 */
 	protected $state = self::STATE_SEEKBOUNDARY;
+
+	/**
+	 * Size of current upload chunk
+	 * @var integer
+	 */
+	protected $curChunkSize;
 
 	const STATE_SEEKBOUNDARY = 0;
 	const STATE_HEADERS = 1;
@@ -266,7 +272,7 @@ class HTTPRequestInput extends EventBuffer {
 							'size'     => 0,
 						];
 						$this->curPart = &$this->req->attrs->files[$name];
-						$this->req->onUploadFileStart($this->curPart);
+						$this->req->onUploadFileStart($this);
 						$this->state = self::STATE_UPLOAD;
 					} else {
 						$this->curPart = &$this->req->attrs->post[$name];
@@ -294,8 +300,8 @@ class HTTPRequestInput extends EventBuffer {
 				if ($l <= 0) {
 					return;
 				}
-				$this->remove($chunk, $l);
 				if (($this->state === self::STATE_BODY) && isset($this->curPartDisp['name'])) {
+					$this->remove($chunk, $l);
 					$this->curPart .= $chunk;
 				}
 				elseif (($this->state === self::STATE_UPLOAD) && isset($this->curPartDisp['filename'])) {
@@ -313,24 +319,25 @@ class HTTPRequestInput extends EventBuffer {
 						$this->req->finish();
 					}
 					else {
-						$this->req->onUploadFileChunk($this->curPart, $chunk);
+						$this->curChunkSize = $l;
+						$this->req->onUploadFileChunk($this);
 					}
 				}
 			}
 			else {
 				if ($chunkEnd1 === false) {
-					$p = $chunkEnd2;
+					$l = $chunkEnd2;
 					$endOfMsg = true;
 				} else {
-					$p = $chunkEnd1;
+					$l = $chunkEnd1;
 					$endOfMsg = false;
 				}
 				/* we have entire Part in buffer */
-				$this->remove($chunk, $p);
 				if (
 					($this->state === self::STATE_BODY)
 					&& isset($this->curPartDisp['name'])
 				) {
+					$this->remove($chunk, $l);
 					$this->curPart .= $chunk;
 					if ($this->curPartDisp['name'] === 'MAX_FILE_SIZE') {
 						$this->maxFileSize = (int) $chunk;
@@ -340,8 +347,9 @@ class HTTPRequestInput extends EventBuffer {
 					($this->state === self::STATE_UPLOAD)
 					&& isset($this->curPartDisp['filename'])
 				) {
-					$this->curPart['size'] += $p;
-					$this->req->onUploadFileChunk($this->curPart, $chunk, true);
+					$this->curPart['size'] += $l;
+					$this->curChunkSize = $l;
+					$this->req->onUploadFileChunk($this, true);
 				}
 
 				if ($endOfMsg) { // end of whole message
@@ -353,6 +361,36 @@ class HTTPRequestInput extends EventBuffer {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Get current upload chunk as string
+	 * @return string Chunk body
+	 */
+	public function getChunkString() {
+		if (!$this->curChunkSize) {
+			return false;
+		}
+		$this->remove($chunk, $this->curChunkSize);
+		$this->curChunkSize = null;
+		return $chunk;
+	}
+
+
+	/**
+	 * Write current upload chunk to file descriptor
+	 * @param mixed File destriptor
+	 * @param callable Callback
+	 * @return boolean Success
+	 */
+	public function writeChunkToFd($fd, $cb = null) {
+		return false; // It is not supported yet (segmentation fault in EventBuffer->write())
+		if (!$this->curChunkSize) {
+			return false;
+		}
+		$this->write($fd, $this->curChunkSize);
+		$this->curChunkSize = null;
+		return true;
 	}
 
 	/**

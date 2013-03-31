@@ -63,6 +63,18 @@ class File {
 	public $closed = false;
 
 	/**
+	 * File descriptor
+	 * @var mixed
+	 */
+	protected $fd;
+
+	/**
+	 * Stack of callbacks called when writing is done
+	 * @var object StackCallbacks
+	 */
+	protected $onWriteOnce;
+
+	/**
 	 * File constructor
  	 * @param resource File descriptor
 	 * @return void
@@ -71,6 +83,14 @@ class File {
 		$this->fd = $fd;
 		$this->path = $path;
 		$this->onWriteOnce = new StackCallbacks;
+	}
+
+	/**
+	 * Get file descriptor
+	 * @return mixed File descriptor
+	 */	
+	public function getFd() {
+		return $this->fd;
 	}
 
 	/**

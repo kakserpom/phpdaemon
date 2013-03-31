@@ -29,7 +29,7 @@ class IPCManager extends AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->socketurl = sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value));
+		$this->socketurl = sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value . "\x00" . Daemon::$config->user->value . "\x00" . Daemon::$config->group->value));
 		if (Daemon::$process instanceof Daemon_IPCThread) {
 			$this->pool = IPCManagerMasterPool::getInstance(array('listen' => $this->socketurl));
 			$this->pool->appInstance = $this;
