@@ -7,7 +7,7 @@
  *
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
-class Connection extends IOStream {
+abstract class Connection extends IOStream {
 
 	/**
 	 * Hostname

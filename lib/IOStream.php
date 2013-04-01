@@ -321,6 +321,21 @@ abstract class IOStream {
 	}
 
 	/**
+	 * Set socket option
+	 * @param integer Level
+	 * @param integer Option
+	 * @param mixed Value
+	 * @return void
+	 */
+	public function setOption($level, $optname, $val) {
+		if (is_resource($this->fd)) {
+			socket_set_option($this->fd, $level, $optname, $val);
+		} else {
+			EventUtil::setSocketOption($this->fd, $level, $optname, $val);
+		}
+	}
+
+	/**
 	 * Set timeouts
 	 * @param integer Read timeout
 	 * @param integer Write timeout
@@ -333,10 +348,8 @@ abstract class IOStream {
 			if ($this->bev) {
 				$this->bev->setTimeouts($this->timeoutRead, $this->timeoutWrite);
 			}
-			if (is_resource($this->fd)) {
-				socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeoutRead, 'usec' => 0]);
-				socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeoutWrite, 'usec' => 0]);
-			}
+			$this->setOption(SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeoutRead, 'usec' => 0]);
+			$this->setOption(SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeoutWrite, 'usec' => 0]);
 		}
 	}
 	

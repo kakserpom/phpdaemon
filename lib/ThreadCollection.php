@@ -19,7 +19,7 @@ class ThreadCollection {
 	 * Counter of spawned threads
 	 * @var int
 	 */
-	protected $spawncounter = 0;
+	protected $spawnCounter = 0;
 
 	/**
 	 * Pushes certain thread to the collection
