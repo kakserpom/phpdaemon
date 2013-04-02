@@ -67,17 +67,13 @@ class SocksServerConnection extends Connection {
 				// Not enough data yet
 				return;
 			} 
-			
-			$buf = $this->look(2);
-			$n = ord(binarySubstr($buf, 1, 1));
-
+			$n = ord($this->look(1, 1));
 			if ($l < $n + 2) {
 				// Not enough data yet
 				return;
 			} 
+			$this->ver = $this->look(1);
 			$this->drain(2);
-
-			$this->ver = $buf{0};
 			$methods = $this->read($n);
 
 			if (!$this->pool->config->auth->value) {
@@ -110,23 +106,20 @@ class SocksServerConnection extends Connection {
 				return;
 			} 
 
-			$buf = $this->look(3);
-			$ver = $buf{0};
+			$ver = $this->look(1);
 
 			if ($ver !== $this->ver) {
 				$this->finish();
 				return;
 			}
 	
-			$ulen = ord(binarySubstr($buf, 1, 1));
-
+			$ulen = ord($this->look(1, 1));
 			if ($l < 3 + $ulen) {
 				// Not enough data yet
 				return;
 			} 
-			$buf = $this->look(3 + $ulen);
-			$username = binarySubstr($buf, 2, $ulen);
-			$plen = ord(binarySubstr($buf, 1, 1));
+			$username = $this->look(2, $ulen);
+			$plen = ord($this->look(2 + $ulen, 1));
 
 			if ($l < 3 + $ulen + $plen) {
 				// Not enough data yet

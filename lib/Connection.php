@@ -10,6 +10,12 @@
 abstract class Connection extends IOStream {
 
 	/**
+	 * Path
+	 * @var string
+	 */
+	protected $path;
+
+	/**
 	 * Hostname
 	 * @var string
 	 */
@@ -418,6 +424,10 @@ abstract class Connection extends IOStream {
 		return $ctx;
 	}
 
+	/**
+	 * Get URL
+	 * @return string
+	 */
 	public function getUrl() {
 		return $this->url;
 	}
@@ -495,13 +505,11 @@ abstract class Connection extends IOStream {
 		$this->type = 'unix';
 
 		if (!$this->bevConnectEnabled) {
-			$fd = socket_create(AF_UNIX, SOCK_STREAM, 0);
+			$fd = socket_create(EventUtil::AF_UNIX, EventUtil::SOCK_STREAM, 0);
 			if (!$fd) {
 				return false;
 			}
 			socket_set_nonblock($fd);
-			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 			@socket_connect($fd, $path, 0);
 			$this->setFd($fd);
 			return true;
@@ -543,15 +551,16 @@ abstract class Connection extends IOStream {
 			$this->host = $this->hostReal;
 		}
 		$this->addr = $this->hostReal . ':raw';
-		$fd = socket_create(AF_INET, SOCK_RAW, 1);
+		$fd = socket_create(EventUtil::AF_INET, EventUtil::SOCK_RAW, 1);
 		if (!$fd) {
 			return false;
 		}
-		socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-		socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 		socket_set_nonblock($fd);
 		@socket_connect($fd, $host, 0);	
 		$this->setFd($fd);
+		if (!$this->bev) {
+			return false;
+		}
 		return true;
 	}
 
@@ -589,22 +598,23 @@ abstract class Connection extends IOStream {
 		$l = strlen($pton);
 		if ($l === 4) {
 			$this->addr = $host . ':' . $port;
-			$fd = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+			$fd = socket_create(EventUtil::AF_INET, EventUtil::SOCK_DGRAM, EventUtil::SOL_UDP);
 		} elseif ($l === 16) {
 			$this->addr = '[' . $host . ']:' . $port;
-			$fd = socket_create(AF_INET6, SOCK_DGRAM, SOL_UDP);
+			$fd = socket_create(EventUtil::AF_INET6, EventUtil::SOCK_DGRAM, EventUtil::SOL_UDP);
 		} else {
 			return false;
 		}
 		if (!$fd) {
 			return false;
 		}
-		socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-		socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 		socket_set_nonblock($fd);
 		@socket_connect($fd, $host, $port);
 		socket_getsockname($fd, $this->locAddr, $this->locPort);
 		$this->setFd($fd);
+		if (!$this->bev) {
+			return false;
+		}
 		return true;
 	}
 
@@ -645,12 +655,12 @@ abstract class Connection extends IOStream {
 		if ($l === 4) {
 			$this->addr = $host . ':' . $port;
 			if (!$this->bevConnectEnabled) {
-				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+				$fd = socket_create(EventUtil::AF_INET, EventUtil::SOCK_STREAM, EventUtil::SOL_TCP);
 			}
 		} elseif ($l === 16) {
 			$this->addr = '[' . $host . ']:' . $port;
 			if (!$this->bevConnectEnabled) {
-				$fd = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
+				$fd = socket_create(EventUtil::AF_INET6, EventUtil::SOCK_STREAM, EventUtil::SOL_TCP);
 			}
 		} else {
 			return false;
@@ -660,13 +670,6 @@ abstract class Connection extends IOStream {
 		}
 		if (!$this->bevConnectEnabled) {
 			socket_set_nonblock($fd);
-			socket_set_option($fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-			socket_set_option($fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-		}
-		if ($this->keepalive) {
-			if (!$this->bevConnect) {
-				socket_set_option($fd, SOL_SOCKET, SO_KEEPALIVE, 1);
-			}
 		}
 		if (!$this->bevConnectEnabled) {
 			@socket_connect($fd, $host, $port);
@@ -676,18 +679,47 @@ abstract class Connection extends IOStream {
 			$this->bevConnect = true;
 		}
 		$this->setFd($fd);
+		if (!$this->bev) {
+			return false;
+		}
 		return true;
 	}
 
-	/* Sets timeout
-	 * @param integer Timeout in seconds
+	/**
+	 * Set keepalive
 	 * @return void
 	 */
-	public function setTimeout($timeout) {
-		parent::setTimeout($timeout);
+	public function setKeepalive($bool) {
+		$this->keepalive = (bool) $bool;
+		$this->setOption(EventUtil::SOL_SOCKET, EventUtil::SO_KEEPALIVE, $this->keepalive ? true : false);
+	}
+
+	/**
+	 * Set timeouts
+	 * @param integer Read timeout in seconds
+	 * @param integer Write timeout in seconds
+	 * @return void
+	 */
+	public function setTimeouts($read, $write) {
+		parent::setTimeouts($read, $write);
 		if ($this->fd !== null) {
-			socket_set_option($this->fd, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-			socket_set_option($this->fd, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			$this->setOption(EventUtil::SOL_SOCKET, EventUtil::SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			$this->setOption(EventUtil::SOL_SOCKET, EventUtil::SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+		}
+	}
+
+	/**
+	 * Set socket option
+	 * @param integer Level
+	 * @param integer Option
+	 * @param mixed Value
+	 * @return void
+	 */
+	public function setOption($level, $optname, $val) {
+		if (is_resource($this->fd)) {
+			socket_set_option($this->fd, $level, $optname, $val);
+		} else {
+			EventUtil::setSocketOption($this->fd, $level, $optname, $val);
 		}
 	}
 }

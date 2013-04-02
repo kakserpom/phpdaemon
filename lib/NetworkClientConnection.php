@@ -8,6 +8,7 @@
  * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
  */
 class NetworkClientConnection extends Connection {
+
 	/**
 	 * Busy?
 	 * @var boolean

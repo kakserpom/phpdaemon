@@ -13,9 +13,9 @@ class XMPPClient extends NetworkClient {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			'port'			=> 5222,
-		);
+		];
 	}
 
 }

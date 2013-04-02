@@ -139,8 +139,8 @@ class HTTPRequestInput extends EventBuffer {
 		}
 		$this->req->attrs->inputDone = true;
 		if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
-			if ($this->remove($data, $this->length) > 0) {
-				HTTPRequest::parse_str($data, $this->req->attrs->post);
+			if (($l = $this->length) > 0) {
+				HTTPRequest::parse_str($this->read($l), $this->req->attrs->post);
 			}
 		}
 		$this->req->postPrepare();
@@ -182,7 +182,7 @@ class HTTPRequestInput extends EventBuffer {
 		}
 		$n = min($this->req->attrs->contentLength - $this->readed, $buf->length);
 		if ($n > 0) {
-			$m = $this->removeBuffer($buf, $n);
+			$m = $this->appendFrom($buf, $n);
 			$this->readed += $m;
 			if ($m > 0) {
 				$this->onRead();
@@ -224,7 +224,7 @@ class HTTPRequestInput extends EventBuffer {
 			}
 			// we have found the nearest boundary at position $p
 			if ($p > 0) {
-				$this->remove($extra, $p);
+				$extra = $this->read($p);
 				$this->log('parseBody(): SEEKBOUNDARY: got unexpected data before boundary (length = ' . $p . '): '.Debug::exportBytes($extra));
 			}
 			$this->drain(strlen($this->boundary) + 4); // drain 
@@ -301,8 +301,7 @@ class HTTPRequestInput extends EventBuffer {
 					return;
 				}
 				if (($this->state === self::STATE_BODY) && isset($this->curPartDisp['name'])) {
-					$this->remove($chunk, $l);
-					$this->curPart .= $chunk;
+					$this->curPart .= $this->read($l);
 				}
 				elseif (($this->state === self::STATE_UPLOAD) && isset($this->curPartDisp['filename'])) {
 					$this->curPart['size'] += $l;
@@ -337,8 +336,7 @@ class HTTPRequestInput extends EventBuffer {
 					($this->state === self::STATE_BODY)
 					&& isset($this->curPartDisp['name'])
 				) {
-					$this->remove($chunk, $l);
-					$this->curPart .= $chunk;
+					$this->curPart .= $this->read($l);
 					if ($this->curPartDisp['name'] === 'MAX_FILE_SIZE') {
 						$this->maxFileSize = (int) $chunk;
 					}
@@ -371,7 +369,7 @@ class HTTPRequestInput extends EventBuffer {
 		if (!$this->curChunkSize) {
 			return false;
 		}
-		$this->remove($chunk, $this->curChunkSize);
+		$chunk = $this->read($this->curChunkSize);
 		$this->curChunkSize = null;
 		return $chunk;
 	}
@@ -384,7 +382,7 @@ class HTTPRequestInput extends EventBuffer {
 	 * @return boolean Success
 	 */
 	public function writeChunkToFd($fd, $cb = null) {
-		return false; // It is not supported yet (segmentation fault in EventBuffer->write())
+		return false; // It is not supported yet (callback missing in EventBuffer->write())
 		if (!$this->curChunkSize) {
 			return false;
 		}

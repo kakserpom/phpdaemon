@@ -273,28 +273,32 @@ class Binary {
 	}
 
 
-	/**
-	 * Convert integer into binary bytes
-	 * @param number Number of length bytes
-	 * @param integer
-	 * @return string
+		/**
+	 * Converts integer to binary string
+	 * @param integer Length
+	 * @param integer Integer
+	 * @param boolean Optional. Little endian. Default value - false.
+	 * @return string Resulting binary string
 	 */
-	public static function int2bytes($len,$int = 1) {
- 		$hexstr = dechex($int);
- 		if ($len === NULL) {
- 			if (strlen($hexstr) % 2) {
- 				$hexstr = "0".$hexstr;
- 			}
- 		}
- 		else {
- 			$hexstr = str_repeat('0', $len * 2 - strlen($hexstr)) . $hexstr;
- 		}
- 		$bytes = strlen($hexstr)/2;
- 		$bin = '';
- 		for($i = 0; $i < $bytes; ++$i) {
- 			$bin .= chr(hexdec(binarySubstr($hexstr,$i*2,2)));
- 		}
- 		return $bin;
+	public static function int2bytes($len, $int = 0, $l = false) {
+		$hexstr = dechex($int);
+
+		if ($len === NULL) {
+			if (strlen($hexstr) % 2) {
+				$hexstr = "0".$hexstr;
+			}
+		} else {
+			$hexstr = str_repeat('0', $len * 2 - strlen($hexstr)) . $hexstr;
+		}
+		
+		$bytes = strlen($hexstr) / 2;
+		$bin = '';
+		
+		for($i = 0; $i < $bytes; ++$i) {
+			$bin .= chr(hexdec(substr($hexstr, $i * 2, 2)));
+		}
+		
+		return $l ? strrev($bin) : $bin;
 	}
 	
 
@@ -315,14 +319,13 @@ class Binary {
 	/**
 	 * @alias int2bytes
 	 */
-	public static function i2b($bytes, $val = 0) {
-		return static::int2bytes($bytes, $val);
+	public static function i2b($bytes, $int = 0, $l = false) {
+		return static::int2bytes($bytes, $val, $l);
 	}
-
 
 	/**
 	 * Convert bytes into integer
-	 * @param binary Bytes
+	 * @param string Bytes
 	 * @param boolean Little endian? Default is false
 	 * @return integer
 	 */
@@ -333,7 +336,7 @@ class Binary {
  		$dec = 0;
  		$len = strlen($str);
  		for($i = 0; $i < $len; ++$i) {
- 			$dec += ord(binarySubstr($str,$i,1))*pow(256,$len-$i-1);
+ 			$dec += ord(binarySubstr($str, $i, 1)) * pow(0x100, $len - $i - 1);
  		}
  		return $dec;
 	}

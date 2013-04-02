@@ -52,7 +52,7 @@ class ExampleWithMySQLRequest extends HTTPRequest {
 		$job('select', function($name, $job) use ($req) { // registering job named 'showvar'
 		
 			$req->appInstance->sql->getConnection(function($sql) use ($name, $job) {
-				if (!$sql->connected) {
+				if (!$sql->isConnected()) {
 					$job->setResult($name, null);
 					return null;
 				}

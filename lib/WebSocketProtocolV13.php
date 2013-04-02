@@ -131,55 +131,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol {
 	     }
 		return $data;
 	}
-	/**
-	 * Converts binary string to integer
-	 * @param string Binary string
-	 * @param boolean Optional. Little endian. Default value - false.
-	 * @return integer Resulting integer
-	 */
-	public function bytes2int($str, $l = FALSE)
-	{
-		if ($l) {
-			$str = strrev($str);
-		}
-		
-		$dec = 0;
-		$len = strlen($str);
-		
-		for($i = 0; $i < $len; ++$i) {
-			$dec += ord(binarySubstr($str, $i, 1)) * pow(0x100, $len - $i - 1);
-		}
-		
-		return $dec;
-	}
 
-	/**
-	 * Converts integer to binary string
-	 * @param integer Length
-	 * @param integer Integer
-	 * @param boolean Optional. Little endian. Default value - false.
-	 * @return string Resulting binary string
-	 */
-	function int2bytes($len, $int = 0, $l = FALSE) {
-		$hexstr = dechex($int);
-
-		if ($len === NULL) {
-			if (strlen($hexstr) % 2) {
-				$hexstr = "0".$hexstr;
-			}
-		} else {
-			$hexstr = str_repeat('0', $len * 2 - strlen($hexstr)) . $hexstr;
-		}
-		
-		$bytes = strlen($hexstr) / 2;
-		$bin = '';
-		
-		for($i = 0; $i < $bytes; ++$i) {
-			$bin .= chr(hexdec(substr($hexstr, $i * 2, 2)));
-		}
-		
-		return $l ? strrev($bin) : $bin;
-	}
 	/**
 	 * Data decoding, according to related IETF draft
 	 * 
@@ -189,8 +141,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol {
     public function onRead() {
 		$data = '';
 		while ($this->conn && (($buflen = $this->conn->getInputLength()) >= 2)) {
-			$hdr = $this->conn->look(20);
-			$first = ord(binarySubstr($hdr, 0, 1)); // first byte integer (fin, opcode)
+			$first = ord($this->conn->look(1)); // first byte integer (fin, opcode)
 			$firstBits = decbin($first);
 			$rsv1 = (bool) $firstBits[1];
 			$rsv2 = (bool) $firstBits[2];
@@ -206,7 +157,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol {
 				$this->conn->finish();
 				return;
 			}
-			$second = ord(binarySubstr($hdr, 1, 1)); // second byte integer (masked, payload length)
+			$second = ord($this->conn->look(1, 1)); // second byte integer (masked, payload length)
 			$fin =	(bool) ($first >> 7);
         	$isMasked   = (bool) ($second >> 7);
         	$dataLength = $second & 0x7f;
@@ -215,14 +166,14 @@ class WebSocketProtocolV13 extends WebSocketProtocol {
 				if ($buflen < $p + 2) {
 					return; // not enough data yet
 				}
-				$dataLength = $this->bytes2int(binarySubstr($hdr, $p, 2), false);
+				$dataLength = Binary::bytes2int($this->conn->look(2, $p), false);
 				$p += 2;
 			}
 			elseif ($dataLength === 0x7f) { // 8 bytes-length
 				if ($buflen < $p + 8) {
 					return; // not enough data yet
 				}
-            	$dataLength = $this->bytes2int(binarySubstr($hdr, $p, 8));
+            	$dataLength = Binary::bytes2int($this->conn->look(8, $p));
             	$p += 8;
             }
 			if ($this->conn->pool->maxAllowedPacket <= $dataLength) {
@@ -234,7 +185,7 @@ class WebSocketProtocolV13 extends WebSocketProtocol {
 				if ($buflen < $p + 4) {
 					return; // not enough data yet
 				}
-				$mask = binarySubstr($hdr, $p, 4);
+				$mask = $this->conn->look(4, $p);
 				$p += 4;
 			}
 			if ($buflen < $p + $dataLength) {

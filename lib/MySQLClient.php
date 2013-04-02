@@ -106,7 +106,7 @@ class MySQLClient extends NetworkClient {
 	protected function getConfigDefaults() {
 		return [
 			// @todo add description strings
-			'server'               =>  'mysql://root@127.0.0.1',
+			'server'               =>  'tcp://root@127.0.0.1/',
 			'port'					=> 3306,
 			'maxconnperserv'		=> 32,
 		];

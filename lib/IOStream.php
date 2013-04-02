@@ -266,7 +266,8 @@ abstract class IOStream {
 			$this->ready = true;
 			$this->alive = true;
 		} else {
-			$flags = !is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0 /*| EventBufferEvent::OPT_DEFER_CALLBACKS /* buggy option */;
+			$flags = !is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
+			$flags |= EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
 			if ($this->ctx) {
 				if ($this->ctx instanceof EventSslContext) {
 					$this->bev = EventBufferEvent::sslSocket(Daemon::$process->eventBase, $this->fd, $this->ctx, $this->ctxMode, $flags);
@@ -289,7 +290,7 @@ abstract class IOStream {
 			$this->bev->priority = $this->priority;
 		}
 		if ($this->timeout !== null) {
-			$this->bev->setTimeouts($this->timeout, $this->timeout);
+			$this->setTimeout($this->timeout);
 		}
 		if ($this->bevConnect && ($this->fd === null)) {
 			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port);
@@ -305,6 +306,9 @@ abstract class IOStream {
 		}
 		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
 		init:
+		if ($this->keepalive) {
+			$this->setKeepalive(true);
+		}
 		if (!$this->inited) {
 			$this->inited = true;
 			$this->init();
@@ -321,35 +325,16 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Set socket option
-	 * @param integer Level
-	 * @param integer Option
-	 * @param mixed Value
-	 * @return void
-	 */
-	public function setOption($level, $optname, $val) {
-		if (is_resource($this->fd)) {
-			socket_set_option($this->fd, $level, $optname, $val);
-		} else {
-			EventUtil::setSocketOption($this->fd, $level, $optname, $val);
-		}
-	}
-
-	/**
 	 * Set timeouts
-	 * @param integer Read timeout
-	 * @param integer Write timeout
+	 * @param integer Read timeout in seconds
+	 * @param integer Write timeout in seconds
 	 * @return void
 	 */
 	public function setTimeouts($read, $write) {
-		$this->timeoutRead = $timeout;
-		$this->timeoutWrite = $timeout;
-		if ($this->timeout !== null) {
-			if ($this->bev) {
-				$this->bev->setTimeouts($this->timeoutRead, $this->timeoutWrite);
-			}
-			$this->setOption(SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeoutRead, 'usec' => 0]);
-			$this->setOption(SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeoutWrite, 'usec' => 0]);
+		$this->timeoutRead = $read;
+		$this->timeoutWrite = $write;
+		if ($this->bev) {
+			$this->bev->setTimeouts($this->timeoutRead, $this->timeoutWrite);
 		}
 	}
 	
@@ -449,15 +434,14 @@ abstract class IOStream {
 	 * @param integer Number of bytes to read
 	 * @return string|false
 	 */
-	public function lookExact($n) {
+	public function lookExact($n, $o = 0) {
 		if (!isset($this->bev)) {
 			return false;
 		}
-		if ($this->bev->input->length < $n) {
+		$data = $this->bev->input->substr($o, $n);
+		if (strlen($data) < $n) {
 			return false;
 		}
-		$data = $this->read($n);
-		$this->bev->input->prepend($data);
 		return $data;
 	}
 
@@ -484,15 +468,30 @@ abstract class IOStream {
 		return $this->bev->output->prepend($str);
 	}
 
-	/* Reads maximum $n bytes of buffer without draining
+	/* Read from buffer without draining
 	 * @param integer Number of bytes to read
+	 * @param integer [Offset
 	 * @return string|false
 	 */
-	public function look($n) {
-		$this->bev->input->copyout($data, $n);
-		return $data;
+	public function look($n, $o = 0) {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		return $this->bev->input->substr($o, $n);
 	}
 
+	/* Read from buffer without draining
+	 * @param Offset
+	 * @param [integer Number of bytes to read
+	 * @return string|false
+	 */
+	public function substr($o, $n = -1) {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		$this->bev->input->substr($o, $n);
+		return $data;
+	}
 
 	/* Searches first occurence of the string in input buffer
 	 * @param string Needle
@@ -500,7 +499,7 @@ abstract class IOStream {
 	 * @param [integer Offset end]
 	 * @return integer Position
 	 */
-	public function search($what, $start = null, $end = null) {
+	public function search($what, $start = 0, $end = -1) {
 		return $this->bev->input->search($what, $start, $end);
 	}
 
@@ -528,9 +527,8 @@ abstract class IOStream {
 		}
 		if ($this->bev->input->length < $n) {
 			return false;
-		} else {
-			return $this->read($n);
 		}
+		return $this->read($n);
 	}
 
 	/*
@@ -660,7 +658,6 @@ abstract class IOStream {
 			return;
 		}
 		$this->finished = true;
-		// if (!Daemon::$process->eventBase->gotStop()) /* @TODO: remove/uncomment */
 		Daemon::$process->eventBase->stop();
 		$this->onFinish();
 		if (!$this->writing) {
@@ -848,24 +845,29 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Moves $n bytes from input buffer to arbitrary buffer
+	 * Moves arbitrary number of bytes from input buffer to given buffer
 	 * @param EventBuffer Destination nuffer
 	 * @param integer Max. number of bytes to move
 	 * @return integer 
 	 */
-	public function readToBuffer(EventBuffer $buf, $n) {
-		return $buf->removeBuffer($this->bev->input, $n);
+	public function moveToBuffer(EventBuffer $dest, $n) {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		return $dest->appendFrom($this->bev->input, $n);
 	}
 
-
 	/**
-	 * Moves $n bytes from $buf buffer to output buffer
-	 * @param EventBuffer Destination nuffer
+	 * Moves arbitrary number of bytes from given buffer to output buffer
+	 * @param EventBuffer Source buffer
 	 * @param integer Max. number of bytes to move
 	 * @return integer 
 	 */
-	public function writeFromBuffer(EventBuffer $buf, $n) {
-		return $this->bev->output->removeBuffer($buf, $n);
+	public function writeFromBuffer(EventBuffer $src, $n) {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		return $this->bev->output->appendFrom($src, $n);
 	}
 
 	/**
@@ -874,15 +876,11 @@ abstract class IOStream {
 	 * @return string Readed data
 	 */
 	public function read($n) {
-		if (!$this->bev instanceof EventBufferEvent) {
+		if (!isset($this->bev)) {
 			return false;
 		}
-		$r = $this->bev->read($read, $n);
-		if (
-			($read === '') 
-			|| ($read === null) 
-			|| ($read === false)
-		) {
+		$read = $this->bev->read($n);
+		if ($read === null) {
 			return false;
 		}
 		return $read;
