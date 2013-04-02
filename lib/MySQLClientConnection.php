@@ -139,7 +139,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function onConnected($cb) {
-		if ($this->phase == self::PHASE_AUTH_ERR) {
+		if ($this->phase === self::PHASE_AUTH_ERR) {
 			call_user_func($cb, $this, false);
 		}
 		elseif ($this->phase === self::PHASE_HANDSHAKED) {
@@ -522,7 +522,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 		$this->resultRows = [];
 		$this->resultFields = [];
 
-		if (($this->phase === self::PHASE_AUTH_SENT) || ($this->phase == self::PHASE_GOT_INIT)) {
+		if (($this->phase === self::PHASE_AUTH_SENT) || ($this->phase === self::PHASE_GOT_INIT)) {
 			// in case of auth error
 			$this->phase = self::PHASE_AUTH_ERR;
 			$this->finish();

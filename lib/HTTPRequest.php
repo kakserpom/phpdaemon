@@ -252,7 +252,7 @@ class HTTPRequest extends Request {
 
 		if (
 			isset($this->attrs->server['REQUEST_METHOD'])
-			&& ($this->attrs->server['REQUEST_METHOD'] == 'POST')
+			&& ($this->attrs->server['REQUEST_METHOD'] === 'POST')
 			&& isset($this->attrs->server['HTTP_CONTENT_TYPE'])
 		) {
 			self::parse_str($this->attrs->server['HTTP_CONTENT_TYPE'], $this->contype, true);
@@ -283,7 +283,7 @@ class HTTPRequest extends Request {
 			$e = explode(' ', $this->attrs->server['HTTP_AUTHORIZATION'], 2);
 
 			if (
-				($e[0] == 'Basic')
+				($e[0] === 'Basic')
 				&& isset($e[1])
 			) {
 				$e[1] = base64_decode($e[1]);

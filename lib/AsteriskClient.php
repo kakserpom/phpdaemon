@@ -267,14 +267,14 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			}
 
 			if ((int)$this->state === self::CONN_STATE_AUTH) {
-				if ($this->instate == self::INPUT_STATE_END_OF_PACKET) {
-					if ($packet['response'] == 'success') {
+				if ($this->instate === self::INPUT_STATE_END_OF_PACKET) {
+					if ($packet['response'] === 'success') {
 						if ($this->state === self::CONN_STATE_CHALLENGE_PACKET_SENT) {
 							if (is_callable($this->onChallenge)) {
 								call_user_func($this->onChallenge, $this, $packet['challenge']);
 							}
 						} else {
-							if ($packet['message'] == 'authentication accepted') {
+							if ($packet['message'] === 'authentication accepted') {
 								$this->state = self::CONN_STATE_HANDSHAKED_OK;
 								
 								Daemon::$process->log(__METHOD__ . ': Authentication ok. Connected to ' . parse_url($this->addr, PHP_URL_HOST));
@@ -305,7 +305,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 					$this->packets = [];
 				}
 			} elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
-				if ($this->instate == self::INPUT_STATE_END_OF_PACKET) {
+				if ($this->instate === self::INPUT_STATE_END_OF_PACKET) {
 					// Event
 					if (isset($packet['event']) && !isset($packet['actionid'])) {
 						$this->event('event_' . $packet['event'], $packet);

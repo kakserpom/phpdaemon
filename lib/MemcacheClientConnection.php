@@ -26,7 +26,7 @@ class MemcacheClientConnection extends NetworkClientConnection {
 			while (($l = $this->readLine()) !== null) {
 				$e = explode(' ', $l);
 
-				if ($e[0] == 'VALUE') {
+				if ($e[0] === 'VALUE') {
 					$this->key = $e[1];
 					$this->valueFlags = $e[2];
 					$this->valueLength = $e[3];

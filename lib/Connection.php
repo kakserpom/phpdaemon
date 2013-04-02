@@ -209,7 +209,20 @@ abstract class Connection extends IOStream {
 		$this->addr = '[' . $this->host . ']:' . $this->port;
 	}
 
-
+	/**
+	 * Getter
+	 * @param string Name
+	 * @return void
+	 */
+	public function __get($name) {
+		if (in_array($name, [
+				'connected', 'hostReal', 'host', 'port', 'finished',
+				'alive', 'freed', 'url'
+		])) {
+			return $this->{$name};
+		}
+		return null;
+	}
 	/**
 	 * Get socket name
 	 * @param &string Addr
@@ -430,6 +443,22 @@ abstract class Connection extends IOStream {
 	 */
 	public function getUrl() {
 		return $this->url;
+	}
+
+	/**
+	 * Get host
+	 * @return string
+	 */
+	public function getHost() {
+		return $this->host;
+	}
+
+	/**
+	 * Get port
+	 * @return string
+	 */
+	public function getPort() {
+		return $this->port;
 	}
 
 	/**

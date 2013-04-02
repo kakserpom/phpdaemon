@@ -212,7 +212,7 @@ class ValveClientConnection extends NetworkClientConnection {
 			$u = unpack('f', binarySubstr($st, 0, 4));
 			$st = binarySubstr($st, 4);
 			$seconds = $u[1];
-			if ($seconds == -1) {
+			if ($seconds === -1) {
 				continue;
 			}
 			$players[] = [

@@ -248,7 +248,7 @@ class HTTPRequestInput extends EventBuffer {
 				if (isset($e[1])) {
 					$e[1] = ltrim($e[1]);
 				}
-				if (($e[0] == 'CONTENT_DISPOSITION') && isset($e[1])) {
+				if (($e[0] === 'CONTENT_DISPOSITION') && isset($e[1])) {
 					HTTPRequest::parse_str($e[1], $this->curPartDisp, true);
 					if (!isset($this->curPartDisp['form-data'])) {
 						break;
@@ -279,7 +279,7 @@ class HTTPRequestInput extends EventBuffer {
 						$this->curPart = '';
 					}
 				}
-				elseif (($e[0] == 'CONTENT_TYPE') && isset($e[1])) {
+				elseif (($e[0] === 'CONTENT_TYPE') && isset($e[1])) {
 					if (isset($this->curPartDisp['name']) && isset($this->curPartDisp['filename'])) {
 						$this->curPart['type'] = $e[1];
 					}
