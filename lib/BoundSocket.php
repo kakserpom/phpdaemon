@@ -288,7 +288,6 @@ abstract class BoundSocket {
 
 		if (!$this instanceof BoundUNIXSocket) {
 			$conn->setPeername($addrPort[0], $addrPort[1]);
-			$conn->checkPeername();
 		}
 
 		if ($this->ctx) {

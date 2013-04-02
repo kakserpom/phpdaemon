@@ -179,24 +179,6 @@ abstract class Connection extends IOStream {
 		return $this->connected;
 	}
 
-	protected static function initContextCache() {
-
-	}
-	/**
-	 * Tries to obtain peer name.
-	 * @return boolean Success
-	 */
-	public function fetchPeername() {
-		if (false === socket_getpeername($this->fd, $this->host, $this->port)) {
-			if (109 === socket_last_error()) {
-				return null;
-			}
-			return false;
-		}
-		$this->addr = '[' . $this->host . ']:' . $this->port;
-		return true;
-	}
-
 	/**
 	 * Sets peer name.
 	 * @param string Hostname
@@ -207,6 +189,13 @@ abstract class Connection extends IOStream {
 		$this->host = $host;
 		$this->port = $port;
 		$this->addr = '[' . $this->host . ']:' . $this->port;
+		if ($this->pool->allowedClients !== null) {
+			if (!BoundTCPSocket::netMatch($this->pool->allowedClients, $this->host)) {
+				Daemon::log('Connection is not allowed (' . $this->host . ')');
+				$this->ready = false;
+				$this->finish();
+			}
+		}
 	}
 
 	/**
@@ -244,34 +233,6 @@ abstract class Connection extends IOStream {
 	 */
 	public function setParentSocket(BoundSocket $sock) {
 		$this->parentSocket = $sock;
-	}
-	
-	/**
-	 * Check peer name
-	 * @return void
-	 */
-	public function checkPeername() {
-		if (isset($this->host)) {
-			goto check;
-		}
-		$r = $this->fetchPeername();
-		if ($r === false) {
-	   		return;
-   		}
-   		if ($r === null) { // interrupt
-   			if ($conn->pool->allowedClients !== null) {
-   				$conn->ready = false; // lockwait
-   			}
-   			$conn->onWriteOnce([$this, 'checkPeername']);
-   		}
-   		check:
-		if ($this->pool->allowedClients !== null) {
-			if (!BoundTCPSocket::netMatch($this->pool->allowedClients, $this->host)) {
-				Daemon::log('Connection is not allowed (' . $this->host . ')');
-				$this->ready = false;
-				$this->finish();
-			}
-		}
 	}
 
 	/**
