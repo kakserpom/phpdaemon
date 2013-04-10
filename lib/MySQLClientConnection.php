@@ -217,12 +217,12 @@ class MySQLClientConnection extends NetworkClientConnection {
 			return false;
 		}
 		if ($f === 252) {			
-			return $this->bytes2int($this->read(2), true);
+			return Binary::bytes2int($this->read(2), true);
 		}
 		if ($f === 253) {
-			return $this->bytes2int($this->read(3), true);
+			return Binary::bytes2int($this->read(3), true);
 		}
-		return $this->bytes2int($this->read(8), true);
+		return Binary::bytes2int($this->read(8), true);
 	}
 
 	/**
