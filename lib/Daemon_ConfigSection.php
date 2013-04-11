@@ -122,12 +122,11 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 				$value->imposeDefault($value);
 			}	else {
 				$current = $this->{$name};
-			  if (is_scalar($value))	{
+			  if (!is_object($value)) {
 					$this->{$name} = new Daemon_ConfigEntry($value);
 				} else {
 					$this->{$name} = $value;
 				}
-				
 				$this->{$name}->setHumanValue($current->value);
 				$this->{$name}->source = $current->source;
 				$this->{$name}->revision = $current->revision;
