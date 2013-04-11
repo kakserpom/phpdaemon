@@ -10,6 +10,10 @@
 /**************************************************************************/
 @ob_end_clean(); // clear shebang
 error_reporting(E_ALL);
+if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
+	echo 'PHP >= 5.4.0 required.' . PHP_EOL;
+	return;
+}
 
 foreach (array('/usr/share/phpdaemon', dirname(dirname(__FILE__))) as $d) {
 	if (@chdir($d)) {
