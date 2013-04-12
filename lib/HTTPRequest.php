@@ -48,7 +48,9 @@ class HTTPRequest extends Request {
 		414 => 'Request-URI Too Long',
 		415 => 'Unsupported Media Type',
 		416 => 'Requested Range Not Satisfiable',
-		417 => 'Expectation Failed',
+        417 => 'Expectation Failed',
+        422 => 'Unprocessable Entity',
+        423 => 'Locked',
 		500 => 'Internal Server Error',
 		501 => 'Not Implemented',
 		502 => 'Bad Gateway',
@@ -87,7 +89,7 @@ class HTTPRequest extends Request {
 	 */
 	public static $htr = ['-' => '_'];
 
-	
+
 
 	/**
 	 * Outgoing headers
@@ -194,7 +196,7 @@ class HTTPRequest extends Request {
 		});
 		return true;
 	}
-	
+
 	/**
 	 * Called to check if Request is ready
 	 * @return boolean Ready?
@@ -389,7 +391,7 @@ class HTTPRequest extends Request {
 		$this->upstream->requestOut($this, $h);
 		return false;
 	}
-	
+
 	/**
 	 * Output some data
 	 * @param string String to out
@@ -408,12 +410,12 @@ class HTTPRequest extends Request {
 		if (!isset($this->upstream)) {
 			return false;
 		}
-		
+
 		$l = strlen($s);
 		$this->responseLength += $l;
 
 		$this->ensureSentHeaders();
-		
+
 		if ($this->attrs->chunked) {
 			for ($o = 0; $o < $l;) {
 				$c = min($this->upstream->pool->config->chunksize->value, $l - $o);
