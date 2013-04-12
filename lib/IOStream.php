@@ -422,7 +422,13 @@ abstract class IOStream {
 		if ($ll < $l) {
 			return $in->search(substr($str, 0, $ll)) === 0 ? null : false;
 		}
-		if ($in->search($str, 0, $l) === 0) {
+		if ($ll === $l) {
+			if ($in->search($str) === 0) {
+				$in->drain($l);
+				return true;
+			}
+		}
+		elseif ($in->search($str, 0, $l) === 0) {
 			$in->drain($l);
 			return true;
 		}
