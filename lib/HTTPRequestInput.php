@@ -143,6 +143,7 @@ class HTTPRequestInput extends EventBuffer {
 		    $this->req->attrs->raw = $this->read($l);
 		    if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
 				HTTPRequest::parse_str($this->req->attrs->raw, $this->req->attrs->post);
+				unset($this->req->attrs->raw);
 			}
 		}
 		$this->req->postPrepare();
