@@ -138,9 +138,12 @@ class HTTPRequestInput extends EventBuffer {
 			return;
 		}
 		$this->req->attrs->inputDone = true;
-		if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
-			if (($l = $this->length) > 0) {
-				HTTPRequest::parse_str($this->read($l), $this->req->attrs->post);
+		$this->req->attrs->raw = '';
+		if (($l = $this->length) > 0) {
+		    $this->req->attrs->raw = $this->read($l);
+		    if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
+				HTTPRequest::parse_str($this->req->attrs->raw, $this->req->attrs->post);
+				unset($this->req->attrs->raw);
 			}
 		}
 		$this->req->postPrepare();
@@ -174,7 +177,7 @@ class HTTPRequestInput extends EventBuffer {
 	/**
 	 * Moves $n bytes from input buffer to arbitrary buffer
 	 * @param EventBuffer Source nuffer
-	 * @return integer 
+	 * @return integer
 	 */
 	public function readFromBuffer(EventBuffer $buf) {
 		if (!$this->req) {
@@ -227,7 +230,7 @@ class HTTPRequestInput extends EventBuffer {
 				$extra = $this->read($p);
 				$this->log('parseBody(): SEEKBOUNDARY: got unexpected data before boundary (length = ' . $p . '): '.Debug::exportBytes($extra));
 			}
-			$this->drain(strlen($this->boundary) + 4); // drain 
+			$this->drain(strlen($this->boundary) + 4); // drain
 			$this->state = self::STATE_HEADERS;
 		}
 		if ($this->state === self::STATE_HEADERS) {
@@ -295,7 +298,7 @@ class HTTPRequestInput extends EventBuffer {
 			$chunkEnd1 = $this->search("\r\n--" . $this->boundary . "\r\n");
 			$chunkEnd2 = $this->search("\r\n--" . $this->boundary . "--\r\n");
 			if ($chunkEnd1 === false && $chunkEnd2 === false) {
-				/*  we have only piece of Part in buffer */ 
+				/*  we have only piece of Part in buffer */
 				$l = $this->length - strlen($this->boundary) - 8;
 				if ($l <= 0) {
 					return;
