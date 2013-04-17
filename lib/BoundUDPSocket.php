@@ -112,7 +112,6 @@ class BoundUDPSocket extends BoundSocket {
 				return false;
 			}
 		}
-		Daemon::log(Debug::dump([$this->host, $this->port]));
 		if (!@socket_bind($sock, $this->host, $this->port)) {
 			$errno = socket_last_error();
 			Daemon::$process->log(get_class($this) . ': Couldn\'t bind UDP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
