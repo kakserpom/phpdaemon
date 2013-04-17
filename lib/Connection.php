@@ -180,6 +180,15 @@ abstract class Connection extends IOStream {
 	}
 
 	/**
+	 * Sets DGRAM mode
+	 * @param boolean
+	 * @return void
+	 */
+	public function setDgram($bool) {
+		$this->dgram = $bool;
+	}
+
+	/**
 	 * Sets peer name.
 	 * @param string Hostname
 	 * @param integer Port

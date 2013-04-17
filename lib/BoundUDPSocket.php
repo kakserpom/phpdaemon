@@ -62,7 +62,7 @@ class BoundUDPSocket extends BoundSocket {
 	 * @return mixed
 	 */
 	public function sendTo($data, $flags, $host, $port) {
-		return socket_sendto($this->fd, $data, strlen($data), $this->finished ? MSG_EOF : 0, $host, $port);
+		return socket_sendto($this->fd, $data, strlen($data), $flags, $host, $port);
 	}
 
 	/**
@@ -87,19 +87,19 @@ class BoundUDPSocket extends BoundSocket {
 	 * @return boolean Success.
 	 */
 	 public function bindSocket() {
-		$hp = explode(':', $this->addr, 2);
-		if (!isset($hp[1])) {
-			$hp[1] = $this->defaultPort;
-		}
-		$host = $hp[0];
-		$port = (int) $hp[1];
-		$addr = $host . ':' . $port;
 		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 		if (!$sock) {
 			$errno = socket_last_error();
 			Daemon::$process->log(get_class($this) . ': Couldn\'t create UDP-socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}
+		if (!isset($this->port)) {
+	 		if (isset($this->defaultPort)) {
+	 			$this->port = $this->defaultPort;
+	 		} else {
+	 			Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): no port defined for \''.$this->uri['uri'].'\'');
+	 		}
+	 	}
 		if ($this->reuse) {
 			if (!socket_set_option($sock, SOL_SOCKET, SO_REUSEADDR, 1)) {
 				$errno = socket_last_error();
@@ -112,9 +112,10 @@ class BoundUDPSocket extends BoundSocket {
 				return false;
 			}
 		}
-		if (!@socket_bind($sock, $hp[0], $hp[1])) {
+		Daemon::log(Debug::dump([$this->host, $this->port]));
+		if (!@socket_bind($sock, $this->host, $this->port)) {
 			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this) . ': Couldn\'t bind TCP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			Daemon::$process->log(get_class($this) . ': Couldn\'t bind UDP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}
 		socket_getsockname($sock, $this->host, $this->port);
@@ -197,12 +198,10 @@ class BoundUDPSocket extends BoundSocket {
 				}
 				$class = $this->pool->connectionClass;
 				$conn = new $class(null, $this->pool);
-				$conn->dgram = true;
-				$conn->onWriteEv();
-				$conn->host = $host;
-				$conn->port = $port;
-				$conn->addr = $key;
- 				$conn->parentSocket = $this;
+				$conn->setDgram(true);
+				$conn->onWriteEv(null);
+				$conn->setPeername($host, $port);
+ 				$conn->setParentSocket($this);
  				$this->portsMap[$key] = $conn;
  				$conn->timeoutRef = setTimeout(function($timer) use ($conn) {
  					$conn->finish();
