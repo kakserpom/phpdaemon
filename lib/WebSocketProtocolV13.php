@@ -54,7 +54,6 @@ class WebSocketProtocolV13 extends WebSocketProtocol {
                 . "Sec-WebSocket-Origin: " . $this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'] . "\r\n"
                 . "Sec-WebSocket-Location: ws://" . $this->conn->server['HTTP_HOST'] . $this->conn->server['REQUEST_URI'] . "\r\n"
                 . "Sec-WebSocket-Accept: " . base64_encode(sha1(trim($this->conn->server['HTTP_SEC_WEBSOCKET_KEY']) . "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", true)) . "\r\n";
-
             if (isset($this->conn->server['HTTP_SEC_WEBSOCKET_PROTOCOL'])) {
                 $reply .= "Sec-WebSocket-Protocol: " . $this->conn->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n";
             }

@@ -112,6 +112,12 @@ abstract class BoundSocket {
 	protected $verifypeer = false;
 
 	/**
+	 * Verify depth
+	 * @var integer
+	 */
+	protected $verifydepth;
+
+	/**
 	 * Allow self-signed?
 	 * @var boolean
 	 */
@@ -231,6 +237,9 @@ abstract class BoundSocket {
  			EventSslContext::OPT_VERIFY_PEER => $this->verifypeer,
  			EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
 		];
+		if ($this->verifydepth !== null) {
+			$params[EventSslContext::OPT_VERIFY_DEPTH] = $this->verifydepth;
+		}
 		if ($this->cafile !== null) {
 			$params[EventSslContext::OPT_CA_FILE] = $this->cafile;
 		}
