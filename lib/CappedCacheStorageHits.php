@@ -19,7 +19,7 @@ class CappedCacheStorageHits extends CappedCacheStorage {
 			$this->maxCacheSize = $max;
 		}
 		$this->sorter = function($a, $b) {
-			if ($a->hits == $b->hits) {
+			if ($a->hits === $b->hits) {
 				return 0;
 			}
 			return ($a->hits < $b->hits) ? 1 : -1;

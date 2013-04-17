@@ -94,6 +94,12 @@ abstract class BoundSocket {
 	protected $certfile;
 
 	/**
+	 * CA file
+	 * @var string
+	 */
+	protected $cafile;
+
+	/**
 	 * Passphrase
 	 * @var string
 	 */
@@ -218,14 +224,17 @@ abstract class BoundSocket {
 
 			return;
 		}
-
-	 	$this->ctx = new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, [
+		$params = [
  			EventSslContext::OPT_LOCAL_CERT  => $this->certfile,
  			EventSslContext::OPT_LOCAL_PK    => $this->pkfile,
  			EventSslContext::OPT_PASSPHRASE  => $this->passphrase,
  			EventSslContext::OPT_VERIFY_PEER => $this->verifypeer,
  			EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
-		]);
+		];
+		if ($this->cafile !== null) {
+			$params[EventSslContext::OPT_CA_FILE] = $this->cafile;
+		}
+	 	$this->ctx = new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, $params);
 	}
 
 	/**
