@@ -4,7 +4,7 @@
  * @package NetworkServers
  * @subpackage LockServer
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class LockServer extends NetworkServer {
 	

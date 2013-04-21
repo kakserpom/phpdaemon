@@ -8,7 +8,7 @@
  * @version 2.0
  * @author Ponomarev Dmitry <ponomarev.base@gmail.com> (original code)
  * @author TyShkan <denis@tyshkan.ru> (2.0)
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com> (2.0)
+ * @author Zorin Vasily <maintainer@daemon.io> (2.0)
  */
 class AsteriskClient extends NetworkClient {
 	
@@ -601,7 +601,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 
 	/**
 	 * Generate a unique ID.
-	 * @return Returns the unique identifier, as a string. 
+	 * @return string Returns the unique identifier, as a string. 
 	 */
 	protected function uniqid() {
 		static $n = 0;

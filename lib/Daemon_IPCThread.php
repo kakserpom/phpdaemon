@@ -5,7 +5,7 @@
  *
  * @package Core
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 // @TODO: respawning IPCThread on unexpected failures
 class Daemon_IPCThread extends Thread {
@@ -67,7 +67,6 @@ class Daemon_IPCThread extends Thread {
 		}
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
-			$oldfd = Daemon::$logpointerAsync->fd;
 			Daemon::$logpointerAsync->fd = null;
 			Daemon::$logpointerAsync = null;
 		}

@@ -3,7 +3,7 @@
  * @package NetworkClients
  * @subpackage DNSClient
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class DNSClient extends NetworkClient {
 	/**

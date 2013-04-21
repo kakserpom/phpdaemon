@@ -4,7 +4,7 @@
  * @package NetworkServers
  * @subpackage TelnetHoneypot
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class TelnetHoneypot extends NetworkServer {
 	/**

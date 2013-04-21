@@ -3,7 +3,7 @@
  * @package Applications
  * @subpackage MongoClientAsync
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class MongoClientAsync extends NetworkClient {
 	public $noSAF = true;
@@ -794,7 +794,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @return void
 	 */
 	public function killCursors($cursors = [], $key = '') {
-		$reqId = $this->request($key, self::OP_KILL_CURSORS, 
+		$this->request($key, self::OP_KILL_CURSORS, 
 			"\x00\x00\x00\x00"
 			. pack('V', sizeof($cursors))
 			. implode('', $cursors)
@@ -826,7 +826,7 @@ class MongoClientAsync extends NetworkClient {
 			$ids[] = $doc['_id'];
 		}
 		
-		$reqId = $this->request($key, self::OP_INSERT, 
+		$this->request($key, self::OP_INSERT, 
 			"\x00\x00\x00\x00"
 			. $col . "\x00"
 			. $bson
@@ -856,7 +856,7 @@ class MongoClientAsync extends NetworkClient {
 			$cond = new MongoCode($cond);
 		}
 		
-		$reqId = $this->request($key, self::OP_DELETE, 
+		$this->request($key, self::OP_DELETE, 
 			"\x00\x00\x00\x00"
 			. $col . "\x00"
 			. "\x00\x00\x00\x00"

@@ -5,7 +5,7 @@
  * 
  * @package Core
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Connection extends IOStream {
 
@@ -210,7 +210,7 @@ abstract class Connection extends IOStream {
 	/**
 	 * Getter
 	 * @param string Name
-	 * @return void
+	 * @return mixed
 	 */
 	public function __get($name) {
 		if (in_array($name, [

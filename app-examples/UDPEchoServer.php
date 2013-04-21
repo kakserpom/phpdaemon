@@ -4,7 +4,7 @@
  * @package Examples
  * @subpackage UDPEchoServer
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class UDPEchoServer extends NetworkServer {
 

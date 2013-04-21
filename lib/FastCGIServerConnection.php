@@ -4,7 +4,7 @@
  * @package NetworkServers
  * @subpackage Base
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class FastCGIServerConnection extends Connection {
 	protected $lowMark  = 8;         // initial value of the minimal amout of bytes in buffer

@@ -5,7 +5,7 @@
  * @package Examples
  * @subpackage Base
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class ExampleComplexJob extends AppInstance {
 

@@ -3,7 +3,7 @@
  * @package NetworkClients
  * @subpackage HTTPClient
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class HTTPClient extends NetworkClient {
 	/**

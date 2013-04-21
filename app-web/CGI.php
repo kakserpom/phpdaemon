@@ -4,7 +4,7 @@
  * @package Applications
  * @subpackage CGI
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class CGI extends AppInstance {
 

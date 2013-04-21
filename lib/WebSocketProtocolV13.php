@@ -138,13 +138,9 @@ class WebSocketProtocolV13 extends WebSocketProtocol {
 	 */
 
     public function onRead() {
-		$data = '';
 		while ($this->conn && (($buflen = $this->conn->getInputLength()) >= 2)) {
 			$first = ord($this->conn->look(1)); // first byte integer (fin, opcode)
 			$firstBits = decbin($first);
-			$rsv1 = (bool) $firstBits[1];
-			$rsv2 = (bool) $firstBits[2];
-			$rsv3 = (bool) $firstBits[3];
 			$opcode = (int) bindec(substr($firstBits, 4, 4));
 			if ($opcode === 0x8) { // CLOSE
         		$this->conn->finish();

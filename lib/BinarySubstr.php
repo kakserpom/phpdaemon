@@ -4,7 +4,7 @@
  *
  * @package Core
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 
 // @todo move to some class

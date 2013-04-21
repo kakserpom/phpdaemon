@@ -4,7 +4,7 @@
  * @package Network clients
  * @subpackage MySQLClient
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class MySQLClient extends NetworkClient {
 

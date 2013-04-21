@@ -5,7 +5,7 @@
  *
  * @package Core
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class Daemon_MasterThread extends Thread {
 
@@ -20,6 +20,7 @@ class Daemon_MasterThread extends Thread {
 	public $eventBaseConfig;
 	public $lastMpmActionTs;
 	public $minMpmActionInterval = 1; // in seconds
+	private $timerCb;
 	
 	/**
 	 * Runtime of Master process

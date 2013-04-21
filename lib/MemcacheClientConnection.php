@@ -3,7 +3,7 @@
  * @package Network clients
  * @subpackage MemcacheClient
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 
 class MemcacheClientConnection extends NetworkClientConnection {

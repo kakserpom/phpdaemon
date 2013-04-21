@@ -3,7 +3,7 @@
  * @package NetworkClients
  * @subpackage HLClient
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 // https://developer.valvesoftware.com/wiki/Server_queries
 class ValveClient extends NetworkClient {

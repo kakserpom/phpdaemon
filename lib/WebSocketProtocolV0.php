@@ -69,7 +69,7 @@ class WebSocketProtocolV0 extends WebSocketProtocol {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->conn->addr . '"') ;
 			return false;
 		}
-		$bodyData = binarySubstr($data, 0, 8) ;	
+		//$bodyData = binarySubstr($data, 0, 8) ;	
 		return md5($this->_computeKey($key1) . $this->_computeKey($key2) . binarySubstr($data, 0, 8), true);
 	}
 

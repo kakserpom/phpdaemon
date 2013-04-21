@@ -6,7 +6,7 @@
  * @package Applications
  * @subpackage GearmanNode
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class GearmanNode extends AppInstance {
 

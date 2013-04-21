@@ -4,7 +4,7 @@
  * @package NetworkServers
  * @subpackage SocksServer
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class SocksServer extends NetworkServer {
 	
@@ -168,7 +168,6 @@ class SocksServerConnection extends Connection {
 			elseif ($atype === "\x03") {
 				$len = ord($this->read(1));
 				$address = $this->read($len);
-				$pl += $len;
 			}
 			elseif ($atype === "\x04") {
 				$address = inet_ntop($this->read(16));

@@ -4,7 +4,7 @@
  * 
  * @package Core
  *
- * @author Zorin Vasily <kak.serpom.po.yaitsam@gmail.com>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
 class File {
 
@@ -73,6 +73,17 @@ class File {
 	 * @var object StackCallbacks
 	 */
 	protected $onWriteOnce;
+
+	/**
+	 * Cache of stat()
+	 * @var array
+	 */
+	protected $stat;
+	/**
+	 * Cache of statvfs()
+	 * @var array
+	 */
+	protected $statcfs;
 
 	/**
 	 * File constructor
@@ -400,7 +411,7 @@ class File {
 			$length,
 			$offset !== null ? $offset : $this->offset,
 			$pri,
-			$cb ? $cb: $this->onRead,
+			$cb,
 			$this
 		);
 		return true;
@@ -509,13 +520,12 @@ class File {
 		return eio_readahead(
 			$this->fd,
 			$length,
-			$offset !== null ? $offset : $this->pos,
+			$offset !== null ? $offset : $this->offset,
 			$pri,
 			$cb,
 			$this
 		);
 	}
-
 
 	/**
 	 * Reads whole file
@@ -623,20 +633,17 @@ class File {
 		return eio_seek($this->fd, $offset, $pri, $cb, $this);
 	}
 
-
 	/**
 	 * Get current pointer position
 	 * @return integer
 	 */
 	public function tell() {
 		if (EIO::$supported) {
-			return $this->pos;
+			return $this->offset;
 		}
 		return ftell($this->fd);
 	}
 	
-
-
 	/**
 	 * Close the file
 	 * @return resource
