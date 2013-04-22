@@ -191,10 +191,10 @@ class WebSocketProtocolV13 extends WebSocketProtocol {
 			if ($isMasked) {
 				$data = $this->mask($data, $mask);
 			}
-			//Daemon::log(Debug::dump(array('ext' => $this->conn->extensions, 'rsv1' => $rsv1, 'data' => Debug::exportBytes($data))));
-			if ($rsv1 && in_array('deflate-frame', $this->conn->extensions)) { // deflate frame
-				//$data = gzuncompress($data, $this->conn->pool->maxAllowedPacket);
-			}
+			//Daemon::log(Debug::dump(array('ext' => $this->conn->extensions, 'rsv1' => $firstBits[1], 'data' => Debug::exportBytes($data))));
+			/*if ($firstBits[1] && in_array('deflate-frame', $this->conn->extensions)) { // deflate frame
+				$data = gzuncompress($data, $this->conn->pool->maxAllowedPacket);
+			}*/
 			if (!$fin) {
 				$this->conn->framebuf .= $data;
 			} else {
