@@ -24,7 +24,13 @@ class File {
 	 * Stat
 	 * @var hash
 	 */
-	public $stat;
+	protected $stat;
+
+	/**
+	 * Cache of statvfs()
+	 * @var array
+	 */
+	protected $statvfs;
 
 	/**
 	 * Current offset 
@@ -74,16 +80,6 @@ class File {
 	 */
 	protected $onWriteOnce;
 
-	/**
-	 * Cache of stat()
-	 * @var array
-	 */
-	protected $stat;
-	/**
-	 * Cache of statvfs()
-	 * @var array
-	 */
-	protected $statcfs;
 
 	/**
 	 * File constructor
