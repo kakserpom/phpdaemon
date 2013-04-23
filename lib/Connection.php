@@ -694,6 +694,17 @@ abstract class Connection extends IOStream {
 	}
 
 	/**
+	 * Close the connection
+	 * @return void
+	 */
+	public function close() {
+		parent::close();
+		if (is_resource($this->fd)) {
+			socket_close($this->fd);
+		}
+	}
+
+	/**
 	 * Set timeouts
 	 * @param integer Read timeout in seconds
 	 * @param integer Write timeout in seconds

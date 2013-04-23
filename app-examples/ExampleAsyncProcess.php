@@ -31,29 +31,24 @@ class ExampleAsyncProcessRequest extends HTTPRequest {
 		$this->header('Content-Type: text/plain');
 
 		$this->proc = new AsyncProcess;
-
-		$this->proc->onReadData(
-			function($stream, $data) {
-				$stream->request->out($data);
-			}
-		);
-
-		$this->proc->onEOF(
-			function($stream) {
-				$stream->request->wakeup();
-			}
-		);
-
-		$this->proc->setRequest($this);
+		$this->proc->onReadData(function($stream, $data) {
+			echo $data;
+		});
+		$this->proc->onEOF(function($stream) {
+			$this->wakeup();
+		});
 		$this->proc->nice(256);
-		$this->proc->execute('ls -lia');
-		$this->proc->closeWrite();
+		$this->proc->execute('/bin/ls -l /tmp');
 	}
 
 	public function onAbort() {
 		if ($this->proc) {
 			$this->proc->close();
 		}
+	}
+
+	public function onFinish() {
+		$this->proc = null;
 	}
 
 	/**

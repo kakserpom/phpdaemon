@@ -687,7 +687,6 @@ abstract class IOStream {
 	
 	/**
 	 * Close the connection
-	 * @param integer Connection's ID
 	 * @return void
 	 */
 	public function close() {
@@ -697,9 +696,6 @@ abstract class IOStream {
 				$this->bev->free();
 			}
 			$this->bev = null;
-			if (is_resource($this->fd)) {
-				socket_close($this->fd);
-			}
 			//Daemon::$process->eventBase->stop();
 		}
 		if ($this->pool) {
