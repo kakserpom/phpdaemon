@@ -302,8 +302,51 @@ class AsyncProcess extends IOStream {
 
 	}
 
-	public function __destruct() {
-		Daemon::log('destructor');
+	/**
+	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
+	 * @param string Data to send.
+	 * @return boolean Success.
+	 */
+	public function write($data) {
+		if (!$this->alive) {
+			Daemon::log('Attempt to write to dead IOStream ('.get_class($this).')');
+			return false;
+		}
+		if (!isset($this->bevWrite)) {
+			return false;
+		}
+		if (!strlen($data)) {
+			return true;
+		}
+ 		$this->writing = true;
+ 		Daemon::$noError = true;
+		if (!$this->bevWrite->write($data) || !Daemon::$noError) {
+			$this->close();
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Send data and appending \n to connection. Note that it just writes to buffer flushed at every baseloop
+	 * @param string Data to send.
+	 * @return boolean Success.
+	 */
+	public function writeln($data) {
+		if (!$this->alive) {
+			Daemon::log('Attempt to write to dead IOStream ('.get_class($this).')');
+			return false;
+		}
+		if (!isset($this->bevWrite)) {
+			return false;
+		}
+		if (!strlen($data) && !strlen($this->EOL)) {
+			return true;
+		}
+ 		$this->writing = true;
+		$this->bevWrite->write($data);
+		$this->bevWrite->write($this->EOL);
+		return true;
 	}
 
 	public function onEOF($cb = NULL) {

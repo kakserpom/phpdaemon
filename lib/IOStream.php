@@ -629,6 +629,7 @@ abstract class IOStream {
  		Daemon::$noError = true;
 		if (!$this->bev->write($data) || !Daemon::$noError) {
 			$this->close();
+			return false;
 		}
 		return true;
 	}
