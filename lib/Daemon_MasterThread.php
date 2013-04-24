@@ -131,7 +131,7 @@ class Daemon_MasterThread extends Thread {
 			//Daemon::log('maxworkers = '.Daemon::$config->maxworkers->value);
 			//Daemon::log('maxspareworkers = '.Daemon::$config->maxspareworkers->value);
 			//Daemon::log(json_encode($state));
-			//Daemon::log('upToMinSpareWorkers = ' . $upToMinSpareWorkers . '   upToMinWorkers = ' . $upToMinWorker);
+			//Daemon::log('upToMinSpareWorkers = ' . $upToMinSpareWorkers . '   upToMinWorkers = ' . $upToMinWorkers);
 			Daemon::log('Spawning ' . $n . ' worker(s)');
 			$this->spawnWorkers($n);
 			return $n;

@@ -52,12 +52,6 @@ class Daemon_WorkerThread extends Thread {
 	protected $autoReloadLast = 0;
 
 	/**
-	 * Current status
-	 * @var integer
-	 */
-	protected $currentStatus = 0;
-
-	/**
 	 * Event base
 	 * @var EventBase
 	 */
@@ -183,7 +177,7 @@ class Daemon_WorkerThread extends Thread {
 
 		Timer::add(function($event) {
 
-			if (!Daemon::$runworkerMode || 1) {
+			if (!Daemon::$runworkerMode) {
 				$this->IPCManager->ensureConnection();
 			}
 
@@ -588,6 +582,9 @@ class Daemon_WorkerThread extends Thread {
 		if (!$this->id) {
 			return false;
 		}
+		if ($int === $this->state) {
+			return false;
+		}
 
 		if (Daemon::$config->logworkersetstate->value) {
 			$this->log('state is ' . Daemon::$wstateRev[$int]);
@@ -720,6 +717,8 @@ class Daemon_WorkerThread extends Thread {
 	 * @return void
 	 */
 	public function __destruct() {
-		$this->setState(Daemon::WSTATE_SHUTDOWN);
+		if (posix_getpid() === $this->pid) {
+			$this->setState(Daemon::WSTATE_SHUTDOWN);
+		}
 	}
 }

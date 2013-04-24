@@ -235,16 +235,16 @@ class AsyncProcess extends IOStream {
 			$this->cmd = 'nice -n ' . ((int) $this->nice) . ' ' . $this->cmd;
 		}
 
-		$pipesDescr = array(
-			0 => array('pipe', 'r'),  // stdin is a pipe that the child will read from
-			1 => array('pipe', 'w'),  // stdout is a pipe that the child will write to
+		$pipesDescr = [
+			0 => ['pipe', 'r'],  // stdin is a pipe that the child will read from
+			1 => ['pipe', 'w'],  // stdout is a pipe that the child will write to
 		);
 
 		if (
 			($this->errlogfile !== NULL) 
 			&& !$this->outputErrors
 		) {
-			//$pipesDescr[2] = array('file', $this->errlogfile, 'a');
+			//$pipesDescr[2] = ['file', $this->errlogfile, 'a'];
 		}
 
 		$this->pd = proc_open($this->cmd, $pipesDescr, $this->pipes);//, $this->cwd, $this->env);
