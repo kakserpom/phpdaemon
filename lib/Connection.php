@@ -597,10 +597,11 @@ abstract class Connection extends IOStream {
 		$l = strlen($pton);
 		if ($l === 4) {
 			$this->addr = $host . ':' . $port;
-			$fd = socket_create(EventUtil::AF_INET, EventUtil::SOCK_DGRAM, EventUtil::SOL_UDP);
+			/* @TODO: use EventUtil::SOCK_DGRAM */
+			$fd = socket_create(EventUtil::AF_INET, SOCK_DGRAM, EventUtil::SOL_UDP);
 		} elseif ($l === 16) {
 			$this->addr = '[' . $host . ']:' . $port;
-			$fd = socket_create(EventUtil::AF_INET6, EventUtil::SOCK_DGRAM, EventUtil::SOL_UDP);
+			$fd = socket_create(EventUtil::AF_INET6, SOCK_DGRAM, EventUtil::SOL_UDP);
 		} else {
 			return false;
 		}
