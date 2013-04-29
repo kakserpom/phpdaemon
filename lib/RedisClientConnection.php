@@ -115,12 +115,12 @@ class RedisClientConnection extends NetworkClientConnection {
 					$this->result = [binarySubstr($l, 1)];
 					goto start;
 				}
-				elseif ($char == '*') { // defines number of elements of incoming array
+				elseif ($char === '*') { // defines number of elements of incoming array
 					$this->resultLength = (int) substr($l, 1);
 					$this->result = [];
 					goto start;
 				}
-				elseif ($char == '$') { // defines size of the data block
+				elseif ($char === '$') { // defines size of the data block
 					$this->valueLength = (int) substr($l, 1);
 					$this->setWatermark($this->valueLength);
 					$this->state = self::STATE_BINARY; // binary data block

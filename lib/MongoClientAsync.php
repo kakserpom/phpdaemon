@@ -711,10 +711,7 @@ class MongoClientAsync extends NetworkClient {
 			$cond = new MongoCode($cond);
 		}
 		
-		if (
-			$flags 
-			& 1 == 1
-		) {
+		if ($flags) {
 			//if (!isset($data['_id'])) {$data['_id'] = new MongoId();}
 		}
 		
