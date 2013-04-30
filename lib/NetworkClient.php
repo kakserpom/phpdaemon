@@ -231,6 +231,16 @@ class NetworkClient extends ConnectionPool {
 	}
 
 	/**
+	 * Returns available connection from the pool by key
+	 * @param callable Callback
+	 * @return boolean Success
+	 */
+	public function getConnectionRR($cb = null) {
+		$addr = array_rand($this->servers);
+		return $this->getConnection($addr, $cb);
+	}
+
+	/**
 	 * Sends a request to arbitrary server
 	 * @param string Server
 	 * @param string Request

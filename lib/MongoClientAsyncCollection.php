@@ -25,10 +25,9 @@ class MongoClientAsyncCollection {
 	 * Finds objects in collection
 	 * @param mixed Callback called when response received
 	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
-	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function find($cb, $p = array(), $key = '') {
+	public function find($cb, $p = []) {
 		$p['col'] = $this->name;
 		$this->pool->find($p, $cb, $key);
 	}
@@ -40,9 +39,9 @@ class MongoClientAsyncCollection {
 	 * @param string Optional. Distribution key.
 	 * @return void
  	*/
-	public function findOne($cb, $p = array(), $key = '') {
+	public function findOne($cb, $p = []) {
 		$p['col'] = $this->name;
-		$this->pool->findOne($p, $cb, $key);
+		$this->pool->findOne($p, $cb);
 	}
 
 	/**
@@ -52,9 +51,9 @@ class MongoClientAsyncCollection {
 	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function count($cb, $p = array(), $key = '') {
+	public function count($cb, $p = []) {
 		$p['col'] = $this->name;
-		$this->pool->findCount($p, $cb, $key);
+		$this->pool->findCount($p, $cb);
 	}
 
 	/**
@@ -63,7 +62,7 @@ class MongoClientAsyncCollection {
 	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
 	 * @return void
 	 */
-	public function group($cb, $p = [], $key = '') {
+	public function group($cb, $p = []) {
 		$p['col'] = $this->name;
 		$this->pool->group($p, $cb, $key);
 	}
@@ -72,22 +71,22 @@ class MongoClientAsyncCollection {
 	 * Inserts an object
 	 * @param array Data
 	 * @param mixed Optional. Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * @param array Optional. Params.
 	 * @return MongoId
 	 */
-	public function insert($doc, $cb = NULL, $key = '') {
-		return $this->pool->insert($this->name, $doc, $cb, $key);
+	public function insert($doc, $cb = null, $params = null) {
+		return $this->pool->insert($this->name, $doc, $cb, $params);
 	}
 
 	/**
 	 * Inserts several documents
 	 * @param array Array of docs
 	 * @param mixed Optional. Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * @param array Optional. Params.
 	 * @return array IDs
 	 */
-	public function insertMulti($docs, $cb = NULL, $key = '') {
-		return $this->pool->insertMulti($this->name, $docs, $cb, $key);
+	public function insertMulti($docs, $cb = null, $params = null) {
+		return $this->pool->insertMulti($this->name, $docs, $cb, $params);
 	}
 
 	/**
@@ -96,11 +95,11 @@ class MongoClientAsyncCollection {
 	 * @param array Data
 	 * @param integer Optional. Flags.
 	 * @param mixed Optional. Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * @param array Optional. Params.
 	 * @return void
 	 */
-	public function update($cond, $data, $flags = 0, $cb = NULL, $key = '') {
-		$this->pool->update($this->name, $cond, $data, $flags, $cb, $key);
+	public function update($cond, $data, $flags = 0, $cb = null, $params = null) {
+		$this->pool->update($this->name, $cond, $data, $flags, $cb, $key, $params);
 	}
 
 	/**
@@ -108,11 +107,11 @@ class MongoClientAsyncCollection {
 	 * @param array Conditions
 	 * @param array Data
 	 * @param mixed Optional. Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * @param array Optional. Params.
 	 * @return void
 	 */
-	public function updateMulti($cond, $data, $cb = NULL, $key = '') {
-		$this->pool->updateMulti($this->name, $cond, $data, $cb, $key);
+	public function updateMulti($cond, $data, $cb = NULL, $params = null) {
+		$this->pool->updateMulti($this->name, $cond, $data, $cb, $params);
 	}
 
 	/**
@@ -121,42 +120,40 @@ class MongoClientAsyncCollection {
 	 * @param array Data
 	 * @param boolean Optional. Multi-flag.
 	 * @param mixed Optional. Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * @param array Optional. Params.
 	 * @return void
 	 */
-	public function upsert($cond, $data, $multi = false, $cb = NULL, $key = '') {
-		$this->pool->upsert($this->name, $cond, $data, $multi, $cb, $key);
+	public function upsert($cond, $data, $multi = false, $cb = NULL, $params = null) {
+		$this->pool->upsert($this->name, $cond, $data, $multi, $cb, $params);
 	}
 
 	/**
 	 * Removes objects from collection
 	 * @param array Conditions
 	 * @param mixed Optional. Callback called when response received.
-	 * @param string Optional. Distribution key.
+	 * @param array Optional. Params.
 	 * @return void
 	 */
-	public function remove($cond = array(), $cb = NULL, $key = '') {
-		$this->pool->remove($this->name, $cond, $cb, $key);
+	public function remove($cond = array(), $cb = NULL, $params = null) {
+		$this->pool->remove($this->name, $cond, $cb);
 	}
 
     /**
      * Evaluates a code on the server side
      * @param string Code
      * @param mixed Callback called when response received
-     * @param string Optional. Distribution key
      * @return void
      */
-    public function evaluate($code, $cb, $key = '') {
-		$this->pool->evaluate($code, $cb, $key);
+    public function evaluate($code, $cb) {
+		$this->pool->evaluate($code, $cb);
     }
 
     /**
      * Generation autoincrement
      * @param Closure $cb called when response received
-     * @param string $key Optional. Distribution key
      * @return void
      */
-    public function autoincrement($cb, $key = '') {
+    public function autoincrement($cb) {
 		$this->evaluate('function () { '
 			. 'return db.autoincrement.findAndModify({ '
 			. 'query: {"_id":' . json_encode($this->name) . '}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',

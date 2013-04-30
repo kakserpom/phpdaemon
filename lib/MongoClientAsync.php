@@ -75,14 +75,14 @@ class MongoClientAsync extends NetworkClient {
 
 	/**
 	 * Gets the key
-	 * @param string Key
 	 * @param integer Opcode (see constants above)
 	 * @param string Data
 	 * @param boolean Is an answer expected?
+	 * @param object Connection. Optional.
 	 * @return integer Request ID
 	 * @throws MongoClientAsyncConnectionFinished
 	 */
-	public function request($key, $opcode, $data, $reply = false) {
+	public function request($opcode, $data, $reply = false, $conn = null) {
 		$reqId = ++$this->lastReqId;
 		$cb = function ($conn) use ($opcode, $data, $reply, $reqId) {
 			if ($conn->isFinished()) {
@@ -95,13 +95,10 @@ class MongoClientAsync extends NetworkClient {
 				$conn->setFree(false);
 			}
 		};
-		if (
-			(is_object($key) 
-			&& ($key instanceof MongoClientAsyncConnection))
-		) {
-			$cb($key);
+		if (is_object($conn) && ($conn instanceof MongoClientAsyncConnection)) {
+			$cb($conn);
 		} else {
-			$this->getConnectionByKey($key, $cb);
+			$this->getConnectionRR($cb);
 		}
 		return $reqId;
 	}
@@ -110,10 +107,9 @@ class MongoClientAsync extends NetworkClient {
 	 * Finds objects in collection
 	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
 	 * @param mixed Callback called when response received
-	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function find($p, $callback, $key = '') {
+	public function find($p, $callback) {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -201,7 +197,7 @@ class MongoClientAsync extends NetworkClient {
 			$bson = str_replace("\x11\$gt", "\x09\$gt", $bson);
 		}
 
-		$reqId = $this->request($key, self::OP_QUERY, 
+		$reqId = $this->request(self::OP_QUERY, 
 			chr(bindec(strrev($p['opts']))) . "\x00\x00\x00"
 				. $p['col'] . "\x00"
 				. pack('VV', $p['offset'], $p['limit'])
@@ -216,10 +212,9 @@ class MongoClientAsync extends NetworkClient {
 	 * Finds one object in collection
 	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
 	 * @param mixed Callback called when response received
-	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function findOne($p, $callback, $key = '') {
+	public function findOne($p, $callback) {
 		if (isset($p['cachekey'])) {
 			$db = $this;
 			$this->cache->get($p['cachekey'], function($r) use ($db,  $p,  $callback,  $key) {
@@ -227,7 +222,7 @@ class MongoClientAsync extends NetworkClient {
 					call_user_func($callback, bson_decode($r->result));
 				} else {
 					unset($p['cachekey']);
-					$db->findOne($p, $callback, $key);
+					$db->findOne($p, $callback);
 				}
 			});
 			
@@ -302,7 +297,7 @@ class MongoClientAsync extends NetworkClient {
 			$o = $p['where'];
 		}
 		
-		$reqId = $this->request($key, self::OP_QUERY, 
+		$reqId = $this->request(self::OP_QUERY, 
 			pack('V', $p['opts'])
 				. $p['col'] . "\x00"
 				. pack('VV', $p['offset'], -1)
@@ -317,10 +312,9 @@ class MongoClientAsync extends NetworkClient {
 	 * Counts objects in collection
 	 * @param array Hash of properties (offset,  limit,  opts,  where,  col)
 	 * @param mixed Callback called when response received
-	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function findCount($p, $callback, $key = '') {
+	public function findCount($p, $callback) {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -373,7 +367,7 @@ class MongoClientAsync extends NetworkClient {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$reqId = $this->request(self::OP_QUERY, $packet, true);
 		$this->requests[$reqId] = [$p['col'], $callback, true];
 	}
 
@@ -384,7 +378,7 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function auth($p, $callback, $key = '') {
+	public function auth($p, $callback) {
 		if (!isset($p['opts'])) {
 			$p['opts'] = 0;
 		}
@@ -402,7 +396,7 @@ class MongoClientAsync extends NetworkClient {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$reqId = $this->request(self::OP_QUERY, $packet, true);
 		$this->requests[$reqId] = [$p['dbname'], $callback, true];
 	}
 
@@ -410,7 +404,7 @@ class MongoClientAsync extends NetworkClient {
 	 * Sends request of nonce
 	 * @return void
 	 */
-	public function getNonce($p, $callback, $key = '') {
+	public function getNonce($p, $callback) {
 		if (!isset($p['opts'])) {
 			$p['opts'] = 0;
 		}
@@ -424,7 +418,7 @@ class MongoClientAsync extends NetworkClient {
 			. pack('VV', 0, -1)
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
-		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$reqId = $this->request(self::OP_QUERY, $packet, true);
 		$this->requests[$reqId] = [$p['dbname'], $callback, true];
 	}
 
@@ -433,10 +427,10 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Dbname
 	 * @param mixed Callback called when response received
 	 * @param array Parameters.
-	 * @param string Optional. Distribution key
+	 * @param object Connection. Optional.
 	 * @return void
 	 */
-	public function lastError($db, $callback, $params = [], $key = '') {
+	public function lastError($db, $callback, $params = [], $conn = null) {
 		$e = explode('.', $db);
 		$params['getlasterror'] =  1;
 		$reqId = $this->request($key, self::OP_QUERY,
@@ -444,7 +438,7 @@ class MongoClientAsync extends NetworkClient {
 			. $e[0] . '.$cmd' . "\x00"
 			. pack('VV', 0, -1)
 			. bson_encode($params)
-		, true);
+		, true, $conn);
 		$this->requests[$reqId] = [$db, $callback, true];
 	}
 
@@ -452,10 +446,9 @@ class MongoClientAsync extends NetworkClient {
 	 * Find objects in collection using min/max specifiers
 	 * @param array Hash of properties (offset,  limit,  opts,  where,  col,  min,  max)
 	 * @param mixed Callback called when response received
-	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function range($p, $callback, $key = '') {
+	public function range($p, $callback) {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -514,7 +507,7 @@ class MongoClientAsync extends NetworkClient {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$reqId = $this->request(self::OP_QUERY, $packet, true);
 		$this->requests[$reqId] = [$p['col'], $callback, true];
 	}
 
@@ -522,10 +515,9 @@ class MongoClientAsync extends NetworkClient {
 	 * Evaluates a code on the server side
 	 * @param string Code
 	 * @param mixed Callback called when response received
-	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function evaluate($code, $callback, $key = '') {
+	public function evaluate($code, $callback) {
 		$p = [];
 		
 		if (!isset($p['offset'])) {
@@ -552,7 +544,7 @@ class MongoClientAsync extends NetworkClient {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 	
-		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$reqId = $this->request(self::OP_QUERY, $packet, true);
 		$this->requests[$reqId] = [$p['db'], $callback, true];
 	}
 
@@ -560,10 +552,9 @@ class MongoClientAsync extends NetworkClient {
 	 * Returns distinct values of the property
 	 * @param array Hash of properties (offset,  limit,  opts,  key,  col, where)
 	 * @param mixed Callback called when response received
-	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function distinct($p, $callback, $key = '') {
+	public function distinct($p, $callback) {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -610,7 +601,7 @@ class MongoClientAsync extends NetworkClient {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$reqId = $this->request(self::OP_QUERY, $packet, true);
 		$this->requests[$reqId] = [$p['col'], $callback, true];
 	}
 
@@ -618,10 +609,9 @@ class MongoClientAsync extends NetworkClient {
 	 * Groupping function
 	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
 	 * @param mixed Callback called when response received
-	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function group($p, $callback, $key = '') {
+	public function group($p, $callback) {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -687,7 +677,7 @@ class MongoClientAsync extends NetworkClient {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId = $this->request($key, self::OP_QUERY, $packet, true);
+		$reqId = $this->request(self::OP_QUERY, $packet, true);
 		$this->requests[$reqId] = [$p['col'], $callback, false];
 	}
 
@@ -699,10 +689,9 @@ class MongoClientAsync extends NetworkClient {
 	 * @param integer Optional. Flags.
 	 * @param callback Callback (getLastError)
 	 * @param array Parameters (getLastError).
-	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function update($col, $cond, $data, $flags = 0, $cb = NULL, $params = [], $key = '') {
+	public function update($col, $cond, $data, $flags = 0, $cb = NULL, $params = []) {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -735,11 +724,10 @@ class MongoClientAsync extends NetworkClient {
 	 * @param array Data
 	 * @param callback Callback
 	 * @param array Parameters (getLastError).
-	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function updateMulti($col, $cond, $data, $cb = NULL, $params = [], $key = '') {
-		$this->update($col, $cond, $data, 2, $cb, $params, $key);
+	public function updateMulti($col, $cond, $data, $cb = NULL, $params = []) {
+		$this->update($col, $cond, $data, 2, $cb, $params);
 	}
 
 	/**
@@ -748,21 +736,21 @@ class MongoClientAsync extends NetworkClient {
 	 * @param array Conditions
 	 * @param array Data
 	 * @param boolean Optional. Multi-flag. | array Parameters.
-	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $params = [], $key = '') {
-		$this->update($col, $cond, $data, $multi ? 3 : 1, $cb, $params, $key);
+	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $params = []) {
+		$this->update($col, $cond, $data, $multi ? 3 : 1, $cb, $params);
 	}
 
 	/**
 	 * Inserts an object
 	 * @param string Collection's name
 	 * @param array Data
-	 * @param string Optional. Distribution key.
+	 * @param callback Callback (getLastError)
+	 * @param array Parameters (getLastError).
 	 * @return MongoId
 	 */
-	public function insert($col, $doc = [], $cb = NULL, $params = [], $key = '') {
+	public function insert($col, $doc = [], $cb = NULL, $params = []) {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -771,7 +759,7 @@ class MongoClientAsync extends NetworkClient {
 			$doc['_id'] = new MongoId();
 		}
 		
-		$reqId = $this->request($key, self::OP_INSERT, 
+		$reqId = $this->request(self::OP_INSERT, 
 			"\x00\x00\x00\x00"
 			. $col . "\x00"
 			. bson_encode($doc)
@@ -787,11 +775,10 @@ class MongoClientAsync extends NetworkClient {
 	/**
 	 * Sends a request to kill certain cursors on the server side
 	 * @param array Array of cursors
-	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function killCursors($cursors = [], $key = '') {
-		$this->request($key, self::OP_KILL_CURSORS, 
+	public function killCursors($cursors = []) {
+		$this->request(self::OP_KILL_CURSORS, 
 			"\x00\x00\x00\x00"
 			. pack('V', sizeof($cursors))
 			. implode('', $cursors)
@@ -802,10 +789,9 @@ class MongoClientAsync extends NetworkClient {
 	 * Inserts several documents
 	 * @param string Collection's name
 	 * @param array Array of docs
-	 * @param string Optional. Distribution key.
 	 * @return array IDs
 	 */
-	public function insertMulti($col, $docs = [], $cb = NULL, $params = [], $key = '') {
+	public function insertMulti($col, $docs = [], $cb = NULL, $params = []) {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -823,7 +809,7 @@ class MongoClientAsync extends NetworkClient {
 			$ids[] = $doc['_id'];
 		}
 		
-		$this->request($key, self::OP_INSERT, 
+		$this->request(self::OP_INSERT, 
 			"\x00\x00\x00\x00"
 			. $col . "\x00"
 			. $bson
@@ -841,10 +827,9 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Collection's name
 	 * @param array Conditions
 	 * @param mixed Optional. Callback called when response received.
-	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function remove($col, $cond = array(), $cb = NULL, $params = [], $key = '') {
+	public function remove($col, $cond = array(), $cb = NULL, $params = []) {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -853,7 +838,7 @@ class MongoClientAsync extends NetworkClient {
 			$cond = new MongoCode($cond);
 		}
 		
-		$this->request($key, self::OP_DELETE, 
+		$this->request(self::OP_DELETE, 
 			"\x00\x00\x00\x00"
 			. $col . "\x00"
 			. "\x00\x00\x00\x00"
@@ -870,15 +855,14 @@ class MongoClientAsync extends NetworkClient {
 	 * @param string Collection's name
 	 * @param string Cursor's ID
 	 * @param integer Number of objects
-	 * @param string Optional. Distribution key.
 	 * @return void
 	 */
-	public function getMore($col, $id, $number, $key = '') {
+	public function getMore($col, $id, $number) {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 
-		$reqId = $this->request($key, self::OP_GETMORE, 
+		$reqId = $this->request(self::OP_GETMORE, 
 			"\x00\x00\x00\x00"
 			. $col . "\x00"
 			. pack('V', $number)
