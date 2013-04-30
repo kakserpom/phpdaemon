@@ -29,14 +29,13 @@ class MongoClientAsyncCollection {
 	 */
 	public function find($cb, $p = []) {
 		$p['col'] = $this->name;
-		$this->pool->find($p, $cb, $key);
+		$this->pool->find($p, $cb);
 	}
 
 	/**
 	 * Finds one object in collection
 	 * @param mixed Callback called when response received
 	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
-	 * @param string Optional. Distribution key.
 	 * @return void
  	*/
 	public function findOne($cb, $p = []) {
@@ -64,7 +63,7 @@ class MongoClientAsyncCollection {
 	 */
 	public function group($cb, $p = []) {
 		$p['col'] = $this->name;
-		$this->pool->group($p, $cb, $key);
+		$this->pool->group($p, $cb);
 	}
 
 	/**
@@ -99,7 +98,7 @@ class MongoClientAsyncCollection {
 	 * @return void
 	 */
 	public function update($cond, $data, $flags = 0, $cb = null, $params = null) {
-		$this->pool->update($this->name, $cond, $data, $flags, $cb, $key, $params);
+		$this->pool->update($this->name, $cond, $data, $flags, $cb, $params);
 	}
 
 	/**
@@ -157,6 +156,6 @@ class MongoClientAsyncCollection {
 		$this->evaluate('function () { '
 			. 'return db.autoincrement.findAndModify({ '
 			. 'query: {"_id":' . json_encode($this->name) . '}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',
-		$cb, $key);
+		$cb);
     }
 }

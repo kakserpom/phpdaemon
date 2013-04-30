@@ -231,7 +231,7 @@ class NetworkClient extends ConnectionPool {
 	}
 
 	/**
-	 * Returns available connection from the pool by key
+	 * Returns available connection from the pool
 	 * @param callable Callback
 	 * @return boolean Success
 	 */

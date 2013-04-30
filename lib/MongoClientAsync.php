@@ -217,7 +217,7 @@ class MongoClientAsync extends NetworkClient {
 	public function findOne($p, $callback) {
 		if (isset($p['cachekey'])) {
 			$db = $this;
-			$this->cache->get($p['cachekey'], function($r) use ($db,  $p,  $callback,  $key) {
+			$this->cache->get($p['cachekey'], function($r) use ($db,  $p,  $callback) {
 				if ($r->result !== NULL) {
 					call_user_func($callback, bson_decode($r->result));
 				} else {
@@ -433,7 +433,7 @@ class MongoClientAsync extends NetworkClient {
 	public function lastError($db, $callback, $params = [], $conn = null) {
 		$e = explode('.', $db);
 		$params['getlasterror'] =  1;
-		$reqId = $this->request($key, self::OP_QUERY,
+		$reqId = $this->request(self::OP_QUERY,
 			pack('V', 0)
 			. $e[0] . '.$cmd' . "\x00"
 			. pack('VV', 0, -1)
@@ -704,7 +704,7 @@ class MongoClientAsync extends NetworkClient {
 			//if (!isset($data['_id'])) {$data['_id'] = new MongoId();}
 		}
 		
-		$reqId = $this->request($key, self::OP_UPDATE, 
+		$reqId = $this->request(self::OP_UPDATE, 
 			"\x00\x00\x00\x00"
 			. $col . "\x00"
 			. pack('V', $flags)
