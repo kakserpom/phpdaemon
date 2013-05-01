@@ -320,7 +320,7 @@ class Binary {
 	 * @alias int2bytes
 	 */
 	public static function i2b($bytes, $int = 0, $l = false) {
-		return static::int2bytes($bytes, $val, $l);
+		return static::int2bytes($bytes, $int, $l);
 	}
 
 	/**
