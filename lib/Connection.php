@@ -580,7 +580,7 @@ abstract class Connection extends IOStream {
 				}
 				// @todo stack of addrs
 				if (is_array($result)) {
-					srand(Daemon::$process->pid);
+					srand(Daemon::$process->getPid());
 					$real = $result[rand(0, sizeof($result) - 1)];
 					srand();
 				} else {
@@ -636,7 +636,7 @@ abstract class Connection extends IOStream {
 				}
 				// @todo stack of addrs
 				if (is_array($result)) {
-					srand(Daemon::$process->pid);
+					srand(Daemon::$process->getPid());
 					$real = $result[rand(0, sizeof($result) - 1)];
 					srand();
 				} else {
