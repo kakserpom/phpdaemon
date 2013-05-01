@@ -82,6 +82,7 @@ class HTTPServerConnection extends Connection {
 		$srv['SERVER_PROTOCOL'] = isset($e[2]) ? $e[2] : 'HTTP/1.1';
 		$srv['REMOTE_ADDR'] = $this->host;
 		$srv['REMOTE_PORT'] = $this->port;
+		$srv['HTTPS'] = $this->ssl ? 'on' : 'off';
 		return true;
 	}
 
