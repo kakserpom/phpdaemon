@@ -600,18 +600,6 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	}
 
 	/**
-	 * Generate a unique ID.
-	 * @return string Returns the unique identifier, as a string. 
-	 */
-	protected function uniqid() {
-		static $n = 0;
-		return str_shuffle(md5(str_shuffle(
-				  microtime(true) . chr(mt_rand(0, 0xFF))
-				. Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
-				. (++$n) . mt_rand(0, mt_getrandmax()))));
-	}
-		
-	/**
 	 * Sends arbitrary command.
 	 * @param string $packet A packet for sending by the connected client to Asterisk
 	 * @param callable Callback called when response received.
@@ -626,7 +614,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			return;
 		}
 
-		$actionId = $this->uniqid();
+		$actionId = Daemon::uniqid();
 		
 		if (!is_callable($cb, true)) {
 			$cb = false;

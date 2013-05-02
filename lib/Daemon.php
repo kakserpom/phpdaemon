@@ -100,6 +100,18 @@ class Daemon {
 		    define("SO_REUSEPORT", 0x200);	// @TODO: FIXME: this is a BSD-only hack
 	}
 
+	/**
+	 * Generate a unique ID.
+	 * @return string Returns the unique identifier, as a string. 
+	 */
+	public static function uniqid() {
+		static $n = 0;
+		return str_shuffle(md5(str_shuffle(
+				  microtime(true) . chr(mt_rand(0, 0xFF))
+				. Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
+				. (++$n) . mt_rand(0, mt_getrandmax()))));
+	}
+		
 	public static function loadModuleIfAbsent($mod, $version = null, $compare = '>=') {
 		if (!extension_loaded($mod)) {
 			if (!get_cfg_var('enable_dl')) {
