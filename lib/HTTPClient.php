@@ -116,6 +116,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 	public $curChunk;
 	public $chunked = false;
 	public $protocolError;
+	public $responseCode = 0;
 	
 	public function get($url, $params = null) {
 		if (!is_array($params)) {
@@ -146,8 +147,6 @@ class HTTPClientConnection extends NetworkClientConnection {
 			$this->customRequestHeaders($params['headers']);
 		}
 		$this->writeln('');
-		$this->headers = [];
-		$this->body = '';
 		$this->onResponse->push($params['resultcb']);
 		$this->checkFree();
 	}
@@ -209,8 +208,6 @@ class HTTPClientConnection extends NetworkClientConnection {
 		}
 		$this->writeln('');
 		$this->write($body);
-		$this->headers = [];
-		$this->body = '';
 		$this->onResponse->push($params['resultcb']);
 		$this->checkFree();
 	}
@@ -252,6 +249,8 @@ class HTTPClientConnection extends NetworkClientConnection {
 			}
 			if ($this->state === self::STATE_ROOT) {
 				$this->headers['STATUS'] = rtrim($line);
+				$e = explode(' ', $this->headers['STATUS']);
+				$this->responseCode = isset($e[1]) ? (int) $e[1] : 0;
 				$this->state = self::STATE_HEADERS;
 			} elseif ($this->state === self::STATE_HEADERS) {
 				$e = explode(': ', rtrim($line));
@@ -340,6 +339,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 		$this->chunked = false;
 		$this->headers = [];
 		$this->body = '';
+		$this->responseCode = 0;
 		if (!$this->keepalive) {
 			$this->finish();
 		}
