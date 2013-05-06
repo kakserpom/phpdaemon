@@ -92,7 +92,7 @@ class FS {
 		}
 		self::updateConfig();
 		self::$fd = eio_get_event_stream();
-		self::$ev = new Event(Daemon::$process->eventBase, self::$fd, Event::READ | Event::PERSIST, function ($fd, $events, $arg) {
+		self::$ev = new \Event(Daemon::$process->eventBase, self::$fd, \Event::READ | \Event::PERSIST, function ($fd, $events, $arg) {
 			while (eio_nreqs()) {
 				eio_poll();
 			}

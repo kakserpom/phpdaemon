@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\PriorityQueueCallbacks;
+
 /**
  * Network client pattern
  * @extends ConnectionPool
@@ -120,7 +122,7 @@ class NetworkClient extends \PHPDaemon\ConnectionPool {
 			}
 			elseif ($storage->count() >= $this->maxConnPerServ) {
 				if (!isset($this->pending[$url])) {
-					$this->pending[$url] = new PriorityQueueCallbacks;
+					$this->pending[$url] = new PriorityQueueCallbacks();
 				}
 				$this->pending[$url]->enqueue($cb, $pri);
 				return true;

@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\StackCallbacks;
 use PHPDaemon\Thread;
 
 /**
@@ -119,8 +121,8 @@ class WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function run() {
-		$this->callbacks = new StackCallbacks;
-		if (Daemon::$process instanceof Daemon_MasterThread) {
+		$this->callbacks = new StackCallbacks();
+		if (Daemon::$process instanceof MasterThread) {
 			Daemon::$process->unregisterSignals();
 		}
 		if (Daemon::$process && Daemon::$process->eventBase) {
@@ -128,7 +130,7 @@ class WorkerThread extends Thread {
 			$this->eventBase = Daemon::$process->eventBase;
 		}
 		else {
-			$this->eventBase = new EventBase();
+			$this->eventBase = new \EventBase();
 		}
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {

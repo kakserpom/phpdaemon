@@ -3,6 +3,7 @@ namespace PHPDaemon\Clients;
 
 use PHPDaemon\EventHandlers;
 use PHPDaemon\Timer;
+use PHPDaemon\XMLStream;
 
 /**
  * @package    NetworkClients
@@ -136,7 +137,7 @@ class XMPPClientConnection extends NetworkClientConnection {
 	}
 
 	public function createXMLStream() {
-		$this->xml = new XMLStream;
+		$this->xml = new XMLStream();
 		$this->xml->setDefaultNS('jabber:client');
 		$this->xml->conn = $this;
 		$conn            = $this;

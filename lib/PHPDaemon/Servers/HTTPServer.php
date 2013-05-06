@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon\Servers;
 
+use PHPDaemon\Daemon\ConfigEntrySize;
+use PHPDaemon\Daemon\ConfigEntryTime;
+
 /**
  * @package    NetworkServer
  * @subpackage HTTPServer
@@ -72,13 +75,13 @@ class HTTPServer extends NetworkServer {
 			 * Keepalive time
 			 * @var time
 			 */
-			'keepalive'               => new Daemon_ConfigEntryTime('0s'),
+			'keepalive'               => new ConfigEntryTime('0s'),
 
 			/**
 			 * Chunk size
 			 * @var size
 			 */
-			'chunksize'               => new Daemon_ConfigEntrySize('8k'),
+			'chunksize'               => new ConfigEntrySize('8k'),
 
 			/**
 			 * Use X-Sendfile only if server['USE_SENDFILE'] provided.
@@ -102,7 +105,7 @@ class HTTPServer extends NetworkServer {
 			 * Maximum uploading file size.
 			 * @var size
 			 */
-			'upload-max-size'         => new Daemon_ConfigEntrySize(ini_get('upload_max_filesize')),
+			'upload-max-size'         => new ConfigEntrySize(ini_get('upload_max_filesize')),
 
 			/**
 			 * Reponder application (if you do not want to use AppResolver)

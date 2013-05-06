@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\StackCallbacks;
+
 class MySQLClientConnection extends NetworkClientConnection {
 
 	/**
@@ -147,7 +149,8 @@ class MySQLClientConnection extends NetworkClientConnection {
 		}
 		else {
 			if (!$this->onConnected) {
-				$this->onConnected = new StackCallbacks;
+				$this->onConnected = new StackCallbacks();
+				$this->onConnected = new StackCallbacks();
 			}
 			$this->onConnected->push($cb);
 		}

@@ -2,6 +2,7 @@
 namespace PHPDaemon\Servers;
 
 use PHPDaemon\Connection;
+use PHPDaemon\Daemon;
 
 /**
  * @package    NetworkServers

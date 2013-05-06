@@ -137,7 +137,7 @@ abstract class Thread {
 			) {
 				continue;
 			}
-			$ev = Event::signal($this->eventBase, $no, array($this, 'eventSighandler'), array($no));
+			$ev = \Event::signal($this->eventBase, $no, array($this, 'eventSighandler'), array($no));
 			if (!$ev) {
 				$this->log('Cannot event_set for ' . $name . ' signal');
 			}

@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\FS;
+
 /**
  * Bootstrap for PHPDaemon
  *

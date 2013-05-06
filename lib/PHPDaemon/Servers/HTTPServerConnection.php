@@ -2,6 +2,7 @@
 namespace PHPDaemon\Servers;
 
 use PHPDaemon\Connection;
+use PHPDaemon\HTTPRequest;
 
 /**
  * @package    NetworkServers

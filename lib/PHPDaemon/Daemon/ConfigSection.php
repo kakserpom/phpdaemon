@@ -22,7 +22,7 @@ class ConfigSection implements \ArrayAccess, \Countable {
 	public function __construct($arr = []) {
 		foreach ($arr as $k => $v) {
 			if (!is_object($v)) {
-				$e = new Daemon_ConfigEntry;
+				$e = new ConfigEntry;
 				$e->setHumanValue($v);
 				$this->{$k} = $e;
 			}

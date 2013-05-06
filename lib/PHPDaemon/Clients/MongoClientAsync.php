@@ -148,7 +148,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 
 		if (is_string($p['where'])) {
-			$p['where'] = new MongoCode($p['where']);
+			$p['where'] = new \MongoCode($p['where']);
 		}
 
 		$o = array();

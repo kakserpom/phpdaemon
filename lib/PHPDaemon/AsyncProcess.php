@@ -88,10 +88,10 @@ class AsyncProcess extends IOStream {
 			return;
 		}
 		$this->fdWrite = $this->pipes[0];
-		$flags         = !is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
+		$flags         = !is_resource($this->fd) ? \EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
 		$flags |= \EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
-		$this->bev      = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, 0, [$this, 'onReadEv'], null, [$this, 'onStateEv']);
-		$this->bevWrite = new EventBufferEvent(Daemon::$process->eventBase, $this->fdWrite, 0, null, [$this, 'onWriteEv'], null);
+		$this->bev      = new \EventBufferEvent(Daemon::$process->eventBase, $this->fd, 0, [$this, 'onReadEv'], null, [$this, 'onStateEv']);
+		$this->bevWrite = new \EventBufferEvent(Daemon::$process->eventBase, $this->fdWrite, 0, null, [$this, 'onWriteEv'], null);
 		if (!$this->bev || !$this->bevWrite) {
 			$this->finish();
 			return;
@@ -102,15 +102,15 @@ class AsyncProcess extends IOStream {
 		if ($this->timeout !== null) {
 			$this->setTimeout($this->timeout);
 		}
-		if (!$this->bev->enable(Event::READ | Event::TIMEOUT | Event::PERSIST)) {
+		if (!$this->bev->enable(\Event::READ | \Event::TIMEOUT | \Event::PERSIST)) {
 			$this->finish();
 			return;
 		}
-		if (!$this->bevWrite->enable(Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
+		if (!$this->bevWrite->enable(\Event::WRITE | \Event::TIMEOUT | \Event::PERSIST)) {
 			$this->finish();
 			return;
 		}
-		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
+		$this->bev->setWatermark(\Event::READ, $this->lowMark, $this->highMark);
 
 		init:
 		if (!$this->inited) {

@@ -92,7 +92,7 @@ class Request {
 	public function __construct($appInstance, $upstream, $parent = null) {
 		$this->appInstance = $appInstance;
 		$this->upstream    = $upstream;
-		$this->ev          = Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
+		$this->ev          = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
 		if ($this->priority !== null) {
 			$this->ev->priority = $this->priority;
 		}

@@ -2,6 +2,8 @@
 namespace PHPDaemon\Daemon;
 
 use PHPDaemon\Daemon;
+use PHPDaemon\FileWatcher;
+use PHPDaemon\FS;
 use PHPDaemon\Thread;
 
 /**
@@ -89,7 +91,7 @@ class IPCThread extends Thread {
 		FS::initEvent();
 		Daemon::openLogs();
 
-		$this->fileWatcher = new FileWatcher;
+		$this->fileWatcher = new FileWatcher();
 		$this->IPCManager  = Daemon::$appResolver->getInstanceByAppName('IPCManager');
 
 		while (!$this->breakMainLoop) {
