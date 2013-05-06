@@ -63,9 +63,6 @@ spl_autoload_register(function($classname) use ($autoloader, &$autoloadCache) {
 });
 
 class_exists('Debug');
-
-require 'lib/BinarySubstr.php';
-require 'lib/IgbinaryFallback.php';
 $e = null;
 execute:
 try {
