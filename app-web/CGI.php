@@ -1,14 +1,14 @@
 <?php
 
 /**
- * @package Applications
+ * @package    Applications
  * @subpackage CGI
  *
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class CGI extends AppInstance {
+class CGI extends \PHPDaemon\AppInstance {
 
-	public $binPath = 'php-cgi';   // Default bin-path
+	public $binPath = 'php-cgi'; // Default bin-path
 	public $binAliases = array(
 		'php5'   => '/usr/local/php/bin/php-cgi',
 		'php6'   => '/usr/local/php6/bin/php-cgi',
@@ -17,24 +17,24 @@ class CGI extends AppInstance {
 		'ruby'   => '/usr/local/bin/ruby',
 	);
 
-	public $chroot = '/';          // default chroot
+	public $chroot = '/'; // default chroot
 
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return [
 			// @todo add description strings
 			'allow-override-binpath' => true,
-			'allow-override-cwd' => true,
-			'allow-override-chroot' => true,
-			'allow-override-user' => true,
-			'allow-override-group' => true,
-			'cwd' => null,
-			'output-errors' => true,
-			'errlog-file' => __DIR__ . '/cgi-error.log',
+			'allow-override-cwd'     => true,
+			'allow-override-chroot'  => true,
+			'allow-override-user'    => true,
+			'allow-override-group'   => true,
+			'cwd'                    => null,
+			'output-errors'          => true,
+			'errlog-file'            => __DIR__ . '/cgi-error.log',
 		];
 	}
 
@@ -48,8 +48,8 @@ class CGI extends AppInstance {
 
 	/**
 	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
+	 * @param object $req      Request.
+	 * @param object $upstream Upstream application instance.
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
@@ -69,12 +69,12 @@ class CGIRequest extends HTTPRequest {
 	public function init() {
 		$this->header('Content-Type: text/html'); // default header.
 
-		$this->proc = new AsyncProcess;
+		$this->proc                 = new \PHPDaemon\AsyncProcess();
 		$this->proc->readPacketSize = $this->appInstance->readPacketSize;
-		$this->proc->onReadData(array($this,'onReadData'));
-		$this->proc->onWrite(array($this,'onWrite'));
+		$this->proc->onReadData(array($this, 'onReadData'));
+		$this->proc->onWrite(array($this, 'onWrite'));
 		$this->proc->binPath = $this->appInstance->binPath;
-		$this->proc->chroot = $this->appInstance->chroot;
+		$this->proc->chroot  = $this->appInstance->chroot;
 
 		if (isset($this->attrs->server['BINPATH'])) {
 			if (isset($this->appInstance->binAliases[$this->attrs->server['BINPATH']])) {
@@ -86,35 +86,36 @@ class CGIRequest extends HTTPRequest {
 		}
 
 		if (
-			isset($this->attrs->server['CHROOT']) 
+			isset($this->attrs->server['CHROOT'])
 			&& $this->appInstance->config->allowoverridechroot->value
 		) {
 			$this->proc->chroot = $this->attrs->server['CHROOT'];
 		}
 
 		if (
-			isset($this->attrs->server['SETUSER']) 
+			isset($this->attrs->server['SETUSER'])
 			&& $this->appInstance->config->allowoverrideuser->value
 		) {
 			$this->proc->setUser = $this->attrs->server['SETUSER'];
 		}
 
 		if (
-			isset($this->attrs->server['SETGROUP']) 
+			isset($this->attrs->server['SETGROUP'])
 			&& $this->appInstance->config->allowoverridegroup->value
 		) {
 			$this->proc->setGroup = $this->attrs->server['SETGROUP'];
 		}
 
 		if (
-			isset($this->attrs->server['CWD']) 
+			isset($this->attrs->server['CWD'])
 			&& $this->appInstance->config->allowoverridecwd->value
 		) {
 			$this->proc->cwd = $this->attrs->server['CWD'];
 		}
 		elseif ($this->appInstance->config->cwd->value !== NULL) {
 			$this->proc->cwd = $this->appInstance->config->cwd->value;
-		} else {
+		}
+		else {
 			$this->proc->cwd = dirname($this->attrs->server['SCRIPT_FILENAME']);
 		}
 
@@ -159,7 +160,7 @@ class CGIRequest extends HTTPRequest {
 	}
 
 	/**
-	 * Called when new data received from process.	
+	 * Called when new data received from process.
 	 * @param object Process pointer.
 	 * @param string Data.
 	 * @return void
@@ -169,16 +170,17 @@ class CGIRequest extends HTTPRequest {
 	}
 
 	/**
-	 * Called when new piece of request's body is received.	
+	 * Called when new piece of request's body is received.
 	 * @param string Piece of request's body.
 	 * @return void
 	 */
 	public function stdin($c) {
 		if ($c === '') {
 			$this->onWrite($this->proc);
-		} else {
+		}
+		else {
 			$this->proc->write($c);
 		}
 	}
-	
+
 }

@@ -234,23 +234,23 @@ $this->onWakeup();
 		<tr>
 			<td class="n"><a href="../">Parent Directory</a>/</td>
 			<td class="t">Directory</td>
+
 		</tr>
 		<?php
-		foreach ($dir['dents'] as $item)
-		{
-		$type = $item['type'] === EIO_DT_DIR ? 'Directory' : MIME::get($path . $item['name']);
-		?>
-		<tr>
-		<td class="n"><a href="<?php echo htmlspecialchars($item['name']) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($item['name']); ?></a></td>
-		<td class="t"><?php echo $type; ?></td>
-		</tr>
+		foreach ($dir['dents'] as $item) {
+			$type = $item['type'] === EIO_DT_DIR ? 'Directory' : \PHPDaemon\MIME::get($path . $item['name']);
+			?>
+			<tr>
+				<td class="n"><a href="<?php echo htmlspecialchars($item['name']) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($item['name']); ?></a></td>
+				<td class="t"><?php echo $type; ?></td>
+			</tr>
 		<?php } ?>
 		</tbody>
 	</table>
 </div>
-<?php if ($this->upstream->pool->config->expose->value)
-{ ?>
-<div class="foot">phpDaemon/<?php echo Daemon::$version; ?></div><?php } ?>
+<?php if ($this->upstream->pool->config->expose->value) {
+	?>
+	<div class="foot">phpDaemon/<?php echo PHPDaemon\Daemon::$version; ?></div><?php } ?>
 </body>
 </html><?php
 }
