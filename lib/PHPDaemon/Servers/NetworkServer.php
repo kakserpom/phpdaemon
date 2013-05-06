@@ -2,6 +2,7 @@
 namespace PHPDaemon\Servers;
 
 use PHPDaemon\ConnectionPool;
+use PHPDaemon\Request;
 
 /**
  * Network server pattern

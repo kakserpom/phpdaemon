@@ -47,7 +47,7 @@ class ConfigSection implements \ArrayAccess, \Countable {
 	public function toArray() {
 		$arr = [];
 		foreach ($this as $k => $entry) {
-			if (!$entry instanceof Daemon_ConfigEntry) {
+			if (!$entry instanceof ConfigEntry) {
 				continue;
 			}
 			$arr[$k] = $entry->value;

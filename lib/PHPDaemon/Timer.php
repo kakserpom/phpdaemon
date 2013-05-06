@@ -25,7 +25,7 @@ class Timer {
 		}
 		$this->id = $id;
 		$this->cb = $cb;
-		$this->ev = Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
+		$this->ev = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
 		if ($priority !== null) {
 			$this->setPriority($priority);
 		}

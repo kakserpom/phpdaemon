@@ -2,6 +2,7 @@
 namespace PHPDaemon\Clients;
 
 use PHPDaemon\EventHandlers;
+use PHPDaemon\Timer;
 
 /**
  * @package    NetworkClients

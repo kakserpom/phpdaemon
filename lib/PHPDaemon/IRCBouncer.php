@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Clients\IRCClient;
+use PHPDaemon\Clients\MongoClientAsync;
 use PHPDaemon\Servers\NetworkServer;
 
 class IRCBouncer extends NetworkServer {

@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\WebSocket;
 
+use PHPDaemon\Daemon;
+
 /**
  * Websocket protocol 13
  * @see    http://datatracker.ietf.org/doc/rfc6455/?include_text=1

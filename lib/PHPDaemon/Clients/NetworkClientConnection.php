@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\StackCallbacks;
+
 /**
  * Network client connection pattern
  * @extends Connection
@@ -42,7 +44,7 @@ class NetworkClientConnection extends \PHPDaemon\Connection {
 	 */
 	public function __construct($fd, $pool = null) {
 		parent::__construct($fd, $pool);
-		$this->onResponse = new StackCallbacks;
+		$this->onResponse = new StackCallbacks();
 	}
 
 	/**

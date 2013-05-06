@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\WebSocket;
 
+use PHPDaemon\Daemon;
+
 /**
  * Websocket protocol abstract class
  */

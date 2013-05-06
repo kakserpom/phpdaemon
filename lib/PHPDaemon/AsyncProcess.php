@@ -239,8 +239,8 @@ class AsyncProcess extends IOStream {
 
 		$pipesDescr = [
 			0 => ['pipe', 'r'], // stdin is a pipe that the child will read from
-			1 => ['pipe', 'w'],  // stdout is a pipe that the child will write to
-		);
+			1 => ['pipe', 'w'] // stdout is a pipe that the child will write to
+		];
 
 		if (
 			($this->errlogfile !== NULL)
@@ -249,7 +249,7 @@ class AsyncProcess extends IOStream {
 			//$pipesDescr[2] = ['file', $this->errlogfile, 'a'];
 		}
 
-		$this->pd = proc_open($this->cmd, $pipesDescr, $this->pipes);//, $this->cwd, $this->env);
+		$this->pd = proc_open($this->cmd, $pipesDescr, $this->pipes); //, $this->cwd, $this->env);
 		if ($this->pd) {
 			$this->setFd($this->pipes[1]);
 		}

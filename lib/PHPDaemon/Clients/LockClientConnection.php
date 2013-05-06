@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
+
 class LockClientConnection extends NetworkClientConnection {
 
 	/**

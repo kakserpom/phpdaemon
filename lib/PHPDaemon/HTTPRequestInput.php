@@ -8,7 +8,7 @@ namespace PHPDaemon;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class HTTPRequestInput extends EventBuffer {
+class HTTPRequestInput extends \EventBuffer {
 
 	/**
 	 * Boundary

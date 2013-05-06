@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\WebSocket;
 
+use PHPDaemon\Daemon;
 use PHPDaemon\Servers\NetworkServer;
 
 class WebSocketServer extends NetworkServer {
@@ -22,7 +23,7 @@ class WebSocketServer extends NetworkServer {
 			'expose'             => 1,
 			'listen'             => '0.0.0.0',
 			'port'               => 8047,
-			'max-allowed-packet' => new Daemon_ConfigEntrySize('1m'),
+			'max-allowed-packet' => new \PHPDaemon\Daemon\ConfigEntrySize('1m'),
 			'fps-name'           => '',
 		);
 	}

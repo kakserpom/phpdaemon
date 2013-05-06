@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon\Servers;
 
+use PHPDaemon\Daemon\ConfigEntrySize;
+use PHPDaemon\Daemon\ConfigEntryTime;
+
 /**
  * @package    NetworkServers
  * @subpackage Base
@@ -31,10 +34,10 @@ class FastCGIServer extends NetworkServer {
 			'send-file-dir'           => '/dev/shm',
 			'send-file-prefix'        => 'fcgi-',
 			'send-file-onlybycommand' => 0,
-			'keepalive'               => new Daemon_ConfigEntryTime('0s'),
-			'chunksize'               => new Daemon_ConfigEntrySize('8k'),
+			'keepalive'               => new ConfigEntryTime('0s'),
+			'chunksize'               => new ConfigEntrySize('8k'),
 			'defaultcharset'          => 'utf-8',
-			'upload-max-size'         => new Daemon_ConfigEntrySize(ini_get('upload_max_filesize')),
+			'upload-max-size'         => new ConfigEntrySize(ini_get('upload_max_filesize')),
 		);
 	}
 

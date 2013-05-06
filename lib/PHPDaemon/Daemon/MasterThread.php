@@ -1,7 +1,11 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\StackCallbacks;
 use PHPDaemon\Thread;
+use PHPDaemon\ThreadCollection;
+use PHPDaemon\Timer;
 
 /**
  * Implementation of the master thread
@@ -46,7 +50,7 @@ class MasterThread extends Thread {
 			$this->registerSignals();
 		}
 
-		$this->workers                   = new ThreadCollection;
+		$this->workers                   = new ThreadCollection();
 		$this->collections['workers']    = $this->workers;
 		$this->ipcthreads                = new ThreadCollection;
 		$this->collections['ipcthreads'] = $this->ipcthreads;
@@ -54,7 +58,7 @@ class MasterThread extends Thread {
 		Daemon::$appResolver = require Daemon::$appResolverPath;
 		Daemon::$appResolver->preload(true);
 
-		$this->callbacks = new StackCallbacks;
+		$this->callbacks = new StackCallbacks();
 		$this->spawnIPCThread();
 		$this->spawnWorkers(min(
 								Daemon::$config->startworkers->value,

@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\CallbackWrapper;
+
 /**
  * @package    NetworkClients
  * @subpackage RedisClient
@@ -45,7 +47,7 @@ class RedisClient extends NetworkClient {
 
 	/**
 	 * Magic __call.
-	 * @method Command name
+	 * @method $name Command name
 	 * @param   .. Command-dependent set of arguments ..
 	 * @param   [callback Callback. Optional.
 	 * @example $redis->lpush('mylist', microtime(true));

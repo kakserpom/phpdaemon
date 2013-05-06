@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\Servers\IdentServer;
+
 /**
  * @package    NetworkClients
  * @subpackage IRCClient

@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon\Servers;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\FS;
+
 class FlashPolicyServer extends NetworkServer {
 
 	/**
@@ -33,7 +36,7 @@ class FlashPolicyServer extends NetworkServer {
 	 */
 	public function onConfigUpdated() {
 		parent::onConfigUpdated();
-		if (Daemon::$process instanceof Daemon_WorkerThread) {
+		if (Daemon::$process instanceof Daemon\WorkerThread) {
 			$pool = $this;
 			FS::readfile($this->config->file->value, function ($file, $data) use ($pool) {
 				$pool->policyData = $data;

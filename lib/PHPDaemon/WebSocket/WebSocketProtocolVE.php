@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\WebSocket;
 
+use PHPDaemon\Daemon;
+
 /**
  * Websocket protocol hixie-76
  * @see         http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76

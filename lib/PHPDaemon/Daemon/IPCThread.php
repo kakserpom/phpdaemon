@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\Daemon;
 use PHPDaemon\Thread;
 
 /**
@@ -67,7 +68,7 @@ class IPCThread extends Thread {
 			$this->eventBase = Daemon::$process->eventBase;
 		}
 		else {
-			$this->eventBase = new EventBase();
+			$this->eventBase = new \EventBase();
 		}
 		Daemon::$process = $this;
 		if (Daemon::$logpointerAsync) {
