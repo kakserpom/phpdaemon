@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Servers;
+
+use PHPDaemon\Connection;
 
 /**
  * @package    NetworkServers

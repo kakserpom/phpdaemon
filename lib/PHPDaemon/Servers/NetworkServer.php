@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Servers;
+
+use PHPDaemon\ConnectionPool;
 
 /**
  * Network server pattern
