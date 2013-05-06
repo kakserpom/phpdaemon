@@ -237,7 +237,7 @@ $this->onWakeup();
 		</tr>
 		<?php
 		foreach ($dir['dents'] as $item) {
-			$type = $item['type'] === EIO_DT_DIR ? 'Directory' : MIME::get($path . $item['name']);
+			$type = $item['type'] === EIO_DT_DIR ? 'Directory' : \PHPDaemon\MIME::get($path . $item['name']);
 			?>
 			<tr>
 				<td class="n"><a href="<?php echo htmlspecialchars($item['name']) . ($type == 'Directory' ? '/' : ''); ?>"><?php echo htmlspecialchars($item['name']); ?></a></td>
