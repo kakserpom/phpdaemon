@@ -4,7 +4,7 @@ namespace PHPDaemon\WebSocket;
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
 
-class WebSocketServerConnection extends Connection {
+class ServerConnection extends Connection {
 
 	/**
 	 * Timeout
@@ -140,7 +140,7 @@ class WebSocketServerConnection extends Connection {
 		elseif (is_array($route) || is_object($route)) { // if we have a lambda object or callback reference
 			if (is_callable($route)) {
 				$ret = call_user_func($route, $this); // calling the route callback
-				if ($ret instanceof WebSocketRoute) {
+				if ($ret instanceof Route) {
 					$this->route = $ret;
 				}
 				else {
@@ -391,10 +391,10 @@ class WebSocketServerConnection extends Connection {
 		// ----------------------------------------------------------
 		if (isset($this->server['HTTP_SEC_WEBSOCKET_VERSION'])) { // HYBI
 			if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '8') { // Version 8 (FF7, Chrome14)
-				$this->protocol = new WebSocketProtocolV13($this);
+				$this->protocol = new ProtocolV13($this);
 			}
 			elseif ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '13') { // newest protocol
-				$this->protocol = new WebSocketProtocolV13($this);
+				$this->protocol = new ProtocolV13($this);
 			}
 			else {
 				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . " : Websocket protocol version " . $this->server['HTTP_SEC_WEBSOCKET_VERSION'] . ' is not yet supported for client "' . $this->addr . '"');
@@ -403,10 +403,10 @@ class WebSocketServerConnection extends Connection {
 			}
 		}
 		elseif (!isset($this->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
-			$this->protocol = new WebSocketProtocolVE($this);
+			$this->protocol = new ProtocolVE($this);
 		}
 		else { // Defaulting to HIXIE (Safari5 and many non-browser clients...)
-			$this->protocol = new WebSocketProtocolV0($this);
+			$this->protocol = new ProtocolV0($this);
 		}
 		// ----------------------------------------------------------
 		// End of protocol discovery

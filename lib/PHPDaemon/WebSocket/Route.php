@@ -8,7 +8,7 @@ namespace PHPDaemon\WebSocket;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class WebSocketRoute {
+class Route {
 
 	public $client; // Remote client
 	public $appInstance;

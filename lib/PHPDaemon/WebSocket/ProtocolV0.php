@@ -8,7 +8,7 @@ use PHPDaemon\Daemon;
  * @see    http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76
  */
 
-class WebSocketProtocolV0 extends WebSocketProtocol {
+class ProtocolV0 extends Protocol {
 
 	const STRING = 0x00;
 	const BINARY = 0x80;

@@ -7,7 +7,7 @@ use PHPDaemon\Daemon;
  * Websocket protocol abstract class
  */
 
-class WebSocketProtocol {
+class Protocol {
 
 	public $description;
 	public $conn;

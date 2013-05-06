@@ -8,7 +8,7 @@ use PHPDaemon\Daemon;
  * @see    http://datatracker.ietf.org/doc/rfc6455/?include_text=1
  */
 
-class WebSocketProtocolV13 extends WebSocketProtocol {
+class ProtocolV13 extends Protocol {
 	const CONTINUATION = 0;
 	const STRING       = 0x1;
 	const BINARY       = 0x2;
