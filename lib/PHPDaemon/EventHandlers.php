@@ -11,7 +11,7 @@ namespace PHPDaemon;
 
 trait EventHandlers {
 	/* Event handlers
-	 * @var hash
+	 * @var array
 	 */
 	protected $eventHandlers = [];
 

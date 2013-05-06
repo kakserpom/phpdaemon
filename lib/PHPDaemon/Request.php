@@ -1,13 +1,6 @@
 <?php
 namespace PHPDaemon;
 
-/**
- * Request
- *
- * @package Core
- *
- * @author  Zorin Vasily <maintainer@daemon.io>
- */
 class Request {
 
 	const STATE_FINISHED = 1;
@@ -34,7 +27,7 @@ class Request {
 
 	/**
 	 * Attributes
-	 * @var StdCLass
+	 * @var \StdCLass
 	 */
 	public $attrs;
 
@@ -82,7 +75,7 @@ class Request {
 
 	/**
 	 * Log
-	 * @param string Message
+	 * @param string $msg Message
 	 * @return void
 	 */
 	public function log($msg) {
@@ -91,9 +84,9 @@ class Request {
 
 	/**
 	 * Constructor
-	 * @param object Parent AppInstance.
-	 * @param object Upstream.
-	 * @param object Source request.
+	 * @param object $appInstance Parent AppInstance.
+	 * @param object $upstream    Upstream.
+	 * @param object $parent      Source request.
 	 * @return void
 	 */
 	public function __construct($appInstance, $upstream, $parent = null) {
@@ -173,7 +166,7 @@ class Request {
 				$this->state = Request::STATE_WAITING;
 			} catch (RequestTerminatedException $e) {
 				$this->state = Request::STATE_FINISHED;
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				$throw = true;
 			}
 			if ($this->state === Request::STATE_FINISHED) {
@@ -184,7 +177,7 @@ class Request {
 				throw $e;
 			}
 
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 			$this->finish();
 			return;
@@ -231,8 +224,8 @@ class Request {
 	 */
 	protected function preinit($req) {
 		if ($req === NULL) {
-			$req        = new stdClass;
-			$req->attrs = new stdClass;
+			$req        = new \stdClass;
+			$req->attrs = new \stdClass;
 		}
 
 		$this->attrs = $req->attrs;
@@ -531,14 +524,5 @@ class Request {
 	 */
 	protected function postFinishHandler() { }
 
-}
-
-class RequestSleepException extends Exception {
-}
-
-class RequestTerminatedException extends Exception {
-}
-
-class RequestHeadersAlreadySent extends Exception {
 }
 

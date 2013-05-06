@@ -92,7 +92,7 @@ class Daemon {
 	public static function initSettings() {
 		Daemon::$version = file_get_contents('VERSION', true);
 
-		Daemon::$config = new Daemon_Config;
+		Daemon::$config = new Daemon\Config;
 
 		if (preg_match('~BSD~i', php_uname('s'))) {
 			Daemon::$reusePort = true;
@@ -128,9 +128,9 @@ class Daemon {
 			return true;
 		}
 		try {
-			$ext = new ReflectionExtension($mod);
+			$ext = new \ReflectionExtension($mod);
 			return version_compare($ext->getVersion(), $version, $compare);
-		} catch (ReflectionException $e) {
+		} catch (\ReflectionException $e) {
 			return false;
 		}
 	}
@@ -181,7 +181,7 @@ class Daemon {
 		return '';
 	}
 
-	public static function uncaughtExceptionHandler(Exception $e) {
+	public static function uncaughtExceptionHandler(\Exception $e) {
 		$msg = $e->getMessage();
 		Daemon::log('Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')' . (strlen($msg) ? ': ' . $msg : '') . ".\n" . $e->getTraceAsString());
 		if (Daemon::$req) {
@@ -245,7 +245,7 @@ class Daemon {
 
 	/**
 	 * Is thing supported
-	 * @param integer Thing to check
+	 * @param integer $what Thing to check
 	 * @return boolean
 	 */
 	public static function supported($what) {
@@ -288,6 +288,7 @@ class Daemon {
 		}
 
 		if (self::supported(self::SUPPORT_RUNKIT_SANDBOX)) {
+			/** @noinspection PhpUndefinedFunctionInspection */
 			return runkit_lint_file($filename);
 		}
 
@@ -309,7 +310,7 @@ class Daemon {
 
 		$argv = isset($_SERVER['CMD_ARGV']) ? $_SERVER['CMD_ARGV'] : '';
 
-		$args = Daemon_Bootstrap::getArgs($argv);
+		$args = Daemon\Bootstrap::getArgs($argv);
 
 		if (isset($args[$k = 'configfile'])) {
 			Daemon::$config[$k] = $args[$k];
@@ -334,8 +335,8 @@ class Daemon {
 		$appResolver = require Daemon::$config->path->value;
 		$appResolver->init();
 
-		$req                    = new stdClass;
-		$req->attrs             = new stdClass;
+		$req                    = new \stdClass;
+		$req->attrs             = new \stdClass;
 		$req->attrs->request    = $_REQUEST;
 		$req->attrs->get        = $_GET;
 		$req->attrs->post       = $_REQUEST;
@@ -362,7 +363,7 @@ class Daemon {
 
 	/**
 	 * Load config-file
-	 * @param string Path
+	 * @param string $paths Path
 	 * @return boolean - Success.
 	 */
 	public static function loadConfig($paths) {
@@ -396,7 +397,7 @@ class Daemon {
 			if (isset(Daemon::$config->user->value)) {
 				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value); // @TODO: rewrite to async I/O
 			}
-			if ((Daemon::$process instanceof Daemon_WorkerThread) && FS::$supported) {
+			if ((Daemon::$process instanceof Daemon\WorkerThread) && FS::$supported) {
 				FS::open(Daemon::$config->logstorage->value, 'a!', function ($file) {
 					Daemon::$logpointerAsync = $file;
 					if (!$file) {
@@ -441,7 +442,7 @@ class Daemon {
 						// reloaded (shutdown)
 						$code -= 100;
 						if ($code !== Daemon::WSTATE_SHUTDOWN) {
-							if (Daemon::$process instanceof Daemon_MasterThread) {
+							if (Daemon::$process instanceof Daemon\MasterThread) {
 								Daemon::$process->reloadWorker($offset + $i + 1);
 								++$stat['reloading'];
 								continue;
@@ -523,7 +524,7 @@ class Daemon {
 	 * @return boolean - success
 	 */
 	public static function spawnMaster() {
-		Daemon::$masters->push($thread = new Daemon_MasterThread);
+		Daemon::$masters->push($thread = new Daemon\MasterThread);
 		$thread->start();
 
 		if (-1 === $thread->getPid()) {
@@ -536,7 +537,7 @@ class Daemon {
 
 	public static function runWorker() {
 		Daemon::$runworkerMode = true;
-		$thread                = new Daemon_WorkerThread;
+		$thread                = new Daemon\WorkerThread;
 		$thread();
 	}
 

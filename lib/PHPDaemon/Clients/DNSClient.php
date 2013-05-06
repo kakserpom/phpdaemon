@@ -45,7 +45,7 @@ class DNSClient extends NetworkClient {
 
 	/**
 	 * Classes
-	 * @var hash [code => "class"]
+	 * @var array [code => "class"]
 	 */
 	public static $class = [
 		1   => 'IN',

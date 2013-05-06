@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Servers\HTTPServerConnection;
+
 /**
  * HTTP request
  *
@@ -80,19 +82,19 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Replacement pairs for processing some header values in parse_str()
-	 * @var hash
+	 * @var array hash
 	 */
 	public static $hvaltr = [';' => '&', ' ' => ''];
 
 	/**
 	 * State
-	 * @var hash
+	 * @var array
 	 */
 	public static $htr = ['-' => '_'];
 
 	/**
 	 * Outgoing headers
-	 * @var hash
+	 * @var array
 	 */
 	protected $headers = ['STATUS' => '200 OK'];
 
@@ -128,7 +130,7 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Preparing before init
-	 * @param object Source request
+	 * @param object $req Source request
 	 * @return void
 	 */
 	protected function preinit($req) {
@@ -535,7 +537,7 @@ class HTTPRequest extends Request {
 	/**
 	 * Send HTTP-status
 	 * @throws RequestHeadersAlreadySent
-	 * @param int Code
+	 * @param int $code Code
 	 * @return boolean Success
 	 */
 	public function status($code = 200) {
@@ -568,12 +570,12 @@ class HTTPRequest extends Request {
 
 	/**
 	 * Set the cookie
-	 * @param string Name of cookie
-	 * @param string Value
-	 * @param integer. Optional. Max-Age. Default is 0.
-	 * @param string . Optional. Path. Default is empty string.
-	 * @param boolean. Optional. Secure. Default is false.
-	 * @param boolean. Optional. HTTPOnly. Default is false.
+	 * @param string $name  Name of cookie
+	 * @param string $value Value
+	 * @param integer       . Optional. Max-Age. Default is 0.
+	 * @param string        . Optional. Path. Default is empty string.
+	 * @param boolean       . Optional. Secure. Default is false.
+	 * @param boolean       . Optional. HTTPOnly. Default is false.
 	 * @return void
 	 * @throws RequestHeadersAlreadySent
 	 */

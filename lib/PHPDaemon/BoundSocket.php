@@ -142,7 +142,7 @@ abstract class BoundSocket {
 	 * @return object
 	 */
 	public function __construct($uri) {
-		$this->uri = is_array($uri) ? $uri : Daemon_Config::parseCfgUri($uri);
+		$this->uri = is_array($uri) ? $uri : Daemon\Config::parseCfgUri($uri);
 		if (!$this->uri) {
 			return;
 		}
@@ -199,7 +199,7 @@ abstract class BoundSocket {
 		}
 		$ctx = Daemon::$config->{'TransportContext:' . $this->ctxname};
 		foreach ($ctx as $key => $entry) {
-			$value = ($entry instanceof Daemon_ConfigEntry) ? $entry->value : $entry;
+			$value = ($entry instanceof Daemon\ConfigEntry) ? $entry->value : $entry;
 			if (isset($this->{$key}) && is_bool($this->{$key})) {
 				$this->{$key} = (bool)$value;
 				continue;

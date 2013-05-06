@@ -128,8 +128,8 @@ class FastCGIServerConnection extends Connection {
 			++Daemon::$process->reqCounter;
 			$u = unpack('nrole/Cflags', $this->content);
 
-			$req                    = new stdClass();
-			$req->attrs             = new stdClass;
+			$req                    = new \stdClass();
+			$req->attrs             = new \stdClass;
 			$req->attrs->request    = [];
 			$req->attrs->get        = [];
 			$req->attrs->post       = [];

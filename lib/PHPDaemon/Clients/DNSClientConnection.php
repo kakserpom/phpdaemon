@@ -23,7 +23,7 @@ class DNSClientConnection extends NetworkClientConnection {
 
 	/**
 	 * Response
-	 * @var hash
+	 * @var array
 	 */
 	public $response = [];
 

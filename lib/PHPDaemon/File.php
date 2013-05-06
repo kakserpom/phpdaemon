@@ -24,7 +24,7 @@ class File {
 
 	/**
 	 * Stat
-	 * @var hash
+	 * @var string $stat hash
 	 */
 	protected $stat;
 
@@ -103,8 +103,8 @@ class File {
 
 	/**
 	 * Converts string of flags to integer or standard text representation
-	 * @param string  Mode
-	 * @param boolean Text?
+	 * @param string $mode  Mode
+	 * @param boolean $text Text?
 	 * @param priority
 	 * @return mixed
 	 */

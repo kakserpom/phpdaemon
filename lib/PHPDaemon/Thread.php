@@ -207,7 +207,7 @@ abstract class Thread {
 		$pid = pcntl_fork();
 
 		if ($pid === -1) {
-			throw new Exception('Could not fork');
+			throw new \Exception('Could not fork');
 		}
 		elseif ($pid === 0) { // we are the child
 			$thread      = $this;

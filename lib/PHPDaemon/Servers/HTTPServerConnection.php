@@ -121,8 +121,8 @@ class HTTPServerConnection extends Connection {
 	 * @return object
 	 */
 	protected function newRequest() {
-		$req                     = new stdClass;
-		$req->attrs              = new stdClass();
+		$req                     = new \stdClass;
+		$req->attrs              = new \stdClass();
 		$req->attrs->request     = [];
 		$req->attrs->get         = [];
 		$req->attrs->post        = [];

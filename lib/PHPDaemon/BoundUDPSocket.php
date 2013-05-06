@@ -41,13 +41,13 @@ class BoundUDPSocket extends BoundSocket {
 
 	/**
 	 * Ports map
-	 * @var hash [portNumber => Connection]
+	 * @var array [portNumber => Connection]
 	 */
 	protected $portsMap = [];
 
 	/**
 	 * Sets default port
-	 * @param integer Port
+	 * @param integer $port Port
 	 * @return void
 	 */
 	public function setDefaultPort($port) {
@@ -56,10 +56,10 @@ class BoundUDPSocket extends BoundSocket {
 
 	/**
 	 * Send UDP packet
-	 * @param string  Data
-	 * @param integer Flags
-	 * @param string  Host
-	 * @param integer Port
+	 * @param string $data   Data
+	 * @param integer $flags Flags
+	 * @param string $host   Host
+	 * @param integer $port  Port
 	 * @return mixed
 	 */
 	public function sendTo($data, $flags, $host, $port) {
@@ -68,7 +68,7 @@ class BoundUDPSocket extends BoundSocket {
 
 	/**
 	 * Unassigns addr
-	 * @param string Address
+	 * @param string $addr Address
 	 * @return void
 	 */
 	public function unassignAddr($addr) {
@@ -77,7 +77,7 @@ class BoundUDPSocket extends BoundSocket {
 
 	/**
 	 * Sets reuse
-	 * @param integer Port
+	 * @param integer $reuse Port
 	 * @return void
 	 */
 	public function setReuse($reuse = true) {
@@ -164,9 +164,9 @@ class BoundUDPSocket extends BoundSocket {
 
 	/**
 	 * Called when we got UDP packet
-	 * @param resource Descriptor
-	 * @param integer  Events
-	 * @param mixed    Attached variable
+	 * @param resource $dtream Descriptor
+	 * @param integer $events  Events
+	 * @param mixed $arg       Attached variable
 	 * @return boolean Success.
 	 */
 	public function onReadUdp($stream = null, $events = 0, $arg = null) {

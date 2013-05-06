@@ -1,11 +1,11 @@
 <?php
 namespace PHPDaemon;
 
-class ObjectStorage extends SplObjectStorage {
+class ObjectStorage extends \SplObjectStorage {
 
 	/**
 	 * Call given method of all objects in storage
-	 * @param string Method
+	 * @param string $Method
 	 * @param ... arguments ...
 	 * @return integer Number of called objects
 	 */
@@ -25,12 +25,12 @@ class ObjectStorage extends SplObjectStorage {
 
 	/**
 	 * Remove all objects from this storage, which contained in another storage
-	 * @param SplObjectStorage
+	 * @param \SplObjectStorage
 	 * @return void
 	 */
 	public function removeAll($obj = null) {
 		if ($obj === null) {
-			$this->removeAllExcept(new SplObjectStorage);
+			$this->removeAllExcept(new \SplObjectStorage);
 		}
 		parent::removeAll($obj);
 	}

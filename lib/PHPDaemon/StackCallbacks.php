@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon;
 
-class StackCallbacks extends SplStack {
+class StackCallbacks extends \SplStack {
 	/**
 	 * Push callback to the bottom of stack
 	 * @param callable Callback

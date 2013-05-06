@@ -13,15 +13,15 @@ class PubSub {
 
 	/**
 	 * Storage of events
-	 * @var hash [id => PubSubEvent, ...]
+	 * @var array [id => PubSubEvent, ...]
 	 */
 	protected $events = [];
 
 	/**
 	 * Subcribe to event
-	 * @param string   Event ID
-	 * @param object   Subscriber
-	 * @param callable Callback
+	 * @param string $id   Event ID
+	 * @param object $obj  Subscriber
+	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
 	public function sub($id, $obj, $cb) {
@@ -33,7 +33,7 @@ class PubSub {
 
 	/**
 	 * Adds event
-	 * @param string Event ID
+	 * @param string $id Event ID
 	 * @param PubSubEvent
 	 * @return void
 	 */
@@ -43,7 +43,7 @@ class PubSub {
 
 	/**
 	 * Removes event
-	 * @param string Event ID
+	 * @param string $id Event ID
 	 * @return void
 	 */
 	public function removeEvent($id) {
@@ -52,7 +52,7 @@ class PubSub {
 
 	/**
 	 * Unsubscribe object from event
-	 * @param string Event ID
+	 * @param string $id Event ID
 	 * @param object
 	 * @return boolean Success
 	 */
@@ -65,8 +65,8 @@ class PubSub {
 
 	/**
 	 * Publish
-	 * @param string Event ID
-	 * @param mixed  Data
+	 * @param string $id  Event ID
+	 * @param mixed $data Data
 	 * @return boolean Success
 	 */
 	public function pub($id, $data) {

@@ -9,7 +9,7 @@ class MIME {
 	/**
 	 * MIME types
 	 * @static
-	 * @var hash
+	 * @var array
 	 */
 	protected static $fileTypes = [
 		'txt'  => 'text/plain',
@@ -69,7 +69,7 @@ class MIME {
 	/**
 	 * Returns MIME type of the given file.
 	 * @static
-	 * @param string Path
+	 * @param string $path Path
 	 * @return string MIME type.
 	 */
 	public static function get($path) {

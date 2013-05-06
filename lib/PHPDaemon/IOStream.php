@@ -738,7 +738,7 @@ abstract class IOStream {
 		}
 		try {
 			$this->onRead();
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
 	}
@@ -788,7 +788,7 @@ abstract class IOStream {
 			while (!$this->onWriteOnce->isEmpty()) {
 				try {
 					$this->onWriteOnce->executeOne($this);
-				} catch (Exception $e) {
+				} catch (\Exception $e) {
 					Daemon::uncaughtExceptionHandler($e);
 				}
 				if (!$this->ready) {
@@ -802,7 +802,7 @@ abstract class IOStream {
 					$this->wRead = false;
 					$this->onRead();
 				}
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				Daemon::uncaughtExceptionHandler($e);
 			}
 		}
@@ -811,7 +811,7 @@ abstract class IOStream {
 		}
 		try {
 			$this->onWrite();
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
 	}
@@ -846,7 +846,7 @@ abstract class IOStream {
 				$this->finished = true;
 				$this->onFinish();
 				$this->close();
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				Daemon::uncaughtExceptionHandler($e);
 			}
 		}

@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon;
 
-class ClearStackException extends Exception {
+class ClearStackException extends \Exception {
 	/**
 	 * Thread object
 	 * @var object Thread

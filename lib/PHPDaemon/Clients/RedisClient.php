@@ -12,7 +12,7 @@ class RedisClient extends NetworkClient {
 
 	/**
 	 * Subcriptions
-	 * @var hash
+	 * @var array
 	 */
 	protected $subscribeCb = [];
 

@@ -39,7 +39,7 @@ class Timer {
 		try {
 			//Daemon::log('cb - '.Debug::zdump($this->cb));
 			call_user_func($this->cb, $this);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
 	}

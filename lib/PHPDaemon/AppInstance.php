@@ -46,14 +46,14 @@ class AppInstance {
 
 		if (!isset(Daemon::$config->{$fullname})) {
 
-			Daemon::$config->{$fullname} = new Daemon_ConfigSection;
+			Daemon::$config->{$fullname} = new Daemon\ConfigSection;
 		}
 		else {
 			if (
 				!isset(Daemon::$config->{$fullname}->enable)
 				&& !isset(Daemon::$config->{$fullname}->disable)
 			) {
-				Daemon::$config->{$fullname}->enable = new Daemon_ConfigEntry;
+				Daemon::$config->{$fullname}->enable = new Daemon\ConfigEntry;
 				Daemon::$config->{$fullname}->enable->setValue(true);
 			}
 		}
@@ -70,7 +70,7 @@ class AppInstance {
 
 		$this->init();
 
-		if (Daemon::$process instanceof Daemon_WorkerThread) {
+		if (Daemon::$process instanceof Daemon\WorkerThread) {
 			if (!$this->ready) {
 				$this->ready = true;
 				$this->onReady();

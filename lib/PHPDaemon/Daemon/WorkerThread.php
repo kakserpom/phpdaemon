@@ -92,7 +92,7 @@ class WorkerThread extends Thread {
 
 	/**
 	 * Instances count
-	 * @var hash
+	 * @var array
 	 */
 	public $instancesCount = [];
 
@@ -520,7 +520,7 @@ class WorkerThread extends Thread {
 		}
 
 		if (Daemon::$config->throwexceptiononshutdown->value) {
-			throw new Exception('event shutdown');
+			throw new \Exception('event shutdown');
 		}
 
 		@ob_flush();

@@ -42,7 +42,7 @@ class HTTPRequestInput extends EventBuffer {
 
 	/**
 	 * Current Part
-	 * @var hash
+	 * @var array
 	 */
 	public $curPart;
 

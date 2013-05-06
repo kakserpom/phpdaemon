@@ -29,7 +29,7 @@ class FS {
 
 	/**
 	 * Mode types
-	 * @var hash
+	 * @var array
 	 */
 	public static $modeTypes = array(
 		0140000 => 's',

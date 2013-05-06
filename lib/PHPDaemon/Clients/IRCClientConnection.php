@@ -206,7 +206,7 @@ class IRCClientConnection extends NetworkClientConnection {
 				$this->buffers[$bufName] = [];
 			}
 			if (!isset($this->buffers[$bufName][$channelName])) {
-				$this->buffers[$bufName][$channelName] = new SplStack;
+				$this->buffers[$bufName][$channelName] = new \SplStack;
 			}
 			$this->buffers[$bufName][$channelName]->push($args);
 		}

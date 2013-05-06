@@ -12,8 +12,8 @@ class Debug {
 
 	/**
 	 * Export binary data
-	 * @param string  String
-	 * @param boolean Whether to replace all of chars with escaped sequences
+	 * @param string $str  String
+	 * @param boolean $all Whether to replace all of chars with escaped sequences
 	 * @return string - Escaped string
 	 */
 	public static function exportBytes($str, $all = FALSE) {
@@ -83,8 +83,8 @@ class Debug {
 	public static function backtrace() {
 		if (Daemon::$obInStack) {
 			try {
-				throw new Exception;
-			} catch (Exception $e) {
+				throw new \Exception;
+			} catch (\Exception $e) {
 				$trace = $e->getTraceAsString();
 				$e     = explode("\n", $trace);
 				array_shift($e);

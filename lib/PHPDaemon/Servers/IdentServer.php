@@ -4,7 +4,7 @@ namespace PHPDaemon\Servers;
 class IdentServer extends NetworkServer {
 
 	/* Pairs
-	 * @var hash ["$local:$foreign" => "$user", ...]
+	 * @var array ["$local:$foreign" => "$user", ...]
 	 */
 	protected $pairs = [];
 

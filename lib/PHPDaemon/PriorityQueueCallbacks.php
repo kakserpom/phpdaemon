@@ -1,11 +1,11 @@
 <?php
 namespace PHPDaemon;
 
-class PriorityQueueCallbacks extends SplPriorityQueue {
+class PriorityQueueCallbacks extends \SplPriorityQueue {
 	/**
 	 * Insert callback
-	 * @param callable Callback
-	 * @param integer  Priority
+	 * @param callable $cb Callback
+	 * @param integer $pri Priority
 	 * @return void
 	 */
 	public function insert($cb, $pri = 0) {
@@ -23,7 +23,7 @@ class PriorityQueueCallbacks extends SplPriorityQueue {
 
 	/**
 	 * Dequeue
-	 * @return callabble
+	 * @return callback
 	 */
 	public function dequeue() {
 		return $this->extract();

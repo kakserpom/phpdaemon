@@ -9,7 +9,7 @@ namespace PHPDaemon;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 
-class PubSubEvent extends SplObjectStorage {
+class PubSubEvent extends \SplObjectStorage {
 	/**
 	 * Subscriptions
 	 * @var array
@@ -33,7 +33,7 @@ class PubSubEvent extends SplObjectStorage {
 	 * @return object
 	 */
 	public function __construct() {
-		$this->storage = new SplObjectStorage;
+		$this->storage = new \SplObjectStorage;
 	}
 
 	/**
@@ -66,8 +66,8 @@ class PubSubEvent extends SplObjectStorage {
 
 	/**
 	 * Subscribe
-	 * @param object   Subcriber object
-	 * @param callable Callback
+	 * @param object $obj  Subcriber object
+	 * @param callable $cb Callback
 	 * @return PubSubEvent
 	 */
 	public function sub($obj, $cb) {
@@ -83,7 +83,7 @@ class PubSubEvent extends SplObjectStorage {
 
 	/**
 	 * Unsubscripe
-	 * @param object Subscriber object
+	 * @param object $obj Subscriber object
 	 * @return PubSubEvent
 	 */
 	public function unsub($obj) {
@@ -98,7 +98,7 @@ class PubSubEvent extends SplObjectStorage {
 
 	/**
 	 * Publish
-	 * @param mixed Data
+	 * @param mixed $data Data
 	 * @return PubSubEvent
 	 */
 	public function pub($data) {

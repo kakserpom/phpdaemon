@@ -30,13 +30,13 @@ abstract class ConnectionPool extends ObjectStorage {
 
 	/**
 	 * Configuration
-	 * @var Daemon_ConfigSection
+	 * @var Daemon\ConfigSection
 	 */
 	public $config;
 
 	/**
 	 * Instances storage
-	 * @var hash ['name' => ConnectionPool, ...]
+	 * @var array ['name' => ConnectionPool, ...]
 	 */
 	protected static $instances = [];
 
@@ -107,7 +107,7 @@ abstract class ConnectionPool extends ObjectStorage {
 	 * @return void
 	 */
 	public function onConfigUpdated() {
-		if (Daemon::$process instanceof Daemon_WorkerProcess) {
+		if (Daemon::$process instanceof Daemon\WorkerProcess) {
 			if ($this->config === null) {
 				$this->disable();
 			}
@@ -127,7 +127,7 @@ abstract class ConnectionPool extends ObjectStorage {
 	 */
 	protected function applyConfig() {
 		foreach ($this->config as $k => $v) {
-			if (is_object($v) && $v instanceof Daemon_ConfigEntry) {
+			if (is_object($v) && $v instanceof Daemon\ConfigEntry) {
 				$v = $v->value;
 			}
 			$k = strtolower($k);
@@ -178,17 +178,17 @@ abstract class ConnectionPool extends ObjectStorage {
 			}
 			$k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '');
 
-			$config    = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon_ConfigSection) ? Daemon::$config->{$k} : new Daemon_ConfigSection;
+			$config    = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon\ConfigSection) ? Daemon::$config->{$k} : new Daemon\ConfigSection;
 			$obj       = self::$instances[$key] = new $class($config);
 			$obj->name = $arg;
 			return $obj;
 		}
-		elseif ($arg instanceof Daemon_ConfigSection) {
+		elseif ($arg instanceof Daemon\ConfigSection) {
 			return new static($arg);
 
 		}
 		else {
-			return new static(new Daemon_ConfigSection($arg));
+			return new static(new Daemon\ConfigSection($arg));
 		}
 	}
 
@@ -353,7 +353,7 @@ abstract class ConnectionPool extends ObjectStorage {
 	 * @return boolean Success
 	 */
 	public function bindSocket($uri) {
-		$u      = Daemon_Config::parseCfgUri($uri);
+		$u      = Daemon\Config::parseCfgUri($uri);
 		$scheme = $u['scheme'];
 		if ($scheme === 'unix') {
 			$socket = new BoundUNIXSocket($u);

@@ -15,7 +15,7 @@ class Pool extends AppInstance {
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
 	 * Uncomment and return array with your default options
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return false;
@@ -40,8 +40,8 @@ class Pool extends AppInstance {
 	/**
 	 * Function handles incoming Remote Procedure Calls
 	 * You can override it
-	 * @param string Method name.
-	 * @param array  Arguments.
+	 * @param string $method Method name.
+	 * @param array $args    Arguments.
 	 * @return mixed Result
 	 */
 	public function RPCall($method, $args) {

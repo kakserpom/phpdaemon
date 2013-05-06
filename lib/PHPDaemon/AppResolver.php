@@ -19,7 +19,7 @@ class AppResolver {
 
 		foreach (Daemon::$config as $fullname => $section) {
 
-			if (!$section instanceof Daemon_ConfigSection) {
+			if (!$section instanceof Daemon\ConfigSection) {
 				continue;
 			}
 			if (isset($section->limitinstances)) {
