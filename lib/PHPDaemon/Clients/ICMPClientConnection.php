@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\Daemon;
+
 /**
  * @package    Applications
  * @subpackage ICMPClient

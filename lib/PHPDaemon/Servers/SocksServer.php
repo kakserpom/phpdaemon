@@ -5,7 +5,7 @@ class SocksServer extends NetworkServer {
 
 	/**
 	 * Setting default config options
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return array(

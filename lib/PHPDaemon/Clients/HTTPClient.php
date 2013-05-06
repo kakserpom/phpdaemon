@@ -5,7 +5,7 @@ class HTTPClient extends NetworkClient {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return [

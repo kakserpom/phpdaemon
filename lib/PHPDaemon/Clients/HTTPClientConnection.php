@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\HTTPRequest;
+
 /**
  * @package    NetworkClients
  * @subpackage HTTPClient

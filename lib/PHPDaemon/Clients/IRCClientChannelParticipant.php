@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\IRC;
+
 class IRCClientChannelParticipant {
 	public $channel;
 	public $nick;

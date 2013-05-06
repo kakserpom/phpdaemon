@@ -151,7 +151,7 @@ abstract class ConnectionPool extends ObjectStorage {
 
 	/**
 	 * Setting default config options
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return false;

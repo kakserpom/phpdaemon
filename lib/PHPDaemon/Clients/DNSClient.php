@@ -1,6 +1,10 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\CappedCacheStorageHits;
+use PHPDaemon\ComplexJob;
+use PHPDaemon\FS;
+
 class DNSClient extends NetworkClient {
 	/**
 	 * Record Types
@@ -64,7 +68,7 @@ class DNSClient extends NetworkClient {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return [
@@ -86,7 +90,7 @@ class DNSClient extends NetworkClient {
 		parent::applyConfig();
 		$pool = $this;
 		if (!isset($this->preloading)) {
-			$this->preloading = new ComplexJob;
+			$this->preloading = new ComplexJob();
 		}
 		$job = $this->preloading;
 		$job->addJob('resolvfile', function ($jobname, $job) use ($pool) {

@@ -17,7 +17,7 @@ class FastCGIServer extends NetworkServer {
 	/**
 	 * Setting default config options
 	 * Overriden from ConnectionPool::getConfigDefaults
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return array(

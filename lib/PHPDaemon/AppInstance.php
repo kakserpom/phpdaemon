@@ -89,7 +89,7 @@ class AppInstance {
 	/**
 	 * Function to get default config options from application
 	 * Override to set your own
-	 * @return array|false
+	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return false;
@@ -98,8 +98,8 @@ class AppInstance {
 	/**
 	 * Function handles incoming Remote Procedure Calls
 	 * You can override it
-	 * @param string Method name.
-	 * @param array  Arguments.
+	 * @param string $method Method name.
+	 * @param array $args    Arguments.
 	 * @return mixed Result
 	 */
 	public function RPCall($method, $args) {

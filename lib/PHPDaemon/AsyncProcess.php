@@ -89,7 +89,7 @@ class AsyncProcess extends IOStream {
 		}
 		$this->fdWrite = $this->pipes[0];
 		$flags         = !is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
-		$flags |= EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
+		$flags |= \EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
 		$this->bev      = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, 0, [$this, 'onReadEv'], null, [$this, 'onStateEv']);
 		$this->bevWrite = new EventBufferEvent(Daemon::$process->eventBase, $this->fdWrite, 0, null, [$this, 'onWriteEv'], null);
 		if (!$this->bev || !$this->bevWrite) {
