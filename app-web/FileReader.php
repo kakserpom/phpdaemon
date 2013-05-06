@@ -249,7 +249,7 @@ $this->onWakeup();
 </div>
 <?php if ($this->upstream->pool->config->expose->value) {
 	?>
-	<div class="foot">phpDaemon/<?php echo Daemon::$version; ?></div><?php } ?>
+	<div class="foot">phpDaemon/<?php echo PHPDaemon\Daemon::$version; ?></div><?php } ?>
 </body>
 </html><?php
 }
