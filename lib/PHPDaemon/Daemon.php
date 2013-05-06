@@ -241,6 +241,28 @@ class Daemon {
 		Daemon::$masters       = new ThreadCollection;
 		Daemon::$shm_wstate    = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate', true);
 		Daemon::openLogs();
+
+		if (ini_get('mbstring.func_overload') & 2) {
+			function binarySubstr($s, $p, $l = 0xFFFFFFF) {
+				return substr($s, $p, $l, 'ASCII');
+			}
+		}
+		else {
+			function binarySubstr($s, $p, $l = NULL) {
+				if ($l === NULL) {
+					$ret = substr($s, $p);
+				}
+				else {
+					$ret = substr($s, $p, $l);
+				}
+
+				if ($ret === FALSE) {
+					$ret = '';
+				}
+				return $ret;
+			}
+		}
+
 	}
 
 	/**
