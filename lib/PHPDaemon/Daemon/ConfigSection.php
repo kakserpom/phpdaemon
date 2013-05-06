@@ -116,7 +116,7 @@ class ConfigSection implements \ArrayAccess, \Countable {
 			$name = strtolower(str_replace('-', '', $name));
 			if (!isset($this->{$name})) {
 				if (is_scalar($value)) {
-					$this->{$name} = new Daemon_ConfigEntry($value);
+					$this->{$name} = new ConfigEntry($value);
 				}
 				else {
 					$this->{$name} = $value;
