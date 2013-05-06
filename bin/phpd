@@ -28,17 +28,10 @@ ini_set('include_path', get_include_path()
 );
 
 $autoloader = function($classname) {
-	$parts = explode('\\', $classname);
-	if (sizeof($parts) > 1 && ('PHPDaemon' == $parts[0])) {
-		// namespaces support (remove first "PHPDaemon\" part)
-		array_shift($parts);
-	}
-
-	$pathes = array('lib/' . implode('/', $parts) . '.php', 'lib/' . implode('/', $parts));
-	
-	foreach ($pathes as $path) {
-		if (file_exists($path)) {
-			require $path;
+	$subpath = str_replace('/', '\\', $classname) . '.php';
+	foreach ($e as $path) {
+		if (file_exists($path . $subpath)) {
+			require $path . $subpath;
 			return true;
 		}
 	}
