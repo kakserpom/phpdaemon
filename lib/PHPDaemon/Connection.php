@@ -232,10 +232,10 @@ abstract class Connection extends IOStream {
 	 */
 	public function getSocketName(&$addr, &$port) {
 		if (func_num_args() === 0) {
-			EventUtil::getSocketName($this->bev->fd, $this->locAddr, $this->locPort);
+			\EventUtil::getSocketName($this->bev->fd, $this->locAddr, $this->locPort);
 			return;
 		}
-		EventUtil::getSocketName($this->bev->fd, $addr, $port);
+		\EventUtil::getSocketName($this->bev->fd, $addr, $port);
 	}
 
 	/**
