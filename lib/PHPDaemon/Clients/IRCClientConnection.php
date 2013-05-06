@@ -34,6 +34,7 @@ class IRCClientConnection extends NetworkClientConnection {
 	 */
 	public function onReady() {
 		if ($this->pool->identd) {
+			/** @noinspection PhpParamsInspection */
 			$this->getSocketName();
 			$this->pool->identd->registerPair($this->locAddr, $this->locPort, ['UNIX', $this->user]);
 		}
