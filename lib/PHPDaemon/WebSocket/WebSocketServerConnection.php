@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\WebSocket;
+
+use PHPDaemon\Connection;
 
 class WebSocketServerConnection extends Connection {
 
