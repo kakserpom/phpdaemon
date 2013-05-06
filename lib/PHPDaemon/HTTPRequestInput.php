@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 /**
  * HTTP request input buffer
  *

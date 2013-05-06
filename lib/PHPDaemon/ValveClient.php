@@ -1,10 +1,12 @@
 <?php
-/**
- * @package    NetworkClients
- * @subpackage HLClient
- *
- * @author     Zorin Vasily <maintainer@daemon.io>
- */
+namespace PHPDaemon;
+
+	/**
+	 * @package    NetworkClients
+	 * @subpackage HLClient
+	 *
+	 * @author     Zorin Vasily <maintainer@daemon.io>
+	 */
 // https://developer.valvesoftware.com/wiki/Server_queries
 class ValveClient extends NetworkClient {
 	const A2S_INFO                     = "\x54";

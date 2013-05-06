@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 /**
  * Event handlers trait
  *

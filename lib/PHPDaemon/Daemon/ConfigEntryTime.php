@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * Time config entry
@@ -8,7 +9,7 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_ConfigEntryTime extends Daemon_ConfigEntry {
+class ConfigEntryTime extends ConfigEntry {
 
 	public static function HumanToPlain($value) {
 		$time = 0;

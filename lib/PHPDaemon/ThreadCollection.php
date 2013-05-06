@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon;
 
 /**
  * Collection of threads

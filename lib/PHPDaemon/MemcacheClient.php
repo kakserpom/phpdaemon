@@ -1,11 +1,12 @@
 <?php
+namespace PHPDaemon;
 
-/**
- * @package    Network clients
- * @subpackage MemcacheClient
- *
- * @author     Zorin Vasily <maintainer@daemon.io>
- */
+	/**
+	 * @package    Network clients
+	 * @subpackage MemcacheClient
+	 *
+	 * @author     Zorin Vasily <maintainer@daemon.io>
+	 */
 // @TODO: Binary protocol support
 class MemcacheClient extends NetworkClient {
 	/**

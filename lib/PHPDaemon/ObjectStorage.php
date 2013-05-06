@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class ObjectStorage extends SplObjectStorage {
 
 	/**

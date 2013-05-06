@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class PriorityQueueCallbacks extends SplPriorityQueue {
 	/**
 	 * Insert callback

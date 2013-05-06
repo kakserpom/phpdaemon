@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * Bootstrap for PHPDaemon
@@ -7,7 +8,7 @@
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_Bootstrap {
+class Bootstrap {
 
 	/**
 	 * Master process ID
@@ -85,7 +86,7 @@ class Daemon_Bootstrap {
 		$error   = FALSE;
 		$argv    = $_SERVER['argv'];
 		$runmode = isset($argv[1]) ? str_replace('-', '', $argv[1]) : '';
-		$args    = Daemon_Bootstrap::getArgs($argv);
+		$args    = Bootstrap::getArgs($argv);
 
 		if (
 			!isset(self::$params[$runmode])
@@ -196,12 +197,12 @@ class Daemon_Bootstrap {
 				$error = true;
 			}
 
-			Daemon_Bootstrap::$pid = 0;
+			Bootstrap::$pid = 0;
 		}
 		elseif (!is_file(Daemon::$config->pidfile->value)) {
 			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be a regular file.');
-			Daemon_Bootstrap::$pid = FALSE;
-			$error                 = true;
+			Bootstrap::$pid = FALSE;
+			$error          = true;
 		}
 		elseif (!is_writable(Daemon::$config->pidfile->value)) {
 			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be writable.');
@@ -209,11 +210,11 @@ class Daemon_Bootstrap {
 		}
 		elseif (!is_readable(Daemon::$config->pidfile->value)) {
 			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be readable.');
-			Daemon_Bootstrap::$pid = FALSE;
-			$error                 = true;
+			Bootstrap::$pid = FALSE;
+			$error          = true;
 		}
 		else {
-			Daemon_Bootstrap::$pid = (int)file_get_contents(Daemon::$config->pidfile->value);
+			Bootstrap::$pid = (int)file_get_contents(Daemon::$config->pidfile->value);
 		}
 
 		if (Daemon::$config->chroot->value !== '/') {
@@ -290,7 +291,7 @@ class Daemon_Bootstrap {
 
 		if ($runmode == 'start') {
 			if ($error === FALSE) {
-				Daemon_Bootstrap::start();
+				Bootstrap::start();
 			}
 			else {
 				exit(6);
@@ -298,7 +299,7 @@ class Daemon_Bootstrap {
 		}
 		elseif ($runmode === 'runworker') {
 			if ($error === FALSE) {
-				Daemon_Bootstrap::runworker();
+				Bootstrap::runworker();
 			}
 			else {
 				exit(6);
@@ -308,7 +309,7 @@ class Daemon_Bootstrap {
 			$runmode === 'status'
 			|| $runmode === 'fullstatus'
 		) {
-			$status = Daemon_Bootstrap::$pid && Thread::ifExistsByPid(Daemon_Bootstrap::$pid);
+			$status = Bootstrap::$pid && Thread::ifExistsByPid(Bootstrap::$pid);
 			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon::$config->pidfile->value . ").\n";
 
 			if (
@@ -335,37 +336,37 @@ class Daemon_Bootstrap {
 		}
 		elseif ($runmode == 'update') {
 			if (
-				(!Daemon_Bootstrap::$pid)
-				|| (!posix_kill(Daemon_Bootstrap::$pid, SIGHUP))
+				(!Bootstrap::$pid)
+				|| (!posix_kill(Bootstrap::$pid, SIGHUP))
 			) {
-				echo '[UPDATE] ERROR. It seems that phpDaemon is not running' . (Daemon_Bootstrap::$pid ? ' (PID ' . Daemon_Bootstrap::$pid . ')' : '') . ".\n";
+				echo '[UPDATE] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
 		}
 		elseif ($runmode == 'reopenlog') {
 			if (
-				(!Daemon_Bootstrap::$pid)
-				|| (!posix_kill(Daemon_Bootstrap::$pid, SIGUSR1))
+				(!Bootstrap::$pid)
+				|| (!posix_kill(Bootstrap::$pid, SIGUSR1))
 			) {
-				echo '[REOPEN-LOG] ERROR. It seems that phpDaemon is not running' . (Daemon_Bootstrap::$pid ? ' (PID ' . Daemon_Bootstrap::$pid . ')' : '') . ".\n";
+				echo '[REOPEN-LOG] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
 		}
 		elseif ($runmode == 'reload') {
 			if (
-				(!Daemon_Bootstrap::$pid)
-				|| (!posix_kill(Daemon_Bootstrap::$pid, SIGUSR2))
+				(!Bootstrap::$pid)
+				|| (!posix_kill(Bootstrap::$pid, SIGUSR2))
 			) {
-				echo '[RELOAD] ERROR. It seems that phpDaemon is not running' . (Daemon_Bootstrap::$pid ? ' (PID ' . Daemon_Bootstrap::$pid . ')' : '') . ".\n";
+				echo '[RELOAD] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
 		}
 		elseif ($runmode == 'restart') {
 			if ($error === FALSE) {
-				Daemon_Bootstrap::stop(2);
-				Daemon_Bootstrap::start();
+				Bootstrap::stop(2);
+				Bootstrap::start();
 			}
 		}
 		elseif ($runmode == 'hardrestart') {
-			Daemon_Bootstrap::stop(3);
-			Daemon_Bootstrap::start();
+			Bootstrap::stop(3);
+			Bootstrap::start();
 		}
 		elseif ($runmode == 'configtest') {
 			$term               = new Terminal;
@@ -383,7 +384,7 @@ class Daemon_Bootstrap {
 			);
 
 			foreach (Daemon::$config as $name => $entry) {
-				if (!$entry instanceof Daemon_ConfigEntry) {
+				if (!$entry instanceof ConfigEntry) {
 					continue;
 				}
 
@@ -404,26 +405,26 @@ class Daemon_Bootstrap {
 			echo "\n";
 		}
 		elseif ($runmode == 'stop') {
-			Daemon_Bootstrap::stop();
+			Bootstrap::stop();
 		}
 		elseif ($runmode == 'hardstop') {
-			echo '[HARDSTOP] Sending SIGINT to ' . Daemon_Bootstrap::$pid . '... ';
+			echo '[HARDSTOP] Sending SIGINT to ' . Bootstrap::$pid . '... ';
 
-			$ok = Daemon_Bootstrap::$pid && posix_kill(Daemon_Bootstrap::$pid, SIGINT);
+			$ok = Bootstrap::$pid && posix_kill(Bootstrap::$pid, SIGINT);
 
 			echo $ok ? 'OK.' : 'ERROR. It seems that phpDaemon is not running.';
 
 			if ($ok) {
 				$i = 0;
 
-				while ($r = Thread::ifExistsByPid(Daemon_Bootstrap::$pid)) {
+				while ($r = Thread::ifExistsByPid(Bootstrap::$pid)) {
 					usleep(500000);
 
 					if ($i == 9) {
 						echo "\nphpDaemon master-process hasn't finished. Sending SIGKILL... ";
-						posix_kill(Daemon_Bootstrap::$pid, SIGKILL);
+						posix_kill(Bootstrap::$pid, SIGKILL);
 						sleep(0.2);
-						if (!Thread::ifExistsByPid(Daemon_Bootstrap::$pid)) {
+						if (!Thread::ifExistsByPid(Bootstrap::$pid)) {
 							echo " Oh, his blood is on my hands :'(";
 						}
 						else {
@@ -488,10 +489,10 @@ class Daemon_Bootstrap {
 	 */
 	public static function start() {
 		if (
-			Daemon_Bootstrap::$pid
-			&& Thread::ifExistsByPid(Daemon_Bootstrap::$pid)
+			Bootstrap::$pid
+			&& Thread::ifExistsByPid(Bootstrap::$pid)
 		) {
-			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Daemon_Bootstrap::$pid . ')');
+			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Bootstrap::$pid . ')');
 			exit(6);
 		}
 
@@ -515,10 +516,10 @@ class Daemon_Bootstrap {
 	 * @return void
 	 */
 	public static function stop($mode = 1) {
-		$ok = Daemon_Bootstrap::$pid && posix_kill(Daemon_Bootstrap::$pid, $mode === 3 ? SIGINT : SIGTERM);
+		$ok = Bootstrap::$pid && posix_kill(Bootstrap::$pid, $mode === 3 ? SIGINT : SIGTERM);
 
 		if (!$ok) {
-			echo '[WARN]. It seems that phpDaemon is not running' . (Daemon_Bootstrap::$pid ? ' (PID ' . Daemon_Bootstrap::$pid . ')' : '') . ".\n";
+			echo '[WARN]. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 		}
 
 		if (
@@ -527,7 +528,7 @@ class Daemon_Bootstrap {
 		) {
 			$i = 0;
 
-			while ($r = Thread::ifExistsByPid(Daemon_Bootstrap::$pid)) {
+			while ($r = Thread::ifExistsByPid(Bootstrap::$pid)) {
 				usleep(10000);
 				++$i;
 			}

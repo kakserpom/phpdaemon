@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon;
 
 /**
  * Network client connection pattern

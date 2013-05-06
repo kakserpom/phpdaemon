@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class WebSocketServerConnection extends Connection {
 
 	/**

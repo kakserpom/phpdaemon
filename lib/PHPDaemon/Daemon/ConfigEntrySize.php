@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * Size config entry
@@ -8,7 +9,7 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_ConfigEntrySize extends Daemon_ConfigEntry {
+class ConfigEntrySize extends ConfigEntry {
 
 	public static function HumanToPlain($value) {
 		$l = substr($value, -1);

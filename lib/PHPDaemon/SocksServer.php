@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon;
 
 /**
  * @package    NetworkServers

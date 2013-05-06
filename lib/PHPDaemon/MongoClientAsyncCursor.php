@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class MongoClientAsyncCursor {
 	public $id; // Cursor's ID.
 	public $col; // Collection's name.

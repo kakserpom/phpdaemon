@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon;
 
 /**
  * Web socket route

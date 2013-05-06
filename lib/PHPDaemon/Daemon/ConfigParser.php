@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * Config parser
@@ -8,7 +9,7 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_ConfigParser {
+class ConfigParser {
 
 	const T_ALL     = 1;
 	const T_COMMENT = 2;
@@ -72,7 +73,7 @@ class Daemon_ConfigParser {
 	 * @param string  File path
 	 * @param object  Target
 	 * @param boolean Included? Default is false
-	 * @return Daemon_ConfigParser
+	 * @return ConfigParser
 	 */
 	public static function parse($file, $target, $included = false) {
 		return new self($file, $target, $included);
@@ -85,7 +86,7 @@ class Daemon_ConfigParser {
 	public function __construct($file, $target, $included = false) {
 		$this->file     = $file;
 		$this->target   = $target;
-		$this->revision = ++Daemon_Config::$lastRevision;
+		$this->revision = ++Config::$lastRevision;
 		$this->data     = file_get_contents($file);
 
 		if (substr($this->data, 0, 2) === '#!') {
@@ -140,7 +141,7 @@ class Daemon_ConfigParser {
 				if (ctype_space($c)) {
 				}
 				elseif ($c === '#') {
-					$this->state[] = [Daemon_ConfigParser::T_COMMENT];
+					$this->state[] = [ConfigParser::T_COMMENT];
 				}
 				elseif ($c === '}') {
 					if (sizeof($this->state) > 1) {
@@ -179,12 +180,12 @@ class Daemon_ConfigParser {
 								$this->raiseError('Unexpected T_STRING.');
 							}
 
-							$string = $this->token(Daemon_ConfigParser::T_STRING, $c);
+							$string = $this->token(ConfigParser::T_STRING, $c);
 							--$this->p;
 
 							if ($elTypes[$i] === null) {
 								$elements[$i] = $string;
-								$elTypes[$i]  = Daemon_ConfigParser::T_STRING;
+								$elTypes[$i]  = ConfigParser::T_STRING;
 							}
 						}
 						elseif ($c === '}') {
@@ -194,15 +195,15 @@ class Daemon_ConfigParser {
 							if ($newLineDetected) {
 								$this->raiseError('Unexpected new-line instead of \';\'', 'notice', $newLineDetected[0], $newLineDetected[1]);
 							}
-							$tokenType = Daemon_ConfigParser::T_VAR;
+							$tokenType = ConfigParser::T_VAR;
 							break;
 						}
 						elseif ($c === '{') {
-							$tokenType = Daemon_ConfigParser::T_BLOCK;
+							$tokenType = ConfigParser::T_BLOCK;
 							break;
 						}
 						else {
-							if ($elTypes[$i] === Daemon_ConfigParser::T_STRING) {
+							if ($elTypes[$i] === ConfigParser::T_STRING) {
 								$this->raiseError('Unexpected T_CVALUE.');
 							}
 							else {
@@ -211,12 +212,12 @@ class Daemon_ConfigParser {
 								}
 
 								$elements[$i] .= $c;
-								$elTypes[$i] = Daemon_ConfigParser::T_CVALUE;
+								$elTypes[$i] = ConfigParser::T_CVALUE;
 							}
 						}
 					}
 					foreach ($elTypes as $k => $v) {
-						if (Daemon_ConfigParser::T_CVALUE === $v) {
+						if (ConfigParser::T_CVALUE === $v) {
 							if (ctype_digit($elements[$k])) {
 								$elements[$k] = (int)$elements[$k];
 							}
@@ -241,7 +242,7 @@ class Daemon_ConfigParser {
 					if ($tokenType === 0) {
 						$this->raiseError('Expected \';\' or \'{\'');
 					}
-					elseif ($tokenType === Daemon_ConfigParser::T_VAR) {
+					elseif ($tokenType === ConfigParser::T_VAR) {
 						$name = str_replace('-', '', strtolower($elements[0]));
 						if (sizeof($elements) > 2) {
 							$value = array_slice($elements, 1);
@@ -262,7 +263,7 @@ class Daemon_ConfigParser {
 								$files = glob($path);
 								if ($files) {
 									foreach ($files as $fn) {
-										Daemon_ConfigParser::parse($fn, $scope, true);
+										ConfigParser::parse($fn, $scope, true);
 									}
 								}
 							}
@@ -271,11 +272,11 @@ class Daemon_ConfigParser {
 							if ($value === null) {
 								$value       = true;
 								$elements[1] = true;
-								$elTypes[1]  = Daemon_ConfigParser::T_CVALUE;
+								$elTypes[1]  = ConfigParser::T_CVALUE;
 							}
 							if (isset($scope->{$name})) {
 								if ($scope->{$name}->source !== 'cmdline') {
-									if (($elTypes[1] === Daemon_ConfigParser::T_CVALUE) && is_string($value)) {
+									if (($elTypes[1] === ConfigParser::T_CVALUE) && is_string($value)) {
 										$scope->{$name}->setHumanValue($value);
 									}
 									else {
@@ -297,17 +298,17 @@ class Daemon_ConfigParser {
 							}
 						}
 					}
-					elseif ($tokenType === Daemon_ConfigParser::T_BLOCK) {
+					elseif ($tokenType === ConfigParser::T_BLOCK) {
 						$scope       = $this->getCurrentScope();
 						$sectionName = implode('-', $elements);
 						$sectionName = strtr($sectionName, '-. ', ':::');
 						if (!isset($scope->{$sectionName})) {
-							$scope->{$sectionName} = new Daemon_ConfigSection;
+							$scope->{$sectionName} = new ConfigSection;
 						}
 						$scope->{$sectionName}->source   = 'config';
 						$scope->{$sectionName}->revision = $this->revision;
 						$this->state[]                   = [
-							Daemon_ConfigParser::T_ALL,
+							ConfigParser::T_ALL,
 							$scope->{$sectionName},
 						];
 					}
@@ -341,7 +342,7 @@ class Daemon_ConfigParser {
 					}
 				}
 			}
-			elseif ($obj instanceof Daemon_ConfigSection) {
+			elseif ($obj instanceof ConfigSection) {
 
 				if ($obj->source === 'config' && ($obj->revision < $this->revision)) {
 					if (sizeof($obj) === 0) {

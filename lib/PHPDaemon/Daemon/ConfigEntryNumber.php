@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * Number config entry
@@ -8,7 +9,7 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_ConfigEntryNumber extends Daemon_ConfigEntry {
+class ConfigEntryNumber extends ConfigEntry {
 
 	public static function HumanToPlain($value) {
 		if ($value === null) {

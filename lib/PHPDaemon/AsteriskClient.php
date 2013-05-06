@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 /**
  * Driver for Asterisk Call Manager/1.1
  *

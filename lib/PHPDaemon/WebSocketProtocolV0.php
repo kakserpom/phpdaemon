@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon;
 
 /**
  * Websocket protocol hixie-76

@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class StackCallbacks extends SplStack {
 	/**
 	 * Push callback to the bottom of stack

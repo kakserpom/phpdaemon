@@ -1,4 +1,7 @@
 <?php
+namespace PHPDaemon\Daemon;
+
+use PHPDaemon\Thread;
 
 /**
  * Implementation of the IPC thread
@@ -8,7 +11,7 @@
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 // @TODO: respawning IPCThread on unexpected failures
-class Daemon_IPCThread extends Thread {
+class IPCThread extends Thread {
 	/**
 	 * Event base
 	 * @var EventBase
@@ -56,7 +59,7 @@ class Daemon_IPCThread extends Thread {
 	 * @return void
 	 */
 	protected function run() {
-		if (Daemon::$process instanceof Daemon_MasterThread) {
+		if (Daemon::$process instanceof MasterThread) {
 			Daemon::$process->unregisterSignals();
 		}
 		if (Daemon::$process->eventBase) {

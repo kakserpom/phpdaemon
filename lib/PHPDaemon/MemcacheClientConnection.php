@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 /**
  * @package    Network clients
  * @subpackage MemcacheClient

@@ -1,18 +1,18 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
- * External function config entry
+ * Boolean config entry
  *
  * @package    Core
  * @subpackage Config
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_ConfigEntryExtFunc extends Daemon_ConfigEntry {
+class ConfigEntryBoolean extends ConfigEntry {
 
 	public static function HumanToPlain($value) {
-		$cb = include($value);
-		return is_callable($cb) ? $cb : null;
+		return (boolean)$value;
 	}
 
 }

@@ -1,4 +1,7 @@
 <?php
+namespace PHPDaemon\Daemon;
+
+use PHPDaemon\Thread;
 
 /**
  * Implementation of the worker thread
@@ -7,7 +10,7 @@
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_WorkerThread extends Thread {
+class WorkerThread extends Thread {
 
 	/**
 	 * Update?

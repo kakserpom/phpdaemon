@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon;
 
 /**
  * Debug static functions

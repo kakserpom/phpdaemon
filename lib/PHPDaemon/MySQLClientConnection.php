@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class MySQLClientConnection extends NetworkClientConnection {
 
 	/**

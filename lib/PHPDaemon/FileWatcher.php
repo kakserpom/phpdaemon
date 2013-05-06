@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon;
 
 /**
  * Implementation of the file watcher

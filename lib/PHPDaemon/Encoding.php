@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 /**
  * @author   "Sebastián Grignoli" <grignoli@framework2.com.ar>
  * @package  Encoding

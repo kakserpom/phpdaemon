@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class XMPPRoster {
 	use EventHandlers;
 

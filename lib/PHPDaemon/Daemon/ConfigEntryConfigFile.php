@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * ConfigFile config entry
@@ -8,10 +9,10 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_ConfigEntryConfigFile extends Daemon_ConfigEntry {
+class ConfigEntryConfigFile extends ConfigEntry {
 
 	public function onUpdate($old) {
-		if (!Daemon::$process instanceof Daemon_MasterThread || (Daemon::$config->autoreload->value === 0) || !$old) {
+		if (!Daemon::$process instanceof MasterThread || (Daemon::$config->autoreload->value === 0) || !$old) {
 			return;
 		}
 

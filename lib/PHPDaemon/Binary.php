@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class Binary {
 	/**
 	 * Build structure of labels

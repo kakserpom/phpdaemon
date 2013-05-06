@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * Array config entry
@@ -8,7 +9,7 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_ConfigEntryArray extends Daemon_ConfigEntry {
+class ConfigEntryArray extends ConfigEntry {
 
 	public static function HumanToPlain($value) {
 		if (is_array($value)) {

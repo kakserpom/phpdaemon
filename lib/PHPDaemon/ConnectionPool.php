@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon;
 
 /**
  * Pool of connections
@@ -158,7 +159,7 @@ abstract class ConnectionPool extends ObjectStorage {
 
 	/**
 	 * Returns instance object
-	 * @param mixed String name / array config / Daemon_ConfigSection
+	 * @param mixed String name / array config / ConfigSection
 	 * @param [boolean Spawn? Default is true]
 	 * @return object
 	 */

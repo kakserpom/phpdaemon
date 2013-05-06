@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * Config class
@@ -8,7 +9,7 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_Config implements ArrayAccess {
+class Config implements \ArrayAccess {
 
 	/**
 	 * Maximum memory usage
@@ -275,19 +276,19 @@ class Daemon_Config implements ArrayAccess {
 
 		foreach ($this as $name => $value) {
 			if (in_array($name, $sizes)) {
-				$entry = new Daemon_ConfigEntrySize;
+				$entry = new ConfigEntrySize;
 			}
 			elseif (in_array($name, $times)) {
-				$entry = new Daemon_ConfigEntryTime;
+				$entry = new ConfigEntryTime;
 			}
 			elseif (in_array($name, $numbers)) {
-				$entry = new Daemon_ConfigEntryNumber;
+				$entry = new ConfigEntryNumber;
 			}
 			elseif ($name === 'configfile') {
-				$entry = new Daemon_ConfigEntryConfigFile;
+				$entry = new ConfigEntryConfigFile;
 			}
 			else {
-				$entry = new Daemon_ConfigEntry;
+				$entry = new ConfigEntry;
 			}
 
 			$entry->setDefaultValue($value);
@@ -302,7 +303,7 @@ class Daemon_Config implements ArrayAccess {
 	 * @return boolean Success
 	 */
 	public function loadFile($path) {
-		$parser = new Daemon_ConfigParser($path, $this);
+		$parser = new ConfigParser($path, $this);
 		$this->onLoad();
 		return !$parser->isErrorneous();
 	}

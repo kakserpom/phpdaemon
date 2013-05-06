@@ -1,4 +1,7 @@
 <?php
+namespace PHPDaemon\Daemon;
+
+use PHPDaemon\Thread;
 
 /**
  * Implementation of the master thread
@@ -7,7 +10,7 @@
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_MasterThread extends Thread {
+class MasterThread extends Thread {
 
 	public $delayedSigReg = true;
 	public $breakMainLoop = false;
@@ -217,7 +220,7 @@ class Daemon_MasterThread extends Thread {
 		$n = (int)$n;
 
 		for ($i = 0; $i < $n; ++$i) {
-			$thread = new Daemon_WorkerThread;
+			$thread = new WorkerThread;
 			$this->workers->push($thread);
 			$this->callbacks->push(function ($self) use ($thread) {
 				$thread->start();

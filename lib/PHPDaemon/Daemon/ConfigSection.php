@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Daemon;
 
 /**
  * Config section
@@ -8,7 +9,7 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Daemon_ConfigSection implements ArrayAccess, Countable {
+class ConfigSection implements \ArrayAccess, \Countable {
 
 	public $source;
 	public $revision;
@@ -121,7 +122,7 @@ class Daemon_ConfigSection implements ArrayAccess, Countable {
 					$this->{$name} = $value;
 				}
 			}
-			elseif ($value instanceof Daemon_ConfigSection) {
+			elseif ($value instanceof ConfigSection) {
 				$value->imposeDefault($value);
 			}
 			else {

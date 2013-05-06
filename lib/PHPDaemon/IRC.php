@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon;
+
 class IRC {
 	public static $codes = [
 		'1' => 'RPL_WELCOME', 2 => 'RPL_YOURHOST',
