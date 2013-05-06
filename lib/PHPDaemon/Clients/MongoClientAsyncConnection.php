@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
 
 class MongoClientAsyncConnection extends NetworkClientConnection {
 	public $url; // url

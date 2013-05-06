@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
 
 /**
  * Network client pattern
@@ -8,7 +8,7 @@ namespace PHPDaemon;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class NetworkClient extends ConnectionPool {
+class NetworkClient extends \PHPDaemon\ConnectionPool {
 
 	protected $servers = array(); // Array of servers 
 	protected $dtags_enabled = false; // Enables tags for distribution

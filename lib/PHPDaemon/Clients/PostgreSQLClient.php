@@ -1,12 +1,6 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
 
-/**
- * @package    lib
- * @subpackage PostgreSQLClient
- *
- * @author     Zorin Vasily <maintainer@daemon.io>
- */
 class PostgreSQLClient extends NetworkClient {
 	/**
 	 * Setting default config options
@@ -716,7 +710,4 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 
 		Daemon::log(__METHOD__ . ' #' . $this->errno . ': ' . $this->errmsg);
 	}
-}
-
-class PostgreSQLClientSessionFinished extends Exception {
 }

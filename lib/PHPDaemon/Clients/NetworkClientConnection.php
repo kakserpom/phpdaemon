@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
 
 /**
  * Network client connection pattern
@@ -8,7 +8,7 @@ namespace PHPDaemon;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class NetworkClientConnection extends Connection {
+class NetworkClientConnection extends \PHPDaemon\Connection {
 
 	/**
 	 * Busy?

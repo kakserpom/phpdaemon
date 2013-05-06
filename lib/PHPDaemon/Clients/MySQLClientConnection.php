@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
 
 class MySQLClientConnection extends NetworkClientConnection {
 
@@ -531,7 +531,4 @@ class MySQLClientConnection extends NetworkClientConnection {
 
 		Daemon::log(__METHOD__ . ' #' . $this->errno . ': ' . $this->errmsg);
 	}
-}
-
-class MySQLClientConnectionFinished extends Exception {
 }

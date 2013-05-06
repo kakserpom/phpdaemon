@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
+
+use PHPDaemon\EventHandlers;
 
 /**
  * @package    NetworkClients

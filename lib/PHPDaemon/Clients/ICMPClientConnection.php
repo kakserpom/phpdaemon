@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
 
 /**
  * @package    Applications
@@ -7,21 +7,6 @@ namespace PHPDaemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ICMPClient extends NetworkClient {
-
-	/**
-	 * Establishes connection
-	 * @param string Address
-	 * @return integer Connection ID
-	 */
-
-	public function sendPing($host, $cb) {
-		$this->connect('raw://' . $host, function ($conn) use ($cb) {
-			$conn->sendEcho($cb);
-		});
-	}
-}
-
 class ICMPClientConnection extends NetworkClientConnection {
 	/**
 	 * Packet sequence

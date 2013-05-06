@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
 
 class MongoClientAsyncCollection {
 	/** Related Pool object

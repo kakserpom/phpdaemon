@@ -1,12 +1,6 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Clients;
 
-/**
- * @package    Applications
- * @subpackage MongoClientAsync
- *
- * @author     Zorin Vasily <maintainer@daemon.io>
- */
 class MongoClientAsync extends NetworkClient {
 	public $noSAF = true;
 	public $requests = []; // Pending requests
@@ -906,7 +900,4 @@ class MongoClientAsync extends NetworkClient {
 	public function __get($name) {
 		return $this->getCollection($name);
 	}
-}
-
-class MongoClientAsyncConnectionFinished extends Exception {
 }
