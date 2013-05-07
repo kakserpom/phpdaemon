@@ -4,7 +4,7 @@ namespace PHPDaemon\WebSocket;
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
 use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\Servers\FlashPolicyServer;
+use PHPDaemon\Servers\FlashPolicy\Pool;
 
 class ServerConnection extends Connection {
 
@@ -313,7 +313,7 @@ class ServerConnection extends Connection {
 				return;
 			}
 			if ($d) {
-				if (($FP = FlashPolicyServer::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
+				if (($FP = Pool::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();

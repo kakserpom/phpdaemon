@@ -1,7 +1,5 @@
 <?php
-namespace PHPDaemon\Servers;
-
-use PHPDaemon\Connection;
+namespace PHPDaemon\Servers\FlashPolicy;
 
 /**
  * @package    NetworkServers
@@ -9,7 +7,7 @@ use PHPDaemon\Connection;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class FlashPolicyServerConnection extends Connection {
+class Connection extends \PHPDaemon\Connection {
 	protected $lowMark = 23; // length of "<policy-file-request/>\x00"
 	protected $highMark = 23;
 
