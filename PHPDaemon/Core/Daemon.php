@@ -281,6 +281,13 @@ class Daemon {
 			}
 		}
 
+		function setTimeout($cb, $timeout = null, $id = null, $priority = null) {
+			return Timer::add($cb, $timeout, $id, $priority);
+		}
+
+		function clearTimeout($id) {
+			Timer::remove($id);
+		}
 	}
 
 	/**

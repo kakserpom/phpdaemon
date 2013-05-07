@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Servers\Websocket;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Servers\FlashPolicy\Pool;
 use PHPDaemon\WebSocket\ProtocolV0;
@@ -9,7 +9,7 @@ use PHPDaemon\WebSocket\ProtocolV13;
 use PHPDaemon\WebSocket\ProtocolVE;
 use PHPDaemon\WebSocket\Route;
 
-class Connection extends \PHPDaemon\Connection {
+class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Timeout

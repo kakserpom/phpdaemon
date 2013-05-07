@@ -1,18 +1,12 @@
 <?php
 namespace PHPDaemon\Network;
 
-use PHPDaemon\Address;
-use PHPDaemon\Key;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Network\ConnectionPool;
 use PHPDaemon\Network;
-use PHPDaemon\onConnected;
-use PHPDaemon\Optional;
 use PHPDaemon\Request;
-use PHPDaemon\Server;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Structures\PriorityQueueCallbacks;
-use PHPDaemon\Weight;
 
 /**
  * Network client pattern

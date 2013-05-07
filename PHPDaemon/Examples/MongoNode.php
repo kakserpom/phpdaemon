@@ -74,7 +74,7 @@ class MongoNode extends \PHPDaemon\Core\AppInstance {
 
 			try {
 				$this->cursor->getMore();
-			} catch (\PHPDaemon\Clients\Mongo\SessionFinished $e) {
+			} catch (\PHPDaemon\Clients\Mongo\ConnectionFinished $e) {
 				$this->cursor = FALSE;
 			}
 		}

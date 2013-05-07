@@ -3,6 +3,7 @@ namespace PHPDaemon\Clients\HTTP;
 
 use PHPDaemon\Clients\HTTP\Pool;
 use PHPDaemon\Clients\HTTP\UploadFile;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Network\ClientConnection;
 

@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Core;
 
 use PHPDaemon\Core\Daemon;
 
@@ -34,7 +34,7 @@ class Timer {
 		if ($timeout !== null) {
 			$this->timeout($timeout);
 		}
-		Core\Timer::$list[$id] = $this;
+		self::$list[$id] = $this;
 	}
 
 	public function eventCall($arg) {
@@ -57,22 +57,22 @@ class Timer {
 	}
 
 	public static function setTimeout($id, $timeout = NULL) {
-		if (isset(Core\Timer::$list[$id])) {
-			Core\Timer::$list[$id]->timeout($timeout);
+		if (isset(self::$list[$id])) {
+			self::$list[$id]->timeout($timeout);
 			return true;
 		}
 		return false;
 	}
 
 	public static function remove($id) {
-		if (isset(Core\Timer::$list[$id])) {
-			Core\Timer::$list[$id]->free();
+		if (isset(self::$list[$id])) {
+			self::$list[$id]->free();
 		}
 	}
 
 	public static function cancelTimeout($id) {
-		if (isset(Core\Timer::$list[$id])) {
-			Core\Timer::$list[$id]->cancel();
+		if (isset(self::$list[$id])) {
+			self::$list[$id]->cancel();
 		}
 	}
 
@@ -96,18 +96,10 @@ class Timer {
 	}
 
 	public function free() {
-		unset(Core\Timer::$list[$this->id]);
+		unset(self::$list[$this->id]);
 		if ($this->ev !== null) {
 			$this->ev->free();
 			$this->ev = null;
 		}
 	}
-}
-
-function setTimeout($cb, $timeout = null, $id = null, $priority = null) {
-	return Core\Timer::add($cb, $timeout, $id, $priority);
-}
-
-function clearTimeout($id) {
-	Core\Timer::remove($id);
 }

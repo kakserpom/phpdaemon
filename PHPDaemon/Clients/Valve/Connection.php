@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Valve;
 
-use PHPDaemon\Clients\Data;
-use PHPDaemon\Clients\Type;
 use PHPDaemon\Clients\Valve\Pool;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;

@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Servers\HTTP;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\HTTPRequest\Input;

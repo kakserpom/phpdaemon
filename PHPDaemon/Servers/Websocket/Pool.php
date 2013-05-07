@@ -1,11 +1,11 @@
 <?php
 namespace PHPDaemon\Servers\Websocket;
 
-use PHPDaemon\Daemon;
-use PHPDaemon\NetworkServer;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Network\Server;
 use PHPDaemon\WebSocket\Route;
 
-class Pool extends NetworkServer {
+class Pool extends Server {
 	public $routes = array();
 
 	const BINARY = 'BINARY';
