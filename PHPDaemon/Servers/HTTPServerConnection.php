@@ -6,7 +6,6 @@ use PHPDaemon\Daemon;
 use PHPDaemon\FS\FS;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\HTTPRequest\Input;
-use PHPDaemon\Request\Generic;
 
 /**
  * @package    NetworkServers
