@@ -2,7 +2,9 @@
 namespace PHPDaemon\Servers;
 
 use PHPDaemon\Connection;
+use PHPDaemon\Daemon;
 use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequestInput;
 
 /**
  * @package    NetworkServers
@@ -133,7 +135,7 @@ class HTTPServerConnection extends Connection {
 		$req->attrs->session     = null;
 		$req->attrs->paramsDone  = false;
 		$req->attrs->inputDone   = false;
-		$req->attrs->input       = new HTTPRequestInput;
+		$req->attrs->input       = new HTTPRequestInput();
 		$req->attrs->inputReaded = 0;
 		$req->attrs->chunked     = false;
 		$req->upstream           = $this;
@@ -157,7 +159,7 @@ class HTTPServerConnection extends Connection {
 		}
 
 		$this->req = Daemon::$appResolver->getRequest($this->req, $this, isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null);
-		if ($this->req instanceof stdClass) {
+		if ($this->req instanceof \stdClass) {
 			$this->endRequest($this->req, 0, 0);
 			return false;
 		}

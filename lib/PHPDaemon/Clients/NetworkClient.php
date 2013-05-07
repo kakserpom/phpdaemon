@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\ObjectStorage;
 use PHPDaemon\PriorityQueueCallbacks;
 
 /**
@@ -135,7 +136,7 @@ class NetworkClient extends \PHPDaemon\ConnectionPool {
 			}
 		}
 		else {
-			$this->servConn[$url]     = new ObjectStorage;
+			$this->servConn[$url]     = new ObjectStorage();
 			$this->servConnFree[$url] = new ObjectStorage;
 		}
 		$conn = $this->connect($url, $cb);

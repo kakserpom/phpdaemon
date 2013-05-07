@@ -3,12 +3,12 @@
 /**
  * Gearman Node
  *
- * @package Applications
+ * @package    Applications
  * @subpackage GearmanNode
  *
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class GearmanNode extends AppInstance {
+class GearmanNode extends \PHPDaemon\AppInstance {
 
 	public $client;
 	public $worker;
@@ -43,7 +43,7 @@ class GearmanNode extends AppInstance {
 			$this->worker->setTimeout(0);
 
 			foreach (explode(',', $this->config->servers->value) as $address) {
-				$e = explode(':', $address, 2);
+				$e    = explode(':', $address, 2);
 				$port = isset($e[1]) ? $e[1] : $this->config->port->value;
 
 				$this->client->addServer($e[0], $port);
@@ -53,10 +53,10 @@ class GearmanNode extends AppInstance {
 			$this->interval = $this->pushRequest(new GearmanNodeInterval($this, $this));
 		}
 	}
-	
+
 }
 
-class GearmanNodeInterval extends Request {
+class GearmanNodeInterval extends \PHPDaemon\Request {
 
 	/**
 	 * Called when request iterated
@@ -70,7 +70,8 @@ class GearmanNodeInterval extends Request {
 		@$worker->work();
 		$ret = $worker->returnCode();
 
-		if ($ret == GEARMAN_IO_WAIT) {}
+		if ($ret == GEARMAN_IO_WAIT) {
+		}
 
 		if ($ret == GEARMAN_NO_JOBS) {
 			$this->sleep(0.2);
@@ -83,5 +84,5 @@ class GearmanNodeInterval extends Request {
 		@$worker->wait();
 		$this->sleep(0.2);
 	}
-	
+
 }

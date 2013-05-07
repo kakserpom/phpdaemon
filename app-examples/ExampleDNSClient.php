@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package Examples
+ * @package    Examples
  * @subpackage ExampleHTTPClient
  *
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleDNSClient extends AppInstance {
-	/** 
+class ExampleDNSClient extends \PHPDaemon\AppInstance {
+	/**
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
@@ -16,7 +16,7 @@ class ExampleDNSClient extends AppInstance {
 	public function beginRequest($req, $upstream) {
 		return new ExampleDNSClientRequest($this, $upstream, $req);
 	}
-	
+
 }
 
 class ExampleDNSClientRequest extends HTTPRequest {
@@ -30,26 +30,26 @@ class ExampleDNSClientRequest extends HTTPRequest {
 	public function init() {
 
 		$req = $this;
-		
-		$job = $this->job = new ComplexJob(function() use ($req) { // called when job is done
+
+		$job = $this->job = new \PHPDaemon\ComplexJob(function () use ($req) { // called when job is done
 			$req->wakeup(); // wake up the request immediately
 
 		});
-		
-		$job('query', function($name, $job) { // registering job named 'showvar'
-			DNSClient::getInstance()->get('phpdaemon.net', function($response) use ($name, $job) {
+
+		$job('query', function ($name, $job) { // registering job named 'showvar'
+			DNSClient::getInstance()->get('phpdaemon.net', function ($response) use ($name, $job) {
 				$job->setResult($name, $response);
 			});
 		});
 
-		$job('resolve', function($name, $job) { // registering job named 'showvar'
-			DNSClient::getInstance()->resolve('phpdaemon.net', function($ip) use ($name, $job) {
-				$job->setResult($name, array('phpdaemon.net resolved to' =>  $ip));
+		$job('resolve', function ($name, $job) { // registering job named 'showvar'
+			DNSClient::getInstance()->resolve('phpdaemon.net', function ($ip) use ($name, $job) {
+				$job->setResult($name, array('phpdaemon.net resolved to' => $ip));
 			});
 		});
-		
+
 		$job(); // let the fun begin
-		
+
 		$this->sleep(5, true); // setting timeout
 	}
 
@@ -57,10 +57,13 @@ class ExampleDNSClientRequest extends HTTPRequest {
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
-	public function run() {		
-		try {$this->header('Content-Type: text/plain');} catch (Exception $e) {}
+	public function run() {
+		try {
+			$this->header('Content-Type: text/plain');
+		} catch (Exception $e) {
+		}
 		var_dump($this->job->getResult('query'));
 		var_dump($this->job->getResult('resolve'));
 	}
-	
+
 }

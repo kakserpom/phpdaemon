@@ -2,6 +2,7 @@
 namespace PHPDaemon\Clients;
 
 use PHPDaemon\Binary;
+use PHPDaemon\Encoding;
 
 /**
  * @package    NetworkClients

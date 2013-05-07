@@ -1,19 +1,20 @@
 <?php
 
 /**
- * @package Examples
+ * @package    Examples
  * @subpackage ExampleHTTPClient
  *
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleHTTPClient extends AppInstance {
+class ExampleHTTPClient extends \PHPDaemon\AppInstance {
 	public $httpclient;
+
 	/**
 	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
-		$this->httpclient = HTTPClient::getInstance();
+		$this->httpclient = \PHPDaemon\Clients\HTTPClient::getInstance();
 	}
 
 	/**
@@ -34,7 +35,7 @@ class ExampleHTTPClient extends AppInstance {
 		return TRUE;
 	}
 
-	/** 
+	/**
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
@@ -43,7 +44,7 @@ class ExampleHTTPClient extends AppInstance {
 	public function beginRequest($req, $upstream) {
 		return new ExampleHTTPClientRequest($this, $upstream, $req);
 	}
-	
+
 }
 
 class ExampleHTTPClientRequest extends HTTPRequest {
@@ -54,16 +55,19 @@ class ExampleHTTPClientRequest extends HTTPRequest {
 	 */
 	public function init() {
 
-		try {$this->header('Content-Type: text/html');} catch (Exception $e) {}
+		try {
+			$this->header('Content-Type: text/html');
+		} catch (Exception $e) {
+		}
 
-			$this->appInstance->httpclient->post(
-				['https://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
-				function($conn, $success) {
-					echo $conn->body;
-					Daemon::$req->finish();
-				}
-			);
-		
+		$this->appInstance->httpclient->post(
+			['https://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
+			function ($conn, $success) {
+				echo $conn->body;
+				\PHPDaemon\Daemon::$req->finish();
+			}
+		);
+
 		$this->sleep(5, true); // setting timeout
 	}
 
@@ -71,8 +75,8 @@ class ExampleHTTPClientRequest extends HTTPRequest {
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
-	public function run() {		
+	public function run() {
 		echo 'Something went wrong.';
 	}
-	
+
 }

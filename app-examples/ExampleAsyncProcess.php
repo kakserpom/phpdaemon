@@ -1,12 +1,12 @@
 <?php
 
 /**
- * @package Examples
+ * @package    Examples
  * @subpackage AsyncProcess
  *
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleAsyncProcess extends AppInstance {
+class ExampleAsyncProcess extends \PHPDaemon\AppInstance {
 
 	/**
 	 * Creates Request.
@@ -30,11 +30,11 @@ class ExampleAsyncProcessRequest extends HTTPRequest {
 	public function init() {
 		$this->header('Content-Type: text/plain');
 
-		$this->proc = new AsyncProcess;
-		$this->proc->onReadData(function($stream, $data) {
+		$this->proc = new \PHPDaemon\AsyncProcess();
+		$this->proc->onReadData(function ($stream, $data) {
 			echo $data;
 		});
-		$this->proc->onEOF(function($stream) {
+		$this->proc->onEOF(function ($stream) {
 			$this->wakeup();
 		});
 		$this->proc->nice(256);
@@ -60,5 +60,5 @@ class ExampleAsyncProcessRequest extends HTTPRequest {
 			$this->sleep(1);
 		}
 	}
-	
+
 }

@@ -1,12 +1,12 @@
 <?php
 
 /**
- * @package Examples
+ * @package    Examples
  * @subpackage Sandbox
  *
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleSandbox extends AppInstance {
+class ExampleSandbox extends \PHPDaemon\AppInstance {
 
 	public $counter = 0;
 
@@ -34,7 +34,7 @@ class ExampleSandbox extends AppInstance {
 		return TRUE;
 	}
 
-	/** 
+	/**
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
@@ -43,7 +43,7 @@ class ExampleSandbox extends AppInstance {
 	public function beginRequest($req, $upstream) {
 		return new ExampleSandboxRequest($this, $upstream, $req);
 	}
-	
+
 }
 
 class ExampleSandboxRequest extends HTTPRequest {
@@ -55,20 +55,20 @@ class ExampleSandboxRequest extends HTTPRequest {
 	public function run() {
 		$stime = microtime(TRUE);
 		$this->header('Content-Type: text/html');
- 
-		$sandbox = new Runkit_Sandbox(array(
-			'safe_mode'        => TRUE,
-			'open_basedir'     => '/var/www/users/jdoe/',
-			'allow_url_fopen'  => 'false',
-			'disable_functions'=>'exec,shell_exec,passthru,system',
-			'disable_classes'  => '',
-			'output_handler'   => array($this,'out')
-		));
 
-		$sandbox->ini_set('html_errors',true);
-		$sandbox->call_user_func(function() {
+		$sandbox = new \Runkit_Sandbox(array(
+										   'safe_mode'         => TRUE,
+										   'open_basedir'      => '/var/www/users/jdoe/',
+										   'allow_url_fopen'   => 'false',
+										   'disable_functions' => 'exec,shell_exec,passthru,system',
+										   'disable_classes'   => '',
+										   'output_handler'    => array($this, 'out')
+									   ));
+
+		$sandbox->ini_set('html_errors', true);
+		$sandbox->call_user_func(function () {
 			echo "Hello World!";
 		});
 	}
-	
+
 }

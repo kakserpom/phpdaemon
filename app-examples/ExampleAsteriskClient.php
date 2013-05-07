@@ -1,15 +1,15 @@
 <?php
 
 /**
- * @package Examples
+ * @package    Examples
  * @subpackage Asterisk
  *
- * @author TyShkan <denis@tyshkan.ru>
+ * @author     TyShkan <denis@tyshkan.ru>
  */
-class ExampleAsteriskClient extends AppInstance {
-	
+class ExampleAsteriskClient extends \PHPDaemon\AppInstance {
+
 	public $asteriskclient;
-	
+
 	public $asteriskconn;
 
 	/**
@@ -19,22 +19,22 @@ class ExampleAsteriskClient extends AppInstance {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			'url' => 'tcp://user:password@localhost:5038',
-			'reconnect' => 1,
+			'url'                 => 'tcp://user:password@localhost:5038',
+			'reconnect'           => 1,
 			'asteriskclient-name' => ''
 		];
 	}
-	
+
 	/**
 	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->asteriskclient = AsteriskClient::getInstance($this->config->asteriskclientname->value);
+			$this->asteriskclient = \PHPDaemon\Clients\AsteriskClient::getInstance($this->config->asteriskclientname->value);
 		}
 	}
-	
+
 	/**
 	 * Called when the worker is ready to go.
 	 * @return void
@@ -45,21 +45,22 @@ class ExampleAsteriskClient extends AppInstance {
 			$this->connect();
 		}
 	}
-	
+
 	public function connect() {
 		$this->asteriskclient->getConnection($this->config->url->value, function ($conn) {
 			$this->asteriskconn = $conn;
 			if ($conn->connected) {
-				$conn->bind('disconnect', function($conn) {
-					Daemon::log('Connection lost... Reconnect in ' . $this->config->reconnect->value . ' sec');			
+				$conn->bind('disconnect', function ($conn) {
+					\PHPDaemon\Daemon::log('Connection lost... Reconnect in ' . $this->config->reconnect->value . ' sec');
 					$this->connect();
 				});
-			} else {
-				Daemon::log(get_class($this).': couldn\'t connect to '.$this->config->url->value);
+			}
+			else {
+				\PHPDaemon\Daemon::log(get_class($this) . ': couldn\'t connect to ' . $this->config->url->value);
 			}
 		});
 	}
-	
+
 	/**
 	 * Called when application instance is going to shutdown.
 	 * @return boolean Ready to shutdown?
@@ -67,8 +68,8 @@ class ExampleAsteriskClient extends AppInstance {
 	public function onShutdown($graceful = false) {
 		if ($this->asteriskclient) {
 			return $this->asteriskclient->onShutdown();
-		}		
+		}
 		return true;
-	}	
+	}
 }
 

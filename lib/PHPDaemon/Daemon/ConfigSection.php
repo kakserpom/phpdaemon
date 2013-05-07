@@ -128,7 +128,7 @@ class ConfigSection implements \ArrayAccess, \Countable {
 			else {
 				$current = $this->{$name};
 				if (!is_object($value)) {
-					$this->{$name} = new Daemon_ConfigEntry($value);
+					$this->{$name} = new ConfigEntry($value);
 				}
 				else {
 					$this->{$name} = $value;

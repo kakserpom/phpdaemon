@@ -1,16 +1,16 @@
 <?php
 
 /**
- * @package Examples
+ * @package    Examples
  * @subpackage Base
  *
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class ExampleJabberbot extends AppInstance {
+class ExampleJabberbot extends \PHPDaemon\AppInstance {
 	public $xmppclient;
 	public $xmppconn;
-	
+
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -22,13 +22,14 @@ class ExampleJabberbot extends AppInstance {
 			'url' => 'xmpp://user:password@host/phpDaemon'
 		);
 	}
+
 	/**
 	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->xmppclient = XMPPClient::getInstance();
+			$this->xmppclient = \PHPDaemon\Clients\XMPPClient::getInstance();
 		}
 	}
 
@@ -42,27 +43,28 @@ class ExampleJabberbot extends AppInstance {
 			$this->connect();
 		}
 	}
-	
+
 	public function connect() {
 		$app = $this;
 		$this->xmppclient->getConnection($this->config->url->value, function ($conn) use ($app) {
 			$app->xmppconn = $conn;
 			if ($conn->connected) {
-				Daemon::log('Jabberbot connected at '.$this->config->url->value);
+				\PHPDaemon\Daemon::log('Jabberbot connected at ' . $this->config->url->value);
 				$conn->presence('I\'m a robot.', 'chat');
-				$conn->bind('message', function($conn, $msg) {
-					Daemon::log('JabberBot: got message \''.$msg['body'].'\'');
-					$conn->message($msg['from'], 'You just wrote: '.$msg['body']); // send the message back
+				$conn->bind('message', function ($conn, $msg) {
+					\PHPDaemon\Daemon::log('JabberBot: got message \'' . $msg['body'] . '\'');
+					$conn->message($msg['from'], 'You just wrote: ' . $msg['body']); // send the message back
 				});
-				$conn->bind('disconnect', function() use ($app) {
+				$conn->bind('disconnect', function () use ($app) {
 					$app->connect();
 				});
 			}
 			else {
-				Daemon::log('Jabberbot: unable to connect ('.$this->config->url->value.')');
+				\PHPDaemon\Daemon::log('Jabberbot: unable to connect (' . $this->config->url->value . ')');
 			}
 		});
 	}
+
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void

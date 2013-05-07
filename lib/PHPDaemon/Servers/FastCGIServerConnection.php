@@ -3,6 +3,7 @@ namespace PHPDaemon\Servers;
 
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
+use PHPDaemon\HTTPRequestInput;
 
 /**
  * @package    NetworkServers
@@ -143,7 +144,7 @@ class FastCGIServerConnection extends Connection {
 			$req->attrs->id         = $this->header['reqid'];
 			$req->attrs->paramsDone = false;
 			$req->attrs->inputDone  = false;
-			$req->attrs->input      = new HTTPRequestInput;
+			$req->attrs->input      = new HTTPRequestInput();
 			$req->attrs->chunked    = false;
 			$req->attrs->noHttpVer  = true;
 			$req->queueId           = $rid;

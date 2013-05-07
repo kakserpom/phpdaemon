@@ -1,9 +1,14 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\AppInstance;
 use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
+use PHPDaemon\FS;
+use PHPDaemon\HTTPRequest;
 use PHPDaemon\StackCallbacks;
 use PHPDaemon\Thread;
+use PHPDaemon\Timer;
 
 /**
  * Implementation of the worker thread
@@ -160,7 +165,7 @@ class WorkerThread extends Thread {
 		$this->overrideNativeFuncs();
 
 		$this->setState(Daemon::WSTATE_INIT);;
-		$this->dnsBase = new EventDnsBase($this->eventBase, false); // @TODO: test with true
+		$this->dnsBase = new \EventDnsBase($this->eventBase, false); // @TODO: test with true
 		$this->registerEventSignals();
 
 		FS::init();

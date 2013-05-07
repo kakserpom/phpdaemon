@@ -3,14 +3,14 @@
 /**
  * @package GameMonitor
  *
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author  Zorin Vasily <maintainer@daemon.io>
  */
 // db.servers.ensureIndex({address:1}, {unique:true});
-class GameMonitor extends AppInstance {
+class GameMonitor extends \PHPDaemon\AppInstance {
 	public $client;
 	public $db;
 	public $servers;
-	
+
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -22,14 +22,15 @@ class GameMonitor extends AppInstance {
 			'dbname' => 'gamemonitor',
 		];
 	}
+
 	/**
 	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->client = ValveClient::getInstance();
-			$this->db = MongoClient::getInstance();
+			$this->client  = \PHPDaemon\Clients\ValveClient::getInstance();
+			$this->db      = MongoClient::getInstance();
 			$this->servers = $this->db->{$this->config->dbname->value . '.servers'};
 		}
 	}
@@ -45,84 +46,85 @@ class GameMonitor extends AppInstance {
 	}
 
 	public $jobMap = [];
+
 	public function updateServer($server) {
 		if (!isset($server['address'])) {
 			return;
 		}
 		$server['address'] = trim($server['address']);
-		$app = $this;
+		$app               = $this;
 		if (isset($app->jobMap[$server['address']])) {
-			//Daemon::log('already doing: '.$server['address']);
+			//\PHPDaemon\Daemon::log('already doing: '.$server['address']);
 			return;
 		}
-		$job = new ComplexJob(function($job) use ($app, $server) {
+		$job                             = new \PHPDaemon\ComplexJob(function ($job) use ($app, $server) {
 			unset($app->jobMap[$server['address']]);
-			//Daemon::log('Removed job for '.$server['address']. ' ('.sizeof($app->jobMap).')');
-			$set = $job->results['info'];
+			//\PHPDaemon\Daemon::log('Removed job for '.$server['address']. ' ('.sizeof($app->jobMap).')');
+			$set            = $job->results['info'];
 			$set['address'] = $server['address'];
 			$set['players'] = $job->results['players'];
 			$set['latency'] = $job->results['latency'];
-			$set['atime'] = time();
-			if (0) Daemon::log('Updated server ('.round(memory_get_usage(true)/1024/1024, 5).'): '.$server['address']. ' latency = '.round($set['latency'] * 1000, 2).' ==== '
-				 . (isset($server['atime']) ?
-				  round($set['atime'] - $server['atime']) . ' secs. from last update.'
-				  : ' =---= '.json_encode($server))
-			);
+			$set['atime']   = time();
+			if (0) {
+				\PHPDaemon\Daemon::log('Updated server (' . round(memory_get_usage(true) / 1024 / 1024, 5) . '): ' . $server['address'] . ' latency = ' . round($set['latency'] * 1000, 2) . ' ==== '
+											   . (isset($server['atime']) ?
+													   round($set['atime'] - $server['atime']) . ' secs. from last update.'
+													   : ' =---= ' . json_encode($server))
+				);
+			}
 			try {
 				$app->servers->upsert(['_id' => $server['_id']], ['$set' => $set]);
 			} catch (MongoException $e) {
-				Daemon::uncaughtExceptionHandler($e);
+				\PHPDaemon\Daemon::uncaughtExceptionHandler($e);
 				$app->servers->upsert(['_id' => $server['_id']], ['$set' => array('atime' => time())]);
 			}
 		});
 		$app->jobMap[$server['address']] = $job;
-		//Daemon::log('Added job for '.$server['address']);
+		//\PHPDaemon\Daemon::log('Added job for '.$server['address']);
 
 		$job('info', function ($jobname, $job) use ($app, $server) {
 			$app->client->requestInfo($server['address'], function ($conn, $result) use ($app, $server, $jobname, $job) {
 
 				$job('players', function ($jobname, $job) use ($app, $server, $conn) {
-					
-					$conn->requestPlayers(function ($conn, $result) use ($app,$jobname, $job) {
+
+					$conn->requestPlayers(function ($conn, $result) use ($app, $jobname, $job) {
 
 						$job->setResult($jobname, $result);
 						$conn->finish();
-	
+
 					});
 				});
-
 
 				$job->setResult($jobname, $result);
 			});
 		});
 
 		$job('latency', function ($jobname, $job) use ($app, $server) {
-							
+
 			$app->client->ping($server['address'], function ($conn, $result) use ($app, $jobname, $job) {
-	
+
 				$job->setResult($jobname, $result);
 
 				$conn->finish();
-	
-			});	
-						
-		});
 
+			});
+
+		});
 
 		$job();
 	}
-	
+
 	public function updateAllServers() {
 		gc_collect_cycles();
-		$app = $this;
+		$app    = $this;
 		$amount = 1000 - sizeof($this->jobMap);
-		Daemon::log('amount: '.$amount);
+		\PHPDaemon\Daemon::log('amount: ' . $amount);
 		if ($amount <= 0) {
 			return;
 		}
-		$this->servers->find(function($cursor) use ($app, $amount) {
+		$this->servers->find(function ($cursor) use ($app, $amount) {
 			if (isset($cursor->items[0]['$err'])) {
-				Daemon::log(Debug::dump($cursor->items));
+				\PHPDaemon\Daemon::log(\PHPDaemon\Debug::dump($cursor->items));
 				return;
 			}
 			foreach ($cursor->items as $server) {
@@ -130,17 +132,17 @@ class GameMonitor extends AppInstance {
 			}
 			$cursor->destroy();
 		}, [
-			'where' => ['$or' => [
-				['atime' => ['$lte' => time() - 30], 'latency' => ['$ne' => false]],
-				['atime' => array('$lte' => time() - 120), 'latency' => false],
-				['atime' => null],
-				//['address' => 'dimon4ik.no-ip.org:27016'],
+			   'where' => ['$or' => [
+				   ['atime' => ['$lte' => time() - 30], 'latency' => ['$ne' => false]],
+				   ['atime' => array('$lte' => time() - 120), 'latency' => false],
+				   ['atime' => null],
+				   //['address' => 'dimon4ik.no-ip.org:27016'],
 
-			]],
-			//'fields' => '_id,atime,address',
-			'limit' => - max($amount, 100),
-			'sort' => ['atime' => 1],
-		]);
+			   ]],
+			   //'fields' => '_id,atime,address',
+			   'limit' => -max($amount, 100),
+			   'sort'  => ['atime' => 1],
+		   ]);
 	}
 
 	/**
@@ -155,7 +157,7 @@ class GameMonitor extends AppInstance {
 			}, 1);
 		}
 	}
-	
+
 	/**
 	 * Called when worker is going to update configuration.
 	 * @return void
@@ -181,45 +183,46 @@ class GameMonitor extends AppInstance {
 
 class GameMonitorHTTPRequest extends HTTPRequest {
 
-	/**
-	 * Constructor.
-	 * @return void
-	 */
-	public function init() {
-		$req = $this;
+/**
+ * Constructor.
+ * @return void
+ */
+public function init() {
+	$req = $this;
 
-		$job = $this->job = new ComplexJob(function() use ($req) { // called when job is done
+	$job = $this->job = new \PHPDaemon\ComplexJob(function () use ($req) { // called when job is done
 
-			$req->wakeup(); // wake up the request immediately
+		$req->wakeup(); // wake up the request immediately
 
+	});
+
+	$job('getServers', function ($name, $job) use ($req) { // registering job named 'pingjob'
+
+		$req->appInstance->servers->find(function ($cursor) use ($name, $job) {
+			$job->setResult($name, $cursor->items);
 		});
-				
-		$job('getServers', function($name, $job) use ($req) { // registering job named 'pingjob'
-		
-			$req->appInstance->servers->find(function ($cursor) use ($name, $job) {
-				$job->setResult($name, $cursor->items);
-			});
-		});
+	});
 
-		$job(); // let the fun begin
+	$job(); // let the fun begin
 
-		$this->sleep(5); // setting timeout
-	}
-	
-	/**
-	 * Called when request iterated.
-	 * @return integer Status.
-	 */
-	public function run() {
-		$this->header('Content-Type: text/html');
+	$this->sleep(5); // setting timeout
+}
+
+/**
+ * Called when request iterated.
+ * @return integer Status.
+ */
+public function run() {
+$this->header('Content-Type: text/html');
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Game servers</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>Game servers</title>
 </head>
 <body>
-</body></html><?php
-	}
-	
+</body>
+</html><?php
+}
+
 }

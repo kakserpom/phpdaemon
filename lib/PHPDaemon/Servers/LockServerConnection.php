@@ -5,6 +5,7 @@ namespace PHPDaemon\Servers;
 
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
 
 /**
  * @package    NetworkServers
