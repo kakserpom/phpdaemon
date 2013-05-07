@@ -1,12 +1,5 @@
 <?php
 namespace PHPDaemon;
-
-use PHPDaemon\BoundSocket\Generic;
-use PHPDaemon\BoundSocket\Generic;
-use PHPDaemon\BoundSocket\TCP;
-use PHPDaemon\BoundSocket\UDP;
-use PHPDaemon\BoundSocket\UNIX;
-
 /**
  * Pool of connections
  *
@@ -362,17 +355,17 @@ abstract class ConnectionPool extends ObjectStorage {
 		$u      = Daemon\Config::parseCfgUri($uri);
 		$scheme = $u['scheme'];
 		if ($scheme === 'unix') {
-			$socket = new UNIX($u);
+			$socket = new BoundSocket\UNIX($u);
 
 		}
 		elseif ($scheme === 'udp') {
-			$socket = new UDP($u);
+			$socket = new BoundSocket\UDP($u);
 			if (isset($this->config->port->value)) {
 				$socket->setDefaultPort($this->config->port->value);
 			}
 		}
 		elseif ($scheme === 'tcp') {
-			$socket = new TCP($u);
+			$socket = new BoundSocket\TCP($u);
 			if (isset($this->config->port->value)) {
 				$socket->setDefaultPort($this->config->port->value);
 			}
