@@ -17,12 +17,6 @@ use PHPDaemon\Thread;
 abstract class ConnectionPool extends ObjectStorage {
 
 	/**
-	 * Allowed clients
-	 * @var array|null
-	 */
-	public $allowedClients = null;
-
-	/**
 	 * Default connection class
 	 * @var string
 	 */
@@ -59,12 +53,6 @@ abstract class ConnectionPool extends ObjectStorage {
 	protected $finished = false;
 
 	/**
-	 * Bound sockets
-	 * @var ObjectStorage
-	 */
-	protected $bound;
-
-	/**
 	 * Is enabled?
 	 * @var boolean
 	 */
@@ -81,8 +69,7 @@ abstract class ConnectionPool extends ObjectStorage {
 	 * @param array Config variables
 	 * @return object
 	 */
-	public function __construct($config = []) {
-		$this->bound  = new ObjectStorage;
+	public function __construct($config = [], $init = true) {
 		$this->config = $config;
 		$this->onConfigUpdated();
 		if ($this->connectionClass === null) {
@@ -90,10 +77,6 @@ abstract class ConnectionPool extends ObjectStorage {
 			$e[sizeof($e) - 1] = 'Connection';
 			$this->connectionClass = '\\'. implode('\\', $e);
 		}
-		if (isset($this->config->listen)) {
-			$this->bindSockets($this->config->listen->value);
-		}
-		$this->init();
 	}
 
 	/**
@@ -145,14 +128,8 @@ abstract class ConnectionPool extends ObjectStorage {
 			elseif ($k === 'name') {
 				$this->name = $v;
 			}
-			elseif ($k === 'allowedclients') {
-				$this->allowedClients = $v;
-			}
 			elseif ($k === 'maxallowedpacket') {
 				$this->maxAllowedPacket = (int)$v;
-			}
-			elseif ($k === 'maxconcurrency') {
-				$this->maxConcurrency = (int)$v;
 			}
 		}
 	}
@@ -218,9 +195,7 @@ abstract class ConnectionPool extends ObjectStorage {
 			return;
 		}
 		$this->enabled = true;
-		if ($this->bound) {
-			$this->bound->each('enable');
-		}
+		$this->onEnable();
 	}
 
 	/**
@@ -232,10 +207,20 @@ abstract class ConnectionPool extends ObjectStorage {
 			return;
 		}
 		$this->enabled = false;
-		if ($this->bound) {
-			$this->bound->each('disable');
-		}
+		$this->onDisable();
 	}
+
+	/**
+	 * Called when ConnectionPool is now enabled
+	 * @return void
+	 */
+	protected function onEnable() {}
+
+	/**
+	 * Called when ConnectionPool is now disabled
+	 * @return void
+	 */
+	protected function onDisable() {}
 
 	/**
 	 * Called when application instance is going to shutdown
@@ -252,21 +237,12 @@ abstract class ConnectionPool extends ObjectStorage {
 	protected function onFinish() { }
 
 	/**
-	 * Close each of binded sockets.
-	 * @return void
-	 */
-	public function closeBound() {
-		$this->bound->each('close');
-	}
-
-	/**
 	 * Finishes ConnectionPool
 	 * @return boolean Success
 	 */
 
 	public function finish() {
 		$this->disable();
-		$this->closeBound();
 
 		$result = true;
 
@@ -280,25 +256,6 @@ abstract class ConnectionPool extends ObjectStorage {
 			$this->onFinish();
 		}
 		return $result;
-	}
-
-	/**
-	 * Attach Generic
-	 * @param Generic
-	 * @param [mixed Info]
-	 * @return void
-	 */
-	public function attachBound(BoundSocket\Generic $bound, $inf = null) {
-		$this->bound->attach($bound, $inf);
-	}
-
-	/**
-	 * Detach Generic
-	 * @param Generic
-	 * @return void
-	 */
-	public function detachBound(BoundSocket\Generic $bound) {
-		$this->bound->detach($bound);
 	}
 
 	/**
@@ -332,65 +289,6 @@ abstract class ConnectionPool extends ObjectStorage {
 				$this->enable();
 			}
 		}
-	}
-
-	/**
-	 * Bind given sockets
-	 * @param mixed Addresses to bind
-	 * @return integer Number of bound.
-	 */
-	public function bindSockets($addrs = [], $max = 0) {
-		if (is_string($addrs)) { // @TODO: remove in 1.0
-			$addrs = array_map('trim', explode(',', $addrs));
-		}
-		$n = 0;
-		foreach ($addrs as $addr) {
-			if ($this->bindSocket($addr)) {
-				++$n;
-			}
-			if ($max > 0 && ($n >= $max)) {
-				return $n;
-			}
-		}
-		return $n;
-	}
-
-	/**
-	 * Bind given socket
-	 * @param string Address to bind
-	 * @return boolean Success
-	 */
-	public function bindSocket($uri) {
-		$u      = Config\Object::parseCfgUri($uri);
-		$scheme = $u['scheme'];
-		if ($scheme === 'unix') {
-			$socket = new BoundSocket\UNIX($u);
-
-		}
-		elseif ($scheme === 'udp') {
-			$socket = new BoundSocket\UDP($u);
-			if (isset($this->config->port->value)) {
-				$socket->setDefaultPort($this->config->port->value);
-			}
-		}
-		elseif ($scheme === 'tcp') {
-			$socket = new BoundSocket\TCP($u);
-			if (isset($this->config->port->value)) {
-				$socket->setDefaultPort($this->config->port->value);
-			}
-		}
-		else {
-			Daemon::log(get_class($this) . ': enable to bind \'' . $uri . '\': scheme \'' . $scheme . '\' is not supported');
-			return false;
-		}
-		$socket->attachTo($this);
-		if ($socket->bindSocket()) {
-			if ($this->enabled) {
-				$socket->enable();
-			}
-			return true;
-		}
-		return false;
 	}
 
 	/**
