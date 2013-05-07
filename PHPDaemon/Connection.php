@@ -6,6 +6,7 @@ use PHPDaemon\BoundSocket\TCP;
 use PHPDaemon\Cache\CappedStorage;
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Clients\DNS\Pool;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Structures\StackCallbacks;
 
 /**

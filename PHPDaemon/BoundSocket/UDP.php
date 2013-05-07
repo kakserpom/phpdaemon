@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\BoundSocket;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\Timer;
 

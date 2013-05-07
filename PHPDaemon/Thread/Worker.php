@@ -2,7 +2,7 @@
 namespace PHPDaemon\Thread;
 
 use PHPDaemon\AppInstance;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;

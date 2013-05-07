@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Applications;
 
-use PHPDaemon\Daemon;use PHPDaemon\HTTPRequest\Generic;class FileReaderRequest extends Generic {
+use PHPDaemon\Core\Daemon;use PHPDaemon\HTTPRequest\Generic;class FileReaderRequest extends Generic {
 
 public $stream;
 public $job;
@@ -86,7 +86,7 @@ public function file($path) {
 	}
 	static $warn = false;
 	if ($warn) {
-		\PHPDaemon\Daemon::log('BEWARE! You are using FileReader with EIO enabled. Maybe this is still buggy.');
+		\PHPDaemon\Core\Daemon::log('BEWARE! You are using FileReader with EIO enabled. Maybe this is still buggy.');
 		$warn = true;
 	}
 	$job = $this->job;

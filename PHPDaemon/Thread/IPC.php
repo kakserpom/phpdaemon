@@ -2,7 +2,7 @@
 namespace PHPDaemon\Thread;
 
 use PHPDaemon\AppInstance;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\FS\FileWatcher;
 

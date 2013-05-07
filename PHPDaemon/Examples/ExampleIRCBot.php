@@ -51,13 +51,13 @@ class ExampleIRCBot extends \PHPDaemon\AppInstance {
 		$r   = $this->client->getConnection($this->config->url->value, function ($conn) use ($app) {
 			$app->conn = $conn;
 			if ($conn->connected) {
-				\PHPDaemon\Daemon::log('IRC bot connected at ' . $this->config->url->value);
+				\PHPDaemon\Core\Daemon::log('IRC bot connected at ' . $this->config->url->value);
 				$conn->join('#botwar_phpdaemon');
 				$conn->bind('motd', function ($conn) {
 					//\PHPDaemon\Daemon::log($conn->motd);
 				});
 				$conn->bind('privateMsg', function ($conn, $msg) {
-					\PHPDaemon\Daemon::log('IRCBot: got private message \'' . $msg['body'] . '\' from \'' . $msg['from']['orig'] . '\'');
+					\PHPDaemon\Core\Daemon::log('IRCBot: got private message \'' . $msg['body'] . '\' from \'' . $msg['from']['orig'] . '\'');
 					$conn->message($msg['from']['nick'], 'You just wrote: ' . $msg['body']); // send the message back
 				});
 				$conn->bind('disconnect', function () use ($app) {
@@ -65,7 +65,7 @@ class ExampleIRCBot extends \PHPDaemon\AppInstance {
 				});
 			}
 			else {
-				\PHPDaemon\Daemon::log('IRCBot: unable to connect (' . $this->config->url->value . ')');
+				\PHPDaemon\Core\Daemon::log('IRCBot: unable to connect (' . $this->config->url->value . ')');
 			}
 		});
 	}

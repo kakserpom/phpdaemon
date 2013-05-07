@@ -46,7 +46,7 @@ class ExampleComplexJob extends \PHPDaemon\AppInstance {
 					'line' => 94,
 			  ),
 			)*/
-			\PHPDaemon\Daemon::log($job->results);
+			\PHPDaemon\Core\Daemon::log($job->results);
 		});
 
 		// Adding listener

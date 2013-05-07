@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Utils;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 
 class ShmEntity {
 	/**

@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Core\Daemon;
+
 class IPCManagerWorkerConnection extends Connection {
 	protected $timeout = null;
 	protected $lowMark = 4; // initial value of the minimal amout of bytes in buffer

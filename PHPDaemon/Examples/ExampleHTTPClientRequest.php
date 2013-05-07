@@ -20,7 +20,7 @@ class ExampleHTTPClientRequest extends Generic {
 			['https://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
 			function ($conn, $success) {
 				echo $conn->body;
-				\PHPDaemon\Daemon::$req->finish();
+				\PHPDaemon\Core\Daemon::$req->finish();
 			}
 		);
 

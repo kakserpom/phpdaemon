@@ -3,7 +3,7 @@ namespace PHPDaemon\FS;
 
 use PHPDaemon\Cache\CappedStorage;
 use PHPDaemon\Cache\CappedStorageHits;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 
 /**
  * FileSystem

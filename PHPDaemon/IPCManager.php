@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Core\Daemon;
+
 class IPCManager extends AppInstance {
 	public $pool;
 	public $conn;

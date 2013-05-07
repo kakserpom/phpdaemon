@@ -18,7 +18,7 @@ class ExamplePubSub extends \PHPDaemon\AppInstance {
 		$this->pubsub = new \PHPDaemon\PubSub\PubSub();
 		$this->pubsub->addEvent('usersNum', \PHPDaemon\PubSub\PubSubEvent::init()
 												  ->onActivation(function ($pubsub) use ($appInstance) {
-													  \PHPDaemon\Daemon::log('onActivation');
+													  \PHPDaemon\Core\Daemon::log('onActivation');
 													  if (isset($pubsub->event)) {
 														  \PHPDaemon\Timer::setTimeout($pubsub->event, 0);
 														  return;

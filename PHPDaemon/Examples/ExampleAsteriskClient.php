@@ -55,12 +55,12 @@ class ExampleAsteriskClient extends AppInstance {
 			$this->asteriskconn = $conn;
 			if ($conn->connected) {
 				$conn->bind('disconnect', function ($conn) {
-					\PHPDaemon\Daemon::log('Connection lost... Reconnect in ' . $this->config->reconnect->value . ' sec');
+					\PHPDaemon\Core\Daemon::log('Connection lost... Reconnect in ' . $this->config->reconnect->value . ' sec');
 					$this->connect();
 				});
 			}
 			else {
-				\PHPDaemon\Daemon::log(get_class($this) . ': couldn\'t connect to ' . $this->config->url->value);
+				\PHPDaemon\Core\Daemon::log(get_class($this) . ': couldn\'t connect to ' . $this->config->url->value);
 			}
 		});
 	}

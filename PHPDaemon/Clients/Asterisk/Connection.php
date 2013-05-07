@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients\Asterisk;
 use PHPDaemon\CallbackWrapper;
 use PHPDaemon\Clients\Asterisk\ConnectionFinished;
 use PHPDaemon\Clients\Asterisk\Pool;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Traits\EventHandlers;

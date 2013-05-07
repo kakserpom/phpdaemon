@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Core\Daemon;
+
 /**
  * Class finder
  *
@@ -11,7 +13,7 @@ namespace PHPDaemon;
 class ClassFinder {
 
 	/**
-	 * 
+	 *
 	 * @param string Class
 	 * @return string Class
 	 */

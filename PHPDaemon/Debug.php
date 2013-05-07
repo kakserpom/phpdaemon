@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Core\Daemon;
+
 /**
  * Debug static functions
  *

@@ -50,10 +50,10 @@ class ExampleJabberbot extends \PHPDaemon\AppInstance {
 		$this->xmppclient->getConnection($this->config->url->value, function ($conn) use ($app) {
 			$app->xmppconn = $conn;
 			if ($conn->connected) {
-				\PHPDaemon\Daemon::log('Jabberbot connected at ' . $this->config->url->value);
+				\PHPDaemon\Core\Daemon::log('Jabberbot connected at ' . $this->config->url->value);
 				$conn->presence('I\'m a robot.', 'chat');
 				$conn->bind('message', function ($conn, $msg) {
-					\PHPDaemon\Daemon::log('JabberBot: got message \'' . $msg['body'] . '\'');
+					\PHPDaemon\Core\Daemon::log('JabberBot: got message \'' . $msg['body'] . '\'');
 					$conn->message($msg['from'], 'You just wrote: ' . $msg['body']); // send the message back
 				});
 				$conn->bind('disconnect', function () use ($app) {
@@ -61,7 +61,7 @@ class ExampleJabberbot extends \PHPDaemon\AppInstance {
 				});
 			}
 			else {
-				\PHPDaemon\Daemon::log('Jabberbot: unable to connect (' . $this->config->url->value . ')');
+				\PHPDaemon\Core\Daemon::log('Jabberbot: unable to connect (' . $this->config->url->value . ')');
 			}
 		});
 	}

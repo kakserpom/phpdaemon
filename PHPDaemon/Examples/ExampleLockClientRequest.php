@@ -20,7 +20,7 @@ class ExampleLockClientRequest extends Generic {
 
 		if (!$this->started) {
 			$this->started = true;
-			$LockClient    = \PHPDaemon\Daemon::$appResolver->getInstanceByAppName('LockClient');
+			$LockClient    = \PHPDaemon\Core\Daemon::$appResolver->getInstanceByAppName('LockClient');
 			$req           = $this;
 			$LockClient->job(
 				'ExampleJobName', // name of the job
@@ -28,7 +28,7 @@ class ExampleLockClientRequest extends Generic {
 				function ($command, $jobname, $client) use ($req) {
 					if ($command === 'RUN') {
 						\PHPDaemon\Timer::add(function ($event) use ($req, $jobname, $client) {
-							\PHPDaemon\Daemon::log('done');
+							\PHPDaemon\Core\Daemon::log('done');
 							$client->done($jobname);
 							$req->out(':-)');
 							$req->wakeup();

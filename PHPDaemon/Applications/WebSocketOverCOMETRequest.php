@@ -118,7 +118,7 @@ class WebSocketOverCOMETRequest extends Generic {
 				list ($workerId, $this->reqIdAuthKey) = explode('.', $id, 2);
 				$workerId = (int)$workerId;
 				$this->appInstance->directCall($workerId, 'poll', array(
-					\PHPDaemon\Daemon::$process->id,
+					\PHPDaemon\Core\Daemon::$process->id,
 					$this->id,
 					$this->reqIdAuthKey,
 					self::getString($_REQUEST['ts'])

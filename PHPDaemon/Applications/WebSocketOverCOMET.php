@@ -21,10 +21,10 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 	public function initSession($route, $req) {
 		if (!isset($this->WS->routes[$route])) {
 			if (
-				isset(\PHPDaemon\Daemon::$config->logerrors)
-				&& \PHPDaemon\Daemon::$config->logerrors
+				isset(\PHPDaemon\Core\Daemon::$config->logerrors)
+				&& \PHPDaemon\Core\Daemon::$config->logerrors
 			) {
-				\PHPDaemon\Daemon::log(__METHOD__ . ': undefined route \'' . $route . '\'.');
+				\PHPDaemon\Core\Daemon::log(__METHOD__ . ': undefined route \'' . $route . '\'.');
 			}
 			return array('error' => 404);
 		}
@@ -37,7 +37,7 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 			return array('error' => 403);
 		}
 		$sess->server = $req->attrs->server;
-		$id           = \PHPDaemon\Daemon::$process->id . '.' . $sess->id . '.' . $sess->authKey;
+		$id           = \PHPDaemon\Core\Daemon::$process->id . '.' . $sess->id . '.' . $sess->authKey;
 		return array('id' => $id);
 	}
 

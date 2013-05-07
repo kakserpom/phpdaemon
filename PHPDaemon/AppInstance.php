@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\Generic;
 
 /**

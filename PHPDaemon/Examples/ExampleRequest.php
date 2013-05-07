@@ -50,7 +50,7 @@ $displaystate = TRUE;
 if ($displaystate)
 {
 
-?><br/><br/><b>State of workers:</b><?php $stat = \PHPDaemon\Daemon::getStateOfWorkers(); ?>
+?><br/><br/><b>State of workers:</b><?php $stat = \PHPDaemon\Core\Daemon::getStateOfWorkers(); ?>
 <br/>Idle: <?php echo $stat['idle']; ?>
 <br/>Busy: <?php echo $stat['busy']; ?>
 <br/>Total alive: <?php echo $stat['alive']; ?>

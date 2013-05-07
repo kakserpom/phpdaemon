@@ -1,8 +1,12 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Core;
 
+use PHPDaemon\Config;
+use PHPDaemon\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
+use PHPDaemon\Thread;
+use PHPDaemon\ThreadCollection;
 use PHPDaemon\Utils\ShmEntity;
 
 /**
@@ -236,8 +240,8 @@ class Daemon {
 
 		Daemon::$defaultErrorLevel    = error_reporting();
 		Daemon::$restrictErrorControl = (bool)Daemon::$config->restricterrorcontrol->value;
-		ob_start(array('\\PHPDaemon\\Daemon', 'outputFilter'));
-		set_error_handler(array('\\PHPDaemon\\Daemon', 'errorHandler'));
+		ob_start(array('\PHPDaemon\Core\Daemon', 'outputFilter'));
+		set_error_handler(array('\PHPDaemon\Core\Daemon', 'errorHandler'));
 
 		Daemon::checkSupports();
 

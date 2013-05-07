@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\HTTPRequest;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Request\RequestHeadersAlreadySent;

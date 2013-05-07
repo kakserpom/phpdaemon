@@ -2,7 +2,7 @@
 namespace PHPDaemon;
 
 use PHPDaemon\Config\Entry\Generic;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Terminal;
 use PHPDaemon\Utils\ShmEntity;
@@ -82,12 +82,12 @@ class Bootstrap {
 	 */
 	public static function init($configFile = null) {
 		if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-			Daemon::log('PHP >= 5.4.0 required.');
+			Core\Daemon::log('PHP >= 5.4.0 required.');
 			return;
 		}
-		Daemon::initSettings();
+		Core\Daemon::initSettings();
 		FileSystem::init();
-		Daemon::$runName = basename($_SERVER['argv'][0]);
+		Core\Daemon::$runName = basename($_SERVER['argv'][0]);
 
 		$error   = FALSE;
 		$argv    = $_SERVER['argv'];
@@ -121,38 +121,38 @@ class Bootstrap {
 		}
 
 		if (isset($configFile)) {
-			Daemon::$config->configfile->setHumanValue($configFile);
+			Core\Daemon::$config->configfile->setHumanValue($configFile);
 		}
 		if (isset($args['configfile'])) {
-			Daemon::$config->configfile->setHumanValue($args['configfile']);
+			Core\Daemon::$config->configfile->setHumanValue($args['configfile']);
 		}
 
-		if (!Daemon::$config->loadCmdLineArgs($args)) {
+		if (!Core\Daemon::$config->loadCmdLineArgs($args)) {
 			$error = true;
 		}
 
-		if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
+		if (!Core\Daemon::loadConfig(Core\Daemon::$config->configfile->value)) {
 			$error = true;
 		}
 
 		if ('log' === $runmode) {
-			passthru('tail -n ' . $n . ' -f ' . escapeshellarg(Daemon::$config->logstorage->value));
+			passthru('tail -n ' . $n . ' -f ' . escapeshellarg(Core\Daemon::$config->logstorage->value));
 			exit;
 		}
 
 		if (extension_loaded('apc') && ini_get('apc.enabled')) {
-			Daemon::log('Detected pecl-apc extension enabled. Usage of bytecode caching (APC/eAccelerator/xcache/...)  makes no sense at all in case of using phpDaemon \'cause phpDaemon includes files just in time itself.');
+			Core\Daemon::log('Detected pecl-apc extension enabled. Usage of bytecode caching (APC/eAccelerator/xcache/...)  makes no sense at all in case of using phpDaemon \'cause phpDaemon includes files just in time itself.');
 		}
 
-		if (isset(Daemon::$config->locale->value) && Daemon::$config->locale->value !== '') {
-			setlocale(LC_ALL, array_map('trim', explode(',', Daemon::$config->locale->value)));
+		if (isset(Daemon::$config->locale->value) && Core\Daemon::$config->locale->value !== '') {
+			setlocale(LC_ALL, array_map('trim', explode(',', Core\Daemon::$config->locale->value)));
 		}
 
 		if (
 			Daemon::$config->autoreimport->value
 			&& !is_callable('runkit_import')
 		) {
-			Daemon::log('[WARN] runkit extension not found. You should install it or disable --auto-reimport. Non-critical error.');
+			Core\Daemon::log('[WARN] runkit extension not found. You should install it or disable --auto-reimport. Non-critical error.');
 		}
 
 		if (!is_callable('posix_kill')) {
@@ -161,24 +161,24 @@ class Bootstrap {
 		}
 
 		if (!is_callable('pcntl_signal')) {
-			Daemon::log('[EMERG] PCNTL not found. You should compile PHP with \'--enable-pcntl\'.');
+			Core\Daemon::log('[EMERG] PCNTL not found. You should compile PHP with \'--enable-pcntl\'.');
 			$error = true;
 		}
 
 		if (extension_loaded('libevent')) {
-			Daemon::log('[EMERG] libevent extension found. You have to remove libevent.so extension.');
+			Core\Daemon::log('[EMERG] libevent extension found. You have to remove libevent.so extension.');
 			$error = true;
 		}
 
 		$eventVer     = '1.6.0';
 		$eventVerType = 'stable';
 		if (!Daemon::loadModuleIfAbsent('event', $eventVer . '-' . $eventVerType)) {
-			Daemon::log('[EMERG] event extension >= ' . $eventVer . ' not found (or OUTDATED). You have to install it. `pecl install http://pecl.php.net/get/event-' . $eventVer . '.tgz`');
+			Core\Daemon::log('[EMERG] event extension >= ' . $eventVer . ' not found (or OUTDATED). You have to install it. `pecl install http://pecl.php.net/get/event-' . $eventVer . '.tgz`');
 			$error = true;
 		}
 
 		if (!is_callable('socket_create')) {
-			Daemon::log('[EMERG] Sockets extension not found. You should compile PHP with \'--enable-sockets\'.');
+			Core\Daemon::log('[EMERG] Sockets extension not found. You should compile PHP with \'--enable-sockets\'.');
 			$error = true;
 		}
 
@@ -188,110 +188,110 @@ class Bootstrap {
 		}
 
 		if (!isset(Daemon::$config->user)) {
-			Daemon::log('[EMERG] You must set \'user\' parameter.');
+			Core\Daemon::log('[EMERG] You must set \'user\' parameter.');
 			$error = true;
 		}
 
-		if (!isset(Daemon::$config->path)) {
-			Daemon::log('[EMERG] You must set \'path\' parameter (path to your application resolver).');
+		if (!isset(Core\Daemon::$config->path)) {
+			Core\Daemon::log('[EMERG] You must set \'path\' parameter (path to your application resolver).');
 			$error = true;
 		}
 
-		if (!file_exists(Daemon::$config->pidfile->value)) {
+		if (!file_exists(Core\Daemon::$config->pidfile->value)) {
 			if (!touch(Daemon::$config->pidfile->value)) {
-				Daemon::log('[EMERG] Couldn\'t create pid-file \'' . Daemon::$config->pidfile->value . '\'.');
+				Core\Daemon::log('[EMERG] Couldn\'t create pid-file \'' . Core\Daemon::$config->pidfile->value . '\'.');
 				$error = true;
 			}
 
 			Bootstrap::$pid = 0;
 		}
 		elseif (!is_file(Daemon::$config->pidfile->value)) {
-			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be a regular file.');
+			Core\Daemon::log('Pid-file \'' . Core\Daemon::$config->pidfile->value . '\' must be a regular file.');
 			Bootstrap::$pid = FALSE;
 			$error          = true;
 		}
-		elseif (!is_writable(Daemon::$config->pidfile->value)) {
-			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be writable.');
+		elseif (!is_writable(Core\Daemon::$config->pidfile->value)) {
+			Core\Daemon::log('Pid-file \'' . Core\Daemon::$config->pidfile->value . '\' must be writable.');
 			$error = true;
 		}
 		elseif (!is_readable(Daemon::$config->pidfile->value)) {
-			Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be readable.');
+			Core\Daemon::log('Pid-file \'' . Core\Daemon::$config->pidfile->value . '\' must be readable.');
 			Bootstrap::$pid = FALSE;
 			$error          = true;
 		}
 		else {
-			Bootstrap::$pid = (int)file_get_contents(Daemon::$config->pidfile->value);
+			Bootstrap::$pid = (int)file_get_contents(Core\Daemon::$config->pidfile->value);
 		}
 
-		if (Daemon::$config->chroot->value !== '/') {
+		if (Core\Daemon::$config->chroot->value !== '/') {
 			if (posix_getuid() != 0) {
-				Daemon::log('You must have the root privileges to change root.');
+				Core\Daemon::log('You must have the root privileges to change root.');
 				$error = true;
 			}
 		}
 
-		$pathList = preg_split('~\s*;\s*~', Daemon::$config->path->value);
+		$pathList = preg_split('~\s*;\s*~', Core\Daemon::$config->path->value);
 		$found    = false;
 		foreach ($pathList as $path) {
 			if (@is_file($path)) {
-				Daemon::$appResolverPath = $path;
-				$found                   = true;
+				Core\Daemon::$appResolverPath = $path;
+				$found                        = true;
 			}
 		}
 		if (!$found) {
-			Daemon::log('Your application resolver \'' . Daemon::$config->path->value . '\' is not available (config directive \'path\').');
+			Core\Daemon::log('Your application resolver \'' . Core\Daemon::$config->path->value . '\' is not available (config directive \'path\').');
 			$error = true;
 		}
 
 		if (
-			isset(Daemon::$config->group->value)
+			isset(Core\Daemon::$config->group->value)
 			&& is_callable('posix_getgid')
 		) {
-			if (($sg = posix_getgrnam(Daemon::$config->group->value)) === FALSE) {
-				Daemon::log('Unexisting group \'' . Daemon::$config->group->value . '\'. You have to replace config-variable \'group\' with existing group-name.');
+			if (($sg = posix_getgrnam(Core\Daemon::$config->group->value)) === FALSE) {
+				Core\Daemon::log('Unexisting group \'' . Core\Daemon::$config->group->value . '\'. You have to replace config-variable \'group\' with existing group-name.');
 				$error = true;
 			}
 			elseif (($sg['gid'] != posix_getgid()) && (posix_getuid() != 0)) {
-				Daemon::log('You must have the root privileges to change group.');
+				Core\Daemon::log('You must have the root privileges to change group.');
 				$error = true;
 			}
 		}
 
 		if (
-			isset(Daemon::$config->user->value)
+			isset(Core\Daemon::$config->user->value)
 			&& is_callable('posix_getuid')
 		) {
-			if (($su = posix_getpwnam(Daemon::$config->user->value)) === FALSE) {
-				Daemon::log('Unexisting user \'' . Daemon::$config->user->value . '\', user not found. You have to replace config-variable \'user\' with existing username.');
+			if (($su = posix_getpwnam(Core\Daemon::$config->user->value)) === FALSE) {
+				Core\Daemon::log('Unexisting user \'' . Core\Daemon::$config->user->value . '\', user not found. You have to replace config-variable \'user\' with existing username.');
 				$error = true;
 			}
 			elseif (
 				($su['uid'] != posix_getuid())
 				&& (posix_getuid() != 0)
 			) {
-				Daemon::log('You must have the root privileges to change user.');
+				Core\Daemon::log('You must have the root privileges to change user.');
 				$error = true;
 			}
 		}
 
 		if (
-			isset(Daemon::$config->minspareworkers->value)
-			&& Daemon::$config->minspareworkers->value > 0
-			&& isset(Daemon::$config->maxspareworkers->value)
-			&& Daemon::$config->maxspareworkers->value > 0
+			isset(Core\Daemon::$config->minspareworkers->value)
+			&& Core\Daemon::$config->minspareworkers->value > 0
+			&& isset(Core\Daemon::$config->maxspareworkers->value)
+			&& Core\Daemon::$config->maxspareworkers->value > 0
 		) {
-			if (Daemon::$config->minspareworkers->value > Daemon::$config->maxspareworkers->value) {
-				Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
+			if (Core\Daemon::$config->minspareworkers->value > Core\Daemon::$config->maxspareworkers->value) {
+				Core\Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
 				$error = true;
 			}
 		}
 
 		if (
-			isset(Daemon::$config->minworkers->value)
-			&& isset(Daemon::$config->maxworkers->value)
+			isset(Core\Daemon::$config->minworkers->value)
+			&& isset(Core\Daemon::$config->maxworkers->value)
 		) {
-			if (Daemon::$config->minworkers->value > Daemon::$config->maxworkers->value) {
-				Daemon::$config->minworkers->value = Daemon::$config->maxworkers->value;
+			if (Core\Daemon::$config->minworkers->value > Core\Daemon::$config->maxworkers->value) {
+				Core\Daemon::$config->minworkers->value = Core\Daemon::$config->maxworkers->value;
 			}
 		}
 
@@ -316,17 +316,17 @@ class Bootstrap {
 			|| $runmode === 'fullstatus'
 		) {
 			$status = Bootstrap::$pid && Thread\Generic::ifExistsByPid(Bootstrap::$pid);
-			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon::$config->pidfile->value . ").\n";
+			echo '[STATUS] phpDaemon ' . Core\Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Core\Daemon::$config->pidfile->value . ").\n";
 
 			if (
 				$status
 				&& ($runmode == 'fullstatus')
 			) {
-				echo 'Uptime: ' . Daemon::date_period_text(filemtime(Daemon::$config->pidfile->value), time()) . "\n";
+				echo 'Uptime: ' . Core\Daemon::date_period_text(filemtime(Core\Daemon::$config->pidfile->value), time()) . "\n";
 
-				Daemon::$shm_wstate = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate');
+				Daemon::$shm_wstate = new ShmEntity(Core\Daemon::$config->pidfile->value, Core\Daemon::SHM_WSTATE_SIZE, 'wstate');
 
-				$stat = Daemon::getStateOfWorkers();
+				$stat = Core\Daemon::getStateOfWorkers();
 
 				echo "State of workers:\n";
 				echo "\tTotal: " . $stat['alive'] . "\n";
@@ -389,7 +389,7 @@ class Bootstrap {
 				'_bold'     => true,
 			);
 
-			foreach (Daemon::$config as $name => $entry) {
+			foreach (Core\Daemon::$config as $name => $entry) {
 				if (!$entry instanceof Generic) {
 					continue;
 				}
@@ -454,7 +454,7 @@ class Bootstrap {
 	 * @return void
 	 */
 	protected static function printUsage() {
-		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
+		echo 'usage: ' . Core\Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
 	}
 
 	/**
@@ -464,7 +464,7 @@ class Bootstrap {
 	protected static function printHelp() {
 		$term = new Terminal();
 
-		echo 'phpDaemon ' . Daemon::$version . ". http://phpdaemon.net\n";
+		echo 'phpDaemon ' . Core\Daemon::$version . ". http://phpdaemon.net\n";
 
 		self::printUsage();
 
@@ -498,13 +498,13 @@ class Bootstrap {
 			Bootstrap::$pid
 			&& Thread\Generic::ifExistsByPid(Bootstrap::$pid)
 		) {
-			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Bootstrap::$pid . ')');
+			Core\Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Bootstrap::$pid . ')');
 			exit(6);
 		}
 
-		Daemon::init();
-		$pid = Daemon::spawnMaster();
-		file_put_contents(Daemon::$config->pidfile->value, $pid);
+		Core\Daemon::init();
+		$pid = Core\Daemon::spawnMaster();
+		file_put_contents(Core\Daemon::$config->pidfile->value, $pid);
 	}
 
 	/**
@@ -512,9 +512,9 @@ class Bootstrap {
 	 * @return void
 	 */
 	public static function runworker() {
-		Daemon::log('PLEASE USE runworker COMMAND ONLY FOR DEBUGGING PURPOSES.');
-		Daemon::init();
-		Daemon::runWorker();
+		Core\Daemon::log('PLEASE USE runworker COMMAND ONLY FOR DEBUGGING PURPOSES.');
+		Core\Daemon::init();
+		Core\Daemon::runWorker();
 	}
 
 	/**

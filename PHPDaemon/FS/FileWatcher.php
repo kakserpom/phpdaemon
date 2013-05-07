@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\FS;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Timer;
 
 /**

@@ -13,7 +13,7 @@ class ExampleBroadcastCall extends \PHPDaemon\AppInstance {
 
 	public function hello($pid) {
 
-		\PHPDaemon\Daemon::$process->log('I got hello from ' . $pid . '!');
+		\PHPDaemon\Core\Daemon::$process->log('I got hello from ' . $pid . '!');
 
 	}
 
@@ -23,7 +23,7 @@ class ExampleBroadcastCall extends \PHPDaemon\AppInstance {
 
 		setTimeout(function ($event) use ($appInstance) {
 
-			$appInstance->broadcastCall('hello', array(\PHPDaemon\Daemon::$process->getPid()));
+			$appInstance->broadcastCall('hello', array(\PHPDaemon\Core\Daemon::$process->getPid()));
 
 			$event->finish();
 

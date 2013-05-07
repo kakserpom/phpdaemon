@@ -29,8 +29,8 @@ class ServerStatusRequest extends Generic {
 			<title>Server status.</title>
 		</head>
 		<body>
-		<br/>Uptime: <b><?php echo \PHPDaemon\Daemon::date_period_text(\PHPDaemon\Daemon::$startTime, time()); ?></b>
-		<br/><br/><b>State of workers:</b><?php $stat = \PHPDaemon\Daemon::getStateOfWorkers(); ?>
+		<br/>Uptime: <b><?php echo \PHPDaemon\Core\Daemon::date_period_text(\PHPDaemon\Core\Daemon::$startTime, time()); ?></b>
+		<br/><br/><b>State of workers:</b><?php $stat = \PHPDaemon\Core\Daemon::getStateOfWorkers(); ?>
 		<br/>Idle: <?php echo $stat['idle']; ?>
 		<br/>Busy: <?php echo $stat['busy']; ?>
 		<br/>Total alive: <?php echo $stat['alive']; ?>

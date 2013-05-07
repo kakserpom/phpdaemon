@@ -2,6 +2,7 @@
 namespace PHPDaemon;
 
 use PHPDaemon\Clients\Mongo\Pool;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\NetworkServer;
 use PHPDaemon\Structures\ObjectStorage;
 

@@ -42,7 +42,7 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 		if ($data === 'ping') {
 			$this->client->sendFrame('pong', 'STRING',
 				function ($client) { // optional. called when the frame is transmitted to the client
-					\PHPDaemon\Daemon::log('ExampleWebSocket: \'pong\' received by client.');
+					\PHPDaemon\Core\Daemon::log('ExampleWebSocket: \'pong\' received by client.');
 				}
 			);
 		}

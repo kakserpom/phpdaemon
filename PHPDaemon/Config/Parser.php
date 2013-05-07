@@ -4,7 +4,7 @@ namespace PHPDaemon\Config;
 use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\Config\Object;
 use PHPDaemon\Config\Section;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
 
 /**

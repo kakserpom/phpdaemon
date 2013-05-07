@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Thread;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Thread\Generic;

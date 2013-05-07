@@ -66,16 +66,16 @@ class GameMonitor extends \PHPDaemon\AppInstance {
 			$set['latency'] = $job->results['latency'];
 			$set['atime']   = time();
 			if (0) {
-				\PHPDaemon\Daemon::log('Updated server (' . round(memory_get_usage(true) / 1024 / 1024, 5) . '): ' . $server['address'] . ' latency = ' . round($set['latency'] * 1000, 2) . ' ==== '
-											   . (isset($server['atime']) ?
-													   round($set['atime'] - $server['atime']) . ' secs. from last update.'
-													   : ' =---= ' . json_encode($server))
+				\PHPDaemon\Core\Daemon::log('Updated server (' . round(memory_get_usage(true) / 1024 / 1024, 5) . '): ' . $server['address'] . ' latency = ' . round($set['latency'] * 1000, 2) . ' ==== '
+													. (isset($server['atime']) ?
+															round($set['atime'] - $server['atime']) . ' secs. from last update.'
+															: ' =---= ' . json_encode($server))
 				);
 			}
 			try {
 				$app->servers->upsert(['_id' => $server['_id']], ['$set' => $set]);
 			} catch (\MongoException $e) {
-				\PHPDaemon\Daemon::uncaughtExceptionHandler($e);
+				\PHPDaemon\Core\Daemon::uncaughtExceptionHandler($e);
 				$app->servers->upsert(['_id' => $server['_id']], ['$set' => array('atime' => time())]);
 			}
 		});
@@ -118,13 +118,13 @@ class GameMonitor extends \PHPDaemon\AppInstance {
 		gc_collect_cycles();
 		$app    = $this;
 		$amount = 1000 - sizeof($this->jobMap);
-		\PHPDaemon\Daemon::log('amount: ' . $amount);
+		\PHPDaemon\Core\Daemon::log('amount: ' . $amount);
 		if ($amount <= 0) {
 			return;
 		}
 		$this->servers->find(function ($cursor) use ($app, $amount) {
 			if (isset($cursor->items[0]['$err'])) {
-				\PHPDaemon\Daemon::log(\PHPDaemon\Debug::dump($cursor->items));
+				\PHPDaemon\Core\Daemon::log(\PHPDaemon\Debug::dump($cursor->items));
 				return;
 			}
 			foreach ($cursor->items as $server) {

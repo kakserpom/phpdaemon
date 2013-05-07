@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Servers\FlashPolicy;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\NetworkServer;
 

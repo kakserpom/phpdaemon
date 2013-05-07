@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\BoundSocket;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 
 /**
  * UNIX

@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Servers\Lock;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
 
 /**

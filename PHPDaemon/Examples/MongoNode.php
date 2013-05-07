@@ -57,8 +57,8 @@ class MongoNode extends \PHPDaemon\AppInstance {
 							$ts = new \MongoTimestamp(0, 0);
 						}
 
-						if (\PHPDaemon\Daemon::$config->logevents->value) {
-							\PHPDaemon\Daemon::log('MongoNode: replication point - ' . $answer->result . ' (' . \PHPDaemon\Debug::dump($ts) . ')');
+						if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
+							\PHPDaemon\Core\Daemon::log('MongoNode: replication point - ' . $answer->result . ' (' . \PHPDaemon\Debug::dump($ts) . ')');
 						}
 
 						$this->initSlave($ts);
@@ -98,8 +98,8 @@ class MongoNode extends \PHPDaemon\AppInstance {
 	 * @return void
 	 */
 	public function cacheObject($o) {
-		if (\PHPDaemon\Daemon::$config->logevents->value) {
-			\PHPDaemon\Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
+		if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
+			\PHPDaemon\Core\Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
 		}
 
 		if (isset($o['_key'])) {
@@ -110,8 +110,8 @@ class MongoNode extends \PHPDaemon\AppInstance {
 		if (isset($o['_ev'])) {
 			$o['name'] = $o['_ev'];
 
-			if (\PHPDaemon\Daemon::$config->logevents->value) {
-				\PHPDaemon\Daemon::log('MongoNode send event ' . $o['name']);
+			if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
+				\PHPDaemon\Core\Daemon::log('MongoNode send event ' . $o['name']);
 			}
 		}
 	}
@@ -122,8 +122,8 @@ class MongoNode extends \PHPDaemon\AppInstance {
 	 * @return void
 	 */
 	public function deleteObject($o) {
-		if (\PHPDaemon\Daemon::$config->logevents->value) {
-			\PHPDaemon\Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
+		if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
+			\PHPDaemon\Core\Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
 		}
 
 		$this->cache->get('_id.' . ((string)$o['_id']),
@@ -149,8 +149,8 @@ class MongoNode extends \PHPDaemon\AppInstance {
 				$cursor->lastOpId = NULL;
 
 				foreach ($cursor->items as $k => &$item) {
-					if (\PHPDaemon\Daemon::$config->logevents->value) {
-						\PHPDaemon\Daemon::log(get_class($this) . ': caught oplog-record with ts = (' . \PHPDaemon\Debug::dump($item['ts']) . ')');
+					if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
+						\PHPDaemon\Core\Daemon::log(get_class($this) . ': caught oplog-record with ts = (' . \PHPDaemon\Debug::dump($item['ts']) . ')');
 					}
 
 					$cursor->lastOpId = $item['ts'];

@@ -2,7 +2,7 @@
 namespace PHPDaemon\Config\Entry;
 
 use PHPDaemon\Config\Entry\Generic;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Thread\Master;
 
 /**

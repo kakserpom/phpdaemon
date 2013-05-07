@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Core\Daemon;
+
 class IPCManagerMasterPoolConnection extends Connection {
 	public $instancesCount = [];
 	protected $timeout = null;

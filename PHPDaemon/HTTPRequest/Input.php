@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\HTTPRequest;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\FS\File;
 

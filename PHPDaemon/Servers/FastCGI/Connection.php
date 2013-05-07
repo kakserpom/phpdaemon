@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Servers\FastCGI;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 
 /**
  * @package    NetworkServers

@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\Lock;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
 
 class Connection extends \PHPDaemon\NetworkClientConnection {

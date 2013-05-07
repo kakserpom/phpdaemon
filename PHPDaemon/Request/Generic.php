@@ -2,7 +2,7 @@
 namespace PHPDaemon\Request;
 
 use PHPDaemon\AppInstance;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 
 abstract class Generic {
 

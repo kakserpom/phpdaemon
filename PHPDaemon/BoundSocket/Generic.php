@@ -2,7 +2,7 @@
 namespace PHPDaemon\BoundSocket;
 
 use PHPDaemon\ConnectionPool;
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 
 /**

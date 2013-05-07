@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
