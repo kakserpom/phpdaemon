@@ -1,7 +1,6 @@
 <?php
 namespace PHPDaemon\Servers\HTTP;
 
-use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
@@ -15,7 +14,7 @@ use PHPDaemon\Servers\FlashPolicyServer;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class HTTPServerConnection extends Connection {
+class Connection extends \PHPDaemon\Connection {
 	protected $initialLowMark = 1;
 	protected $initialHighMark = 8192; // initial value of the maximum amout of bytes in buffer
 	protected $timeout = 45;

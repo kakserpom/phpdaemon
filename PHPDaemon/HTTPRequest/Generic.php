@@ -6,7 +6,7 @@ use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\MIME;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
-use PHPDaemon\Servers\HTTP\HTTPServerConnection;
+use PHPDaemon\Servers\HTTP\Connection;
 
 /**
  * HTTP request
@@ -388,7 +388,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if ($this->attrs->chunked) {
 			$this->header('Transfer-Encoding: chunked');
 		}
-		if ($this->upstream instanceof HTTPServerConnection) {
+		if ($this->upstream instanceof Connection) {
 			$this->header('Connection: close');
 		}
 
