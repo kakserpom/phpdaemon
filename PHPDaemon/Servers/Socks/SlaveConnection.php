@@ -1,9 +1,9 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon\Servers\Socks;
 
 use PHPDaemon\Connection;
 
-class SocksServerSlaveConnection extends Connection {
+class SlaveConnection extends Connection {
 
 	protected $client;
 	protected $lowMark = 2;

@@ -1,7 +1,5 @@
 <?php
-namespace PHPDaemon\Servers;
-
-use PHPDaemon\Connection;
+namespace PHPDaemon\Servers\Socks;
 
 /**
  * @package    NetworkServers
@@ -9,7 +7,7 @@ use PHPDaemon\Connection;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class SocksServerConnection extends Connection {
+class Connection extends \PHPDaemon\Connection {
 	protected $ver; // protocol version (X'04' / X'05')
 	protected $state = 0; // (0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange)
 	protected $slave;
