@@ -32,6 +32,12 @@ class Config implements \ArrayAccess {
 	public $pidfile = '/var/run/phpd.pid';
 
 	/**
+	 * Default namespace
+	 * @var path
+	 */
+	public $defaultns = 'PHPDaemon';
+
+	/**
 	 * Default PID file
 	 * @var path
 	 */

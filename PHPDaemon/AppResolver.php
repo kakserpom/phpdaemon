@@ -101,18 +101,19 @@ class AppResolver {
 	 */
 	public function appInstantiate($appName, $instance, $preload = false) {
 		$fullname = $this->getAppFullname($appName, $instance);
-		if (!class_exists($appName) || !is_subclass_of($appName, 'AppInstance')) {
+		$class = ClassFinder::find($appName);
+		if (!class_exists($class) || !is_subclass_of($class, '\PHPDaemon\AppInstance')) {
 			return false;
 		}
 		if (!$preload) {
-			if (!$appName::$runOnDemand) {
+			if (!$class::$runOnDemand) {
 				return false;
 			}
 			if (isset(Daemon::$config->{$fullname}->limitinstances)) {
 				return false;
 			}
 		}
-		return new $appName($instance);
+		return new $class($instance);
 	}
 
 	/**
