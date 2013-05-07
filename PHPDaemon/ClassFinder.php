@@ -26,13 +26,13 @@ class ClassFinder {
 			array_unshift($e, 'Examples');
 		}
 		if ('Server' === substr($class, -6)) {
-			array_unshift($e, 'Servers');
+			return '\\PHPDaemon\\Servers\\'.substr($class, 0, -6).'\\Pool';
 		}
 		if ('Client' === substr($class, -6)) {
-			array_unshift($e, 'Clients');
+			return '\\PHPDaemon\\Clients\\'.substr($class, 0, -6).'\\Pool';
 		}
 		if ('ClientAsync' === substr($class, -11)) {
-			array_unshift($e, 'Clients');
+			return '\\PHPDaemon\\Clients\\'.substr($class, 0, -11).'\\Pool';
 		}
 		array_unshift($e, '\\' . Daemon::$config->defaultns->value);
 		return implode('\\', $e);

@@ -86,7 +86,9 @@ abstract class ConnectionPool extends ObjectStorage {
 		$this->config = $config;
 		$this->onConfigUpdated();
 		if ($this->connectionClass === null) {
-			$this->connectionClass = get_class($this) . 'Connection';
+			$e = explode('\\', get_class($this));
+			$e[sizeof($e) - 1] = 'Connection';
+			$this->connectionClass = '\\'. implode('\\', $e);
 		}
 		if (isset($this->config->listen)) {
 			$this->bindSockets($this->config->listen->value);

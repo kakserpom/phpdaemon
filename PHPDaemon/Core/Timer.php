@@ -23,7 +23,7 @@ class Timer {
 
 	public function __construct($cb, $timeout = null, $id = null, $priority = null) {
 		if ($id === null) {
-			$id = ++Core\self::$counter;
+			$id = ++self::$counter;
 		}
 		$this->id = $id;
 		$this->cb = $cb;
@@ -52,7 +52,7 @@ class Timer {
 	}
 
 	public static function add($cb, $timeout = null, $id = null, $priority = null) {
-		$obj = new Core\self($cb, $timeout, $id, $priority);
+		$obj = new self($cb, $timeout, $id, $priority);
 		return $obj->id;
 	}
 

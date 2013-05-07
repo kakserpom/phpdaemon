@@ -108,7 +108,7 @@ class AppResolver {
 	public function appInstantiate($appName, $instance, $preload = false) {
 		$fullname = $this->getAppFullname($appName, $instance);
 		$class    = ClassFinder::find($appName);
-		if (!class_exists($class) || !is_subclass_of($class, '\PHPDaemon\Core\AppInstance')) {
+		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Core\\AppInstance')) {
 			return false;
 		}
 		if (!$preload) {

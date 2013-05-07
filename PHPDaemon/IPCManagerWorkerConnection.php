@@ -66,7 +66,7 @@ class IPCManagerWorkerConnection extends Connection {
 		if ($p === null) {
 			return;
 		}
-		$data = igbinary_serialize($p);
+		$data = \igbinary_serialize($p);
 		$this->write(pack('N', strlen($data)) . $data);
 	}
 
@@ -91,7 +91,7 @@ class IPCManagerWorkerConnection extends Connection {
 			}
 			$this->setWatermark(4);
 			$this->state = self::STATE_ROOT;
-			$this->onPacket(igbinary_unserialize($packet));
+			$this->onPacket(\igbinary_unserialize($packet));
 		}
 		goto start;
 	}

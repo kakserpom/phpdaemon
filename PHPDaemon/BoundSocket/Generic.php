@@ -3,7 +3,6 @@ namespace PHPDaemon\BoundSocket;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
-use PHPDaemon\Network\ConnectionPool;
 
 /**
  * Generic
@@ -257,7 +256,7 @@ abstract class Generic {
 	 * @param ConnectionPool
 	 * @return void
 	 */
-	public function attachTo(ConnectionPool $pool) {
+	public function attachTo(\PHPDaemon\Network\ConnectionPool $pool) {
 		$this->pool = $pool;
 		$this->pool->attachBound($this);
 	}
@@ -308,6 +307,10 @@ abstract class Generic {
 
 	public function onAcceptEv(\EventListener $listener, $fd, $addrPort, $ctx) {
 		$class = $this->pool->connectionClass;
+		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Network\\Connection')) {
+			Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): onAcceptEv: wrong connectionClass: '.$class);
+			return;
+		}
 		$conn  = new $class(null, $this->pool);
 		$conn->setParentSocket($this);
 
