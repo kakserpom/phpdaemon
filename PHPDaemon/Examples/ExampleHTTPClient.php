@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Examples;
 
 /**
  * @package    Examples
@@ -42,41 +43,7 @@ class ExampleHTTPClient extends \PHPDaemon\AppInstance {
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		return new ExampleHTTPClientRequest($this, $upstream, $req);
-	}
-
-}
-
-class ExampleHTTPClientRequest extends HTTPRequest {
-
-	/**
-	 * Constructor.
-	 * @return void
-	 */
-	public function init() {
-
-		try {
-			$this->header('Content-Type: text/html');
-		} catch (Exception $e) {
-		}
-
-		$this->appInstance->httpclient->post(
-			['https://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
-			function ($conn, $success) {
-				echo $conn->body;
-				\PHPDaemon\Daemon::$req->finish();
-			}
-		);
-
-		$this->sleep(5, true); // setting timeout
-	}
-
-	/**
-	 * Called when request iterated.
-	 * @return integer Status.
-	 */
-	public function run() {
-		echo 'Something went wrong.';
+		return new \PHPDaemon\Examples\ExampleHTTPClientRequest($this, $upstream, $req);
 	}
 
 }

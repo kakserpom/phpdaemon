@@ -1,26 +1,17 @@
 <?php
 
+
+namespace PHPDaemon\Applications;
+
+use PHPDaemon\HTTPRequest;
+
 /**
  * @package    Applications
  * @subpackage ServerStatus
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ServerStatus extends \PHPDaemon\AppInstance {
-
-	/**
-	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
-	 * @return object Request.
-	 */
-	public function beginRequest($req, $upstream) {
-		return new ServerStatus_Request($this, $upstream, $req);
-	}
-
-}
-
-class ServerStatus_Request extends HTTPRequest {
+class ServerStatusRequest extends HTTPRequest {
 
 	/**
 	 * Called when request iterated.

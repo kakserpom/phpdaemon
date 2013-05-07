@@ -1,49 +1,7 @@
 <?php
+namespace PHPDaemon\Applications;
 
-/**
- * @package    Applications
- * @subpackage FileReader
- *
- * @author     Zorin Vasily <maintainer@daemon.io>
- */
-class FileReader extends \PHPDaemon\AppInstance {
-
-	/**
-	 * Setting default config options
-	 * Overriden from AppInstance::getConfigDefaults
-	 * @return array|false
-	 */
-	protected function getConfigDefaults() {
-		return array(
-			// index file names
-			'indexfiles' => 'index.html/index.htm'
-		);
-	}
-
-	/**
-	 * Constructor.
-	 * @return void
-	 */
-	public function init() {
-		$this->onConfigUpdated();
-	}
-
-	public function onConfigUpdated() {
-		$this->indexFiles = explode('/', $this->config->indexfiles->value);
-	}
-
-	/**
-	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
-	 * @return object Request.
-	 */
-	public function beginRequest($req, $upstream) {
-		return new FileReaderRequest($this, $upstream, $req);
-	}
-}
-
-class FileReaderRequest extends HTTPRequest {
+use PHPDaemon\Daemon;use PHPDaemon\HTTPRequest;class FileReaderRequest extends HTTPRequest {
 
 public $stream;
 public $job;
@@ -232,7 +190,7 @@ $this->onWakeup();
 		</thead>
 		<tbody>
 		<tr>
-			<td class="n"><a href="../">Parent Directory</a>/</td>
+			<td class="n"><a href="../../">Parent Directory</a>/</td>
 			<td class="t">Directory</td>
 
 		</tr>
@@ -250,7 +208,7 @@ $this->onWakeup();
 </div>
 <?php if ($this->upstream->pool->config->expose->value) {
 	?>
-	<div class="foot">phpDaemon/<?php echo PHPDaemon\Daemon::$version; ?></div><?php } ?>
+	<div class="foot">phpDaemon/<?php echo Daemon::$version; ?></div><?php } ?>
 </body>
 </html><?php
 }
