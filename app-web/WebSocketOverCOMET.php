@@ -1,11 +1,11 @@
 <?php
 /**
- * @package    Applications
+ * @package Applications
  * @subpackage WebSocketOverCOMET
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author Zorin Vasily <maintainer@daemon.io>
  */
-class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
+class WebSocketOverCOMET extends AppInstance {
 
 	public $WS;
 	public $requests = array();
@@ -19,32 +19,31 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->WS = \PHPDaemon\WebSocket\WebSocketServer::getInstance();
+		$this->WS = WebSocketServer::getInstance();
 	}
 
 	public function initSession($route, $req) {
 		if (!isset($this->WS->routes[$route])) {
 			if (
-				isset(\PHPDaemon\Daemon::$config->logerrors)
-				&& \PHPDaemon\Daemon::$config->logerrors
+				isset(Daemon::$config->logerrors) 
+				&& Daemon::$config->logerrors
 			) {
-				\PHPDaemon\Daemon::log(__METHOD__ . ': undefined route \'' . $route . '\'.');
+				Daemon::log(__METHOD__ . ': undefined route \'' . $route . '\'.');
 			}
 			return array('error' => 404);
 		}
 		$sess = new WebSocketOverCOMET_Session(
-			$route,
-			$this,
-			sprintf('%x', crc32(microtime(true) . "\x00" . $req->attrs->server['REMOTE_ADDR']))
+				$route,
+				$this,
+				sprintf('%x', crc32(microtime(true) . "\x00" . $req->attrs->server['REMOTE_ADDR']))
 		);
 		if (!$sess->downstream) {
 			return array('error' => 403);
 		}
 		$sess->server = $req->attrs->server;
-		$id           = \PHPDaemon\Daemon::$process->id . '.' . $sess->id . '.' . $sess->authKey;
+		$id = Daemon::$process->id . '.' . $sess->id . '.' . $sess->authKey;
 		return array('id' => $id);
 	}
-
 	/**
 	 * Creates Request.
 	 * @param object Request.
@@ -55,7 +54,6 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 		$req = new WebSocketOverCOMET_Request($this, $upstream, $req);
 		return $this->requests[$req->id] = $req;
 	}
-
 	public function s2c($reqId, $sessId, $packets, $ts) {
 		if (!isset($this->requests[$reqId])) {
 			return;
@@ -63,11 +61,10 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 		$req = $this->requests[$reqId];
 		if ($req->jsid) {
 			$body = 'Response' . $req->jsid . ' = ' . json_encode(array('packets' => $packets)) . ";\n";
-		}
-		else {
+		} else {
 			$body = '<script type="text/javascript">';
 			foreach ($packets as $packet) {
-				$body .= 'WebSocket.onmessage(' . json_encode(array('type' => $packet[0], 'data' => $packet[1])) . ");\n";
+				$body .= 'WebSocket.onmessage('.json_encode(array('type' => $packet[0], 'data' => $packet[1])). ");\n";
 			}
 			$body .= "</script>\n";
 		}
@@ -77,7 +74,7 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 
 	public function c2s($fullId, $body) {
 		list($sessId, $authKey) = explode('.', $fullId, 2);
-		$sessId = (int)$sessId;
+		$sessId = (int) $sessId;
 		if (!isset($this->sessions[$sessId])) {
 			return;
 		}
@@ -88,13 +85,13 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 		if (!isset($sess->downstream)) {
 			return;
 		}
-		$sess->downstream->onFrame($body, \PHPDaemon\WebSocket\WebSocketServer::STRING);
-		\PHPDaemon\Timer::setTimeout($sess->finishTimer);
+		$sess->downstream->onFrame($body, WebSocketServer::STRING);
+		Timer::setTimeout($sess->finishTimer);
 	}
 
 	public function poll($pollWorker, $pollReqId, $fullId, $ts) {
 		list($sessId, $authKey) = explode('.', $fullId, 2);
-		$sessId = (int)$sessId;
+		$sessId = (int) $sessId;
 		if (!isset($this->sessions[$sessId])) {
 			return;
 		}
@@ -107,11 +104,11 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 		}
 		$sess->polling->push(array($pollWorker, $pollReqId));
 		$sess->flushBufferedPackets($ts);
-		\PHPDaemon\Timer::setTimeout($sess->finishTimer);
+		Timer::setTimeout($sess->finishTimer);
+
 
 	}
 }
-
 class WebSocketOverCOMET_Session {
 	public $downstream;
 	public $polling;
@@ -123,17 +120,16 @@ class WebSocketOverCOMET_Session {
 	public $finished = false;
 	public $timeout = 30; // 30
 	public $server;
-
 	public function __construct($route, $appInstance, $authKey) {
-		$this->polling     = new SplStack;
-		$this->callbacks   = new \PHPDaemon\StackCallbacks();
-		$this->authKey     = $authKey;
-		$this->id          = ++$appInstance->sessCounter;
+		$this->polling = new SplStack;
+		$this->callbacks = new StackCallbacks;
+		$this->authKey = $authKey;
+		$this->id = ++$appInstance->sessCounter;
 		$this->appInstance = $appInstance;
 		if (!$this->downstream = call_user_func($this->appInstance->WS->routes[$route], $this)) {
 			return;
 		}
-		$this->finishTimer                      = setTimeout(array($this, 'finishTimer'), $this->timeout * 1e6);
+		$this->finishTimer = setTimeout(array($this, 'finishTimer'), $this->timeout * 1e6);
 		$this->appInstance->sessions[$this->id] = $this;
 	}
 
@@ -151,16 +147,15 @@ class WebSocketOverCOMET_Session {
 		}
 		unset($this->downstream);
 		if ($this->finishTimer !== null) {
-			\PHPDaemon\Timer::remove($this->finishTimer);
+			Timer::remove($this->finishTimer);
 			$this->finishTimer = null;
 		}
 		unset($this->appInstance->sessions[$this->id]);
 	}
-
 	public function finishTimer($timer) {
 		$this->finish();
 	}
-
+	
 	public function onWrite() {
 		if ($this->finished) {
 			return;
@@ -172,26 +167,26 @@ class WebSocketOverCOMET_Session {
 	}
 
 	public function compareFloats($a, $b, $precision = 3) {
-		$k   = pow(10, $precision);
-		$a   = round($a * $k) / $k;
-		$b   = round($b * $k) / $k;
-		$cmp = strnatcmp((string)$a, (string)$b);
+		$k = pow(10, $precision);
+		$a = round($a * $k) / $k;
+		$b = round($b * $k) / $k;
+		$cmp = strnatcmp((string) $a, (string) $b);
 
 		return $cmp;
 	}
 
 	/**
-	 * Flushes buffered packets (only for the long-polling method)
+	 * Flushes buffered packets (only for the long-polling method)	
 	 * @param string Optional. Last timestamp.
 	 * @return void
 	 */
 	public function flushBufferedPackets($ts = NULL) {
-		if ($this->polling->isEmpty() || !sizeof($this->bufferedPackets)) {
+		if ($this->polling->isEmpty()|| !sizeof($this->bufferedPackets)) {
 			return;
 		}
 
 		if ($ts !== NULL) {
-			$ts = (float)$ts;
+			$ts = (float) $ts;
 
 			for ($i = sizeof($this->bufferedPackets) - 1; $i >= 0; --$i) {
 				if ($this->compareFloats($this->bufferedPackets[$i][2], $ts) <= 0) {
@@ -209,7 +204,7 @@ class WebSocketOverCOMET_Session {
 
 		while (!$this->polling->isEmpty()) {
 			list ($workerId, $reqId) = $this->polling->pop();
-			$workerId = (int)$workerId;
+			$workerId = (int) $workerId;
 			$this->appInstance->directCall($workerId, 's2c', array($reqId, $this->id, $this->bufferedPackets, $ts));
 		}
 
@@ -218,8 +213,8 @@ class WebSocketOverCOMET_Session {
 
 	/**
 	 * Sends a frame.
-	 * @param string   Frame's data.
-	 * @param integer  Frame's type. See the constants.
+	 * @param string Frame's data.
+	 * @param integer Frame's type. See the constants.
 	 * @param callback Optional. Callback called when the frame is received by client.
 	 * @return boolean Success.
 	 */
@@ -233,7 +228,6 @@ class WebSocketOverCOMET_Session {
 	}
 
 }
-
 class WebSocketOverCOMET_Request extends HTTPRequest {
 
 	public $inited = FALSE;
@@ -262,29 +256,29 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 			return;
 		}
 		$this->inited = true;
-		$data         = self::getString($_REQUEST['data']);
+		$data = self::getString($_REQUEST['data']);
 		if ($data !== '') {
 			$ret = array();
-			$id  = self::getString($_REQUEST['_id']);
+			$id = self::getString($_REQUEST['_id']);
 			if (strpos($id, '.') === false) {
-				$ret['error'] = 'Bad cookie.';
+					$ret['error'] = 'Bad cookie.';
 			}
 			elseif (
-				!isset($_REQUEST['data'])
+				!isset($_REQUEST['data']) 
 				|| !is_string($_REQUEST['data'])
 			) {
 				$ret['error'] = 'No data.';
 			}
 			else {
 				list ($workerId, $this->reqIdAuthKey) = explode('.', $id, 2);
-				$workerId = (int)$workerId;
-				$this->appInstance->directCall($workerId, 'c2s', array($this->reqIdAuthKey, $data));
+				$workerId = (int) $workerId;
+				$this->appInstance->directCall($workerId, 'c2s', array($this->reqIdAuthKey,	$data));
 			}
 			if (sizeof($ret)) {
 				echo json_encode($ret);
 				return;
 			}
-		}
+		} 
 		/*if ($this->type === 'pull') {
 			if (!$this->inited) {
 				$this->authKey = sprintf('%x', crc32(microtime() . "\x00" . $this->attrs->server['REMOTE_ADDR']));
@@ -319,14 +313,13 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 		if (isset($_REQUEST['_init'])) {
 			$this->header('Content-Type: application/x-javascript; charset=utf-8');
 			$route = self::getString($_REQUEST['_route']);
-			$res   = $this->appInstance->initSession($route, $this);
+			$res = $this->appInstance->initSession($route, $this);
 			if (isset($_REQUEST['_script'])) {
 				$q = self::getString($_GET['q']);
 				if (ctype_digit($q)) {
 					$this->out('Response' . $q . ' = ' . json_encode($res) . ";\n");
 				}
-			}
-			else {
+			} else {
 				$this->out(json_encode($res));
 			}
 			return;
@@ -335,15 +328,15 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 			$this->header('Content-Type: text/plain; charset=utf-8');
 
 			$ret = array();
-			$id  = self::getString($_REQUEST['_id']);
+			$id = self::getString($_REQUEST['_id']);
 			if (strpos($id, '.') === false) {
 				$ret['error'] = 'Bad cookie.';
 			}
 			else {
 				list ($workerId, $this->reqIdAuthKey) = explode('.', $id, 2);
-				$workerId = (int)$workerId;
+				$workerId = (int) $workerId;
 				$this->appInstance->directCall($workerId, 'poll', array(
-					\PHPDaemon\Daemon::$process->id,
+					Daemon::$process->id,
 					$this->id,
 					$this->reqIdAuthKey,
 					self::getString($_REQUEST['ts'])
@@ -353,7 +346,7 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 			if (isset($this->attrs->get['_script'])) {
 				$this->header('Content-Type: application/x-javascript; charset=utf-8');
 				$q = self::getString($this->attrs->get['q']);
-
+	
 				if (!ctype_digit($q)) {
 					$ret['error'] = 'Bad q.';
 				}
@@ -377,6 +370,6 @@ class WebSocketOverCOMET_Request extends HTTPRequest {
 	public function onFinish() {
 		unset($this->appInstance->requests[$this->id]);
 	}
-
+	
 }
 

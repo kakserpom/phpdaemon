@@ -3,5 +3,3 @@ conf/phpd.conf
 doc/output
 /.project
 *.swp
-
-.idea
