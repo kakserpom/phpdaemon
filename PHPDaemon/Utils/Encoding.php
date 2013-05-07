@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Utils;
 
 /**
  * @author   "Sebastián Grignoli" <grignoli@framework2.com.ar>

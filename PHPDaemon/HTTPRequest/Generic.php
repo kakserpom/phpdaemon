@@ -4,9 +4,9 @@ namespace PHPDaemon\HTTPRequest;
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
-use PHPDaemon\MIME;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Servers\HTTP\Connection;
+use PHPDaemon\Utils\MIME;
 
 /**
  * HTTP request
