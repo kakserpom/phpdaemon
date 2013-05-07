@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\PubSub;
+
+use PHPDaemon\PubSub\PubSubEvent;
 
 /**
  * Thread

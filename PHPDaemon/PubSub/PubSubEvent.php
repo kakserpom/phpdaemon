@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\PubSub;
 
 /**
  * PubSubEvent
@@ -39,7 +39,7 @@ class PubSubEvent extends \SplObjectStorage {
 	/**
 	 * Sets onActivation callback.
 	 * @param callable Callback
-	 * @return PubSubEvent
+	 * @return \PHPDaemon\PubSub\PubSubEvent
 	 */
 	public function onActivation($cb) {
 		$this->actCb = $cb;
@@ -49,7 +49,7 @@ class PubSubEvent extends \SplObjectStorage {
 	/**
 	 * Sets onDeactivation callback.
 	 * @param callable Callback
-	 * @return PubSubEvent
+	 * @return \PHPDaemon\PubSub\PubSubEvent
 	 */
 	public function onDeactivation($cb) {
 		$this->deactCb = $cb;
@@ -58,7 +58,7 @@ class PubSubEvent extends \SplObjectStorage {
 
 	/**
 	 * Constructor
-	 * @return PubSubEvent
+	 * @return \PHPDaemon\PubSub\PubSubEvent
 	 */
 	public static function init() {
 		return new static;
@@ -68,7 +68,7 @@ class PubSubEvent extends \SplObjectStorage {
 	 * Subscribe
 	 * @param object $obj  Subcriber object
 	 * @param callable $cb Callback
-	 * @return PubSubEvent
+	 * @return \PHPDaemon\PubSub\PubSubEvent
 	 */
 	public function sub($obj, $cb) {
 		$act = $this->count() === 0;
@@ -84,7 +84,7 @@ class PubSubEvent extends \SplObjectStorage {
 	/**
 	 * Unsubscripe
 	 * @param object $obj Subscriber object
-	 * @return PubSubEvent
+	 * @return \PHPDaemon\PubSub\PubSubEvent
 	 */
 	public function unsub($obj) {
 		$this->detach($obj);
@@ -99,7 +99,7 @@ class PubSubEvent extends \SplObjectStorage {
 	/**
 	 * Publish
 	 * @param mixed $data Data
-	 * @return PubSubEvent
+	 * @return \PHPDaemon\PubSub\PubSubEvent
 	 */
 	public function pub($data) {
 		foreach ($this as $obj) {
