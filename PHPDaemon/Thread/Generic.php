@@ -1,8 +1,8 @@
 <?php
 namespace PHPDaemon\Thread;
 
-use PHPDaemon\ClearStackException;
 use PHPDaemon\Daemon;
+use PHPDaemon\Exceptions\ClearStack;
 
 /**
  * Thread
@@ -219,7 +219,7 @@ abstract class Generic {
 				$thread->registerSignals();
 			}
 			if ($clearstack) {
-				throw new ClearStackException('', 0, $thread);
+				throw new ClearStack('', 0, $thread);
 			}
 			else {
 				$thread->run();
