@@ -1,6 +1,11 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Config;
 
+use PHPDaemon\Config\Entry\ConfigFile;
+use PHPDaemon\Config\Entry\Number;
+use PHPDaemon\Config\Entry\Size;
+use PHPDaemon\Config\Entry\Time;
+use PHPDaemon\Config\Parser;
 use PHPDaemon\Daemon;
 
 /**
@@ -11,7 +16,7 @@ use PHPDaemon\Daemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Config implements \ArrayAccess {
+class Object implements \ArrayAccess {
 
 	/**
 	 * Maximum memory usage
@@ -284,19 +289,19 @@ class Config implements \ArrayAccess {
 
 		foreach ($this as $name => $value) {
 			if (in_array($name, $sizes)) {
-				$entry = new ConfigEntrySize;
+				$entry = new Size;
 			}
 			elseif (in_array($name, $times)) {
-				$entry = new ConfigEntryTime;
+				$entry = new Time;
 			}
 			elseif (in_array($name, $numbers)) {
-				$entry = new ConfigEntryNumber;
+				$entry = new Number;
 			}
 			elseif ($name === 'configfile') {
-				$entry = new ConfigEntryConfigFile;
+				$entry = new ConfigFile;
 			}
 			else {
-				$entry = new ConfigEntry;
+				$entry = new Entry\Entry;
 			}
 
 			$entry->setDefaultValue($value);
@@ -311,7 +316,7 @@ class Config implements \ArrayAccess {
 	 * @return boolean Success
 	 */
 	public function loadFile($path) {
-		$parser = new ConfigParser($path, $this);
+		$parser = new Parser($path, $this);
 		$this->onLoad();
 		return !$parser->isErrorneous();
 	}

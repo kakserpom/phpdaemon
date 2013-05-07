@@ -146,7 +146,7 @@ abstract class Generic {
 	 * @return object
 	 */
 	public function __construct($uri) {
-		$this->uri = is_array($uri) ? $uri : Daemon\Config::parseCfgUri($uri);
+		$this->uri = is_array($uri) ? $uri : \PHPDaemon\Config\Object::parseCfgUri($uri);
 		if (!$this->uri) {
 			return;
 		}
@@ -203,7 +203,7 @@ abstract class Generic {
 		}
 		$ctx = Daemon::$config->{'TransportContext:' . $this->ctxname};
 		foreach ($ctx as $key => $entry) {
-			$value = ($entry instanceof Daemon\ConfigEntry) ? $entry->value : $entry;
+			$value = ($entry instanceof \PHPDaemon\Config\Entry\Generic) ? $entry->value : $entry;
 			if (isset($this->{$key}) && is_bool($this->{$key})) {
 				$this->{$key} = (bool)$value;
 				continue;

@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Config\Entry;
+
+use PHPDaemon\Config\Entry\Generic;
 
 /**
  * Time config entry
@@ -9,7 +11,7 @@ namespace PHPDaemon\Daemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ConfigEntryTime extends ConfigEntry {
+class Time extends Generic {
 
 	public static function HumanToPlain($value) {
 		$time = 0;

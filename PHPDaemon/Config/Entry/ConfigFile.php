@@ -1,7 +1,9 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Config\Entry;
 
+use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\Daemon;
+use PHPDaemon\Daemon\MasterThread;
 
 /**
  * ConfigFile config entry
@@ -11,7 +13,7 @@ use PHPDaemon\Daemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ConfigEntryConfigFile extends ConfigEntry {
+class ConfigFile extends Generic {
 
 	public function onUpdate($old) {
 		if (!Daemon::$process instanceof MasterThread || (Daemon::$config->autoreload->value === 0) || !$old) {

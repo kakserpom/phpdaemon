@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Config\Entry;
 
 /**
  * Config entry
@@ -9,7 +9,7 @@ namespace PHPDaemon\Daemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ConfigEntry {
+class Generic {
 
 	public $defaultValue;
 	public $value;

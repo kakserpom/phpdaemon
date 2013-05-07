@@ -371,7 +371,7 @@ abstract class Connection extends IOStream {
 		}
 		$ctx = Daemon::$config->{'TransportContext:' . $this->ctxname};
 		foreach ($ctx as $key => $entry) {
-			$value = ($entry instanceof Daemon\ConfigEntry) ? $entry->value : $entry;
+			$value = ($entry instanceof Config\Entry\Generic) ? $entry->value : $entry;
 			if (isset($this->{$key}) && is_bool($this->{$key})) {
 				$this->{$key} = (bool)$value;
 				continue;
@@ -450,7 +450,7 @@ abstract class Connection extends IOStream {
 	 * @return boolean Success
 	 */
 	public function connect($url, $cb = null) {
-		$this->uri = Daemon\Config::parseCfgUri($url);
+		$this->uri = Config\Object::parseCfgUri($url);
 		$u         =& $this->uri;
 		if (!$u) {
 			return false;

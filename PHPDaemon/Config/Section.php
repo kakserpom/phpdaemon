@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Config;
+
+use PHPDaemon\Config\Entry\Generic;
 
 /**
  * Config section
@@ -9,7 +11,7 @@ namespace PHPDaemon\Daemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ConfigSection implements \ArrayAccess, \Countable {
+class Section implements \ArrayAccess, \Countable {
 
 	public $source;
 	public $revision;
@@ -22,7 +24,7 @@ class ConfigSection implements \ArrayAccess, \Countable {
 	public function __construct($arr = []) {
 		foreach ($arr as $k => $v) {
 			if (!is_object($v)) {
-				$e = new ConfigEntry;
+				$e = new Generic;
 				$e->setHumanValue($v);
 				$this->{$k} = $e;
 			}
@@ -47,7 +49,7 @@ class ConfigSection implements \ArrayAccess, \Countable {
 	public function toArray() {
 		$arr = [];
 		foreach ($this as $k => $entry) {
-			if (!$entry instanceof ConfigEntry) {
+			if (!$entry instanceof Generic) {
 				continue;
 			}
 			$arr[$k] = $entry->value;
@@ -116,19 +118,19 @@ class ConfigSection implements \ArrayAccess, \Countable {
 			$name = strtolower(str_replace('-', '', $name));
 			if (!isset($this->{$name})) {
 				if (is_scalar($value)) {
-					$this->{$name} = new ConfigEntry($value);
+					$this->{$name} = new Generic($value);
 				}
 				else {
 					$this->{$name} = $value;
 				}
 			}
-			elseif ($value instanceof ConfigSection) {
+			elseif ($value instanceof Section) {
 				$value->imposeDefault($value);
 			}
 			else {
 				$current = $this->{$name};
 				if (!is_object($value)) {
-					$this->{$name} = new ConfigEntry($value);
+					$this->{$name} = new Generic($value);
 				}
 				else {
 					$this->{$name} = $value;

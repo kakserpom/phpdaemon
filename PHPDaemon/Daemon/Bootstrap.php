@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\ShmEntity;
@@ -390,7 +391,7 @@ class Bootstrap {
 			);
 
 			foreach (Daemon::$config as $name => $entry) {
-				if (!$entry instanceof ConfigEntry) {
+				if (!$entry instanceof Generic) {
 					continue;
 				}
 

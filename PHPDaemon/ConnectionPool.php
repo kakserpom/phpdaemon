@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon;
+
 /**
  * Pool of connections
  *
@@ -29,7 +30,7 @@ abstract class ConnectionPool extends ObjectStorage {
 
 	/**
 	 * Configuration
-	 * @var Daemon\ConfigSection
+	 * @var \PHPDaemon\Config\Section
 	 */
 	public $config;
 
@@ -126,7 +127,7 @@ abstract class ConnectionPool extends ObjectStorage {
 	 */
 	protected function applyConfig() {
 		foreach ($this->config as $k => $v) {
-			if (is_object($v) && $v instanceof Daemon\ConfigEntry) {
+			if (is_object($v) && $v instanceof Config\Entry\Generic) {
 				$v = $v->value;
 			}
 			$k = strtolower($k);
@@ -177,17 +178,17 @@ abstract class ConnectionPool extends ObjectStorage {
 			}
 			$k = 'Pool:' . $class . ($arg !== '' ? ':' . $arg : '');
 
-			$config    = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Daemon\ConfigSection) ? Daemon::$config->{$k} : new Daemon\ConfigSection;
+			$config    = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Config\Section) ? Daemon::$config->{$k} : new Config\Section;
 			$obj       = self::$instances[$key] = new $class($config);
 			$obj->name = $arg;
 			return $obj;
 		}
-		elseif ($arg instanceof Daemon\ConfigSection) {
+		elseif ($arg instanceof Config\Section) {
 			return new static($arg);
 
 		}
 		else {
-			return new static(new Daemon\ConfigSection($arg));
+			return new static(new Config\Section($arg));
 		}
 	}
 
@@ -352,7 +353,7 @@ abstract class ConnectionPool extends ObjectStorage {
 	 * @return boolean Success
 	 */
 	public function bindSocket($uri) {
-		$u      = Daemon\Config::parseCfgUri($uri);
+		$u      = Config\Object::parseCfgUri($uri);
 		$scheme = $u['scheme'];
 		if ($scheme === 'unix') {
 			$socket = new BoundSocket\UNIX($u);

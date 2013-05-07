@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Config\Entry;
+
+use PHPDaemon\Config\Entry\Generic;
 
 /**
  * Array config entry
@@ -9,7 +11,7 @@ namespace PHPDaemon\Daemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ConfigEntryArray extends ConfigEntry {
+class ArraySet extends Generic {
 
 	public static function HumanToPlain($value) {
 		if (is_array($value)) {
