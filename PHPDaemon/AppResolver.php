@@ -2,7 +2,6 @@
 namespace PHPDaemon;
 
 use PHPDaemon\Request\Generic;
-use PHPDaemon\Request\Generic;
 
 /**
  * Application resolver
