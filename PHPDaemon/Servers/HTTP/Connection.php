@@ -168,12 +168,13 @@ class Connection extends \PHPDaemon\Connection {
 			if ($this->pool->config->sendfile->value && (!$this->pool->config->sendfileonlybycommand->value || isset($this->req->attrs->server['USE_SENDFILE']))
 					&& !isset($this->req->attrs->server['DONT_USE_SENDFILE'])
 			) {
-				$fn  = FileSystem::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value);
 				$req = $this->req;
-				FileSystem::open($fn, 'wb', function ($file) use ($req) {
-					$req->sendfp = $file;
+				FileSystem::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value, function ($fn) use ($req) {
+					FileSystem::open($fn, 'wb', function ($file) use ($req) {
+						$req->sendfp = $file;
+					});
+					$req->header('X-Sendfile: ' . $fn);
 				});
-				$this->req->header('X-Sendfile: ' . $fn);
 			}
 		}
 		return true;
