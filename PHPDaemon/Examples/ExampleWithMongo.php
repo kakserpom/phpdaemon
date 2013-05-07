@@ -15,7 +15,7 @@ class ExampleWithMongo extends \PHPDaemon\AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->mongo = \PHPDaemon\Clients\MongoClientAsync::getInstance(
+		$this->mongo = \PHPDaemon\Clients\Mongo\Pool::getInstance(
 			array('maxconnperserv' => 100)
 		);
 	}

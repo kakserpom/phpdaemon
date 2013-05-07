@@ -33,8 +33,8 @@ class MongoNode extends \PHPDaemon\AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->db    = \PHPDaemon\Clients\MongoClientAsync::getInstance($this->config->mongoclientname->value);
-		$this->cache = \PHPDaemon\Clients\MemcacheClient::getInstance($this->config->memcacheclientname->value);
+		$this->db    = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoclientname->value);
+		$this->cache = \PHPDaemon\Clients\Memcache\Pool::getInstance($this->config->memcacheclientname->value);
 		if (!isset($this->config->limitinstances)) {
 			$this->log('missing \'limitInstances\' directive');
 		}
@@ -74,7 +74,7 @@ class MongoNode extends \PHPDaemon\AppInstance {
 
 			try {
 				$this->cursor->getMore();
-			} catch (\PHPDaemon\Clients\MongoClientSessionFinished $e) {
+			} catch (\PHPDaemon\Clients\Mongo\SessionFinished $e) {
 				$this->cursor = FALSE;
 			}
 		}

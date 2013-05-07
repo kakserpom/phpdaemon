@@ -1,9 +1,12 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Mongo;
 
+use PHPDaemon\Clients\Mongo\Cursor;
+use PHPDaemon\Clients\Mongo\Pool;
+use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\Daemon;
 
-class MongoClientAsyncConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 	public $url; // url
 	public $user; // Username
 	public $password; // Password
@@ -72,7 +75,7 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 			}
 			$this->state = self::STATE_ROOT;
 			$this->setWatermark(16, 0xFFFF);
-			if ($this->hdr['opCode'] === MongoClientAsync::OP_REPLY) {
+			if ($this->hdr['opCode'] === Pool::OP_REPLY) {
 				$r             = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', binarySubstr($pct, 0, 20));
 				$r['cursorId'] = binarySubstr($pct, 4, 8);
 				$id            = (int)$this->hdr['responseTo'];
@@ -86,7 +89,7 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 				$curId    = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00" ? 'c' . $r['cursorId'] : 'r' . $this->hdr['responseTo']);
 
 				if ($req && isset($req[2]) && ($req[2] === false) && !isset($this->cursors[$curId])) {
-					$cur                   = new MongoClientAsyncCursor($curId, $req[0], $this);
+					$cur                   = new Cursor($curId, $req[0], $this);
 					$this->cursors[$curId] = $cur;
 					$cur->failure          = $flagBits[1] === '1';
 					$cur->await            = $flagBits[3] === '1';
@@ -134,7 +137,7 @@ class MongoClientAsyncConnection extends NetworkClientConnection {
 					);
 
 					if ($cur) {
-						if ($cur instanceof MongoClientAsyncCursor) {
+						if ($cur instanceof Cursor) {
 							$cur->destroy();
 						}
 						else {

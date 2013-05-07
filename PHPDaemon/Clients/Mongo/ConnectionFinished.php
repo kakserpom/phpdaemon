@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Mongo;
 
 /**
  * @package    Applications
@@ -7,5 +7,5 @@ namespace PHPDaemon\Clients;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class MongoClientAsyncConnectionFinished extends \Exception {
+class ConnectionFinished extends \Exception {
 }

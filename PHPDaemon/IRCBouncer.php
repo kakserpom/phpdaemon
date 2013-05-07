@@ -1,8 +1,7 @@
 <?php
 namespace PHPDaemon;
 
-use PHPDaemon\Clients\IRC\Pool;
-use PHPDaemon\Clients\MongoClientAsync;
+use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\NetworkServer;
 use PHPDaemon\Structures\ObjectStorage;
 
@@ -17,7 +16,7 @@ class IRCBouncer extends NetworkServer {
 	protected function init() {
 		$this->client               = Pool::getInstance();
 		$this->client->protologging = $this->protologging;
-		$this->db                   = MongoClientAsync::getInstance();
+		$this->db                   = Pool::getInstance();
 		$this->messages             = $this->db->{$this->config->dbname->value . '.messages'};
 		$this->channels             = $this->db->{$this->config->dbname->value . '.channels'};
 	}

@@ -1,7 +1,12 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Mongo;
 
-class MongoClientAsync extends NetworkClient {
+use PHPDaemon\Clients\Mongo\Collection;
+use PHPDaemon\Clients\Mongo\Connection;
+use PHPDaemon\Clients\Mongo\ConnectionFinished;
+use PHPDaemon\Clients\NetworkClient;
+
+class Pool extends NetworkClient {
 	public $noSAF = true;
 	public $requests = []; // Pending requests
 	public $lastReqId = 0; // ID of the last request
@@ -75,13 +80,13 @@ class MongoClientAsync extends NetworkClient {
 	 * @param boolean Is an answer expected?
 	 * @param object  Connection. Optional.
 	 * @return integer Request ID
-	 * @throws MongoClientAsyncConnectionFinished
+	 * @throws ConnectionFinished
 	 */
 	public function request($opcode, $data, $reply = false, $conn = null) {
 		$reqId = ++$this->lastReqId;
 		$cb    = function ($conn) use ($opcode, $data, $reply, $reqId) {
 			if ($conn->isFinished()) {
-				throw new MongoClientAsyncConnectionFinished;
+				throw new ConnectionFinished;
 			}
 			$conn->pool->lastRequestConnection = $conn;
 			$conn->write(pack('VVVV', strlen($data) + 16, $reqId, 0, $opcode));
@@ -90,7 +95,7 @@ class MongoClientAsync extends NetworkClient {
 				$conn->setFree(false);
 			}
 		};
-		if (is_object($conn) && ($conn instanceof MongoClientAsyncConnection)) {
+		if (is_object($conn) && ($conn instanceof Connection)) {
 			$cb($conn);
 		}
 		else {
@@ -874,7 +879,7 @@ class MongoClientAsync extends NetworkClient {
 	/**
 	 * Returns an object of collection
 	 * @param string Collection's name
-	 * @return MongoClientAsyncCollection
+	 * @return Collection
 	 */
 	public function getCollection($col) {
 		if (strpos($col, '.') === false) {
@@ -889,13 +894,13 @@ class MongoClientAsync extends NetworkClient {
 			return $this->collections[$col];
 		}
 
-		return $this->collections[$col] = new MongoClientAsyncCollection($col, $this);
+		return $this->collections[$col] = new Collection($col, $this);
 	}
 
 	/**
 	 * Magic getter-method. Proxy for getCollection.
 	 * @param string Collection's name
-	 * @return MongoClientAsyncCollection
+	 * @return Collection
 	 */
 	public function __get($name) {
 		return $this->getCollection($name);

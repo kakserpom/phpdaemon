@@ -1,7 +1,7 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Mongo;
 
-class MongoClientAsyncCollection {
+class Collection {
 	/** Related Pool object
 	 * @var MongoClient
 	 */

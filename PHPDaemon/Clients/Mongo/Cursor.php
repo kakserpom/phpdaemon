@@ -1,7 +1,7 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Mongo;
 
-class MongoClientAsyncCursor {
+class Cursor {
 	public $id; // Cursor's ID.
 	public $col; // Collection's name.
 	public $items = []; // Array of objects

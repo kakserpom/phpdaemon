@@ -39,7 +39,7 @@ public function init() {
 		$req->wakeup(); // wake up the request immediately
 
 	});
-	$memcache = \PHPDaemon\Clients\MemcacheClient::getInstance();
+	$memcache = \PHPDaemon\Clients\Memcache\Pool::getInstance();
 
 	$job('testquery', function ($name, $job) use ($memcache) { // registering job named 'testquery'
 
