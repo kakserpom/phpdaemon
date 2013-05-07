@@ -1,5 +1,8 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Servers;
+
+use PHPDaemon\Daemon;
+use PHPDaemon\NetworkServer;
 
 class DebugConsole extends NetworkServer {
 	/**
