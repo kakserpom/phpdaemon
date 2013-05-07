@@ -232,8 +232,8 @@ class Daemon {
 
 		Daemon::$defaultErrorLevel    = error_reporting();
 		Daemon::$restrictErrorControl = (bool)Daemon::$config->restricterrorcontrol->value;
-		ob_start(array('Daemon', 'outputFilter'));
-		set_error_handler(array('Daemon', 'errorHandler'));
+		ob_start(array('\\PHPDaemon\\Daemon', 'outputFilter'));
+		set_error_handler(array('\\PHPDaemon\\Daemon', 'errorHandler'));
 
 		Daemon::checkSupports();
 
@@ -272,7 +272,6 @@ class Daemon {
 				return unserialize($m);
 			}
 		}
-
 
 	}
 
