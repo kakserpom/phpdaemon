@@ -1,7 +1,5 @@
 <?php
-namespace PHPDaemon;
-
-use PHPDaemon\Thread\Generic;
+namespace PHPDaemon\Thread;
 
 /**
  * Collection of threads
@@ -10,7 +8,7 @@ use PHPDaemon\Thread\Generic;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class ThreadCollection {
+class Collection {
 
 	/**
 	 * Array of threads

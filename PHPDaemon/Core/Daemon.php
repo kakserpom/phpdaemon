@@ -6,7 +6,7 @@ use PHPDaemon\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Thread;
-use PHPDaemon\ThreadCollection;
+use PHPDaemon\Thread\Collection;
 use PHPDaemon\Utils\ShmEntity;
 
 /**
@@ -246,7 +246,7 @@ class Daemon {
 		Daemon::checkSupports();
 
 		Daemon::$initservervar = $_SERVER;
-		Daemon::$masters       = new ThreadCollection;
+		Daemon::$masters       = new Collection;
 		Daemon::$shm_wstate    = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate', true);
 		Daemon::openLogs();
 

@@ -3,7 +3,7 @@ namespace PHPDaemon\Clients\IRC;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\IRC;
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 
 /**
  * @package    NetworkClients
@@ -11,7 +11,7 @@ use PHPDaemon\NetworkClientConnection;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 	use \PHPDaemon\Traits\EventHandlers;
 
 	public $user = 'Guest'; // Username

@@ -3,9 +3,9 @@ namespace PHPDaemon\Servers\FlashPolicy;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
-use PHPDaemon\NetworkServer;
+use PHPDaemon\Network\Server;
 
-class Pool extends NetworkServer {
+class Pool extends Server {
 
 	/**
 	 * Cached policy file contents

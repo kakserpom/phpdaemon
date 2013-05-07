@@ -14,7 +14,7 @@ use PHPDaemon\Servers\FlashPolicy\Pool;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class Connection extends \PHPDaemon\Connection {
+class Connection extends \PHPDaemon\Network\Connection {
 	protected $initialLowMark = 1;
 	protected $initialHighMark = 8192; // initial value of the maximum amout of bytes in buffer
 	protected $timeout = 45;

@@ -7,7 +7,7 @@ namespace PHPDaemon\Servers\Socks;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends \PHPDaemon\Connection {
+class Connection extends \PHPDaemon\Network\Connection {
 	protected $ver; // protocol version (X'04' / X'05')
 	protected $state = 0; // (0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange)
 	protected $slave;

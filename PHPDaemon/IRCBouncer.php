@@ -3,10 +3,10 @@ namespace PHPDaemon;
 
 use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\NetworkServer;
+use PHPDaemon\Network\Server;
 use PHPDaemon\Structures\ObjectStorage;
 
-class IRCBouncer extends NetworkServer {
+class IRCBouncer extends Server {
 	public $client;
 	public $conn;
 	public $protologging = false;

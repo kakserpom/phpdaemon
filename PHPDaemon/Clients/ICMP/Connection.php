@@ -3,7 +3,7 @@ namespace PHPDaemon\Clients\ICMP;
 
 use PHPDaemon\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
 
 /**
@@ -12,7 +12,7 @@ use PHPDaemon\Utils\Binary;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 	/**
 	 * Packet sequence
 	 * @var integer

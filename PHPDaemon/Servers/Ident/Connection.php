@@ -7,7 +7,7 @@ namespace PHPDaemon\Servers\Ident;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends \PHPDaemon\Connection {
+class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * EOL

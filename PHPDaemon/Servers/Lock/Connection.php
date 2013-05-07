@@ -10,7 +10,7 @@ use PHPDaemon\Debug;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends \PHPDaemon\Connection {
+class Connection extends \PHPDaemon\Network\Connection {
 	public $server = FALSE; // Is this S2S-session?
 	public $locks = array(); // State of locks.
 

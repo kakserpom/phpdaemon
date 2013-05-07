@@ -9,7 +9,7 @@ use PHPDaemon\Core\Daemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends \PHPDaemon\Connection {
+class Connection extends \PHPDaemon\Network\Connection {
 	protected $lowMark = 8; // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
 	public $timeout = 180;

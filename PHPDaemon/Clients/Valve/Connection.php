@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients\Valve;
 use PHPDaemon\Clients\Data;
 use PHPDaemon\Clients\Type;
 use PHPDaemon\Clients\Valve\Pool;
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
 use PHPDaemon\Utils\Encoding;
 
@@ -14,7 +14,7 @@ use PHPDaemon\Utils\Encoding;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 	public $timeout = 1;
 
 	/**

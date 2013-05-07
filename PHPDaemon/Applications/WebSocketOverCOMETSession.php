@@ -40,7 +40,7 @@ class WebSocketOverCOMETSession {
 		}
 		unset($this->downstream);
 		if ($this->finishTimer !== null) {
-			\PHPDaemon\Timer::remove($this->finishTimer);
+			\PHPDaemon\Core\Timer::remove($this->finishTimer);
 			$this->finishTimer = null;
 		}
 		unset($this->appInstance->sessions[$this->id]);

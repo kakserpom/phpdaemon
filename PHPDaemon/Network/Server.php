@@ -1,8 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Network;
 
-use PHPDaemon\ConnectionPool;
-use PHPDaemon\Request\Generic;
+use PHPDaemon\Network\ConnectionPool;
 
 /**
  * Network server pattern
@@ -11,7 +10,7 @@ use PHPDaemon\Request\Generic;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-abstract class NetworkServer extends ConnectionPool {
+abstract class Server extends ConnectionPool {
 
 	/**
 	 * Called when a request to HTTP-server looks like another connection.
@@ -29,7 +28,7 @@ abstract class NetworkServer extends ConnectionPool {
 		$oldConn->unsetFd();
 		$oldConn->pool->detach($oldConn);
 		$conn->onInheritanceFromRequest($req);
-		if ($req instanceof Generic) {
+		if ($req instanceof \PHPDaemon\Request\Generic) {
 			$req->free();
 		}
 		return true;

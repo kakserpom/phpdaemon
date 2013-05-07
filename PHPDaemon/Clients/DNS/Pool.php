@@ -5,9 +5,9 @@ use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Clients\Hostname;
 use PHPDaemon\ComplexJob;
 use PHPDaemon\FS\FileSystem;
-use PHPDaemon\NetworkClient;
+use PHPDaemon\Network\Client;
 
-class Pool extends NetworkClient {
+class Pool extends Client {
 	/**
 	 * Record Types
 	 * @var array hash [code => "name", ...]

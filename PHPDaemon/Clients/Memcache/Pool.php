@@ -8,7 +8,7 @@ namespace PHPDaemon\Clients\Memcache;
 	 * @author     Zorin Vasily <maintainer@daemon.io>
 	 */
 // @TODO: Binary protocol support
-class Pool extends \PHPDaemon\NetworkClient {
+class Pool extends \PHPDaemon\Network\Client {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults

@@ -2,7 +2,7 @@
 namespace PHPDaemon\Clients\DNS;
 
 use PHPDaemon\Clients\DNS\Pool;
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
 
 /**
@@ -11,7 +11,7 @@ use PHPDaemon\Utils\Binary;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 
 	/**
 	 * Sequence

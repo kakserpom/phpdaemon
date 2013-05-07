@@ -4,9 +4,9 @@ namespace PHPDaemon\Clients\Mongo;
 use PHPDaemon\Clients\Mongo\Collection;
 use PHPDaemon\Clients\Mongo\Connection;
 use PHPDaemon\Clients\Mongo\ConnectionFinished;
-use PHPDaemon\NetworkClient;
+use PHPDaemon\Network\Client;
 
-class Pool extends NetworkClient {
+class Pool extends Client {
 	public $noSAF = true;
 	public $requests = []; // Pending requests
 	public $lastReqId = 0; // ID of the last request

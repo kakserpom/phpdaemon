@@ -3,10 +3,10 @@ namespace PHPDaemon\Clients;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
 
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 	/**
 	 * URL
 	 * @var string

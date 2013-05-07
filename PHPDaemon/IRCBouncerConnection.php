@@ -2,6 +2,8 @@
 namespace PHPDaemon;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Timer;
+use PHPDaemon\Network\Connection;
 use PHPDaemon\Traits\EventHandlers;
 
 /**

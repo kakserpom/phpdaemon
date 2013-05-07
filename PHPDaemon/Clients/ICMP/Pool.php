@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Clients\ICMP;
 
-use PHPDaemon\NetworkClient;
+use PHPDaemon\Network\Client;
 
-class Pool extends NetworkClient {
+class Pool extends Client {
 
 	/**
 	 * Establishes connection

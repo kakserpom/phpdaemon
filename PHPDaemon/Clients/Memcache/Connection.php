@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\Memcache;
 
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 
 /**
  * @package    Network clients
@@ -10,7 +10,7 @@ use PHPDaemon\NetworkClientConnection;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 
 	public $result; // current result
 	public $valueFlags; // flags of incoming value

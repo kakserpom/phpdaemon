@@ -2,12 +2,12 @@
 namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
+use PHPDaemon\Thread\Collection;
 use PHPDaemon\Thread\Generic;
 use PHPDaemon\Thread\IPC;
-use PHPDaemon\ThreadCollection;
-use PHPDaemon\Timer;
 
 /**
  * Implementation of the master thread
@@ -52,9 +52,9 @@ class Master extends Generic {
 			$this->registerSignals();
 		}
 
-		$this->workers                   = new ThreadCollection();
+		$this->workers                   = new Collection();
 		$this->collections['workers']    = $this->workers;
-		$this->ipcthreads                = new ThreadCollection;
+		$this->ipcthreads                = new Collection;
 		$this->collections['ipcthreads'] = $this->ipcthreads;
 
 		Daemon::$appResolver = require Daemon::$appResolverPath;

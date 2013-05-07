@@ -4,9 +4,9 @@ namespace PHPDaemon\Clients\Mongo;
 use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 	public $url; // url
 	public $user; // Username
 	public $password; // Password

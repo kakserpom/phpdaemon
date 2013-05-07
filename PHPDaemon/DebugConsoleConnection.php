@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Network\Connection;
+
 /**
  * @package    NetworkServers
  * @subpackage DebungConsole

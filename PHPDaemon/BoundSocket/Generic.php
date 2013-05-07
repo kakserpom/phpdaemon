@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\BoundSocket;
 
-use PHPDaemon\ConnectionPool;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
+use PHPDaemon\Network\ConnectionPool;
 
 /**
  * Generic
@@ -40,7 +40,7 @@ abstract class Generic {
 
 	/**
 	 * Pool
-	 * @var ConnectionPool
+	 * @var \PHPDaemon\Network\ConnectionPool
 	 */
 	protected $pool;
 

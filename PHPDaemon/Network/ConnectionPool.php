@@ -1,12 +1,11 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Network;
 
+use PHPDaemon\BoundSocket;
+use PHPDaemon\Config;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Structures\ObjectStorage;
-use PHPDaemon\Structures\ObjectStorage;
-use PHPDaemon\Structures\ObjectStorage;
-use PHPDaemon\Structures\ObjectStorage;
-use PHPDaemon\Structures\ObjectStorage;
+use PHPDaemon\Thread;
 
 /**
  * Pool of connections

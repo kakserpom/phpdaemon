@@ -2,9 +2,9 @@
 namespace PHPDaemon\Servers;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\NetworkServer;
+use PHPDaemon\Network\Server;
 
-class DebugConsole extends NetworkServer {
+class DebugConsole extends Server {
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults

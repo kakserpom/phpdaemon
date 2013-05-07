@@ -1,12 +1,14 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Network;
 
 use PHPDaemon\BoundSocket\Generic;
 use PHPDaemon\BoundSocket\TCP;
 use PHPDaemon\Cache\CappedStorage;
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Clients\DNS\Pool;
+use PHPDaemon\Config;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\IOStream;
 use PHPDaemon\Structures\StackCallbacks;
 
 /**

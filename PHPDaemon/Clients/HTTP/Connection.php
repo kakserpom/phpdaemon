@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients\HTTP;
 use PHPDaemon\Clients\HTTP\Pool;
 use PHPDaemon\Clients\HTTP\UploadFile;
 use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 
 /**
  * @package    NetworkClients
@@ -12,7 +12,7 @@ use PHPDaemon\NetworkClientConnection;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 
 	const STATE_HEADERS = 1;
 	const STATE_BODY    = 2;

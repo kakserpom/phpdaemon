@@ -2,6 +2,7 @@
 namespace PHPDaemon;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Network\Connection;
 
 class IPCManagerMasterPoolConnection extends Connection {
 	public $instancesCount = [];

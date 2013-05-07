@@ -3,10 +3,10 @@ namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Timer;
 use PHPDaemon\Debug;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Timer;
 
 /**
  * Implementation of the worker thread

@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class TelnetHoneypot extends \PHPDaemon\NetworkServer {
+class TelnetHoneypot extends \PHPDaemon\Network\Server {
 	/**
 	 * Setting default config options
 	 * Overriden from ConnectionPool::getConfigDefaults
@@ -22,7 +22,7 @@ class TelnetHoneypot extends \PHPDaemon\NetworkServer {
 	}
 }
 
-class TelnetHoneypotConnection extends \PHPDaemon\Connection {
+class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 	/**
 	 * Called when new data received.
 	 * @param string New data.

@@ -10,7 +10,7 @@ use PHPDaemon\Config\Entry\Time;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Pool extends \PHPDaemon\NetworkServer {
+class Pool extends \PHPDaemon\Network\Server {
 
 	/* Variables order
 	 * @var string "GPC"

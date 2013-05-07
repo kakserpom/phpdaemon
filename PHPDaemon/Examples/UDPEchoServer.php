@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class UDPEchoServer extends \PHPDaemon\NetworkServer {
+class UDPEchoServer extends \PHPDaemon\Network\Server {
 
 	/**
 	 * Setting default config options
@@ -27,7 +27,7 @@ class UDPEchoServer extends \PHPDaemon\NetworkServer {
 
 }
 
-class UDPEchoServerConnection extends \PHPDaemon\Connection {
+class UDPEchoServerConnection extends \PHPDaemon\Network\Connection {
 	/**
 	 * Called when UDP packet received.
 	 * @param string New data.

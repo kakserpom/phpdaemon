@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Servers\Socks;
 
-use PHPDaemon\Connection;
+use PHPDaemon\Network\Connection;
 
 class SlaveConnection extends Connection {
 

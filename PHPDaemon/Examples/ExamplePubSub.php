@@ -20,7 +20,7 @@ class ExamplePubSub extends \PHPDaemon\Core\AppInstance {
 												  ->onActivation(function ($pubsub) use ($appInstance) {
 													  \PHPDaemon\Core\Daemon::log('onActivation');
 													  if (isset($pubsub->event)) {
-														  \PHPDaemon\Timer::setTimeout($pubsub->event, 0);
+														  \PHPDaemon\Core\Timer::setTimeout($pubsub->event, 0);
 														  return;
 													  }
 													  $pubsub->event = setTimeout(function ($timer) use ($pubsub, $appInstance) {
@@ -37,7 +37,7 @@ class ExamplePubSub extends \PHPDaemon\Core\AppInstance {
 												  })
 												  ->onDeactivation(function ($pubsub) {
 													  if (isset($pubsub->event)) {
-														  \PHPDaemon\Timer::cancelTimeout($pubsub->event);
+														  \PHPDaemon\Core\Timer::cancelTimeout($pubsub->event);
 													  }
 												  })
 		);

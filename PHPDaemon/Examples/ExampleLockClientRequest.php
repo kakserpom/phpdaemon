@@ -27,7 +27,7 @@ class ExampleLockClientRequest extends Generic {
 				false, //wait?
 				function ($command, $jobname, $client) use ($req) {
 					if ($command === 'RUN') {
-						\PHPDaemon\Timer::add(function ($event) use ($req, $jobname, $client) {
+						\PHPDaemon\Core\Timer::add(function ($event) use ($req, $jobname, $client) {
 							\PHPDaemon\Core\Daemon::log('done');
 							$client->done($jobname);
 							$req->out(':-)');

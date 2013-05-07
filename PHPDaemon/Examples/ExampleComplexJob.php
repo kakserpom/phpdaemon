@@ -62,11 +62,11 @@ class ExampleComplexJob extends \PHPDaemon\Core\AppInstance {
 		$job('foo', $this->foo(array('param' => 'value')));
 
 		// Adding with 1 sec delay
-		\PHPDaemon\Timer::add(function ($event) use ($job) {
+		\PHPDaemon\Core\Timer::add(function ($event) use ($job) {
 
 			// Adding async job bar
 			$job('bar', function ($jobname, $job) {
-				\PHPDaemon\Timer::add(function ($event) use ($jobname, $job) {
+				\PHPDaemon\Core\Timer::add(function ($event) use ($jobname, $job) {
 					// Job done
 					$job->setResult($jobname, array('job' => 'bar', 'success' => false, 'line' => __LINE__));
 					$event->finish();
@@ -87,7 +87,7 @@ class ExampleComplexJob extends \PHPDaemon\Core\AppInstance {
 
 	final public function foo($arg) {
 		return function ($jobname, $job) use ($arg) {
-			\PHPDaemon\Timer::add(function ($event) use ($jobname, $job, $arg) {
+			\PHPDaemon\Core\Timer::add(function ($event) use ($jobname, $job, $arg) {
 				// Job done
 				$job->setResult($jobname, array('job' => 'foo', 'success' => true, 'line' => __LINE__, 'arg' => $arg));
 				$event->finish();
@@ -97,7 +97,7 @@ class ExampleComplexJob extends \PHPDaemon\Core\AppInstance {
 
 	final public function baz() {
 		return function ($jobname, $job) {
-			\PHPDaemon\Timer::add(function ($event) use ($jobname, $job) {
+			\PHPDaemon\Core\Timer::add(function ($event) use ($jobname, $job) {
 				// Job done
 				$job->setResult($jobname, array('job' => 'baz', 'success' => false, 'line' => __LINE__));
 				$event->finish();

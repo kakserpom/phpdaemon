@@ -85,7 +85,7 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 			return;
 		}
 		$sess->downstream->onFrame($body, \PHPDaemon\Servers\Websocket\Pool::STRING);
-		\PHPDaemon\Timer::setTimeout($sess->finishTimer);
+		\PHPDaemon\Core\Timer::setTimeout($sess->finishTimer);
 	}
 
 	public function poll($pollWorker, $pollReqId, $fullId, $ts) {
@@ -103,7 +103,7 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 		}
 		$sess->polling->push(array($pollWorker, $pollReqId));
 		$sess->flushBufferedPackets($ts);
-		\PHPDaemon\Timer::setTimeout($sess->finishTimer);
+		\PHPDaemon\Core\Timer::setTimeout($sess->finishTimer);
 
 	}
 }

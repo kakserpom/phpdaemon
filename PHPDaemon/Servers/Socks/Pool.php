@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Servers\Socks;
 
-use PHPDaemon\NetworkServer;
+use PHPDaemon\Network\Server;
 
-class Pool extends NetworkServer {
+class Pool extends Server {
 
 	/**
 	 * Setting default config options

@@ -5,7 +5,7 @@ use PHPDaemon\CallbackWrapper;
 use PHPDaemon\Clients\Asterisk\ConnectionFinished;
 use PHPDaemon\Clients\Asterisk\Pool;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Traits\EventHandlers;
 
@@ -13,7 +13,7 @@ use PHPDaemon\Traits\EventHandlers;
  * Asterisk Call Manager Connection.
  *
  */
-class Connection extends NetworkClientConnection {
+class Connection extends ClientConnection {
 
 	use \PHPDaemon\Traits\EventHandlers;
 

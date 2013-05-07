@@ -1,9 +1,18 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Network;
 
-use PHPDaemon\NetworkClientConnection;
+use PHPDaemon\Address;
+use PHPDaemon\Key;
+use PHPDaemon\Network\ClientConnection;
+use PHPDaemon\Network\ConnectionPool;
+use PHPDaemon\Network;
+use PHPDaemon\onConnected;
+use PHPDaemon\Optional;
+use PHPDaemon\Request;
+use PHPDaemon\Server;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Structures\PriorityQueueCallbacks;
+use PHPDaemon\Weight;
 
 /**
  * Network client pattern
@@ -12,7 +21,7 @@ use PHPDaemon\Structures\PriorityQueueCallbacks;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-abstract class NetworkClient extends ConnectionPool {
+abstract class Client extends ConnectionPool {
 
 	protected $servers = array(); // Array of servers 
 	protected $dtags_enabled = false; // Enables tags for distribution
@@ -166,7 +175,7 @@ abstract class NetworkClient extends ConnectionPool {
 	 * @param URL
 	 * @return void
 	 */
-	public function markConnFree(NetworkClientConnection $conn, $url) {
+	public function markConnFree(ClientConnection $conn, $url) {
 		if (!isset($this->servConnFree[$url])) {
 			return;
 		}
@@ -179,7 +188,7 @@ abstract class NetworkClient extends ConnectionPool {
 	 * @param URL
 	 * @return void
 	 */
-	public function markConnBusy(NetworkClientConnection $conn, $url) {
+	public function markConnBusy(ClientConnection $conn, $url) {
 		if (!isset($this->servConnFree[$url])) {
 			return;
 		}
@@ -192,7 +201,7 @@ abstract class NetworkClient extends ConnectionPool {
 	 * @param URL
 	 * @return void
 	 */
-	public function detachConnFromUrl(NetworkClientConnection $conn, $url) {
+	public function detachConnFromUrl(Network\ClientConnection $conn, $url) {
 		if (!isset($this->servConnFree[$url]) || !isset($this->servConn[$url])) {
 			return;
 		}
