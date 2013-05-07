@@ -11,7 +11,7 @@ use PHPDaemon\Servers\WebSocketServer;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class HTTPServer extends \PHPDaemon\NetworkServer {
+class Pool extends \PHPDaemon\NetworkServer {
 
 	/* Variables order
 	 * @var string "GPC"
