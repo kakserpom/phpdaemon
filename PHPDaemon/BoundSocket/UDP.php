@@ -1,19 +1,18 @@
 <?php
 namespace PHPDaemon\BoundSocket;
 
-use PHPDaemon\BoundSocket\BoundSocket;
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\Timer;
 
 /**
- * BoundUDPSocket
+ * UDP
  *
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class BoundUDPSocket extends BoundSocket {
+class UDP extends Generic {
 	/**
 	 * Hostname
 	 * @var string

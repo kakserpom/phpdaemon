@@ -1,8 +1,8 @@
 <?php
 namespace PHPDaemon;
 
-use PHPDaemon\BoundSocket\BoundSocket;
-use PHPDaemon\BoundSocket\BoundTCPSocket;
+use PHPDaemon\BoundSocket\Generic;
+use PHPDaemon\BoundSocket\TCP;
 use PHPDaemon\Clients\DNSClient;
 
 /**
@@ -94,7 +94,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Parent socket
-	 * @var BoundSocket
+	 * @var Generic
 	 */
 	protected $parentSocket;
 
@@ -204,7 +204,7 @@ abstract class Connection extends IOStream {
 		$this->port = $port;
 		$this->addr = '[' . $this->host . ']:' . $this->port;
 		if ($this->pool->allowedClients !== null) {
-			if (!BoundTCPSocket::netMatch($this->pool->allowedClients, $this->host)) {
+			if (!TCP::netMatch($this->pool->allowedClients, $this->host)) {
 				Daemon::log('Connection is not allowed (' . $this->host . ')');
 				$this->ready = false;
 				$this->finish();
@@ -247,7 +247,7 @@ abstract class Connection extends IOStream {
 	 * @param BoundSocket
 	 * @return boolean Success
 	 */
-	public function setParentSocket(BoundSocket $sock) {
+	public function setParentSocket(Generic $sock) {
 		$this->parentSocket = $sock;
 	}
 
