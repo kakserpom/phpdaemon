@@ -2,6 +2,7 @@
 namespace PHPDaemon\Daemon;
 
 use PHPDaemon\Daemon;
+use PHPDaemon\FS;
 use PHPDaemon\StackCallbacks;
 use PHPDaemon\Thread;
 use PHPDaemon\ThreadCollection;
@@ -257,7 +258,7 @@ class MasterThread extends Thread {
 		if (FS::$supported) {
 			eio_event_loop();
 		}
-		$thread = new Daemon_IPCThread;
+		$thread = new IPCThread;
 		$this->ipcthreads->push($thread);
 
 		$this->callbacks->push(function ($self) use ($thread) {

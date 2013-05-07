@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Clients\DNSClient;
+
 /**
  * Connection
  *
@@ -383,22 +385,22 @@ abstract class Connection extends IOStream {
 	 * @return object|false Context
 	 */
 	protected function initSSLContext() {
-		if (!EventUtil::sslRandPoll()) {
+		if (!\EventUtil::sslRandPoll()) {
 			Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
 			return false;
 		}
 		$params = [
-			EventSslContext::OPT_VERIFY_PEER       => $this->verifypeer,
-			EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
+			\EventSslContext::OPT_VERIFY_PEER       => $this->verifypeer,
+			\EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
 		];
 		if ($this->certfile !== null) {
-			$params[EventSslContext::OPT_LOCAL_CERT] = $this->certfile;
+			$params[\EventSslContext::OPT_LOCAL_CERT] = $this->certfile;
 		}
 		if ($this->pkfile !== null) {
-			$params[EventSslContext::OPT_LOCAL_PK] = $this->pkfile;
+			$params[\EventSslContext::OPT_LOCAL_PK] = $this->pkfile;
 		}
 		if ($this->passphrase !== null) {
-			$params[EventSslContext::OPT_PASSPHRASE] = $this->passphrase;
+			$params[\EventSslContext::OPT_PASSPHRASE] = $this->passphrase;
 		}
 		$hash = igbinary_serialize($params);
 		if (!self::$contextCache) {
@@ -407,7 +409,7 @@ abstract class Connection extends IOStream {
 		elseif ($ctx = self::$contextCache->getValue($hash)) {
 			return $ctx;
 		}
-		$ctx = new EventSslContext(EventSslContext::SSLv3_CLIENT_METHOD, $params);
+		$ctx = new \EventSslContext(\EventSslContext::SSLv3_CLIENT_METHOD, $params);
 		self::$contextCache->put($hash, $ctx);
 		return $ctx;
 	}
@@ -466,7 +468,7 @@ abstract class Connection extends IOStream {
 		}
 
 		if ($this->ssl) {
-			$this->setContext($this->initSSLContext(), EventBufferEvent::SSL_CONNECTING);
+			$this->setContext($this->initSSLContext(), \EventBufferEvent::SSL_CONNECTING);
 		}
 
 		$this->url    = $url;
@@ -510,7 +512,7 @@ abstract class Connection extends IOStream {
 		$this->type = 'unix';
 
 		if (!$this->bevConnectEnabled) {
-			$fd = socket_create(EventUtil::AF_UNIX, EventUtil::SOCK_STREAM, 0);
+			$fd = socket_create(\EventUtil::AF_UNIX, \EventUtil::SOCK_STREAM, 0);
 			if (!$fd) {
 				return false;
 			}
@@ -556,7 +558,7 @@ abstract class Connection extends IOStream {
 			$this->host = $this->hostReal;
 		}
 		$this->addr = $this->hostReal . ':raw';
-		$fd         = socket_create(EventUtil::AF_INET, EventUtil::SOCK_RAW, 1);
+		$fd         = socket_create(\EventUtil::AF_INET, \EventUtil::SOCK_RAW, 1);
 		if (!$fd) {
 			return false;
 		}
@@ -581,7 +583,7 @@ abstract class Connection extends IOStream {
 			DNSClient::getInstance()->resolve($host, function ($result) use ($host, $port) {
 				if ($result === false) {
 					Daemon::log(get_class($this) . '->connectUdp : enable to resolve hostname: ' . $host);
-					$this->onStateEv($this->bev, EventBufferEvent::ERROR);
+					$this->onStateEv($this->bev, \EventBufferEvent::ERROR);
 					return;
 				}
 				// @todo stack of addrs
@@ -605,11 +607,11 @@ abstract class Connection extends IOStream {
 		if ($l === 4) {
 			$this->addr = $host . ':' . $port;
 			/* @TODO: use EventUtil::SOCK_DGRAM */
-			$fd = socket_create(EventUtil::AF_INET, SOCK_DGRAM, EventUtil::SOL_UDP);
+			$fd = socket_create(\EventUtil::AF_INET, SOCK_DGRAM, \EventUtil::SOL_UDP);
 		}
 		elseif ($l === 16) {
 			$this->addr = '[' . $host . ']:' . $port;
-			$fd         = socket_create(EventUtil::AF_INET6, SOCK_DGRAM, EventUtil::SOL_UDP);
+			$fd         = socket_create(\EventUtil::AF_INET6, SOCK_DGRAM, \EventUtil::SOL_UDP);
 		}
 		else {
 			return false;
@@ -640,7 +642,7 @@ abstract class Connection extends IOStream {
 			DNSClient::getInstance()->resolve($this->host, function ($result) use ($host, $port) {
 				if ($result === false) {
 					Daemon::log(get_class($this) . '->connectTcp : enable to resolve hostname: ' . $host);
-					$this->onStateEv($this->bev, EventBufferEvent::ERROR);
+					$this->onStateEv($this->bev, \EventBufferEvent::ERROR);
 					return;
 				}
 				// @todo stack of addrs
@@ -665,13 +667,13 @@ abstract class Connection extends IOStream {
 		if ($l === 4) {
 			$this->addr = $host . ':' . $port;
 			if (!$this->bevConnectEnabled) {
-				$fd = socket_create(EventUtil::AF_INET, EventUtil::SOCK_STREAM, EventUtil::SOL_TCP);
+				$fd = socket_create(\EventUtil::AF_INET, \EventUtil::SOCK_STREAM, \EventUtil::SOL_TCP);
 			}
 		}
 		elseif ($l === 16) {
 			$this->addr = '[' . $host . ']:' . $port;
 			if (!$this->bevConnectEnabled) {
-				$fd = socket_create(EventUtil::AF_INET6, EventUtil::SOCK_STREAM, EventUtil::SOL_TCP);
+				$fd = socket_create(\EventUtil::AF_INET6, \EventUtil::SOCK_STREAM, \EventUtil::SOL_TCP);
 			}
 		}
 		else {
@@ -703,7 +705,7 @@ abstract class Connection extends IOStream {
 	 */
 	public function setKeepalive($bool) {
 		$this->keepalive = (bool)$bool;
-		$this->setOption(EventUtil::SOL_SOCKET, EventUtil::SO_KEEPALIVE, $this->keepalive ? true : false);
+		$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_KEEPALIVE, $this->keepalive ? true : false);
 	}
 
 	/**
@@ -726,8 +728,8 @@ abstract class Connection extends IOStream {
 	public function setTimeouts($read, $write) {
 		parent::setTimeouts($read, $write);
 		if ($this->fd !== null) {
-			$this->setOption(EventUtil::SOL_SOCKET, EventUtil::SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-			$this->setOption(EventUtil::SOL_SOCKET, EventUtil::SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 		}
 	}
 
@@ -743,7 +745,7 @@ abstract class Connection extends IOStream {
 			socket_set_option($this->fd, $level, $optname, $val);
 		}
 		else {
-			EventUtil::setSocketOption($this->fd, $level, $optname, $val);
+			\EventUtil::setSocketOption($this->fd, $level, $optname, $val);
 		}
 	}
 }

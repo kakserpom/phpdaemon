@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\WebSocket;
 
+use PHPDaemon\Binary;
 use PHPDaemon\Daemon;
 
 /**

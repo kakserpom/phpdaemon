@@ -37,13 +37,13 @@ class ExampleDNSClientRequest extends HTTPRequest {
 		});
 
 		$job('query', function ($name, $job) { // registering job named 'showvar'
-			DNSClient::getInstance()->get('phpdaemon.net', function ($response) use ($name, $job) {
+			\PHPDaemon\Clients\DNSClient::getInstance()->get('phpdaemon.net', function ($response) use ($name, $job) {
 				$job->setResult($name, $response);
 			});
 		});
 
 		$job('resolve', function ($name, $job) { // registering job named 'showvar'
-			DNSClient::getInstance()->resolve('phpdaemon.net', function ($ip) use ($name, $job) {
+			\PHPDaemon\Clients\DNSClient::getInstance()->resolve('phpdaemon.net', function ($ip) use ($name, $job) {
 				$job->setResult($name, array('phpdaemon.net resolved to' => $ip));
 			});
 		});

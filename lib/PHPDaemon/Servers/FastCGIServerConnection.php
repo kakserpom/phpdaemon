@@ -175,7 +175,7 @@ class FastCGIServerConnection extends Connection {
 				$req       = Daemon::$appResolver->getRequest($req, $this);
 				$req->conn = $this;
 
-				if ($req instanceof stdClass) {
+				if ($req instanceof \stdClass) {
 					$this->endRequest($req, 0, 0);
 					unset($this->requests[$rid]);
 				}

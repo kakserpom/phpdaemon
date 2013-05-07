@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\Binary;
+use PHPDaemon\Daemon;
 use PHPDaemon\StackCallbacks;
 
 class MySQLClientConnection extends NetworkClientConnection {

@@ -3,6 +3,9 @@ namespace PHPDaemon\Daemon;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\FS;
+use PHPDaemon\ShmEntity;
+use PHPDaemon\Terminal;
+use PHPDaemon\Thread;
 
 /**
  * Bootstrap for PHPDaemon
@@ -372,7 +375,7 @@ class Bootstrap {
 			Bootstrap::start();
 		}
 		elseif ($runmode == 'configtest') {
-			$term               = new Terminal;
+			$term               = new Terminal();
 			$term->enable_color = true;
 
 			echo "\n";

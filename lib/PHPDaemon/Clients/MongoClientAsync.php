@@ -257,7 +257,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 
 		if (is_string($p['where'])) {
-			$p['where'] = new MongoCode($p['where']);
+			$p['where'] = new \MongoCode($p['where']);
 		}
 
 		$o = [];
@@ -353,7 +353,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 
 		if (is_string($p['where'])) {
-			$query['where'] = new MongoCode($p['where']);
+			$query['where'] = new \MongoCode($p['where']);
 		}
 		elseif (
 			is_object($p['where'])
@@ -493,7 +493,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 
 		if (is_string($p['where'])) {
-			$query['where'] = new MongoCode($p['where']);
+			$query['where'] = new \MongoCode($p['where']);
 		}
 		elseif (
 			is_object($p['where'])
@@ -537,7 +537,7 @@ class MongoClientAsync extends NetworkClient {
 			$p['db'] = $this->dbname;
 		}
 
-		$query = ['$eval' => new MongoCode($code)];
+		$query = ['$eval' => new \MongoCode($code)];
 
 		$packet = pack('V', $p['opts'])
 				. $p['db'] . '.$cmd' . "\x00"
@@ -629,7 +629,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 
 		if (is_string($p['reduce'])) {
-			$p['reduce'] = new MongoCode($p['reduce']);
+			$p['reduce'] = new \MongoCode($p['reduce']);
 		}
 
 		if (strpos($p['col'], '.') === false) {
@@ -661,7 +661,7 @@ class MongoClientAsync extends NetworkClient {
 
 		if (isset($p[$k = 'finalize'])) {
 			if (is_string($p[$k])) {
-				$p[$k] = new MongoCode($p[$k]);
+				$p[$k] = new \MongoCode($p[$k]);
 			}
 
 			$query['group'][$k] = $p[$k];
@@ -697,7 +697,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 
 		if (is_string($cond)) {
-			$cond = new MongoCode($cond);
+			$cond = new \MongoCode($cond);
 		}
 
 		if ($flags) {
@@ -756,7 +756,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 
 		if (!isset($doc['_id'])) {
-			$doc['_id'] = new MongoId();
+			$doc['_id'] = new \MongoId();
 		}
 
 		$reqId = $this->request(self::OP_INSERT,
@@ -801,7 +801,7 @@ class MongoClientAsync extends NetworkClient {
 
 		foreach ($docs as &$doc) {
 			if (!isset($doc['_id'])) {
-				$doc['_id'] = new MongoId();
+				$doc['_id'] = new \MongoId();
 			}
 
 			$bson .= bson_encode($doc);
@@ -835,7 +835,7 @@ class MongoClientAsync extends NetworkClient {
 		}
 
 		if (is_string($cond)) {
-			$cond = new MongoCode($cond);
+			$cond = new \MongoCode($cond);
 		}
 
 		$this->request(self::OP_DELETE,

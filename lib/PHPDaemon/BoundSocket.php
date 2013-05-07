@@ -218,7 +218,7 @@ abstract class BoundSocket {
 	 * @return void
 	 */
 	protected function initSSLContext() {
-		if (!EventUtil::sslRandPoll()) {
+		if (!\EventUtil::sslRandPoll()) {
 			Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
 			$this->errorneous = true;
 			return;
@@ -233,19 +233,19 @@ abstract class BoundSocket {
 			return;
 		}
 		$params = [
-			EventSslContext::OPT_LOCAL_CERT        => $this->certfile,
-			EventSslContext::OPT_LOCAL_PK          => $this->pkfile,
-			EventSslContext::OPT_PASSPHRASE        => $this->passphrase,
-			EventSslContext::OPT_VERIFY_PEER       => $this->verifypeer,
-			EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
+			\EventSslContext::OPT_LOCAL_CERT        => $this->certfile,
+			\EventSslContext::OPT_LOCAL_PK          => $this->pkfile,
+			\EventSslContext::OPT_PASSPHRASE        => $this->passphrase,
+			\EventSslContext::OPT_VERIFY_PEER       => $this->verifypeer,
+			\EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
 		];
 		if ($this->verifydepth !== null) {
-			$params[EventSslContext::OPT_VERIFY_DEPTH] = $this->verifydepth;
+			$params[\EventSslContext::OPT_VERIFY_DEPTH] = $this->verifydepth;
 		}
 		if ($this->cafile !== null) {
-			$params[EventSslContext::OPT_CA_FILE] = $this->cafile;
+			$params[\EventSslContext::OPT_CA_FILE] = $this->cafile;
 		}
-		$this->ctx = new EventSslContext(EventSslContext::SSLv3_SERVER_METHOD, $params);
+		$this->ctx = new \EventSslContext(\EventSslContext::SSLv3_SERVER_METHOD, $params);
 	}
 
 	/**
@@ -287,11 +287,11 @@ abstract class BoundSocket {
 		}
 		$this->enabled = true;
 		if ($this->ev === null) {
-			$this->ev = new EventListener(
+			$this->ev = new \EventListener(
 				Daemon::$process->eventBase,
 				[$this, 'onAcceptEv'],
 				null,
-				EventListener::OPT_CLOSE_ON_FREE | EventListener::OPT_REUSEABLE,
+				\EventListener::OPT_CLOSE_ON_FREE | \EventListener::OPT_REUSEABLE,
 				-1,
 				$this->fd
 			);
@@ -302,7 +302,7 @@ abstract class BoundSocket {
 		}
 	}
 
-	public function onAcceptEv(EventListener $listener, $fd, $addrPort, $ctx) {
+	public function onAcceptEv(\EventListener $listener, $fd, $addrPort, $ctx) {
 		$class = $this->pool->connectionClass;
 		$conn  = new $class(null, $this->pool);
 		$conn->setParentSocket($this);
@@ -312,7 +312,7 @@ abstract class BoundSocket {
 		}
 
 		if ($this->ctx) {
-			$conn->setContext($this->ctx, EventBufferEvent::SSL_ACCEPTING);
+			$conn->setContext($this->ctx, \EventBufferEvent::SSL_ACCEPTING);
 		}
 
 		$conn->setFd($fd);
@@ -327,10 +327,10 @@ abstract class BoundSocket {
 			return;
 		}
 		$this->enabled = false;
-		if ($this->ev instanceof Event) {
+		if ($this->ev instanceof \Event) {
 			$this->ev->del();
 		}
-		elseif ($this->ev instanceof EventListener) {
+		elseif ($this->ev instanceof \EventListener) {
 			$this->ev->disable();
 		}
 	}

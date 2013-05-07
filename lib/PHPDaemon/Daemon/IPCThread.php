@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\AppInstance;
 use PHPDaemon\Daemon;
 use PHPDaemon\FileWatcher;
 use PHPDaemon\FS;

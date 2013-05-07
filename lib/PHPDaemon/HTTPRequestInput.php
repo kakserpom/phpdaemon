@@ -241,7 +241,7 @@ class HTTPRequestInput extends \EventBuffer {
 			$this->curPartDisp = false;
 			$i                 = 0;
 			do {
-				$l = $this->readline(EventBuffer::EOL_CRLF);
+				$l = $this->readline(\EventBuffer::EOL_CRLF);
 				if ($l === null) {
 					return;
 				}

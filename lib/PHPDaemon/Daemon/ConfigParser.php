@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
+
 /**
  * Config parser
  *
@@ -287,7 +290,7 @@ class ConfigParser {
 								}
 							}
 							elseif (sizeof($this->state) > 1) {
-								$scope->{$name}           = new Daemon_ConfigEntry();
+								$scope->{$name}           = new ConfigEntry();
 								$scope->{$name}->source   = 'config';
 								$scope->{$name}->revision = $this->revision;
 								$scope->{$name}->setValue($value);
@@ -335,7 +338,7 @@ class ConfigParser {
 	 */
 	protected function purgeScope($scope) {
 		foreach ($scope as $name => $obj) {
-			if ($obj instanceof Daemon_ConfigEntry) {
+			if ($obj instanceof ConfigEntry) {
 				if ($obj->source === 'config' && ($obj->revision < $this->revision)) {
 					if (!$obj->resetToDefault()) {
 						unset($scope->{$name});

@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\Daemon;
 use PHPDaemon\EventHandlers;
 use PHPDaemon\Timer;
 use PHPDaemon\XMLStream;

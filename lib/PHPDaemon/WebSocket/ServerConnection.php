@@ -3,6 +3,8 @@ namespace PHPDaemon\WebSocket;
 
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
+use PHPDaemon\HTTPRequest;
+use PHPDaemon\Servers\FlashPolicyServer;
 
 class ServerConnection extends Connection {
 

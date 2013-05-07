@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Daemon;
 
+use PHPDaemon\Daemon;
+
 /**
  * Config class
  *

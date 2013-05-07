@@ -1,6 +1,10 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
+use PHPDaemon\StackCallbacks;
+
 class PostgreSQLClient extends NetworkClient {
 	/**
 	 * Setting default config options
@@ -166,7 +170,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 		}
 		else {
 			if (!$this->onConnected) {
-				$this->onConnected = new StackCallbacks;
+				$this->onConnected = new StackCallbacks();
 			}
 			$this->onConnected->push($cb);
 		}

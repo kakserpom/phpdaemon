@@ -180,13 +180,13 @@ abstract class IOStream {
 		}
 
 		if ($this->EOL === "\n") {
-			$this->EOLS = EventBuffer::EOL_LF;
+			$this->EOLS = \EventBuffer::EOL_LF;
 		}
 		elseif ($this->EOL === "\r\n") {
-			$this->EOLS = EventBuffer::EOL_CRLF;
+			$this->EOLS = \EventBuffer::EOL_CRLF;
 		}
 		else {
-			$this->EOLS = EventBuffer::EOL_ANY;
+			$this->EOLS = \EventBuffer::EOL_ANY;
 		}
 
 		$this->onWriteOnce = new StackCallbacks;
@@ -269,11 +269,11 @@ abstract class IOStream {
 			$this->alive = true;
 		}
 		else {
-			$flags = !is_resource($this->fd) ? EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
-			$flags |= EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
+			$flags = !is_resource($this->fd) ? \EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
+			$flags |= \EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
 			if ($this->ctx) {
-				if ($this->ctx instanceof EventSslContext) {
-					$this->bev = EventBufferEvent::sslSocket(Daemon::$process->eventBase, $this->fd, $this->ctx, $this->ctxMode, $flags);
+				if ($this->ctx instanceof \EventSslContext) {
+					$this->bev = \EventBufferEvent::sslSocket(Daemon::$process->eventBase, $this->fd, $this->ctx, $this->ctxMode, $flags);
 					if ($this->bev) {
 						$this->bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
 					}
@@ -285,7 +285,7 @@ abstract class IOStream {
 				}
 			}
 			else {
-				$this->bev = new EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
+				$this->bev = new \EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
 			}
 			if (!$this->bev) {
 				return;
@@ -305,11 +305,11 @@ abstract class IOStream {
 			$this->finish();
 			return;
 		}
-		if (!$this->bev->enable(Event::READ | Event::WRITE | Event::TIMEOUT | Event::PERSIST)) {
+		if (!$this->bev->enable(\Event::READ | \Event::WRITE | \Event::TIMEOUT | \Event::PERSIST)) {
 			$this->finish();
 			return;
 		}
-		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
+		$this->bev->setWatermark(\Event::READ, $this->lowMark, $this->highMark);
 		init:
 		if ($this->keepalive) {
 			$this->setKeepalive(true);
@@ -364,7 +364,7 @@ abstract class IOStream {
 		if ($high != null) {
 			$this->highMark = $high;
 		}
-		$this->bev->setWatermark(Event::READ, $this->lowMark, $this->highMark);
+		$this->bev->setWatermark(\Event::READ, $this->lowMark, $this->highMark);
 	}
 
 	/**
@@ -824,18 +824,18 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function onStateEv($bev, $events) {
-		if ($events & EventBufferEvent::CONNECTED) {
+		if ($events & \EventBufferEvent::CONNECTED) {
 			$this->onWriteEv($bev);
 		}
-		elseif ($events & (EventBufferEvent::ERROR | EventBufferEvent::EOF)) {
+		elseif ($events & (\EventBufferEvent::ERROR | \EventBufferEvent::EOF)) {
 			try {
 				if ($this->finished) {
 					return;
 				}
-				if ($events & EventBufferEvent::ERROR) {
-					$errno = EventUtil::getLastSocketErrno();
+				if ($events & \EventBufferEvent::ERROR) {
+					$errno = \EventUtil::getLastSocketErrno();
 					if ($errno !== 0) {
-						$this->log('Socket error #' . $errno . ':' . EventUtil::getLastSocketError());
+						$this->log('Socket error #' . $errno . ':' . \EventUtil::getLastSocketError());
 					}
 					if ($this->ssl && $this->bev) {
 						while ($err = $this->bev->sslError()) {
@@ -858,7 +858,7 @@ abstract class IOStream {
 	 * @param integer     Max. number of bytes to move
 	 * @return integer
 	 */
-	public function moveToBuffer(EventBuffer $dest, $n) {
+	public function moveToBuffer(\EventBuffer $dest, $n) {
 		if (!isset($this->bev)) {
 			return false;
 		}
@@ -871,7 +871,7 @@ abstract class IOStream {
 	 * @param integer     Max. number of bytes to move
 	 * @return integer
 	 */
-	public function writeFromBuffer(EventBuffer $src, $n) {
+	public function writeFromBuffer(\EventBuffer $src, $n) {
 		if (!isset($this->bev)) {
 			return false;
 		}

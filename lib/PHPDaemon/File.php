@@ -622,7 +622,7 @@ class File {
 	 * @return resource
 	 */
 	public function seek($offset, $cb, $pri = EIO_PRI_DEFAULT) {
-		if (!EIO::$supported) {
+		if (!\EIO::$supported) {
 			fseek($this->fd, $offset);
 			return false;
 		}
@@ -634,7 +634,7 @@ class File {
 	 * @return integer
 	 */
 	public function tell() {
-		if (EIO::$supported) {
+		if (\EIO::$supported) {
 			return $this->offset;
 		}
 		return ftell($this->fd);
