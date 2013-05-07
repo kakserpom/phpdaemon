@@ -4,8 +4,8 @@ namespace PHPDaemon;
 use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\FileSystem;
-use PHPDaemon\ShmEntity;
 use PHPDaemon\Terminal;
+use PHPDaemon\Utils\ShmEntity;
 
 /**
  * Bootstrap for PHPDaemon

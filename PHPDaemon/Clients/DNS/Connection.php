@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Clients\DNS;
 
-use PHPDaemon\Binary;
 use PHPDaemon\Clients\DNS\Pool;
 use PHPDaemon\Clients\NetworkClientConnection;
+use PHPDaemon\Utils\Binary;
 
 /**
  * @package    NetworkClients

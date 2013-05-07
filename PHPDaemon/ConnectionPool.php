@@ -1,6 +1,12 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Structures\ObjectStorage;
+use PHPDaemon\Structures\ObjectStorage;
+use PHPDaemon\Structures\ObjectStorage;
+use PHPDaemon\Structures\ObjectStorage;
+use PHPDaemon\Structures\ObjectStorage;
+
 /**
  * Pool of connections
  *

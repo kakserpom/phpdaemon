@@ -1,10 +1,10 @@
 <?php
 namespace PHPDaemon\Clients\ICMP;
 
-use PHPDaemon\Binary;
 use PHPDaemon\CallbackWrapper;
 use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\Daemon;
+use PHPDaemon\Utils\Binary;
 
 /**
  * @package    Applications

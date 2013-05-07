@@ -2,7 +2,7 @@
 namespace PHPDaemon\Clients\IRC;
 
 use PHPDaemon\IRC;
-use PHPDaemon\ObjectStorage;
+use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Traits\EventHandlers;
 
 /**

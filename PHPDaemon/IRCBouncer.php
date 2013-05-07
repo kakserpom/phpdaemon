@@ -4,6 +4,7 @@ namespace PHPDaemon;
 use PHPDaemon\Clients\IRC\Pool;
 use PHPDaemon\Clients\MongoClientAsync;
 use PHPDaemon\NetworkServer;
+use PHPDaemon\Structures\ObjectStorage;
 
 class IRCBouncer extends NetworkServer {
 	public $client;

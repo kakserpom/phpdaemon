@@ -1,8 +1,8 @@
 <?php
 namespace PHPDaemon\WebSocket;
 
-use PHPDaemon\Binary;
 use PHPDaemon\Daemon;
+use PHPDaemon\Utils\Binary;
 
 /**
  * Websocket protocol 13

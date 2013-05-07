@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
-use PHPDaemon\ObjectStorage;
+use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Structures\PriorityQueueCallbacks;
 
 /**

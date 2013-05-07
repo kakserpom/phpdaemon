@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
-use PHPDaemon\Binary;
+use PHPDaemon\Utils\Binary;
 use PHPDaemon\Utils\Encoding;
 
 /**

@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Structures;
 
 class ObjectStorage extends \SplObjectStorage {
 
