@@ -3,8 +3,8 @@ namespace PHPDaemon\Clients\MySQL;
 
 use PHPDaemon\Clients\MySQL\ConnectionFinished;
 use PHPDaemon\Clients\MySQL\Pool;
-use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\Daemon;
+use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Utils\Binary;
 

@@ -3,9 +3,9 @@ namespace PHPDaemon\Clients\DNS;
 
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Clients\Hostname;
-use PHPDaemon\Clients\NetworkClient;
 use PHPDaemon\ComplexJob;
 use PHPDaemon\FS\FileSystem;
+use PHPDaemon\NetworkClient;
 
 class Pool extends NetworkClient {
 	/**

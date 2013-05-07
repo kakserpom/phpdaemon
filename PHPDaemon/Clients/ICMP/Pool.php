@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\ICMP;
 
-use PHPDaemon\Clients\NetworkClient;
+use PHPDaemon\NetworkClient;
 
 class Pool extends NetworkClient {
 

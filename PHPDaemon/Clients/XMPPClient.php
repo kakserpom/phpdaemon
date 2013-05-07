@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\NetworkClient;
+
 /**
  * @package    NetworkClients
  * @subpackage XMPPClient

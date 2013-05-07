@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Redis;
+
+use PHPDaemon\NetworkClientConnection;
 
 /**
  * @package    NetworkClients
@@ -8,7 +10,7 @@ namespace PHPDaemon\Clients;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class RedisClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 
 	/**
 	 * Current result

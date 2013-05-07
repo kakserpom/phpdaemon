@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Clients\IRC;
 
-use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\Daemon;
 use PHPDaemon\IRC;
+use PHPDaemon\NetworkClientConnection;
 
 /**
  * @package    NetworkClients

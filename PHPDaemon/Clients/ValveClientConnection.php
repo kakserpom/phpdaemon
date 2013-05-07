@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
+use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Utils\Binary;
 use PHPDaemon\Utils\Encoding;
 

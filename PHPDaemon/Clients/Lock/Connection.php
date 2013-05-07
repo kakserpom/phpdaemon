@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients\Lock;
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
 
-class Connection extends \PHPDaemon\Clients\NetworkClientConnection {
+class Connection extends \PHPDaemon\NetworkClientConnection {
 
 	/**
 	 * Called when new data received

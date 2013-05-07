@@ -1,6 +1,7 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon;
 
+use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Structures\PriorityQueueCallbacks;
 
@@ -11,7 +12,7 @@ use PHPDaemon\Structures\PriorityQueueCallbacks;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class NetworkClient extends \PHPDaemon\ConnectionPool {
+abstract class NetworkClient extends ConnectionPool {
 
 	protected $servers = array(); // Array of servers 
 	protected $dtags_enabled = false; // Enables tags for distribution

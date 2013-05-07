@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon;
 
 use PHPDaemon\Structures\StackCallbacks;
 
@@ -10,7 +10,7 @@ use PHPDaemon\Structures\StackCallbacks;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class NetworkClientConnection extends \PHPDaemon\Connection {
+class NetworkClientConnection extends Connection {
 
 	/**
 	 * Busy?

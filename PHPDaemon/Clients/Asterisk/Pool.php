@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\Asterisk;
 
-use PHPDaemon\Clients\NetworkClient;
+use PHPDaemon\NetworkClient;
 
 class Pool extends NetworkClient {
 

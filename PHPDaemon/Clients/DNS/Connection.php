@@ -2,7 +2,7 @@
 namespace PHPDaemon\Clients\DNS;
 
 use PHPDaemon\Clients\DNS\Pool;
-use PHPDaemon\Clients\NetworkClientConnection;
+use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Utils\Binary;
 
 /**

@@ -16,7 +16,7 @@ class ExampleWithRedis extends \PHPDaemon\AppInstance {
 	 * @return void
 	 */
 	public function onReady() {
-		$redis = \PHPDaemon\Clients\RedisClient::getInstance();
+		$redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
 		/*$redis->subscribe('testchannel', function($redis) {
 			\PHPDaemon\Daemon::log(\PHPDaemon\Debug::dump($redis->result));
 			
@@ -52,7 +52,7 @@ class ExampleWithRedisRequest extends Generic {
 
 		});
 
-		$redis = \PHPDaemon\Clients\RedisClient::getInstance();
+		$redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
 		$redis->lpush('mylist', microtime(true)); // just pushing something
 
 		$job('testquery', function ($name, $job) use ($redis) { // registering job named 'testquery'

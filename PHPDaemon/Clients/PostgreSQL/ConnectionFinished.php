@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\PostgreSQL;
 
 /**
  * @package    lib
@@ -7,5 +7,5 @@ namespace PHPDaemon\Clients;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class PostgreSQLClientSessionFinished extends \Exception {
+class ConnectionFinished extends \Exception {
 }

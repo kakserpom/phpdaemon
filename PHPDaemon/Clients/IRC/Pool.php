@@ -7,7 +7,7 @@ namespace PHPDaemon\Clients\IRC;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Pool extends \PHPDaemon\Clients\NetworkClient {
+class Pool extends \PHPDaemon\NetworkClient {
 	public $identd;
 	public $protologging = false;
 

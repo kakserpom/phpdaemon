@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\MySQL;
 
-use PHPDaemon\Clients\NetworkClient;
+use PHPDaemon\NetworkClient;
 
 /**
  * @package    Network clients

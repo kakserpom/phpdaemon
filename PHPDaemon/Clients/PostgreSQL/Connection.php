@@ -3,29 +3,10 @@ namespace PHPDaemon\Clients;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
+use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
 
-class PostgreSQLClient extends NetworkClient {
-	/**
-	 * Setting default config options
-	 * Overriden from AppInstance::getConfigDefaults
-	 * @return array|bool
-	 */
-	protected function getConfigDefaults() {
-		return [
-			// default server
-			'server'       => 'pg://root@127.0.0.1',
-			// default port
-			'port'         => 5432,
-			// @todo add description
-			'protologging' => 0,
-			// disabled by default
-			'enable'       => 0
-		];
-	}
-}
-
-class PostgreSQLClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 	/**
 	 * URL
 	 * @var string
@@ -162,10 +143,10 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	 * @return void
 	 */
 	public function onConnected($cb) {
-		if ($this->state == self::STATE_AUTH_ERROR) {
+		if ($this->state == PostgreSQL\self::STATE_AUTH_ERROR) {
 			call_user_func($cb, $this, false);
 		}
-		elseif ($this->state === self::STATE_AUTH_OK) {
+		elseif ($this->state === PostgreSQL\self::STATE_AUTH_OK) {
 			call_user_func($cb, $this, true);
 		}
 		else {
@@ -379,7 +360,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 	 * @return boolean Success
 	 */
 	public function command($cmd, $q = '', $cb = NULL) {
-		if ($this->state !== self::STATE_AUTH_OK) {
+		if ($this->state !== PostgreSQL\self::STATE_AUTH_OK) {
 			return FALSE;
 		}
 
@@ -448,7 +429,7 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 					Daemon::log(__CLASS__ . ': auth. ok.');
 				}
 
-				$this->state = self::STATE_AUTH_OK;
+				$this->state = PostgreSQL\self::STATE_AUTH_OK;
 
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, TRUE);
@@ -457,36 +438,36 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 			elseif ($authType === 2) {
 				// KerberosV5
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: KerberosV5.');
-				$this->state = self::STATE_AUTH_ERROR; // Auth. error
+				$this->state = PostgreSQL\self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 			elseif ($authType === 3) {
 				// Cleartext
 				$this->sendPacket('p', $this->password); // Password Message
-				$this->state = self::STATE_AUTH_PACKET_SENT;
+				$this->state = PostgreSQL\self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 4) {
 				// Crypt
 				$salt = binarySubstr($packet, 4, 2);
 				$this->sendPacket('p', crypt($this->password, $salt)); // Password Message
-				$this->state = self::STATE_AUTH_PACKET_SENT;
+				$this->state = PostgreSQL\self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 5) {
 				// MD5
 				$salt = binarySubstr($packet, 4, 4);
 				$this->sendPacket('p', 'md5' . md5(md5($this->password . $this->user) . $salt)); // Password Message
-				$this->state = self::STATE_AUTH_PACKET_SENT;
+				$this->state = PostgreSQL\self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 6) {
 				// SCM
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: SCM.');
-				$this->state = self::STATE_AUTH_ERROR; // Auth. error
+				$this->state = PostgreSQL\self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 			elseif ($authType == 9) {
 				// GSS
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: GSS.');
-				$this->state = self::STATE_AUTH_ERROR; // Auth. error
+				$this->state = PostgreSQL\self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 		}
@@ -593,13 +574,13 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 			$this->errno  = -1;
 			$this->errmsg = $message;
 
-			if ($this->state == self::STATE_AUTH_PACKET_SENT) {
+			if ($this->state == PostgreSQL\self::STATE_AUTH_PACKET_SENT) {
 				// Auth. error
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, FALSE);
 				}
 
-				$this->state = self::STATE_AUTH_ERROR;
+				$this->state = PostgreSQL\self::STATE_AUTH_ERROR;
 			}
 
 			$this->onError();
@@ -706,9 +687,9 @@ class PostgreSQLClientConnection extends NetworkClientConnection {
 		$this->resultRows   = [];
 		$this->resultFields = [];
 
-		if ($this->state === self::STATE_AUTH_PACKET_SENT) {
+		if ($this->state === PostgreSQL\self::STATE_AUTH_PACKET_SENT) {
 			// in case of auth error
-			$this->state = self::STATE_AUTH_ERROR;
+			$this->state = PostgreSQL\self::STATE_AUTH_ERROR;
 			$this->finish();
 		}
 

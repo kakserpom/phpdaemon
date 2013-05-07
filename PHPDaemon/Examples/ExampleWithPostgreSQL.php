@@ -36,7 +36,7 @@ class ExampleWithPostgreSQLRequest extends Generic {
 	 */
 	public function init() {
 		$req = $this;
-		\PHPDaemon\Clients\PostgreSQLClient::getInstance()->getConnection(function ($sql) use ($req) {
+		\PHPDaemon\Clients\PostgreSQL\Pool::getInstance()->getConnection(function ($sql) use ($req) {
 			if (!$sql->connected) { // failed to connect
 				$req->wakeup(); // wake up the request immediately
 				$sql->release();

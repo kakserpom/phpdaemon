@@ -2,6 +2,7 @@
 namespace PHPDaemon\Clients;
 
 use PHPDaemon\Daemon;
+use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Timer;
 use PHPDaemon\Traits\EventHandlers;
 use PHPDaemon\XMLStream\XMLStream;

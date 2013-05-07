@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients\Mongo;
 use PHPDaemon\Clients\Mongo\Collection;
 use PHPDaemon\Clients\Mongo\Connection;
 use PHPDaemon\Clients\Mongo\ConnectionFinished;
-use PHPDaemon\Clients\NetworkClient;
+use PHPDaemon\NetworkClient;
 
 class Pool extends NetworkClient {
 	public $noSAF = true;

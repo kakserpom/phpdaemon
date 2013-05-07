@@ -3,8 +3,8 @@ namespace PHPDaemon\Clients\Mongo;
 
 use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Clients\Mongo\Pool;
-use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\Daemon;
+use PHPDaemon\NetworkClientConnection;
 
 class Connection extends NetworkClientConnection {
 	public $url; // url

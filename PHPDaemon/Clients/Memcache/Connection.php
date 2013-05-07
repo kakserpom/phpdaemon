@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\Memcache;
 
-use PHPDaemon\Clients\NetworkClientConnection;
+use PHPDaemon\NetworkClientConnection;
 
 /**
  * @package    Network clients
