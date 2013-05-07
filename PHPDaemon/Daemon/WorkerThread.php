@@ -5,7 +5,7 @@ use PHPDaemon\AppInstance;
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\FS\FS;
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Thread;
 use PHPDaemon\Timer;
@@ -241,7 +241,7 @@ class WorkerThread extends Thread {
 			runkit_function_rename('header', 'header_native');
 
 			function header() {
-				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
 					return false;
 				}
 				return call_user_func_array([Daemon::$req, 'header'], func_get_args());
@@ -250,7 +250,7 @@ class WorkerThread extends Thread {
 			runkit_function_rename('is_uploaded_file', 'is_uploaded_file_native');
 
 			function is_uploaded_file() {
-				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
 					return false;
 				}
 				return call_user_func_array([Daemon::$req, 'isUploadedFile'], func_get_args());
@@ -259,7 +259,7 @@ class WorkerThread extends Thread {
 			runkit_function_rename('move_uploaded_file', 'move_uploaded_file_native');
 
 			function move_uploaded_file() {
-				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
 					return false;
 				}
 				return call_user_func_array([Daemon::$req, 'moveUploadedFile'], func_get_args());
@@ -268,7 +268,7 @@ class WorkerThread extends Thread {
 			runkit_function_rename('headers_sent', 'headers_sent_native');
 
 			function headers_sent(&$file, &$line) {
-				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
 					return false;
 				}
 				return Daemon::$req->headers_sent($file, $line);
@@ -277,7 +277,7 @@ class WorkerThread extends Thread {
 			runkit_function_rename('headers_list', 'headers_list_native');
 
 			function headers_list() {
-				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
 					return false;
 				}
 				return Daemon::$req->headers_list();
@@ -286,7 +286,7 @@ class WorkerThread extends Thread {
 			runkit_function_rename('setcookie', 'setcookie_native');
 
 			function setcookie() {
-				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
 					return false;
 				}
 				return call_user_func_array([Daemon::$req, 'setcookie'], func_get_args());
@@ -295,7 +295,7 @@ class WorkerThread extends Thread {
 			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
 
 			function register_shutdown_function($cb) {
-				if (!Daemon::$req || !Daemon::$req instanceof HTTPRequest) {
+				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
 					return false;
 				}
 				return Daemon::$req->registerShutdownFunction($cb);

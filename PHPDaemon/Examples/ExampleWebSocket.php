@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest;
+namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
 /**
  * @package    Examples
  * @subpackage WebSocket
@@ -52,7 +52,7 @@ class ExampleWebSocketRoute extends WebSocketRoute {
 
 
 
-class ExampleWebSocketTestPageRequest extends HTTPRequest {
+class ExampleWebSocketTestPageRequest extends Generic {
 
 /**
  * Called when request iterated.

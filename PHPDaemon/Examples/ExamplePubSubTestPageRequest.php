@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;class ExamplePubSubTestPageRequest extends HTTPRequest {
+use PHPDaemon\HTTPRequest\Generic;class ExamplePubSubTestPageRequest extends Generic {
 
 /**
  * Called when request iterated.

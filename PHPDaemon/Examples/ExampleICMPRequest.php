@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;use PHPDaemon\HTTPRequest;class ExampleICMPRequest extends HTTPRequest {
+use PHPDaemon\HTTPRequest\Generic;use PHPDaemon\HTTPRequest\Generic;class ExampleICMPRequest extends Generic {
 /**
  * Constructor.
  * @return void

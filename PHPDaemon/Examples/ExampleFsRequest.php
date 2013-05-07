@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
-class ExampleFsRequest extends HTTPRequest {
+class ExampleFsRequest extends Generic {
 
 	public function init() {
 		$req = $this;

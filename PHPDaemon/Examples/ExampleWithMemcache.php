@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest;
+namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
 /**
  * @package    Examples
  * @subpackage Memcache
@@ -19,7 +19,7 @@ class ExampleWithMemcache extends \PHPDaemon\AppInstance {
 
 }
 
-class ExampleWithMemcacheRequest extends HTTPRequest {
+class ExampleWithMemcacheRequest extends Generic {
 
 public $job;
 

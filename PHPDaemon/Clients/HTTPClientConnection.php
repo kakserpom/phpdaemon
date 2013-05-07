@@ -2,7 +2,7 @@
 namespace PHPDaemon\Clients;
 
 use PHPDaemon\Daemon;
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
 /**
  * @package    NetworkClients
@@ -167,7 +167,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 				$e = explode(': ', rtrim($line));
 
 				if (isset($e[1])) {
-					$this->headers['HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr))] = $e[1];
+					$this->headers['HTTP_' . strtoupper(strtr($e[0], Generic::$htr))] = $e[1];
 				}
 			}
 		}

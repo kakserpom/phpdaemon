@@ -4,8 +4,8 @@ namespace PHPDaemon\Servers;
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\FS;
-use PHPDaemon\HTTPRequest;
-use PHPDaemon\HTTPRequestInput;
+use PHPDaemon\HTTPRequest\Generic;
+use PHPDaemon\HTTPRequest\Input;
 use PHPDaemon\Request\Generic;
 
 /**
@@ -105,7 +105,7 @@ class HTTPServerConnection extends Connection {
 			}
 			$e = explode(': ', $l);
 			if (isset($e[1])) {
-				$this->currentHeader                            = 'HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr));
+				$this->currentHeader                            = 'HTTP_' . strtoupper(strtr($e[0], Generic::$htr));
 				$this->req->attrs->server[$this->currentHeader] = $e[1];
 			}
 			elseif (($e[0][0] === "\t" || $e[0][0] === "\x20") && $this->currentHeader) {
@@ -137,7 +137,7 @@ class HTTPServerConnection extends Connection {
 		$req->attrs->session     = null;
 		$req->attrs->paramsDone  = false;
 		$req->attrs->inputDone   = false;
-		$req->attrs->input       = new HTTPRequestInput();
+		$req->attrs->input       = new Input();
 		$req->attrs->inputReaded = 0;
 		$req->attrs->chunked     = false;
 		$req->upstream           = $this;

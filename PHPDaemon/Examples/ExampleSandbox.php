@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
 /**
  * @package    Examples
@@ -49,7 +49,7 @@ class ExampleSandbox extends \PHPDaemon\AppInstance {
 
 }
 
-class ExampleSandboxRequest extends HTTPRequest {
+class ExampleSandboxRequest extends Generic {
 
 	/**
 	 * Called when request iterated.

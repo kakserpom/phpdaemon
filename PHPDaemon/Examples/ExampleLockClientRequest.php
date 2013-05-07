@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
 /**
  * @package    Examples
@@ -9,7 +9,7 @@ use PHPDaemon\HTTPRequest;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleLockClientRequest extends HTTPRequest {
+class ExampleLockClientRequest extends Generic {
 	public $started = false;
 
 	/**

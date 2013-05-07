@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
-class ExampleAsyncProcessRequest extends HTTPRequest {
+class ExampleAsyncProcessRequest extends Generic {
 
 	public $proc;
 

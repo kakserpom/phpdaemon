@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest;
+namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
 /**
  * @package    Examples
  * @subpackage MySQL
@@ -30,7 +30,7 @@ class ExampleWithMySQL extends \PHPDaemon\AppInstance {
 
 }
 
-class ExampleWithMySQLRequest extends HTTPRequest {
+class ExampleWithMySQLRequest extends Generic {
 
 public $job;
 

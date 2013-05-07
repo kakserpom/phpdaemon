@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
-class ExampleDNSClientRequest extends HTTPRequest {
+class ExampleDNSClientRequest extends Generic {
 
 	public $job;
 

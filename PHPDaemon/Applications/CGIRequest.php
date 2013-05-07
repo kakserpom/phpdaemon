@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Applications;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
 /**
  * @package    Applications
@@ -9,7 +9,7 @@ use PHPDaemon\HTTPRequest;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class CGIRequest extends HTTPRequest {
+class CGIRequest extends Generic {
 
 	public $terminateOnAbort = false;
 	public $proc;

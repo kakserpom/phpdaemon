@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
 /**
  * @package    Examples
@@ -23,7 +23,7 @@ class ExampleWithPostgreSQL extends \PHPDaemon\AppInstance {
 
 }
 
-class ExampleWithPostgreSQLRequest extends HTTPRequest {
+class ExampleWithPostgreSQLRequest extends Generic {
 
 	public $stime;
 	public $queryResult;

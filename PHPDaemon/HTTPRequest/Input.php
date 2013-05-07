@@ -1,8 +1,9 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\HTTPRequest;
 
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
 use PHPDaemon\FS\File;
-use PHPDaemon\Request\Generic;
 
 /**
  * HTTP request input buffer
@@ -11,7 +12,7 @@ use PHPDaemon\Request\Generic;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class HTTPRequestInput extends \EventBuffer {
+class Input extends \EventBuffer {
 
 	/**
 	 * Boundary
@@ -147,7 +148,7 @@ class HTTPRequestInput extends \EventBuffer {
 		if (($l = $this->length) > 0) {
 			$this->req->attrs->raw = $this->read($l);
 			if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
-				HTTPRequest::parse_str($this->req->attrs->raw, $this->req->attrs->post);
+				Generic::parse_str($this->req->attrs->raw, $this->req->attrs->post);
 				unset($this->req->attrs->raw);
 			}
 		}
@@ -253,12 +254,12 @@ class HTTPRequestInput extends \EventBuffer {
 				}
 
 				$e    = explode(':', $l, 2);
-				$e[0] = strtr(strtoupper($e[0]), HTTPRequest::$htr);
+				$e[0] = strtr(strtoupper($e[0]), Generic::$htr);
 				if (isset($e[1])) {
 					$e[1] = ltrim($e[1]);
 				}
 				if (($e[0] === 'CONTENT_DISPOSITION') && isset($e[1])) {
-					HTTPRequest::parse_str($e[1], $this->curPartDisp, true);
+					Generic::parse_str($e[1], $this->curPartDisp, true);
 					if (!isset($this->curPartDisp['form-data'])) {
 						break;
 					}

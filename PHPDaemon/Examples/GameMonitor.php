@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest;
+namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
 /**
  * @package GameMonitor
  *
@@ -181,7 +181,7 @@ class GameMonitor extends \PHPDaemon\AppInstance {
 	}
 }
 
-class GameMonitorHTTPRequest extends HTTPRequest {
+class GameMonitorHTTPRequest extends Generic {
 
 /**
  * Constructor.

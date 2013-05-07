@@ -3,7 +3,7 @@
 
 namespace PHPDaemon\Applications;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
 /**
  * @package    Applications
@@ -11,7 +11,7 @@ use PHPDaemon\HTTPRequest;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ServerStatusRequest extends HTTPRequest {
+class ServerStatusRequest extends Generic {
 
 	/**
 	 * Called when request iterated.

@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
-class ExampleRequest extends HTTPRequest
+class ExampleRequest extends Generic
 {
 /**
  * Called when request iterated.

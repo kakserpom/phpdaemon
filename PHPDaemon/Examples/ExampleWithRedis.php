@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 
 /**
  * @package    Examples
@@ -35,7 +35,7 @@ class ExampleWithRedis extends \PHPDaemon\AppInstance {
 
 }
 
-class ExampleWithRedisRequest extends HTTPRequest {
+class ExampleWithRedisRequest extends Generic {
 
 	public $job;
 

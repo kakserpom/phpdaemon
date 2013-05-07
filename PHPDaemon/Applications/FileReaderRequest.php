@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Applications;
 
-use PHPDaemon\Daemon;use PHPDaemon\HTTPRequest;class FileReaderRequest extends HTTPRequest {
+use PHPDaemon\Daemon;use PHPDaemon\HTTPRequest\Generic;class FileReaderRequest extends Generic {
 
 public $stream;
 public $job;

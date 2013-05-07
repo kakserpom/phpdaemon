@@ -3,7 +3,7 @@ namespace PHPDaemon\WebSocket;
 
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
-use PHPDaemon\HTTPRequest;
+use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Servers\FlashPolicyServer;
 
 class ServerConnection extends Connection {
@@ -285,7 +285,7 @@ class ServerConnection extends Connection {
 			}
 			$e = explode(': ', $l);
 			if (isset($e[1])) {
-				$this->currentHeader                = 'HTTP_' . strtoupper(strtr($e[0], HTTPRequest::$htr));
+				$this->currentHeader                = 'HTTP_' . strtoupper(strtr($e[0], Generic::$htr));
 				$this->server[$this->currentHeader] = $e[1];
 			}
 			elseif (($e[0][0] === "\t" || $e[0][0] === "\x20") && $this->currentHeader) {
@@ -386,7 +386,7 @@ class ServerConnection extends Connection {
 			return false;
 		}
 		if (isset($this->server['HTTP_COOKIE'])) {
-			HTTPRequest::parse_str(strtr($this->server['HTTP_COOKIE'], HTTPRequest::$hvaltr), $this->cookie);
+			Generic::parse_str(strtr($this->server['HTTP_COOKIE'], Generic::$hvaltr), $this->cookie);
 		}
 		// ----------------------------------------------------------
 		// Protocol discovery, based on HTTP headers...

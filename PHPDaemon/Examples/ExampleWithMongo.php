@@ -32,7 +32,7 @@ class ExampleWithMongo extends \PHPDaemon\AppInstance {
 
 }
 
-class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest {
+class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest\Generic {
 
 	public $job;
 

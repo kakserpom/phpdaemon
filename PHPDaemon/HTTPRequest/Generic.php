@@ -1,9 +1,10 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\HTTPRequest;
 
+use PHPDaemon\Daemon;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FS;
-use PHPDaemon\Request\Generic;
+use PHPDaemon\MIME;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Servers\HTTPServerConnection;
 
@@ -14,7 +15,7 @@ use PHPDaemon\Servers\HTTPServerConnection;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class HTTPRequest extends Generic {
+abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Status codes
@@ -621,7 +622,7 @@ class HTTPRequest extends Generic {
 			}
 		}
 
-		$k = strtr(strtoupper($e[0]), HTTPRequest::$htr);
+		$k = strtr(strtoupper($e[0]), Generic::$htr);
 
 		if ($k === 'CONTENT_TYPE') {
 			self::parse_str(strtolower($e[1]), $ctype, true);
@@ -843,7 +844,7 @@ class HTTPRequest extends Generic {
 			};
 		}
 		if ($header) {
-			$s = strtr($s, HTTPRequest::$hvaltr);
+			$s = strtr($s, Generic::$hvaltr);
 		}
 		if (
 			(stripos($s, '%u') !== false)
