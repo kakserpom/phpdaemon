@@ -1,5 +1,10 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\BoundSocket;
+
+use PHPDaemon\BoundSocket\BoundUNIXSocket;
+use PHPDaemon\ConnectionPool;
+use PHPDaemon\Daemon;
+use PHPDaemon\FS;
 
 /**
  * BoundSocket

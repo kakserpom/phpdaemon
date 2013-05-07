@@ -1,5 +1,10 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\BoundSocket;
+
+use PHPDaemon\BoundSocket\BoundSocket;
+use PHPDaemon\Daemon;
+use PHPDaemon\Debug;
+use PHPDaemon\Timer;
 
 /**
  * BoundUDPSocket

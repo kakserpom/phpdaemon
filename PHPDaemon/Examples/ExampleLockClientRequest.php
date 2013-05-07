@@ -1,4 +1,7 @@
 <?php
+namespace PHPDaemon\Examples;
+
+use PHPDaemon\HTTPRequest;
 
 /**
  * @package    Examples
@@ -6,18 +9,6 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleLockClient extends \PHPDaemon\AppInstance {
-	/**
-	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
-	 * @return object Request.
-	 */
-	public function beginRequest($req, $upstream) {
-		return new ExampleLockClientRequest($this, $upstream, $req);
-	}
-}
-
 class ExampleLockClientRequest extends HTTPRequest {
 	public $started = false;
 

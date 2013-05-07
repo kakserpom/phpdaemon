@@ -1,6 +1,12 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\BoundSocket\BoundSocket;
+use PHPDaemon\BoundSocket\BoundSocket;
+use PHPDaemon\BoundSocket\BoundTCPSocket;
+use PHPDaemon\BoundSocket\BoundUDPSocket;
+use PHPDaemon\BoundSocket\BoundUNIXSocket;
+
 /**
  * Pool of connections
  *

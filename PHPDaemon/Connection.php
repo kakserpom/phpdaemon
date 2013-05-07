@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\BoundSocket\BoundSocket;
+use PHPDaemon\BoundSocket\BoundTCPSocket;
 use PHPDaemon\Clients\DNSClient;
 
 /**
