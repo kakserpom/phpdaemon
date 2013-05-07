@@ -3,7 +3,6 @@ namespace PHPDaemon;
 
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FS;
-use PHPDaemon\FS\FS;
 
 /**
  * Daemon "namespace"
