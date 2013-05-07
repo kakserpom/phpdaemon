@@ -1,5 +1,5 @@
 <?php
-
+namespace PHPDaemon\Examples;
 /**
  * @package    Examples
  * @subpackage WebSocket

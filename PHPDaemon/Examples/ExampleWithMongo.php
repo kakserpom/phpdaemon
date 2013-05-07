@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Examples;
 
 /**
  * @package    Examples
@@ -31,7 +32,7 @@ class ExampleWithMongo extends \PHPDaemon\AppInstance {
 
 }
 
-class ExampleWithMongoRequest extends HTTPRequest {
+class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest {
 
 	public $job;
 
@@ -72,7 +73,7 @@ class ExampleWithMongoRequest extends HTTPRequest {
 	public function run() {
 		try {
 			$this->header('Content-Type: text/html');
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 		}
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

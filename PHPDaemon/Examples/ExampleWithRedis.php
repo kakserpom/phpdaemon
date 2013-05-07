@@ -1,4 +1,7 @@
 <?php
+namespace PHPDaemon\Examples;
+
+use PHPDaemon\HTTPRequest;
 
 /**
  * @package    Examples
@@ -73,7 +76,7 @@ class ExampleWithRedisRequest extends HTTPRequest {
 	public function run() {
 		try {
 			$this->header('Content-Type: text/html');
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 		}
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

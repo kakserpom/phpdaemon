@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-class ExamplePubSubWebSocketRoute extends ExampleWebSocketRoute {
+class ExamplePubSubWebSocketRoute extends \ExampleWebSocketRoute {
 
 	/**
 	 * Called when new frame received.

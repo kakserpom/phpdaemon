@@ -1,5 +1,5 @@
 <?php
-
+namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest;
 /**
  * @package GameMonitor
  *
@@ -30,7 +30,7 @@ class GameMonitor extends \PHPDaemon\AppInstance {
 	public function init() {
 		if ($this->isEnabled()) {
 			$this->client  = \PHPDaemon\Clients\ValveClient::getInstance();
-			$this->db      = MongoClient::getInstance();
+			$this->db      = \MongoClient::getInstance();
 			$this->servers = $this->db->{$this->config->dbname->value . '.servers'};
 		}
 	}
@@ -74,7 +74,7 @@ class GameMonitor extends \PHPDaemon\AppInstance {
 			}
 			try {
 				$app->servers->upsert(['_id' => $server['_id']], ['$set' => $set]);
-			} catch (MongoException $e) {
+			} catch (\MongoException $e) {
 				\PHPDaemon\Daemon::uncaughtExceptionHandler($e);
 				$app->servers->upsert(['_id' => $server['_id']], ['$set' => array('atime' => time())]);
 			}

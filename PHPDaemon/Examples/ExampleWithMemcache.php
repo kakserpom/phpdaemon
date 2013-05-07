@@ -1,5 +1,5 @@
 <?php
-
+namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest;
 /**
  * @package    Examples
  * @subpackage Memcache
