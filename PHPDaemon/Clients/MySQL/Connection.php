@@ -1,11 +1,14 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\MySQL;
 
+use PHPDaemon\Clients\MySQL\ConnectionFinished;
+use PHPDaemon\Clients\MySQL\Pool;
+use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\Daemon;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Utils\Binary;
 
-class MySQLClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 
 	/**
 	 * Sequence
@@ -270,15 +273,15 @@ class MySQLClientConnection extends NetworkClientConnection {
 			}
 		});
 		$this->clientFlags =
-				MySQLClient::CLIENT_LONG_PASSWORD |
-						MySQLClient::CLIENT_LONG_FLAG |
-						MySQLClient::CLIENT_LOCAL_FILES |
-						MySQLClient::CLIENT_PROTOCOL_41 |
-						MySQLClient::CLIENT_INTERACTIVE |
-						MySQLClient::CLIENT_TRANSACTIONS |
-						MySQLClient::CLIENT_SECURE_CONNECTION |
-						MySQLClient::CLIENT_MULTI_STATEMENTS |
-						MySQLClient::CLIENT_MULTI_RESULTS;
+				Pool::CLIENT_LONG_PASSWORD |
+						Pool::CLIENT_LONG_FLAG |
+						Pool::CLIENT_LOCAL_FILES |
+						Pool::CLIENT_PROTOCOL_41 |
+						Pool::CLIENT_INTERACTIVE |
+						Pool::CLIENT_TRANSACTIONS |
+						Pool::CLIENT_SECURE_CONNECTION |
+						Pool::CLIENT_MULTI_STATEMENTS |
+						Pool::CLIENT_MULTI_RESULTS;
 
 		$this->sendPacket(
 			$packet = pack('VVc', $this->clientFlags, $this->maxPacketSize, $this->charsetNumber)
@@ -298,7 +301,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * @return boolean Success
 	 */
 	public function query($q, $callback = NULL) {
-		return $this->command(MySQLClient::COM_QUERY, $q, $callback);
+		return $this->command(Pool::COM_QUERY, $q, $callback);
 	}
 
 	/**
@@ -307,7 +310,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 * @return boolean Success
 	 */
 	public function ping($callback = NULL) {
-		return $this->command(MySQLClient::COM_PING, '', $callback);
+		return $this->command(Pool::COM_PING, '', $callback);
 	}
 
 	/**
@@ -320,7 +323,7 @@ class MySQLClientConnection extends NetworkClientConnection {
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {
 		if ($this->finished) {
-			throw new MySQLClientConnectionFinished;
+			throw new ConnectionFinished;
 		}
 
 		if ($this->phase !== self::PHASE_HANDSHAKED) {

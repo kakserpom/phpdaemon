@@ -15,7 +15,7 @@ class ExampleWithMySQL extends \PHPDaemon\AppInstance {
 	 */
 
 	public function onReady() {
-		$this->sql = \PHPDaemon\Clients\MySQLClient::getInstance();
+		$this->sql = \PHPDaemon\Clients\MySQL\Pool::getInstance();
 	}
 
 	/**

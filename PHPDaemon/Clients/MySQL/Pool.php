@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\MySQL;
+
+use PHPDaemon\Clients\NetworkClient;
 
 /**
  * @package    Network clients
@@ -7,7 +9,7 @@ namespace PHPDaemon\Clients;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class MySQLClient extends NetworkClient {
+class Pool extends NetworkClient {
 
 	const CLIENT_LONG_PASSWORD = 1; // new more secure passwords
 	const CLIENT_FOUND_ROWS = 2; // Found instead of affected rows

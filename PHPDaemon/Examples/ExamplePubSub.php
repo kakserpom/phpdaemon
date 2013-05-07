@@ -14,7 +14,7 @@ class ExamplePubSub extends \PHPDaemon\AppInstance {
 		\PHPDaemon\Servers\Websocket\Pool::getInstance()->addRoute('ExamplePubSub', function ($client) use ($appInstance) {
 			return new ExamplePubSubWebSocketRoute($client, $appInstance);
 		});
-		$this->sql    = \PHPDaemon\Clients\MySQLClient::getInstance();
+		$this->sql    = \PHPDaemon\Clients\MySQL\Pool::getInstance();
 		$this->pubsub = new \PHPDaemon\PubSub\PubSub();
 		$this->pubsub->addEvent('usersNum', \PHPDaemon\PubSub\PubSubEvent::init()
 												  ->onActivation(function ($pubsub) use ($appInstance) {
