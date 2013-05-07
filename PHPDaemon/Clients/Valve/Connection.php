@@ -1,6 +1,9 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Valve;
 
+use PHPDaemon\Clients\Data;
+use PHPDaemon\Clients\Type;
+use PHPDaemon\Clients\Valve\Pool;
 use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Utils\Binary;
 use PHPDaemon\Utils\Encoding;
@@ -11,7 +14,7 @@ use PHPDaemon\Utils\Encoding;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ValveClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 	public $timeout = 1;
 
 	/**
@@ -48,21 +51,21 @@ class ValveClientConnection extends NetworkClientConnection {
 	public function request($type, $data = null, $cb = null) {
 		$packet = "\xFF\xFF\xFF\xFF";
 		if ($type === 'ping') {
-			$packet .= ValveClient::A2A_PING;
+			$packet .= Pool::A2A_PING;
 		}
 		elseif ($type === 'challenge') {
 			//$packet .= ValveClient::A2S_SERVERQUERY_GETCHALLENGE;
-			$packet .= ValveClient::A2S_PLAYER . "\xFF\xFF\xFF\xFF";
+			$packet .= Pool::A2S_PLAYER . "\xFF\xFF\xFF\xFF";
 		}
 		elseif ($type === 'info') {
-			$packet .= ValveClient::A2S_INFO . "Source Engine Query\x00";
+			$packet .= Pool::A2S_INFO . "Source Engine Query\x00";
 			//"\xFF\xFF\xFF\xFFdetails\x00"
 		}
 		elseif ($type === 'players') {
 			if ($data === null) {
 				$data = "\xFF\xFF\xFF\xFF";
 			}
-			$packet .= ValveClient::A2S_PLAYER . $data;
+			$packet .= Pool::A2S_PLAYER . $data;
 		}
 		else {
 			return null;
@@ -90,17 +93,17 @@ class ValveClientConnection extends NetworkClientConnection {
 			return;
 		}
 		$type = Binary::getChar($pct);
-		if (($type === ValveClient::S2A_INFO) || ($type === ValveClient::S2A_INFO_SOURCE)) {
+		if (($type === Pool::S2A_INFO) || ($type === Pool::S2A_INFO_SOURCE)) {
 			$result = self::parseInfo($pct, $type);
 		}
-		elseif ($type === ValveClient::S2A_PLAYER) {
+		elseif ($type === Pool::S2A_PLAYER) {
 			$result = self::parsePlayers($pct);
 		}
-		elseif ($type === ValveClient::S2A_SERVERQUERY_GETCHALLENGE) {
+		elseif ($type === Pool::S2A_SERVERQUERY_GETCHALLENGE) {
 			$result = binarySubstr($pct, 0, 4);
 			$pct    = binarySubstr($pct, 5);
 		}
-		elseif ($type === ValveClient::S2A_PONG) {
+		elseif ($type === Pool::S2A_PONG) {
 			$result = true;
 		}
 		else {
@@ -150,7 +153,7 @@ class ValveClientConnection extends NetworkClientConnection {
 	 */
 	public static function parseInfo(&$st, $type) {
 		$info = [];
-		if ($type === ValveClient::S2A_INFO) {
+		if ($type === Pool::S2A_INFO) {
 			$info['proto']      = Binary::getByte($st);
 			$info['hostname']   = Binary::getString($st);
 			$info['map']        = Binary::getString($st);
@@ -165,7 +168,7 @@ class ValveClientConnection extends NetworkClientConnection {
 			$info['passworded'] = Binary::getByte($st);
 			$info['secure']     = Binary::getByte($st);
 		}
-		elseif ($type === ValveClient::S2A_INFO_SOURCE) {
+		elseif ($type === Pool::S2A_INFO_SOURCE) {
 			$info['srvaddress'] = Binary::getString($st);
 			$info['hostname']   = Binary::getString($st);
 			$info['map']        = Binary::getString($st);

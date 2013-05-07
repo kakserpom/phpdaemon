@@ -29,7 +29,7 @@ class GameMonitor extends \PHPDaemon\AppInstance {
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->client  = \PHPDaemon\Clients\ValveClient::getInstance();
+			$this->client  = \PHPDaemon\Clients\Valve\Pool::getInstance();
 			$this->db      = \MongoClient::getInstance();
 			$this->servers = $this->db->{$this->config->dbname->value . '.servers'};
 		}

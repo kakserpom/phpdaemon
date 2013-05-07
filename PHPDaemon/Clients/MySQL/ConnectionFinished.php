@@ -1,5 +1,5 @@
 <?php
 namespace PHPDaemon\Clients\MySQL;
 
-class ConnectionFinished extends \Exception {
+class ConnectionFinished extends \PHPDaemon\Exceptions\ConnectionFinished {
 }

@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\XMPP;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\NetworkClientConnection;
@@ -14,7 +14,7 @@ use PHPDaemon\XMPPRoster;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class XMPPClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 	use \PHPDaemon\Traits\EventHandlers;
 
 	public $use_encryption = false;

@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\XMPP;
 
 use PHPDaemon\NetworkClient;
 
@@ -9,7 +9,7 @@ use PHPDaemon\NetworkClient;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class XMPPClient extends NetworkClient {
+class Pool extends NetworkClient {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults

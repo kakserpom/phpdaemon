@@ -30,7 +30,7 @@ class ExampleJabberbot extends \PHPDaemon\AppInstance {
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->xmppclient = \PHPDaemon\Clients\XMPPClient::getInstance();
+			$this->xmppclient = \PHPDaemon\Clients\XMPP\Pool::getInstance();
 		}
 	}
 

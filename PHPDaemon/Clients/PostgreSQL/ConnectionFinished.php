@@ -7,5 +7,5 @@ namespace PHPDaemon\Clients\PostgreSQL;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ConnectionFinished extends \Exception {
+class ConnectionFinished extends \PHPDaemon\Exceptions\ConnectionFinished {
 }
