@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon;
 
-use PHPDaemon\NetworkServer;
-
 class DebugConsole extends NetworkServer {
 	/**
 	 * Setting default config options
