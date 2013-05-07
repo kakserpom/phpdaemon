@@ -3,7 +3,6 @@ namespace PHPDaemon\Servers\FastCGI;
 
 use PHPDaemon\Daemon\ConfigEntrySize;
 use PHPDaemon\Daemon\ConfigEntryTime;
-use PHPDaemon\NetworkServer;
 
 /**
  * @package    NetworkServers
@@ -11,7 +10,7 @@ use PHPDaemon\NetworkServer;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class FastCGIServer extends NetworkServer {
+class Pool extends \PHPDaemon\NetworkServer {
 
 	/* Variables order
 	 * @var string "GPC"
