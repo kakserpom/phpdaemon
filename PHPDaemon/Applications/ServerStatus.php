@@ -1,4 +1,5 @@
 <?php
+namespace PHPDaemon\Applications;
 
 /**
  * @package    Applications
