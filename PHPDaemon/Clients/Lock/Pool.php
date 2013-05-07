@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Lock;
 
 /**
  * @package    Applications
@@ -7,7 +7,7 @@ namespace PHPDaemon\Clients;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class LockClient extends NetworkClient {
+class Pool extends \PHPDaemon\Clients\NetworkClient {
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults

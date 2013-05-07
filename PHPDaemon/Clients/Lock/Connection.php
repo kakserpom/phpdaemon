@@ -1,10 +1,10 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Lock;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
 
-class LockClientConnection extends NetworkClientConnection {
+class Connection extends \PHPDaemon\Clients\NetworkClientConnection {
 
 	/**
 	 * Called when new data received
