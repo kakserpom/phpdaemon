@@ -301,7 +301,7 @@ class Object implements \ArrayAccess {
 				$entry = new ConfigFile;
 			}
 			else {
-				$entry = new Entry\Entry;
+				$entry = new Entry\Generic;
 			}
 
 			$entry->setDefaultValue($value);
