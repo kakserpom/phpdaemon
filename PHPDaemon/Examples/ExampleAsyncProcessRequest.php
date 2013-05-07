@@ -14,7 +14,7 @@ class ExampleAsyncProcessRequest extends Generic {
 	public function init() {
 		$this->header('Content-Type: text/plain');
 
-		$this->proc = new \PHPDaemon\AsyncProcess();
+		$this->proc = new \PHPDaemon\Core\ShellCommand();
 		$this->proc->onReadData(function ($stream, $data) {
 			echo $data;
 		});

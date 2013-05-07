@@ -2,6 +2,7 @@
 namespace PHPDaemon;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Pool;
 use PHPDaemon\FS\File;
 use PHPDaemon\Structures\StackCallbacks;
 

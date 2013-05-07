@@ -21,7 +21,7 @@ class CGIRequest extends Generic {
 	public function init() {
 		$this->header('Content-Type: text/html'); // default header.
 
-		$this->proc                 = new \PHPDaemon\AsyncProcess();
+		$this->proc                 = new \PHPDaemon\Core\ShellCommand();
 		$this->proc->readPacketSize = $this->appInstance->readPacketSize;
 		$this->proc->onReadData(array($this, 'onReadData'));
 		$this->proc->onWrite(array($this, 'onWrite'));

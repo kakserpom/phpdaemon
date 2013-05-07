@@ -1,6 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Core;
 
+use PHPDaemon\ClassFinder;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 

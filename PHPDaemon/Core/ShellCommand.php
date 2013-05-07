@@ -1,8 +1,10 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Core;
 
+use PHPDaemon\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\File;
+use PHPDaemon\IOStream;
 
 /**
  * Process
@@ -11,7 +13,7 @@ use PHPDaemon\FS\File;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class AsyncProcess extends IOStream {
+class ShellCommand extends IOStream {
 
 	/**
 	 * Command string
