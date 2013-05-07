@@ -1,12 +1,12 @@
 <?php
 namespace PHPDaemon\Clients\XMPP;
 
+use PHPDaemon\Clients\XMPP\XMPPRoster;
 use PHPDaemon\Daemon;
 use PHPDaemon\NetworkClientConnection;
 use PHPDaemon\Timer;
 use PHPDaemon\Traits\EventHandlers;
 use PHPDaemon\XMLStream\XMLStream;
-use PHPDaemon\XMPPRoster;
 
 /**
  * @package    NetworkClients
