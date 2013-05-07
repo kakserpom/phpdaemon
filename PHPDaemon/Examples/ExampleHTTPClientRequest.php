@@ -1,0 +1,38 @@
+<?php
+namespace PHPDaemon\Examples;
+
+use PHPDaemon\HTTPRequest;
+
+class ExampleHTTPClientRequest extends HTTPRequest {
+
+	/**
+	 * Constructor.
+	 * @return void
+	 */
+	public function init() {
+
+		try {
+			$this->header('Content-Type: text/html');
+		} catch (\Exception $e) {
+		}
+
+		$this->appInstance->httpclient->post(
+			['https://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
+			function ($conn, $success) {
+				echo $conn->body;
+				\PHPDaemon\Daemon::$req->finish();
+			}
+		);
+
+		$this->sleep(5, true); // setting timeout
+	}
+
+	/**
+	 * Called when request iterated.
+	 * @return integer Status.
+	 */
+	public function run() {
+		echo 'Something went wrong.';
+	}
+
+}

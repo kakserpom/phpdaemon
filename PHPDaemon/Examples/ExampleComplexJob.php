@@ -1,4 +1,6 @@
 <?php
+namespace PHPDaemon\Examples;
+
 /*
  * All listeners will be called after async calling "foo", "bar", "baz" jobs.
  *

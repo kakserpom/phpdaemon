@@ -1,25 +1,7 @@
 <?php
+namespace PHPDaemon\Examples;
 
-/**
- * @package    Examples
- * @subpackage Base
- *
- * @author     Zorin Vasily <maintainer@daemon.io>
- */
-class ExampleICMP extends \PHPDaemon\AppInstance {
-	/**
-	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
-	 * @return object Request.
-	 */
-	public function beginRequest($req, $upstream) {
-		return new ExampleICMPRequest($this, $upstream, $req);
-	}
-}
-
-class ExampleICMPRequest extends HTTPRequest {
-
+use PHPDaemon\HTTPRequest;use PHPDaemon\HTTPRequest;class ExampleICMPRequest extends HTTPRequest {
 /**
  * Constructor.
  * @return void
