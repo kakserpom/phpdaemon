@@ -5,7 +5,6 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\HTTPRequest\Input;
-use PHPDaemon\Servers\FlashPolicy\Pool;
 
 /**
  * @package    NetworkServers
@@ -192,7 +191,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 				return;
 			}
 			if ($d) {
-				if (($FP = Pool::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
+				if (($FP = \PHPDaemon\Servers\FlashPolicy\Pool::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();

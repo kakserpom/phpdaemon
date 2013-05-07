@@ -346,7 +346,7 @@ class Worker extends Generic {
 		proc_nice(Daemon::$config->workerpriority->value);
 
 		register_shutdown_function(function () {
-			$this->shutdown();
+			$this->shutdown(true);
 		});
 
 		$this->setTitle(
