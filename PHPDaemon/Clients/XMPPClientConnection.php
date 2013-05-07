@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients;
 use PHPDaemon\Daemon;
 use PHPDaemon\EventHandlers;
 use PHPDaemon\Timer;
-use PHPDaemon\XMLStream;
+use PHPDaemon\XMLStream\XMLStream;
 use PHPDaemon\XMPPRoster;
 
 /**

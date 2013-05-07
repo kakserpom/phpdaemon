@@ -1,5 +1,8 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\XMLStream;
+
+use PHPDaemon\EventHandlers;
+use PHPDaemon\XMLStream\XMLStreamObject;
 
 class XMLStream {
 	use EventHandlers;
