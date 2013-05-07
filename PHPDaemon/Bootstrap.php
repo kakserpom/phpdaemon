@@ -1,12 +1,11 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon;
 
 use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\ShmEntity;
 use PHPDaemon\Terminal;
-use PHPDaemon\Thread;
 
 /**
  * Bootstrap for PHPDaemon
@@ -316,7 +315,7 @@ class Bootstrap {
 			$runmode === 'status'
 			|| $runmode === 'fullstatus'
 		) {
-			$status = Bootstrap::$pid && Thread::ifExistsByPid(Bootstrap::$pid);
+			$status = Bootstrap::$pid && Thread\Generic::ifExistsByPid(Bootstrap::$pid);
 			echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon::$config->pidfile->value . ").\n";
 
 			if (
@@ -424,14 +423,14 @@ class Bootstrap {
 			if ($ok) {
 				$i = 0;
 
-				while ($r = Thread::ifExistsByPid(Bootstrap::$pid)) {
+				while ($r = Thread\Generic::ifExistsByPid(Bootstrap::$pid)) {
 					usleep(500000);
 
 					if ($i == 9) {
 						echo "\nphpDaemon master-process hasn't finished. Sending SIGKILL... ";
 						posix_kill(Bootstrap::$pid, SIGKILL);
 						sleep(0.2);
-						if (!Thread::ifExistsByPid(Bootstrap::$pid)) {
+						if (!Thread\Generic::ifExistsByPid(Bootstrap::$pid)) {
 							echo " Oh, his blood is on my hands :'(";
 						}
 						else {
@@ -497,7 +496,7 @@ class Bootstrap {
 	public static function start() {
 		if (
 			Bootstrap::$pid
-			&& Thread::ifExistsByPid(Bootstrap::$pid)
+			&& Thread\Generic::ifExistsByPid(Bootstrap::$pid)
 		) {
 			Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Bootstrap::$pid . ')');
 			exit(6);
@@ -535,7 +534,7 @@ class Bootstrap {
 		) {
 			$i = 0;
 
-			while ($r = Thread::ifExistsByPid(Bootstrap::$pid)) {
+			while ($r = Thread\Generic::ifExistsByPid(Bootstrap::$pid)) {
 				usleep(10000);
 				++$i;
 			}

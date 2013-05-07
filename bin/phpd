@@ -29,7 +29,7 @@ ini_set('include_path', get_include_path()
 
 $autoloader = function ($classname) {
 	$subpath = str_replace('\\', '/', $classname) . '.php';
-	$e = explode(':', get_include_path());
+	$e       = explode(':', get_include_path());
 	foreach ($e as $path) {
 		if (file_exists($path . $subpath)) {
 			require $path . $subpath;
@@ -73,7 +73,7 @@ try {
 		$thread();
 	}
 	else {
-		\PHPDaemon\Daemon\Bootstrap::init(isset($configFile) ? $configFile : null);
+		PHPDaemon\Bootstrap::init(isset($configFile) ? $configFile : null);
 	}
 } catch (\PHPDaemon\ClearStackException $e) {
 	goto execute;

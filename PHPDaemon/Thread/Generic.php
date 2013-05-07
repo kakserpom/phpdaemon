@@ -1,5 +1,8 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Thread;
+
+use PHPDaemon\ClearStackException;
+use PHPDaemon\Daemon;
 
 /**
  * Thread
@@ -8,7 +11,7 @@ namespace PHPDaemon;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-abstract class Thread {
+abstract class Generic {
 
 	/**
 	 * Process identificator

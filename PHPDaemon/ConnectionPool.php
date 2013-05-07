@@ -107,7 +107,7 @@ abstract class ConnectionPool extends ObjectStorage {
 	 * @return void
 	 */
 	public function onConfigUpdated() {
-		if (Daemon::$process instanceof Daemon\WorkerThread) {
+		if (Daemon::$process instanceof Thread\Worker) {
 			if ($this->config === null) {
 				$this->disable();
 			}

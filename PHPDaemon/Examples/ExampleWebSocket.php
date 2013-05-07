@@ -30,7 +30,7 @@ class ExampleWebSocket extends \PHPDaemon\AppInstance {
 	}
 }
 
-class ExampleWebSocketRoute extends WebSocketRoute {
+class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 
 	/**
 	 * Called when new frame received.

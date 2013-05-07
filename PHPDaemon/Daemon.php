@@ -345,7 +345,7 @@ class Daemon {
 
 		$argv = isset($_SERVER['CMD_ARGV']) ? $_SERVER['CMD_ARGV'] : '';
 
-		$args = Daemon\Bootstrap::getArgs($argv);
+		$args = \PHPDaemon\Bootstrap::getArgs($argv);
 
 		if (isset($args[$k = 'configfile'])) {
 			Daemon::$config[$k] = $args[$k];
@@ -432,7 +432,7 @@ class Daemon {
 			if (isset(Daemon::$config->user->value)) {
 				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value); // @TODO: rewrite to async I/O
 			}
-			if ((Daemon::$process instanceof Daemon\WorkerThread) && FileSystem::$supported) {
+			if ((Daemon::$process instanceof Thread\Worker) && FileSystem::$supported) {
 				FileSystem::open(Daemon::$config->logstorage->value, 'a!', function ($file) {
 					Daemon::$logpointerAsync = $file;
 					if (!$file) {
@@ -477,7 +477,7 @@ class Daemon {
 						// reloaded (shutdown)
 						$code -= 100;
 						if ($code !== Daemon::WSTATE_SHUTDOWN) {
-							if (Daemon::$process instanceof Daemon\MasterThread) {
+							if (Daemon::$process instanceof Thread\Master) {
 								Daemon::$process->reloadWorker($offset + $i + 1);
 								++$stat['reloading'];
 								continue;
@@ -559,7 +559,7 @@ class Daemon {
 	 * @return boolean - success
 	 */
 	public static function spawnMaster() {
-		Daemon::$masters->push($thread = new Daemon\MasterThread);
+		Daemon::$masters->push($thread = new Thread\Master);
 		$thread->start();
 
 		if (-1 === $thread->getPid()) {
@@ -572,7 +572,7 @@ class Daemon {
 
 	public static function runWorker() {
 		Daemon::$runworkerMode = true;
-		$thread                = new Daemon\WorkerThread;
+		$thread                = new Thread\Worker;
 		$thread();
 	}
 

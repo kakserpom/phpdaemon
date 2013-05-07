@@ -37,7 +37,7 @@ class Pool extends NetworkServer {
 	 */
 	public function onConfigUpdated() {
 		parent::onConfigUpdated();
-		if (Daemon::$process instanceof Daemon\WorkerThread) {
+		if (Daemon::$process instanceof \PHPDaemon\Thread\Worker) {
 			$pool = $this;
 			FileSystem::readfile($this->config->file->value, function ($file, $data) use ($pool) {
 				$pool->policyData = $data;

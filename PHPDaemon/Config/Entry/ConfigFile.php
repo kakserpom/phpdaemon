@@ -3,7 +3,7 @@ namespace PHPDaemon\Config\Entry;
 
 use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\Daemon;
-use PHPDaemon\Daemon\MasterThread;
+use PHPDaemon\Thread\Master;
 
 /**
  * ConfigFile config entry
@@ -16,7 +16,7 @@ use PHPDaemon\Daemon\MasterThread;
 class ConfigFile extends Generic {
 
 	public function onUpdate($old) {
-		if (!Daemon::$process instanceof MasterThread || (Daemon::$config->autoreload->value === 0) || !$old) {
+		if (!Daemon::$process instanceof Master || (Daemon::$config->autoreload->value === 0) || !$old) {
 			return;
 		}
 

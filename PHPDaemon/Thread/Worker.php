@@ -1,13 +1,11 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Thread;
 
 use PHPDaemon\AppInstance;
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\FS\FileSystem;
-use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Thread;
 use PHPDaemon\Timer;
 
 /**
@@ -17,7 +15,7 @@ use PHPDaemon\Timer;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class WorkerThread extends Thread {
+class Worker extends Generic {
 
 	/**
 	 * Update?
@@ -127,7 +125,7 @@ class WorkerThread extends Thread {
 	 */
 	protected function run() {
 		$this->callbacks = new StackCallbacks();
-		if (Daemon::$process instanceof MasterThread) {
+		if (Daemon::$process instanceof Master) {
 			Daemon::$process->unregisterSignals();
 		}
 		if (Daemon::$process && Daemon::$process->eventBase) {
@@ -714,8 +712,8 @@ class WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function sigunknown($signo) {
-		if (isset(Thread::$signals[$signo])) {
-			$sig = Thread::$signals[$signo];
+		if (isset(Generic::$signals[$signo])) {
+			$sig = Generic::$signals[$signo];
 		}
 		else {
 			$sig = 'UNKNOWN';

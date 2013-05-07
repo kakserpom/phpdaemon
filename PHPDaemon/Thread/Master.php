@@ -1,10 +1,11 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Thread;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Thread;
+use PHPDaemon\Thread\Generic;
+use PHPDaemon\Thread\IPC;
 use PHPDaemon\ThreadCollection;
 use PHPDaemon\Timer;
 
@@ -15,7 +16,7 @@ use PHPDaemon\Timer;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class MasterThread extends Thread {
+class Master extends Generic {
 
 	public $delayedSigReg = true;
 	public $breakMainLoop = false;
@@ -225,7 +226,7 @@ class MasterThread extends Thread {
 		$n = (int)$n;
 
 		for ($i = 0; $i < $n; ++$i) {
-			$thread = new WorkerThread;
+			$thread = new Worker;
 			$this->workers->push($thread);
 			$this->callbacks->push(function ($self) use ($thread) {
 				$thread->start();
@@ -258,7 +259,7 @@ class MasterThread extends Thread {
 		if (FileSystem::$supported) {
 			eio_event_loop();
 		}
-		$thread = new IPCThread;
+		$thread = new IPC;
 		$this->ipcthreads->push($thread);
 
 		$this->callbacks->push(function ($self) use ($thread) {
@@ -434,8 +435,8 @@ class MasterThread extends Thread {
 	 * @return void
 	 */
 	protected function sigunknown($signo) {
-		if (isset(Thread::$signals[$signo])) {
-			$sig = Thread::$signals[$signo];
+		if (isset(Generic::$signals[$signo])) {
+			$sig = Generic::$signals[$signo];
 		}
 		else {
 			$sig = 'UNKNOWN';

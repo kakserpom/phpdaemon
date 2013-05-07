@@ -141,7 +141,7 @@ abstract class Generic {
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
-	public function run() { }
+	protected function run() { }
 
 	/**
 	 * Event handler of Request, called by Evtimer

@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Thread\Generic;
+
 /**
  * Collection of threads
  *
@@ -24,7 +26,7 @@ class ThreadCollection {
 
 	/**
 	 * Pushes certain thread to the collection
-	 * @param object Thread to push
+	 * @param object Generic to push
 	 * @return void
 	 */
 	public function push($thread) {

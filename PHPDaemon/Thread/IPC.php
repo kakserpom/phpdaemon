@@ -1,11 +1,10 @@
 <?php
-namespace PHPDaemon\Daemon;
+namespace PHPDaemon\Thread;
 
 use PHPDaemon\AppInstance;
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\FS\FileWatcher;
-use PHPDaemon\Thread;
 
 /**
  * Implementation of the IPC thread
@@ -15,7 +14,7 @@ use PHPDaemon\Thread;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 // @TODO: respawning IPCThread on unexpected failures
-class IPCThread extends Thread {
+class IPC extends Generic {
 	/**
 	 * Event base
 	 * @var EventBase
@@ -63,7 +62,7 @@ class IPCThread extends Thread {
 	 * @return void
 	 */
 	protected function run() {
-		if (Daemon::$process instanceof MasterThread) {
+		if (Daemon::$process instanceof Master) {
 			Daemon::$process->unregisterSignals();
 		}
 		if (Daemon::$process->eventBase) {
@@ -325,8 +324,8 @@ class IPCThread extends Thread {
 	 * @return void
 	 */
 	public function sigunknown($signo) {
-		if (isset(Thread::$signals[$signo])) {
-			$sig = Thread::$signals[$signo];
+		if (isset(Generic::$signals[$signo])) {
+			$sig = Generic::$signals[$signo];
 		}
 		else {
 			$sig = 'UNKNOWN';
