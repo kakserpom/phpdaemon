@@ -28,6 +28,7 @@ class Pool extends AppInstance {
 	protected function init() {
 		if ($this->isEnabled()) {
 			list ($class, $name) = explode(':', $this->name . ':');
+			$class = ClassFinder::find($class);
 			if (!class_exists($class)) {
 				Daemon::log($class . ' class not exists.');
 				return;
