@@ -3,7 +3,7 @@ namespace PHPDaemon\Clients;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
-use PHPDaemon\StackCallbacks;
+use PHPDaemon\Structures\StackCallbacks;
 
 class PostgreSQLClient extends NetworkClient {
 	/**

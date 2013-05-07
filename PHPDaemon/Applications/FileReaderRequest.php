@@ -22,21 +22,21 @@ public function init() {
 	});
 	$this->job = $job;
 	$this->sleep(5, true);
-	$this->attrs->server['FR_PATH'] = \PHPDaemon\FS::sanitizePath($this->attrs->server['FR_PATH']);
+	$this->attrs->server['FR_PATH'] = \PHPDaemon\FS\FS::sanitizePath($this->attrs->server['FR_PATH']);
 	$job('stat', function ($name, $job) {
-		\PHPDaemon\FS::stat($this->attrs->server['FR_PATH'], function ($path, $stat) use ($job) {
+		\PHPDaemon\FS\FS::stat($this->attrs->server['FR_PATH'], function ($path, $stat) use ($job) {
 			if ($stat === -1) {
 				$this->fileNotFound();
 				$job->setResult('stat', false);
 				return;
 			}
 			if ($stat['type'] === 'd') {
-				if (!\PHPDaemon\FS::$supported) {
+				if (!\PHPDaemon\FS\FS::$supported) {
 					$this->file(rtrim($path, '/') . '/index.html');
 				}
 				else {
 					$job('readdir', function ($name, $job) use ($path) {
-						\PHPDaemon\FS::readdir(rtrim($path, '/'), function ($path, $dir) use ($job) {
+						\PHPDaemon\FS\FS::readdir(rtrim($path, '/'), function ($path, $dir) use ($job) {
 							$found = false;
 							if (is_array($dir)) {
 								foreach ($dir['dents'] as $file) {
@@ -74,12 +74,12 @@ public function fileNotFound() {
 	try {
 		$this->header('404 Not Found');
 		$this->header('Content-Type: text/html');
-	} catch (\PHPDaemon\RequestHeadersAlreadySent $e) {
+	} catch (\PHPDaemon\Request\RequestHeadersAlreadySent $e) {
 	}
 	$this->out('File not found.');
 }
 public function file($path) {
-	if (!\PHPDaemon\FS::$supported) {
+	if (!\PHPDaemon\FS\FS::$supported) {
 		$this->out(file_get_contents(realpath($path)));
 		$this->wakeup();
 		return;

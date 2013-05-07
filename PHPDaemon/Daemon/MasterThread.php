@@ -2,8 +2,8 @@
 namespace PHPDaemon\Daemon;
 
 use PHPDaemon\Daemon;
-use PHPDaemon\FS;
-use PHPDaemon\StackCallbacks;
+use PHPDaemon\FS\FS;
+use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Thread;
 use PHPDaemon\ThreadCollection;
 use PHPDaemon\Timer;

@@ -4,9 +4,9 @@ namespace PHPDaemon\Daemon;
 use PHPDaemon\AppInstance;
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
-use PHPDaemon\FS;
+use PHPDaemon\FS\FS;
 use PHPDaemon\HTTPRequest;
-use PHPDaemon\StackCallbacks;
+use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Thread;
 use PHPDaemon\Timer;
 
@@ -117,7 +117,7 @@ class WorkerThread extends Thread {
 
 	/**
 	 * Stack of callbacks to execute
-	 * @var StackCallbacks
+	 * @var \PHPDaemon\Structures\StackCallbacks
 	 */
 	public $callbacks;
 

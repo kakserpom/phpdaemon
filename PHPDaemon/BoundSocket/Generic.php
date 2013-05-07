@@ -3,7 +3,7 @@ namespace PHPDaemon\BoundSocket;
 
 use PHPDaemon\ConnectionPool;
 use PHPDaemon\Daemon;
-use PHPDaemon\FS;
+use PHPDaemon\FS\FS;
 
 /**
  * Generic

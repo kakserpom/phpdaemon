@@ -14,7 +14,7 @@ public function run()
 try {
 	$this->header('Content-Type: text/html');
 	$this->setcookie('testcookie', '1');
-} catch (\PHPDaemon\RequestHeadersAlreadySent $e) {
+} catch (\PHPDaemon\Request\RequestHeadersAlreadySent $e) {
 }
 $this
 

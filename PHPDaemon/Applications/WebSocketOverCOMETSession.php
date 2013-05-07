@@ -15,7 +15,7 @@ class WebSocketOverCOMETSession {
 
 	public function __construct($route, $appInstance, $authKey) {
 		$this->polling     = new \SplStack();
-		$this->callbacks   = new \PHPDaemon\StackCallbacks();
+		$this->callbacks   = new \PHPDaemon\Structures\StackCallbacks();
 		$this->authKey     = $authKey;
 		$this->id          = ++$appInstance->sessCounter;
 		$this->appInstance = $appInstance;

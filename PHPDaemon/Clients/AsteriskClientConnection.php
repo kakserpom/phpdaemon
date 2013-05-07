@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients;
 use PHPDaemon\CallbackWrapper;
 use PHPDaemon\Daemon;
 use PHPDaemon\EventHandlers;
-use PHPDaemon\StackCallbacks;
+use PHPDaemon\Structures\StackCallbacks;
 
 /**
  * Asterisk Call Manager Connection.
