@@ -1,8 +1,9 @@
 <?php
-namespace PHPDaemon\WebSocket;
+namespace PHPDaemon\Servers;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\Servers\NetworkServer;
+use PHPDaemon\WebSocket\Route;
 
 class WebSocketServer extends NetworkServer {
 	public $routes = array();

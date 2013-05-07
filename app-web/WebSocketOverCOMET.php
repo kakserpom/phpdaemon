@@ -19,7 +19,7 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->WS = \PHPDaemon\WebSocket\WebSocketServer::getInstance();
+		$this->WS = \PHPDaemon\Servers\WebSocketServer::getInstance();
 	}
 
 	public function initSession($route, $req) {
@@ -88,7 +88,7 @@ class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
 		if (!isset($sess->downstream)) {
 			return;
 		}
-		$sess->downstream->onFrame($body, \PHPDaemon\WebSocket\WebSocketServer::STRING);
+		$sess->downstream->onFrame($body, \PHPDaemon\Servers\WebSocketServer::STRING);
 		\PHPDaemon\Timer::setTimeout($sess->finishTimer);
 	}
 

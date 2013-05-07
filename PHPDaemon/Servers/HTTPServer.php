@@ -3,7 +3,7 @@ namespace PHPDaemon\Servers;
 
 use PHPDaemon\Daemon\ConfigEntrySize;
 use PHPDaemon\Daemon\ConfigEntryTime;
-use PHPDaemon\WebSocket\WebSocketServer;
+use PHPDaemon\Servers\WebSocketServer;
 
 /**
  * @package    NetworkServer
