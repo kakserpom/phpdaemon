@@ -1,5 +1,8 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\BoundSocket;
+
+use PHPDaemon\BoundSocket\BoundSocket;
+use PHPDaemon\Daemon;
 
 /**
  * BoundTCPSocket
