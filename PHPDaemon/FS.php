@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Cache\CappedCacheStorage;
+use PHPDaemon\Cache\CappedCacheStorageHits;
+
 /**
  * FS
  *

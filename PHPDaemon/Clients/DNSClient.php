@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
-use PHPDaemon\CappedCacheStorageHits;
+use PHPDaemon\Cache\CappedCacheStorageHits;
 use PHPDaemon\ComplexJob;
 use PHPDaemon\FS;
 

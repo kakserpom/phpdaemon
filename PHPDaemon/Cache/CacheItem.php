@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Cache;
+
+use PHPDaemon\StackCallbacks;
 
 /**
  * CacheItem

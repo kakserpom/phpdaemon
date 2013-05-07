@@ -3,6 +3,8 @@ namespace PHPDaemon;
 
 use PHPDaemon\BoundSocket\Generic;
 use PHPDaemon\BoundSocket\TCP;
+use PHPDaemon\Cache\CappedCacheStorage;
+use PHPDaemon\Cache\CappedCacheStorageHits;
 use PHPDaemon\Clients\DNSClient;
 
 /**
