@@ -20,10 +20,16 @@ class ClassFinder {
 		if ($e[0] === '') {
 			return $class;
 		}
-		if (substr($class, -6) === 'Server') {
+		if ('Example' === substr($class, 7)) {
+			array_unshift($e, 'Examples');
+		}
+		if ('Server' === substr($class, -6)) {
 			array_unshift($e, 'Servers');
 		}
-		if (substr($class, -6) === 'Client') {
+		if ('Client' === substr($class, -6)) {
+			array_unshift($e, 'Clients');
+		}
+		if ('ClientAsync' === substr($class, -11)) {
 			array_unshift($e, 'Clients');
 		}
 		array_unshift($e, '\\' . Daemon::$config->defaultns->value);
