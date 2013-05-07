@@ -1,9 +1,9 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\IRC;
 
+use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\Daemon;
 use PHPDaemon\IRC;
-use PHPDaemon\Traits\EventHandlers;
 
 /**
  * @package    NetworkClients
@@ -11,7 +11,7 @@ use PHPDaemon\Traits\EventHandlers;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class IRCClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 	use \PHPDaemon\Traits\EventHandlers;
 
 	public $user = 'Guest'; // Username
@@ -175,7 +175,7 @@ class IRCClientConnection extends NetworkClientConnection {
 		elseif ($cmd === 'JOIN') {
 			list ($channel) = $args;
 			$chan = $this->channel($channel);
-			IRCClientChannelParticipant::instance($chan, $from['nick'])->setUsermask($from);
+			ChannelParticipant::instance($chan, $from['nick'])->setUsermask($from);
 		}
 		elseif ($cmd === 'NICK') {
 			list ($newNick) = $args;
@@ -232,7 +232,7 @@ class IRCClientConnection extends NetworkClientConnection {
 
 				foreach ($matches as $m) {
 					list(, $flag, $nickname) = $m;
-					IRCClientChannelParticipant::instance($chan, $nickname)->setFlag($flag);
+					ChannelParticipant::instance($chan, $nickname)->setFlag($flag);
 				}
 
 			}
@@ -244,7 +244,7 @@ class IRCClientConnection extends NetworkClientConnection {
 			list( /*$myNick*/, $channelName, $user, /*$host*/, $server, $nick, $mode, $hopCountRealName) = $args;
 			list ($hopCount, $realName) = explode("\x20", $hopCountRealName);
 			if ($channel = $this->channelIfExists($channelName)) {
-				IRCClientChannelParticipant::instance($channel, $nick)
+				ChannelParticipant::instance($channel, $nick)
 						->setUsermask($nick . '!' . $user . '@' . $server)
 						->setFlag($mode);
 			}
@@ -358,7 +358,7 @@ class IRCClientConnection extends NetworkClientConnection {
 		if (isset($this->channels[$chan])) {
 			return $this->channels[$chan];
 		}
-		return $this->channels[$chan] = new IRCClientChannel($this, $chan);
+		return $this->channels[$chan] = new Channel($this, $chan);
 	}
 
 	public function channelIfExists($chan) {

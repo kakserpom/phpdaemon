@@ -1,7 +1,10 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Asterisk;
 
 use PHPDaemon\CallbackWrapper;
+use PHPDaemon\Clients\Asterisk\ConnectionFinished;
+use PHPDaemon\Clients\Asterisk\Pool;
+use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\Daemon;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Traits\EventHandlers;
@@ -10,7 +13,7 @@ use PHPDaemon\Traits\EventHandlers;
  * Asterisk Call Manager Connection.
  *
  */
-class AsteriskClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 
 	use \PHPDaemon\Traits\EventHandlers;
 
@@ -178,7 +181,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 			}
 			else {
 				$this->instate = self::INPUT_STATE_PROCESSING;
-				list($header, $value) = AsteriskClient::extract($line);
+				list($header, $value) = Pool::extract($line);
 				$this->packets[$this->cnt][$header] = $value;
 			}
 
@@ -528,7 +531,7 @@ class AsteriskClientConnection extends NetworkClientConnection {
 	 */
 	protected function command($packet, $cb, $assertion = null) {
 		if ($this->finished) {
-			throw new AsteriskClientConnectionFinished;
+			throw new ConnectionFinished;
 		}
 
 		if ($this->state !== self::CONN_STATE_HANDSHAKED_OK) {

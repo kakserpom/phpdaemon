@@ -1,7 +1,9 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\HTTP;
 
-use PHPDaemon\Daemon;
+use PHPDaemon\Clients\HTTP\Pool;
+use PHPDaemon\Clients\HTTP\UploadFile;
+use PHPDaemon\Clients\NetworkClientConnection;
 use PHPDaemon\HTTPRequest\Generic;
 
 /**
@@ -10,7 +12,7 @@ use PHPDaemon\HTTPRequest\Generic;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class HTTPClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 
 	const STATE_HEADERS = 1;
 	const STATE_BODY    = 2;
@@ -31,7 +33,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			$prepared = HTTPClient::prepareUrl($url);
+			$prepared = Pool::prepareUrl($url);
 			if (!$prepared) {
 				if (isset($params['resultcb'])) {
 					call_user_func($params['resultcb'], false);
@@ -80,7 +82,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			$prepared = HTTPClient::prepareUrl($url);
+			$prepared = Pool::prepareUrl($url);
 			if (!$prepared) {
 				if (isset($params['resultcb'])) {
 					call_user_func($params['resultcb'], false);
@@ -104,7 +106,7 @@ class HTTPClientConnection extends NetworkClientConnection {
 			$this->writeln('Cookie: ' . http_build_query($this->cookie, '', '; '));
 		}
 		foreach ($data as $val) {
-			if (is_object($val) && $val instanceof HTTPClientUpload) {
+			if (is_object($val) && $val instanceof UploadFile) {
 				$params['contentType'] = 'multipart/form-data';
 			}
 		}

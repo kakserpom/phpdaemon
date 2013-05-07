@@ -1,7 +1,7 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\HTTP;
 
-class HTTPClientUpload {
+class UploadFile {
 	public $name;
 	public $data;
 	public $path;

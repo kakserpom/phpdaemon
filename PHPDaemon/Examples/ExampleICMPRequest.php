@@ -17,7 +17,7 @@ public function init() {
 
 	$job('pingjob', function ($name, $job) use ($req) { // registering job named 'pingjob'
 
-		\PHPDaemon\Clients\ICMPClient::getInstance()->sendPing('8.8.8.8', function ($latency) use ($name, $job) {
+		\PHPDaemon\Clients\ICMP\Pool::getInstance()->sendPing('8.8.8.8', function ($latency) use ($name, $job) {
 			$job->setResult($name, $latency);
 		});
 	});

@@ -21,13 +21,13 @@ class ExampleDNSClientRequest extends Generic {
 		});
 
 		$job('query', function ($name, $job) { // registering job named 'showvar'
-			\PHPDaemon\Clients\DNSClient::getInstance()->get('phpdaemon.net', function ($response) use ($name, $job) {
+			\PHPDaemon\Clients\DNS\Pool::getInstance()->get('phpdaemon.net', function ($response) use ($name, $job) {
 				$job->setResult($name, $response);
 			});
 		});
 
 		$job('resolve', function ($name, $job) { // registering job named 'showvar'
-			\PHPDaemon\Clients\DNSClient::getInstance()->resolve('phpdaemon.net', function ($ip) use ($name, $job) {
+			\PHPDaemon\Clients\DNS\Pool::getInstance()->resolve('phpdaemon.net', function ($ip) use ($name, $job) {
 				$job->setResult($name, array('phpdaemon.net resolved to' => $ip));
 			});
 		});

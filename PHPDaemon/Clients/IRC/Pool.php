@@ -1,7 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
-
-use PHPDaemon\Servers\Ident\Pool;
+namespace PHPDaemon\Clients\IRC;
 
 /**
  * @package    NetworkClients
@@ -9,7 +7,7 @@ use PHPDaemon\Servers\Ident\Pool;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class IRCClient extends NetworkClient {
+class Pool extends \PHPDaemon\Clients\NetworkClient {
 	public $identd;
 	public $protologging = false;
 
@@ -25,7 +23,7 @@ class IRCClient extends NetworkClient {
 	}
 
 	public function onReady() {
-		$this->identd = Pool::getInstance();
+		$this->identd = \PHPDaemon\Servers\Ident\Pool::getInstance();
 		parent::onReady();
 	}
 }

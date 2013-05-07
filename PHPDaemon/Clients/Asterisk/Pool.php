@@ -1,7 +1,9 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Asterisk;
 
-class AsteriskClient extends NetworkClient {
+use PHPDaemon\Clients\NetworkClient;
+
+class Pool extends NetworkClient {
 
 	/**
 	 * Asterisk Call Manager Interface versions for each session.

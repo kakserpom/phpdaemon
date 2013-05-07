@@ -1,7 +1,9 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\HTTP;
 
-class HTTPClient extends NetworkClient {
+use PHPDaemon\Clients\NetworkClient;
+
+class Pool extends NetworkClient {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults

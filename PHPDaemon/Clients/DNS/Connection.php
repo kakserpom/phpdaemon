@@ -1,7 +1,9 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\DNS;
 
 use PHPDaemon\Binary;
+use PHPDaemon\Clients\DNS\Pool;
+use PHPDaemon\Clients\NetworkClientConnection;
 
 /**
  * @package    NetworkClients
@@ -9,7 +11,7 @@ use PHPDaemon\Binary;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class DNSClientConnection extends NetworkClientConnection {
+class Connection extends NetworkClientConnection {
 
 	/**
 	 * Sequence
@@ -74,9 +76,9 @@ class DNSClientConnection extends NetworkClientConnection {
 		for ($i = 0; $i < $qdcount; ++$i) {
 			$name     = Binary::parseLabels($pct, $orig);
 			$typeInt  = Binary::getWord($pct);
-			$type     = isset(DNSClient::$type[$typeInt]) ? DNSClient::$type[$typeInt] : 'UNK(' . $typeInt . ')';
+			$type     = isset(Pool::$type[$typeInt]) ? Pool::$type[$typeInt] : 'UNK(' . $typeInt . ')';
 			$classInt = Binary::getWord($pct);
-			$class    = isset(DNSClient::$class[$classInt]) ? DNSClient::$class[$classInt] : 'UNK(' . $classInt . ')';
+			$class    = isset(Pool::$class[$classInt]) ? Pool::$class[$classInt] : 'UNK(' . $classInt . ')';
 			if (!isset($this->response[$type])) {
 				$this->response[$type] = [];
 			}
@@ -90,9 +92,9 @@ class DNSClientConnection extends NetworkClientConnection {
 		$getResRecord = function (&$pct) use ($orig) {
 			$name     = Binary::parseLabels($pct, $orig);
 			$typeInt  = Binary::getWord($pct);
-			$type     = isset(DNSClient::$type[$typeInt]) ? DNSClient::$type[$typeInt] : 'UNK(' . $typeInt . ')';
+			$type     = isset(Pool::$type[$typeInt]) ? Pool::$type[$typeInt] : 'UNK(' . $typeInt . ')';
 			$classInt = Binary::getWord($pct);
-			$class    = isset(DNSClient::$class[$classInt]) ? DNSClient::$class[$classInt] : 'UNK(' . $classInt . ')';
+			$class    = isset(Pool::$class[$classInt]) ? Pool::$class[$classInt] : 'UNK(' . $classInt . ')';
 			$ttl      = Binary::getDWord($pct);
 			$length   = Binary::getWord($pct);
 			$data     = binarySubstr($pct, 0, $length);
@@ -196,8 +198,8 @@ class DNSClientConnection extends NetworkClientConnection {
 		$qtype     = isset($e[1]) ? $e[1] : 'A';
 		$qclass    = isset($e[2]) ? $e[2] : 'IN';
 		$QD        = [];
-		$qtypeInt  = array_search($qtype, DNSClient::$type, true);
-		$qclassInt = array_search($qclass, DNSClient::$class, true);
+		$qtypeInt  = array_search($qtype, Pool::$type, true);
+		$qclassInt = array_search($qclass, Pool::$class, true);
 		if (($qtypeInt === false) || ($qclassInt === false)) {
 			call_user_func($cb, false);
 			return;

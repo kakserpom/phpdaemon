@@ -1,9 +1,9 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\IRC;
 
 use PHPDaemon\IRC;
 
-class IRCClientChannelParticipant {
+class ChannelParticipant {
 	public $channel;
 	public $nick;
 	public $user;

@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\Asterisk;
 
 /**
  * Driver for Asterisk Call Manager/1.1
@@ -12,5 +12,5 @@ namespace PHPDaemon\Clients;
  * @author     TyShkan <denis@tyshkan.ru> (2.0)
  * @author     Zorin Vasily <maintainer@daemon.io> (2.0)
  */
-class AsteriskClientConnectionFinished extends \Exception {
+class ConnectionFinished extends \Exception {
 }

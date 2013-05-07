@@ -2,7 +2,7 @@
 namespace PHPDaemon\Examples;
 
 use PHPDaemon\AppInstance;
-use PHPDaemon\Clients\AsteriskClient;
+use PHPDaemon\Clients\Asterisk\Pool;
 
 /**
  * @package    Examples
@@ -35,7 +35,7 @@ class ExampleAsteriskClient extends AppInstance {
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->asteriskclient = AsteriskClient::getInstance($this->config->asteriskclientname->value);
+			$this->asteriskclient = Pool::getInstance($this->config->asteriskclientname->value);
 		}
 	}
 

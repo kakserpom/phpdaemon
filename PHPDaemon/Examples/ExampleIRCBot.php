@@ -31,7 +31,7 @@ class ExampleIRCBot extends \PHPDaemon\AppInstance {
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->client = \PHPDaemon\Clients\IRCClient::getInstance();
+			$this->client = \PHPDaemon\Clients\IRC\Pool::getInstance();
 		}
 	}
 

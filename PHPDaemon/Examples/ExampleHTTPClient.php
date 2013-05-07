@@ -15,7 +15,7 @@ class ExampleHTTPClient extends \PHPDaemon\AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->httpclient = \PHPDaemon\Clients\HTTPClient::getInstance();
+		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
 	}
 
 	/**

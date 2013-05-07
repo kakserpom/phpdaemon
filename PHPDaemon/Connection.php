@@ -5,7 +5,7 @@ use PHPDaemon\BoundSocket\Generic;
 use PHPDaemon\BoundSocket\TCP;
 use PHPDaemon\Cache\CappedStorage;
 use PHPDaemon\Cache\CappedStorageHits;
-use PHPDaemon\Clients\DNSClient;
+use PHPDaemon\Clients\DNS\Pool;
 use PHPDaemon\Structures\StackCallbacks;
 
 /**
@@ -539,7 +539,7 @@ abstract class Connection extends IOStream {
 	public function connectRaw($host) {
 		$this->type = 'raw';
 		if (@inet_pton($host) === false) { // dirty check
-			DNSClient::getInstance()->resolve($host, function ($result) use ($host) {
+			Pool::getInstance()->resolve($host, function ($result) use ($host) {
 				if ($result === false) {
 					Daemon::log(get_class($this) . '->connectRaw : enable to resolve hostname: ' . $host);
 					$this->onFailureEv();
@@ -585,7 +585,7 @@ abstract class Connection extends IOStream {
 		$this->type = 'udp';
 		$pton       = @inet_pton($host);
 		if ($pton === false) { // dirty check
-			DNSClient::getInstance()->resolve($host, function ($result) use ($host, $port) {
+			Pool::getInstance()->resolve($host, function ($result) use ($host, $port) {
 				if ($result === false) {
 					Daemon::log(get_class($this) . '->connectUdp : enable to resolve hostname: ' . $host);
 					$this->onStateEv($this->bev, \EventBufferEvent::ERROR);
@@ -644,7 +644,7 @@ abstract class Connection extends IOStream {
 		$pton       = @inet_pton($host);
 		$fd         = null;
 		if ($pton === false) { // dirty check
-			DNSClient::getInstance()->resolve($this->host, function ($result) use ($host, $port) {
+			Pool::getInstance()->resolve($this->host, function ($result) use ($host, $port) {
 				if ($result === false) {
 					Daemon::log(get_class($this) . '->connectTcp : enable to resolve hostname: ' . $host);
 					$this->onStateEv($this->bev, \EventBufferEvent::ERROR);

@@ -1,11 +1,13 @@
 <?php
-namespace PHPDaemon\Clients;
+namespace PHPDaemon\Clients\DNS;
 
 use PHPDaemon\Cache\CappedStorageHits;
+use PHPDaemon\Clients\Hostname;
+use PHPDaemon\Clients\NetworkClient;
 use PHPDaemon\ComplexJob;
 use PHPDaemon\FS\FileSystem;
 
-class DNSClient extends NetworkClient {
+class Pool extends NetworkClient {
 	/**
 	 * Record Types
 	 * @var array hash [code => "name", ...]
