@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Clients;
 
-use PHPDaemon\EventHandlers;
 use PHPDaemon\IRC;
 use PHPDaemon\ObjectStorage;
+use PHPDaemon\Traits\EventHandlers;
 
 /**
  * @package    NetworkClients
@@ -13,7 +13,7 @@ use PHPDaemon\ObjectStorage;
  */
 
 class IRCClientChannel extends ObjectStorage {
-	use EventHandlers;
+	use \PHPDaemon\Traits\EventHandlers;
 
 	public $irc;
 	public $name;

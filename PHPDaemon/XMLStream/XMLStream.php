@@ -1,11 +1,11 @@
 <?php
 namespace PHPDaemon\XMLStream;
 
-use PHPDaemon\EventHandlers;
+use PHPDaemon\Traits\EventHandlers;
 use PHPDaemon\XMLStream\XMLStreamObject;
 
 class XMLStream {
-	use EventHandlers;
+	use \PHPDaemon\Traits\EventHandlers;
 
 	protected $parser;
 	protected $xml_depth = 0;

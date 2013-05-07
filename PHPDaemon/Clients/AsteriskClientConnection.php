@@ -3,8 +3,8 @@ namespace PHPDaemon\Clients;
 
 use PHPDaemon\CallbackWrapper;
 use PHPDaemon\Daemon;
-use PHPDaemon\EventHandlers;
 use PHPDaemon\Structures\StackCallbacks;
+use PHPDaemon\Traits\EventHandlers;
 
 /**
  * Asterisk Call Manager Connection.
@@ -12,7 +12,7 @@ use PHPDaemon\Structures\StackCallbacks;
  */
 class AsteriskClientConnection extends NetworkClientConnection {
 
-	use EventHandlers;
+	use \PHPDaemon\Traits\EventHandlers;
 
 	const CONN_STATE_START                             = 0;
 	const CONN_STATE_GOT_INITIAL_PACKET                = 0.1;

@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Traits\EventHandlers;
+
 /**
  * @package    NetworkServers
  * @subpackage IRCBouncer

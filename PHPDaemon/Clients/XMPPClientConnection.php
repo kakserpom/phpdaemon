@@ -2,8 +2,8 @@
 namespace PHPDaemon\Clients;
 
 use PHPDaemon\Daemon;
-use PHPDaemon\EventHandlers;
 use PHPDaemon\Timer;
+use PHPDaemon\Traits\EventHandlers;
 use PHPDaemon\XMLStream\XMLStream;
 use PHPDaemon\XMPPRoster;
 
@@ -14,7 +14,7 @@ use PHPDaemon\XMPPRoster;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class XMPPClientConnection extends NetworkClientConnection {
-	use EventHandlers;
+	use \PHPDaemon\Traits\EventHandlers;
 
 	public $use_encryption = false;
 	public $authorized;
