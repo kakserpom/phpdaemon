@@ -3,7 +3,7 @@ namespace PHPDaemon\Clients;
 
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\ComplexJob;
-use PHPDaemon\FS\FS;
+use PHPDaemon\FS\FileSystem;
 
 class DNSClient extends NetworkClient {
 	/**
@@ -94,7 +94,7 @@ class DNSClient extends NetworkClient {
 		}
 		$job = $this->preloading;
 		$job->addJob('resolvfile', function ($jobname, $job) use ($pool) {
-			FS::readfile($pool->config->resolvfile->value, function ($file, $data) use ($pool, $job, $jobname) {
+			FileSystem::readfile($pool->config->resolvfile->value, function ($file, $data) use ($pool, $job, $jobname) {
 				if ($file) {
 					preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
 					foreach ($m[1] as $s) {
@@ -106,7 +106,7 @@ class DNSClient extends NetworkClient {
 			});
 		});
 		$job->addJob('hostsfile', function ($jobname, $job) use ($pool) {
-			FS::readfile($pool->config->hostsfile->value, function ($file, $data) use ($pool, $job, $jobname) {
+			FileSystem::readfile($pool->config->hostsfile->value, function ($file, $data) use ($pool, $job, $jobname) {
 				if ($file) {
 					preg_match_all('~^(\S+)\s+([^\r\n]+)\s*~m', $data, $m, PREG_SET_ORDER);
 					$pool->hosts = [];

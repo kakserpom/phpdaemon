@@ -3,8 +3,8 @@ namespace PHPDaemon\Daemon;
 
 use PHPDaemon\AppInstance;
 use PHPDaemon\Daemon;
+use PHPDaemon\FS\FileSystem;
 use PHPDaemon\FS\FileWatcher;
-use PHPDaemon\FS\FS;
 use PHPDaemon\Thread;
 
 /**
@@ -88,8 +88,8 @@ class IPCThread extends Thread {
 		}
 		$this->prepareSystemEnv();
 		$this->registerEventSignals();
-		FS::init(); // re-init
-		FS::initEvent();
+		FileSystem::init(); // re-init
+		FileSystem::initEvent();
 		Daemon::openLogs();
 
 		$this->fileWatcher = new FileWatcher();
@@ -184,7 +184,7 @@ class IPCThread extends Thread {
 	 * @return void
 	 */
 	protected function update() {
-		FS::updateConfig();
+		FileSystem::updateConfig();
 		foreach (Daemon::$appInstances as $app) {
 			foreach ($app as $appInstance) {
 				$appInstance->handleStatus(AppInstance::EVENT_CONFIG_UPDATED);
@@ -227,7 +227,7 @@ class IPCThread extends Thread {
 		if ($hard) {
 			exit(0);
 		}
-		FS::waitAllEvents(); // ensure that all I/O events completed before suicide
+		FileSystem::waitAllEvents(); // ensure that all I/O events completed before suicide
 		posix_kill(posix_getppid(), SIGCHLD); // praying to Master
 		exit(0); // R.I.P.
 	}

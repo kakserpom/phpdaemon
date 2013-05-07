@@ -146,7 +146,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$fp = fopen($this->path, 'r+');
 			$r  = $fp && ftruncate($fp, $offset);
 			if ($cb) {
@@ -170,8 +170,8 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
-			call_user_func($cb, $this, FS::statPrepare(fstat($this->fd)));
+		if (!FileSystem::$supported) {
+			call_user_func($cb, $this, FileSystem::statPrepare(fstat($this->fd)));
 			return false;
 		}
 		if ($this->stat) {
@@ -179,7 +179,7 @@ class File {
 			return true;
 		}
 		return eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
-			$stat       = FS::statPrepare($stat);
+			$stat       = FileSystem::statPrepare($stat);
 			$file->stat = $stat;
 			call_user_func($cb, $file, $stat);
 		}, $this);
@@ -198,12 +198,12 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
-			call_user_func($cb, $this, FS::statPrepare(fstat($this->fd)));
+		if (!FileSystem::$supported) {
+			call_user_func($cb, $this, FileSystem::statPrepare(fstat($this->fd)));
 			return true;
 		}
 		return eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
-			$stat       = FS::statPrepare($stat);
+			$stat       = FileSystem::statPrepare($stat);
 			$file->stat = $stat;
 			call_user_func($cb, $file, $stat);
 		}, $this);
@@ -222,7 +222,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
@@ -251,7 +251,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			call_user_func($cb, $this, true);
 			return false;
 		}
@@ -271,7 +271,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			call_user_func($cb, $this, true);
 			return false;
 		}
@@ -293,7 +293,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			if ($offset !== null) {
 				fseek($data, $offset);
 			}
@@ -334,7 +334,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$r = chown($this->path, $uid);
 			if ($gid !== -1) {
 				$r = $r && chgrp($this->path, $gid);
@@ -362,7 +362,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$r = touch($this->path, $mtime, $atime);
 			if ($cb) {
 				call_user_func($cb, $this, $r);
@@ -396,7 +396,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
@@ -430,7 +430,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
@@ -509,7 +509,7 @@ class File {
 			}
 			return false;
 		}
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
@@ -653,13 +653,13 @@ class File {
 		}
 		$this->closed = true;
 		if ($this->fdCacheKey !== null) {
-			FS::$fdCache->invalidate($this->fdCacheKey);
+			FileSystem::$fdCache->invalidate($this->fdCacheKey);
 		}
 		if ($this->fd === null) {
 			return false;
 		}
 
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			fclose($this->fd);
 			return false;
 		}

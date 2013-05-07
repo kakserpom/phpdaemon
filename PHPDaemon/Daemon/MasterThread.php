@@ -2,7 +2,7 @@
 namespace PHPDaemon\Daemon;
 
 use PHPDaemon\Daemon;
-use PHPDaemon\FS\FS;
+use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Thread;
 use PHPDaemon\ThreadCollection;
@@ -219,7 +219,7 @@ class MasterThread extends Thread {
 	 * @return boolean - success
 	 */
 	protected function spawnWorkers($n) {
-		if (FS::$supported) {
+		if (FileSystem::$supported) {
 			eio_event_loop();
 		}
 		$n = (int)$n;
@@ -255,7 +255,7 @@ class MasterThread extends Thread {
 	 * @return boolean - success
 	 */
 	protected function spawnIPCThread() {
-		if (FS::$supported) {
+		if (FileSystem::$supported) {
 			eio_event_loop();
 		}
 		$thread = new IPCThread;

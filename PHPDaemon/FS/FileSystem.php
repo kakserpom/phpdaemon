@@ -6,13 +6,13 @@ use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Daemon;
 
 /**
- * FS
+ * FileSystem
  *
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class FS {
+class FileSystem {
 	/**
 	 * Is EIO supported?
 	 * @var boolean
@@ -168,7 +168,7 @@ class FS {
 		if ($stat === -1 || !$stat) {
 			return -1;
 		}
-		$stat['type'] = FS::$modeTypes[$stat['mode'] & 0170000];
+		$stat['type'] = FileSystem::$modeTypes[$stat['mode'] & 0170000];
 		return $stat;
 	}
 
@@ -181,10 +181,10 @@ class FS {
 	 */
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
-			call_user_func($cb, $path, FS::statPrepare(@stat($path)));
+			call_user_func($cb, $path, FileSystem::statPrepare(@stat($path)));
 			return true;
 		}
-		return eio_stat($path, $pri, function ($path, $stat) use ($cb) { call_user_func($cb, $path, FS::statPrepare($stat)); }, $path);
+		return eio_stat($path, $pri, function ($path, $stat) use ($cb) { call_user_func($cb, $path, FileSystem::statPrepare($stat)); }, $path);
 	}
 
 	/**
@@ -248,10 +248,10 @@ class FS {
 	 */
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if (!self::$supported) {
-			call_user_func($cb, $path, FS::statPrepare(lstat($path)));
+			call_user_func($cb, $path, FileSystem::statPrepare(lstat($path)));
 			return true;
 		}
-		return eio_lstat($path, $pri, function ($path, $stat) use ($cb) { call_user_func($cb, $path, FS::statPrepare($stat)); }, $path);
+		return eio_lstat($path, $pri, function ($path, $stat) use ($cb) { call_user_func($cb, $path, FileSystem::statPrepare($stat)); }, $path);
 	}
 
 	/**
@@ -313,7 +313,7 @@ class FS {
 	 * @return resource
 	 */
 	public static function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$r = touch($path, $mtime, $atime);
 			if ($cb) {
 				call_user_func($cb, $r);
@@ -331,7 +331,7 @@ class FS {
 	 * @return resource
 	 */
 	public static function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$r = rmdir($path);
 			if ($cb) {
 				call_user_func($cb, $path, $r);
@@ -350,7 +350,7 @@ class FS {
 	 * @return resource
 	 */
 	public static function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$r = mkdir($path, $mode);
 			if ($cb) {
 				call_user_func($cb, $path, $r);
@@ -369,7 +369,7 @@ class FS {
 	 * @return resource
 	 */
 	public static function readdir($path, $cb = null, $flags, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$r = glob($path);
 			if ($cb) {
 				call_user_func($cb, $path, $r);
@@ -387,7 +387,7 @@ class FS {
 	 * @return resource
 	 */
 	public static function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$fp = fopen($path, 'r+');
 			$r  = $fp && ftruncate($fp, $offset);
 			if ($cb) {
@@ -414,7 +414,7 @@ class FS {
 			return false;
 		}
 		$noncache = true;
-		FS::open($path, 'r!', function ($file) use ($cb, $noncache, $startCb, $path, $pri, $outfd, $offset, $length) {
+		FileSystem::open($path, 'r!', function ($file) use ($cb, $noncache, $startCb, $path, $pri, $outfd, $offset, $length) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
@@ -440,7 +440,7 @@ class FS {
 	 * @return resource
 	 */
 	public static function chown($path, $uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$r = chown($path, $uid);
 			if ($gid !== -1) {
 				$r = $r && chgrp($path, $gid);
@@ -459,11 +459,11 @@ class FS {
 	 * @return resource
 	 */
 	public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			call_user_func($cb, $path, file_get_contents($path));
 			return true;
 		}
-		return FS::open($path, 'r!', function ($file) use ($path, $cb, $pri, $path) {
+		return FileSystem::open($path, 'r!', function ($file) use ($path, $cb, $pri, $path) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
@@ -481,12 +481,12 @@ class FS {
 	 * @return resource
 	 */
 	public static function readfileChunked($path, $cb, $chunkcb, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			call_user_func($chunkcb, $path, $r = readfile($path));
 			call_user_func($cb, $r !== false);
 			return;
 		}
-		FS::open($path, 'r!', function ($file) use ($path, $cb, $chunkcb, $pri) {
+		FileSystem::open($path, 'r!', function ($file) use ($path, $cb, $chunkcb, $pri) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
@@ -522,8 +522,8 @@ class FS {
 	 * @return resource
 	 */
 	public static function tempnam($dir, $prefix, $cb) {
-		if (!FS::$supported) {
-			FS::open(tempnam($dir, $prefix), 'w!', $cb);
+		if (!FileSystem::$supported) {
+			FileSystem::open(tempnam($dir, $prefix), 'w!', $cb);
 		}
 		$tries   = 0;
 		$handler = function () use ($dir, $prefix, &$handler, $cb, &$tries) {
@@ -531,8 +531,8 @@ class FS {
 				call_user_func($cb, false);
 				return;
 			}
-			$path = FS::genRndTempnam($dir, $prefix);
-			FS::open($path, 'x+!', function ($file) use ($handler, $cb) {
+			$path = FileSystem::genRndTempnam($dir, $prefix);
+			FileSystem::open($path, 'x+!', function ($file) use ($handler, $cb) {
 				if (!$file) {
 					$handler();
 				}
@@ -552,7 +552,7 @@ class FS {
 	 * @return resource
 	 */
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
-		if (!FS::$supported) {
+		if (!FileSystem::$supported) {
 			$mode = File::convertFlags($flags, true);
 			$fd   = fopen($path, $mode);
 			if (!$fd) {
@@ -566,7 +566,7 @@ class FS {
 		$fdCacheKey = $path . "\x00" . $flags;
 		$noncache   = strpos($flags, '!') !== false;
 		$flags      = File::convertFlags($flags);
-		if (!$noncache && ($item = FS::$fdCache->get($fdCacheKey))) { // cache hit
+		if (!$noncache && ($item = FileSystem::$fdCache->get($fdCacheKey))) { // cache hit
 			$file = $item->getValue();
 			if ($file === null) { // operation in progress
 				$item->addListener($cb);
@@ -577,7 +577,7 @@ class FS {
 			return null;
 		}
 		elseif (!$noncache) {
-			$item = FS::$fdCache->put($fdCacheKey, null);
+			$item = FileSystem::$fdCache->put($fdCacheKey, null);
 			$item->addListener($cb);
 		}
 		return eio_open($path, $flags, $mode, $pri, function ($path, $fd) use ($cb, $flags, $fdCacheKey, $noncache) {
@@ -586,7 +586,7 @@ class FS {
 					call_user_func($cb, false);
 				}
 				else {
-					FS::$fdCache->put($fdCacheKey, false, self::$badFDttl);
+					FileSystem::$fdCache->put($fdCacheKey, false, self::$badFDttl);
 				}
 				return;
 			}
@@ -597,7 +597,7 @@ class FS {
 					$file->pos = $stat['size'];
 					if (!$noncache) {
 						$file->fdCacheKey = $fdCacheKey;
-						FS::$fdCache->put($fdCacheKey, $file);
+						FileSystem::$fdCache->put($fdCacheKey, $file);
 					}
 					else {
 						call_user_func($cb, $file);
@@ -607,7 +607,7 @@ class FS {
 			else {
 				if (!$noncache) {
 					$file->fdCacheKey = $fdCacheKey;
-					FS::$fdCache->put($fdCacheKey, $file);
+					FileSystem::$fdCache->put($fdCacheKey, $file);
 				}
 				else {
 					call_user_func($cb, $file);

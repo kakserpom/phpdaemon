@@ -1,9 +1,8 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon\Servers\HTTP;
 
 use PHPDaemon\Daemon\ConfigEntrySize;
 use PHPDaemon\Daemon\ConfigEntryTime;
-use PHPDaemon\NetworkServer;
 use PHPDaemon\Servers\WebSocketServer;
 
 /**
@@ -12,7 +11,7 @@ use PHPDaemon\Servers\WebSocketServer;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class HTTPServer extends NetworkServer {
+class HTTPServer extends \PHPDaemon\NetworkServer {
 
 	/* Variables order
 	 * @var string "GPC"

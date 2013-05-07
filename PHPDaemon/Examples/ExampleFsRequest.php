@@ -8,7 +8,7 @@ class ExampleFsRequest extends Generic {
 	public function init() {
 		$req = $this;
 		$this->sleep(1, true);
-		\PHPDaemon\FS\FS::readfile('/etc/filesystems', function ($file, $data) use ($req) {
+		\PHPDaemon\FS\FileSystem::readfile('/etc/filesystems', function ($file, $data) use ($req) {
 			$req->fileData = $data;
 			$req->wakeup();
 		});

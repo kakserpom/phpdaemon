@@ -1,11 +1,12 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon\Servers\HTTP;
 
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
-use PHPDaemon\FS\FS;
+use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\HTTPRequest\Input;
+use PHPDaemon\Servers\FlashPolicyServer;
 
 /**
  * @package    NetworkServers
@@ -168,9 +169,9 @@ class HTTPServerConnection extends Connection {
 			if ($this->pool->config->sendfile->value && (!$this->pool->config->sendfileonlybycommand->value || isset($this->req->attrs->server['USE_SENDFILE']))
 					&& !isset($this->req->attrs->server['DONT_USE_SENDFILE'])
 			) {
-				$fn  = FS::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value);
+				$fn  = FileSystem::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value);
 				$req = $this->req;
-				FS::open($fn, 'wb', function ($file) use ($req) {
+				FileSystem::open($fn, 'wb', function ($file) use ($req) {
 					$req->sendfp = $file;
 				});
 				$this->req->header('X-Sendfile: ' . $fn);

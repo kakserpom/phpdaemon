@@ -2,7 +2,7 @@
 namespace PHPDaemon\Daemon;
 
 use PHPDaemon\Daemon;
-use PHPDaemon\FS\FS;
+use PHPDaemon\FS\FileSystem;
 use PHPDaemon\ShmEntity;
 use PHPDaemon\Terminal;
 use PHPDaemon\Thread;
@@ -86,7 +86,7 @@ class Bootstrap {
 			return;
 		}
 		Daemon::initSettings();
-		FS::init();
+		FileSystem::init();
 		Daemon::$runName = basename($_SERVER['argv'][0]);
 
 		$error   = FALSE;

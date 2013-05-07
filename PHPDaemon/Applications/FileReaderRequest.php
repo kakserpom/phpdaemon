@@ -22,21 +22,21 @@ public function init() {
 	});
 	$this->job = $job;
 	$this->sleep(5, true);
-	$this->attrs->server['FR_PATH'] = \PHPDaemon\FS\FS::sanitizePath($this->attrs->server['FR_PATH']);
+	$this->attrs->server['FR_PATH'] = \PHPDaemon\FS\FileSystem::sanitizePath($this->attrs->server['FR_PATH']);
 	$job('stat', function ($name, $job) {
-		\PHPDaemon\FS\FS::stat($this->attrs->server['FR_PATH'], function ($path, $stat) use ($job) {
+		\PHPDaemon\FS\FileSystem::stat($this->attrs->server['FR_PATH'], function ($path, $stat) use ($job) {
 			if ($stat === -1) {
 				$this->fileNotFound();
 				$job->setResult('stat', false);
 				return;
 			}
 			if ($stat['type'] === 'd') {
-				if (!\PHPDaemon\FS\FS::$supported) {
+				if (!\PHPDaemon\FS\FileSystem::$supported) {
 					$this->file(rtrim($path, '/') . '/index.html');
 				}
 				else {
 					$job('readdir', function ($name, $job) use ($path) {
-						\PHPDaemon\FS\FS::readdir(rtrim($path, '/'), function ($path, $dir) use ($job) {
+						\PHPDaemon\FS\FileSystem::readdir(rtrim($path, '/'), function ($path, $dir) use ($job) {
 							$found = false;
 							if (is_array($dir)) {
 								foreach ($dir['dents'] as $file) {
@@ -79,7 +79,7 @@ public function fileNotFound() {
 	$this->out('File not found.');
 }
 public function file($path) {
-	if (!\PHPDaemon\FS\FS::$supported) {
+	if (!\PHPDaemon\FS\FileSystem::$supported) {
 		$this->out(file_get_contents(realpath($path)));
 		$this->wakeup();
 		return;

@@ -3,7 +3,7 @@ namespace PHPDaemon\BoundSocket;
 
 use PHPDaemon\ConnectionPool;
 use PHPDaemon\Daemon;
-use PHPDaemon\FS\FS;
+use PHPDaemon\FS\FileSystem;
 
 /**
  * Generic
@@ -227,7 +227,7 @@ abstract class Generic {
 			$this->errorneous = true;
 			return;
 		}
-		if (!FS::checkFileReadable($this->certfile) || !FS::checkFileReadable($this->pkfile)) {
+		if (!FileSystem::checkFileReadable($this->certfile) || !FileSystem::checkFileReadable($this->pkfile)) {
 			Daemon::log('Couldn\'t read ' . $this->certfile . ' or ' . $this->pkfile . ' file.  To generate a key' . PHP_EOL
 								. 'and self-signed certificate, run' . PHP_EOL
 								. '  openssl genrsa -out ' . escapeshellarg($this->pkfile) . ' 2048' . PHP_EOL

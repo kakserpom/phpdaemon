@@ -4,7 +4,7 @@ namespace PHPDaemon\Daemon;
 use PHPDaemon\AppInstance;
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
-use PHPDaemon\FS\FS;
+use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Thread;
@@ -168,8 +168,8 @@ class WorkerThread extends Thread {
 		$this->dnsBase = new \EventDnsBase($this->eventBase, false); // @TODO: test with true
 		$this->registerEventSignals();
 
-		FS::init();
-		FS::initEvent();
+		FileSystem::init();
+		FileSystem::initEvent();
 		Daemon::openLogs();
 
 		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
@@ -425,7 +425,7 @@ class WorkerThread extends Thread {
 	 * @return void
 	 */
 	protected function update() {
-		FS::updateConfig();
+		FileSystem::updateConfig();
 		foreach (Daemon::$appInstances as $app) {
 			foreach ($app as $appInstance) {
 				$appInstance->handleStatus(AppInstance::EVENT_CONFIG_UPDATED);
@@ -577,7 +577,7 @@ class WorkerThread extends Thread {
 		while (!$this->reloadReady) {
 			$this->eventBase->loop();
 		}
-		FS::waitAllEvents(); // ensure that all I/O events completed before suicide
+		FileSystem::waitAllEvents(); // ensure that all I/O events completed before suicide
 		exit(0); // R.I.P.
 	}
 

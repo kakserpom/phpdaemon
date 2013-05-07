@@ -2,7 +2,7 @@
 namespace PHPDaemon;
 
 use PHPDaemon\FS\File;
-use PHPDaemon\FS\FS;
+use PHPDaemon\FS\FileSystem;
 
 /**
  * Daemon "namespace"
@@ -432,8 +432,8 @@ class Daemon {
 			if (isset(Daemon::$config->user->value)) {
 				chown(Daemon::$config->logstorage->value, Daemon::$config->user->value); // @TODO: rewrite to async I/O
 			}
-			if ((Daemon::$process instanceof Daemon\WorkerThread) && FS::$supported) {
-				FS::open(Daemon::$config->logstorage->value, 'a!', function ($file) {
+			if ((Daemon::$process instanceof Daemon\WorkerThread) && FileSystem::$supported) {
+				FileSystem::open(Daemon::$config->logstorage->value, 'a!', function ($file) {
 					Daemon::$logpointerAsync = $file;
 					if (!$file) {
 						return;

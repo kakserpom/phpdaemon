@@ -3,10 +3,10 @@ namespace PHPDaemon\HTTPRequest;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\FS\File;
-use PHPDaemon\FS\FS;
+use PHPDaemon\FS\FileSystem;
 use PHPDaemon\MIME;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
-use PHPDaemon\Servers\HTTPServerConnection;
+use PHPDaemon\Servers\HTTP\HTTPServerConnection;
 
 /**
  * HTTP request
@@ -174,7 +174,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		} catch (RequestHeadersAlreadySent $e) {
 		}
 		if ($this->upstream->checkSendfileCap()) {
-			FS::sendfile($this->upstream, $path, $cb, function ($file, $length, $handler) {
+			FileSystem::sendfile($this->upstream, $path, $cb, function ($file, $length, $handler) {
 				try {
 					$this->header('Content-Length: ' . $length);
 				} catch (RequestHeadersAlreadySent $e) {
@@ -188,7 +188,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			return true;
 		}
 		$first = true;
-		FS::readfileChunked($path, $cb, function ($file, $chunk) use (&$first) { // readed chunk
+		FileSystem::readfileChunked($path, $cb, function ($file, $chunk) use (&$first) { // readed chunk
 			if ($this->upstream->isFreed()) {
 				return false;
 			}
@@ -352,7 +352,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 					unset($this->attrs->files[$k]);
 					continue;
 				}
-				FS::open($file['tmp_name'], 'c+!', function ($fp) use (&$file) {
+				FileSystem::open($file['tmp_name'], 'c+!', function ($fp) use (&$file) {
 					if (!$fp) {
 						return;
 					}
@@ -706,7 +706,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 */
 	public function onUploadFileStart($in) {
 		$this->freezeInput();
-		FS::tempnam(ini_get('upload_tmp_dir'), 'php', function ($fp) use ($in) {
+		FileSystem::tempnam(ini_get('upload_tmp_dir'), 'php', function ($fp) use ($in) {
 			if (!$fp) {
 				$in->curPart['fp']    = false;
 				$in->curPart['error'] = UPLOAD_ERR_NO_TMP_DIR;
@@ -804,7 +804,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if (!$this->isUploadedFile($filename)) {
 			return false;
 		}
-		return FS::rename($filename, $dest);
+		return FileSystem::rename($filename, $dest);
 	}
 
 	/**
@@ -815,7 +815,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if (!isset($this->attrs->server['REQUEST_BODY_FILE'])) {
 			return false;
 		}
-		FS::readfileChunked($this->attrs->server['REQUEST_BODY_FILE'],
+		FileSystem::readfileChunked($this->attrs->server['REQUEST_BODY_FILE'],
 			function ($file, $success) {
 				$this->attrs->bodyDone = true;
 				if ($this->sleepTime === 0) {
@@ -868,7 +868,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if (isset($this->attrs->files)) {
 			foreach ($this->attrs->files as $f) {
 				if (isset($f['tmp_name'])) {
-					FS::unlink($f['tmp_name']);
+					FileSystem::unlink($f['tmp_name']);
 				}
 			}
 		}
