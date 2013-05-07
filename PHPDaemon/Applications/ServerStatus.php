@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Applications;
 
-class ServerStatus extends \PHPDaemon\AppInstance {
+class ServerStatus extends \PHPDaemon\Core\AppInstance {
 
 	/**
 	 * Creates Request.

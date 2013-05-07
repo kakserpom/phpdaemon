@@ -8,7 +8,7 @@
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class GearmanNode extends \PHPDaemon\AppInstance {
+class GearmanNode extends \PHPDaemon\Core\AppInstance {
 
 	public $client;
 	public $worker;

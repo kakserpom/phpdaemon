@@ -6,7 +6,7 @@ namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleWebSocket extends \PHPDaemon\AppInstance {
+class ExampleWebSocket extends \PHPDaemon\Core\AppInstance {
 	/**
 	 * Called when the worker is ready to go.
 	 * @return void

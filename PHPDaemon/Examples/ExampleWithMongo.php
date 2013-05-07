@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleWithMongo extends \PHPDaemon\AppInstance {
+class ExampleWithMongo extends \PHPDaemon\Core\AppInstance {
 	public $mongo;
 
 	/**

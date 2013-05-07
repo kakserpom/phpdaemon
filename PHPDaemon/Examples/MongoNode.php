@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class MongoNode extends \PHPDaemon\AppInstance {
+class MongoNode extends \PHPDaemon\Core\AppInstance {
 
 	public $db; // MongoClient
 	public $cache; // MemcacheClient

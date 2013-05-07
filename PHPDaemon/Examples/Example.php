@@ -9,7 +9,7 @@ use PHPDaemon\Examples\ExampleRequest;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Example extends \PHPDaemon\AppInstance {
+class Example extends \PHPDaemon\Core\AppInstance {
 
 	public $counter = 0;
 

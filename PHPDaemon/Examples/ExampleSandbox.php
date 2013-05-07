@@ -9,7 +9,7 @@ use PHPDaemon\HTTPRequest\Generic;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleSandbox extends \PHPDaemon\AppInstance {
+class ExampleSandbox extends \PHPDaemon\Core\AppInstance {
 
 	public $counter = 0;
 

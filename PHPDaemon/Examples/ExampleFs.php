@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleFs extends \PHPDaemon\AppInstance {
+class ExampleFs extends \PHPDaemon\Core\AppInstance {
 	/**
 	 * Creates Request.
 	 * @param object Request.

@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 
 class IPCManager extends AppInstance {

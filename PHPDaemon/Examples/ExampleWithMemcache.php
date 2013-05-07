@@ -6,7 +6,7 @@ namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleWithMemcache extends \PHPDaemon\AppInstance {
+class ExampleWithMemcache extends \PHPDaemon\Core\AppInstance {
 	/**
 	 * Creates Request.
 	 * @param object Request.

@@ -9,7 +9,7 @@ use PHPDaemon\HTTPRequest\Generic;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleWithRedis extends \PHPDaemon\AppInstance {
+class ExampleWithRedis extends \PHPDaemon\Core\AppInstance {
 
 	/**
 	 * Called when the worker is ready to go.

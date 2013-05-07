@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Applications;
 
-class CGI extends \PHPDaemon\AppInstance {
+class CGI extends \PHPDaemon\Core\AppInstance {
 
 	public $binPath = 'php-cgi'; // Default bin-path
 	public $binAliases = array(

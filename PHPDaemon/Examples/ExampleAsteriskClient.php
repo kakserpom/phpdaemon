@@ -1,8 +1,8 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\AppInstance;
 use PHPDaemon\Clients\Asterisk\Pool;
+use PHPDaemon\Core\AppInstance;
 
 /**
  * @package    Examples

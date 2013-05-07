@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleICMP extends \PHPDaemon\AppInstance {
+class ExampleICMP extends \PHPDaemon\Core\AppInstance {
 	/**
 	 * Creates Request.
 	 * @param object Request.

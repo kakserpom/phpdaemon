@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-class ExamplePubSub extends \PHPDaemon\AppInstance {
+class ExamplePubSub extends \PHPDaemon\Core\AppInstance {
 	public $sql;
 	public $pubsub;
 

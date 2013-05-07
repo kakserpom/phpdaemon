@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Request;
 
-use PHPDaemon\AppInstance;
+use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 
 abstract class Generic {
@@ -12,7 +12,7 @@ abstract class Generic {
 
 	/**
 	 * Related Application instance
-	 * @var AppInstance
+	 * @var \PHPDaemon\Core\AppInstance
 	 */
 	public $appInstance;
 

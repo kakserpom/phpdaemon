@@ -1,6 +1,9 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Core;
 
+use PHPDaemon\ClassFinder;
+use PHPDaemon\Config;
+use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\Generic;
 
@@ -105,7 +108,7 @@ class AppResolver {
 	public function appInstantiate($appName, $instance, $preload = false) {
 		$fullname = $this->getAppFullname($appName, $instance);
 		$class    = ClassFinder::find($appName);
-		if (!class_exists($class) || !is_subclass_of($class, '\PHPDaemon\AppInstance')) {
+		if (!class_exists($class) || !is_subclass_of($class, '\PHPDaemon\Core\AppInstance')) {
 			return false;
 		}
 		if (!$preload) {

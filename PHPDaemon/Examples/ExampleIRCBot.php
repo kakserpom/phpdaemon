@@ -8,7 +8,7 @@ namespace PHPDaemon\Examples;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class ExampleIRCBot extends \PHPDaemon\AppInstance {
+class ExampleIRCBot extends \PHPDaemon\Core\AppInstance {
 	public $client;
 	public $conn;
 

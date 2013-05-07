@@ -73,7 +73,7 @@ try {
 		$thread();
 	}
 	else {
-		PHPDaemon\Bootstrap::init(isset($configFile) ? $configFile : null);
+		\PHPDaemon\Core\Bootstrap::init(isset($configFile) ? $configFile : null);
 	}
 } catch (\PHPDaemon\Exceptions\ClearStack $e) {
 	goto execute;

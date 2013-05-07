@@ -1,10 +1,12 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Core;
 
 use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Terminal;
+use PHPDaemon\Thread;
 use PHPDaemon\Utils\ShmEntity;
 
 /**

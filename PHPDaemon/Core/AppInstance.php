@@ -1,8 +1,10 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Core;
 
+use PHPDaemon\Config;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\Generic;
+use PHPDaemon\Thread;
 
 /**
  * Application instance

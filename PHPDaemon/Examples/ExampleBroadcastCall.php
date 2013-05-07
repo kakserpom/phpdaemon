@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleBroadcastCall extends \PHPDaemon\AppInstance {
+class ExampleBroadcastCall extends \PHPDaemon\Core\AppInstance {
 
 	public $enableRPC = true;
 

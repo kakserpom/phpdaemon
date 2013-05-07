@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleDNSClient extends \PHPDaemon\AppInstance {
+class ExampleDNSClient extends \PHPDaemon\Core\AppInstance {
 	/**
 	 * Creates Request.
 	 * @param object Request.

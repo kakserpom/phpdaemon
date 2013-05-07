@@ -9,7 +9,7 @@ use PHPDaemon\HTTPRequest\Generic;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleWithPostgreSQL extends \PHPDaemon\AppInstance {
+class ExampleWithPostgreSQL extends \PHPDaemon\Core\AppInstance {
 
 	/**
 	 * Creates Request.

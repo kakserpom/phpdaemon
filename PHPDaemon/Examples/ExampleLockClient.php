@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-class ExampleLockClient extends \PHPDaemon\AppInstance {
+class ExampleLockClient extends \PHPDaemon\Core\AppInstance {
 	/**
 	 * Creates Request.
 	 * @param object Request.

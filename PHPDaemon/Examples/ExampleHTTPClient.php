@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleHTTPClient extends \PHPDaemon\AppInstance {
+class ExampleHTTPClient extends \PHPDaemon\Core\AppInstance {
 	public $httpclient;
 
 	/**

@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Applications;
 
-class WebSocketOverCOMET extends \PHPDaemon\AppInstance {
+class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 
 	public $WS;
 	public $requests = array();

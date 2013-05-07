@@ -9,7 +9,7 @@ namespace PHPDaemon\Examples;
  *
  * @author Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleComplexJob extends \PHPDaemon\AppInstance {
+class ExampleComplexJob extends \PHPDaemon\Core\AppInstance {
 
 	/**
 	 * Called when the worker is ready to go

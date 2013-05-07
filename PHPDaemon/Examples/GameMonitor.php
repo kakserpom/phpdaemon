@@ -6,7 +6,7 @@ namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 // db.servers.ensureIndex({address:1}, {unique:true});
-class GameMonitor extends \PHPDaemon\AppInstance {
+class GameMonitor extends \PHPDaemon\Core\AppInstance {
 	public $client;
 	public $db;
 	public $servers;

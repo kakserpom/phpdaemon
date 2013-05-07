@@ -8,7 +8,7 @@ namespace PHPDaemon\Examples;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class ExampleJabberbot extends \PHPDaemon\AppInstance {
+class ExampleJabberbot extends \PHPDaemon\Core\AppInstance {
 	public $xmppclient;
 	public $xmppconn;
 

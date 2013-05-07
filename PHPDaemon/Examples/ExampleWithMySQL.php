@@ -6,7 +6,7 @@ namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleWithMySQL extends \PHPDaemon\AppInstance {
+class ExampleWithMySQL extends \PHPDaemon\Core\AppInstance {
 	public $sql;
 
 	/**

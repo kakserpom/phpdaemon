@@ -350,7 +350,7 @@ class Daemon {
 
 		$argv = isset($_SERVER['CMD_ARGV']) ? $_SERVER['CMD_ARGV'] : '';
 
-		$args = \PHPDaemon\Bootstrap::getArgs($argv);
+		$args = \PHPDaemon\Core\Bootstrap::getArgs($argv);
 
 		if (isset($args[$k = 'configfile'])) {
 			Daemon::$config[$k] = $args[$k];

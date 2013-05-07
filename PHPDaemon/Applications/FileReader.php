@@ -7,7 +7,7 @@ namespace PHPDaemon\Applications;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class FileReader extends \PHPDaemon\AppInstance {
+class FileReader extends \PHPDaemon\Core\AppInstance {
 
 	/**
 	 * Setting default config options

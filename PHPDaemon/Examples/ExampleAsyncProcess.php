@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleAsyncProcess extends \PHPDaemon\AppInstance {
+class ExampleAsyncProcess extends \PHPDaemon\Core\AppInstance {
 
 	/**
 	 * Creates Request.

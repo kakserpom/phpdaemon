@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Thread;
 
-use PHPDaemon\AppInstance;
+use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Debug;
 use PHPDaemon\FS\FileSystem;

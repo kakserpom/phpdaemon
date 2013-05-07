@@ -6,7 +6,7 @@
  * @package Core
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class MyAppResolver extends \PHPDaemon\AppResolver {
+class MyAppResolver extends \PHPDaemon\Core\AppResolver {
 
 	/**
 	 * Routes incoming request to related application. Method is for overloading.
