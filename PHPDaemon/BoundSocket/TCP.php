@@ -1,17 +1,16 @@
 <?php
 namespace PHPDaemon\BoundSocket;
 
-use PHPDaemon\BoundSocket\BoundSocket;
 use PHPDaemon\Daemon;
 
 /**
- * BoundTCPSocket
+ * TCP
  *
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class BoundTCPSocket extends BoundSocket {
+class TCP extends Generic {
 	/**
 	 * Hostname
 	 * @var string

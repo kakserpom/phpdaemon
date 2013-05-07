@@ -1,11 +1,11 @@
 <?php
 namespace PHPDaemon;
 
-use PHPDaemon\BoundSocket\BoundSocket;
-use PHPDaemon\BoundSocket\BoundSocket;
-use PHPDaemon\BoundSocket\BoundTCPSocket;
-use PHPDaemon\BoundSocket\BoundUDPSocket;
-use PHPDaemon\BoundSocket\BoundUNIXSocket;
+use PHPDaemon\BoundSocket\Generic;
+use PHPDaemon\BoundSocket\Generic;
+use PHPDaemon\BoundSocket\TCP;
+use PHPDaemon\BoundSocket\UDP;
+use PHPDaemon\BoundSocket\UNIX;
 
 /**
  * Pool of connections
@@ -281,21 +281,21 @@ abstract class ConnectionPool extends ObjectStorage {
 	}
 
 	/**
-	 * Attach BoundSocket
-	 * @param BoundSocket
+	 * Attach Generic
+	 * @param Generic
 	 * @param [mixed Info]
 	 * @return void
 	 */
-	public function attachBound(BoundSocket $bound, $inf = null) {
+	public function attachBound(Generic $bound, $inf = null) {
 		$this->bound->attach($bound, $inf);
 	}
 
 	/**
-	 * Detach BoundSocket
-	 * @param BoundSocket
+	 * Detach Generic
+	 * @param Generic
 	 * @return void
 	 */
-	public function detachBound(BoundSocket $bound) {
+	public function detachBound(Generic $bound) {
 		$this->bound->detach($bound);
 	}
 
@@ -362,17 +362,17 @@ abstract class ConnectionPool extends ObjectStorage {
 		$u      = Daemon\Config::parseCfgUri($uri);
 		$scheme = $u['scheme'];
 		if ($scheme === 'unix') {
-			$socket = new BoundUNIXSocket($u);
+			$socket = new UNIX($u);
 
 		}
 		elseif ($scheme === 'udp') {
-			$socket = new BoundUDPSocket($u);
+			$socket = new UDP($u);
 			if (isset($this->config->port->value)) {
 				$socket->setDefaultPort($this->config->port->value);
 			}
 		}
 		elseif ($scheme === 'tcp') {
-			$socket = new BoundTCPSocket($u);
+			$socket = new TCP($u);
 			if (isset($this->config->port->value)) {
 				$socket->setDefaultPort($this->config->port->value);
 			}

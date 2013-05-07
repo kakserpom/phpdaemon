@@ -1,19 +1,18 @@
 <?php
 namespace PHPDaemon\BoundSocket;
 
-use PHPDaemon\BoundSocket\BoundUNIXSocket;
 use PHPDaemon\ConnectionPool;
 use PHPDaemon\Daemon;
 use PHPDaemon\FS;
 
 /**
- * BoundSocket
+ * Generic
  *
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-abstract class BoundSocket {
+abstract class Generic {
 
 	/**
 	 * Enabled?
@@ -312,7 +311,7 @@ abstract class BoundSocket {
 		$conn  = new $class(null, $this->pool);
 		$conn->setParentSocket($this);
 
-		if (!$this instanceof BoundUNIXSocket) {
+		if (!$this instanceof UNIX) {
 			$conn->setPeername($addrPort[0], $addrPort[1]);
 		}
 
@@ -357,7 +356,7 @@ abstract class BoundSocket {
 	}
 
 	/**
-	 * Finishes BoundSocket
+	 * Finishes Generic
 	 * @return void
 	 */
 	public function finish() {

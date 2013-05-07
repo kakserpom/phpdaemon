@@ -1,17 +1,16 @@
 <?php
 namespace PHPDaemon\BoundSocket;
 
-use PHPDaemon\BoundSocket\BoundSocket;
 use PHPDaemon\Daemon;
 
 /**
- * BoundUNIXSocket
+ * UNIX
  *
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class BoundUNIXSocket extends BoundSocket {
+class UNIX extends Generic {
 	/**
 	 * Group
 	 * @var string
