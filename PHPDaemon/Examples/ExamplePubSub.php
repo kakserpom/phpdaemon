@@ -11,7 +11,7 @@ class ExamplePubSub extends \PHPDaemon\AppInstance {
 	 */
 	public function onReady() {
 		$appInstance = $this; // a reference to this application instance for ExampleWebSocketRoute
-		\PHPDaemon\Servers\WebSocketServer::getInstance()->addRoute('ExamplePubSub', function ($client) use ($appInstance) {
+		\PHPDaemon\Servers\Websocket\Pool::getInstance()->addRoute('ExamplePubSub', function ($client) use ($appInstance) {
 			return new ExamplePubSubWebSocketRoute($client, $appInstance);
 		});
 		$this->sql    = \PHPDaemon\Clients\MySQLClient::getInstance();

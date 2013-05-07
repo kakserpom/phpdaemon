@@ -3,7 +3,6 @@ namespace PHPDaemon\Servers\HTTP;
 
 use PHPDaemon\Daemon\ConfigEntrySize;
 use PHPDaemon\Daemon\ConfigEntryTime;
-use PHPDaemon\Servers\WebSocketServer;
 
 /**
  * @package    NetworkServer
@@ -139,6 +138,6 @@ class Pool extends \PHPDaemon\NetworkServer {
 	 */
 	public function onReady() {
 		parent::onReady();
-		$this->WS = WebSocketServer::getInstance($this->config->wssname->value, false);
+		$this->WS = Pool::getInstance($this->config->wssname->value, false);
 	}
 }

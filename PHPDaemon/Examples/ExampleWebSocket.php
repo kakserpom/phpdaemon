@@ -14,7 +14,7 @@ class ExampleWebSocket extends \PHPDaemon\AppInstance {
 	public function onReady() {
 		$appInstance = $this; // a reference to this application instance for ExampleWebSocketRoute
 		// URI /exampleApp should be handled by ExampleWebSocketRoute
-		\PHPDaemon\Servers\WebSocketServer::getInstance()->addRoute('exampleApp', function ($client) use ($appInstance) {
+		\PHPDaemon\Servers\Websocket\Pool::getInstance()->addRoute('exampleApp', function ($client) use ($appInstance) {
 			return new ExampleWebSocketRoute($client, $appInstance);
 		});
 	}
