@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
+namespace PHPDaemon\Examples;
+
+use PHPDaemon\HTTPRequest\Generic;
 /**
  * @package    Examples
  * @subpackage MySQL

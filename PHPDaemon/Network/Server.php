@@ -48,7 +48,7 @@ abstract class Server extends ConnectionPool {
 
 	public function finish() {
 		$this->closeBound();
-		parent::finish();
+		return parent::finish();
 	}
 
 	/**

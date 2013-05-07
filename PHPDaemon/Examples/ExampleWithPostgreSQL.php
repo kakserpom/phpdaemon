@@ -11,6 +11,16 @@ use PHPDaemon\HTTPRequest\Generic;
  */
 class ExampleWithPostgreSQL extends \PHPDaemon\Core\AppInstance {
 
+	public $pgsql;
+
+	/**
+	 * Constructor.
+	 * @return void
+	 */
+	public function init() {
+		$this->pgsql = \PHPDaemon\Clients\PostgreSQL\Pool::getInstance()
+	}
+
 	/**
 	 * Creates Request.
 	 * @param object Request.
@@ -35,16 +45,15 @@ class ExampleWithPostgreSQLRequest extends Generic {
 	 * @return void
 	 */
 	public function init() {
-		$req = $this;
-		\PHPDaemon\Clients\PostgreSQL\Pool::getInstance()->getConnection(function ($sql) use ($req) {
+		$this->appInstance->pgsql->getConnection(function ($sql) {
 			if (!$sql->connected) { // failed to connect
-				$req->wakeup(); // wake up the request immediately
+				$this->wakeup(); // wake up the request immediately
 				$sql->release();
 				return;
 			}
-			$sql->query('SELECT 123 as integer, NULL as nul, \'test\' as string', function ($sql, $success) use ($req) {
-				$req->queryResult = $sql->resultRows; // save the result
-				$req->wakeup(); // wake up the request immediately
+			$sql->query('SELECT 123 as integer, NULL as nul, \'test\' as string', function ($sql, $success) {
+				$this->queryResult = $sql->resultRows; // save the result
+				$this->wakeup(); // wake up the request immediately
 				$sql->release();
 			});
 		});

@@ -34,9 +34,6 @@ class ClassFinder {
 		if ('Client' === substr($class, -6)) {
 			return '\\PHPDaemon\\Clients\\'.substr($class, 0, -6).'\\Pool';
 		}
-		if ('ClientAsync' === substr($class, -11)) {
-			return '\\PHPDaemon\\Clients\\'.substr($class, 0, -11).'\\Pool';
-		}
 		array_unshift($e, '\\' . Daemon::$config->defaultns->value);
 		return implode('\\', $e);
 	}

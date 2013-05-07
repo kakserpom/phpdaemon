@@ -15,9 +15,7 @@ class ExampleWithMongo extends \PHPDaemon\Core\AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->mongo = \PHPDaemon\Clients\Mongo\Pool::getInstance(
-			array('maxconnperserv' => 100)
-		);
+		$this->mongo = \PHPDaemon\Clients\Mongo\Pool::getInstance(['maxconnperserv' => 100]);
 	}
 
 	/**
@@ -31,7 +29,6 @@ class ExampleWithMongo extends \PHPDaemon\Core\AppInstance {
 	}
 
 }
-
 class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest\Generic {
 
 	public $job;
@@ -41,11 +38,9 @@ class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest\Generic {
 	 * @return void
 	 */
 	public function init() {
-		$req = $this;
+		$job = $this->job = new \PHPDaemon\ComplexJob(function () { // called when job is done
 
-		$job = $this->job = new \PHPDaemon\ComplexJob(function () use ($req) { // called when job is done
-
-			$req->wakeup(); // wake up the request immediately
+			$this->wakeup(); // wake up the request immediately
 
 		});
 
