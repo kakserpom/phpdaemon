@@ -181,7 +181,7 @@ class HTTPRequestInput extends \EventBuffer {
 	 * @param EventBuffer Source nuffer
 	 * @return integer
 	 */
-	public function readFromBuffer(EventBuffer $buf) {
+	public function readFromBuffer(\EventBuffer $buf) {
 		if (!$this->req) {
 			return false;
 		}

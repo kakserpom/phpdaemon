@@ -153,7 +153,7 @@ class BoundUDPSocket extends BoundSocket {
 		$this->enabled = true;
 
 		if ($this->ev === null) {
-			$this->ev = new Event(Daemon::$process->eventBase, $this->fd, Event::READ | Event::PERSIST, [$this, 'onReadUdp']);
+			$this->ev = new \Event(Daemon::$process->eventBase, $this->fd, \Event::READ | \Event::PERSIST, [$this, 'onReadUdp']);
 			$this->onBound();
 		}
 		else {
