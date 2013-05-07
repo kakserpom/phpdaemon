@@ -1,16 +1,14 @@
 <?php
 namespace PHPDaemon\Cache;
 
-use PHPDaemon\Cache\CappedCacheStorage;
-
 /**
- * CappedCacheStorageHits
+ * CappedStorageHits
  *
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class CappedCacheStorageHits extends CappedCacheStorage {
+class CappedStorageHits extends CappedStorage {
 
 	/**
 	 * Constructor

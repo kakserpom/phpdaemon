@@ -1,8 +1,8 @@
 <?php
 namespace PHPDaemon;
 
-use PHPDaemon\Cache\CappedCacheStorage;
-use PHPDaemon\Cache\CappedCacheStorageHits;
+use PHPDaemon\Cache\CappedStorage;
+use PHPDaemon\Cache\CappedStorageHits;
 
 /**
  * FS
@@ -52,7 +52,7 @@ class FS {
 
 	/**
 	 * File descriptor cache
-	 * @var CappedCacheStorage
+	 * @var CappedStorage
 	 */
 	public static $fdCache;
 
@@ -81,7 +81,7 @@ class FS {
 			Daemon::log('FS: missing pecl-eio >= ' . self::$eioVer . '. Filesystem I/O performance compromised. Consider installing pecl-eio. `pecl install http://pecl.php.net/get/eio-' . self::$eioVer . '.tgz`');
 			return;
 		}
-		self::$fdCache = new CappedCacheStorageHits(self::$fdCacheSize);
+		self::$fdCache = new CappedStorageHits(self::$fdCacheSize);
 		eio_init();
 	}
 

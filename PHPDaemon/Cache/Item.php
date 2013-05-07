@@ -4,13 +4,13 @@ namespace PHPDaemon\Cache;
 use PHPDaemon\StackCallbacks;
 
 /**
- * CacheItem
+ * Item
  *
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class CacheItem {
+class Item {
 
 	/* Value
 	 * @var mixed

@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
-use PHPDaemon\Cache\CappedCacheStorageHits;
+use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\ComplexJob;
 use PHPDaemon\FS;
 
@@ -43,7 +43,7 @@ class DNSClient extends NetworkClient {
 
 	/**
 	 * Resolve cache
-	 * @var CappedCacheStorageHits
+	 * @var CappedStorageHits
 	 */
 	public $resolveCache;
 
@@ -62,7 +62,7 @@ class DNSClient extends NetworkClient {
 	 * @return object
 	 */
 	protected function init() {
-		$this->resolveCache = new CappedCacheStorageHits($this->config->resolvecachesize->value);
+		$this->resolveCache = new CappedStorageHits($this->config->resolvecachesize->value);
 	}
 
 	/**

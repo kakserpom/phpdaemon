@@ -2,13 +2,13 @@
 namespace PHPDaemon\Cache;
 
 /**
- * CappedCacheStorage
+ * CappedStorage
  *
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-abstract class CappedCacheStorage {
+abstract class CappedStorage {
 	/**
 	 * Sorter function
 	 * @var callable
@@ -56,7 +56,7 @@ abstract class CappedCacheStorage {
 			$item->setValue($value);
 			return $item;
 		}
-		$item = new CacheItem($value);
+		$item = new Item($value);
 		if ($ttl !== null) {
 			$item->expire = microtime(true) + $ttl;
 		}
@@ -84,7 +84,7 @@ abstract class CappedCacheStorage {
 	/**
 	 * Gets element by key
 	 * @param string Key
-	 * @return object CacheItem
+	 * @return object Item
 	 */
 	public function get($key) {
 		$k = $this->hash($key);

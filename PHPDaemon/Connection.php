@@ -3,8 +3,8 @@ namespace PHPDaemon;
 
 use PHPDaemon\BoundSocket\Generic;
 use PHPDaemon\BoundSocket\TCP;
-use PHPDaemon\Cache\CappedCacheStorage;
-use PHPDaemon\Cache\CappedCacheStorageHits;
+use PHPDaemon\Cache\CappedStorage;
+use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Clients\DNSClient;
 
 /**
@@ -168,7 +168,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Context cache
-	 * @var CappedCacheStorage
+	 * @var CappedStorage
 	 */
 	protected static $contextCache;
 
@@ -408,7 +408,7 @@ abstract class Connection extends IOStream {
 		}
 		$hash = igbinary_serialize($params);
 		if (!self::$contextCache) {
-			self::$contextCache = new CappedCacheStorageHits(self::$contextCacheSize);
+			self::$contextCache = new CappedStorageHits(self::$contextCacheSize);
 		}
 		elseif ($ctx = self::$contextCache->getValue($hash)) {
 			return $ctx;
