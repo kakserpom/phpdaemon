@@ -1,9 +1,7 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon\Servers\FastCGI;
 
-use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
-use PHPDaemon\HTTPRequest\Input;
 
 /**
  * @package    NetworkServers
@@ -11,7 +9,7 @@ use PHPDaemon\HTTPRequest\Input;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class FastCGIServerConnection extends Connection {
+class Connection extends \PHPDaemon\Connection {
 	protected $lowMark = 8; // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
 	public $timeout = 180;
@@ -144,7 +142,7 @@ class FastCGIServerConnection extends Connection {
 			$req->attrs->id         = $this->header['reqid'];
 			$req->attrs->paramsDone = false;
 			$req->attrs->inputDone  = false;
-			$req->attrs->input      = new Input();
+			$req->attrs->input      = new \PHPDaemon\HTTPRequest\Input();
 			$req->attrs->chunked    = false;
 			$req->attrs->noHttpVer  = true;
 			$req->queueId           = $rid;

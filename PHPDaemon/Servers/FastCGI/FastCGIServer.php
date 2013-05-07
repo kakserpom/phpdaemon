@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon\Servers\FastCGI;
 
 use PHPDaemon\Daemon\ConfigEntrySize;
 use PHPDaemon\Daemon\ConfigEntryTime;
