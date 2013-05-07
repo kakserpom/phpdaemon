@@ -1,10 +1,10 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Request;
 
-use PHPDaemon\Request\RequestSleep;
-use PHPDaemon\Request\RequestTerminated;
+use PHPDaemon\AppInstance;
+use PHPDaemon\Daemon;
 
-abstract class Request {
+abstract class Generic {
 
 	const STATE_FINISHED = 1;
 	const STATE_WAITING  = 2;
@@ -149,30 +149,30 @@ abstract class Request {
 	 */
 	public function eventCall($arg) {
 		try {
-			if ($this->state === Request::STATE_FINISHED) {
+			if ($this->state === Generic::STATE_FINISHED) {
 				$this->finish();
 				$this->free();
 				return;
 			}
-			$this->state = Request::STATE_RUNNING;
+			$this->state = Generic::STATE_RUNNING;
 			$this->onWakeup();
 			$throw = false;
 			try {
 				$ret = $this->run();
-				if (($ret === Request::STATE_FINISHED) || ($ret === null)) {
+				if (($ret === Generic::STATE_FINISHED) || ($ret === null)) {
 					$this->finish();
 				}
-				elseif ($ret === Request::STATE_WAITING) {
+				elseif ($ret === Generic::STATE_WAITING) {
 					$this->state = $ret;
 				}
 			} catch (RequestSleep $e) {
-				$this->state = Request::STATE_WAITING;
+				$this->state = Generic::STATE_WAITING;
 			} catch (RequestTerminated $e) {
-				$this->state = Request::STATE_FINISHED;
+				$this->state = Generic::STATE_FINISHED;
 			} catch (\Exception $e) {
 				$throw = true;
 			}
-			if ($this->state === Request::STATE_FINISHED) {
+			if ($this->state === Generic::STATE_FINISHED) {
 				$this->finish();
 			}
 			$this->onSleep();
@@ -186,10 +186,10 @@ abstract class Request {
 			return;
 		}
 		handleStatus:
-		if ($this->state === Request::STATE_FINISHED) {
+		if ($this->state === Generic::STATE_FINISHED) {
 			$this->free();
 		}
-		elseif ($this->state === REQUEST::STATE_WAITING) {
+		elseif ($this->state === Generic::STATE_WAITING) {
 			$this->ev->add($this->sleepTime);
 		}
 	}
@@ -348,10 +348,10 @@ abstract class Request {
 	 * @return void
 	 */
 	public function sleep($time = 0, $set = false) {
-		if ($this->state === Request::STATE_FINISHED) {
+		if ($this->state === Generic::STATE_FINISHED) {
 			return;
 		}
-		if ($this->state !== Request::STATE_RUNNING) {
+		if ($this->state !== Generic::STATE_RUNNING) {
 			$set = true;
 		}
 
@@ -365,7 +365,7 @@ abstract class Request {
 			$this->ev->add($this->sleepTime);
 		}
 
-		$this->state = Request::STATE_WAITING;
+		$this->state = Generic::STATE_WAITING;
 	}
 
 	/**
@@ -385,7 +385,7 @@ abstract class Request {
 	 * @return void
 	 */
 	public function wakeup() {
-		if ($this->state === Request::STATE_WAITING) {
+		if ($this->state === Generic::STATE_WAITING) {
 			$this->ev->del();
 			$this->ev->add(0);
 		}
@@ -449,8 +449,8 @@ abstract class Request {
 		if (
 			(ignore_user_abort() === 1)
 			&& (
-					($this->state === Request::STATE_RUNNING)
-					|| ($this->state === Request::STATE_WAITING)
+					($this->state === Generic::STATE_RUNNING)
+					|| ($this->state === Generic::STATE_WAITING)
 			)
 			&& !Daemon::$compatMode
 		) {
@@ -475,12 +475,12 @@ abstract class Request {
 	 * @return void
 	 */
 	public function finish($status = 0, $zombie = FALSE) {
-		if ($this->state === Request::STATE_FINISHED) {
+		if ($this->state === Generic::STATE_FINISHED) {
 			return;
 		}
 
 		if (!$zombie) {
-			$this->state = Request::STATE_FINISHED;
+			$this->state = Generic::STATE_FINISHED;
 		}
 
 		if (!($r = $this->running)) {

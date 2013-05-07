@@ -6,7 +6,7 @@ use PHPDaemon\Daemon;
 use PHPDaemon\FS\FS;
 use PHPDaemon\HTTPRequest;
 use PHPDaemon\HTTPRequestInput;
-use PHPDaemon\Request;
+use PHPDaemon\Request\Generic;
 
 /**
  * @package    NetworkServers
@@ -278,7 +278,7 @@ class HTTPServerConnection extends Connection {
 
 	/**
 	 * Handles the output from downstream requests.
-	 * @param object Request.
+	 * @param object \PHPDaemon\Request\Generic.
 	 * @param string The output.
 	 * @return boolean Success
 	 */
@@ -335,7 +335,7 @@ class HTTPServerConnection extends Connection {
 	 * @return void
 	 */
 	public function onFinish() {
-		if ($this->req !== null && $this->req instanceof Request) {
+		if ($this->req !== null && $this->req instanceof Generic) {
 			if (!$this->req->isFinished()) {
 				$this->req->abort();
 			}

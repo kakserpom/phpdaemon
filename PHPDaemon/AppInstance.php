@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Request\Generic;
+
 /**
  * Application instance
  *
@@ -199,7 +201,7 @@ class AppInstance {
 
 	/**
 	 * Create Request instance
-	 * @param object Request
+	 * @param object Generic
 	 * @param object Upstream application instance
 	 * @return object Request
 	 */

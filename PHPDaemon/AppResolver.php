@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Request\Generic;
+use PHPDaemon\Request\Generic;
+
 /**
  * Application resolver
  *
@@ -101,7 +104,7 @@ class AppResolver {
 	 */
 	public function appInstantiate($appName, $instance, $preload = false) {
 		$fullname = $this->getAppFullname($appName, $instance);
-		$class = ClassFinder::find($appName);
+		$class    = ClassFinder::find($appName);
 		if (!class_exists($class) || !is_subclass_of($class, '\PHPDaemon\AppInstance')) {
 			return false;
 		}
@@ -118,7 +121,7 @@ class AppResolver {
 
 	/**
 	 * Routes incoming request to related application
-	 * @param object Request.
+	 * @param object Generic.
 	 * @param object AppInstance of Upstream.
 	 * @param string Default application name.
 	 * @return object Request.
@@ -151,7 +154,7 @@ class AppResolver {
 
 	/**
 	 * Routes incoming request to related application. Method is for overloading.
-	 * @param object Request.
+	 * @param object Generic.
 	 * @param object AppInstance of Upstream.
 	 * @return string Application's name.
 	 */

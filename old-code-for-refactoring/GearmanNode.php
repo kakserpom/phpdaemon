@@ -56,7 +56,7 @@ class GearmanNode extends \PHPDaemon\AppInstance {
 
 }
 
-class GearmanNodeInterval extends \PHPDaemon\Request {
+class GearmanNodeInterval extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called when request iterated

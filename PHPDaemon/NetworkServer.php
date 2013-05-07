@@ -2,7 +2,7 @@
 namespace PHPDaemon;
 
 use PHPDaemon\ConnectionPool;
-use PHPDaemon\Request;
+use PHPDaemon\Request\Generic;
 
 /**
  * Network server pattern
@@ -29,7 +29,7 @@ abstract class NetworkServer extends ConnectionPool {
 		$oldConn->unsetFd();
 		$oldConn->pool->detach($oldConn);
 		$conn->onInheritanceFromRequest($req);
-		if ($req instanceof Request) {
+		if ($req instanceof Generic) {
 			$req->free();
 		}
 		return true;

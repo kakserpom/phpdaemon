@@ -2,6 +2,7 @@
 namespace PHPDaemon;
 
 use PHPDaemon\FS\File;
+use PHPDaemon\Request\Generic;
 
 /**
  * HTTP request input buffer
@@ -56,7 +57,7 @@ class HTTPRequestInput extends \EventBuffer {
 
 	/**
 	 * Related Request
-	 * @var Request
+	 * @var Generic
 	 */
 	protected $req;
 
@@ -129,7 +130,7 @@ class HTTPRequestInput extends \EventBuffer {
 	 * @param Request
 	 * @return void
 	 */
-	public function setRequest(Request $req) {
+	public function setRequest(Generic $req) {
 		$this->req = $req;
 	}
 

@@ -3,6 +3,7 @@ namespace PHPDaemon;
 
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FS;
+use PHPDaemon\Request\Generic;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Servers\HTTPServerConnection;
 
@@ -13,7 +14,7 @@ use PHPDaemon\Servers\HTTPServerConnection;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class HTTPRequest extends Request {
+class HTTPRequest extends Generic {
 
 	/**
 	 * Status codes
