@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon;
 
-class Request {
+abstract class Request {
 
 	const STATE_FINISHED = 1;
 	const STATE_WAITING  = 2;
