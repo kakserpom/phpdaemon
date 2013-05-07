@@ -65,4 +65,3 @@ class Item {
 		$this->listeners->executeAll($this->value);
 	}
 }
-
