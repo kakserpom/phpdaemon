@@ -1,9 +1,9 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon\Servers\Ident;
 
 use PHPDaemon\NetworkServer;
 
-class IdentServer extends NetworkServer {
+class Pool extends NetworkServer {
 
 	/* Pairs
 	 * @var array ["$local:$foreign" => "$user", ...]

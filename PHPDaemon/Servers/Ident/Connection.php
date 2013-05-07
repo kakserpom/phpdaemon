@@ -1,7 +1,5 @@
 <?php
-namespace PHPDaemon\Servers;
-
-use PHPDaemon\Connection;
+namespace PHPDaemon\Servers\Ident;
 
 /**
  * @package    NetworkServers
@@ -9,7 +7,7 @@ use PHPDaemon\Connection;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class IdentServerConnection extends Connection {
+class Connection extends \PHPDaemon\Connection {
 
 	/**
 	 * EOL
