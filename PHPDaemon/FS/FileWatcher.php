@@ -1,5 +1,8 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\FS;
+
+use PHPDaemon\Daemon;
+use PHPDaemon\Timer;
 
 /**
  * Implementation of the file watcher

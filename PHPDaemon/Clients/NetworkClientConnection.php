@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients;
 
-use PHPDaemon\StackCallbacks;
+use PHPDaemon\Structures\StackCallbacks;
 
 /**
  * Network client connection pattern
@@ -32,7 +32,7 @@ class NetworkClientConnection extends \PHPDaemon\Connection {
 
 	/**
 	 * Stack of onResponse callbacks
-	 * @var StackCallbacks
+	 * @var \PHPDaemon\Structures\StackCallbacks
 	 */
 	protected $onResponse;
 

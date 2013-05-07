@@ -1,5 +1,8 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\FS;
+
+use PHPDaemon\IOStream;
+use PHPDaemon\Structures\StackCallbacks;
 
 /**
  * File

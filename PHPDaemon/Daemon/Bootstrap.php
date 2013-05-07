@@ -2,7 +2,7 @@
 namespace PHPDaemon\Daemon;
 
 use PHPDaemon\Daemon;
-use PHPDaemon\FS;
+use PHPDaemon\FS\FS;
 use PHPDaemon\ShmEntity;
 use PHPDaemon\Terminal;
 use PHPDaemon\Thread;

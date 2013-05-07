@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Structures\StackCallbacks;
+
 /**
  * DeferredEvent class.
  */

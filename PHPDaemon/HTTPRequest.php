@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\FS\File;
+use PHPDaemon\FS\FS;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Servers\HTTPServerConnection;
 

@@ -3,7 +3,7 @@ namespace PHPDaemon\Clients;
 
 use PHPDaemon\Binary;
 use PHPDaemon\Daemon;
-use PHPDaemon\StackCallbacks;
+use PHPDaemon\Structures\StackCallbacks;
 
 class MySQLClientConnection extends NetworkClientConnection {
 

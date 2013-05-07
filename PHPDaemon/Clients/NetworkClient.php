@@ -2,7 +2,7 @@
 namespace PHPDaemon\Clients;
 
 use PHPDaemon\ObjectStorage;
-use PHPDaemon\PriorityQueueCallbacks;
+use PHPDaemon\Structures\PriorityQueueCallbacks;
 
 /**
  * Network client pattern

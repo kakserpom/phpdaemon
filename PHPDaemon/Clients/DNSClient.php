@@ -3,7 +3,7 @@ namespace PHPDaemon\Clients;
 
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\ComplexJob;
-use PHPDaemon\FS;
+use PHPDaemon\FS\FS;
 
 class DNSClient extends NetworkClient {
 	/**

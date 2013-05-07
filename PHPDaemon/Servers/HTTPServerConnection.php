@@ -3,7 +3,7 @@ namespace PHPDaemon\Servers;
 
 use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
-use PHPDaemon\FS;
+use PHPDaemon\FS\FS;
 use PHPDaemon\HTTPRequest;
 use PHPDaemon\HTTPRequestInput;
 use PHPDaemon\Request;

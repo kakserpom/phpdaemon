@@ -8,7 +8,7 @@ class ExampleFsRequest extends HTTPRequest {
 	public function init() {
 		$req = $this;
 		$this->sleep(1, true);
-		\PHPDaemon\FS::readfile('/etc/filesystems', function ($file, $data) use ($req) {
+		\PHPDaemon\FS\FS::readfile('/etc/filesystems', function ($file, $data) use ($req) {
 			$req->fileData = $data;
 			$req->wakeup();
 		});
