@@ -30,6 +30,14 @@ class Generic {
 	}
 
 	/**
+	 * Get value
+	 * @return mixed
+	 */
+	public function getValue() {
+		return $this->value;
+	}
+
+	/**
 	 * Set value
 	 * @param mixed
 	 * @return void

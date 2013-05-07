@@ -47,25 +47,46 @@ class AppResolver {
 				if (isset(Daemon::$appInstances[$appNameLower][$instance])) {
 					continue;
 				}
-				$this->appInstantiate($appName, $instance, true);
+				$this->getInstance($appName, $instance, true, true);
 			}
 		}
 	}
 
 	/**
-	 * Gets instance of application by it's name.
+	 * Gets instance of application
 	 * @param string Application name.
 	 * @return object AppInstance.
 	 */
-	public function getInstanceByAppName($appName, $instance = '', $spawn = true) {
-		$appNameLower = strtolower($appName);
-		if (!isset(Daemon::$appInstances[$appNameLower][$instance])) {
-			if (!$spawn) {
+	public function getInstanceByAppName($appName, $instance = '', $spawn = true, $preload = false) {
+		return $this->getInstance($appName, $instance, $spawn, $preload);
+	}
+
+	/**
+	 * Gets instance of application
+	 * @param string Application name.
+	 * @return object AppInstance.
+	 */
+	public function getInstance($appName, $instance = '', $spawn = true, $preload = false) {
+		$class = ClassFinder::find($appName);
+		if (isset(Daemon::$appInstances[$class][$instance])) {
+			return Daemon::$appInstances[$class][$instance];
+		}
+		if (!$spawn) {
+			return false;
+		}
+		$fullname = $this->getAppFullname($appName, $instance);
+		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Core\\AppInstance')) {
+			return false;
+		}
+		if (!$preload) {
+			if (!$class::$runOnDemand) {
 				return false;
 			}
-			return $this->appInstantiate($appName, $instance);
+			if (isset(Daemon::$config->{$fullname}->limitinstances)) {
+				return false;
+			}
 		}
-		return Daemon::$appInstances[$appNameLower][$instance];
+		return new $class($instance, $appName);
 	}
 
 	/**
@@ -96,30 +117,6 @@ class AppResolver {
 	 */
 	public function getAppFullname($appName, $instance = '') {
 		return $appName . ($instance !== '' ? ':' . $instance : '');
-	}
-
-	/**
-	 * Run new application instance
-	 * @param string Application name
-	 * @param string Name of instance
-	 * @param [boolean = false] Preload?
-	 * @return object AppInstance.
-	 */
-	public function appInstantiate($appName, $instance, $preload = false) {
-		$fullname = $this->getAppFullname($appName, $instance);
-		$class    = ClassFinder::find($appName);
-		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Core\\AppInstance')) {
-			return false;
-		}
-		if (!$preload) {
-			if (!$class::$runOnDemand) {
-				return false;
-			}
-			if (isset(Daemon::$config->{$fullname}->limitinstances)) {
-				return false;
-			}
-		}
-		return new $class($instance);
 	}
 
 	/**

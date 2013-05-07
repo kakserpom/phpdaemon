@@ -132,7 +132,10 @@ abstract class Server extends ConnectionPool {
 				$this->allowedClients = $v;
 			}
 			elseif ($k === 'maxallowedpacket') {
-				$this->maxAllowedPacket = (int)$v;
+				if ($v instanceof \PHPDaemon\Config\Entry\Generic) {
+					$v = $v->getValue();
+				}
+				$this->maxAllowedPacket = (int) $v;
 			}
 			elseif ($k === 'maxconcurrency') {
 				$this->maxConcurrency = (int)$v;
