@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class UDPEchoServer extends \PHPDaemon\Servers\NetworkServer {
+class UDPEchoServer extends \PHPDaemon\NetworkServer {
 
 	/**
 	 * Setting default config options

@@ -3,7 +3,7 @@ namespace PHPDaemon;
 
 use PHPDaemon\Clients\IRCClient;
 use PHPDaemon\Clients\MongoClientAsync;
-use PHPDaemon\Servers\NetworkServer;
+use PHPDaemon\NetworkServer;
 
 class IRCBouncer extends NetworkServer {
 	public $client;

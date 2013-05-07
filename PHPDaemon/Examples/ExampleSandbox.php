@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Examples;
 
+use PHPDaemon\HTTPRequest;
+
 /**
  * @package    Examples
  * @subpackage Sandbox

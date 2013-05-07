@@ -30,7 +30,7 @@ public $job;
 public function init() {
 	try {
 		$this->header('Content-Type: text/html');
-	} catch (Exception $e) {
+	} catch (\Exception $e) {
 	}
 	$req = $this;
 

@@ -51,10 +51,10 @@ class MongoNode extends \PHPDaemon\AppInstance {
 						$e            = explode(' ', $answer->result);
 
 						if (isset($e[1])) {
-							$ts = new MongoTimestamp((int)$e[0], (int)$e[1]);
+							$ts = new \MongoTimestamp((int)$e[0], (int)$e[1]);
 						}
 						else {
-							$ts = new MongoTimestamp(0, 0);
+							$ts = new \MongoTimestamp(0, 0);
 						}
 
 						if (\PHPDaemon\Daemon::$config->logevents->value) {

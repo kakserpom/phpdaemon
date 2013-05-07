@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Servers;
 
+use PHPDaemon\NetworkServer;
+
 class LockServer extends NetworkServer {
 
 	public $lockState = array(); // Jobs

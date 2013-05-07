@@ -3,6 +3,7 @@ namespace PHPDaemon\Servers;
 
 use PHPDaemon\Daemon;
 use PHPDaemon\FS;
+use PHPDaemon\NetworkServer;
 
 class FlashPolicyServer extends NetworkServer {
 

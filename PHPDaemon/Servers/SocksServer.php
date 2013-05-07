@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Servers;
 
+use PHPDaemon\NetworkServer;
+
 class SocksServer extends NetworkServer {
 
 	/**

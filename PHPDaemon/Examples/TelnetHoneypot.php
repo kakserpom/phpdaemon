@@ -7,7 +7,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class TelnetHoneypot extends \PHPDaemon\Servers\NetworkServer {
+class TelnetHoneypot extends \PHPDaemon\NetworkServer {
 	/**
 	 * Setting default config options
 	 * Overriden from ConnectionPool::getConfigDefaults

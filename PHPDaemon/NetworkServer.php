@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon;
 
 use PHPDaemon\ConnectionPool;
 use PHPDaemon\Request;
