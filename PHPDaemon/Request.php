@@ -1,6 +1,9 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Request\RequestSleep;
+use PHPDaemon\Request\RequestTerminated;
+
 class Request {
 
 	const STATE_FINISHED = 1;
@@ -162,9 +165,9 @@ class Request {
 				elseif ($ret === Request::STATE_WAITING) {
 					$this->state = $ret;
 				}
-			} catch (RequestSleepException $e) {
+			} catch (RequestSleep $e) {
 				$this->state = Request::STATE_WAITING;
-			} catch (RequestTerminatedException $e) {
+			} catch (RequestTerminated $e) {
 				$this->state = Request::STATE_FINISHED;
 			} catch (\Exception $e) {
 				$throw = true;
@@ -339,7 +342,7 @@ class Request {
 
 	/**
 	 * Delays the request execution for the given number of seconds
-	 * @throws RequestSleepException
+	 * @throws RequestSleep
 	 * @param float   Time to sleep in seconds
 	 * @param boolean Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
 	 * @return void
@@ -355,7 +358,7 @@ class Request {
 		$this->sleepTime = $time;
 
 		if (!$set) {
-			throw new RequestSleepException;
+			throw new RequestSleep;
 		}
 		else {
 			$this->ev->del();
@@ -374,7 +377,7 @@ class Request {
 			$this->out($s);
 		}
 
-		throw new RequestTerminatedException;
+		throw new RequestTerminated;
 	}
 
 	/**

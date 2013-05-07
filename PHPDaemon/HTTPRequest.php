@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon;
 
+use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Servers\HTTPServerConnection;
 
 /**

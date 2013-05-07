@@ -74,7 +74,7 @@ public function fileNotFound() {
 	try {
 		$this->header('404 Not Found');
 		$this->header('Content-Type: text/html');
-	} catch (\PHPDaemon\RequestHeadersAlreadySent $e) {
+	} catch (\PHPDaemon\Request\RequestHeadersAlreadySent $e) {
 	}
 	$this->out('File not found.');
 }
