@@ -1,9 +1,9 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon\Servers\Lock;
 
 use PHPDaemon\NetworkServer;
 
-class LockServer extends NetworkServer {
+class Pool extends NetworkServer {
 
 	public $lockState = array(); // Jobs
 	public $lockConnState = array(); // Array of connection's state

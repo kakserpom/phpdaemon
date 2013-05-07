@@ -1,9 +1,6 @@
 <?php
+namespace PHPDaemon\Servers\Lock;
 
-
-namespace PHPDaemon\Servers;
-
-use PHPDaemon\Connection;
 use PHPDaemon\Daemon;
 use PHPDaemon\Debug;
 
@@ -13,7 +10,7 @@ use PHPDaemon\Debug;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class LockServerConnection extends Connection {
+class Connection extends \PHPDaemon\Connection {
 	public $server = FALSE; // Is this S2S-session?
 	public $locks = array(); // State of locks.
 
