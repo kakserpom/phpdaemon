@@ -170,7 +170,10 @@ class Worker extends Generic {
 		FileSystem::initEvent();
 		Daemon::openLogs();
 
-		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('IPCManager');
+		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
+		if (!$this->IPCManager) {
+			$this->log('cannot instantiate IPCManager');
+		}
 
 		Daemon::$appResolver->preload();
 
@@ -188,7 +191,9 @@ class Worker extends Generic {
 		Timer::add(function ($event) {
 
 			if (!Daemon::$runworkerMode) {
-				$this->IPCManager->ensureConnection();
+				if ($this->IPCManager) {
+					$this->IPCManager->ensureConnection();
+				}
 			}
 
 			$this->breakMainLoopCheck();

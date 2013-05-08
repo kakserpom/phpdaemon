@@ -92,7 +92,10 @@ class IPC extends Generic {
 		Daemon::openLogs();
 
 		$this->fileWatcher = new FileWatcher();
-		$this->IPCManager  = Daemon::$appResolver->getInstanceByAppName('IPCManager');
+		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
+		if (!$this->IPCManager) {
+			$this->log('cannot instantiate IPCManager');
+		}
 
 		while (!$this->breakMainLoop) {
 			if (!$this->eventBase->dispatch()) {

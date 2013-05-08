@@ -9,5 +9,5 @@ namespace PHPDaemon\IPCManager;
  */
 class MasterPool extends \PHPDaemon\Network\Server {
 	public $workers = array();
-	public $connectionClass = '\PHPDaemon\IPCManagerMasterPoolConnection';
+	public $connectionClass = '\PHPDaemon\IPCManager\MasterPoolConnection';
 }
