@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Network;
 
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\ConnectionPool;
 
 /**
@@ -31,7 +32,7 @@ abstract class Server extends ConnectionPool {
 	 */
 	public function __construct($config = [], $init = true) {
 		parent::__construct($config, false);
-		$this->bound  = new \PHPDaemon\Structures\ObjectStorage;
+		$this->bound = new \PHPDaemon\Structures\ObjectStorage;
 		if (isset($this->config->listen)) {
 			$this->bindSockets($this->config->listen->value);
 		}
@@ -39,7 +40,6 @@ abstract class Server extends ConnectionPool {
 			$this->init();
 		}
 	}
-
 
 	/**
 	 * Finishes ConnectionPool
@@ -110,7 +110,6 @@ abstract class Server extends ConnectionPool {
 		return false;
 	}
 
-
 	/**
 	 * Applies config
 	 * @return void
@@ -118,7 +117,7 @@ abstract class Server extends ConnectionPool {
 	protected function applyConfig() {
 		parent::applyConfig();
 		foreach ($this->config as $k => $v) {
-			if (is_object($v) && $v instanceof Config\Entry\Generic) {
+			if (is_object($v) && $v instanceof \PHPDaemon\Config\Entry\Generic) {
 				$v = $v->value;
 			}
 			$k = strtolower($k);
@@ -135,7 +134,7 @@ abstract class Server extends ConnectionPool {
 				if ($v instanceof \PHPDaemon\Config\Entry\Generic) {
 					$v = $v->getValue();
 				}
-				$this->maxAllowedPacket = (int) $v;
+				$this->maxAllowedPacket = (int)$v;
 			}
 			elseif ($k === 'maxconcurrency') {
 				$this->maxConcurrency = (int)$v;
@@ -152,6 +151,7 @@ abstract class Server extends ConnectionPool {
 			$this->bound->each('enable');
 		}
 	}
+
 	/**
 	 * Called when ConnectionPool is now disabled
 	 * @return void
@@ -188,7 +188,6 @@ abstract class Server extends ConnectionPool {
 	public function closeBound() {
 		$this->bound->each('close');
 	}
-
 
 	/**
 	 * Called when a request to HTTP-server looks like another connection.
