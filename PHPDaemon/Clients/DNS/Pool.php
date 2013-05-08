@@ -2,7 +2,6 @@
 namespace PHPDaemon\Clients\DNS;
 
 use PHPDaemon\Cache\CappedStorageHits;
-use PHPDaemon\Clients\Hostname;
 use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Network\Client;

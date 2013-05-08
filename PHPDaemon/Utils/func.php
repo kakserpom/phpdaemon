@@ -23,13 +23,15 @@ if (!function_exists('igbinary_serialize')) {
 	function igbinary_serialize($m) {
 		return serialize($m);
 	}
+
 	function igbinary_unserialize($m) {
 		return unserialize($m);
 	}
 }
 function setTimeout($cb, $timeout = null, $id = null, $priority = null) {
-	return Timer::add($cb, $timeout, $id, $priority);
+	return \PHPDaemon\Core\Timer::add($cb, $timeout, $id, $priority);
 }
+
 function clearTimeout($id) {
-	Timer::remove($id);
+	\PHPDaemon\Core\Timer::remove($id);
 }

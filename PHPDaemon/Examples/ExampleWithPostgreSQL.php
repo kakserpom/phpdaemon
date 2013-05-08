@@ -18,7 +18,7 @@ class ExampleWithPostgreSQL extends \PHPDaemon\Core\AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->pgsql = \PHPDaemon\Clients\PostgreSQL\Pool::getInstance()
+		$this->pgsql = \PHPDaemon\Clients\PostgreSQL\Pool::getInstance();
 	}
 
 	/**
