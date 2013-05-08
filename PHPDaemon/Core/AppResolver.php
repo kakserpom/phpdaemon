@@ -67,7 +67,7 @@ class AppResolver {
 	 * @return object AppInstance.
 	 */
 	public function getInstance($appName, $instance = '', $spawn = true, $preload = false) {
-		$class = ClassFinder::find($appName);
+		$class = ClassFinder::find($appName, 'Applications');
 		if (isset(Daemon::$appInstances[$class][$instance])) {
 			return Daemon::$appInstances[$class][$instance];
 		}

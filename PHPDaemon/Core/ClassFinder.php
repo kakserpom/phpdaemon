@@ -12,10 +12,24 @@ class ClassFinder {
 
 	/**
 	 *
-	 * @param string Class
+	 * @param string|object $class Object or String
 	 * @return string Class
 	 */
-	public static function find($class) {
+	public static function getClassBasename($class) {
+		if (is_object($class)) {
+			$class = get_class($class);
+		}
+		$e = explode('\\', $class);
+		return end($e);
+	}
+
+	/**
+	 *
+	 * @param string Class
+	 * @param string Namespace
+	 * @return string Class
+	 */
+	public static function find($class, $namespace = null) {
 		$e = explode('\\', $class);
 		if ($e[0] === '') {
 			return $class;
@@ -37,6 +51,9 @@ class ClassFinder {
 		if ('ClientAsync' === substr($class, -11)) {
 			$path = '\\PHPDaemon\\Clients\\' . substr($class, 0, -11) . '\\Pool';
 			return str_replace('\\Client\\Clients', '\\Clients', $path);
+		}
+		if ($namespace !== null) {
+			array_unshift($e, $namespace);
 		}
 		array_unshift($e, '\\' . Daemon::$config->defaultns->value);
 		return implode('\\', $e);

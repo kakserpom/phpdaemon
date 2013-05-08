@@ -155,6 +155,12 @@ class Worker extends Generic {
 		}
 
 		if (Daemon::$runworkerMode) {
+			if (!Daemon::$config->verbosetty->value) {
+				fclose(STDIN);
+				fclose(STDOUT);
+				fclose(STDERR);
+			}
+
 			Daemon::$appResolver = require Daemon::$appResolverPath;
 			Daemon::$appResolver->preload(true);
 		}
