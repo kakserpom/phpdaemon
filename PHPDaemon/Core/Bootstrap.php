@@ -288,6 +288,10 @@ class Bootstrap {
 			}
 		}
 
+		if (isset(Core\Daemon::$config->addincludepath->value)) {
+			ini_set('include_path', ini_get('include_path') . ':' . Core\Daemon::$config->addincludepath->value);
+		}
+
 		if (
 			isset(Core\Daemon::$config->minworkers->value)
 			&& isset(Core\Daemon::$config->maxworkers->value)

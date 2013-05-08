@@ -158,7 +158,7 @@ class Parser {
 						$this->raiseError('Unexpected \'}\'');
 					}
 				}
-				elseif (ctype_alnum($c)) {
+				elseif (ctype_alnum($c) || $c === '\\') {
 					$elements        = [''];
 					$elTypes         = [null];
 					$i               = 0;

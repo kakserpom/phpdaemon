@@ -20,8 +20,8 @@ class ClassFinder {
 		if ($e[0] === '') {
 			return $class;
 		}
-		if ('Pool' === $class) {
-			return '\\PHPDaemon\\Core\\Pool';
+		if ('Pool' === $class || 'TransportContext' === $class) {
+			return '\\PHPDaemon\\Core\\' . $class;
 		}
 		if ('Example' === substr($class, 0, 7)) {
 			array_unshift($e, 'Examples');

@@ -66,6 +66,13 @@ class Object implements \ArrayAccess {
 	 */
 	public $appfilepath = '{app-*,applications}/%s.php';
 
+
+	/**
+	 * Additional include path
+	 * @var path
+	 */
+	public $addincludepath = null;
+
 	/**
 	 * Autoload path
 	 * @var path

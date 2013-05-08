@@ -26,13 +26,15 @@ ini_set('include_path', get_include_path()
 		. ':' . dirname(dirname(__FILE__)) . '/conf'
 		. ':/usr/share/phpdaemon:/etc/phpdaemon'
 );
-
+require 'PHPDaemon/Core/Daemon.php';
+require 'PHPDaemon/Core/Debug.php';
 $autoloader = function ($classname) {
 	$subpath = str_replace('\\', '/', $classname) . '.php';
 	$e       = explode(':', get_include_path());
 	foreach ($e as $path) {
-		if (file_exists($path . $subpath)) {
-			require $path . $subpath;
+		$file = rtrim($path, '/') . '/' . $subpath;
+		if (file_exists($file)) {
+			require $file;
 			return true;
 		}
 	}
