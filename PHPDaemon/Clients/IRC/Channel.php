@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Clients\IRC;
 
-use PHPDaemon\IRC;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Traits\EventHandlers;
+use PHPDaemon\Utils\IRC;
 
 /**
  * @package    NetworkClients

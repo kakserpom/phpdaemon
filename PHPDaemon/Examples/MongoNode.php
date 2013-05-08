@@ -58,7 +58,7 @@ class MongoNode extends \PHPDaemon\Core\AppInstance {
 						}
 
 						if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
-							\PHPDaemon\Core\Daemon::log('MongoNode: replication point - ' . $answer->result . ' (' . \PHPDaemon\Debug::dump($ts) . ')');
+							\PHPDaemon\Core\Daemon::log('MongoNode: replication point - ' . $answer->result . ' (' . \PHPDaemon\Core\Debug::dump($ts) . ')');
 						}
 
 						$this->initSlave($ts);
@@ -150,7 +150,7 @@ class MongoNode extends \PHPDaemon\Core\AppInstance {
 
 				foreach ($cursor->items as $k => &$item) {
 					if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
-						\PHPDaemon\Core\Daemon::log(get_class($this) . ': caught oplog-record with ts = (' . \PHPDaemon\Debug::dump($item['ts']) . ')');
+						\PHPDaemon\Core\Daemon::log(get_class($this) . ': caught oplog-record with ts = (' . \PHPDaemon\Core\Debug::dump($item['ts']) . ')');
 					}
 
 					$cursor->lastOpId = $item['ts'];

@@ -1,10 +1,10 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\IPCManager;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\Connection;
 
-class IPCManagerMasterPoolConnection extends Connection {
+class MasterPoolConnection extends Connection {
 	public $instancesCount = [];
 	protected $timeout = null;
 	protected $lowMark = 4; // initial value of the minimal amout of bytes in buffer

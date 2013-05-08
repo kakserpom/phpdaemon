@@ -1,7 +1,5 @@
 <?php
-namespace PHPDaemon;
-
-use PHPDaemon\Network\Connection;
+namespace PHPDaemon\Servers\DebugConsole;
 
 /**
  * @package    NetworkServers
@@ -9,7 +7,7 @@ use PHPDaemon\Network\Connection;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class DebugConsoleConnection extends Connection {
+class Connection extends \PHPDaemon\Network\Connection {
 
 	public $timeout = 5;
 

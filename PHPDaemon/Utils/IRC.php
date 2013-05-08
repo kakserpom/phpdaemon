@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Utils;
 
 class IRC {
 	public static $codes = [

@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Structures;
 
-use PHPDaemon\CallbackWrapper;
+use PHPDaemon\Core\CallbackWrapper;
 
 class PriorityQueueCallbacks extends \SplPriorityQueue {
 	/**

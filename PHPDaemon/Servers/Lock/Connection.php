@@ -2,7 +2,7 @@
 namespace PHPDaemon\Servers\Lock;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Debug;
+use PHPDaemon\Core\Debug;
 
 /**
  * @package    NetworkServers

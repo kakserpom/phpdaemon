@@ -1,7 +1,5 @@
 <?php
-namespace PHPDaemon;
-
-use PHPDaemon\Core\Daemon;
+namespace PHPDaemon\Core;
 
 /**
  * CallbackWrapper

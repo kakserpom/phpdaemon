@@ -1,12 +1,12 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Servers\IRCBouncer;
 
 use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\Server;
 use PHPDaemon\Structures\ObjectStorage;
 
-class IRCBouncer extends Server {
+class Pool extends Server {
 	public $client;
 	public $conn;
 	public $protologging = false;

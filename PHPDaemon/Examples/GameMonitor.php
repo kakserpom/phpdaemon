@@ -124,7 +124,7 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance {
 		}
 		$this->servers->find(function ($cursor) use ($app, $amount) {
 			if (isset($cursor->items[0]['$err'])) {
-				\PHPDaemon\Core\Daemon::log(\PHPDaemon\Debug::dump($cursor->items));
+				\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump($cursor->items));
 				return;
 			}
 			foreach ($cursor->items as $server) {

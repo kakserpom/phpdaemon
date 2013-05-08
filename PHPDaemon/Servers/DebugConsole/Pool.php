@@ -1,10 +1,10 @@
 <?php
-namespace PHPDaemon\Servers;
+namespace PHPDaemon\Servers\DebugConsole;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\Server;
 
-class DebugConsole extends Server {
+class Pool extends Server {
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults

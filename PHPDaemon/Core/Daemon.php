@@ -2,7 +2,7 @@
 namespace PHPDaemon\Core;
 
 use PHPDaemon\Config;
-use PHPDaemon\Debug;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Thread;

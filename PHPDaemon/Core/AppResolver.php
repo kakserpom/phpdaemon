@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Core;
 
-use PHPDaemon\ClassFinder;
 use PHPDaemon\Config;
 use PHPDaemon\Core\AppInstance;
+use PHPDaemon\Core\ClassFinder;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Request\Generic;
 

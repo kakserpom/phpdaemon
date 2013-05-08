@@ -8,7 +8,7 @@ use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Clients\DNS\Pool;
 use PHPDaemon\Config;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\IOStream;
+use PHPDaemon\Network\IOStream;
 use PHPDaemon\Structures\StackCallbacks;
 
 /**

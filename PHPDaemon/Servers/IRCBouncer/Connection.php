@@ -1,10 +1,10 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Servers\IRCBouncer;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Timer;
-use PHPDaemon\Network\Connection;
 use PHPDaemon\Traits\EventHandlers;
+use PHPDaemon\Utils\IRC;
 
 /**
  * @package    NetworkServers
@@ -12,7 +12,7 @@ use PHPDaemon\Traits\EventHandlers;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class IRCBouncerConnection extends Connection {
+class Connection extends \PHPDaemon\Network\Connection {
 	use EventHandlers;
 
 	public $EOL = "\r\n";

@@ -1,11 +1,11 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\IPCManager;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\Network\Connection;
 
-class IPCManagerWorkerConnection extends Connection {
+class WorkerConnection extends Connection {
 	protected $timeout = null;
 	protected $lowMark = 4; // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFF; // initial value of the maximum amout of bytes in buffer

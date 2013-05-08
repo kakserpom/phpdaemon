@@ -1,10 +1,10 @@
 <?php
 namespace PHPDaemon\Core;
 
-use PHPDaemon\CallbackWrapper;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\File;
-use PHPDaemon\IOStream;
+use PHPDaemon\Network\IOStream;
 
 /**
  * Process

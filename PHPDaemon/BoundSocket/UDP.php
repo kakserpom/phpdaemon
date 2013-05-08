@@ -2,8 +2,8 @@
 namespace PHPDaemon\BoundSocket;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
-use PHPDaemon\Debug;
 
 /**
  * UDP

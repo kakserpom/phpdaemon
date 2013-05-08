@@ -5,7 +5,7 @@ use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\Config\Object;
 use PHPDaemon\Config\Section;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Debug;
+use PHPDaemon\Core\Debug;
 
 /**
  * Config parser

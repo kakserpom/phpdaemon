@@ -2,7 +2,7 @@
 namespace PHPDaemon\HTTPRequest;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Debug;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 
 /**

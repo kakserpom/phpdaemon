@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Network;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Pool;

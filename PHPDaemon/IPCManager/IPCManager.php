@@ -1,8 +1,12 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\IPCManager;
 
+use PHPDaemon\Config;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\IPCManager\MasterPool;
+use PHPDaemon\IPCManager\WorkerConnection;
+use PHPDaemon\Thread;
 
 class IPCManager extends AppInstance {
 	public $pool;
@@ -27,7 +31,7 @@ class IPCManager extends AppInstance {
 	public function init() {
 		$this->socketurl = sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value . "\x00" . Daemon::$config->user->value . "\x00" . Daemon::$config->group->value));
 		if (Daemon::$process instanceof Thread\IPC) {
-			$this->pool              = IPCManagerMasterPool::getInstance(array('listen' => $this->socketurl));
+			$this->pool              = MasterPool::getInstance(array('listen' => $this->socketurl));
 			$this->pool->appInstance = $this;
 			$this->pool->onReady();
 		}
@@ -110,7 +114,7 @@ class IPCManager extends AppInstance {
 			$conn->sendPacket($packet);
 		};
 		if (!$this->conn) {
-			$this->conn = new IPCManagerWorkerConnection(null, null, null);
+			$this->conn = new WorkerConnection(null, null, null);
 			$this->conn->connect($this->socketurl);
 		}
 		$this->conn->onConnected($cb);

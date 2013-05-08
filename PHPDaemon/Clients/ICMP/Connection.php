@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\ICMP;
 
-use PHPDaemon\CallbackWrapper;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;

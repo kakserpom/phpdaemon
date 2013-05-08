@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Utils;
 
-use PHPDaemon\Debug;
+use PHPDaemon\Core\Debug;
 
 class Binary {
 	/**

@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\IPCManager;
 
 /**
  * @package    Applications
@@ -7,7 +7,7 @@ namespace PHPDaemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class IPCManagerMasterPool extends \PHPDaemon\Network\Server {
+class MasterPool extends \PHPDaemon\Network\Server {
 	public $workers = array();
 	public $connectionClass = '\PHPDaemon\IPCManagerMasterPoolConnection';
 }
