@@ -77,6 +77,9 @@ abstract class ConnectionPool extends ObjectStorage {
 			$e[sizeof($e) - 1] = 'Connection';
 			$this->connectionClass = '\\'. implode('\\', $e);
 		}
+		if ($init) {
+			$this->init();
+		}
 	}
 
 	/**
