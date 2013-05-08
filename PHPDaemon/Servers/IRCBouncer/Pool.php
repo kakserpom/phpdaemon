@@ -1,7 +1,6 @@
 <?php
 namespace PHPDaemon\Servers\IRCBouncer;
 
-use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\Server;
 use PHPDaemon\Structures\ObjectStorage;
