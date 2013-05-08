@@ -1,5 +1,7 @@
 <?php
-namespace PHPDaemon;
+namespace PHPDaemon\Core;
+
+use PHPDaemon\CallbackWrapper;
 
 /**
  * ComplexJob class.

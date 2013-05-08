@@ -20,7 +20,7 @@ class ExampleComplexJob extends \PHPDaemon\Core\AppInstance {
 
 		// Adding listener
 		// ComplexJob - STATE_WAITING
-		$job = new \PHPDaemon\ComplexJob(function ($job) {
+		$job = new \PHPDaemon\Core\ComplexJob(function ($job) {
 			// ComplexJob - STATE_DONE
 			/*array (
 			  'bar' =>

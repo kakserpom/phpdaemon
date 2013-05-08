@@ -17,7 +17,7 @@ public function init() {
 		$this->finish();
 		return;
 	}
-	$job       = new \PHPDaemon\ComplexJob(function ($job) {
+	$job       = new \PHPDaemon\Core\ComplexJob(function ($job) {
 		$this->wakeup();
 	});
 	$this->job = $job;

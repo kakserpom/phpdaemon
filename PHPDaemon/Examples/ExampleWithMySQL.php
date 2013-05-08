@@ -1,8 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest\Generic;
-/**
+use PHPDaemon\HTTPRequest\Generic;/**
  * @package    Examples
  * @subpackage MySQL
  *
@@ -44,7 +43,7 @@ public function init() {
 
 	$req = $this;
 
-	$job = $this->job = new \PHPDaemon\ComplexJob(function () use ($req) { // called when job is done
+	$job = $this->job = new \PHPDaemon\Core\ComplexJob(function () use ($req) { // called when job is done
 
 		$req->wakeup(); // wake up the request immediately
 

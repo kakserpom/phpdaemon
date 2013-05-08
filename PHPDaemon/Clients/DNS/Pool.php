@@ -3,7 +3,7 @@ namespace PHPDaemon\Clients\DNS;
 
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Clients\Hostname;
-use PHPDaemon\ComplexJob;
+use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Network\Client;
 
@@ -39,7 +39,7 @@ class Pool extends Client {
 
 	/**
 	 * Preloading ComplexJob
-	 * @var \PHPDaemon\ComplexJob
+	 * @var \PHPDaemon\Core\ComplexJob
 	 */
 	public $preloading;
 

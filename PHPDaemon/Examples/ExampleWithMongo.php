@@ -29,6 +29,7 @@ class ExampleWithMongo extends \PHPDaemon\Core\AppInstance {
 	}
 
 }
+
 class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest\Generic {
 
 	public $job;
@@ -38,7 +39,7 @@ class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest\Generic {
 	 * @return void
 	 */
 	public function init() {
-		$job = $this->job = new \PHPDaemon\ComplexJob(function () { // called when job is done
+		$job = $this->job = new \PHPDaemon\Core\ComplexJob(function () { // called when job is done
 
 			$this->wakeup(); // wake up the request immediately
 

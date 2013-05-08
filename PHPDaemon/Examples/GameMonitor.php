@@ -57,7 +57,7 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance {
 			//\PHPDaemon\Daemon::log('already doing: '.$server['address']);
 			return;
 		}
-		$job                             = new \PHPDaemon\ComplexJob(function ($job) use ($app, $server) {
+		$job                             = new \PHPDaemon\Core\ComplexJob(function ($job) use ($app, $server) {
 			unset($app->jobMap[$server['address']]);
 			//\PHPDaemon\Daemon::log('Removed job for '.$server['address']. ' ('.sizeof($app->jobMap).')');
 			$set            = $job->results['info'];
@@ -190,7 +190,7 @@ class GameMonitorHTTPRequest extends Generic {
 public function init() {
 	$req = $this;
 
-	$job = $this->job = new \PHPDaemon\ComplexJob(function () use ($req) { // called when job is done
+	$job = $this->job = new \PHPDaemon\Core\ComplexJob(function () use ($req) { // called when job is done
 
 		$req->wakeup(); // wake up the request immediately
 
