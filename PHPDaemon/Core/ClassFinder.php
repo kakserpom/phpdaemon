@@ -52,7 +52,7 @@ class ClassFinder {
 			$path = '\\PHPDaemon\\Clients\\' . substr($class, 0, -11) . '\\Pool';
 			return str_replace('\\Client\\Clients', '\\Clients', $path);
 		}
-		if ($namespace !== null) {
+		if ($namespace !== null && sizeof($e) < 2) {
 			array_unshift($e, $namespace);
 		}
 		array_unshift($e, '\\' . Daemon::$config->defaultns->value);
