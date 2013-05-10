@@ -65,6 +65,7 @@ class Daemon {
 	 */
 	protected static $support = array();
 
+	/** @var \PHPDaemon\Thread\IPC */
 	public static $process;
 	public static $appResolver;
 	public static $appInstances = array();
