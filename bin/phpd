@@ -34,6 +34,11 @@ $autoloader = function ($classname) {
 	foreach ($e as $path) {
 		$file = rtrim($path, '/') . '/' . $subpath;
 		if (file_exists($file)) {
+			if (!is_readable($file)) {
+				if (class_exists('PHPDaemon\Core\Daemon', false)) {
+					PHPDaemon\Core\Daemon::log('autoloader: while');
+				}
+			}
 			require $file;
 			return true;
 		}

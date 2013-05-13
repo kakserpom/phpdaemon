@@ -2,6 +2,7 @@
 namespace PHPDaemon\IPCManager;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\Network\Connection;
 
@@ -55,8 +56,7 @@ class WorkerConnection extends Connection {
 				$p['appfullname'] .= ':';
 			}
 			list($app, $name) = explode(':', $p['appfullname'], 2);
-
-			if ($app = Daemon::$appResolver->getInstanceByAppName($app, $name)) {
+			if ($app = Daemon::$appResolver->getInstance($app, $name)) {
 				$app->RPCall($p['method'], $p['args']);
 			}
 		}

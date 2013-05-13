@@ -133,7 +133,7 @@ class Pool extends Client {
 		}
 
 		if (!isset($p['where'])) {
-			$p['where'] = array();
+			$p['where'] = [];
 		}
 
 		if (strpos($p['col'], '.') === false) {
@@ -145,7 +145,7 @@ class Pool extends Client {
 			&& is_string($p['fields'])
 		) {
 			$e           = explode(',', $p['fields']);
-			$p['fields'] = array();
+			$p['fields'] = [];
 
 			foreach ($e as &$f) {
 				$p['fields'][$f] = 1;
@@ -156,7 +156,7 @@ class Pool extends Client {
 			$p['where'] = new \MongoCode($p['where']);
 		}
 
-		$o = array();
+		$o = [];
 		$s = false;
 
 		foreach ($p as $k => $v) {
@@ -208,7 +208,7 @@ class Pool extends Client {
 										. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 			, true);
 
-		$this->requests[$reqId] = [$p['col'], $callback, false, isset($p['parse_oplog']), isset($p['tailable'])];
+		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), false, isset($p['parse_oplog']), isset($p['tailable'])];
 	}
 
 	/**
@@ -311,7 +311,7 @@ class Pool extends Client {
 										. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 			, true);
 
-		$this->requests[$reqId] = [$p['col'], $callback, true];
+		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -374,7 +374,7 @@ class Pool extends Client {
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['col'], $callback, true];
+		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -403,7 +403,7 @@ class Pool extends Client {
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['dbname'], $callback, true];
+		$this->requests[$reqId] = [$p['dbname'], CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -425,7 +425,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['dbname'], $callback, true];
+		$this->requests[$reqId] = [$p['dbname'], CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -445,7 +445,7 @@ class Pool extends Client {
 														 . pack('VV', 0, -1)
 														 . bson_encode($params)
 			, true, $conn);
-		$this->requests[$reqId] = [$db, $callback, true];
+		$this->requests[$reqId] = [$db, CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -514,7 +514,7 @@ class Pool extends Client {
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['col'], $callback, true];
+		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -551,7 +551,7 @@ class Pool extends Client {
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['db'], $callback, true];
+		$this->requests[$reqId] = [$p['db'], CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -607,7 +607,7 @@ class Pool extends Client {
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['col'], $callback, true];
+		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -683,7 +683,7 @@ class Pool extends Client {
 				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
 		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['col'], $callback, false];
+		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), false];
 	}
 
 	/**
@@ -801,7 +801,7 @@ class Pool extends Client {
 			$col = $this->dbname . '.' . $col;
 		}
 
-		$ids  = array();
+		$ids  = [];
 		$bson = '';
 
 		foreach ($docs as &$doc) {
@@ -834,7 +834,7 @@ class Pool extends Client {
 	 * @param mixed  Optional. Callback called when response received.
 	 * @return void
 	 */
-	public function remove($col, $cond = array(), $cb = NULL, $params = []) {
+	public function remove($col, $cond = [], $cb = NULL, $params = []) {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -873,7 +873,7 @@ class Pool extends Client {
 														 . pack('V', $number)
 														 . $id
 		);
-		$this->requests[$reqId] = array($id);
+		$this->requests[$reqId] = [$id];
 	}
 
 	/**
