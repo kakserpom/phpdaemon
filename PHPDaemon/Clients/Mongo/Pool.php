@@ -342,7 +342,7 @@ class Pool extends Client {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 
-		$e = explode('.', $p['col']);
+		$e = explode('.', $p['col'], 2);
 
 		$query = [
 			'count'  => $e[1],
@@ -429,6 +429,46 @@ class Pool extends Client {
 		$this->requests[$reqId] = [$p['dbname'], CallbackWrapper::wrap($callback), true];
 	}
 
+	public function getIndexName($keys) {
+		$name = '';
+		$first = true;
+		foreach ($keys as $k => $v) {
+			$name .= ($first ? '_' : '') . $k . '_' . $v;
+			$first = false;
+		}
+		return $name;
+	}
+
+	/**
+	 * Ensure index
+	 * @param string Collection
+	 * @param array  Keys
+	 * @param array Optional. Options
+	 * @param mixed Optional. Callback called when response received
+	 * @return void
+	 */
+	public function ensureIndex($ns, $keys, $options = [], $callback = null) {
+		$e = explode('.', $ns, 2);
+		$doc = [
+			'ns' => $ns,
+			'key' => $keys,
+			'name' => isset($options['name']) ? $options['name'] : $this->getIndexName($keys),
+		];
+		if (isset($options['unique'])) {
+			$doc['unique'] = $options['unique'];
+		}
+		if (isset($options['version'])) {
+			$doc['v'] = $options['version'];
+		}
+		if (isset($options['background'])) {
+			$doc['background'] = $options['background'];
+		}
+		if (isset($options['ttl'])) {
+			$doc['expireAfterSeconds'] = $options['ttl'];
+		}
+		$this->getCollection($e[0] . '.system.indexes')->insert($doc);
+	}
+
 	/**
 	 * Gets last error
 	 * @param string Dbname
@@ -438,7 +478,7 @@ class Pool extends Client {
 	 * @return void
 	 */
 	public function lastError($db, $callback, $params = [], $conn = null) {
-		$e                      = explode('.', $db);
+		$e                      = explode('.', $db, 2);
 		$params['getlasterror'] = 1;
 		$reqId                  = $this->request(self::OP_QUERY,
 												 pack('V', 0)
@@ -484,7 +524,7 @@ class Pool extends Client {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 
-		$e = explode('.', $p['col']);
+		$e = explode('.', $p['col'], 2);
 
 		$query = [
 			'$query' => $p['where'],
@@ -582,7 +622,7 @@ class Pool extends Client {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 
-		$e = explode('.', $p['col']);
+		$e = explode('.', $p['col'], 2);
 
 		$query = [
 			'distinct' => $e[1],
@@ -642,7 +682,7 @@ class Pool extends Client {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 
-		$e = explode('.', $p['col']);
+		$e = explode('.', $p['col'], 2);
 
 		$query = [
 			'group' => [
@@ -887,8 +927,7 @@ class Pool extends Client {
 			$col = $this->dbname . '.' . $col;
 		}
 		else {
-			$collName     = explode('.', $col);
-			$this->dbname = $collName[0];
+			$collName = explode('.', $col, 2);
 		}
 
 		if (isset($this->collections[$col])) {

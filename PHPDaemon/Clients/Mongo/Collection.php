@@ -58,6 +58,17 @@ class Collection {
 	}
 
 	/**
+	 * Ensure index
+	 * @param array  Keys
+	 * @param array Optional. Options
+	 * @param mixed Optional. Callback called when response received
+	 * @return void
+	 */
+	public function ensureIndex($keys, $options = [], $cb = null) {
+		$this->pool->ensureIndex($this->name, $keys, $options, $cb);
+	}
+
+	/**
 	 * Groupping function
 	 * @param mixed Callback called when response received
 	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
