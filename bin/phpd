@@ -21,11 +21,12 @@ foreach (array('/usr/share/phpdaemon', dirname(dirname(__FILE__))) as $d) {
 	}
 }
 
-ini_set('include_path', get_include_path() 
-	. ':' . dirname(dirname(__FILE__))
-	. ':' . dirname(dirname(__FILE__)).'/conf'
-	. ':/usr/share/phpdaemon:/etc/phpdaemon'
+ini_set('include_path', get_include_path()
+		. ':' . dirname(dirname(__FILE__))
+		. ':' . dirname(dirname(__FILE__)) . '/conf'
+		. ':/usr/share/phpdaemon:/etc/phpdaemon'
 );
+<<<<<<< HEAD
 
 $autoloader = function($classname) {
 	$parts = explode('\\', $classname);
@@ -39,19 +40,35 @@ $autoloader = function($classname) {
 	foreach ($pathes as $path) {
 		if (file_exists($path)) {
 			require $path;
+=======
+require 'PHPDaemon/Core/Daemon.php';
+require 'PHPDaemon/Core/Debug.php';
+$autoloader = function ($classname) {
+	$subpath = str_replace('\\', '/', $classname) . '.php';
+	$e       = explode(':', get_include_path());
+	foreach ($e as $path) {
+		$file = rtrim($path, '/') . '/' . $subpath;
+		if (file_exists($file)) {
+			if (!is_readable($file)) {
+				if (class_exists('PHPDaemon\Core\Daemon', false)) {
+					PHPDaemon\Core\Daemon::log('autoloader: while');
+				}
+			}
+			require $file;
+>>>>>>> ns
 			return true;
 		}
 	}
-	if (class_exists('Daemon', false) && isset(Daemon::$config->autoload->value)) {
-		$files = glob($g = sprintf(Daemon::$config->autoload->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
+	if (class_exists('PHPDaemon\Core\Daemon', false) && isset(\PHPDaemon\Core\Daemon::$config->autoload->value)) {
+		$files = glob($g = sprintf(\PHPDaemon\Core\Daemon::$config->autoload->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
 		if (isset($files[0])) {
 			require $files[0];
 			return true;
 		}
 	}
-	
-	if (class_exists('Daemon', false) && isset(Daemon::$config->appfilepath->value)) {
-		$files = glob($g = sprintf(Daemon::$config->appfilepath->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
+
+	if (class_exists('PHPDaemon\Core\Daemon', false) && isset(\PHPDaemon\Core\Daemon::$config->appfilepath->value)) {
+		$files = glob($g = sprintf(\PHPDaemon\Core\Daemon::$config->appfilepath->value, str_replace('_', DIRECTORY_SEPARATOR, $classname)), GLOB_BRACE);
 		if (isset($files[0])) {
 			require $files[0];
 			return true;
@@ -60,7 +77,7 @@ $autoloader = function($classname) {
 	return false;
 };
 $autoloadCache = array();
-spl_autoload_register(function($classname) use ($autoloader, &$autoloadCache) {
+spl_autoload_register(function ($classname) use ($autoloader, &$autoloadCache) {
 	if (isset($autoloadCache[$classname])) {
 		return $autoloadCache[$classname];
 	}
@@ -78,13 +95,13 @@ execute:
 try {
 	if ($e) {
 		$thread = $e->getThread();
-	    $e = null;
+		$e      = null;
 		$thread();
 	}
 	else {
-	    Daemon_Bootstrap::init(isset($configFile) ? $configFile : null);
+		\PHPDaemon\Core\Bootstrap::init(isset($configFile) ? $configFile : null);
 	}
-} catch (ClearStackException $e) {
-    goto execute;
+} catch (\PHPDaemon\Exceptions\ClearStack $e) {
+	goto execute;
 }
 

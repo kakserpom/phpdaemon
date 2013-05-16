@@ -4,12 +4,12 @@
  * Default application resolver
  *
  * @package Core
- * @author Zorin Vasily <maintainer@daemon.io>
+ * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class MyAppResolver extends AppResolver {
-	
+class MyAppResolver extends \PHPDaemon\Core\AppResolver {
+
 	/**
-	 * Routes incoming request to related application. Method is for overloading.	
+	 * Routes incoming request to related application. Method is for overloading.
 	 * @param object Request.
 	 * @param object AppInstance of Upstream.
 	 * @return string Application's name.
@@ -23,7 +23,7 @@ class MyAppResolver extends AppResolver {
 		if (preg_match('~^/(WebSocketOverCOMET|Example|ExampleWithMongo)/~', $req->attrs->server['DOCUMENT_URI'], $m)) {
 			return $m[1];
 		}
-  
+
 		/* Example
 		$host = basename($req->attrs->server['HTTP_HOST']);
 
@@ -34,7 +34,7 @@ class MyAppResolver extends AppResolver {
 			return 'FileReader';
 		} */
 	}
-	
+
 }
 
 return new MyAppResolver;
