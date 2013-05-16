@@ -87,12 +87,12 @@ abstract class Generic {
 
 	/**
 	 * Constructor
-	 * @param object $appInstance Parent AppInstance.
-	 * @param object $upstream    Upstream.
-	 * @param object $parent      Source request.
+	 * @param AppInstance $appInstance                        Parent AppInstance.
+	 * @param IRequestUpstream $upstream                      Upstream.
+	 * @param object $parent                                  Source request.
 	 * @return void
 	 */
-	public function __construct($appInstance, $upstream, $parent = null) {
+	public function __construct($appInstance, IRequestUpstream $upstream, $parent = null) {
 		$this->appInstance = $appInstance;
 		$this->upstream    = $upstream;
 		$this->ev          = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
@@ -141,7 +141,8 @@ abstract class Generic {
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
-	protected function run() { }
+	protected function run() {
+	}
 
 	/**
 	 * Event handler of Request, called by Evtimer
@@ -246,7 +247,8 @@ abstract class Generic {
 	 * Called when request constructs
 	 * @return void
 	 */
-	protected function init() { }
+	protected function init() {
+	}
 
 	/**
 	 * Get string value from the given variable
@@ -306,7 +308,8 @@ abstract class Generic {
 	 * Called when the connection is ready to accept new data
 	 * @return void
 	 */
-	public function onWrite() { }
+	public function onWrite() {
+	}
 
 	/**
 	 * Adds new callback called before the request finished
@@ -403,13 +406,15 @@ abstract class Generic {
 	 * Called when the request aborted
 	 * @return void
 	 */
-	public function onAbort() { }
+	public function onAbort() {
+	}
 
 	/**
 	 * Called when the request finished
 	 * @return void
 	 */
-	public function onFinish() { }
+	public function onFinish() {
+	}
 
 	/**
 	 * Called when the request wakes up
@@ -447,16 +452,16 @@ abstract class Generic {
 		$this->onAbort();
 
 		if (
-			(ignore_user_abort() === 1)
-			&& (
-					($this->state === Generic::STATE_RUNNING)
-					|| ($this->state === Generic::STATE_WAITING)
-			)
-			&& !Daemon::$compatMode
+				(ignore_user_abort() === 1)
+				&& (
+						($this->state === Generic::STATE_RUNNING)
+						|| ($this->state === Generic::STATE_WAITING)
+				)
+				&& !Daemon::$compatMode
 		) {
 			if (
-				!isset($this->upstream->keepalive->value)
-				|| !$this->upstream->keepalive->value
+					!isset($this->upstream->keepalive->value)
+					|| !$this->upstream->keepalive->value
 			) {
 				$this->upstream->endRequest($this);
 			}
@@ -525,7 +530,8 @@ abstract class Generic {
 	 * Called after request finish
 	 * @return void
 	 */
-	protected function postFinishHandler() { }
+	protected function postFinishHandler() {
+	}
 
 }
 
