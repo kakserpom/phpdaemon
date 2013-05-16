@@ -88,11 +88,11 @@ abstract class Generic {
 	/**
 	 * Constructor
 	 * @param AppInstance $appInstance                        Parent AppInstance.
-	 * @param \PHPDaemon\Servers\HTTP\Connection $upstream    Upstream.
+	 * @param IRequestUpstream $upstream                      Upstream.
 	 * @param object $parent                                  Source request.
 	 * @return void
 	 */
-	public function __construct($appInstance, $upstream, $parent = null) {
+	public function __construct($appInstance, IRequestUpstream $upstream, $parent = null) {
 		$this->appInstance = $appInstance;
 		$this->upstream    = $upstream;
 		$this->ev          = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);

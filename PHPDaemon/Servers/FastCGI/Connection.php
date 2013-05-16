@@ -2,6 +2,7 @@
 namespace PHPDaemon\Servers\FastCGI;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Request\IRequestUpstream;
 
 /**
  * @package    NetworkServers
@@ -9,7 +10,7 @@ use PHPDaemon\Core\Daemon;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends \PHPDaemon\Network\Connection {
+class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstream {
 	protected $lowMark = 8; // initial value of the minimal amout of bytes in buffer
 	protected $highMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
 	public $timeout = 180;
@@ -179,12 +180,12 @@ class Connection extends \PHPDaemon\Network\Connection {
 				}
 				else {
 					if (
-						$this->pool->config->sendfile->value
-						&& (
-								!$this->pool->config->sendfileonlybycommand->value
-								|| isset($req->attrs->server['USE_SENDFILE'])
-						)
-						&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
+							$this->pool->config->sendfile->value
+							&& (
+									!$this->pool->config->sendfileonlybycommand->value
+									|| isset($req->attrs->server['USE_SENDFILE'])
+							)
+							&& !isset($req->attrs->server['DONT_USE_SENDFILE'])
 					) {
 						$fn = tempnam(
 							$this->pool->config->sendfiledir->value,
@@ -238,8 +239,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 
 		if (
-			$req->attrs->inputDone
-			&& $req->attrs->paramsDone
+				$req->attrs->inputDone
+				&& $req->attrs->paramsDone
 		) {
 			if ($this->pool->variablesOrder === null) {
 				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;
@@ -293,10 +294,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public function sendChunk($req, $chunk) {
 		return $this->write(
 			"\x01" // protocol version
-					. "\x06" // record type (STDOUT)
-					. pack('nn', $req->attrs->id, strlen($chunk)) // id, content length
-					. "\x00" // padding length
-					. "\x00" // reserved 
+			. "\x06" // record type (STDOUT)
+			. pack('nn', $req->attrs->id, strlen($chunk)) // id, content length
+			. "\x00" // padding length
+			. "\x00" // reserved 
 		) && $this->write($chunk); // content
 	}
 
@@ -314,11 +315,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 		$this->write(
 			"\x01" // protocol version
-					. "\x03" // record type (END_REQUEST)
-					. pack('nn', $req->attrs->id, strlen($c)) // id, content length
-					. "\x00" // padding length
-					. "\x00" // reserved
-					. $c // content
+			. "\x03" // record type (END_REQUEST)
+			. pack('nn', $req->attrs->id, strlen($c)) // id, content length
+			. "\x00" // padding length
+			. "\x00" // reserved
+			. $c // content
 		);
 
 		if ($protoStatus === -1) {
@@ -327,6 +328,14 @@ class Connection extends \PHPDaemon\Network\Connection {
 		elseif (!$this->pool->config->keepalive->value) {
 			$this->finish();
 		}
+	}
+
+	/**
+	 * Send Bad request
+	 * @return void
+	 */
+	public function badRequest($req) {
+		// TODO: Implement badRequest() method.
 	}
 }
 

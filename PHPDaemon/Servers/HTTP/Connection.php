@@ -5,6 +5,7 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\HTTPRequest\Input;
+use PHPDaemon\Request\IRequestUpstream;
 
 /**
  * @package    NetworkServers
@@ -13,7 +14,7 @@ use PHPDaemon\HTTPRequest\Input;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class Connection extends \PHPDaemon\Network\Connection {
+class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstream {
 	protected $initialLowMark = 1;
 	protected $initialHighMark = 8192; // initial value of the maximum amout of bytes in buffer
 	protected $timeout = 45;
@@ -149,8 +150,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected function httpProcessHeaders() {
 		$this->req->attrs->paramsDone = true;
 		if (
-			isset($this->req->attrs->server['HTTP_CONNECTION']) && preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->req->attrs->server['HTTP_CONNECTION'])
-			&& isset($this->req->attrs->server['HTTP_UPGRADE']) && (strtolower($this->req->attrs->server['HTTP_UPGRADE']) === 'websocket')
+				isset($this->req->attrs->server['HTTP_CONNECTION']) && preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->req->attrs->server['HTTP_CONNECTION'])
+				&& isset($this->req->attrs->server['HTTP_UPGRADE']) && (strtolower($this->req->attrs->server['HTTP_UPGRADE']) === 'websocket')
 		) {
 			if ($this->pool->WS) {
 				$this->pool->WS->inheritFromRequest($this->req, $this);
@@ -303,9 +304,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 			}
 
 			if (
-				(!$this->pool->config->keepalive->value)
-				|| (!isset($req->attrs->server['HTTP_CONNECTION']))
-				|| ($req->attrs->server['HTTP_CONNECTION'] !== 'keep-alive')
+					(!$this->pool->config->keepalive->value)
+					|| (!isset($req->attrs->server['HTTP_CONNECTION']))
+					|| ($req->attrs->server['HTTP_CONNECTION'] !== 'keep-alive')
 			) {
 				$this->finish();
 			}
