@@ -26,21 +26,6 @@ ini_set('include_path', get_include_path()
 		. ':' . dirname(dirname(__FILE__)) . '/conf'
 		. ':/usr/share/phpdaemon:/etc/phpdaemon'
 );
-<<<<<<< HEAD
-
-$autoloader = function($classname) {
-	$parts = explode('\\', $classname);
-	if (sizeof($parts) > 1 && ('PHPDaemon' == $parts[0])) {
-		// namespaces support (remove first "PHPDaemon\" part)
-		array_shift($parts);
-	}
-
-	$pathes = array('lib/' . implode('/', $parts) . '.php', 'lib/' . implode('/', $parts));
-	
-	foreach ($pathes as $path) {
-		if (file_exists($path)) {
-			require $path;
-=======
 require 'PHPDaemon/Core/Daemon.php';
 require 'PHPDaemon/Core/Debug.php';
 $autoloader = function ($classname) {
@@ -55,7 +40,6 @@ $autoloader = function ($classname) {
 				}
 			}
 			require $file;
->>>>>>> ns
 			return true;
 		}
 	}
@@ -87,9 +71,6 @@ spl_autoload_register(function ($classname) use ($autoloader, &$autoloadCache) {
 });
 
 class_exists('Debug');
-
-require 'lib/BinarySubstr.php';
-require 'lib/IgbinaryFallback.php';
 $e = null;
 execute:
 try {
@@ -104,4 +85,3 @@ try {
 } catch (\PHPDaemon\Exceptions\ClearStack $e) {
 	goto execute;
 }
-
