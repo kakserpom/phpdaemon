@@ -1,8 +1,7 @@
 <?php
 namespace PHPDaemon\Applications;
 
-use PHPDaemon\Core\Daemon;use PHPDaemon\HTTPRequest\Generic;class FileReaderRequest extends Generic {
-
+class FileReaderRequest extends \PHPDaemon\HTTPRequest\Generic {
 public $stream;
 public $job;
 public $indexFile;
@@ -83,11 +82,6 @@ public function file($path) {
 		$this->out(file_get_contents(realpath($path)));
 		$this->wakeup();
 		return;
-	}
-	static $warn = false;
-	if ($warn) {
-		\PHPDaemon\Core\Daemon::log('BEWARE! You are using FileReader with EIO enabled. Maybe this is still buggy.');
-		$warn = true;
 	}
 	$job = $this->job;
 	$job('readfile', function ($name, $job) use ($path) {
@@ -208,7 +202,7 @@ $this->onWakeup();
 </div>
 <?php if ($this->upstream->pool->config->expose->value) {
 	?>
-	<div class="foot">phpDaemon/<?php echo Daemon::$version; ?></div><?php } ?>
+	<div class="foot">phpDaemon/<?php echo \PHPDaemon\Core\Daemon::$version; ?></div><?php } ?>
 </body>
 </html><?php
 }
@@ -224,5 +218,6 @@ public function onAbort() {
  * Called when request iterated.
  * @return integer Status.
  */
-public function run() { }
+public function run() {
+}
 }
