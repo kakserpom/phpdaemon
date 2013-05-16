@@ -41,8 +41,8 @@ class Pool extends Client {
 		$ssl = $params['scheme'] === 'https';
 		$this->getConnection(
 			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($ssl ? '#ssl' : ''),
-			function ($conn) use ($url, $data, $params) {
-				$conn->get($url, $data, $params);
+			function ($conn) use ($url, $params) {
+				$conn->get($url, $params);
 			}
 		);
 	}

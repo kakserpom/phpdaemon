@@ -447,7 +447,7 @@ class Pool extends Client {
 	 * @param mixed Optional. Callback called when response received
 	 * @return void
 	 */
-	public function ensureIndex($ns, $keys, $options = [], $callback = null) {
+	public function ensureIndex($ns, $keys, $options = [], $cb = null) {
 		$e = explode('.', $ns, 2);
 		$doc = [
 			'ns' => $ns,
@@ -466,7 +466,7 @@ class Pool extends Client {
 		if (isset($options['ttl'])) {
 			$doc['expireAfterSeconds'] = $options['ttl'];
 		}
-		$this->getCollection($e[0] . '.system.indexes')->insert($doc);
+		$this->getCollection($e[0] . '.system.indexes')->insert($doc, $cb);
 	}
 
 	/**
