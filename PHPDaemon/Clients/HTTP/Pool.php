@@ -93,7 +93,7 @@ class Pool extends Client {
 	}
 
 	public static function prepareUrl($mixed) {
-		$url = $this->buildUrl($mixed);
+		$url = static::buildUrl($mixed);
 		if (false === $url) {
 			return false;
 		}
