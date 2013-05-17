@@ -134,7 +134,7 @@ class AppInstance {
 	 */
 	public function broadcastCall($method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendBroadcastCall(
-			get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
+			'\\'. get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 			$method,
 			$args,
 			$cb
@@ -151,7 +151,7 @@ class AppInstance {
 	 */
 	public function singleCall($method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendSingleCall(
-			get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
+			'\\'. get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 			$method,
 			$args,
 			$cb
@@ -170,7 +170,7 @@ class AppInstance {
 	public function directCall($workerId, $method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendDirectCall(
 			$workerId,
-			get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
+			'\\'. get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 			$method,
 			$args,
 			$cb
