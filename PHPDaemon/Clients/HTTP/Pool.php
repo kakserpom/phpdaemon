@@ -63,7 +63,7 @@ class Pool extends Client {
 		);
 	}
 
-	public static function prepareUrl($mixed) {
+	public static function buildUrl($mixed) {
 		if (is_string($mixed)) {
 			$url = $mixed;
 		}
@@ -87,6 +87,14 @@ class Pool extends Client {
 			}
 		}
 		else {
+			return false;
+		}
+
+	}
+
+	public static function prepareUrl($mixed) {
+		$url = $this->buildUrl($mixed);
+		if (false === $url) {
 			return false;
 		}
 		$u   = parse_url($url);
