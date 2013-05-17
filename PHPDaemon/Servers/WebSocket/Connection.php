@@ -3,7 +3,6 @@ namespace PHPDaemon\Servers\Websocket;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\Servers\FlashPolicy\Pool;
 use PHPDaemon\WebSocket\ProtocolV0;
 use PHPDaemon\WebSocket\ProtocolV13;
 use PHPDaemon\WebSocket\ProtocolVE;
@@ -316,7 +315,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 				return;
 			}
 			if ($d) {
-				if (($FP = Pool::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
+				if (($FP = \PHPDaemon\Servers\FlashPolicy\Pool::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
 					$this->write($FP->policyData . "\x00");
 				}
 				$this->finish();
