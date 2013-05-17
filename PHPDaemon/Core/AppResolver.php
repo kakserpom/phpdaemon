@@ -79,11 +79,16 @@ class AppResolver {
 			Daemon::$process->log(__METHOD__.': cannot find application class \''.$class.'\'');
 			return false;
 		}
+		$fullnameClass = $this->getAppFullname($class, $instance);
+		if ($fullname !== $fullnameClass) {
+			Daemon::$config->{$fullnameClass} = Daemon::$config->{$fullname};
+			unset(Daemon::$config->{$fullname});
+		}
 		if (!$preload) {
 			if (!$class::$runOnDemand) {
 				return false;
 			}
-			if (isset(Daemon::$config->{$fullname}->limitinstances)) {
+			if (isset(Daemon::$config->{$fullnameClass}->limitinstances)) {
 				return false;
 			}
 		}
