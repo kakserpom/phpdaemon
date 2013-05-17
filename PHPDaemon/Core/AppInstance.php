@@ -30,12 +30,9 @@ class AppInstance {
 	 * Application constructor
 	 * @return void
 	 */
-	public function __construct($name = '', $appName = null) {
+	public function __construct($name = '') {
 		$this->name   = $name;
-		$class = '\\' . get_class($this);
-		if ($appName === null) {
-			$appName      = $class;
-		}
+		$appName = '\\' . get_class($this);
 		$fullname     = Daemon::$appResolver->getAppFullName($appName, $this->name);
 		//Daemon::$process->log($fullname . ' instantiated.');
 
@@ -46,10 +43,10 @@ class AppInstance {
 			}
 		}
 
-		if (!isset(Daemon::$appInstances[$class])) {
-			Daemon::$appInstances[$class] = [];
+		if (!isset(Daemon::$appInstances[$appName])) {
+			Daemon::$appInstances[$appName] = [];
 		}
-		Daemon::$appInstances[$class][$this->name] = $this;
+		Daemon::$appInstances[$appName][$this->name] = $this;
 
 		if (!isset(Daemon::$config->{$fullname})) {
 

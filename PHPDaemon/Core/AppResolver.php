@@ -80,7 +80,7 @@ class AppResolver {
 			return false;
 		}
 		$fullnameClass = $this->getAppFullname($class, $instance);
-		if ($fullname !== $fullnameClass) {
+		if ($fullname !== $fullnameClass && isset(Daemon::$config->{$fullname})) {
 			Daemon::$config->{$fullnameClass} = Daemon::$config->{$fullname};
 			unset(Daemon::$config->{$fullname});
 		}
@@ -92,27 +92,7 @@ class AppResolver {
 				return false;
 			}
 		}
-		return new $class($instance, $appName);
-	}
-
-	/**
-	 * Check if instance of application was enabled during preload.
-	 * @param string Application name.
-	 * @return bool
-	 */
-	public function checkAppEnabled($appName, $instance = '') {
-		$appNameLower = strtolower($appName);
-		if (!isset(Daemon::$appInstances[$appNameLower])) {
-			return false;
-		}
-
-		if (!empty($instance) && !isset(Daemon::$appInstances[$appNameLower][$instance])) {
-			return false;
-		}
-
-		$fullname = $this->getAppFullname($appName, $instance);
-
-		return !isset(Daemon::$config->{$fullname}->enable) ? false : !!Daemon::$config->{$fullname}->enable->value;
+		return new $class($instance);
 	}
 
 	/**
