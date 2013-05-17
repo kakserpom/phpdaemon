@@ -38,6 +38,10 @@ class TCP extends Generic {
 		$this->defaultPort = $port;
 	}
 
+	public function getPort() {
+		return isset($this->port) ? $this->port : $this->defaultPort;
+	}
+
 	/**
 	 * Called when socket is bound
 	 * @return boolean Success
@@ -47,7 +51,7 @@ class TCP extends Generic {
 			$this->ev->getSocketName($this->locHost, $this->locPort);
 		}
 		else {
-			Daemon::log('Unable to bind TCP-socket ' . $this->host . ':' . $this->port);
+			Daemon::log('Unable to bind TCP-socket ' . $this->host . ':' . $this->getPort());
 		}
 	}
 
@@ -59,19 +63,16 @@ class TCP extends Generic {
 		if ($this->errorneous) {
 			return false;
 		}
-		if (!isset($this->port)) {
-			if (isset($this->defaultPort)) {
-				$this->port = $this->defaultPort;
-			}
-			else {
-				Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): no port defined for \'' . $this->uri['uri'] . '\'');
-			}
+		$port = $this->getPort();
+		if (!$port) {
+			Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): no port defined for \'' . $this->uri['uri'] . '\'');
+			return;
 		}
-		if (($this->port < 1024) && Daemon::$config->user->value !== 'root') {
+		if (($port < 1024) && Daemon::$config->user->value !== 'root') {
 			$this->listenerMode = false;
 		}
 		if ($this->listenerMode) {
-			$this->setFd($this->host . ':' . $this->port);
+			$this->setFd($this->host . ':' . $port);
 			return true;
 		}
 		$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -92,9 +93,9 @@ class TCP extends Generic {
 				return false;
 			}
 		}
-		if (!@socket_bind($sock, $this->host, $this->port)) {
+		if (!@socket_bind($sock, $this->host, $port)) {
 			$errno = socket_last_error();
-			Daemon::$process->log(get_class($this->pool) . ': Couldn\'t bind TCP-socket \'' . $this->host . ':' . $this->uri['port'] . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
+			Daemon::$process->log(get_class($this->pool) . ': Couldn\'t bind TCP-socket \'' . $this->host . ':' . $port . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}
 		socket_getsockname($sock, $this->host, $this->port);
@@ -102,7 +103,7 @@ class TCP extends Generic {
 		if (!$this->listenerMode) {
 			if (!socket_listen($sock, SOMAXCONN)) {
 				$errno = socket_last_error();
-				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t listen TCP-socket \'' . $this->host . ':' . $this->uri['port'] . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
+				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t listen TCP-socket \'' . $this->host . ':' . $port . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
 				return false;
 			}
 		}
