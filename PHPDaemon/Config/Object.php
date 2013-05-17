@@ -60,24 +60,12 @@ class Object implements \ArrayAccess {
 	 */
 	public $path = '/etc/phpdaemon/AppResolver.php;./conf/AppResolver.php';
 
-	/**
-	 * Path to applications
-	 * @var path
-	 */
-	public $appfilepath = '{app-*,applications}/%s.php';
-
 
 	/**
 	 * Additional include path
 	 * @var path
 	 */
 	public $addincludepath = null;
-
-	/**
-	 * Autoload path
-	 * @var path
-	 */
-	public $autoload = null;
 
 	/**
 	 * Multi-Process Manager delay

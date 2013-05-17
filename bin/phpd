@@ -43,21 +43,6 @@ $autoloader = function ($classname) {
 			return true;
 		}
 	}
-	if (class_exists('PHPDaemon\Core\Daemon', false) && isset(\PHPDaemon\Core\Daemon::$config->autoload->value)) {
-		$files = glob(sprintf(\PHPDaemon\Core\Daemon::$config->autoload->value, $subpath), GLOB_BRACE);
-		if (isset($files[0])) {
-			require $files[0];
-			return true;
-		}
-	}
-
-	if (class_exists('PHPDaemon\Core\Daemon', false) && isset(\PHPDaemon\Core\Daemon::$config->appfilepath->value)) {
-		$files = glob(sprintf(\PHPDaemon\Core\Daemon::$config->appfilepath->value, $subpath), GLOB_BRACE);
-		if (isset($files[0])) {
-			require $files[0];
-			return true;
-		}
-	}
 	return false;
 };
 $autoloadCache = array();
