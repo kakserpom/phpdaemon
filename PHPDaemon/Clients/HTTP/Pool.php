@@ -65,31 +65,29 @@ class Pool extends Client {
 
 	public static function buildUrl($mixed) {
 		if (is_string($mixed)) {
-			$url = $mixed;
+			return $mixed;
 		}
-		elseif (is_array($mixed)) {
-			$url            = '';
-			$buf            = [];
-			$queryDelimiter = '?';
-			$mixed[]        = '';
-			foreach ($mixed as $k => $v) {
-				if (is_int($k) || ctype_digit($k)) {
-					if (sizeof($buf) > 0) {
-						$url .= $queryDelimiter;
-						$queryDelimiter = '';
-						$url .= http_build_query($buf);
-					}
-					$url .= $v;
-				}
-				else {
-					$buf[$k] = $v;
-				}
-			}
-		}
-		else {
+		if (!is_array($mixed)) {
 			return false;
 		}
-
+		$url            = '';
+		$buf            = [];
+		$queryDelimiter = '?';
+		$mixed[]        = '';
+		foreach ($mixed as $k => $v) {
+			if (is_int($k) || ctype_digit($k)) {
+				if (sizeof($buf) > 0) {
+					$url .= $queryDelimiter;
+					$queryDelimiter = '';
+					$url .= http_build_query($buf);
+				}
+				$url .= $v;
+			}
+			else {
+				$buf[$k] = $v;
+			}
+		}
+		return $url;
 	}
 
 	public static function prepareUrl($mixed) {
