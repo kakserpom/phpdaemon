@@ -39,7 +39,7 @@ abstract class Generic {
 
 	/**
 	 * Pool
-	 * @var \PHPDaemon\Network\ConnectionPool
+	 * @var \PHPDaemon\Network\Pool
 	 */
 	protected $pool;
 
@@ -228,10 +228,10 @@ abstract class Generic {
 		}
 		if (!FileSystem::checkFileReadable($this->certfile) || !FileSystem::checkFileReadable($this->pkfile)) {
 			Daemon::log('Couldn\'t read ' . $this->certfile . ' or ' . $this->pkfile . ' file.  To generate a key' . PHP_EOL
-								. 'and self-signed certificate, run' . PHP_EOL
-								. '  openssl genrsa -out ' . escapeshellarg($this->pkfile) . ' 2048' . PHP_EOL
-								. '  openssl req -new -key ' . escapeshellarg($this->pkfile) . '  -out cert.req' . PHP_EOL
-								. '  openssl x509 -req -days 365 -in cert.req -signkey ' . escapeshellarg($this->pkfile) . '  -out ' . escapeshellarg($this->certfile));
+						. 'and self-signed certificate, run' . PHP_EOL
+						. '  openssl genrsa -out ' . escapeshellarg($this->pkfile) . ' 2048' . PHP_EOL
+						. '  openssl req -new -key ' . escapeshellarg($this->pkfile) . '  -out cert.req' . PHP_EOL
+						. '  openssl x509 -req -days 365 -in cert.req -signkey ' . escapeshellarg($this->pkfile) . '  -out ' . escapeshellarg($this->certfile));
 
 			return;
 		}
@@ -256,7 +256,7 @@ abstract class Generic {
 	 * @param ConnectionPool
 	 * @return void
 	 */
-	public function attachTo(\PHPDaemon\Network\ConnectionPool $pool) {
+	public function attachTo(\PHPDaemon\Network\Pool $pool) {
 		$this->pool = $pool;
 		$this->pool->attachBound($this);
 	}
@@ -275,7 +275,8 @@ abstract class Generic {
 	 * Called when socket is bound
 	 * @return boolean Success
 	 */
-	protected function onBound() { }
+	protected function onBound() {
+	}
 
 	/**
 	 * Enable socket events
@@ -308,10 +309,10 @@ abstract class Generic {
 	public function onAcceptEv(\EventListener $listener, $fd, $addrPort, $ctx) {
 		$class = $this->pool->connectionClass;
 		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Network\\Connection')) {
-			Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): onAcceptEv: wrong connectionClass: '.$class);
+			Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): onAcceptEv: wrong connectionClass: ' . $class);
 			return;
 		}
-		$conn  = new $class(null, $this->pool);
+		$conn = new $class(null, $this->pool);
 		$conn->setParentSocket($this);
 
 		if (!$this instanceof UNIX) {

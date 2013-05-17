@@ -2,7 +2,7 @@
 namespace PHPDaemon\Network;
 
 use PHPDaemon\Network\ClientConnection;
-use PHPDaemon\Network\ConnectionPool;
+use PHPDaemon\Network\Pool;
 use PHPDaemon\Network;
 use PHPDaemon\Request;
 use PHPDaemon\Structures\ObjectStorage;
@@ -15,7 +15,7 @@ use PHPDaemon\Structures\PriorityQueueCallbacks;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-abstract class Client extends ConnectionPool {
+abstract class Client extends Pool {
 
 	protected $servers = array(); // Array of servers 
 	protected $dtags_enabled = false; // Enables tags for distribution
@@ -226,10 +226,10 @@ abstract class Client extends ConnectionPool {
 			return $key->onConnected($cb);
 		}
 		if (
-			($this->dtags_enabled)
-			&& (($sp = strpos($key, '[')) !== FALSE)
-			&& (($ep = strpos($key, ']')) !== FALSE)
-			&& ($ep > $sp)
+				($this->dtags_enabled)
+				&& (($sp = strpos($key, '[')) !== FALSE)
+				&& (($ep = strpos($key, ']')) !== FALSE)
+				&& ($ep > $sp)
 		) {
 			$key = substr($key, $sp + 1, $ep - $sp - 1);
 		}

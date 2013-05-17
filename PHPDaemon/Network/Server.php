@@ -2,7 +2,7 @@
 namespace PHPDaemon\Network;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Network\ConnectionPool;
+use PHPDaemon\Network\Pool;
 
 /**
  * Network server pattern
@@ -11,7 +11,7 @@ use PHPDaemon\Network\ConnectionPool;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-abstract class Server extends ConnectionPool {
+abstract class Server extends Pool {
 
 	/**
 	 * Bound sockets

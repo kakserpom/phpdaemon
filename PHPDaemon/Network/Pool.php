@@ -14,7 +14,7 @@ use PHPDaemon\Thread;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-abstract class ConnectionPool extends ObjectStorage {
+abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Default connection class
@@ -73,9 +73,9 @@ abstract class ConnectionPool extends ObjectStorage {
 		$this->config = $config;
 		$this->onConfigUpdated();
 		if ($this->connectionClass === null) {
-			$e = explode('\\', get_class($this));
-			$e[sizeof($e) - 1] = 'Connection';
-			$this->connectionClass = '\\'. implode('\\', $e);
+			$e                     = explode('\\', get_class($this));
+			$e[sizeof($e) - 1]     = 'Connection';
+			$this->connectionClass = '\\' . implode('\\', $e);
 		}
 		if ($init) {
 			$this->init();
@@ -86,7 +86,8 @@ abstract class ConnectionPool extends ObjectStorage {
 	 * Constructor
 	 * @return void
 	 */
-	protected function init() { }
+	protected function init() {
+	}
 
 	/**
 	 * Called when the worker is ready to go.
@@ -217,13 +218,15 @@ abstract class ConnectionPool extends ObjectStorage {
 	 * Called when ConnectionPool is now enabled
 	 * @return void
 	 */
-	protected function onEnable() {}
+	protected function onEnable() {
+	}
 
 	/**
 	 * Called when ConnectionPool is now disabled
 	 * @return void
 	 */
-	protected function onDisable() {}
+	protected function onDisable() {
+	}
 
 	/**
 	 * Called when application instance is going to shutdown
@@ -237,7 +240,8 @@ abstract class ConnectionPool extends ObjectStorage {
 	 * Called when ConnectionPool is finished]
 	 * @return void
 	 */
-	protected function onFinish() { }
+	protected function onFinish() {
+	}
 
 	/**
 	 * Finishes ConnectionPool
