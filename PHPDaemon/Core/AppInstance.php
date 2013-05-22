@@ -62,7 +62,7 @@ class AppInstance {
 			}
 		}
 
-		$this->config = Daemon::$config->{$fullname};
+ 		$this->config = Daemon::$config->{$fullname};
 		if ($this->isEnabled()) {
 			Daemon::$process->log($appName . ($name ? ":{$name}" : '') . ' up.');
 		}

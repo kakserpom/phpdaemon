@@ -21,8 +21,8 @@ class AppResolver {
 	 * @param boolean Privileged.
 	 * @return void
 	 */
-	public function preload($privileged = false) {
 
+	public function preload($privileged = false) {
 		foreach (Daemon::$config as $fullname => $section) {
 
 			if (!$section instanceof Config\Section) {
@@ -81,8 +81,7 @@ class AppResolver {
 		}
 		$fullnameClass = $this->getAppFullname($class, $instance);
 		if ($fullname !== $fullnameClass && isset(Daemon::$config->{$fullname})) {
-			Daemon::$config->{$fullnameClass} = Daemon::$config->{$fullname};
-			unset(Daemon::$config->{$fullname});
+			Daemon::$config->renameSection($fullname, $fullnameClass);
 		}
 		if (!$preload) {
 			if (!$class::$runOnDemand) {

@@ -6,13 +6,23 @@ class Cursor {
 	public $col; // Collection's name.
 	public $items = []; // Array of objects
 	public $item; // Current object
-	public $conn; // Network connection
+	protected $conn; // Network connection
 	public $finished = false; // Is this cursor finished?
 	public $failure = false; // Is this query failured?
 	public $await = false; // awaitCapable?
 	public $destroyed = false; // Is this cursor destroyed?
 	public $parseOplog = false;
 
+	public function isBusyConn() {
+		if (!$this->conn) {
+			return false;
+		}
+		return $this->conn->isBusy();
+	}
+
+	public function isFinished() {
+		return $this->finished;
+	}
 	/**
 	 * Constructor
 	 * @param string Cursor's ID

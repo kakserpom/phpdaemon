@@ -37,20 +37,26 @@ class ClassFinder {
 		if ('Pool' === $class || 'TransportContext' === $class) {
 			return '\\PHPDaemon\\Core\\' . $class;
 		}
-		if ('Example' === substr($class, 0, 7)) {
+		if ('Example' === substr($class, 0, 7) && strpos($class, '\\') === false) {
 			array_unshift($e, 'Examples');
 		}
-		if ('Server' === substr($class, -6)) {
+		if ('Server' === substr($class, -6) && strpos($class, '\\') === false) {
 			$path = '\\PHPDaemon\\Servers\\' . substr($class, 0, -6) . '\\Pool';
-			return str_replace('\\Servers\\Servers', '\\Servers', $path);
+			$r = str_replace('\\Servers\\Servers', '\\Servers', $path);
+			Daemon::log('ClassFinder: \'' . $class . '\' -> \''.$r.'\', you should change your code.');
+			return $r;
 		}
-		if ('Client' === substr($class, -6)) {
+		if ('Client' === substr($class, -6) && strpos($class, '\\') === false) {
 			$path = '\\PHPDaemon\\Clients\\' . substr($class, 0, -6) . '\\Pool';
-			return str_replace('\\Clients\\Clients', '\\Clients', $path);
+			$r = str_replace('\\Clients\\Clients', '\\Clients', $path);
+			Daemon::log('ClassFinder: \'' . $class . '\' -> \''.$r.'\', you should change your code.');
+			return $r;
 		}
-		if ('ClientAsync' === substr($class, -11)) {
+		if ('ClientAsync' === substr($class, -11) && strpos($class, '\\') === false) {
 			$path = '\\PHPDaemon\\Clients\\' . substr($class, 0, -11) . '\\Pool';
-			return str_replace('\\Client\\Clients', '\\Clients', $path);
+			$r = str_replace('\\Client\\Clients', '\\Clients', $path);
+			Daemon::log('ClassFinder: \'' . $class . '\' -> \''.$r.'\', you should change your code.');
+			return $r;
 		}
 		if ($namespace !== null && sizeof($e) < 2) {
 			array_unshift($e, $namespace);
