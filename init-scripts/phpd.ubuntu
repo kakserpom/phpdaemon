@@ -1,0 +1,122 @@
+#!/bin/sh
+#
+# phpd - this script starts and stops the phpDaemon
+#
+### BEGIN INIT INFO
+# Provides:          phpd
+# Required-Start:    
+# Required-Stop:     
+# Should-Start:      
+# Default-Start:     2 3 4 5
+# Default-Stop:      
+# Short-Description: php server process
+# Description:       php daemon allows running of php scripts as daemon
+#                    processes. Scripts can execute for days without problems
+### END INIT INFO
+
+set -e
+
+# /etc/init.d/phpd: start and stop the php daemon
+
+DAEMON=/opt/phpdaemon/bin/phpd
+PHPD_CONF_FILE=/opt/phpdaemon/conf/phpd.conf
+PHPD_PID_FILE=/opt/phpdaemon/run/phpd.pid
+
+test -x $DAEMON || exit 0
+test -f $PHP_CONF_FILE || exit 0
+
+. /lib/lsb/init-functions
+
+phpd_start() {
+        if start-stop-daemon --start  \
+                --pidfile $PHPD_PID_FILE \
+                --exec $DAEMON -- start
+        then
+                log_warning_msg "Starting the phpd daemon. start-stop-daemon return status: ${?}"
+                rc=0
+                sleep 1
+                if ! kill -0 $(cat $PHPD_PID_FILE) >/dev/null 2>&1; then
+                        log_failure_msg "phpd daemon failed to start"
+                        rc=1
+                fi
+        else
+                rc=1
+        fi
+        if [ $rc -eq 0 ]; then
+                log_end_msg 0
+        else
+                log_end_msg 1
+                rm -f $PHPD_PID_FILE
+        fi
+}
+
+# Upgrade the binary with no downtime.
+upgrade() {
+        local pidfile="/var/run/${prog}.pid"
+        local oldbin_pidfile="${pidfile}.oldbin"
+
+        configtest_q || configtest || return 6
+        echo -n $"Staring new master $prog: "
+        killproc $phpd -USR2
+        retval=$?
+        echo
+        sleep 1
+
+        if [[ -f ${oldbin_pidfile} && -f ${pidfile} ]];  then
+                echo -n $"Graceful shutdown of old $prog: "
+                killproc -p ${oldbin_pidfile} -QUIT
+                retval=$?
+                echo
+                return 0
+        else
+                echo $"Something bad happened, manual intervention required, maybe restart?"
+                return 1
+        fi
+}
+
+case "$1" in
+        start)
+                log_daemon_msg "Starting php daemon" "phpd"
+                if [ -s $PHPD_PID_FILE ] && kill -0 $(cat $PHPD_PID_FILE) >/dev/null 2>&1; then
+                        log_progress_msg "apparently phpd is already running"
+                        log_end_msg 0
+                        exit 0
+                fi
+                phpd_start
+                ;;
+        stop)
+                log_daemon_msg "Stopping phpd daemon" "phpd"
+                PHPD_MASTER_PID=$(cat $PHPD_PID_FILE)
+                log_warning_msg "phpd master pid: ${PHPD_MASTER_PID}"
+                for child_pid in `ps -o pid --no-headers --ppid $PHPD_MASTER_PID`
+                do
+                        kill -9 $child_pid
+                        log_warning_msg "Killing phpd child with pid ${child_pid}"
+                done
+                start-stop-daemon --stop --quiet --oknodo --pidfile $PHPD_PID_FILE
+                STARTSTOPKILL=$?
+                log_end_msg $STARTSTOPKILL
+                # make sure the main PHPD process is dead
+                kill -9 $PHPD_MASTER_PID > /dev/null 2>&1
+                rm -rf $PHPD_PID_FILE
+                ;;
+        restart)
+                log_daemon_msg "Restarting phpd daemon" "phpd"
+                if [ -s $PHPD_PID_FILE ] && kill -0 $(cat $PHPD_PID_FILE) >/dev/null 2>&1; then
+                        start-stop-daemon --stop --quiet --oknodo --pidfile $PHPD_PID_FILE || true
+                        sleep 1
+                else
+                        log_warning_msg "phpd daemon not running, attempting to start"
+                        rm -f $PHPD_PID_FILE
+                fi
+                phpd_start
+                ;;
+        status)
+                status_of_proc -p $PHPD_PID_FILE "$DAEMON" phpd
+                exit $? # not reached due to set -e
+                ;;
+        *)
+
+        echo $"Usage: $0 {start|stop|status|restart}"
+        exit 2
+esac
