@@ -41,7 +41,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * Contructor
 	 * @return void
 	 */
-	public function init() { }
+	public function init() {
+		$this->setWatermark(null, $this->pool->maxAllowedPacket + 100);
+	}
 
 	/**
 	 * Called when connection is inherited from HTTP request

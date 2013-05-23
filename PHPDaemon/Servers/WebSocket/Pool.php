@@ -6,7 +6,7 @@ use PHPDaemon\Network\Server;
 use PHPDaemon\WebSocket\Route;
 
 class Pool extends Server {
-	public $routes = array();
+	public $routes = [];
 
 	const BINARY = 'BINARY';
 	const STRING = 'STRING';
@@ -24,7 +24,7 @@ class Pool extends Server {
 			'expose'             => 1,
 			'listen'             => '0.0.0.0',
 			'port'               => 8047,
-			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1m'),
+			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
 			'fps-name'           => '',
 		);
 	}
