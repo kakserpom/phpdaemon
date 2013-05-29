@@ -78,6 +78,12 @@ class Worker extends Generic {
 	public $state = 0;
 
 	/**
+	 * Request counter
+	 * @var integer
+	 */
+	public $reqCounter = 0;
+
+	/**
 	 * Break main loop?
 	 * @var boolean
 	 */
@@ -470,6 +476,15 @@ class Worker extends Generic {
 			&& (memory_get_usage(TRUE) > Daemon::$config->maxmemoryusage->value)
 		) {
 			$this->log('\'maxmemory\' exceed. Graceful shutdown.');
+
+			$this->initReload();
+		}
+
+		if (
+			(Daemon::$config->maxrequests->value > 0)
+			&& ($this->reqCounter >= Daemon::$config->maxrequests->value)
+		) {
+			$this->log('\'max-requests\' exceed. Graceful shutdown.');
 
 			$this->initReload();
 		}
