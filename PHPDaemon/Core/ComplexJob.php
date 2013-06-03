@@ -48,6 +48,9 @@ class ComplexJob {
 	 */
 	public $jobsNum = 0;
 
+	/** @var \PHPDaemon\HTTPRequest\Generic */
+	public $req;
+
 	/**
 	 * Constructor
 	 * @param callable Listener
