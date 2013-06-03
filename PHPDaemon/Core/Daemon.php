@@ -86,6 +86,7 @@ class Daemon {
 	public static $reusePort = false;
 	public static $compatMode = FALSE;
 	public static $runName = 'phpdaemon';
+	/** @var  Config\Object */
 	public static $config;
 	public static $appResolverPath;
 	public static $restrictErrorControl = false;
@@ -317,7 +318,6 @@ class Daemon {
 	 * @return boolean - Success.
 	 */
 	public static function compatRunEmul() {
-		Daemon::$dir        = realpath(__DIR__ . '/..');
 		Daemon::$compatMode = TRUE;
 		Daemon::initSettings();
 

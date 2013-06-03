@@ -22,6 +22,9 @@ class AppResolver {
 	 * @return void
 	 */
 
+	/**
+	 * @param bool $privileged
+	 */
 	public function preload($privileged = false) {
 		foreach (Daemon::$config as $fullname => $section) {
 
@@ -32,9 +35,9 @@ class AppResolver {
 				continue;
 			}
 			if (
-				(isset($section->enable) && $section->enable->value)
-				||
-				(!isset($section->enable) && !isset($section->disable))
+					(isset($section->enable) && $section->enable->value)
+					||
+					(!isset($section->enable) && !isset($section->disable))
 			) {
 				if (strpos($fullname, ':') === false) {
 					$fullname .= ':';
@@ -67,6 +70,7 @@ class AppResolver {
 	 * @return object AppInstance.
 	 */
 	public function getInstance($appName, $instance = '', $spawn = true, $preload = false) {
+		/** @var AppInstance $class */
 		$class = ClassFinder::find($appName, 'Applications');
 		if (isset(Daemon::$appInstances[$class][$instance])) {
 			return Daemon::$appInstances[$class][$instance];
@@ -76,7 +80,7 @@ class AppResolver {
 		}
 		$fullname = $this->getAppFullname($appName, $instance);
 		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Core\\AppInstance')) {
-			Daemon::$process->log(__METHOD__.': cannot find application class \''.$class.'\'');
+			Daemon::$process->log(__METHOD__ . ': cannot find application class \'' . $class . '\'');
 			return false;
 		}
 		$fullnameClass = $this->getAppFullname($class, $instance);
@@ -84,7 +88,8 @@ class AppResolver {
 			Daemon::$config->renameSection($fullname, $fullnameClass);
 		}
 		if (!$preload) {
-			if (!$class::$runOnDemand) {
+			/** @noinspection PhpUndefinedFieldInspection */
+			if (!$class::runOnDemand) {
 				return false;
 			}
 			if (isset(Daemon::$config->{$fullnameClass}->limitinstances)) {
@@ -143,6 +148,7 @@ class AppResolver {
 	 * @param object AppInstance of Upstream.
 	 * @return string Application's name.
 	 */
-	public function getRequestRoute($req, $upstream) { }
+	public function getRequestRoute($req, $upstream) {
+	}
 
 }
