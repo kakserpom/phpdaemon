@@ -67,8 +67,10 @@ class Daemon {
 
 	/** @var \PHPDaemon\Thread\IPC */
 	public static $process;
+	/** @var  AppResolver */
 	public static $appResolver;
 	public static $appInstances = array();
+	/** @var \PHPDaemon\HTTPRequest\Generic */
 	public static $req;
 	public static $context;
 	protected static $workers;
@@ -120,8 +122,8 @@ class Daemon {
 		static $n = 0;
 		return str_shuffle(md5(str_shuffle(
 								   microtime(true) . chr(mt_rand(0, 0xFF))
-										   . Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
-										   . (++$n) . mt_rand(0, mt_getrandmax()))));
+								   . Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
+								   . (++$n) . mt_rand(0, mt_getrandmax()))));
 	}
 
 	public static function loadModuleIfAbsent($mod, $version = null, $compare = '>=') {
@@ -152,9 +154,9 @@ class Daemon {
 
 	public static function checkAutoGC() {
 		if (
-			(Daemon::$config->autogc->value > 0)
-			&& (Daemon::$process->counterGC > 0)
-			&& (Daemon::$process->counterGC >= Daemon::$config->autogc->value)
+				(Daemon::$config->autogc->value > 0)
+				&& (Daemon::$process->counterGC > 0)
+				&& (Daemon::$process->counterGC >= Daemon::$config->autogc->value)
 		) {
 			Daemon::$process->counterGC = 0;
 			return true;
@@ -176,8 +178,8 @@ class Daemon {
 		++$n;
 		Daemon::$obInStack = true;
 		if (
-			Daemon::$config->obfilterauto->value
-			&& (Daemon::$req !== NULL)
+				Daemon::$config->obfilterauto->value
+				&& (Daemon::$req !== NULL)
 		) {
 			Daemon::$req->out($s, false);
 
@@ -281,8 +283,8 @@ class Daemon {
 		}
 
 		if (
-			self::supported(self::SUPPORT_RUNKIT_MODIFY)
-			&& ini_get('runkit.internal_override')
+				self::supported(self::SUPPORT_RUNKIT_MODIFY)
+				&& ini_get('runkit.internal_override')
 		) {
 			self::$support[self::SUPPORT_RUNKIT_INTERNAL_MODIFY] = true;
 		}
@@ -558,8 +560,8 @@ class Daemon {
 	 */
 	public static function date_period($st, $fin) {
 		if (
-			(is_int($st))
-			|| (ctype_digit($st))
+				(is_int($st))
+				|| (ctype_digit($st))
 		) {
 			$st = date('d-m-Y-H-i-s', $st);
 		}
@@ -567,8 +569,8 @@ class Daemon {
 		$st = explode('-', $st);
 
 		if (
-			(is_int($fin))
-			|| (ctype_digit($fin))
+				(is_int($fin))
+				|| (ctype_digit($fin))
 		) {
 			$fin = date('d-m-Y-H-i-s', $fin);
 		}
@@ -635,8 +637,8 @@ class Daemon {
 		}
 
 		if (
-			$result[0] > 0
-			|| $str == ''
+				$result[0] > 0
+				|| $str == ''
 		) {
 			$str .= $result[0] . ' sec. ';
 		}

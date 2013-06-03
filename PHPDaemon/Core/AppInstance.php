@@ -17,6 +17,7 @@ class AppInstance {
 	public $passphrase; // optional passphrase
 	public $ready = false; // ready to start?
 	protected $name; // name of instance
+	/** @var Config\Object */
 	public $config;
 	public $enableRPC = false;
 	public $requestClass;
@@ -31,9 +32,9 @@ class AppInstance {
 	 * @return void
 	 */
 	public function __construct($name = '') {
-		$this->name   = $name;
-		$appName = '\\' . get_class($this);
-		$fullname     = Daemon::$appResolver->getAppFullName($appName, $this->name);
+		$this->name = $name;
+		$appName    = '\\' . get_class($this);
+		$fullname   = Daemon::$appResolver->getAppFullName($appName, $this->name);
 		//Daemon::$process->log($fullname . ' instantiated.');
 
 		if ($this->requestClass === null) {
@@ -54,15 +55,15 @@ class AppInstance {
 		}
 		else {
 			if (
-				!isset(Daemon::$config->{$fullname}->enable)
-				&& !isset(Daemon::$config->{$fullname}->disable)
+					!isset(Daemon::$config->{$fullname}->enable)
+					&& !isset(Daemon::$config->{$fullname}->disable)
 			) {
 				Daemon::$config->{$fullname}->enable = new Config\Entry\Generic;
 				Daemon::$config->{$fullname}->enable->setValue(true);
 			}
 		}
 
- 		$this->config = Daemon::$config->{$fullname};
+		$this->config = Daemon::$config->{$fullname};
 		if ($this->isEnabled()) {
 			Daemon::$process->log($appName . ($name ? ":{$name}" : '') . ' up.');
 		}
@@ -82,10 +83,18 @@ class AppInstance {
 		}
 	}
 
+	/**
+	 * @param string $name
+	 * @param bool $spawn
+	 * @return AppInstance
+	 */
 	public static function getInstance($name, $spawn = true) {
 		return Daemon::$appResolver->getInstanceByAppName(get_called_class(), $name, $spawn);
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isEnabled() {
 		return isset($this->config->enable->value) && $this->config->enable->value;
 	}
@@ -113,10 +122,16 @@ class AppInstance {
 		return call_user_func_array([$this, $method], $args);
 	}
 
+	/**
+	 * @return Config\Object
+	 */
 	public function getConfig() {
 		return $this->config;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getName() {
 		return $this->name;
 	}
@@ -131,7 +146,7 @@ class AppInstance {
 	 */
 	public function broadcastCall($method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendBroadcastCall(
-			'\\'. get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
+			'\\' . get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 			$method,
 			$args,
 			$cb
@@ -148,7 +163,7 @@ class AppInstance {
 	 */
 	public function singleCall($method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendSingleCall(
-			'\\'. get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
+			'\\' . get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 			$method,
 			$args,
 			$cb
@@ -167,7 +182,7 @@ class AppInstance {
 	public function directCall($workerId, $method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendDirectCall(
 			$workerId,
-			'\\'. get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
+			'\\' . get_class($this) . ($this->name !== '' ? ':' . $this->name : ''),
 			$method,
 			$args,
 			$cb
@@ -178,20 +193,23 @@ class AppInstance {
 	 * Called when the worker is ready to go
 	 * @return void
 	 */
-	protected function onReady() { }
+	protected function onReady() {
+	}
 
 	/**
 	 * Called when creates instance of the application
 	 * @return void
 	 */
-	protected function init() { }
+	protected function init() {
+	}
 
 	/**
 	 * Called when worker is going to update configuration
 	 * @todo call it only when application section config is changed
 	 * @return void
 	 */
-	public function onConfigUpdated() { }
+	public function onConfigUpdated() {
+	}
 
 	/**
 	 * Called when application instance is going to shutdown
