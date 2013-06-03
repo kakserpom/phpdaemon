@@ -89,7 +89,7 @@ class AppResolver {
 		}
 		if (!$preload) {
 			/** @noinspection PhpUndefinedFieldInspection */
-			if (!$class::runOnDemand) {
+			if (!$class::$runOnDemand) {
 				return false;
 			}
 			if (isset(Daemon::$config->{$fullnameClass}->limitinstances)) {
