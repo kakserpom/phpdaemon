@@ -88,7 +88,6 @@ class AppResolver {
 			Daemon::$config->renameSection($fullname, $fullnameClass);
 		}
 		if (!$preload) {
-			/** @noinspection PhpUndefinedFieldInspection */
 			if (!$class::$runOnDemand) {
 				return false;
 			}
