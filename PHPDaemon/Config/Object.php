@@ -74,6 +74,12 @@ class Object implements \ArrayAccess {
 	public $mpmdelay = '0.1s';
 
 	/**
+	 * Max. requests before worker restart
+	 * @var number
+	 */
+	public $maxrequests = '10k';
+
+	/**
 	 * Start workers
 	 * @var number
 	 */
