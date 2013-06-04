@@ -125,6 +125,7 @@ class Worker extends Generic {
 	 */
 	public $callbacks;
 
+	/** @var \PHPDaemon\IPCManager\IPCManager */
 	public $IPCManager;
 
 	/**
@@ -370,7 +371,7 @@ class Worker extends Generic {
 
 		$this->setTitle(
 			Daemon::$runName . ': worker process'
-					. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
+			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
 					? ' (' . Daemon::$config->pidfile->value . ')' : '')
 		);
 
@@ -399,8 +400,8 @@ class Worker extends Generic {
 				exit(0);
 			}
 			elseif (
-				($sg['gid'] != posix_getgid())
-				&& (!posix_setgid($sg['gid']))
+					($sg['gid'] != posix_getgid())
+					&& (!posix_setgid($sg['gid']))
 			) {
 				Daemon::log('Couldn\'t change group to \'' . Daemon::$config->group->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
@@ -413,8 +414,8 @@ class Worker extends Generic {
 				exit(0);
 			}
 			elseif (
-				($su['uid'] != posix_getuid())
-				&& (!posix_setuid($su['uid']))
+					($su['uid'] != posix_getuid())
+					&& (!posix_setuid($su['uid']))
 			) {
 				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
@@ -474,8 +475,8 @@ class Worker extends Generic {
 		}
 
 		if (
-			(Daemon::$config->maxmemoryusage->value > 0)
-			&& (memory_get_usage(TRUE) > Daemon::$config->maxmemoryusage->value)
+				(Daemon::$config->maxmemoryusage->value > 0)
+				&& (memory_get_usage(TRUE) > Daemon::$config->maxmemoryusage->value)
 		) {
 			$this->log('\'maxmemory\' exceed. Graceful shutdown.');
 
@@ -483,8 +484,8 @@ class Worker extends Generic {
 		}
 
 		if (
-			(Daemon::$config->maxrequests->value > 0)
-			&& ($this->reqCounter >= Daemon::$config->maxrequests->value)
+				(Daemon::$config->maxrequests->value > 0)
+				&& ($this->reqCounter >= Daemon::$config->maxrequests->value)
 		) {
 			$this->log('\'max-requests\' exceed. Graceful shutdown.');
 
@@ -492,9 +493,9 @@ class Worker extends Generic {
 		}
 
 		if (
-			Daemon::$config->maxidle->value
-			&& $this->timeLastActivity
-			&& ($time - $this->timeLastActivity > Daemon::$config->maxidle->value)
+				Daemon::$config->maxidle->value
+				&& $this->timeLastActivity
+				&& ($time - $this->timeLastActivity > Daemon::$config->maxidle->value)
 		) {
 			$this->log('\'maxworkeridle\' exceed. Graceful shutdown.');
 
@@ -727,13 +728,15 @@ class Worker extends Generic {
 	 * Handler of the SIGTTIN signal in worker process.
 	 * @return void
 	 */
-	protected function sigttin() { }
+	protected function sigttin() {
+	}
 
 	/**
 	 * Handler of the SIGPIPE signal in worker process.
 	 * @return void
 	 */
-	protected function sigpipe() { }
+	protected function sigpipe() {
+	}
 
 	/**
 	 * Handler of non-known signals.
