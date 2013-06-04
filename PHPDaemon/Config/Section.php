@@ -6,6 +6,7 @@ use PHPDaemon\Config\Entry\Generic;
 /**
  * Config section
  *
+ * @property Entry\Boolean enable
  * @package    Core
  * @subpackage Config
  *
@@ -74,7 +75,7 @@ class Section implements \ArrayAccess, \Countable {
 
 	public function offsetExists($prop) {
 		$prop = $this->getRealPropertyName($prop);
-		return propery_exists($this, $prop);
+		return property_exists($this, $prop);
 	}
 
 	/**

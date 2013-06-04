@@ -14,18 +14,35 @@ use PHPDaemon\Thread;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class AppInstance {
-	public $passphrase; // optional passphrase
-	public $ready = false; // ready to start?
-	protected $name; // name of instance
-	/** @var Config\Object */
-	public $config;
-	public $enableRPC = false;
-	public $requestClass;
+	const EVENT_CONFIG_UPDATED = 1; // optional passphrase
+	const EVENT_GRACEFUL_SHUTDOWN = 2; // ready to start?
+	const EVENT_HARD_SHUTDOWN = 3; // name of instance
+	/**
+	 * @var bool
+	 */
 	public static $runOnDemand = true;
-
-	const EVENT_CONFIG_UPDATED    = 1;
-	const EVENT_GRACEFUL_SHUTDOWN = 2;
-	const EVENT_HARD_SHUTDOWN     = 3;
+	/**
+	 * @var string
+	 */
+	public $passphrase;
+	/**
+	 * @var bool
+	 */
+	public $ready = false;
+	/** @var Config\Section */
+	public $config;
+	/**
+	 * @var bool
+	 */
+	public $enableRPC = false;
+	/**
+	 * @var null|string
+	 */
+	public $requestClass;
+	/**
+	 * @var string
+	 */
+	protected $name;
 
 	/**
 	 * Application constructor
@@ -70,6 +87,7 @@ class AppInstance {
 
 		$defaults = $this->getConfigDefaults();
 		if ($defaults) {
+			/** @noinspection PhpUndefinedMethodInspection */
 			$this->config->imposeDefault($defaults);
 		}
 
@@ -81,15 +99,6 @@ class AppInstance {
 				$this->onReady();
 			}
 		}
-	}
-
-	/**
-	 * @param string $name
-	 * @param bool $spawn
-	 * @return AppInstance
-	 */
-	public static function getInstance($name, $spawn = true) {
-		return Daemon::$appResolver->getInstanceByAppName(get_called_class(), $name, $spawn);
 	}
 
 	/**
@@ -106,6 +115,29 @@ class AppInstance {
 	 */
 	protected function getConfigDefaults() {
 		return false;
+	}
+
+	/**
+	 * Called when creates instance of the application
+	 * @return void
+	 */
+	protected function init() {
+	}
+
+	/**
+	 * Called when the worker is ready to go
+	 * @return void
+	 */
+	protected function onReady() {
+	}
+
+	/**
+	 * @param string $name
+	 * @param bool $spawn
+	 * @return AppInstance
+	 */
+	public static function getInstance($name, $spawn = true) {
+		return Daemon::$appResolver->getInstanceByAppName(get_called_class(), $name, $spawn);
 	}
 
 	/**
@@ -139,9 +171,9 @@ class AppInstance {
 	/**
 	 * Send broadcast RPC.
 	 * You can override it
-	 * @param string Method name.
-	 * @param array  Arguments.
-	 * @param mixed  Callback.
+	 * @param string $method Method name.
+	 * @param array $args    Arguments.
+	 * @param callable $cb   Callback.
 	 * @return boolean Success.
 	 */
 	public function broadcastCall($method, $args = [], $cb = NULL) {
@@ -190,50 +222,6 @@ class AppInstance {
 	}
 
 	/**
-	 * Called when the worker is ready to go
-	 * @return void
-	 */
-	protected function onReady() {
-	}
-
-	/**
-	 * Called when creates instance of the application
-	 * @return void
-	 */
-	protected function init() {
-	}
-
-	/**
-	 * Called when worker is going to update configuration
-	 * @todo call it only when application section config is changed
-	 * @return void
-	 */
-	public function onConfigUpdated() {
-	}
-
-	/**
-	 * Called when application instance is going to shutdown
-	 * @return boolean Ready to shutdown?
-	 */
-	protected function onShutdown($graceful = false) {
-		return true;
-	}
-
-	/**
-	 * Create Request instance
-	 * @param object Generic
-	 * @param object Upstream application instance
-	 * @return object Request
-	 */
-	public function beginRequest($req, $upstream) {
-		if (!$this->requestClass) {
-			return false;
-		}
-		$className = $this->requestClass;
-		return new $className($this, $upstream, $req);
-	}
-
-	/**
 	 * Log something
 	 * @param string - Message.
 	 * @return void
@@ -254,6 +242,20 @@ class AppInstance {
 	}
 
 	/**
+	 * Create Request instance
+	 * @param object Generic
+	 * @param object Upstream application instance
+	 * @return object Request
+	 */
+	public function beginRequest($req, $upstream) {
+		if (!$this->requestClass) {
+			return false;
+		}
+		$className = $this->requestClass;
+		return new $className($this, $upstream, $req);
+	}
+
+	/**
 	 * Handle the worker status
 	 * @param int Status code
 	 * @return boolean Result
@@ -270,5 +272,21 @@ class AppInstance {
 			return $this->onShutdown();
 		}
 		return false;
+	}
+
+	/**
+	 * Called when worker is going to update configuration
+	 * @todo call it only when application section config is changed
+	 * @return void
+	 */
+	public function onConfigUpdated() {
+	}
+
+	/**
+	 * Called when application instance is going to shutdown
+	 * @return boolean Ready to shutdown?
+	 */
+	protected function onShutdown($graceful = false) {
+		return true;
 	}
 }
