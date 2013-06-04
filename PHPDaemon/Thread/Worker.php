@@ -125,6 +125,8 @@ class Worker extends Generic {
 	 */
 	public $callbacks;
 
+	public $IPCManager;
+
 	/**
 	 * Runtime of Worker process.
 	 * @return void
