@@ -289,7 +289,7 @@ class Bootstrap {
 		}
 
 		if (isset(Core\Daemon::$config->addincludepath->value)) {
-			ini_set('include_path', ini_get('include_path') . ':' . Core\Daemon::$config->addincludepath->value);
+			ini_set('include_path', ini_get('include_path') . ':' . implode(':', Core\Daemon::$config->addincludepath->value));
 		}
 
 		if (

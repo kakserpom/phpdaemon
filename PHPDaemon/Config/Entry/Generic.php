@@ -17,6 +17,7 @@ class Generic {
 	public $source;
 	public $revision;
 	public $hasDefaultValue = FALSE;
+	protected $stackable = false;
 
 	/**
 	 * Constructor
@@ -48,6 +49,43 @@ class Generic {
 		$this->humanValue = static::PlainToHuman($value);
 		$this->onUpdate($old);
 	}
+
+	public function setStackable($b = true) {
+		$this->stackable = $b;
+	}
+	public function isStackable() {
+		return $this->stackable;
+	}
+	public function pushValue($value) {
+		$old = $this->value;
+		if (!$this->stackable) {
+			$this->setValue($value);
+			return;
+		}
+		if (!is_array($this->value)) {
+			$this->value = [$this->value, $value];
+		} else {
+			$f = false;
+			foreach ($this->value as $k => $v) {
+				if (!is_int($k)) {
+					$f = true;
+					break;
+				}
+			}
+			if (!$f) {
+				$this->value[] = $value;
+			}
+			else {
+				$this->value = [$this->value, $value];
+			}
+		}
+		$this->onUpdate($old);
+	}
+
+	public function pushHumanValue($value) {
+		$this->pushValue(static::HumanToPlain($value));
+	}
+
 
 	/**
 	 * Set value type

@@ -305,6 +305,10 @@ class Object implements \ArrayAccess {
 				$entry = new Entry\Generic;
 			}
 
+			if (in_array($name, ['addincludepath'])) {
+				$entry->setStackable();
+			}
+
 			$entry->setDefaultValue($value);
 			$entry->setHumanValue($value);
 			$this->{$name} = $entry;
