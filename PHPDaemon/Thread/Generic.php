@@ -196,7 +196,7 @@ abstract class Generic {
 				continue;
 			}
 
-			if (!pcntl_signal($no, array($this, 'sighandler'), TRUE)) {
+			if (!\pcntl_signal($no, [$this, 'sighandler'], true)) {
 				$this->log('Cannot assign ' . $name . ' signal');
 			}
 		}
@@ -207,14 +207,14 @@ abstract class Generic {
 	 * @return void
 	 */
 	public function start($clearstack = true) {
-		$pid = pcntl_fork();
+		$pid = \pcntl_fork();
 
 		if ($pid === -1) {
 			throw new \Exception('Could not fork');
 		}
 		elseif ($pid === 0) { // we are the child
 			$thread      = $this;
-			$thread->pid = posix_getpid();
+			$thread->pid = \posix_getpid();
 			if (!$thread->delayedSigReg) {
 				$thread->registerSignals();
 			}
@@ -250,7 +250,7 @@ abstract class Generic {
 	 * @return void
 	 */
 	protected function shutdown() {
-		posix_kill(posix_getppid(), SIGCHLD);
+		\posix_kill(\posix_getppid(), SIGCHLD);
 		exit(0);
 	}
 
@@ -260,7 +260,7 @@ abstract class Generic {
 	 * @return boolean Success
 	 */
 	protected function backsig($sig) {
-		return posix_kill(posix_getppid(), $sig);
+		return \posix_kill(\posix_getppid(), $sig);
 	}
 
 	/**
@@ -277,7 +277,7 @@ abstract class Generic {
 				return false;
 			}
 
-			usleep($interval * 1000000);
+			\usleep($interval * 1000000);
 		}
 
 		return true;
@@ -330,7 +330,7 @@ abstract class Generic {
 	 */
 	public function stop($kill = false) {
 		$this->shutdown = true;
-		posix_kill($this->pid, $kill ? SIGKILL : SIGTERM);
+		\posix_kill($this->pid, $kill ? SIGKILL : SIGTERM);
 	}
 
 	/**
@@ -339,7 +339,7 @@ abstract class Generic {
 	 */
 	protected function waitPid() {
 		start:
-		$pid = pcntl_waitpid(-1, $status, WNOHANG);
+		$pid = \pcntl_waitpid(-1, $status, WNOHANG);
 		if ($pid > 0) {
 			foreach ($this->collections as &$col) {
 				foreach ($col->threads as $k => &$t) {
@@ -360,7 +360,7 @@ abstract class Generic {
 	 * @return boolean Success
 	 */
 	public function signal($sig) {
-		return posix_kill($this->pid, $sig);
+		return \posix_kill($this->pid, $sig);
 	}
 
 	/**
@@ -368,10 +368,10 @@ abstract class Generic {
 	 * @return boolean Success
 	 */
 	public function ifExists() {
-		if (file_exists('/proc')) {
-			return file_exists('/proc/' . $this->pid);
+		if (\file_exists('/proc')) {
+			return \file_exists('/proc/' . $this->pid);
 		}
-		return posix_signal($this->pid, SIGTTIN);
+		return \posix_kill($this->pid, SIGTTIN);
 	}
 
 	/**
@@ -381,10 +381,10 @@ abstract class Generic {
 	 * @return boolean Success
 	 */
 	public static function ifExistsByPid($pid) {
-		if (file_exists('/proc')) {
-			return file_exists('/proc/' . $pid);
+		if (\file_exists('/proc')) {
+			return \file_exists('/proc/' . $pid);
 		}
-		return posix_signal($pid, SIGTTIN);
+		return \posix_kill($pid, SIGTTIN);
 	}
 
 	/**
@@ -411,10 +411,10 @@ abstract class Generic {
 	 */
 	protected function setTitle($title) {
 		if (is_callable('cli_set_process_title')) {
-			return cli_set_process_title($title);
+			return \cli_set_process_title($title);
 		}
 		if (Daemon::loadModuleIfAbsent('proctitle')) {
-			return setproctitle($title);
+			return \setproctitle($title);
 		}
 		return false;
 	}
@@ -425,7 +425,7 @@ abstract class Generic {
 	 */
 	protected function getTitle() {
 		if (is_callable('cli_get_process_title')) {
-			return cli_get_process_title();
+			return \cli_get_process_title();
 		}
 		return false;
 	}
@@ -438,7 +438,7 @@ abstract class Generic {
 	 */
 	protected function sigwait($sec = 0, $nano = 0.3e9) {
 		$siginfo = null;
-		$signo   = @pcntl_sigtimedwait(self::$signalsno, $siginfo, $sec, $nano);
+		$signo   = @\pcntl_sigtimedwait(self::$signalsno, $siginfo, $sec, $nano);
 
 		if (is_bool($signo)) {
 			return $signo;
@@ -456,11 +456,11 @@ abstract class Generic {
 
 if (!function_exists('pcntl_sigtimedwait')) { // For Mac OS where missing the orignal function
 	function pcntl_sigtimedwait($signals, $siginfo, $sec, $nano) {
-		pcntl_signal_dispatch();
-		if (time_nanosleep($sec, $nano) === true) {
+		\pcntl_signal_dispatch();
+		if (\time_nanosleep($sec, $nano) === true) {
 			return false;
 		}
-		pcntl_signal_dispatch();
+		\pcntl_signal_dispatch();
 		return true;
 	}
 }

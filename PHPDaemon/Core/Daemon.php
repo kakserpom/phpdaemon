@@ -115,6 +115,14 @@ class Daemon {
 		} // @TODO: FIXME: this is a BSD-only hack
 	}
 
+	public static function glob($pattern, $flags = 0) {
+		$r = [];
+		foreach (explode(':', get_include_path()) as $path) {
+			$r = array_merge($r, glob($p = $path . '/' . $pattern, $flags));
+		}
+		return array_unique($r);
+	}
+
 	/**
 	 * Generate a unique ID.
 	 * @return string Returns the unique identifier, as a string.
