@@ -105,6 +105,9 @@ abstract class Generic {
 		$this->onSleep();
 	}
 
+	public function handleException($e) {
+	}
+
 	/**
 	 * Is this request aborted?
 	 * @return boolean

@@ -202,6 +202,11 @@ class Daemon {
 	}
 
 	public static function uncaughtExceptionHandler(\Exception $e) {
+		if (Daemon::$context !== null) {
+			if (Daemon::$context->handleException($e)) {
+				return;
+			}
+		}
 		$msg = $e->getMessage();
 		Daemon::log('Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')' . (strlen($msg) ? ': ' . $msg : '') . ".\n" . $e->getTraceAsString());
 		if (Daemon::$req) {
