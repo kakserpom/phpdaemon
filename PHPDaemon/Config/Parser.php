@@ -283,10 +283,10 @@ class Parser {
 							if (isset($scope->{$name})) {
 								if ($scope->{$name}->source !== 'cmdline') {
 									if (($elTypes[1] === Parser::T_CVALUE) && is_string($value)) {
-										$scope->{$name}->setHumanValue($value);
+										$scope->{$name}->pushHumanValue($value);
 									}
 									else {
-										$scope->{$name}->setValue($value);
+										$scope->{$name}->pushValue($value);
 									}
 									$scope->{$name}->source   = 'config';
 									$scope->{$name}->revision = $this->revision;
@@ -296,7 +296,7 @@ class Parser {
 								$scope->{$name}           = new Generic();
 								$scope->{$name}->source   = 'config';
 								$scope->{$name}->revision = $this->revision;
-								$scope->{$name}->setValue($value);
+								$scope->{$name}->pushValue($value);
 								$scope->{$name}->setValueType($value);
 							}
 							else {
@@ -355,7 +355,7 @@ class Parser {
 						unset($scope->{$name});
 					}
 					elseif (isset($obj->enable)) {
-						$obj->enable->setValue(FALSE);
+						$obj->enable->setValue(false);
 					}
 				}
 			}

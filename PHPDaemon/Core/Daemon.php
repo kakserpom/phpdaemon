@@ -115,6 +115,14 @@ class Daemon {
 		} // @TODO: FIXME: this is a BSD-only hack
 	}
 
+	public static function glob($pattern, $flags = 0) {
+		$r = [];
+		foreach (explode(':', get_include_path()) as $path) {
+			$r = array_merge($r, glob($p = $path . '/' . $pattern, $flags));
+		}
+		return array_unique($r);
+	}
+
 	/**
 	 * Generate a unique ID.
 	 * @return string Returns the unique identifier, as a string.
@@ -194,6 +202,11 @@ class Daemon {
 	}
 
 	public static function uncaughtExceptionHandler(\Exception $e) {
+		if (Daemon::$context !== null) {
+			if (Daemon::$context->handleException($e)) {
+				return;
+			}
+		}
 		$msg = $e->getMessage();
 		Daemon::log('Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')' . (strlen($msg) ? ': ' . $msg : '') . ".\n" . $e->getTraceAsString());
 		if (Daemon::$req) {

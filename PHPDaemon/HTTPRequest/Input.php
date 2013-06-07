@@ -151,6 +151,10 @@ class Input extends \EventBuffer {
 				Generic::parse_str($this->req->attrs->raw, $this->req->attrs->post);
 				unset($this->req->attrs->raw);
 			}
+			if (isset($this->req->contype['application/json'])) {
+				$this->req->attrs->post = json_encode($this->req->attrs->raw, true);
+				unset($this->req->attrs->raw);
+			}
 		}
 		$this->req->postPrepare();
 		$this->req->checkIfReady();
