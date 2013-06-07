@@ -260,12 +260,12 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if (isset($this->attrs->server['QUERY_STRING'])) {
 			self::parse_str($this->attrs->server['QUERY_STRING'], $this->attrs->get);
 		}
-
 		if (
 			isset($this->attrs->server['REQUEST_METHOD'])
-			&& ($this->attrs->server['REQUEST_METHOD'] === 'POST')
+			&& ($this->attrs->server['REQUEST_METHOD'] === 'POST' || $this->attrs->server['REQUEST_METHOD'] === 'PUT')
 			&& isset($this->attrs->server['HTTP_CONTENT_TYPE'])
 		) {
+			$this->attrs->server['REQUEST_METHOD_POST'] = true;
 			self::parse_str($this->attrs->server['HTTP_CONTENT_TYPE'], $this->contype, true);
 			$found = false;
 			foreach ($this->contype as $k => $v) {
@@ -285,6 +285,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			) {
 				$this->attrs->input->setBoundary($this->contype['boundary']);
 			}
+		} else {
+			$this->attrs->server['REQUEST_METHOD_POST'] = false;
 		}
 
 		if (isset($this->attrs->server['HTTP_COOKIE'])) {
@@ -315,7 +317,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * @return void
 	 */
 	public function postPrepare() {
-		if (!isset($this->attrs->server['REQUEST_METHOD']) || ($this->attrs->server['REQUEST_METHOD'] !== 'POST')) {
+		if (!$this->attrs->server['REQUEST_METHOD_POST']) {
 			return;
 		}
 		if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] === 'nginx') {

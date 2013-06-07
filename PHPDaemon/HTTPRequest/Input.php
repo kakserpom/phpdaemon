@@ -152,7 +152,7 @@ class Input extends \EventBuffer {
 				unset($this->req->attrs->raw);
 			}
 			if (isset($this->req->contype['application/json'])) {
-				$this->req->attrs->post = json_encode($this->req->attrs->raw, true);
+				$this->req->attrs->post = json_decode($this->req->attrs->raw, true);
 				unset($this->req->attrs->raw);
 			}
 		}
