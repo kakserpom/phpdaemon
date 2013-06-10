@@ -6,6 +6,8 @@ use PHPDaemon\Clients\Mongo\Connection;
 use PHPDaemon\Clients\Mongo\ConnectionFinished;
 use PHPDaemon\Network\Client;
 use PHPDaemon\Core\CallbackWrapper;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 class Pool extends Client {
 	public $noSAF = true;

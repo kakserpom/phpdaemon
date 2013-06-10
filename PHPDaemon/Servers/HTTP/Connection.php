@@ -261,13 +261,19 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 					for ($i = 0, $s = strlen($this->pool->variablesOrder); $i < $s; ++$i) {
 						$char = $this->pool->variablesOrder[$i];
 						if ($char == 'G') {
-							$this->req->attrs->request += $this->req->attrs->get;
+							if (is_array($this->req->attrs->get)) {
+								$this->req->attrs->request += $this->req->attrs->get;
+							}
 						}
 						elseif ($char == 'P') {
-							$this->req->attrs->request += $this->req->attrs->post;
+							if (is_array($this->req->attrs->post)) {
+								$this->req->attrs->request += $this->req->attrs->post;
+							}
 						}
 						elseif ($char == 'C') {
-							$this->req->attrs->request += $this->req->attrs->cookie;
+							if (is_array($this->req->attrs->cookie)) {
+								$this->req->attrs->request += $this->req->attrs->cookie;
+							}
 						}
 					}
 				}
