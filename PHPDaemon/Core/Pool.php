@@ -13,6 +13,9 @@ use PHPDaemon\Core\Daemon;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends AppInstance {
+	/**
+	 * @var Pool
+	 */
 	public $pool;
 
 	/**

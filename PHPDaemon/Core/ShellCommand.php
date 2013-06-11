@@ -9,11 +9,16 @@ use PHPDaemon\Network\IOStream;
 /**
  * Process
  *
+ * @property null onReadData
+ * @property callable onEOF
+ * @property callable onRead
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class ShellCommand extends IOStream {
+	public $writeState;
+	public $finishWrite;
 
 	/**
 	 * Command string
@@ -52,28 +57,68 @@ class ShellCommand extends IOStream {
 	protected $outputErrors = false;
 
 	// @todo make methods setUser and setGroup, variables change to $user and $group with null values
+	/**
+	 * @var string
+	 */
 	protected $setUser; // optinal SUID.
+	/**
+	 * @var string
+	 */
 	protected $setGroup; // optional SGID.
 
 	// @todo the same, make a method setChroot
+	/**
+	 * @var string
+	 */
 	protected $chroot = '/'; // optional chroot.
 
+	/**
+	 * @var array
+	 */
 	protected $env = []; // hash of environment's variables
 
 	// @todo setCwd
+	/**
+	 * @var string
+	 */
 	protected $cwd; // optional chdir
+	/**
+	 * @var string
+	 */
 	protected $errlogfile = '/tmp/cgi-errorlog.log'; // path to error logfile
+	/**
+	 * @var array
+	 */
 	protected $args; // array of arguments
 
 	// @todo setNice
+	/**
+	 * @var int
+	 */
 	protected $nice; // optional priority
 
+	/**
+	 * @var \EventBufferEvent
+	 */
 	protected $bev;
+	/**
+	 * @var \EventBufferEvent
+	 */
 	protected $bevWrite;
+	/**
+	 * @var \EventBufferEvent
+	 */
 	protected $bevErr;
 
+	/**
+	 * @var bool
+	 */
 	protected $EOF = false;
 
+	/**
+	 * @param null $cb
+	 * @return $this
+	 */
 	public function onReadData($cb = NULL) {
 		$this->onReadData = $cb;
 		return $this;
@@ -159,7 +204,7 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Set priority.
-	 * @param integer Priority
+	 * @param integer $nice Priority
 	 * @return object AsyncProccess
 	 */
 	public function nice($nice = NULL) {
@@ -190,9 +235,9 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Execute
-	 * @param string Optional. Binpath.
-	 * @param array  Optional. Arguments.
-	 * @param array  Optional. Hash of environment's variables.
+	 * @param string $binPath Optional. Binpath.
+	 * @param array $args     Optional. Arguments.
+	 * @param array $env      Optional. Hash of environment's variables.
 	 * @return object AsyncProccess
 	 */
 	public function execute($binPath = NULL, $args = NULL, $env = NULL) {
@@ -219,13 +264,13 @@ class ShellCommand extends IOStream {
 		$this->cmd = $this->binPath . $args . ($this->outputErrors ? ' 2>&1' : '');
 
 		if (
-			isset($this->setUser)
-			|| isset($this->setGroup)
+				isset($this->setUser)
+				|| isset($this->setGroup)
 		) {
 			if (
-				isset($this->setUser)
-				&& isset($this->setGroup)
-				&& ($this->setUser !== $this->setGroup)
+					isset($this->setUser)
+					&& isset($this->setGroup)
+					&& ($this->setUser !== $this->setGroup)
 			) {
 				$this->cmd = 'sudo -g ' . escapeshellarg($this->setGroup) . '  -u ' . escapeshellarg($this->setUser) . ' ' . $this->cmd;
 			}
@@ -248,8 +293,8 @@ class ShellCommand extends IOStream {
 		];
 
 		if (
-			($this->errlogfile !== NULL)
-			&& !$this->outputErrors
+				($this->errlogfile !== NULL)
+				&& !$this->outputErrors
 		) {
 			//$pipesDescr[2] = ['file', $this->errlogfile, 'a'];
 		}
@@ -262,6 +307,9 @@ class ShellCommand extends IOStream {
 		return $this;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function finishWrite() {
 		if (!$this->writeState) {
 			$this->closeWrite();
@@ -288,6 +336,9 @@ class ShellCommand extends IOStream {
 		$this->onEofEvent();
 	}
 
+	/**
+	 * @return $this
+	 */
 	public function closeWrite() {
 		if ($this->bevWrite) {
 			if (isset($this->bevWrite)) {
@@ -305,6 +356,9 @@ class ShellCommand extends IOStream {
 
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function eof() {
 		return $this->EOF;
 
@@ -357,6 +411,10 @@ class ShellCommand extends IOStream {
 		return true;
 	}
 
+	/**
+	 * @param null $cb
+	 * @return $this
+	 */
 	public function onEOF($cb = NULL) {
 		$this->onEOF = CallbackWrapper::wrap($cb);
 
