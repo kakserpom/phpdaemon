@@ -1,18 +1,57 @@
 <?php
 namespace PHPDaemon\Applications;
 
+/**
+ * Class WebSocketOverCOMETSession
+ * @package PHPDaemon\Applications
+ */
 class WebSocketOverCOMETSession {
+	/**
+	 * @var \PHPDaemon\Request\Generic
+	 */
 	public $downstream;
+	/**
+	 * @var \SplStack
+	 */
 	public $polling;
+	/**
+	 * @var \PHPDaemon\Structures\StackCallbacks
+	 */
 	public $callbacks;
+	/**
+	 * @var
+	 */
 	public $authKey;
+	/**
+	 * @var
+	 */
 	public $id;
+	/**
+	 * @var
+	 */
 	public $appInstance;
+	/**
+	 * @var array
+	 */
 	public $bufferedPackets = array();
+	/**
+	 * @var bool
+	 */
 	public $finished = false;
+	/**
+	 * @var int
+	 */
 	public $timeout = 30; // 30
+	/**
+	 * @var
+	 */
 	public $server;
 
+	/**
+	 * @param $route
+	 * @param $appInstance
+	 * @param $authKey
+	 */
 	public function __construct($route, $appInstance, $authKey) {
 		$this->polling     = new \SplStack();
 		$this->callbacks   = new \PHPDaemon\Structures\StackCallbacks();
@@ -26,6 +65,9 @@ class WebSocketOverCOMETSession {
 		$this->appInstance->sessions[$this->id] = $this;
 	}
 
+	/**
+	 *
+	 */
 	public function finish() {
 		if ($this->finished) {
 			return;
@@ -34,6 +76,9 @@ class WebSocketOverCOMETSession {
 		$this->onFinish();
 	}
 
+	/**
+	 *
+	 */
 	public function onFinish() {
 		if (isset($this->downstream)) {
 			$this->downstream->onFinish();
@@ -46,10 +91,16 @@ class WebSocketOverCOMETSession {
 		unset($this->appInstance->sessions[$this->id]);
 	}
 
+	/**
+	 * @param $timer
+	 */
 	public function finishTimer($timer) {
 		$this->finish();
 	}
 
+	/**
+	 *
+	 */
 	public function onWrite() {
 		if ($this->finished) {
 			return;
@@ -60,6 +111,12 @@ class WebSocketOverCOMETSession {
 		}
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 * @param int $precision
+	 * @return int
+	 */
 	public function compareFloats($a, $b, $precision = 3) {
 		$k   = pow(10, $precision);
 		$a   = round($a * $k) / $k;

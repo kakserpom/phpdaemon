@@ -30,7 +30,7 @@ class ShellCommand extends IOStream {
 	 * Executable path
 	 * @var string
 	 */
-	protected $binPath;
+	public $binPath;
 
 	/**
 	 * Opened pipes
@@ -60,17 +60,17 @@ class ShellCommand extends IOStream {
 	/**
 	 * @var string
 	 */
-	protected $setUser; // optinal SUID.
+	public $setUser; // optinal SUID.
 	/**
 	 * @var string
 	 */
-	protected $setGroup; // optional SGID.
+	public $setGroup; // optional SGID.
 
 	// @todo the same, make a method setChroot
 	/**
 	 * @var string
 	 */
-	protected $chroot = '/'; // optional chroot.
+	public $chroot = '/'; // optional chroot.
 
 	/**
 	 * @var array
@@ -81,7 +81,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * @var string
 	 */
-	protected $cwd; // optional chdir
+	public $cwd; // optional chdir
 	/**
 	 * @var string
 	 */

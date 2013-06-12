@@ -7,6 +7,13 @@ use PHPDaemon\Config\Entry\Generic;
  * Config section
  *
  * @property Entry\Boolean enable
+ * @property Entry\Boolean allowoverridebinpath
+ * @property Entry\Boolean allowoverridechroot
+ * @property Entry\Boolean allowoverrideuser
+ * @property Entry\Boolean allowoverridegroup
+ * @property Entry\Boolean allowoverridecwd
+ * @property Entry\Generic cwd
+ * @property Entry\Generic indexfiles
  * @package    Core
  * @subpackage Config
  *

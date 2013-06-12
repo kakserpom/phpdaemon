@@ -9,6 +9,10 @@ use PHPDaemon\Thread;
 /**
  * Application instance
  *
+ * @property mixed readPacketSize
+ * @property mixed binPath
+ * @property mixed chroot
+ * @property mixed binAliases
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
@@ -39,6 +43,8 @@ class AppInstance {
 	 * @var null|string
 	 */
 	public $requestClass;
+	/** @var array */
+	public $indexFiles;
 	/**
 	 * @var string
 	 */

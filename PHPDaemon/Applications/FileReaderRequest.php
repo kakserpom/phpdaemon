@@ -1,10 +1,20 @@
 <?php
 namespace PHPDaemon\Applications;
 
+/**
+ * Class FileReaderRequest
+ * @package PHPDaemon\Applications
+ */
 class FileReaderRequest extends \PHPDaemon\HTTPRequest\Generic {
-public $stream;
-public $job;
-public $indexFile;
+/**
+ * @var
+ */public $stream;
+/**
+ * @var
+ */public $job;
+/**
+ * @var
+ */public $indexFile;
 
 /**
  * Constructor.
@@ -23,6 +33,7 @@ public function init() {
 	$this->sleep(5, true);
 	$this->attrs->server['FR_PATH'] = \PHPDaemon\FS\FileSystem::sanitizePath($this->attrs->server['FR_PATH']);
 	$job('stat', function ($name, $job) {
+		/** @var \PHPDaemon\Core\ComplexJob $job */
 		\PHPDaemon\FS\FileSystem::stat($this->attrs->server['FR_PATH'], function ($path, $stat) use ($job) {
 			if ($stat === -1) {
 				$this->fileNotFound();
@@ -35,11 +46,12 @@ public function init() {
 				}
 				else {
 					$job('readdir', function ($name, $job) use ($path) {
+						/** @var \PHPDaemon\Core\ComplexJob $job */
 						\PHPDaemon\FS\FileSystem::readdir(rtrim($path, '/'), function ($path, $dir) use ($job) {
 							$found = false;
 							if (is_array($dir)) {
 								foreach ($dir['dents'] as $file) {
-									if ($file['type'] === EIO_DT_REG) { // is file
+									if ($file['type'] === \EIO_DT_REG) { // is file
 										if (in_array($file['name'], $this->appInstance->indexFiles)) {
 											$this->file($path . '/' . $file['name']);
 											$found = true;
@@ -56,8 +68,9 @@ public function init() {
 									$this->fileNotFound();
 								}
 							}
+
 							$job->setResult('readdir');
-						}, EIO_READDIR_STAT_ORDER | EIO_READDIR_DENTS);
+						}, \EIO_READDIR_STAT_ORDER | \EIO_READDIR_DENTS);
 					});
 				}
 			}
@@ -69,6 +82,9 @@ public function init() {
 	});
 	$job();
 }
+/**
+ * Send header 404 or, if not possible already, response "File not found"
+ */
 public function fileNotFound() {
 	try {
 		$this->header('404 Not Found');
@@ -77,7 +93,9 @@ public function fileNotFound() {
 	}
 	$this->out('File not found.');
 }
-public function file($path) {
+/**
+ * @param $path
+ */public function file($path) {
 	if (!\PHPDaemon\FS\FileSystem::$supported) {
 		$this->out(file_get_contents(realpath($path)));
 		$this->wakeup();
@@ -85,12 +103,16 @@ public function file($path) {
 	}
 	$job = $this->job;
 	$job('readfile', function ($name, $job) use ($path) {
+		/** @var \PHPDaemon\Core\ComplexJob $job */
 		$this->sendfile($path, function ($file, $success) use ($job, $name) {
 			$job->setResult($name);
 		});
 	});
 }
-public function autoindex($path, $dir) {
+/**
+ * @param $path
+ * @param $dir
+ */public function autoindex($path, $dir) {
 $this->onWakeup();
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -208,7 +230,6 @@ $this->onWakeup();
 }
 /**
  * Called when the request aborted.
- * @return void
  */
 public function onAbort() {
 	$this->finish();

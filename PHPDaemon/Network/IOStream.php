@@ -37,7 +37,7 @@ abstract class IOStream {
 	 * @deprecated Remove in 1.0 or earlier
 	 * @var integer 8192
 	 */
-	protected $readPacketSize = 8192;
+	public $readPacketSize = 8192;
 
 	/**
 	 * EventBufferEvent
@@ -375,7 +375,8 @@ abstract class IOStream {
 	 * Called when the session constructed
 	 * @return void
 	 */
-	protected function init() { }
+	protected function init() {
+	}
 
 	/**
 	 * Read a first line ended with \n from buffer, removes it from buffer and returns the line
@@ -614,7 +615,8 @@ abstract class IOStream {
 	 * Called when the connection is ready to accept new data
 	 * @return void
 	 */
-	protected function onWrite() { }
+	public function onWrite() {
+	}
 
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
@@ -691,7 +693,8 @@ abstract class IOStream {
 	 * @param string New received data
 	 * @return void
 	 */
-	protected function stdin($buf) { } // @TODO: deprecated, remove in 1.0
+	protected function stdin($buf) {
+	} // @TODO: deprecated, remove in 1.0
 
 	/**
 	 * Close the connection
