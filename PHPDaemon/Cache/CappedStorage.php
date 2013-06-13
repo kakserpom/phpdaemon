@@ -8,6 +8,10 @@ namespace PHPDaemon\Cache;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
+/**
+ * Class CappedStorage
+ * @package PHPDaemon\Cache
+ */
 abstract class CappedStorage {
 	/**
 	 * Sorter function

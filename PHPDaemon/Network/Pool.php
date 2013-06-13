@@ -11,7 +11,8 @@ use PHPDaemon\Thread;
  * Pool of connections
  *
  * @package Core
- *
+ * @method detachBound()
+ * @method attachBound()
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Pool extends ObjectStorage {
@@ -165,7 +166,7 @@ abstract class Pool extends ObjectStorage {
 			elseif (!$spawn) {
 				return false;
 			}
-			$k = '\PHPDaemon\Core\Pool:\\' . $class . ($arg !== '' ? ':' . $arg : '');
+			$k         = '\PHPDaemon\Core\Pool:\\' . $class . ($arg !== '' ? ':' . $arg : '');
 			$config    = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Config\Section) ? Daemon::$config->{$k} : new Config\Section;
 			$obj       = self::$instances[$key] = new $class($config);
 			$obj->name = $arg;
