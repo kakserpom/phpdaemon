@@ -30,7 +30,7 @@ require 'PHPDaemon/Core/Daemon.php';
 require 'PHPDaemon/Core/Debug.php';
 $autoloader = function ($classname) {
 	$base = str_replace('\\', '/', $classname);
-	$subpath = [$base . '.php', $base . '.class.php'];
+	$subpath = array($base . '.php', $base . '.class.php');
 	$e       = explode(':', get_include_path());
 	foreach ($e as $path) {
 		foreach ($subpath as $item) {
