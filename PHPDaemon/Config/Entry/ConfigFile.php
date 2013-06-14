@@ -25,7 +25,7 @@ class ConfigFile extends Generic {
 
 		$e = explode(';', $old);
 		foreach ($e as $path) {
-			Daemon::$process->fileWatcher->rmWatch($path);
+			Daemon::$process->fileWatcher->rmWatch($path, [Daemon::$process, 'sighup']);
 		}
 
 		$e = explode(';', $this->value);
