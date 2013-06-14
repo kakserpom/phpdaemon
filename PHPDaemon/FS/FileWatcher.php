@@ -109,8 +109,8 @@ class FileWatcher {
 				$mt = filemtime($path);
 
 				if (
-					isset($hash[$path])
-					&& ($mt > $hash[$path])
+						isset($hash[$path])
+						&& ($mt > $hash[$path])
 				) {
 					$this->onFileChanged($path);
 				}

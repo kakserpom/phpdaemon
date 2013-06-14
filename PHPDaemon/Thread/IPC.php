@@ -92,7 +92,7 @@ class IPC extends Generic {
 		Daemon::openLogs();
 
 		$this->fileWatcher = new FileWatcher();
-		$this->IPCManager = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
+		$this->IPCManager  = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
 		if (!$this->IPCManager) {
 			$this->log('cannot instantiate IPCManager');
 		}
@@ -114,7 +114,7 @@ class IPC extends Generic {
 
 		$this->setTitle(
 			Daemon::$runName . ': IPC process'
-					. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
+			. (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
 					? ' (' . Daemon::$config->pidfile->value . ')' : '')
 		);
 
@@ -143,8 +143,8 @@ class IPC extends Generic {
 				exit(0);
 			}
 			elseif (
-				($sg['gid'] != posix_getgid())
-				&& (!posix_setgid($sg['gid']))
+					($sg['gid'] != posix_getgid())
+					&& (!posix_setgid($sg['gid']))
 			) {
 				$this->log('Couldn\'t change group to \'' . Daemon::$config->group->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
@@ -157,8 +157,8 @@ class IPC extends Generic {
 				exit(0);
 			}
 			elseif (
-				($su['uid'] != posix_getuid())
-				&& (!posix_setuid($su['uid']))
+					($su['uid'] != posix_getuid())
+					&& (!posix_setuid($su['uid']))
 			) {
 				$this->log('Couldn\'t change user to \'' . Daemon::$config->user->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
@@ -312,7 +312,8 @@ class IPC extends Generic {
 	 * Handler of the SIGTTIN signal in worker process.
 	 * @return void
 	 */
-	public function sigttin() { }
+	public function sigttin() {
+	}
 
 	/**
 	 * Handler of the SIGXSFZ signal in worker process.

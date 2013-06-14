@@ -73,8 +73,8 @@ class Terminal {
 	 */
 	protected function getMaxColumns() {
 		if (
-			preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
-			&& 2 == sizeof($output)
+				preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
+				&& 2 == sizeof($output)
 		) {
 			return $output[1][0];
 		}
@@ -147,8 +147,8 @@ class Terminal {
 		}
 
 		while (
-			sizeof($leftcolumn) > 0
-			|| sizeof($rightcolumn) > 0
+				sizeof($leftcolumn) > 0
+				|| sizeof($rightcolumn) > 0
 		) {
 			if ($l = array_shift($leftcolumn)) {
 				echo str_pad($l, $paramw, ' ');

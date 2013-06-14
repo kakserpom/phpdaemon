@@ -1,12 +1,12 @@
 <?php
 namespace PHPDaemon\Applications;
 
-/**
- * @package    Applications
- * @subpackage FileReader
- *
- * @author     Zorin Vasily <maintainer@daemon.io>
- */
+	/**
+	 * @package    Applications
+	 * @subpackage FileReader
+	 *
+	 * @author     Zorin Vasily <maintainer@daemon.io>
+	 */
 /**
  * Class FileReader
  * @property array indexFiles

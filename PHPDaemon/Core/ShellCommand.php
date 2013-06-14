@@ -116,7 +116,7 @@ class ShellCommand extends IOStream {
 	protected $EOF = false;
 
 	/**
-	 * @param null $cb
+	 * @param mixed $cb
 	 * @return $this
 	 */
 	public function onReadData($cb = NULL) {
@@ -412,7 +412,7 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * @param null $cb
+	 * @param mixed $cb
 	 * @return $this
 	 */
 	public function onEOF($cb = NULL) {

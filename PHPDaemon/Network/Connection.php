@@ -260,7 +260,8 @@ abstract class Connection extends IOStream {
 	 * Called when new UDP packet received
 	 * @return void
 	 */
-	public function onUdpPacket($pct) { }
+	public function onUdpPacket($pct) {
+	}
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data

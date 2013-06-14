@@ -1,13 +1,13 @@
 <?php
 namespace PHPDaemon\Cache;
 
-/**
- * CappedStorage
- *
- * @package Core
- *
- * @author  Zorin Vasily <maintainer@daemon.io>
- */
+	/**
+	 * CappedStorage
+	 *
+	 * @package Core
+	 *
+	 * @author  Zorin Vasily <maintainer@daemon.io>
+	 */
 /**
  * Class CappedStorage
  * @package PHPDaemon\Cache

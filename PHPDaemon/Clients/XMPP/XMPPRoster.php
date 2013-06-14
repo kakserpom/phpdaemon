@@ -6,12 +6,30 @@ use PHPDaemon\Traits\EventHandlers;
 class XMPPRoster {
 	use EventHandlers;
 
+	/**
+	 * @var
+	 */
 	public $xmpp;
+	/**
+	 * @var array
+	 */
 	public $roster_array = array();
+	/**
+	 * @var bool
+	 */
 	public $track_presence = true;
+	/**
+	 * @var bool
+	 */
 	public $auto_subscribe = true;
+	/**
+	 * @var string
+	 */
 	public $ns = 'jabber:iq:roster';
 
+	/**
+	 * @param $xmpp
+	 */
 	public function __construct($xmpp) {
 		$this->xmpp = $xmpp;
 
@@ -48,14 +66,26 @@ class XMPPRoster {
 
 	}
 
+	/**
+	 * @param $xml
+	 * @param callable $cb
+	 */
 	public function rosterSet($xml, $cb = null) {
 		$this->xmpp->querySetTo($this->xmpp->fulljid, $this->ns, $xml, $cb);
 	}
 
+	/**
+	 * @param $jid
+	 * @param $type
+	 * @param callable $cb
+	 */
 	public function setSubscription($jid, $type, $cb = null) {
 		$this->rosterSet('<item jid="' . htmlspecialchars($jid) . '" subscription="' . htmlspecialchars($type) . '" />', $cb);
 	}
 
+	/**
+	 * @param callable $cb
+	 */
 	public function fetch($cb = null) {
 		$this->xmpp->queryGet($this->ns, function ($xml) use ($cb) {
 			$status    = "result";
@@ -102,12 +132,12 @@ class XMPPRoster {
 	 * @param array $groups
 	 */
 	public function _addContact($jid, $subscription, $name = '', $groups = array()) {
-		$contact = array('jid' => $jid, 'subscription' => $subscription, 'name' => $name, 'groups' => $groups);
+		$contact = ['jid' => $jid, 'subscription' => $subscription, 'name' => $name, 'groups' => $groups];
 		if ($this->isContact($jid)) {
 			$this->roster_array[$jid]['contact'] = $contact;
 		}
 		else {
-			$this->roster_array[$jid] = array('contact' => $contact);
+			$this->roster_array[$jid] = ['contact' => $contact];
 		}
 	}
 
@@ -156,12 +186,11 @@ class XMPPRoster {
 		}
 	}
 
-	/*
-	 *
+	/**
 	 * Return best presence for jid
 	 *
 	 * @param string $jid
-	 * @param array
+	 * @param array|bool
 	 */
 	public function getPresence($jid) {
 		$split = split("/", $jid);

@@ -349,8 +349,8 @@ class Input extends \EventBuffer {
 				}
 				/* we have entire Part in buffer */
 				if (
-					($this->state === self::STATE_BODY)
-					&& isset($this->curPartDisp['name'])
+						($this->state === self::STATE_BODY)
+						&& isset($this->curPartDisp['name'])
 				) {
 					$this->curPart .= $this->read($l);
 					if ($this->curPartDisp['name'] === 'MAX_FILE_SIZE') {
@@ -358,8 +358,8 @@ class Input extends \EventBuffer {
 					}
 				}
 				elseif (
-					($this->state === self::STATE_UPLOAD)
-					&& isset($this->curPartDisp['filename'])
+						($this->state === self::STATE_UPLOAD)
+						&& isset($this->curPartDisp['filename'])
 				) {
 					$this->curPart['size'] += $l;
 					$this->curChunkSize = $l;

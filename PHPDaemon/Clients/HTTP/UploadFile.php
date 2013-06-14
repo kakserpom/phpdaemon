@@ -1,11 +1,19 @@
 <?php
 namespace PHPDaemon\Clients\HTTP;
 
+/**
+ * Class UploadFile
+ * @package PHPDaemon\Clients\HTTP
+ */
 class UploadFile {
 	public $name;
 	public $data;
 	public $path;
 
+	/**
+	 * @param string $path
+	 * @return UploadFile
+	 */
 	public static function fromFile($path) {
 		$upload       = new self;
 		$upload->path = $path;
@@ -13,12 +21,20 @@ class UploadFile {
 		return $upload;
 	}
 
+	/**
+	 * @param string $str
+	 * @return UploadFile
+	 */
 	public static function fromString($str) {
 		$upload       = new self;
 		$upload->data = $str;
 		return $upload;
 	}
 
+	/**
+	 * @param string $name
+	 * @return $this
+	 */
 	public function setName($name) {
 		$this->name = $name;
 		return $this;

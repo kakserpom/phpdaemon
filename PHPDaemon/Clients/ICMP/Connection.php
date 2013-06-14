@@ -34,11 +34,10 @@ class Connection extends ClientConnection {
 	 */
 	public $bevConnectEnabled = false;
 
-	/* 
 	/**
 	 * Send echo-request
-	 * @param callable Callback
-	 * @param [string Data
+	 * @param callable     Callback
+	 * @param string $data Data
 	 * @return void
 	 */
 	public function sendEcho($cb, $data = 'phpdaemon') {
@@ -52,7 +51,7 @@ class Connection extends ClientConnection {
 					   0, // checksum (n)
 					   Daemon::$process->getPid(), // pid (n)
 					   $this->seq // seq (n)
-		) . $data;
+				) . $data;
 		$packet = substr_replace($packet, self::checksum($packet), 2, 2);
 		$this->write($packet);
 		$this->onResponse->push([$cb, microtime(true)]);

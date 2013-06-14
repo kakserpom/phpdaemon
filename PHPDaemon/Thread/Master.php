@@ -195,7 +195,7 @@ class Master extends Generic {
 
 		$this->setTitle(
 			Daemon::$runName . ': master process'
-					. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
+			. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
 		);
 	}
 
@@ -420,7 +420,8 @@ class Master extends Generic {
 	 * Used as "ping" signal
 	 * @return void
 	 */
-	protected function sigttin() { }
+	protected function sigttin() {
+	}
 
 	/**
 	 * Handler for the SIGXSFZ signal in master process

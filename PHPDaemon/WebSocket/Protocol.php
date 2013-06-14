@@ -45,7 +45,8 @@ class Protocol {
 	 * Called when new data received
 	 * @return void
 	 */
-	public function onRead() { }
+	public function onRead() {
+	}
 
 	/**
 	 * Returns handshaked data for reply

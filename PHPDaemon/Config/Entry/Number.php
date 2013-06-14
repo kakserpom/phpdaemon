@@ -20,22 +20,22 @@ class Number extends Generic {
 		$l = substr($value, -1);
 
 		if (
-			($l === 'k')
-			|| ($l === 'K')
+				($l === 'k')
+				|| ($l === 'K')
 		) {
 			return ((int)substr($value, 0, -1) * 1000);
 		}
 
 		if (
-			($l === 'm')
-			|| ($l === 'M')
+				($l === 'm')
+				|| ($l === 'M')
 		) {
 			return ((int)substr($value, 0, -1) * 1000 * 1000);
 		}
 
 		if (
-			($l === 'G')
-			|| ($l === 'G')
+				($l === 'G')
+				|| ($l === 'G')
 		) {
 			return ((int)substr($value, 0, -1) * 1000 * 1000 * 1000);
 		}

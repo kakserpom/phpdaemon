@@ -215,8 +215,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		}
 		if (isset($this->appInstance->passphrase)) {
 			if (
-				!isset($this->attrs->server['PASSPHRASE'])
-				|| ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
+					!isset($this->attrs->server['PASSPHRASE'])
+					|| ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
 			) {
 				$this->finish();
 			}
@@ -251,8 +251,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			$this->attrs->contentLength = (int)$this->attrs->server['HTTP_CONTENT_LENGTH'];
 		}
 		if (
-			isset($this->attrs->server['CONTENT_TYPE'])
-			&& !isset($this->attrs->server['HTTP_CONTENT_TYPE'])
+				isset($this->attrs->server['CONTENT_TYPE'])
+				&& !isset($this->attrs->server['HTTP_CONTENT_TYPE'])
 		) {
 			$this->attrs->server['HTTP_CONTENT_TYPE'] = $this->attrs->server['CONTENT_TYPE'];
 		}
@@ -261,9 +261,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			self::parse_str($this->attrs->server['QUERY_STRING'], $this->attrs->get);
 		}
 		if (
-			isset($this->attrs->server['REQUEST_METHOD'])
-			&& ($this->attrs->server['REQUEST_METHOD'] === 'POST' || $this->attrs->server['REQUEST_METHOD'] === 'PUT')
-			&& isset($this->attrs->server['HTTP_CONTENT_TYPE'])
+				isset($this->attrs->server['REQUEST_METHOD'])
+				&& ($this->attrs->server['REQUEST_METHOD'] === 'POST' || $this->attrs->server['REQUEST_METHOD'] === 'PUT')
+				&& isset($this->attrs->server['HTTP_CONTENT_TYPE'])
 		) {
 			$this->attrs->server['REQUEST_METHOD_POST'] = true;
 			self::parse_str($this->attrs->server['HTTP_CONTENT_TYPE'], $this->contype, true);
@@ -285,7 +285,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			) {
 				$this->attrs->input->setBoundary($this->contype['boundary']);
 			}
-		} else {
+		}
+		else {
 			$this->attrs->server['REQUEST_METHOD_POST'] = false;
 		}
 
@@ -297,8 +298,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			$e = explode(' ', $this->attrs->server['HTTP_AUTHORIZATION'], 2);
 
 			if (
-				($e[0] === 'Basic')
-				&& isset($e[1])
+					($e[0] === 'Basic')
+					&& isset($e[1])
 			) {
 				$e[1] = base64_decode($e[1]);
 				$e    = explode(':', $e[1], 2);
@@ -469,7 +470,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * Called when request's headers parsed
 	 * @return void
 	 */
-	public function onParsedParams() { }
+	public function onParsedParams() {
+	}
 
 	/**
 	 * Outputs data with headers (split by \r\n\r\n)
@@ -589,11 +591,11 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
 		$this->header(
 			'Set-Cookie: ' . $name . '=' . rawurlencode($value)
-					. (empty($domain) ? '' : '; Domain=' . $domain)
-					. (empty($maxage) ? '' : '; Max-Age=' . $maxage)
-					. (empty($path) ? '' : '; Path=' . $path)
-					. (!$secure ? '' : '; Secure')
-					. (!$HTTPOnly ? '' : '; HttpOnly'), false);
+			. (empty($domain) ? '' : '; Domain=' . $domain)
+			. (empty($maxage) ? '' : '; Max-Age=' . $maxage)
+			. (empty($path) ? '' : '; Path=' . $path)
+			. (!$secure ? '' : '; Secure')
+			. (!$HTTPOnly ? '' : '; HttpOnly'), false);
 	}
 
 	/**
@@ -849,8 +851,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			$s = strtr($s, Generic::$hvaltr);
 		}
 		if (
-			(stripos($s, '%u') !== false)
-			&& preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)
+				(stripos($s, '%u') !== false)
+				&& preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)
 		) {
 			$s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i', $cb, $s);
 		}
