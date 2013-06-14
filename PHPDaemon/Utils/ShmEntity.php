@@ -34,6 +34,12 @@ class ShmEntity {
 	 */
 	protected $key;
 
+	/**
+	 * @param $path
+	 * @param $segsize
+	 * @param $name
+	 * @param bool $create
+	 */
 	public function __construct($path, $segsize, $name, $create = false) {
 		$this->path    = $path;
 		$this->segsize = $segsize;

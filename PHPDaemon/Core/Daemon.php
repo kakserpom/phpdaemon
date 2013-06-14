@@ -65,7 +65,7 @@ class Daemon {
 	 */
 	protected static $support = array();
 
-	/** @var \PHPDaemon\Thread\IPC */
+	/** @var \PHPDaemon\Thread\IPC|\PHPDaemon\Thread\Master|\PHPDaemon\Thread\Worker */
 	public static $process;
 	/** @var  AppResolver */
 	public static $appResolver;

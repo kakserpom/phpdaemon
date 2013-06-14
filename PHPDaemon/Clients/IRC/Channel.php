@@ -22,6 +22,10 @@ class Channel extends ObjectStorage {
 	public $type;
 	public $topic;
 
+	/**
+	 * @param $irc
+	 * @param $name
+	 */
 	public function __construct($irc, $name) {
 		$this->irc  = $irc;
 		$this->name = $name;
@@ -31,6 +35,10 @@ class Channel extends ObjectStorage {
 		$this->irc->command('WHO', $this->name);
 	}
 
+	/**
+	 * @param array|string $mask
+	 * @param mixed $msg
+	 */
 	public function onPart($mask, $msg = null) {
 		if (is_string($mask)) {
 			$mask = IRC::parseUsermask($mask);
@@ -43,10 +51,16 @@ class Channel extends ObjectStorage {
 		}
 	}
 
+	/**
+	 * @param string $type
+	 */
 	public function setChanType($type) {
 		$this->type = $type;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function exportNicksArray() {
 		$nicks = array();
 		foreach ($this as $participant) {
@@ -55,10 +69,17 @@ class Channel extends ObjectStorage {
 		return $nicks;
 	}
 
+	/**
+	 * @param $msg
+	 */
 	public function setTopic($msg) {
 		$this->topic = $msg;
 	}
 
+	/**
+	 * @param $nick
+	 * @param $mode
+	 */
 	public function addMode($nick, $mode) {
 		if (!isset($this->nicknames[$nick])) {
 			return;
@@ -70,6 +91,10 @@ class Channel extends ObjectStorage {
 		$participant->onModeUpdate();
 	}
 
+	/**
+	 * @param $target
+	 * @param $mode
+	 */
 	public function removeMode($target, $mode) {
 		if (!isset($this->nicknames[$target])) {
 			return;
@@ -87,15 +112,25 @@ class Channel extends ObjectStorage {
 		$this->irc->join($this->name);
 	}
 
+	/**
+	 * @param mixed $msg
+	 */
 	public function part($msg = null) {
 		$this->irc->part($this->name, $msg);
 	}
 
+	/**
+	 * @param $type
+	 * @return $this
+	 */
 	public function setType($type) {
 		$this->type = $type;
 		return $this;
 	}
 
+	/**
+	 * @param object $obj
+	 */
 	public function detach($obj) {
 		parent::detach($obj);
 		unset($this->nicknames[$obj->nick]);

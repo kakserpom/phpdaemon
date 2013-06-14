@@ -13,6 +13,10 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class ExtFunc extends Generic {
 
+	/**
+	 * @param $value
+	 * @return callable|null
+	 */
 	public static function HumanToPlain($value) {
 		$cb = include($value);
 		return is_callable($cb) ? $cb : null;

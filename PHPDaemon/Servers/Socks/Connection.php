@@ -108,8 +108,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$password = $this->read($plen);
 
 			if (
-				($username !== $this->pool->config->username->value)
-				|| ($password !== $this->pool->config->password->value)
+					($username !== $this->pool->config->username->value)
+					|| ($password !== $this->pool->config->password->value)
 			) {
 				$this->state = self::STATE_ABORTED;
 				$m           = "\x01";
@@ -181,22 +181,27 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 	}
 
+	/**
+	 * @param $code
+	 * @param $addr
+	 * @param $port
+	 */
 	public function onSlaveReady($code, $addr, $port) {
 		$reply =
 				$this->ver // Version
-						. chr($code) // Status
-						. "\x00"; // Reserved
+				. chr($code) // Status
+				. "\x00"; // Reserved
 		if ($addr) {
 			$reply .=
 					(strpos($addr, ':') === FALSE ? "\x01" : "\x04") // IPv4/IPv6
-							. inet_pton($addr) // Address
-							. "\x00\x00"; //pack('n',$port) // Port
+					. inet_pton($addr) // Address
+					. "\x00\x00"; //pack('n',$port) // Port
 		}
 		else {
 			$reply .=
 					"\x01"
-							. "\x00\x00\x00\x00"
-							. "\x00\x00";
+					. "\x00\x00\x00\x00"
+					. "\x00\x00";
 		}
 
 		$this->write($reply);

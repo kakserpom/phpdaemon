@@ -210,22 +210,22 @@ class Connection extends ClientConnection {
 		$QD[]   = $q;
 		$packet =
 				Binary::word(++$this->seq) . // Query ID
-						Binary::bitmap2bytes(
-							'0' . // QR = 0
-									'0000' . // OPCODE = 0000 (standard query)
-									'0' . // AA = 0
-									'0' . // TC = 0
-									'1' . // RD = 1
+				Binary::bitmap2bytes(
+					'0' . // QR = 0
+					'0000' . // OPCODE = 0000 (standard query)
+					'0' . // AA = 0
+					'0' . // TC = 0
+					'1' . // RD = 1
 
-									'0' . // RA = 0, 
-									'000' . // reserved
-									'0000' // RCODE
-							, 2) .
-						Binary::word(sizeof($QD)) . // QDCOUNT
-						Binary::word(0) . // ANCOUNT
-						Binary::word(0) . // NSCOUNT
-						Binary::word(0) . // ARCOUNT
-						implode('', $QD);
+					'0' . // RA = 0, 
+					'000' . // reserved
+					'0000' // RCODE
+					, 2) .
+				Binary::word(sizeof($QD)) . // QDCOUNT
+				Binary::word(0) . // ANCOUNT
+				Binary::word(0) . // NSCOUNT
+				Binary::word(0) . // ARCOUNT
+				implode('', $QD);
 		if ($this->type === 'udp') {
 			$this->write($packet);
 		}

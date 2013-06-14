@@ -70,7 +70,6 @@ class AppResolver {
 	 * @return object AppInstance.
 	 */
 	public function getInstance($appName, $instance = '', $spawn = true, $preload = false) {
-		/** @var AppInstance $class */
 		$class = ClassFinder::find($appName, 'Applications');
 		if (isset(Daemon::$appInstances[$class][$instance])) {
 			return Daemon::$appInstances[$class][$instance];
@@ -88,7 +87,7 @@ class AppResolver {
 			Daemon::$config->renameSection($fullname, $fullnameClass);
 		}
 		if (!$preload) {
-			/** @noinspection PhpUndefinedFieldInspection */
+			/** @noinspection PhpUndefinedVariableInspection */
 			if (!$class::$runOnDemand) {
 				return false;
 			}

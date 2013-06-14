@@ -12,10 +12,25 @@ class DeferredEvent {
 	const STATE_RUNNING = 2;
 	const STATE_DONE    = 3;
 
+	/**
+	 * @var \PHPDaemon\Structures\StackCallbacks
+	 */
 	protected $listeners;
+	/**
+	 * @var mixed
+	 */
 	protected $result;
+	/**
+	 * @var int
+	 */
 	protected $state;
+	/**
+	 * @var
+	 */
 	protected $args;
+	/**
+	 * @var
+	 */
 	protected $onRun;
 
 	public function __construct($cb) {
@@ -24,10 +39,16 @@ class DeferredEvent {
 		$this->listeners = new StackCallbacks;
 	}
 
+	/**
+	 * @param callable $cb
+	 */
 	public function setProducer($cb) {
 		$this->onRun = $cb;
 	}
 
+	/**
+	 * @param mixed $result
+	 */
 	public function setResult($result = null) {
 		$this->result = $result;
 		$this->state  = self::STATE_DONE;
@@ -40,6 +61,9 @@ class DeferredEvent {
 		$this->args      = [];
 	}
 
+	/**
+	 * @param callable $cb
+	 */
 	public function addListener($cb) {
 		if ($this->state === self::STATE_DONE) {
 			call_user_func($cb, $this);
@@ -58,6 +82,10 @@ class DeferredEvent {
 		}
 	}
 
+	/**
+	 * @param callable $cb
+	 * @param array $params
+	 */
 	public function __invoke($cb, $params = array()) {
 		$this->addListener($cb, $params);
 	}

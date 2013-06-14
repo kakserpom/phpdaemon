@@ -59,10 +59,16 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	protected $header;
 	protected $content;
 
+	/**
+	 * @return bool
+	 */
 	public function checkSendfileCap() { // @DISCUSS
 		return false;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function checkChunkedEncCap() { // @DISCUSS
 		return false;
 	}
@@ -291,6 +297,11 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		return true;
 	}
 
+	/**
+	 * @param $req
+	 * @param $chunk
+	 * @return bool
+	 */
 	public function sendChunk($req, $chunk) {
 		return $this->write(
 			"\x01" // protocol version
@@ -301,6 +312,9 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		) && $this->write($chunk); // content
 	}
 
+	/**
+	 * @param $req
+	 */
 	public function freeRequest($req) {
 		unset($this->requests[$req->attrs->id]);
 	}

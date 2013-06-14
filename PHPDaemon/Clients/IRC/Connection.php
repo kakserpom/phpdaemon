@@ -46,6 +46,9 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @param $cmd
+	 */
 	public function command($cmd) {
 		if (ctype_digit($cmd)) {
 			$cmd = IRC::getCommandByCode((int)$cmd);
@@ -67,6 +70,11 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @param $cmd
+	 * @param array $args
+	 * @return bool
+	 */
 	public function commandArr($cmd, $args = []) {
 		if (!is_array($args)) {
 			return false;
@@ -91,6 +99,9 @@ class Connection extends ClientConnection {
 		return true;
 	}
 
+	/**
+	 * @param $channels
+	 */
 	public function join($channels) {
 		if (!is_array($channels)) {
 			$channels = array_map('trim', explode(',', $channels));
@@ -100,6 +111,10 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @param $channels
+	 * @param mixed $msg
+	 */
 	public function part($channels, $msg = null) {
 		$this->command('PART', $channels, $msg);
 	}
@@ -121,10 +136,19 @@ class Connection extends ClientConnection {
 		$this->writeln('PING :' . $this->servername);
 	}
 
+	/**
+	 * @param $to
+	 * @param $msg
+	 */
 	public function message($to, $msg) {
 		$this->command('PRIVMSG', $to, $msg);
 	}
 
+	/**
+	 * @param $channel
+	 * @param $target
+	 * @param $mode
+	 */
 	public function addMode($channel, $target, $mode) {
 		if ($channel) {
 			$this->channel($channel)->addMode($target, $mode);
@@ -136,6 +160,11 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @param $channel
+	 * @param $target
+	 * @param $mode
+	 */
 	public function removeMode($channel, $target, $mode) {
 		if ($channel) {
 			$this->channel($channel)->removeMode($target, $mode);
@@ -143,6 +172,11 @@ class Connection extends ClientConnection {
 		$this->mode = str_replace($mode, '', $this->mode);
 	}
 
+	/**
+	 * @param $from
+	 * @param $cmd
+	 * @param $args
+	 */
 	public function onCommand($from, $cmd, $args) {
 		$this->event('command', $from, $cmd, $args);
 		if ($cmd === 'RPL_WELCOME') {
@@ -354,6 +388,10 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @param $chan
+	 * @return Channel
+	 */
 	public function channel($chan) {
 		if (isset($this->channels[$chan])) {
 			return $this->channels[$chan];
@@ -361,6 +399,10 @@ class Connection extends ClientConnection {
 		return $this->channels[$chan] = new Channel($this, $chan);
 	}
 
+	/**
+	 * @param $chan
+	 * @return bool
+	 */
 	public function channelIfExists($chan) {
 		if (isset($this->channels[$chan])) {
 			return $this->channels[$chan];

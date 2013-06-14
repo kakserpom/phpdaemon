@@ -64,7 +64,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->checkFree();
 			}
 			$conn->writeln('set ' . $this->prefix . $key . ' 0 ' . $exp . ' '
-								   . strlen($value) . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value
+						   . strlen($value) . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value
 			);
 		});
 	}
@@ -87,7 +87,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->checkFree();
 			}
 			$conn->writeln('add ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value)
-								   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
 
@@ -129,7 +129,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->checkFree();
 			}
 			$conn->writeln('replace ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value)
-								   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
 
@@ -151,7 +151,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->checkFree();
 			}
 			$conn->writeln('replace ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value)
-								   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
 
@@ -173,7 +173,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->setFree(false);
 			}
 			$conn->writeln('prepend ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value)
-								   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
 

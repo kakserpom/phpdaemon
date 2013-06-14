@@ -124,6 +124,9 @@ class Master extends Generic {
 		Daemon::log('M#' . $this->pid . ' ' . $message);
 	}
 
+	/**
+	 * @return int
+	 */
 	protected function callMPM() {
 		$state = Daemon::getStateOfWorkers($this);
 		if (isset(Daemon::$config->mpm->value) && is_callable(Daemon::$config->mpm->value)) {
@@ -195,7 +198,7 @@ class Master extends Generic {
 
 		$this->setTitle(
 			Daemon::$runName . ': master process'
-					. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
+			. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
 		);
 	}
 
@@ -343,6 +346,9 @@ class Master extends Generic {
 		$this->shutdown(SIGINT);
 	}
 
+	/**
+	 * @param $signo
+	 */
 	public function signalToChildren($signo) {
 		foreach ($this->collections as $col) {
 			$col->signal($signo);
@@ -420,7 +426,8 @@ class Master extends Generic {
 	 * Used as "ping" signal
 	 * @return void
 	 */
-	protected function sigttin() { }
+	protected function sigttin() {
+	}
 
 	/**
 	 * Handler for the SIGXSFZ signal in master process

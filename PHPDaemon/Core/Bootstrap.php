@@ -97,8 +97,8 @@ class Bootstrap {
 		$args    = Bootstrap::getArgs($argv);
 
 		if (
-			!isset(self::$params[$runmode])
-			&& !in_array($runmode, self::$commands)
+				!isset(self::$params[$runmode])
+				&& !in_array($runmode, self::$commands)
 		) {
 			if ('' !== $runmode) {
 				echo('Unrecognized command: ' . $runmode . "\n");
@@ -112,6 +112,7 @@ class Bootstrap {
 			exit;
 		}
 
+		$n = null;
 		if ('log' === $runmode) {
 			if (isset($args['n'])) {
 				$n = $args['n'];
@@ -151,8 +152,8 @@ class Bootstrap {
 		}
 
 		if (
-			Daemon::$config->autoreimport->value
-			&& !is_callable('runkit_import')
+				Daemon::$config->autoreimport->value
+				&& !is_callable('runkit_import')
 		) {
 			Core\Daemon::log('[WARN] runkit extension not found. You should install it or disable --auto-reimport. Non-critical error.');
 		}
@@ -246,8 +247,8 @@ class Bootstrap {
 		}
 
 		if (
-			isset(Core\Daemon::$config->group->value)
-			&& is_callable('posix_getgid')
+				isset(Core\Daemon::$config->group->value)
+				&& is_callable('posix_getgid')
 		) {
 			if (($sg = posix_getgrnam(Core\Daemon::$config->group->value)) === FALSE) {
 				Core\Daemon::log('Unexisting group \'' . Core\Daemon::$config->group->value . '\'. You have to replace config-variable \'group\' with existing group-name.');
@@ -260,16 +261,16 @@ class Bootstrap {
 		}
 
 		if (
-			isset(Core\Daemon::$config->user->value)
-			&& is_callable('posix_getuid')
+				isset(Core\Daemon::$config->user->value)
+				&& is_callable('posix_getuid')
 		) {
 			if (($su = posix_getpwnam(Core\Daemon::$config->user->value)) === FALSE) {
 				Core\Daemon::log('Unexisting user \'' . Core\Daemon::$config->user->value . '\', user not found. You have to replace config-variable \'user\' with existing username.');
 				$error = true;
 			}
 			elseif (
-				($su['uid'] != posix_getuid())
-				&& (posix_getuid() != 0)
+					($su['uid'] != posix_getuid())
+					&& (posix_getuid() != 0)
 			) {
 				Core\Daemon::log('You must have the root privileges to change user.');
 				$error = true;
@@ -277,10 +278,10 @@ class Bootstrap {
 		}
 
 		if (
-			isset(Core\Daemon::$config->minspareworkers->value)
-			&& Core\Daemon::$config->minspareworkers->value > 0
-			&& isset(Core\Daemon::$config->maxspareworkers->value)
-			&& Core\Daemon::$config->maxspareworkers->value > 0
+				isset(Core\Daemon::$config->minspareworkers->value)
+				&& Core\Daemon::$config->minspareworkers->value > 0
+				&& isset(Core\Daemon::$config->maxspareworkers->value)
+				&& Core\Daemon::$config->maxspareworkers->value > 0
 		) {
 			if (Core\Daemon::$config->minspareworkers->value > Core\Daemon::$config->maxspareworkers->value) {
 				Core\Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
@@ -293,8 +294,8 @@ class Bootstrap {
 		}
 
 		if (
-			isset(Core\Daemon::$config->minworkers->value)
-			&& isset(Core\Daemon::$config->maxworkers->value)
+				isset(Core\Daemon::$config->minworkers->value)
+				&& isset(Core\Daemon::$config->maxworkers->value)
 		) {
 			if (Core\Daemon::$config->minworkers->value > Core\Daemon::$config->maxworkers->value) {
 				Core\Daemon::$config->minworkers->value = Core\Daemon::$config->maxworkers->value;
@@ -318,15 +319,15 @@ class Bootstrap {
 			}
 		}
 		elseif (
-			$runmode === 'status'
-			|| $runmode === 'fullstatus'
+				$runmode === 'status'
+				|| $runmode === 'fullstatus'
 		) {
 			$status = Bootstrap::$pid && Thread\Generic::ifExistsByPid(Bootstrap::$pid);
 			echo '[STATUS] phpDaemon ' . Core\Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Core\Daemon::$config->pidfile->value . ").\n";
 
 			if (
-				$status
-				&& ($runmode == 'fullstatus')
+					$status
+					&& ($runmode == 'fullstatus')
 			) {
 				echo 'Uptime: ' . Core\Daemon::date_period_text(filemtime(Core\Daemon::$config->pidfile->value), time()) . "\n";
 
@@ -348,24 +349,24 @@ class Bootstrap {
 		}
 		elseif ($runmode == 'update') {
 			if (
-				(!Bootstrap::$pid)
-				|| (!posix_kill(Bootstrap::$pid, SIGHUP))
+					(!Bootstrap::$pid)
+					|| (!posix_kill(Bootstrap::$pid, SIGHUP))
 			) {
 				echo '[UPDATE] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
 		}
 		elseif ($runmode == 'reopenlog') {
 			if (
-				(!Bootstrap::$pid)
-				|| (!posix_kill(Bootstrap::$pid, SIGUSR1))
+					(!Bootstrap::$pid)
+					|| (!posix_kill(Bootstrap::$pid, SIGUSR1))
 			) {
 				echo '[REOPEN-LOG] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
 		}
 		elseif ($runmode == 'reload') {
 			if (
-				(!Bootstrap::$pid)
-				|| (!posix_kill(Bootstrap::$pid, SIGUSR2))
+					(!Bootstrap::$pid)
+					|| (!posix_kill(Bootstrap::$pid, SIGUSR2))
 			) {
 				echo '[RELOAD] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
@@ -501,8 +502,8 @@ class Bootstrap {
 	 */
 	public static function start() {
 		if (
-			Bootstrap::$pid
-			&& Thread\Generic::ifExistsByPid(Bootstrap::$pid)
+				Bootstrap::$pid
+				&& Thread\Generic::ifExistsByPid(Bootstrap::$pid)
 		) {
 			Core\Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Bootstrap::$pid . ')');
 			exit(6);
@@ -535,8 +536,8 @@ class Bootstrap {
 		}
 
 		if (
-			$ok
-			&& ($mode > 1)
+				$ok
+				&& ($mode > 1)
 		) {
 			$i = 0;
 
@@ -571,6 +572,7 @@ class Bootstrap {
 				$last_arg = $key;
 			}
 			elseif (preg_match('~^-([a-zA-Z0-9]+)~', $args[$i], $match)) {
+				$key = null;
 				for ($j = 0, $jl = strlen($match[1]); $j < $jl; ++$j) {
 					$key       = $match[1]{$j};
 					$out[$key] = true;

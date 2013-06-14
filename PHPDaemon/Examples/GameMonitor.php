@@ -67,9 +67,9 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance {
 			$set['atime']   = time();
 			if (0) {
 				\PHPDaemon\Core\Daemon::log('Updated server (' . round(memory_get_usage(true) / 1024 / 1024, 5) . '): ' . $server['address'] . ' latency = ' . round($set['latency'] * 1000, 2) . ' ==== '
-													. (isset($server['atime']) ?
-															round($set['atime'] - $server['atime']) . ' secs. from last update.'
-															: ' =---= ' . json_encode($server))
+											. (isset($server['atime']) ?
+													round($set['atime'] - $server['atime']) . ' secs. from last update.'
+													: ' =---= ' . json_encode($server))
 				);
 			}
 			try {

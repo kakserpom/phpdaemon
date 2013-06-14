@@ -179,8 +179,8 @@ class Parser {
 							}
 						}
 						elseif (
-							($c === '"')
-							|| ($c === '\'')
+								($c === '"')
+								|| ($c === '\'')
 						) {
 							if ($elTypes[$i] != null) {
 								$this->raiseError('Unexpected T_STRING.');

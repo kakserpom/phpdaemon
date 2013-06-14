@@ -3,7 +3,7 @@ namespace PHPDaemon\Clients\Mongo;
 
 class Collection {
 	/** Related Pool object
-	 * @var MongoClient
+	 * @var Pool
 	 */
 	public $pool;
 
@@ -60,8 +60,8 @@ class Collection {
 	/**
 	 * Ensure index
 	 * @param array  Keys
-	 * @param array Optional. Options
-	 * @param mixed Optional. Callback called when response received
+	 * @param array  Optional. Options
+	 * @param mixed  Optional. Callback called when response received
 	 * @return void
 	 */
 	public function ensureIndex($keys, $options = [], $cb = null) {
@@ -167,8 +167,8 @@ class Collection {
 	 */
 	public function autoincrement($cb) {
 		$this->evaluate('function () { '
-								. 'return db.autoincrement.findAndModify({ '
-								. 'query: {"_id":' . json_encode($this->name) . '}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',
+						. 'return db.autoincrement.findAndModify({ '
+						. 'query: {"_id":' . json_encode($this->name) . '}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',
 						$cb);
 	}
 }

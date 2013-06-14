@@ -13,6 +13,10 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class Time extends Generic {
 
+	/**
+	 * @param $value
+	 * @return int
+	 */
 	public static function HumanToPlain($value) {
 		$time = 0;
 

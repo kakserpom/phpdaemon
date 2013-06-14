@@ -184,7 +184,9 @@ class FileSystem {
 			call_user_func($cb, $path, FileSystem::statPrepare(@stat($path)));
 			return true;
 		}
-		return eio_stat($path, $pri, function ($path, $stat) use ($cb) { call_user_func($cb, $path, FileSystem::statPrepare($stat)); }, $path);
+		return eio_stat($path, $pri, function ($path, $stat) use ($cb) {
+			call_user_func($cb, $path, FileSystem::statPrepare($stat));
+		}, $path);
 	}
 
 	/**
@@ -251,7 +253,9 @@ class FileSystem {
 			call_user_func($cb, $path, FileSystem::statPrepare(lstat($path)));
 			return true;
 		}
-		return eio_lstat($path, $pri, function ($path, $stat) use ($cb) { call_user_func($cb, $path, FileSystem::statPrepare($stat)); }, $path);
+		return eio_lstat($path, $pri, function ($path, $stat) use ($cb) {
+			call_user_func($cb, $path, FileSystem::statPrepare($stat));
+		}, $path);
 	}
 
 	/**
@@ -508,8 +512,8 @@ class FileSystem {
 		static $n = 0;
 		return $dir . '/' . $prefix . str_shuffle(md5(str_shuffle(
 														  microtime(true) . chr(mt_rand(0, 0xFF))
-																  . Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
-																  . (++$n) . mt_rand(0, mt_getrandmax()))
+														  . Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
+														  . (++$n) . mt_rand(0, mt_getrandmax()))
 												  ));
 	}
 

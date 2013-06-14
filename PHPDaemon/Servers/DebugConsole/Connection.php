@@ -106,9 +106,9 @@ Type "help" to get the list of allowed commands.');
 
 		$finish =
 				(strpos($this->buf, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
-						|| (strpos($this->buf, $s = "\xff\xec") !== FALSE)
-						|| (strpos($this->buf, $s = "\x03") !== FALSE)
-						|| (strpos($this->buf, $s = "\x04") !== FALSE);
+				|| (strpos($this->buf, $s = "\xff\xec") !== FALSE)
+				|| (strpos($this->buf, $s = "\x03") !== FALSE)
+				|| (strpos($this->buf, $s = "\x04") !== FALSE);
 
 		while (($line = $this->gets()) !== FALSE) {
 			$e   = explode(' ', rtrim($line, "\r\n"), 2);

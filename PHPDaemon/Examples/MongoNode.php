@@ -163,8 +163,8 @@ class MongoNode extends \PHPDaemon\Core\AppInstance {
 					}
 					elseif ($item['op'] == 'u') {
 						if (
-							isset($item['b'])
-							&& ($item['b'] === FALSE)
+								isset($item['b'])
+								&& ($item['b'] === FALSE)
 						) {
 							$item['o']['_id'] = $item['o2']['_id'];
 							$this->cacheObject($item['o']);

@@ -23,6 +23,7 @@ class Cursor {
 	public function isFinished() {
 		return $this->finished;
 	}
+
 	/**
 	 * Constructor
 	 * @param string Cursor's ID

@@ -135,8 +135,8 @@ abstract class Generic {
 		}
 		foreach (self::$signals as $no => $name) {
 			if (
-				($name === 'SIGKILL')
-				|| ($name == 'SIGSTOP')
+					($name === 'SIGKILL')
+					|| ($name == 'SIGSTOP')
 			) {
 				continue;
 			}
@@ -175,7 +175,8 @@ abstract class Generic {
 	 * Run thread process
 	 * @return void
 	 */
-	protected function run() { }
+	protected function run() {
+	}
 
 	/**
 	 * If true, we do not register signals automatically at start
@@ -190,8 +191,8 @@ abstract class Generic {
 	protected function registerSignals() {
 		foreach (self::$signals as $no => $name) {
 			if (
-				($name === 'SIGKILL')
-				|| ($name == 'SIGSTOP')
+					($name === 'SIGKILL')
+					|| ($name == 'SIGSTOP')
 			) {
 				continue;
 			}

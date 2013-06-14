@@ -29,6 +29,10 @@ class Connection extends ClientConnection {
 	public $protocolError;
 	public $responseCode = 0;
 
+	/**
+	 * @param string $url
+	 * @param array $params
+	 */
 	public function get($url, $params = null) {
 		if (!is_array($params)) {
 			$params = ['resultcb' => $params];
@@ -62,6 +66,9 @@ class Connection extends ClientConnection {
 		$this->checkFree();
 	}
 
+	/**
+	 * @param $headers
+	 */
 	protected function customRequestHeaders($headers) {
 		foreach ($headers as $key => $item) {
 			if (is_numeric($key)) {
@@ -78,6 +85,11 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @param string $url
+	 * @param array $data
+	 * @param array $params
+	 */
 	public function post($url, $data = [], $params = null) {
 		if (!is_array($params)) {
 			$params = ['resultcb' => $params];

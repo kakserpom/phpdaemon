@@ -260,7 +260,8 @@ abstract class Connection extends IOStream {
 	 * Called when new UDP packet received
 	 * @return void
 	 */
-	public function onUdpPacket($pct) { }
+	public function onUdpPacket($pct) {
+	}
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
@@ -511,7 +512,7 @@ abstract class Connection extends IOStream {
 		return false;
 	}
 
-	/* Establish UNIX socket connection
+	/** Establish UNIX socket connection
 	 * @param string Path
 	 * @return boolean Success
 	 */
@@ -534,9 +535,13 @@ abstract class Connection extends IOStream {
 		return true;
 	}
 
-	/* Establish raw socket connection
+	/** Establish raw socket connection
 	 * @param string Path
 	 * @return boolean Success
+	 */
+	/**
+	 * @param $host
+	 * @return bool
 	 */
 	public function connectRaw($host) {
 		$this->type = 'raw';
@@ -578,10 +583,15 @@ abstract class Connection extends IOStream {
 		return true;
 	}
 
-	/* Establish UDP connection
-	 * @param string Hostname
+	/** Establish UDP connection
+	 * @param string  Hostname
 	 * @param integer Port
 	 * @return boolean Success
+	 */
+	/**
+	 * @param $host
+	 * @param $port
+	 * @return bool
 	 */
 	public function connectUdp($host, $port) {
 		$this->type = 'udp';
@@ -636,9 +646,9 @@ abstract class Connection extends IOStream {
 		return true;
 	}
 
-	/* Establish TCP connection
-	 * @param string Hostname
-	 * @param integer Port
+	/** Establish TCP connection
+	 * @param string $host  Hostname
+	 * @param integer $port Port
 	 * @return boolean Success
 	 */
 	public function connectTcp($host, $port) {

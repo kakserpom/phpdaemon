@@ -45,8 +45,8 @@ class WebSocketOverCOMETRequest extends Generic {
 				$ret['error'] = 'Bad cookie.';
 			}
 			elseif (
-				!isset($_REQUEST['data'])
-				|| !is_string($_REQUEST['data'])
+					!isset($_REQUEST['data'])
+					|| !is_string($_REQUEST['data'])
 			) {
 				$ret['error'] = 'No data.';
 			}

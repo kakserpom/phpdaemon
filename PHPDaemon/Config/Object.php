@@ -32,7 +32,7 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * PID file
-	 * @var path
+	 * @var string|Entry\Generic
 	 */
 	public $pidfile = '/var/run/phpd.pid';
 
@@ -50,20 +50,19 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * Config file
-	 * @var path
+	 * @var string|Entry\ConfigFile
 	 */
 	public $configfile = '/etc/phpdaemon/phpd.conf;/etc/phpd/phpd.conf;./conf/phpd.conf';
 
 	/**
 	 * Application resolver
-	 * @var path
+	 * @var string|Entry\Generic
 	 */
 	public $path = '/etc/phpdaemon/AppResolver.php;./conf/AppResolver.php';
 
-
 	/**
 	 * Additional include path
-	 * @var path
+	 * @var string|Entry\Generic
 	 */
 	public $addincludepath = null;
 
@@ -75,37 +74,37 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * Max. requests before worker restart
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $maxrequests = '10k';
 
 	/**
 	 * Start workers
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $startworkers = 4;
 
 	/**
 	 * Minimum number of workers
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $minworkers = 4;
 
 	/**
 	 * Maximum number of workers
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $maxworkers = 8;
 
 	/**
 	 * Minimum number of spare workes
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $minspareworkers = 2;
 
 	/**
 	 * Maximum number of spare workes
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $maxspareworkers = 0;
 
@@ -129,25 +128,25 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * System user (setuid)
-	 * @var string
+	 * @var string|Entry\Generic
 	 */
 	public $user = null;
 
 	/**
 	 * System group (setgid)
-	 * @var string
+	 * @var string|Entry\Generic
 	 */
 	public $group = null;
 
 	/**
 	 * Automatic garbage collector, number of iterations between GC call
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $autogc = '1k';
 
 	/**
 	 * Chroot
-	 * @var string
+	 * @var string|Entry\Generic
 	 */
 	public $chroot = '/';
 
@@ -165,7 +164,7 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * Try to import updated code (runkit required)
-	 * @var boolean
+	 * @var boolean|Entry\Generic
 	 */
 	public $autoreimport = 0;
 
@@ -183,7 +182,7 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * Comma-separated list of locales
-	 * @var string
+	 * @var string|Entry\Generic
 	 */
 	public $locale = '';
 
@@ -203,7 +202,7 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * Log storage
-	 * @var boolean
+	 * @var boolean|Entry\Generic
 	 */
 	public $logstorage = '/var/log/phpdaemon.log';
 
@@ -251,13 +250,13 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * EIO maximum parallel threads
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $eiosetmaxparallel = null;
 
 	/**
 	 * EIO maximum poll requests
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $eiosetmaxpollreqs = null;
 
@@ -269,7 +268,7 @@ class Object implements \ArrayAccess {
 
 	/**
 	 * EIO minimum parallel threads
-	 * @var number
+	 * @var int|Entry\Number
 	 */
 	public $eiosetminparallel = null;
 
@@ -315,6 +314,10 @@ class Object implements \ArrayAccess {
 		}
 	}
 
+	/**
+	 * @param $old
+	 * @param $new
+	 */
 	public function renameSection($old, $new) {
 		Daemon::$config->{$new} = Daemon::$config->{$old};
 		Daemon::log('Config section \'' . $old . '\' -> \'' . $new . '\'');
@@ -338,10 +341,10 @@ class Object implements \ArrayAccess {
 	 */
 	protected function onLoad() {
 		if (
-			isset($this->minspareworkers->value)
-			&& $this->minspareworkers->value > 0
-			&& isset($this->maxspareworkers->value)
-			&& $this->maxspareworkers->value > 0
+				isset($this->minspareworkers->value)
+				&& $this->minspareworkers->value > 0
+				&& isset($this->maxspareworkers->value)
+				&& $this->maxspareworkers->value > 0
 		) {
 			if ($this->minspareworkers->value > $this->maxspareworkers->value) {
 				Daemon::log('\'minspareworkers\' (' . $this->minspareworkers->value . ')  cannot be greater than \'maxspareworkers\' (' . $this->maxspareworkers->value . ').');
@@ -350,8 +353,8 @@ class Object implements \ArrayAccess {
 		}
 
 		if (
-			isset($this->minworkers->value)
-			&& isset($this->maxworkers->value)
+				isset($this->minworkers->value)
+				&& isset($this->maxworkers->value)
 		) {
 			if ($this->minworkers->value > $this->maxworkers->value) {
 				$this->minworkers->value = $this->maxworkers->value;
@@ -376,7 +379,7 @@ class Object implements \ArrayAccess {
 
 	public function offsetExists($prop) {
 		$prop = $this->getRealPropertyName($prop);
-		return propery_exists($this, $prop);
+		return property_exists($this, $prop);
 	}
 
 	/**
@@ -494,8 +497,8 @@ class Object implements \ArrayAccess {
 			}
 
 			if (
-				($k === 'user')
-				|| ($k === 'group')
+					($k === 'user')
+					|| ($k === 'group')
 			) {
 				if ($v === '') {
 					$v = NULL;

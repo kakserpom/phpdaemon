@@ -12,6 +12,9 @@ class ProtocolVE extends Protocol {
 	const STRING = 0x00;
 	const BINARY = 0x80;
 
+	/**
+	 * @return bool
+	 */
 	public function onHandshake() {
 		return true;
 	}

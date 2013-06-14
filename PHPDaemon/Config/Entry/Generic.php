@@ -50,12 +50,23 @@ class Generic {
 		$this->onUpdate($old);
 	}
 
+	/**
+	 * @param bool $b
+	 */
 	public function setStackable($b = true) {
 		$this->stackable = $b;
 	}
+
+	/**
+	 * @return bool
+	 */
 	public function isStackable() {
 		return $this->stackable;
 	}
+
+	/**
+	 * @param $value
+	 */
 	public function pushValue($value) {
 		$old = $this->value;
 		if (!$this->stackable) {
@@ -64,7 +75,8 @@ class Generic {
 		}
 		if (!is_array($this->value)) {
 			$this->value = [$this->value, $value];
-		} else {
+		}
+		else {
 			$f = false;
 			foreach ($this->value as $k => $v) {
 				if (!is_int($k)) {
@@ -82,10 +94,12 @@ class Generic {
 		$this->onUpdate($old);
 	}
 
+	/**
+	 * @param $value
+	 */
 	public function pushHumanValue($value) {
 		$this->pushValue(static::HumanToPlain($value));
 	}
-
 
 	/**
 	 * Set value type
@@ -152,6 +166,7 @@ class Generic {
 	 * Called when
 	 * @return void
 	 */
-	public function onUpdate($old) { }
+	public function onUpdate($old) {
+	}
 
 }

@@ -3,6 +3,10 @@ namespace PHPDaemon\Clients\HTTP;
 
 use PHPDaemon\Network\Client;
 
+/**
+ * Class Pool
+ * @package PHPDaemon\Clients\HTTP
+ */
 class Pool extends Client {
 	/**
 	 * Setting default config options
@@ -31,6 +35,10 @@ class Pool extends Client {
 		];
 	}
 
+	/**
+	 * @param string $url
+	 * @param array $params
+	 */
 	public function get($url, $params) {
 		if (is_callable($params)) {
 			$params = ['resultcb' => $params];
@@ -47,6 +55,11 @@ class Pool extends Client {
 		);
 	}
 
+	/**
+	 * @param string $url
+	 * @param array $data
+	 * @param array $params
+	 */
 	public function post($url, $data = [], $params) {
 		if (is_callable($params)) {
 			$params = ['resultcb' => $params];
@@ -63,6 +76,10 @@ class Pool extends Client {
 		);
 	}
 
+	/**
+	 * @param $mixed
+	 * @return bool|string
+	 */
 	public static function buildUrl($mixed) {
 		if (is_string($mixed)) {
 			return $mixed;
@@ -90,6 +107,10 @@ class Pool extends Client {
 		return $url;
 	}
 
+	/**
+	 * @param $mixed
+	 * @return array|bool
+	 */
 	public static function prepareUrl($mixed) {
 		$url = static::buildUrl($mixed);
 		if (false === $url) {

@@ -303,8 +303,8 @@ class Connection extends ClientConnection {
 		$l = $this->parseEncodedBinary($s, $p);
 
 		if (
-			($l === NULL)
-			|| ($l === FALSE)
+				($l === NULL)
+				|| ($l === FALSE)
 		) {
 			return $l;
 		}
@@ -513,8 +513,8 @@ class Connection extends ClientConnection {
 			$this->resultRows[] = $row;
 		}
 		elseif (
-			$type === 'G'
-			|| $type === 'H'
+				$type === 'G'
+				|| $type === 'H'
 		) {
 			// Copy in response
 			// The backend is ready to copy data from the frontend to a table; see Section 45.2.5.
@@ -527,8 +527,8 @@ class Connection extends ClientConnection {
 			$type = binarySubstr($packet, 0, 1);
 
 			if (
-				($type === 'S')
-				|| ($type === 'P')
+					($type === 'S')
+					|| ($type === 'P')
 			) {
 				list($name) = $this->decodeNULstrings(binarySubstr($packet, 1));
 			}
@@ -541,11 +541,11 @@ class Connection extends ClientConnection {
 					$this->insertNum = $tag[2];
 				}
 				elseif (
-					($tag[0] === 'DELETE')
-					|| ($tag[0] === 'UPDATE')
-					|| ($tag[0] === 'MOVE')
-					|| ($tag[0] === 'FETCH')
-					|| ($tag[0] === 'COPY')
+						($tag[0] === 'DELETE')
+						|| ($tag[0] === 'UPDATE')
+						|| ($tag[0] === 'MOVE')
+						|| ($tag[0] === 'FETCH')
+						|| ($tag[0] === 'COPY')
 				) {
 					$this->affectedRows = $tag[1];
 				}

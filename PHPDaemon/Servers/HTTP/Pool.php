@@ -12,12 +12,12 @@ use PHPDaemon\Config\Entry\Time;
  */
 class Pool extends \PHPDaemon\Network\Server {
 
-	/* Variables order
+	/** Variables order
 	 * @var string "GPC"
 	 */
 	public $variablesOrder;
 
-	/* WebSocketServer instance
+	/** WebSocketServer instance
 	 * @var WebSocketServer
 	 */
 	public $WS;
@@ -122,8 +122,8 @@ class Pool extends \PHPDaemon\Network\Server {
 	public function onConfigUpdated() {
 		parent::onConfigUpdated();
 		if (
-			($order = ini_get('request_order'))
-			|| ($order = ini_get('variables_order'))
+				($order = ini_get('request_order'))
+				|| ($order = ini_get('variables_order'))
 		) {
 			$this->variablesOrder = $order;
 		}

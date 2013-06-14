@@ -27,7 +27,7 @@ class ClassFinder {
 	 *
 	 * @param string Class
 	 * @param string Namespace
-	 * @return string Class
+	 * @return string
 	 */
 	public static function find($class, $namespace = null) {
 		$e = explode('\\', $class);
@@ -42,20 +42,20 @@ class ClassFinder {
 		}
 		if ('Server' === substr($class, -6) && strpos($class, '\\') === false) {
 			$path = '\\PHPDaemon\\Servers\\' . substr($class, 0, -6) . '\\Pool';
-			$r = str_replace('\\Servers\\Servers', '\\Servers', $path);
-			Daemon::log('ClassFinder: \'' . $class . '\' -> \''.$r.'\', you should change your code.');
+			$r    = str_replace('\\Servers\\Servers', '\\Servers', $path);
+			Daemon::log('ClassFinder: \'' . $class . '\' -> \'' . $r . '\', you should change your code.');
 			return $r;
 		}
 		if ('Client' === substr($class, -6) && strpos($class, '\\') === false) {
 			$path = '\\PHPDaemon\\Clients\\' . substr($class, 0, -6) . '\\Pool';
-			$r = str_replace('\\Clients\\Clients', '\\Clients', $path);
-			Daemon::log('ClassFinder: \'' . $class . '\' -> \''.$r.'\', you should change your code.');
+			$r    = str_replace('\\Clients\\Clients', '\\Clients', $path);
+			Daemon::log('ClassFinder: \'' . $class . '\' -> \'' . $r . '\', you should change your code.');
 			return $r;
 		}
 		if ('ClientAsync' === substr($class, -11) && strpos($class, '\\') === false) {
 			$path = '\\PHPDaemon\\Clients\\' . substr($class, 0, -11) . '\\Pool';
-			$r = str_replace('\\Client\\Clients', '\\Clients', $path);
-			Daemon::log('ClassFinder: \'' . $class . '\' -> \''.$r.'\', you should change your code.');
+			$r    = str_replace('\\Client\\Clients', '\\Clients', $path);
+			Daemon::log('ClassFinder: \'' . $class . '\' -> \'' . $r . '\', you should change your code.');
 			return $r;
 		}
 		if ($namespace !== null && sizeof($e) < 2) {

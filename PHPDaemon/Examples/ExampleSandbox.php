@@ -17,7 +17,8 @@ class ExampleSandbox extends \PHPDaemon\Core\AppInstance {
 	 * Constructor.
 	 * @return void
 	 */
-	public function init() { }
+	public function init() {
+	}
 
 	/**
 	 * Called when the worker is ready to go.

@@ -7,11 +7,13 @@ use PHPDaemon\FS\FileSystem;
 /**
  * Generic
  *
+ * @property mixed addr
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Generic {
+	public $defaultPort;
 
 	/**
 	 * Enabled?
@@ -27,7 +29,7 @@ abstract class Generic {
 
 	/**
 	 * Event
-	 * @var EventListener/Event
+	 * @var \EventListener\Event
 	 */
 	protected $ev;
 
@@ -306,6 +308,12 @@ abstract class Generic {
 		}
 	}
 
+	/**
+	 * @param \EventListener $listener
+	 * @param $fd
+	 * @param $addrPort
+	 * @param $ctx
+	 */
 	public function onAcceptEv(\EventListener $listener, $fd, $addrPort, $ctx) {
 		$class = $this->pool->connectionClass;
 		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Network\\Connection')) {

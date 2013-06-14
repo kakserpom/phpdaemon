@@ -8,6 +8,6 @@ namespace PHPDaemon\IPCManager;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class MasterPool extends \PHPDaemon\Network\Server {
-	public $workers = array();
+	public $workers = [];
 	public $connectionClass = '\PHPDaemon\IPCManager\MasterPoolConnection';
 }
