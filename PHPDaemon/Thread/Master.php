@@ -124,6 +124,9 @@ class Master extends Generic {
 		Daemon::log('M#' . $this->pid . ' ' . $message);
 	}
 
+	/**
+	 * @return int
+	 */
 	protected function callMPM() {
 		$state = Daemon::getStateOfWorkers($this);
 		if (isset(Daemon::$config->mpm->value) && is_callable(Daemon::$config->mpm->value)) {
@@ -343,6 +346,9 @@ class Master extends Generic {
 		$this->shutdown(SIGINT);
 	}
 
+	/**
+	 * @param $signo
+	 */
 	public function signalToChildren($signo) {
 		foreach ($this->collections as $col) {
 			$col->signal($signo);

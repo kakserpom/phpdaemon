@@ -13,6 +13,9 @@ class ProtocolV0 extends Protocol {
 	const STRING = 0x00;
 	const BINARY = 0x80;
 
+	/**
+	 * @return bool
+	 */
 	public function onHandshake() {
 		if (!isset($this->conn->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->conn->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
 			return false;
@@ -107,6 +110,11 @@ class ProtocolV0 extends Protocol {
 		return pack('N', $result);
 	}
 
+	/**
+	 * @param $data
+	 * @param $type
+	 * @return string
+	 */
 	public function encodeFrame($data, $type) {
 		// Binary
 		$type = $this->getFrameType($type);

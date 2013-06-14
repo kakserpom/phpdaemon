@@ -23,6 +23,9 @@ class XMLStream {
 		xml_set_character_data_handler($this->parser, 'charXML');
 	}
 
+	/**
+	 * @param $ns
+	 */
 	public function setDefaultNS($ns) {
 		$this->default_ns = $ns;
 	}
@@ -42,6 +45,9 @@ class XMLStream {
 		}
 	}
 
+	/**
+	 * @param $buf
+	 */
 	public function feed($buf) {
 		xml_parse($this->parser, $buf, false);
 	}
@@ -50,6 +56,11 @@ class XMLStream {
 		xml_parse($this->parser, '', true);
 	}
 
+	/**
+	 * @param $parser
+	 * @param $name
+	 * @param $attr
+	 */
 	public function startXML($parser, $name, $attr) {
 		++$this->xml_depth;
 		if (array_key_exists('XMLNS', $attr)) {
