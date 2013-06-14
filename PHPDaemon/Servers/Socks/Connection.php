@@ -181,6 +181,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 	}
 
+	/**
+	 * @param $code
+	 * @param $addr
+	 * @param $port
+	 */
 	public function onSlaveReady($code, $addr, $port) {
 		$reply =
 				$this->ver // Version
