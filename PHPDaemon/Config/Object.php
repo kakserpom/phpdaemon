@@ -314,6 +314,10 @@ class Object implements \ArrayAccess {
 		}
 	}
 
+	/**
+	 * @param $old
+	 * @param $new
+	 */
 	public function renameSection($old, $new) {
 		Daemon::$config->{$new} = Daemon::$config->{$old};
 		Daemon::log('Config section \'' . $old . '\' -> \'' . $new . '\'');
