@@ -50,14 +50,23 @@ class Generic {
 		$this->onUpdate($old);
 	}
 
+	/**
+	 * @param bool $b
+	 */
 	public function setStackable($b = true) {
 		$this->stackable = $b;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isStackable() {
 		return $this->stackable;
 	}
 
+	/**
+	 * @param $value
+	 */
 	public function pushValue($value) {
 		$old = $this->value;
 		if (!$this->stackable) {
@@ -85,6 +94,9 @@ class Generic {
 		$this->onUpdate($old);
 	}
 
+	/**
+	 * @param $value
+	 */
 	public function pushHumanValue($value) {
 		$this->pushValue(static::HumanToPlain($value));
 	}

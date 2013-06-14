@@ -13,6 +13,10 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class Number extends Generic {
 
+	/**
+	 * @param $value
+	 * @return int|null
+	 */
 	public static function HumanToPlain($value) {
 		if ($value === null) {
 			return null;
