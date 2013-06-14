@@ -5,7 +5,7 @@ use PHPDaemon\Network\Server;
 
 class Pool extends Server {
 
-	/* Pairs
+	/** Pairs
 	 * @var array ["$local:$foreign" => "$user", ...]
 	 */
 	protected $pairs = [];
@@ -41,7 +41,7 @@ class Pool extends Server {
 		}
 	}
 
-	/* Register pair
+	/** Register pair
 	 * @param integer Local
 	 * @param integer Foreign
 	 * @param string  User
@@ -56,7 +56,7 @@ class Pool extends Server {
 		]);
 	}
 
-	/* Unregister pair
+	/** Unregister pair
 	 * @param integer Local
 	 * @param integer Foreign
 	 * @return void
@@ -65,7 +65,7 @@ class Pool extends Server {
 		$this->appInstance->broadcastCall('unregisterPair', [$local, $foreign]);
 	}
 
-	/* Find pair
+	/** Find pair
 	 * @param integer Local
 	 * @param integer Foreign
 	 * @return string User
