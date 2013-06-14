@@ -48,6 +48,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 		Timer::setTimeout($this->keepaliveTimer);
 	}
 
+	/**
+	 * @param $from
+	 * @param $cmd
+	 */
 	public function command($from, $cmd) {
 		if ($from === null) {
 			$from = $this->pool->config->servername->value;
@@ -70,6 +74,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 	}
 
+	/**
+	 * @param $from
+	 * @param $cmd
+	 * @param $args
+	 */
 	public function commandArr($from, $cmd, $args) {
 		if ($from === null) {
 			$from = $this->pool->config->servername->value;
@@ -118,6 +127,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 	}
 
+	/**
+	 * @param $chan
+	 */
 	public function exportChannel($chan) {
 		$this->command($this->usermask, 'JOIN', $chan->name);
 		$this->command($this->usermask, 'RPL_TOPIC', $chan->irc->nick, $chan->name, $chan->topic);
@@ -134,6 +146,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$this->command(null, 'RPL_ENDOFNAMES', $chan->irc->nick, $chan->name, 'End of /NAMES list');
 	}
 
+	/**
+	 * @param $cmd
+	 * @param $args
+	 */
 	public function onCommand($cmd, $args) {
 		if ($cmd === 'USER') {
 			//list ($nick) = $args;
@@ -202,6 +218,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 	}
 
+	/**
+	 * @param $msg
+	 */
 	public function msgFromBNC($msg) {
 		if ($this->usermask === null) {
 			return;

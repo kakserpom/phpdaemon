@@ -30,13 +30,15 @@ class Route {
 	 * Called when the connection is handshaked.
 	 * @return void
 	 */
-	public function onHandshake() { }
+	public function onHandshake() {
+	}
 
 	/**
 	 * Called when session finished.
 	 * @return void
 	 */
-	public function onFinish() { }
+	public function onFinish() {
+	}
 
 	/**
 	 * Called when the worker is going to shutdown.

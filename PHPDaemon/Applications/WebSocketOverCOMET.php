@@ -21,8 +21,8 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 	public function initSession($route, $req) {
 		if (!isset($this->WS->routes[$route])) {
 			if (
-				isset(\PHPDaemon\Core\Daemon::$config->logerrors)
-				&& \PHPDaemon\Core\Daemon::$config->logerrors
+					isset(\PHPDaemon\Core\Daemon::$config->logerrors)
+					&& \PHPDaemon\Core\Daemon::$config->logerrors
 			) {
 				\PHPDaemon\Core\Daemon::log(__METHOD__ . ': undefined route \'' . $route . '\'.');
 			}

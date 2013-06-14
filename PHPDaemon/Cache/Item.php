@@ -12,29 +12,27 @@ use PHPDaemon\Structures\StackCallbacks;
  */
 class Item {
 
-	/* Value
+	/** Value
 	 * @var mixed
 	 */
 	protected $value;
 
-	/* Listeners
+	/** Listeners
 	 * @var StackCallbacks
 	 */
 	protected $listeners;
 
-	/* Hits counter
+	/** Hits counter
 	 * @var integer
 	 */
 	public $hits = 1;
 
-	/* Expire time
+	/** Expire time
 	 * @var integer
 	 */
 	public $expire;
 
-	/* Establish TCP connection
-	 * @param string Hostname
-	 * @param integer Port
+	/** Establish TCP connection
 	 * @return boolean Success
 	 */
 	public function __construct($value) {
@@ -42,11 +40,6 @@ class Item {
 		$this->value     = $value;
 	}
 
-	/* Establish TCP connection
-	 * @param string Hostname
-	 * @param integer Port
-	 * @return boolean Success
-	 */
 	public function getHits() {
 		return $this->hits;
 	}
@@ -56,6 +49,9 @@ class Item {
 		return $this->value;
 	}
 
+	/**
+	 * @param callable $cb
+	 */
 	public function addListener($cb) {
 		$this->listeners->push($cb);
 	}

@@ -144,8 +144,8 @@ class Pool extends Client {
 		}
 
 		if (
-			isset($p['fields'])
-			&& is_string($p['fields'])
+				isset($p['fields'])
+				&& is_string($p['fields'])
 		) {
 			$e           = explode(',', $p['fields']);
 			$p['fields'] = [];
@@ -164,10 +164,10 @@ class Pool extends Client {
 
 		foreach ($p as $k => $v) {
 			if (
-				($k === 'sort')
-				|| ($k === 'hint')
-				|| ($k === 'explain')
-				|| ($k === 'snapshot')
+					($k === 'sort')
+					|| ($k === 'hint')
+					|| ($k === 'explain')
+					|| ($k === 'snapshot')
 			) {
 				if (!$s) {
 					$s = true;
@@ -205,10 +205,10 @@ class Pool extends Client {
 
 		$reqId = $this->request(self::OP_QUERY,
 								chr(bindec(strrev($p['opts']))) . "\x00\x00\x00"
-										. $p['col'] . "\x00"
-										. pack('VV', $p['offset'], $p['limit'])
-										. $bson
-										. (isset($p['fields']) ? bson_encode($p['fields']) : '')
+								. $p['col'] . "\x00"
+								. pack('VV', $p['offset'], $p['limit'])
+								. $bson
+								. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 			, true);
 
 		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), false, isset($p['parse_oplog']), isset($p['tailable'])];
@@ -253,8 +253,8 @@ class Pool extends Client {
 		}
 
 		if (
-			isset($p['fields'])
-			&& is_string($p['fields'])
+				isset($p['fields'])
+				&& is_string($p['fields'])
 		) {
 			$e           = explode(',', $p['fields']);
 			$p['fields'] = [];
@@ -273,10 +273,10 @@ class Pool extends Client {
 
 		foreach ($p as $k => $v) {
 			if (
-				($k === 'sort')
-				|| ($k === 'hint')
-				|| ($k === 'explain')
-				|| ($k === 'snapshot')
+					($k === 'sort')
+					|| ($k === 'hint')
+					|| ($k === 'explain')
+					|| ($k === 'snapshot')
 			) {
 				if (!$s) {
 					$s = true;
@@ -308,10 +308,10 @@ class Pool extends Client {
 
 		$reqId = $this->request(self::OP_QUERY,
 								pack('V', $p['opts'])
-										. $p['col'] . "\x00"
-										. pack('VV', $p['offset'], -1)
-										. bson_encode($o)
-										. (isset($p['fields']) ? bson_encode($p['fields']) : '')
+								. $p['col'] . "\x00"
+								. pack('VV', $p['offset'], -1)
+								. bson_encode($o)
+								. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 			, true);
 
 		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
@@ -364,8 +364,8 @@ class Pool extends Client {
 			$query['where'] = new \MongoCode($p['where']);
 		}
 		elseif (
-			is_object($p['where'])
-			|| sizeof($p['where'])
+				is_object($p['where'])
+				|| sizeof($p['where'])
 		) {
 			$query['query'] = $p['where'];
 		}
@@ -431,8 +431,12 @@ class Pool extends Client {
 		$this->requests[$reqId] = [$p['dbname'], CallbackWrapper::wrap($callback), true];
 	}
 
+	/**
+	 * @param array $keys
+	 * @return string
+	 */
 	public function getIndexName($keys) {
-		$name = '';
+		$name  = '';
 		$first = true;
 		foreach ($keys as $k => $v) {
 			$name .= ($first ? '_' : '') . $k . '_' . $v;
@@ -445,15 +449,15 @@ class Pool extends Client {
 	 * Ensure index
 	 * @param string Collection
 	 * @param array  Keys
-	 * @param array Optional. Options
-	 * @param mixed Optional. Callback called when response received
+	 * @param array  Optional. Options
+	 * @param mixed  Optional. Callback called when response received
 	 * @return void
 	 */
 	public function ensureIndex($ns, $keys, $options = [], $cb = null) {
-		$e = explode('.', $ns, 2);
+		$e   = explode('.', $ns, 2);
 		$doc = [
-			'ns' => $ns,
-			'key' => $keys,
+			'ns'   => $ns,
+			'key'  => $keys,
 			'name' => isset($options['name']) ? $options['name'] : $this->getIndexName($keys),
 		];
 		if (isset($options['unique'])) {
@@ -484,9 +488,9 @@ class Pool extends Client {
 		$params['getlasterror'] = 1;
 		$reqId                  = $this->request(self::OP_QUERY,
 												 pack('V', 0)
-														 . $e[0] . '.$cmd' . "\x00"
-														 . pack('VV', 0, -1)
-														 . bson_encode($params)
+												 . $e[0] . '.$cmd' . "\x00"
+												 . pack('VV', 0, -1)
+												 . bson_encode($params)
 			, true, $conn);
 		$this->requests[$reqId] = [$db, CallbackWrapper::wrap($callback), true];
 	}
@@ -544,8 +548,8 @@ class Pool extends Client {
 			$query['where'] = new \MongoCode($p['where']);
 		}
 		elseif (
-			is_object($p['where'])
-			|| sizeof($p['where'])
+				is_object($p['where'])
+				|| sizeof($p['where'])
 		) {
 			$query['query'] = $p['where'];
 		}
@@ -754,10 +758,10 @@ class Pool extends Client {
 
 		$reqId = $this->request(self::OP_UPDATE,
 								"\x00\x00\x00\x00"
-										. $col . "\x00"
-										. pack('V', $flags)
-										. bson_encode($cond)
-										. bson_encode($data)
+								. $col . "\x00"
+								. pack('V', $flags)
+								. bson_encode($cond)
+								. bson_encode($data)
 		);
 
 		if ($cb !== NULL) {
@@ -809,8 +813,8 @@ class Pool extends Client {
 
 		$reqId = $this->request(self::OP_INSERT,
 								"\x00\x00\x00\x00"
-										. $col . "\x00"
-										. bson_encode($doc)
+								. $col . "\x00"
+								. bson_encode($doc)
 		);
 
 		if ($cb !== NULL) {
@@ -828,8 +832,8 @@ class Pool extends Client {
 	public function killCursors($cursors = []) {
 		$this->request(self::OP_KILL_CURSORS,
 					   "\x00\x00\x00\x00"
-							   . pack('V', sizeof($cursors))
-							   . implode('', $cursors)
+					   . pack('V', sizeof($cursors))
+					   . implode('', $cursors)
 		);
 	}
 
@@ -859,8 +863,8 @@ class Pool extends Client {
 
 		$this->request(self::OP_INSERT,
 					   "\x00\x00\x00\x00"
-							   . $col . "\x00"
-							   . $bson
+					   . $col . "\x00"
+					   . $bson
 		);
 
 		if ($cb !== NULL) {
@@ -888,9 +892,9 @@ class Pool extends Client {
 
 		$this->request(self::OP_DELETE,
 					   "\x00\x00\x00\x00"
-							   . $col . "\x00"
-							   . "\x00\x00\x00\x00"
-							   . bson_encode($cond)
+					   . $col . "\x00"
+					   . "\x00\x00\x00\x00"
+					   . bson_encode($cond)
 		);
 
 		if ($cb !== NULL) {
@@ -912,9 +916,9 @@ class Pool extends Client {
 
 		$reqId                  = $this->request(self::OP_GETMORE,
 												 "\x00\x00\x00\x00"
-														 . $col . "\x00"
-														 . pack('V', $number)
-														 . $id
+												 . $col . "\x00"
+												 . pack('V', $number)
+												 . $id
 		);
 		$this->requests[$reqId] = [$id];
 	}

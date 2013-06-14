@@ -6,6 +6,15 @@ use PHPDaemon\Config\Entry\Generic;
 /**
  * Config section
  *
+ * @property Entry\Boolean enable
+ * @property Entry\Boolean allowoverridebinpath
+ * @property Entry\Boolean allowoverridechroot
+ * @property Entry\Boolean allowoverrideuser
+ * @property Entry\Boolean allowoverridegroup
+ * @property Entry\Boolean allowoverridecwd
+ * @property Entry\Generic cwd
+ * @property Entry\Generic indexfiles
+ * @property Entry\Generic mastersocket
  * @package    Core
  * @subpackage Config
  *
@@ -74,7 +83,7 @@ class Section implements \ArrayAccess, \Countable {
 
 	public function offsetExists($prop) {
 		$prop = $this->getRealPropertyName($prop);
-		return propery_exists($this, $prop);
+		return property_exists($this, $prop);
 	}
 
 	/**

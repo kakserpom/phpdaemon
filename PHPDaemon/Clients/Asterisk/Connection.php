@@ -302,10 +302,10 @@ class Connection extends ClientConnection {
 		$this->state = self::CONN_STATE_LOGIN_PACKET_SENT;
 		$this->write(
 			"Action: login\r\n"
-					. "Username: " . $this->username . "\r\n"
-					. "Secret: " . $this->secret . "\r\n"
-					. "Events: on\r\n"
-					. "\r\n"
+			. "Username: " . $this->username . "\r\n"
+			. "Secret: " . $this->secret . "\r\n"
+			. "Events: on\r\n"
+			. "\r\n"
 		);
 	}
 
@@ -321,8 +321,8 @@ class Connection extends ClientConnection {
 		$this->state       = self::CONN_STATE_CHALLENGE_PACKET_SENT;
 		$this->write(
 			"Action: Challenge\r\n"
-					. "AuthType: MD5\r\n"
-					. "\r\n");
+			. "AuthType: MD5\r\n"
+			. "\r\n");
 	}
 
 	/**

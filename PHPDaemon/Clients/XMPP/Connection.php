@@ -21,6 +21,7 @@ class Connection extends ClientConnection {
 	public $authorized;
 	public $lastId = 0;
 	public $roster;
+	/** @var XMLStream */
 	public $xml;
 	public $fulljid;
 	public $keepaliveTimer;
@@ -63,17 +64,28 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @param $s
+	 */
 	public function sendXML($s) {
 		//Daemon::log(Debug::dump(['send', $s]));
 		$this->write($s);
 	}
 
+	/**
+	 *
+	 */
 	public function startXMLStream() {
 		$this->sendXML('<?xml version="1.0"?>' .
-							   '<stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="' . $this->host . '" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">'
+					   '<stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="' . $this->host . '" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">'
 		);
 	}
 
+	/**
+	 * @param $xml
+	 * @param callable $cb
+	 * @return bool
+	 */
 	public function iqSet($xml, $cb) {
 		if (!isset($this->xml)) {
 			return false;
@@ -84,6 +96,12 @@ class Connection extends ClientConnection {
 		return true;
 	}
 
+	/**
+	 * @param $to
+	 * @param $xml
+	 * @param callable $cb
+	 * @return bool
+	 */
 	public function iqSetTo($to, $xml, $cb) {
 		if (!isset($this->xml)) {
 			return false;
@@ -95,6 +113,11 @@ class Connection extends ClientConnection {
 
 	}
 
+	/**
+	 * @param $xml
+	 * @param callable $cb
+	 * @return bool
+	 */
 	public function iqGet($xml, $cb) {
 		if (!isset($this->xml)) {
 			return false;
@@ -105,6 +128,12 @@ class Connection extends ClientConnection {
 		return true;
 	}
 
+	/**
+	 * @param $to
+	 * @param $xml
+	 * @param callable $cb
+	 * @return bool
+	 */
 	public function iqGetTo($to, $xml, $cb) {
 		if (!isset($this->xml)) {
 			return false;
@@ -116,6 +145,11 @@ class Connection extends ClientConnection {
 
 	}
 
+	/**
+	 * @param mixed $to
+	 * @param mixed $cb
+	 * @return bool
+	 */
 	public function ping($to = null, $cb = null) {
 		if (!isset($this->xml)) {
 			return false;
@@ -127,24 +161,46 @@ class Connection extends ClientConnection {
 		return $this->iqGetTo($to, '<ping xmlns="urn:xmpp:ping"/>', $cb);
 	}
 
+	/**
+	 * @param $ns
+	 * @param callable $cb
+	 * @return bool
+	 */
 	public function queryGet($ns, $cb) {
 		return $this->iqGet('<query xmlns="' . $ns . '" />', $cb);
 	}
 
+	/**
+	 * @param $ns
+	 * @param $xml
+	 * @param callable $cb
+	 * @return bool
+	 */
 	public function querySet($ns, $xml, $cb) {
 		return $this->iqSet('<query xmlns="' . $ns . '">' . $xml . '</query>', $cb);
 	}
 
+	/**
+	 * @param $to
+	 * @param $ns
+	 * @param $xml
+	 * @param callable $cb
+	 * @return bool
+	 */
 	public function querySetTo($to, $ns, $xml, $cb) {
 		return $this->iqSetTo($to, '<query xmlns="' . $ns . '">' . $xml . '</query>', $cb);
 	}
 
+	/**
+	 *
+	 */
 	public function createXMLStream() {
 		$this->xml = new XMLStream();
 		$this->xml->setDefaultNS('jabber:client');
 		$this->xml->conn = $this;
 		$conn            = $this;
 		$this->xml->addXPathHandler('{http://etherx.jabber.org/streams}features', function ($xml) use ($conn) {
+			/** @var XMLStream $xml */
 			if ($xml->hasSub('starttls') and $this->use_encryption) {
 				$conn->sendXML("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'><required /></starttls>");
 			}
@@ -284,6 +340,10 @@ class Connection extends ClientConnection {
 		$this->sendXML($out);
 	}
 
+	/**
+	 * @param mixed $jid
+	 * @param callable $cb
+	 */
 	public function getVCard($jid = null, $cb) {
 		$id = $this->getId();
 		$this->xml->addIdHandler($id, function ($xml) use ($cb) {

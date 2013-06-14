@@ -13,6 +13,10 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class Size extends Generic {
 
+	/**
+	 * @param $value
+	 * @return int
+	 */
 	public static function HumanToPlain($value) {
 		$l = substr($value, -1);
 

@@ -121,6 +121,7 @@ class UDP extends Generic {
 		}
 		if (!@socket_bind($sock, $this->host, $this->port)) {
 			$errno = socket_last_error();
+			$addr  = $this->host . ':' . $this->port;
 			Daemon::$process->log(get_class($this) . ': Couldn\'t bind UDP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
 			return false;
 		}

@@ -374,6 +374,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	}
 
+	/**
+	 * @return bool
+	 */
 	protected function httpProcessHeaders() {
 		$this->state = self::STATE_PROCESSING;
 		if (isset($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS'])) {

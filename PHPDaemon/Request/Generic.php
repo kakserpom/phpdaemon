@@ -105,6 +105,9 @@ abstract class Generic {
 		$this->onSleep();
 	}
 
+	/**
+	 * @param $e
+	 */
 	public function handleException($e) {
 	}
 

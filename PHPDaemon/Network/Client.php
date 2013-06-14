@@ -17,14 +17,41 @@ use PHPDaemon\Structures\PriorityQueueCallbacks;
  */
 abstract class Client extends Pool {
 
+	/**
+	 * @var Server[]
+	 */
 	protected $servers = array(); // Array of servers 
+	/**
+	 * @var bool
+	 */
 	protected $dtags_enabled = false; // Enables tags for distribution
+	/**
+	 * @var Connection[]
+	 */
 	protected $servConn = []; // Active connections
+	/**
+	 * @var Connection[]
+	 */
 	protected $servConnFree = [];
+	/**
+	 * @var string
+	 */
 	protected $prefix = ''; // Prefix for all keys
+	/**
+	 * @var int
+	 */
 	protected $maxConnPerServ = 32;
+	/**
+	 * @var bool
+	 */
 	protected $acquireOnGet = false;
+	/**
+	 * @var bool
+	 */
 	protected $noSAF = false;
+	/**
+	 * @var Connection[]
+	 */
 	protected $pending = [];
 
 	/**

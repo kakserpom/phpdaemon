@@ -11,6 +11,7 @@ use PHPDaemon\Core\Daemon;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class UNIX extends Generic {
+	public $config;
 	/**
 	 * Group
 	 * @var string

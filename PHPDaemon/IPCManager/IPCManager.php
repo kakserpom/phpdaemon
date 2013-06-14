@@ -11,6 +11,7 @@ use PHPDaemon\Thread;
 class IPCManager extends AppInstance {
 	public $pool;
 	public $conn;
+	public $socketurl;
 
 	/**
 	 * Setting default config options
@@ -42,8 +43,8 @@ class IPCManager extends AppInstance {
 		$instancesCount = [];
 		foreach (Daemon::$config as $name => $section) {
 			if (
-				(!$section instanceof Config\Section)
-				|| !isset($section->limitinstances)
+					(!$section instanceof Config\Section)
+					|| !isset($section->limitinstances)
 			) {
 
 				continue;
@@ -91,12 +92,17 @@ class IPCManager extends AppInstance {
 		return true;
 	}
 
+	/**
+	 * @param $workerId
+	 * @param $path
+	 * @return bool
+	 */
 	public function importFile($workerId, $path) {
 		if (!isset($this->pool->workers[$workerId])) {
 			return false;
 		}
 		$worker = $this->pool->workers[$workerId];
-		$worker->sendPacket(array('op' => 'importFile', 'path' => $path));
+		$worker->sendPacket(['op' => 'importFile', 'path' => $path]);
 		return true;
 	}
 
@@ -104,6 +110,9 @@ class IPCManager extends AppInstance {
 		$this->sendPacket('');
 	}
 
+	/**
+	 * @param $packet
+	 */
 	public function sendPacket($packet = null) {
 		if ($this->conn && $this->conn->isConnected()) {
 			$this->conn->sendPacket($packet);
@@ -120,31 +129,50 @@ class IPCManager extends AppInstance {
 		$this->conn->onConnected($cb);
 	}
 
-	public function sendBroadcastCall($appInstance, $method, $args = array(), $cb = null) {
-		$this->sendPacket(array(
+	/**
+	 * @param $appInstance
+	 * @param $method
+	 * @param array $args
+	 * @param callable $cb
+	 */
+	public function sendBroadcastCall($appInstance, $method, $args = [], $cb = null) {
+		$this->sendPacket([
 							  'op'          => 'broadcastCall',
 							  'appfullname' => $appInstance,
 							  'method'      => $method,
 							  'args'        => $args,
-						  ));
+						  ]);
 	}
 
-	public function sendSingleCall($appInstance, $method, $args = array(), $cb = null) {
-		$this->sendPacket(array(
+	/**
+	 * @param $appInstance
+	 * @param $method
+	 * @param array $args
+	 * @param callable $cb
+	 */
+	public function sendSingleCall($appInstance, $method, $args = [], $cb = null) {
+		$this->sendPacket([
 							  'op'          => 'singleCall',
 							  'appfullname' => $appInstance,
 							  'method'      => $method,
 							  'args'        => $args,
-						  ));
+						  ]);
 	}
 
+	/**
+	 * @param $workerId
+	 * @param $appInstance
+	 * @param $method
+	 * @param array $args
+	 * @param callable $cb
+	 */
 	public function sendDirectCall($workerId, $appInstance, $method, $args = array(), $cb = null) {
-		$this->sendPacket(array(
+		$this->sendPacket([
 							  'op'          => 'directCall',
 							  'appfullname' => $appInstance,
 							  'method'      => $method,
 							  'args'        => $args,
 							  'workerId'    => $workerId,
-						  ));
+						  ]);
 	}
 }

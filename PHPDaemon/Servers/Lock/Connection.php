@@ -51,10 +51,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 */
 	public function done($name, $result) {
 		if (
-			isset($this->pool->lockState[$name])
-			&& ($this->pool->lockState[$name] === 1)
-			&& isset($this->pool->lockConnState[$name][$this->connId])
-			&& ($this->pool->lockConnState[$name][$this->connId] === 1)
+				isset($this->pool->lockState[$name])
+				&& ($this->pool->lockState[$name] === 1)
+				&& isset($this->pool->lockConnState[$name][$this->connId])
+				&& ($this->pool->lockConnState[$name][$this->connId] === 1)
 		) {
 			foreach ($this->pool->lockConnState[$name] as $connId => $state) {
 				if (isset($this->pool->list[$connId])) {
@@ -124,8 +124,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 
 		if (
-			(strpos($this->buf, "\xff\xf4\xff\xfd\x06") !== FALSE)
-			|| (strpos($this->buf, "\xff\xec") !== FALSE)
+				(strpos($this->buf, "\xff\xf4\xff\xfd\x06") !== FALSE)
+				|| (strpos($this->buf, "\xff\xec") !== FALSE)
 		) {
 			$this->finish();
 		}

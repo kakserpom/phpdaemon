@@ -1,9 +1,19 @@
 <?php
 namespace PHPDaemon\Applications;
 
+/**
+ * Class CGI
+ * @package PHPDaemon\Applications
+ */
 class CGI extends \PHPDaemon\Core\AppInstance {
 
+	/**
+	 * @var string
+	 */
 	public $binPath = 'php-cgi'; // Default bin-path
+	/**
+	 * @var array
+	 */
 	public $binAliases = array(
 		'php5'   => '/usr/local/php/bin/php-cgi',
 		'php6'   => '/usr/local/php6/bin/php-cgi',
@@ -12,6 +22,9 @@ class CGI extends \PHPDaemon\Core\AppInstance {
 		'ruby'   => '/usr/local/bin/ruby',
 	);
 
+	/**
+	 * @var string
+	 */
 	public $chroot = '/'; // default chroot
 
 	/**

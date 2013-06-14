@@ -13,6 +13,10 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class Boolean extends Generic {
 
+	/**
+	 * @param $value
+	 * @return bool
+	 */
 	public static function HumanToPlain($value) {
 		return (boolean)$value;
 	}

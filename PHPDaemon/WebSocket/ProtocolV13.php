@@ -26,6 +26,9 @@ class ProtocolV13 extends Protocol {
 	];
 	protected $outgoingCompression = 0;
 
+	/**
+	 * @return bool
+	 */
 	public function onHandshake() {
 		if (!isset($this->conn->server['HTTP_SEC_WEBSOCKET_KEY']) || !isset($this->conn->server['HTTP_SEC_WEBSOCKET_VERSION'])) {
 			return false;
@@ -91,6 +94,15 @@ class ProtocolV13 extends Protocol {
 		return $this->encodeFragment($data, $type, $fin, $rsv1, $rsv2, $rsv3);
 	}
 
+	/**
+	 * @param $data
+	 * @param $type
+	 * @param int $fin
+	 * @param int $rsv1
+	 * @param int $rsv2
+	 * @param int $rsv3
+	 * @return string
+	 */
 	protected function encodeFragment($data, $type, $fin = 1, $rsv1 = 0, $rsv2 = 0, $rsv3 = 0) {
 		$mask        = chr(rand(0, 0xFF)) .
 				chr(rand(0, 0xFF)) .
@@ -128,6 +140,11 @@ class ProtocolV13 extends Protocol {
 		return $packet;
 	}
 
+	/**
+	 * @param $data
+	 * @param $mask
+	 * @return mixed
+	 */
 	public function mask($data, $mask) {
 		for ($i = 0, $l = strlen($data), $ml = strlen($mask); $i < $l; $i++) {
 			$data[$i] = $data[$i] ^ $mask[$i % $ml];

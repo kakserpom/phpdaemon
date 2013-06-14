@@ -37,7 +37,7 @@ abstract class IOStream {
 	 * @deprecated Remove in 1.0 or earlier
 	 * @var integer 8192
 	 */
-	protected $readPacketSize = 8192;
+	public $readPacketSize = 8192;
 
 	/**
 	 * EventBufferEvent
@@ -347,7 +347,7 @@ abstract class IOStream {
 		}
 	}
 
-	/* Sets priority
+	/** Sets priority
 	 * @param integer Priority
 	 * @return void
 	 */
@@ -356,7 +356,7 @@ abstract class IOStream {
 		$this->bev->priority = $p;
 	}
 
-	/* Sets watermark
+	/** Sets watermark
 	 * @param integer|null Low
 	 * @param integer|null High
 	 * @return void
@@ -375,7 +375,8 @@ abstract class IOStream {
 	 * Called when the session constructed
 	 * @return void
 	 */
-	protected function init() { }
+	protected function init() {
+	}
 
 	/**
 	 * Read a first line ended with \n from buffer, removes it from buffer and returns the line
@@ -395,7 +396,7 @@ abstract class IOStream {
 		return $r;
 	}
 
-	/* Reads line from buffer
+	/** Reads line from buffer
 	 * @param [integer EOLS_*]
 	 * @return string|null
 	 */
@@ -406,7 +407,7 @@ abstract class IOStream {
 		return $this->bev->input->readLine($eol ? : $this->EOLS);
 	}
 
-	/* Drains buffer
+	/** Drains buffer
 	 * @param integer Numbers of bytes to drain
 	 * @return boolean Success
 	 */
@@ -414,7 +415,7 @@ abstract class IOStream {
 		return $this->bev->input->drain($n);
 	}
 
-	/* Drains buffer it matches the string
+	/** Drains buffer it matches the string
 	 * @param string Data
 	 * @return boolean|null Success
 	 */
@@ -444,7 +445,7 @@ abstract class IOStream {
 		return false;
 	}
 
-	/* Reads exact $n bytes of buffer without draining
+	/** Reads exact $n bytes of buffer without draining
 	 * @param integer Number of bytes to read
 	 * @return string|false
 	 */
@@ -459,7 +460,7 @@ abstract class IOStream {
 		return $data;
 	}
 
-	/* Prepends data to input buffer
+	/** Prepends data to input buffer
 	 * @param string Data
 	 * @return boolean Success
 	 */
@@ -470,7 +471,7 @@ abstract class IOStream {
 		return $this->bev->input->prepend($str);
 	}
 
-	/* Prepends data to output buffer
+	/** Prepends data to output buffer
 	 * @param string Data
 	 * @return boolean Success
 	 */
@@ -481,7 +482,7 @@ abstract class IOStream {
 		return $this->bev->output->prepend($str);
 	}
 
-	/* Read from buffer without draining
+	/** Read from buffer without draining
 	 * @param integer Number of bytes to read
 	 * @param integer [Offset
 	 * @return string|false
@@ -493,7 +494,7 @@ abstract class IOStream {
 		return $this->bev->input->substr($o, $n);
 	}
 
-	/* Read from buffer without draining
+	/** Read from buffer without draining
 	 * @param Offset
 	 * @param [integer Number of bytes to read
 	 * @return string|false
@@ -506,7 +507,7 @@ abstract class IOStream {
 		return $data;
 	}
 
-	/* Searches first occurence of the string in input buffer
+	/** Searches first occurence of the string in input buffer
 	 * @param string Needle
 	 * @param [integer Offset start]
 	 * @param [integer Offset end]
@@ -516,6 +517,10 @@ abstract class IOStream {
 		return $this->bev->input->search($what, $start, $end);
 	}
 
+	/**
+	 * @param $n
+	 * @return bool|string
+	 */
 	public function readFromBufExact($n) { // @TODO: deprecate
 		if ($n === 0) {
 			return '';
@@ -530,7 +535,7 @@ abstract class IOStream {
 		}
 	}
 
-	/* Reads exact $n bytes from buffer
+	/** Reads exact $n bytes from buffer
 	 * @param integer Number of bytes to read
 	 * @return string|false
 	 */
@@ -545,7 +550,7 @@ abstract class IOStream {
 		return $this->read($n);
 	}
 
-	/*
+	/**
 	 * Returns length of input buffer
 	 * @return integer
 	 */
@@ -614,7 +619,8 @@ abstract class IOStream {
 	 * Called when the connection is ready to accept new data
 	 * @return void
 	 */
-	protected function onWrite() { }
+	public function onWrite() {
+	}
 
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
@@ -691,7 +697,8 @@ abstract class IOStream {
 	 * @param string New received data
 	 * @return void
 	 */
-	protected function stdin($buf) { } // @TODO: deprecated, remove in 1.0
+	protected function stdin($buf) {
+	} // @TODO: deprecated, remove in 1.0
 
 	/**
 	 * Close the connection
@@ -720,6 +727,9 @@ abstract class IOStream {
 		$this->fd  = null;
 	}
 
+	/**
+	 * @param $m
+	 */
 	protected function log($m) {
 		Daemon::log(get_class($this) . ': ' . $m);
 	}
@@ -764,6 +774,9 @@ abstract class IOStream {
 	protected function onReady() {
 	}
 
+	/**
+	 * @param callable $cb
+	 */
 	public function onWriteOnce($cb) {
 		if (!$this->writing) {
 			call_user_func($cb, $this);

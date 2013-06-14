@@ -54,6 +54,9 @@ class Pool extends Server {
 		$this->getConnection($this->config->url->value);
 	}
 
+	/**
+	 * @param string $url
+	 */
 	public function getConnection($url) {
 		$this->client->getConnection($url, function ($conn) use ($url) {
 			$this->conn            = $conn;

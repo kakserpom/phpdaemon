@@ -4,6 +4,7 @@ namespace PHPDaemon\Applications;
 use PHPDaemon\HTTPRequest\Generic;
 
 /**
+ * @property mixed stream
  * @package    Applications
  * @subpackage CGI
  *
@@ -11,7 +12,13 @@ use PHPDaemon\HTTPRequest\Generic;
  */
 class CGIRequest extends Generic {
 
+	/**
+	 * @var bool
+	 */
 	public $terminateOnAbort = false;
+	/**
+	 * @var \PHPDaemon\Core\ShellCommand
+	 */
 	public $proc;
 
 	/**
@@ -38,29 +45,29 @@ class CGIRequest extends Generic {
 		}
 
 		if (
-			isset($this->attrs->server['CHROOT'])
-			&& $this->appInstance->config->allowoverridechroot->value
+				isset($this->attrs->server['CHROOT'])
+				&& $this->appInstance->config->allowoverridechroot->value
 		) {
 			$this->proc->chroot = $this->attrs->server['CHROOT'];
 		}
 
 		if (
-			isset($this->attrs->server['SETUSER'])
-			&& $this->appInstance->config->allowoverrideuser->value
+				isset($this->attrs->server['SETUSER'])
+				&& $this->appInstance->config->allowoverrideuser->value
 		) {
 			$this->proc->setUser = $this->attrs->server['SETUSER'];
 		}
 
 		if (
-			isset($this->attrs->server['SETGROUP'])
-			&& $this->appInstance->config->allowoverridegroup->value
+				isset($this->attrs->server['SETGROUP'])
+				&& $this->appInstance->config->allowoverridegroup->value
 		) {
 			$this->proc->setGroup = $this->attrs->server['SETGROUP'];
 		}
 
 		if (
-			isset($this->attrs->server['CWD'])
-			&& $this->appInstance->config->allowoverridecwd->value
+				isset($this->attrs->server['CWD'])
+				&& $this->appInstance->config->allowoverridecwd->value
 		) {
 			$this->proc->cwd = $this->attrs->server['CWD'];
 		}

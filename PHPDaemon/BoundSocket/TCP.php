@@ -38,6 +38,9 @@ class TCP extends Generic {
 		$this->defaultPort = $port;
 	}
 
+	/**
+	 * @return int
+	 */
 	public function getPort() {
 		return isset($this->port) ? $this->port : $this->defaultPort;
 	}

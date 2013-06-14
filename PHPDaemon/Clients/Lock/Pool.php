@@ -81,10 +81,10 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	public function getConnectionByName($name, $cb) {
 		if (
-			($this->dtags_enabled)
-			&& (($sp = strpos($name, '[')) !== FALSE)
-			&& (($ep = strpos($name, ']')) !== FALSE)
-			&& ($ep > $sp)
+				($this->dtags_enabled)
+				&& (($sp = strpos($name, '[')) !== FALSE)
+				&& (($ep = strpos($name, ']')) !== FALSE)
+				&& ($ep > $sp)
 		) {
 			$name = substr($name, $sp + 1, $ep - $sp - 1);
 		}

@@ -3,6 +3,10 @@ namespace PHPDaemon\Clients\Asterisk;
 
 use PHPDaemon\Network\Client;
 
+/**
+ * Class Pool
+ * @package PHPDaemon\Clients\Asterisk
+ */
 class Pool extends Client {
 
 	/**
@@ -29,18 +33,17 @@ class Pool extends Client {
 	 */
 	public static $safeCaseValues = ['dialstring', 'callerid'];
 
-	/* Sets AMI version
-	 * @param string Address
-	 * @param string Version
+	/** Sets AMI version
+	 * @param string $addr Address
+	 * @param string $ver  Version
 	 * @return void
 	 */
-
 	public function setAmiVersion($addr, $ver) {
 		$this->amiVersions[$addr] = $ver;
 	}
 
-	/* Prepares environment scope
-	 * @param string Address
+	/** Prepares environment scope
+	 * @param string $data Address
 	 * @return array
 	 */
 	public static function prepareEnv($data) {

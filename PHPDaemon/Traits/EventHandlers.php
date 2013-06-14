@@ -10,19 +10,19 @@ namespace PHPDaemon\Traits;
  */
 
 trait EventHandlers {
-	/* Event handlers
+	/** Event handlers
 	 * @var array
 	 */
 	protected $eventHandlers = [];
 
-	/* Unshift $this to arguments of callback? 
+	/** Unshift $this to arguments of callback?
 	 * @var boolean
 	 */
 	protected $addThisToEvents = true;
 
-	/* Propagate event
+	/** Propagate event
 	 * @param string Event name
-	 * @param mixed ... variable set of arguments ...
+	 * @param mixed  ... variable set of arguments ...
 	 * @return void
 	 */
 	public function event() {
@@ -38,22 +38,22 @@ trait EventHandlers {
 		}
 	}
 
-	/* Alias of bind()
+	/** Alias of bind()
 	 * @alias bind
 	 */
 	public function addEventHandler($event, $cb) { // @todo: remove in 1.0
 		return $this->bind($event, $cb);
 	}
 
-	/* Alias of unbind()
+	/** Alias of unbind()
 	 * @alias unbind
 	 */
 	public function removeEventHandler($event, $cb = null) { // @todo: remove in 1.0
 		return $this->unbind($event, $cb);
 	}
 
-	/* Bind event
-	 * @param string Event name
+	/** Bind event
+	 * @param string   Event name
 	 * @param callable Callback
 	 * @return boolean Success
 	 */
@@ -65,7 +65,7 @@ trait EventHandlers {
 		return true;
 	}
 
-	/* Unbind event or callback from event
+	/** Unbind event or callback from event
 	 * @param string Event name
 	 * @param [callable Callback, optional
 	 * @return boolean Success

@@ -32,9 +32,9 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 		$this->buf .= $buf;
 		$finish =
 				(strpos($this->buf, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
-						|| (strpos($this->buf, $s = "\xff\xec") !== FALSE)
-						|| (strpos($this->buf, $s = "\x03") !== FALSE)
-						|| (strpos($this->buf, $s = "\x04") !== FALSE);
+				|| (strpos($this->buf, $s = "\xff\xec") !== FALSE)
+				|| (strpos($this->buf, $s = "\x03") !== FALSE)
+				|| (strpos($this->buf, $s = "\x04") !== FALSE);
 
 		while (($line = $this->gets()) !== FALSE) {
 			$e   = explode(' ', rtrim($line, "\r\n"), 2);
@@ -44,8 +44,8 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 				$this->writeln('pong');
 			}
 			elseif (
-				($cmd === 'exit')
-				|| ($cmd === 'quit')
+					($cmd === 'exit')
+					|| ($cmd === 'quit')
 			) {
 				$this->writeln('Quit');
 				$this->finish();
@@ -56,8 +56,8 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 		}
 
 		if (
-			(strlen($this->buf) > 1024)
-			|| $finish
+				(strlen($this->buf) > 1024)
+				|| $finish
 		) {
 			$this->finish();
 		}

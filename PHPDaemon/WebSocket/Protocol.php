@@ -15,10 +15,17 @@ class Protocol {
 	const STRING = NULL;
 	const BINARY = NULL;
 
+	/**
+	 * @param $conn
+	 */
 	public function __construct($conn) {
 		$this->conn = $conn;
 	}
 
+	/**
+	 * @param $type
+	 * @return int|mixed|null
+	 */
 	public function getFrameType($type) {
 		if (is_int($type)) {
 			return $type;
@@ -33,10 +40,17 @@ class Protocol {
 		return $frametype;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function onHandshake() {
 		return true;
 	}
 
+	/**
+	 * @param $data
+	 * @param $type
+	 */
 	public function sendFrame($data, $type) {
 		$this->conn->write($this->encodeFrame($data, $type));
 	}
@@ -45,7 +59,8 @@ class Protocol {
 	 * Called when new data received
 	 * @return void
 	 */
-	public function onRead() { }
+	public function onRead() {
+	}
 
 	/**
 	 * Returns handshaked data for reply

@@ -20,7 +20,15 @@ class Connection extends ClientConnection {
 	 * Client flags
 	 * @var integer
 	 */
-	public $clientFlags = 239237; // Flags of this MySQL client.
+	public $clientFlags = 239237;
+	public $threadId;
+	public $scramble;
+	public $serverver;
+	public $serverCaps;
+	public $serverLang;
+	public $serverStatus;
+	public $warnCount;
+	public $message; // Flags of this MySQL client.
 
 	/**
 	 * Maximum packet size
@@ -274,14 +282,14 @@ class Connection extends ClientConnection {
 		});
 		$this->clientFlags =
 				Pool::CLIENT_LONG_PASSWORD |
-						Pool::CLIENT_LONG_FLAG |
-						Pool::CLIENT_LOCAL_FILES |
-						Pool::CLIENT_PROTOCOL_41 |
-						Pool::CLIENT_INTERACTIVE |
-						Pool::CLIENT_TRANSACTIONS |
-						Pool::CLIENT_SECURE_CONNECTION |
-						Pool::CLIENT_MULTI_STATEMENTS |
-						Pool::CLIENT_MULTI_RESULTS;
+				Pool::CLIENT_LONG_FLAG |
+				Pool::CLIENT_LOCAL_FILES |
+				Pool::CLIENT_PROTOCOL_41 |
+				Pool::CLIENT_INTERACTIVE |
+				Pool::CLIENT_TRANSACTIONS |
+				Pool::CLIENT_SECURE_CONNECTION |
+				Pool::CLIENT_MULTI_STATEMENTS |
+				Pool::CLIENT_MULTI_RESULTS;
 
 		$this->sendPacket(
 			$packet = pack('VVc', $this->clientFlags, $this->maxPacketSize, $this->charsetNumber)
@@ -315,11 +323,11 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends arbitrary command
-	 * @param integer  Command's code. See constants above.
-	 * @param string   Data
-	 * @param callback Optional. Callback called when response received.
+	 * @param $cmd
+	 * @param string $q Data
+	 * @param null|Optional $callback
+	 * @throws ConnectionFinished
 	 * @return boolean Success
-	 * @throws MySQLClientSessionFinished
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {
 		if ($this->finished) {
