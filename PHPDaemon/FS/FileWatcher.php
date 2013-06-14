@@ -33,6 +33,12 @@ class FileWatcher {
 
 	}
 
+	/**
+	 * @param $path
+	 * @param $subscriber
+	 * @param int $flags
+	 * @return bool
+	 */
 	public function addWatch($path, $subscriber, $flags = NULL) {
 		$path = realpath($path);
 		if (!isset($this->files[$path])) {
@@ -46,6 +52,11 @@ class FileWatcher {
 		return true;
 	}
 
+	/**
+	 * @param $path
+	 * @param $subscriber
+	 * @return bool
+	 */
 	public function rmWatch($path, $subscriber) {
 
 		$path = realpath($path);
@@ -67,6 +78,9 @@ class FileWatcher {
 		return true;
 	}
 
+	/**
+	 * @param $path
+	 */
 	public function onFileChanged($path) {
 		if (!Daemon::lintFile($path)) {
 			Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);

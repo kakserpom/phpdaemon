@@ -22,6 +22,9 @@ class WorkerConnection extends Connection {
 		parent::onReady();
 	}
 
+	/**
+	 * @param $p
+	 */
 	protected function onPacket($p) {
 		if ($p['op'] === 'spawnInstance') {
 			$fullname = $p['appfullname'];
@@ -62,6 +65,9 @@ class WorkerConnection extends Connection {
 		}
 	}
 
+	/**
+	 * @param $p
+	 */
 	public function sendPacket($p) {
 		if ($p === null) {
 			return;

@@ -13,6 +13,9 @@ class MasterPoolConnection extends Connection {
 	const STATE_CONTENT = 1;
 	protected $packetLength;
 
+	/**
+	 * @param $p
+	 */
 	protected function onPacket($p) {
 		if (!is_array($p)) {
 			return;
@@ -61,6 +64,9 @@ class MasterPoolConnection extends Connection {
 		$this->pool->appInstance->updatedWorkers();
 	}
 
+	/**
+	 * @param $p
+	 */
 	public function sendPacket($p) {
 		$data = igbinary_serialize($p);
 		$this->write(pack('N', strlen($data)) . $data);

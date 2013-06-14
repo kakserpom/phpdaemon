@@ -771,6 +771,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		$this->attrs->input->unfreeze();
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getUploadTempDir() {
 		if ($r = ini_get('upload_tmp_dir')) {
 			return $r;

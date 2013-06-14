@@ -14,6 +14,7 @@ use PHPDaemon\Config\Entry\Generic;
  * @property Entry\Boolean allowoverridecwd
  * @property Entry\Generic cwd
  * @property Entry\Generic indexfiles
+ * @property Entry\Generic mastersocket
  * @package    Core
  * @subpackage Config
  *
