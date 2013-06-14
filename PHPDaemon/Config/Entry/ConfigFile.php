@@ -15,6 +15,9 @@ use PHPDaemon\Thread\Master;
  */
 class ConfigFile extends Generic {
 
+	/**
+	 * @param $old
+	 */
 	public function onUpdate($old) {
 		if (!Daemon::$process instanceof Master || (Daemon::$config->autoreload->value === 0) || !$old) {
 			return;

@@ -13,6 +13,10 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class ArraySet extends Generic {
 
+	/**
+	 * @param array|string $value
+	 * @return array
+	 */
 	public static function HumanToPlain($value) {
 		if (is_array($value)) {
 			return $value;
