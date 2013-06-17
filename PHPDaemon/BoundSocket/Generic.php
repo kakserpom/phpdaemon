@@ -13,7 +13,6 @@ use PHPDaemon\FS\FileSystem;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Generic {
-	public $defaultPort;
 
 	/**
 	 * Enabled?
