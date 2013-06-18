@@ -20,6 +20,10 @@ class Cursor {
 		return $this->conn->isBusy();
 	}
 
+	public function getConn() {
+		return $this->conn;
+	}
+
 	public function isFinished() {
 		return $this->finished;
 	}

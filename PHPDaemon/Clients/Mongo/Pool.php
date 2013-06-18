@@ -907,9 +907,10 @@ class Pool extends Client {
 	 * @param string  Collection's name
 	 * @param string  Cursor's ID
 	 * @param integer Number of objects
+	 * @param object Connection
 	 * @return void
 	 */
-	public function getMore($col, $id, $number) {
+	public function getMore($col, $id, $number, $conn) {
 		if (strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
@@ -918,7 +919,7 @@ class Pool extends Client {
 												 "\x00\x00\x00\x00"
 												 . $col . "\x00"
 												 . pack('V', $number)
-												 . $id
+												 . $id, false, $conn
 		);
 		$this->requests[$reqId] = [$id];
 	}
