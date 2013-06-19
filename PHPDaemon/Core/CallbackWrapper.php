@@ -50,6 +50,13 @@ class CallbackWrapper {
 		if ($cb instanceof CallbackWrapper || (Daemon::$context === null)) {
 			return $cb;
 		}
+		if ($cb === null) {
+			return null;
+		}
+		if (!is_callable($cb)) {
+			\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump($cb));
+
+		}
 		return new static($cb, Daemon::$context);
 	}
 

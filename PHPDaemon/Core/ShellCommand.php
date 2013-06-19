@@ -115,6 +115,9 @@ class ShellCommand extends IOStream {
 	 */
 	protected $EOF = false;
 
+	protected $onRead;
+	protected $onReadData;
+
 	/**
 	 * @param mixed $cb
 	 * @return $this
@@ -327,7 +330,7 @@ class ShellCommand extends IOStream {
 	public function close() {
 		parent::close();
 		$this->closeWrite();
-		if ($this->pd) {
+		if (is_resource($this->pd)) {
 			proc_close($this->pd);
 		}
 	}

@@ -517,6 +517,21 @@ class FileSystem {
 												  ));
 	}
 
+
+	protected static function tempnamHandler($dir, $prefix, $cb, &$tries) {
+		if (++$tries >= 3) {
+			call_user_func($cb, false);
+			return;
+		}
+		$path = FileSystem::genRndTempnam($dir, $prefix);
+		FileSystem::open($path, 'x+!', function ($file) use ($dir, $prefix, $cb, &$tries) {
+			if (!$file) {
+				static::tempnamHandler($dir, $prefix, $cb, $tries);
+				return;
+			}
+			call_user_func($cb, $file);
+		});
+	}
 	/**
 	 * Obtain exclusive temporary file
 	 * @param string   Directory
@@ -530,20 +545,7 @@ class FileSystem {
 			FileSystem::open(tempnam($dir, $prefix), 'w!', $cb);
 		}
 		$tries   = 0;
-		$handler = function () use ($dir, $prefix, &$handler, $cb, &$tries) {
-			if (++$tries >= 3) {
-				call_user_func($cb, false);
-				return;
-			}
-			$path = FileSystem::genRndTempnam($dir, $prefix);
-			FileSystem::open($path, 'x+!', function ($file) use ($handler, $cb) {
-				if (!$file) {
-					$handler();
-				}
-				call_user_func($cb, $file);
-			});
-		};
-		$handler();
+		static::tempnamHandler($dir, $prefix, $cb, $tries);
 	}
 
 	/**
