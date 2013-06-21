@@ -1,10 +1,14 @@
 {
-    "name": "redcode/phpdaemon",
+    "name": "kakserpom/phpdaemon",
     "description": "phpdaemon lib",
     "keywords": ["phpdaemon"],
     "homepage": "https://github.com/kakserpom/phpdaemon",
     "require": {
-        "php": ">=5.3.2"
+        "php": ">=5.4",
+        "libevent": "*",
+        "ext-pcntl": "*",
+        "ext-sockets": "*",
+        "ext-shmop": "*"
     },
     "autoload": {
         "psr-0": { "PHPDaemon": "" }
