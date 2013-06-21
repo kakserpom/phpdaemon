@@ -1,0 +1,16 @@
+{
+    "name": "kakserpom/phpdaemon",
+    "description": "phpdaemon lib",
+    "keywords": ["phpdaemon"],
+    "homepage": "https://github.com/kakserpom/phpdaemon",
+    "require": {
+        "php": ">=5.4",
+        "ext-event": "1.6.0",
+        "ext-pcntl": "*",
+        "ext-sockets": "*",
+        "ext-shmop": "*"
+    },
+    "autoload": {
+        "psr-0": { "PHPDaemon": "" }
+    }
+}
