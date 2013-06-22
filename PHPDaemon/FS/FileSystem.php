@@ -518,6 +518,20 @@ class FileSystem {
 	}
 
 
+	/**
+	 * Returns random temporary file name
+	 * @param string Directory
+	 * @param string Prefix
+	 * @return string Path
+	 */
+	public static function genRndTempnamPrefix($dir, $prefix) {
+		if (!$dir) {
+			$dir = sys_get_temp_dir();
+		}
+		return $dir . '/' . $prefix;
+	}
+
+
 	protected static function tempnamHandler($dir, $prefix, $cb, &$tries) {
 		if (++$tries >= 3) {
 			call_user_func($cb, false);

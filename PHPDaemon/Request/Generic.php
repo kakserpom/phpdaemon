@@ -523,11 +523,12 @@ abstract class Generic {
 		}
 
 		if ($status !== -1) {
-			$this->postFinishHandler();
 			$appStatus = 0;
-			if (isset($this->upstream)) {
-				$this->upstream->endRequest($this, $appStatus, $status);
-			}
+			$this->postFinishHandler(function() use ($appStatus, $status) {
+				if (isset($this->upstream)) {
+					$this->upstream->endRequest($this, $appStatus, $status);
+				}
+			});
 
 		}
 	}
@@ -536,7 +537,10 @@ abstract class Generic {
 	 * Called after request finish
 	 * @return void
 	 */
-	protected function postFinishHandler() {
+	protected function postFinishHandler($cb = null) {
+		if ($cb) {
+			call_user_func($cb);
+		}
 	}
 
 }

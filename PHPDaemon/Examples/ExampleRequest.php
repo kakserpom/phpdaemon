@@ -16,12 +16,11 @@ try {
 	$this->setcookie('testcookie', '1');
 } catch (\PHPDaemon\Request\RequestHeadersAlreadySent $e) {
 }
-$this
-
-->registerShutdownFunction(function()
-{
-?></html><?php
-});
+$this->registerShutdownFunction(function() {?></html><?php });
+$this->sessionStart();
+if (!isset($_SESSION['counter'])) {
+	$_SESSION['counter'] = 0;
+}
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -32,8 +31,9 @@ $this
 <body>
 <h1>It works! Be happy! ;-) </h1>
 *Hello world!<br/>
-Testing Error Message: <?php /*trigger_error('_text_of_notice_');*/ ?>
+Testing Error Message: <?php trigger_error('_text_of_notice_'); ?>
 <br/>Counter of requests to this Application Instance: <b><?php echo ++$this->appInstance->counter; ?></b>
+<br />Counter in session: <?php echo ++$_SESSION['counter']; ?>
 <br/>Memory usage: <?php $mem = memory_get_usage();
 echo($mem / 1024 / 1024); ?> MB. (<?php echo $mem; ?>)
 <br/>Memory real usage: <?php $mem = memory_get_usage(TRUE);

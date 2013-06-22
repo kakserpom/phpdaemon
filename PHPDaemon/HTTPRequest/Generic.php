@@ -2,6 +2,7 @@
 namespace PHPDaemon\HTTPRequest;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
@@ -120,6 +121,18 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * @var boolean
 	 */
 	protected $headers_sent_line;
+
+	/**
+	 * Session ID
+	 * @var boolean
+	 */
+	protected $sessionId;
+
+	protected $sessionStartTimeout = 10;
+
+	protected $sessionStarted = false;
+	protected $sessionFlushing = false;
+	protected $sessionFp;
 
 	/**
 	 * File pointer to send output (X-Sendfile)
@@ -768,7 +781,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 */
 	protected function unfreezeInput() {
 		$this->upstream->unfreezeInput();
-		$this->attrs->input->unfreeze();
+		if (isset($this->attrs->input)) {
+			$this->attrs->input->unfreeze();
+		}
 	}
 
 	/**
@@ -866,7 +881,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * Called after request finish
 	 * @return void
 	 */
-	protected function postFinishHandler() {
+	protected function postFinishHandler($cb = null) {
 		if (!$this->headers_sent) {
 			$this->out('');
 		}
@@ -880,15 +895,126 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			}
 		}
 		if (isset($this->attrs->session)) {
-			$this->sessionCommit();
+			$this->sessionCommit($cb);
+		} else {
+			if ($cb) {
+				call_user_func($cb);
+			}
 		}
+	}
+	public function sessionStarted() {
+		return $this->sessionStarted;
+	}
+
+	/**
+	 * Session start
+	 * @return void
+	 */
+	protected function sessionStart($force_start = true) {
+		if ($this->sessionStarted) {
+			return;
+		}
+		$this->sessionStarted = true;
+		$this->attrs->session = [];
+		$name = ini_get('session.name');
+		if (!empty($this->attrs->cookie[$name])) {
+			$path = FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($this->attrs->cookie[$name]);
+			FileSystem::open($path, 'r+!', function ($fp, $data) {
+				$fp->readAll(function($fp, $data) {
+					if ($data === false) {
+						$this->sessionStartNew();
+						return;
+					}
+					$this->sessionFp = $fp;
+					$this->sessionDecode($data);
+					if ($this->attrs->session === false) {
+						$this->sessionStartNew();
+						return;
+					}
+					$this->onSessionStarted(true);
+				});
+			});
+		} else {
+			$this->sessionStartNew();
+		}
+		$this->sleep($this->sessionStartTimeout);
+
+	}	
+
+	protected function onSessionStarted($success) {
+		$this->wakeup();
+	}
+
+	protected function sessionStartNew() {
+		FileSystem::tempnam(session_save_path(), 'php', function ($fp) {
+			if (!$fp) {
+				$this->onSessionStarted(false);
+			}
+			else {
+				$this->sessionFp = $fp;
+				$this->sessionId = substr(basename($fp->path), 3);
+				$this->setcookie(
+					  ini_get('session.name')
+					, $this->sessionId
+					, ini_get('session.cookie_lifetime')
+					, ini_get('session.cookie_path')
+					, ini_get('session.cookie_domain')
+					, ini_get('session.cookie_secure')
+					, ini_get('session.cookie_httponly')
+				);
+				$this->onSessionStarted(true);
+			}
+		});
+	}
+
+	protected function sessionEncode() {
+		$type = ini_get('session.serialize_handler');
+		if ($type === 'php') {
+			return serialize($this->attrs->session);
+		}
+		if ($type === 'php_binary') {
+			return igbinary_serialize($this->attrs->session);
+		}
+		return false;
+	}
+
+	protected function sessionDecode($str) {
+		$type = ini_get('session.serialize_handler');
+		if ($type === 'php') {
+			$this->attrs->session = unserialize($str);
+			return true;
+		}
+		if ($type === 'php_binary') {
+			$this->attrs->session = igbinary_unserialize($str);
+			return true;
+		}
+		return false;
 	}
 
 	/**
 	 * Commits the session
 	 * @return void
 	 */
-	protected function sessionCommit() {
-		session_commit();
+	protected function sessionCommit($cb = null) {
+		if ($this->sessionFp) {
+			if ($this->sessionFlushing) {
+				if ($cb) {
+					call_user_func($cb);
+				}
+				return;
+			}
+			$this->sessionFlushing = true;
+			$data = $this->sessionEncode();
+			$l = strlen($data);
+			$this->sessionFp->write($data, function($file, $result) use ($l, $cb) {
+				$file->truncate($l, function ($file, $result) use ($cb) {
+					$this->sessionFlushing = false;
+					if ($cb) {
+						call_user_func($cb);
+					}
+				});
+			});
+		}
+		
 	}
 }
