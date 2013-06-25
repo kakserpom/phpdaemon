@@ -953,14 +953,14 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 			$this->sessionRead($sid, function($data) use ($sessionEvent) {
 				if ($data === false) {
-					$this->startSessionNew(function() use ($sessionEvent) {
+					$this->sessionStartNew(function() use ($sessionEvent) {
 						$sessionEvent->setResult();
 					});
 					return;
 				}
 				$this->sessionDecode($data);
 				if ($this->attrs->session === false) {
-					$this->startSessionNew(function() use ($sessionEvent) {
+					$this->sessionStartNew(function() use ($sessionEvent) {
 						$sessionEvent->setResult();
 					});
 					return;

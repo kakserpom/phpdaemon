@@ -2,6 +2,7 @@
 namespace PHPDaemon\Traits;
 use PHPDaemon\Core\DeferredEvent;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 /**
  * Deferred event handlers trait
@@ -48,6 +49,11 @@ trait DeferredEventHandlers {
 			Daemon::log('Call to undefined method: ' . get_class($this) . '->' . $event);
 			return false;
 		}
-		return call_user_func_array($this->{$event}, $args);
+		$o = $this->{$event};
+		if (!$o) {
+			Daemon::log('Call to undefined method: ' . get_class($this) . '->' . $event);
+			return false;
+		}
+		return call_user_func_array($o, $args);
 	}
 }
