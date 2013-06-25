@@ -8,7 +8,7 @@ use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Servers\HTTP\Connection;
 use PHPDaemon\Utils\MIME;
-
+use PHPDaemon\Traits\DeferredEventHandlers;
 /**
  * HTTP request
  *
@@ -17,6 +17,7 @@ use PHPDaemon\Utils\MIME;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Generic extends \PHPDaemon\Request\Generic {
+	use DeferredEventHandlers;
 
 	/**
 	 * Status codes
@@ -907,6 +908,102 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
+	 * @return callable
+	 */
+	public function onSessionStartEvent() {
+		return function ($sessionStartEvent) {
+			/** @var DeferredEventCmp $sessionStartEvent */
+			$name = ini_get('session.name');
+			$sid = static::getString($this->attrs->cookie[$name]);
+			if ($sid === '') {
+				$this->sessionStartNew(function() use ($sessionStartEvent) {
+					$sessionStartEvent->setResult();
+				});
+				return;
+			}
+
+			$this->onSessionRead(function ($session) use ($sessionStartEvent) {
+				if (!$session) {
+					$this->sessionStartNew(function() use ($sessionStartEvent) {
+						$sessionStartEvent->setResult();
+					});
+				}
+				$sessionStartEvent->setResult(true);
+			});
+		};
+	}
+
+	/**
+	 * @return callable
+	 */
+	public function onSessionReadEvent() {
+
+		return function ($sessionEvent) {
+			/** @var DeferredEventCmp $sessionEvent */
+			$name = ini_get('session.name');
+			$sid = static::getString($this->attrs->cookie[$name]);
+			if ($sid === '') {
+				$sessionEvent->setResult();
+				return;
+			}
+			if ($this->attrs->session) {
+				$sessionEvent->setResult();
+				return;
+			}
+
+			$this->sessionRead($sid, function($data) use ($sessionEvent) {
+				if ($data === false) {
+					$this->startSessionNew(function() use ($sessionEvent) {
+						$sessionEvent->setResult();
+					});
+					return;
+				}
+				$this->sessionDecode($data);
+				if ($this->attrs->session === false) {
+					$this->startSessionNew(function() use ($sessionEvent) {
+						$sessionEvent->setResult();
+					});
+					return;
+				}
+				$sessionEvent->setResult();
+			});
+		};
+	}
+
+	public function sessionRead($sid, $cb = null) {	
+		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($sid), 'r+!', function ($fp) use ($cb)  {
+			if (!$fp) {
+				call_user_func($cb, false);
+				return;
+			}
+			$fp->readAll(function($fp, $data) use ($cb) {
+				$this->sessionFp = $fp;
+				call_user_func($cb, $data);
+			});
+		});
+	}
+
+	public function sessionCommit($cb = null) {
+		if (!$this->sessionFp || $this->sessionFlushing) {
+			if ($cb) {
+				call_user_func(false);
+			}
+			return;
+		}
+		$this->sessionFlushing = true;
+		$data = $this->sessionEncode();
+		$l = strlen($data);
+		$this->sessionFp->write($data, function($file, $result) use ($l, $cb) {
+			$file->truncate($l, function ($file, $result) use ($cb) {
+				$this->sessionFlushing = false;
+				if ($cb) {
+					call_user_func($cb, true);
+				}
+			});
+		});
+	}
+
+	/**
 	 * Session start
 	 * @return void
 	 */
@@ -915,55 +1012,35 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			return;
 		}
 		$this->sessionStarted = true;
-		$this->attrs->session = [];
-		$name = ini_get('session.name');
-		if (!empty($this->attrs->cookie[$name])) {
-			$path = FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($this->attrs->cookie[$name]);
-			FileSystem::open($path, 'r+!', function ($fp, $data) {
-				$fp->readAll(function($fp, $data) {
-					if ($data === false) {
-						$this->sessionStartNew();
-						return;
-					}
-					$this->sessionFp = $fp;
-					$this->sessionDecode($data);
-					if ($this->attrs->session === false) {
-						$this->sessionStartNew();
-						return;
-					}
-					$this->onSessionStarted(true);
-				});
-			});
-		} else {
-			$this->sessionStartNew();
+
+		$f = true; // hack to avoid a sort of "race condition"
+		$this->onSessionStart(function($event) use (&$f) {
+			$f = false;
+			$this->wakeup();
+		});
+		if ($f) {
+			$this->sleep($this->sessionStartTimeout);
 		}
-		$this->sleep($this->sessionStartTimeout);
-
-	}	
-
-	protected function onSessionStarted($success) {
-		$this->wakeup();
 	}
 
-	protected function sessionStartNew() {
-		FileSystem::tempnam(session_save_path(), 'php', function ($fp) {
+	protected function sessionStartNew($cb = null) {
+		FileSystem::tempnam(session_save_path(), 'php', function ($fp) use ($cb) {
 			if (!$fp) {
-				$this->onSessionStarted(false);
+				call_user_func($cb, false);
+				return;
 			}
-			else {
-				$this->sessionFp = $fp;
-				$this->sessionId = substr(basename($fp->path), 3);
-				$this->setcookie(
-					  ini_get('session.name')
-					, $this->sessionId
-					, ini_get('session.cookie_lifetime')
-					, ini_get('session.cookie_path')
-					, ini_get('session.cookie_domain')
-					, ini_get('session.cookie_secure')
-					, ini_get('session.cookie_httponly')
-				);
-				$this->onSessionStarted(true);
-			}
+			$this->sessionFp = $fp;
+			$this->sessionId = substr(basename($fp->path), 3);
+			$this->setcookie(
+				  ini_get('session.name')
+				, $this->sessionId
+				, ini_get('session.cookie_lifetime')
+				, ini_get('session.cookie_path')
+				, ini_get('session.cookie_domain')
+				, ini_get('session.cookie_secure')
+				, ini_get('session.cookie_httponly')
+			);
+			call_user_func($cb, true);
 		});
 	}
 
@@ -989,32 +1066,5 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Commits the session
-	 * @return void
-	 */
-	protected function sessionCommit($cb = null) {
-		if ($this->sessionFp) {
-			if ($this->sessionFlushing) {
-				if ($cb) {
-					call_user_func($cb);
-				}
-				return;
-			}
-			$this->sessionFlushing = true;
-			$data = $this->sessionEncode();
-			$l = strlen($data);
-			$this->sessionFp->write($data, function($file, $result) use ($l, $cb) {
-				$file->truncate($l, function ($file, $result) use ($cb) {
-					$this->sessionFlushing = false;
-					if ($cb) {
-						call_user_func($cb);
-					}
-				});
-			});
-		}
-		
 	}
 }
