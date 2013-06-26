@@ -9,6 +9,8 @@ use PHPDaemon\Request\RequestHeadersAlreadySent;
 use PHPDaemon\Servers\HTTP\Connection;
 use PHPDaemon\Utils\MIME;
 use PHPDaemon\Traits\DeferredEventHandlers;
+use PHPDaemon\Traits\StaticObjectWatchdog;
+use PHPDaemon\Traits\ClassWatchdog;
 /**
  * HTTP request
  *
@@ -146,6 +148,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * @var boolean
 	 */
 	protected $frozenInput = false;
+
+	protected $contype;
 
 	/**
 	 * Preparing before init

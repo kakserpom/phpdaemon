@@ -2,6 +2,7 @@
 namespace PHPDaemon\Examples;
 
 use PHPDaemon\HTTPRequest\Generic;
+use PHPDaemon\Core\Daemon;
 
 class ExampleRequest extends Generic
 {
