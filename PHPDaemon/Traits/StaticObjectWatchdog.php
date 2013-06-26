@@ -17,7 +17,15 @@ trait StaticObjectWatchdog {
 	 * @return null|mixed
 	 */
 	public function __set($prop, $value) {
-		Daemon::log('[CODE WARN] Creating ' . json_encode($prop) . ' property in object of class "' . get_class($this) . '"' . PHP_EOL . Debug::backtrace());
+		Daemon::log('[CODE WARN] Setting undefined property ' . json_encode($prop) . ' in object of class ' . get_class($this) . PHP_EOL . Debug::backtrace());
 		$this->{$prop} = $value;
+	}
+	/**
+	 * @param string $event
+	 * @return null|mixed
+	 */
+	public function __unset($prop, $value) {
+		Daemon::log('[CODE WARN] Unsetting property ' . json_encode($prop) . ' in object of class ' . get_class($this) . PHP_EOL . Debug::backtrace());
+		unset($this->{$prop});
 	}
 }
