@@ -18,6 +18,8 @@ use PHPDaemon\Thread;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class AppInstance {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	const EVENT_CONFIG_UPDATED = 1; // optional passphrase
 	const EVENT_GRACEFUL_SHUTDOWN = 2; // ready to start?
 	const EVENT_HARD_SHUTDOWN = 3; // name of instance

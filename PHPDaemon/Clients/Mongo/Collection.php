@@ -2,6 +2,8 @@
 namespace PHPDaemon\Clients\Mongo;
 
 class Collection {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	/** Related Pool object
 	 * @var Pool
 	 */

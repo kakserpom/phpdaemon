@@ -2,6 +2,7 @@
 namespace PHPDaemon\Structures;
 
 class ObjectStorage extends \SplObjectStorage {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Call given method of all objects in storage

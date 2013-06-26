@@ -13,6 +13,8 @@ use PHPDaemon\Core\Daemon;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class FileSystem {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	/**
 	 * Is EIO supported?
 	 * @var boolean
@@ -517,7 +519,6 @@ class FileSystem {
 												  ));
 	}
 
-
 	/**
 	 * Returns random temporary file name
 	 * @param string Directory
@@ -530,7 +531,6 @@ class FileSystem {
 		}
 		return $dir . '/' . $prefix;
 	}
-
 
 	protected static function tempnamHandler($dir, $prefix, $cb, &$tries) {
 		if (++$tries >= 3) {
@@ -546,6 +546,7 @@ class FileSystem {
 			call_user_func($cb, $file);
 		});
 	}
+
 	/**
 	 * Obtain exclusive temporary file
 	 * @param string   Directory
@@ -558,7 +559,7 @@ class FileSystem {
 		if (!FileSystem::$supported) {
 			FileSystem::open(tempnam($dir, $prefix), 'w!', $cb);
 		}
-		$tries   = 0;
+		$tries = 0;
 		static::tempnamHandler($dir, $prefix, $cb, $tries);
 	}
 

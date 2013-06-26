@@ -4,6 +4,8 @@ namespace PHPDaemon\Utils;
 use PHPDaemon\Core\Debug;
 
 class Binary {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	/**
 	 * Build structure of labels
 	 * @param string Dot-separated labels list

@@ -7,6 +7,7 @@ use PHPDaemon\Structures\StackCallbacks;
  * DeferredEvent class.
  */
 class DeferredEvent {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	const STATE_WAITING = 1;
 	const STATE_RUNNING = 2;

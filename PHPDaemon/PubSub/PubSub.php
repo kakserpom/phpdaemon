@@ -12,6 +12,7 @@ use PHPDaemon\PubSub\PubSubEvent;
  */
 
 class PubSub {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Storage of events

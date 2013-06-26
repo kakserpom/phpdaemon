@@ -5,6 +5,7 @@ use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 
 abstract class Generic {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	const STATE_FINISHED = 1;
 	const STATE_WAITING  = 2;
@@ -524,7 +525,7 @@ abstract class Generic {
 
 		if ($status !== -1) {
 			$appStatus = 0;
-			$this->postFinishHandler(function() use ($appStatus, $status) {
+			$this->postFinishHandler(function () use ($appStatus, $status) {
 				if (isset($this->upstream)) {
 					$this->upstream->endRequest($this, $appStatus, $status);
 				}

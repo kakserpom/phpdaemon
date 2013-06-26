@@ -4,6 +4,8 @@ namespace PHPDaemon\Structures;
 use PHPDaemon\Core\CallbackWrapper;
 
 class PriorityQueueCallbacks extends \SplPriorityQueue {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	/**
 	 * Insert callback
 	 * @param callable $cb Callback
