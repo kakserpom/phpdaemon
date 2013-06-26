@@ -12,6 +12,8 @@ use PHPDaemon\Core\Timer;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class FileWatcher {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	public $files = array();
 	public $inotify;
 	public $descriptors = array();

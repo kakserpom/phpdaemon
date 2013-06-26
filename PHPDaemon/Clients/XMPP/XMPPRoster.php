@@ -5,6 +5,7 @@ use PHPDaemon\Traits\EventHandlers;
 
 class XMPPRoster {
 	use EventHandlers;
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * @var

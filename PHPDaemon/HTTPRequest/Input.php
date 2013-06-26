@@ -13,6 +13,7 @@ use PHPDaemon\FS\File;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Input extends \EventBuffer {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Boundary

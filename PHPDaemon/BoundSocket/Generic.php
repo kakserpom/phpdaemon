@@ -13,6 +13,7 @@ use PHPDaemon\FS\FileSystem;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Generic {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Enabled?

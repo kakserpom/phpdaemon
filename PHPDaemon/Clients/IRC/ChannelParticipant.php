@@ -4,6 +4,8 @@ namespace PHPDaemon\Clients\IRC;
 use PHPDaemon\Utils\IRC;
 
 class ChannelParticipant {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	public $channel;
 	public $nick;
 	public $user;

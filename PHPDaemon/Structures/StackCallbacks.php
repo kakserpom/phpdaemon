@@ -4,6 +4,8 @@ namespace PHPDaemon\Structures;
 use PHPDaemon\Core\CallbackWrapper;
 
 class StackCallbacks extends \SplStack {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	/**
 	 * Push callback to the bottom of stack
 	 * @param callable Callback

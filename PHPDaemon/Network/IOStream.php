@@ -13,6 +13,7 @@ use PHPDaemon\Structures\StackCallbacks;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class IOStream {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Associated pool

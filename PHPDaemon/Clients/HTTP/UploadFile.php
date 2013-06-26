@@ -6,6 +6,8 @@ namespace PHPDaemon\Clients\HTTP;
  * @package PHPDaemon\Clients\HTTP
  */
 class UploadFile {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	public $name;
 	public $data;
 	public $path;

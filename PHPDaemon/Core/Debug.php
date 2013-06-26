@@ -11,6 +11,7 @@ use PHPDaemon\Core\Daemon;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Debug {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Export binary data

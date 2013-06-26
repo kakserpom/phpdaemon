@@ -2,6 +2,8 @@
 namespace PHPDaemon\Clients\Mongo;
 
 class Cursor {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	public $id; // Cursor's ID.
 	public $col; // Collection's name.
 	public $items = []; // Array of objects

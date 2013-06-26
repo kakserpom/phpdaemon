@@ -16,6 +16,7 @@ use PHPDaemon\Core\Debug;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Parser {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	const T_ALL     = 1;
 	const T_COMMENT = 2;

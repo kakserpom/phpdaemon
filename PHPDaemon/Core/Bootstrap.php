@@ -17,6 +17,7 @@ use PHPDaemon\Utils\Terminal;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Bootstrap {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Master process ID
