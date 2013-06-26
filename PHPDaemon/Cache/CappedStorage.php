@@ -13,6 +13,8 @@ namespace PHPDaemon\Cache;
  * @package PHPDaemon\Cache
  */
 abstract class CappedStorage {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	/**
 	 * Sorter function
 	 * @var callable

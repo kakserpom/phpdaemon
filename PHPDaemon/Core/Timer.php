@@ -11,6 +11,7 @@ use PHPDaemon\Core\Daemon;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Timer {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * @var int|null

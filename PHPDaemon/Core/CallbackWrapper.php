@@ -9,6 +9,8 @@ namespace PHPDaemon\Core;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class CallbackWrapper {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	/**
 	 * Context
 	 * @var mixed

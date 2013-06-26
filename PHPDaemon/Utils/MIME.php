@@ -5,6 +5,7 @@ namespace PHPDaemon\Utils;
  * MIME class.
  */
 class MIME {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * MIME types

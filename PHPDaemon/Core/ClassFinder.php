@@ -9,6 +9,7 @@ namespace PHPDaemon\Core;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class ClassFinder {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 *

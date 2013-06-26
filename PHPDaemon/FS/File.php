@@ -12,6 +12,7 @@ use PHPDaemon\Structures\StackCallbacks;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class File {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Priority
@@ -540,6 +541,7 @@ class File {
 			eio_read($file->fd, $len, $offset, $pri, $this->readAllGenHandler($cb, $size, $offset, $pri, $buf), $this);
 		};
 	}
+
 	/**
 	 * Reads whole file
 	 * @param callable Callback
@@ -560,14 +562,13 @@ class File {
 				}
 				return;
 			}
-			$offset  = 0;
-			$buf     = '';
-			$size    = $stat['size'];
+			$offset = 0;
+			$buf    = '';
+			$size   = $stat['size'];
 			eio_read($file->fd, min($file->chunkSize, $size), 0, $pri, $this->readAllGenHandler($cb, $size, $offset, $pri, $buf), $file);
 		}, $pri);
 		return true;
 	}
-
 
 	protected function readAllChunkedGenHandler($cb, $chunkcb, $size, &$offset, $pri) {
 		return function ($file, $data) use ($cb, $chunkcb, $size, &$offset, $pri) {
@@ -581,6 +582,7 @@ class File {
 			eio_read($file->fd, $len, $offset, $pri, $this->readAllChunkedGenHandler($cb, $chunkcb, $size, $offset, $pri), $file);
 		};
 	}
+
 	/**
 	 * Reads file chunk-by-chunk
 	 * @param callable Callback
@@ -599,8 +601,8 @@ class File {
 				call_user_func($cb, $file, false);
 				return;
 			}
-			$offset  = 0;
-			$size    = $stat['size'];
+			$offset = 0;
+			$size   = $stat['size'];
 			eio_read($file->fd, min($file->chunkSize, $size), $offset, $pri, $this->readAllChunkedGenHandler($cb, $chunkcb, $size, $offset, $pri), $file);
 		}, $pri);
 	}

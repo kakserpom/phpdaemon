@@ -21,6 +21,7 @@ use PHPDaemon\Config\Entry\Generic;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Section implements \ArrayAccess, \Countable {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	public $source;
 	public $revision;

@@ -30,8 +30,8 @@ class CGIRequest extends Generic {
 
 		$this->proc                 = new \PHPDaemon\Core\ShellCommand();
 		$this->proc->readPacketSize = $this->appInstance->readPacketSize;
-		$this->proc->onReadData(array($this, 'onReadData'));
-		$this->proc->onWrite(array($this, 'onWrite'));
+		$this->proc->onReadData([$this, 'onReadData']);
+		$this->proc->onWrite([$this, 'onWrite']);
 		$this->proc->binPath = $this->appInstance->binPath;
 		$this->proc->chroot  = $this->appInstance->chroot;
 
@@ -110,6 +110,7 @@ class CGIRequest extends Generic {
 
 	/**
 	 * Called when the request aborted.
+	 * @param $process
 	 * @return void
 	 */
 	public function onWrite($process) {
@@ -120,8 +121,8 @@ class CGIRequest extends Generic {
 
 	/**
 	 * Called when new data received from process.
-	 * @param object Process pointer.
-	 * @param string Data.
+	 * @param object $process Process pointer.
+	 * @param string $data    Data.
 	 * @return void
 	 */
 	public function onReadData($process, $data) {
@@ -130,7 +131,7 @@ class CGIRequest extends Generic {
 
 	/**
 	 * Called when new piece of request's body is received.
-	 * @param string Piece of request's body.
+	 * @param string $c Piece of request's body.
 	 * @return void
 	 */
 	public function stdin($c) {

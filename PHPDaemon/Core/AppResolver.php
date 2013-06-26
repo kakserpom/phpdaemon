@@ -15,6 +15,7 @@ use PHPDaemon\Request\Generic;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class AppResolver {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/*
 	 * Preloads applications.

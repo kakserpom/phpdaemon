@@ -2,6 +2,8 @@
 namespace PHPDaemon\Utils;
 
 class IRC {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	public static $codes = [
 		'1' => 'RPL_WELCOME', 2 => 'RPL_YOURHOST',
 		3   => 'RPL_CREATED', 4 => 'RPL_MYINFO',

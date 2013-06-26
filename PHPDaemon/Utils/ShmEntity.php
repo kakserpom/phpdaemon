@@ -4,6 +4,8 @@ namespace PHPDaemon\Utils;
 use PHPDaemon\Core\Daemon;
 
 class ShmEntity {
+	use \PHPDaemon\Traits\ClassWatchdog;
+
 	/**
 	 * Path
 	 * @var string

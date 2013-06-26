@@ -9,6 +9,7 @@ namespace PHPDaemon\Thread;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Collection {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/**
 	 * Array of threads

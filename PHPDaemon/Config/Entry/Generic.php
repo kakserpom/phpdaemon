@@ -10,6 +10,7 @@ namespace PHPDaemon\Config\Entry;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Generic {
+	use \PHPDaemon\Traits\ClassWatchdog;
 
 	public $defaultValue;
 	public $value;
