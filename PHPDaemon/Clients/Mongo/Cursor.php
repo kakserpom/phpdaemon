@@ -14,6 +14,8 @@ class Cursor {
 	public $await = false; // awaitCapable?
 	public $destroyed = false; // Is this cursor destroyed?
 	public $parseOplog = false;
+	public $tailable;
+	public $callback;
 
 	public function isBusyConn() {
 		if (!$this->conn) {
