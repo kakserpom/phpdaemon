@@ -9,6 +9,11 @@ use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
+/**
+ * Class Pool
+ * @package PHPDaemon\Clients\Mongo
+ * @dynamic_fields
+ */
 class Pool extends Client {
 	public $noSAF = true;
 	public $requests = []; // Pending requests
