@@ -512,7 +512,7 @@ class Pool extends Client {
 			. $e[0] . '.$cmd' . "\x00"
 			. pack('VV', 0, -1)
 			. bson_encode($params)
-			, true, $conn, null, function ($conn, $reqId = null) use ($db, $cb) {
+			, true, $conn, function ($conn, $reqId = null) use ($db, $cb) {
 				if (!$conn) {
 					return;
 				}
@@ -802,7 +802,7 @@ class Pool extends Client {
 				return;
 			}
 			if ($cb !== NULL) {
-				$this->lastError($col, $cb, $params, $this->lastRequestConnection);
+				$this->lastError($col, $cb, $params, $conn);
 			}
 		});
 	}
@@ -855,7 +855,7 @@ class Pool extends Client {
 								. bson_encode($doc)
 		, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
 			if ($cb !== NULL) {
-				$this->lastError($col, $cb, $params, $this->lastRequestConnection);
+				$this->lastError($col, $cb, $params, $conn);
 			}
 		});
 
@@ -905,7 +905,7 @@ class Pool extends Client {
 					   . $bson
 		, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
 			if ($cb !== NULL) {
-				$this->lastError($col, $cb, $params, $this->lastRequestConnection);
+				$this->lastError($col, $cb, $params, $conn);
 			}
 		});
 		return $ids;
@@ -937,7 +937,7 @@ class Pool extends Client {
 				return;
 			}
 			if ($cb !== NULL) {
-				$this->lastError($col, $cb, $params, $conn->lastRequestConnection);
+				$this->lastError($col, $cb, $params, $conn);
 			}
 		});
 	}
