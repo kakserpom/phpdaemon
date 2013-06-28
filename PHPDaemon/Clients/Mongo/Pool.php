@@ -12,9 +12,9 @@ use PHPDaemon\Core\Debug;
 /**
  * Class Pool
  * @package PHPDaemon\Clients\Mongo
- * @dynamic_fields
  */
 class Pool extends Client {
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	public $noSAF = true;
 	public $collections = []; // Objects of MongoClientAsyncCollection
 	public $dbname = ''; // Current database
