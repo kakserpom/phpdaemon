@@ -54,7 +54,7 @@ class ShellCommand extends IOStream {
 	 * Output errors?
 	 * @var boolean
 	 */
-	protected $outputErrors = false;
+	protected $outputErrors = true;
 
 	// @todo make methods setUser and setGroup, variables change to $user and $group with null values
 	/**
@@ -85,7 +85,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * @var string
 	 */
-	protected $errlogfile = '/tmp/cgi-errorlog.log'; // path to error logfile
+	protected $errlogfile = null; // path to error logfile
 	/**
 	 * @var array
 	 */
@@ -123,9 +123,31 @@ class ShellCommand extends IOStream {
 	 * @return $this
 	 */
 	public function onReadData($cb = NULL) {
-		$this->onReadData = $cb;
+		$this->onReadData = CallbackWrapper::wrap($cb);
 		return $this;
 	}
+
+	/**
+	 * Execute
+	 * @param string $binPath Optional. Binpath.
+	 * @param callable $cb 	  Callback
+	 * @param array $args     Optional. Arguments.
+	 * @param array $env      Optional. Hash of environment's variables.
+	 * @return object ShellCommand
+	 */
+	public static function exec($binPath = null, $cb = null, $args = null, $env = null) {
+		$o = new static;
+		$data = '';
+		$o	->onReadData(function($o, $buf) use (&$data, $o) {
+				$data .= $buf;
+			})
+			->onEOF(function($o) use (&$data, $cb) {
+				call_user_func($cb, $data);
+				$o->close();
+			})
+			->execute($binPath, $args, $env);
+	}
+
 
 	/**
 	 * Sets fd
@@ -175,7 +197,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Sets an array of arguments
 	 * @param array Arguments
-	 * @return object AsyncProccess
+	 * @return object ShellCommand
 	 */
 	public function setArgs($args = NULL) {
 		$this->args = $args;
@@ -186,7 +208,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Set a hash of environment's variables
 	 * @param array Hash of environment's variables
-	 * @return object AsyncProccess
+	 * @return object ShellCommand
 	 */
 	public function setEnv($env = NULL) {
 		$this->env = $env;
@@ -208,7 +230,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Set priority.
 	 * @param integer $nice Priority
-	 * @return object AsyncProccess
+	 * @return object ShellCommand
 	 */
 	public function nice($nice = NULL) {
 		$this->nice = $nice;
@@ -241,7 +263,7 @@ class ShellCommand extends IOStream {
 	 * @param string $binPath Optional. Binpath.
 	 * @param array $args     Optional. Arguments.
 	 * @param array $env      Optional. Hash of environment's variables.
-	 * @return object AsyncProccess
+	 * @return object ShellCommand
 	 */
 	public function execute($binPath = NULL, $args = NULL, $env = NULL) {
 		if ($binPath !== NULL) {
@@ -299,10 +321,10 @@ class ShellCommand extends IOStream {
 				($this->errlogfile !== NULL)
 				&& !$this->outputErrors
 		) {
-			//$pipesDescr[2] = ['file', $this->errlogfile, 'a'];
+			$pipesDescr[2] = ['file', $this->errlogfile, 'a']; // @TODO: refactoring
 		}
 
-		$this->pd = proc_open($this->cmd, $pipesDescr, $this->pipes); //, $this->cwd, $this->env);
+		$this->pd = proc_open($this->cmd, $pipesDescr, $this->pipes, $this->cwd, $this->env);
 		if ($this->pd) {
 			$this->setFd($this->pipes[1]);
 		}
@@ -333,6 +355,9 @@ class ShellCommand extends IOStream {
 		if (is_resource($this->pd)) {
 			proc_close($this->pd);
 		}
+		$this->onReadData = null;
+		$this->onRead = null;
+		$this->onEOF = null;
 	}
 
 	public function onFinish() {
@@ -420,7 +445,6 @@ class ShellCommand extends IOStream {
 	 */
 	public function onEOF($cb = NULL) {
 		$this->onEOF = CallbackWrapper::wrap($cb);
-
 		return $this;
 	}
 }

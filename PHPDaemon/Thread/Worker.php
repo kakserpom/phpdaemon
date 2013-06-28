@@ -476,7 +476,7 @@ class Worker extends Generic {
 
 		if (
 				(Daemon::$config->maxmemoryusage->value > 0)
-				&& (memory_get_usage(TRUE) > Daemon::$config->maxmemoryusage->value)
+				&& (memory_get_usage(true) > Daemon::$config->maxmemoryusage->value)
 		) {
 			$this->log('\'maxmemory\' exceed. Graceful shutdown.');
 

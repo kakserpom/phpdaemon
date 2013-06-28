@@ -16,8 +16,6 @@ use PHPDaemon\Core\Debug;
  */
 class Pool extends Client {
 	public $noSAF = true;
-	public $requests = []; // Pending requests
-	public $lastReqId = 0; // ID of the last request
 	public $collections = []; // Objects of MongoClientAsyncCollection
 	public $dbname = ''; // Current database
 	public $lastRequestConnection; // Holds last used MongoClientAsyncConnection object.
@@ -87,29 +85,40 @@ class Pool extends Client {
 	 * @param string  Data
 	 * @param boolean Is an answer expected?
 	 * @param object  Connection. Optional.
-	 * @return integer Request ID
+	 * @param callable Sent callback
+	 * @return void
 	 * @throws ConnectionFinished
 	 */
-	public function request($opcode, $data, $reply = false, $conn = null) {
-		$reqId = ++$this->lastReqId;
-		$cb    = function ($conn) use ($opcode, $data, $reply, $reqId) {
+	public function request($opcode, $data, $reply = false, $conn = null, $sentcb = null) {
+		$cb = $this->requestCbProducer($opcode, $data, $reply, $sentcb);
+		if (is_object($conn) && ($conn instanceof Connection)) {
 			if ($conn->isFinished()) {
 				throw new ConnectionFinished;
 			}
-			$conn->pool->lastRequestConnection = $conn;
-			$conn->write(pack('VVVV', strlen($data) + 16, $reqId, 0, $opcode));
-			$conn->write($data);
-			if ($reply) {
-				$conn->setFree(false);
-			}
-		};
-		if (is_object($conn) && ($conn instanceof Connection)) {
 			$cb($conn);
 		}
 		else {
 			$this->getConnectionRR($cb);
 		}
-		return $reqId;
+	}
+
+	protected function requestCbProducer($opcode, $data, $reply = false, $sentcb = null) {
+		return function ($conn) use ($opcode, $data, $reply, $sentcb) {
+			if ($conn->isFinished()) {
+				$this->getConnectionRR($this->requestCbProducer($opcode, $data, $reply, $sentcb));
+				return;
+			}
+			$reqId = ++$conn->lastReqId;
+			$this->lastRequestConnection = $conn;
+			$conn->write(pack('VVVV', strlen($data) + 16, $reqId, 0, $opcode));
+			$conn->write($data);
+			if ($reply) {
+				$conn->setFree(false);
+			}
+			if ($sentcb !== null) {
+				call_user_func($sentcb, $conn, $reqId);
+			}
+		};
 	}
 
 	/**
@@ -118,7 +127,7 @@ class Pool extends Client {
 	 * @param mixed Callback called when response received
 	 * @return void
 	 */
-	public function find($p, $callback) {
+	public function find($p, $cb) {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -148,10 +157,7 @@ class Pool extends Client {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 
-		if (
-				isset($p['fields'])
-				&& is_string($p['fields'])
-		) {
+		if (isset($p['fields'])	&& is_string($p['fields'])) {
 			$e           = explode(',', $p['fields']);
 			$p['fields'] = [];
 
@@ -207,16 +213,19 @@ class Pool extends Client {
 		if (isset($p['parse_oplog'])) {
 			$bson = str_replace("\x11\$gt", "\x09\$gt", $bson);
 		}
-
-		$reqId = $this->request(self::OP_QUERY,
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY,
 								chr(bindec(strrev($p['opts']))) . "\x00\x00\x00"
 								. $p['col'] . "\x00"
 								. pack('VV', $p['offset'], $p['limit'])
 								. $bson
 								. (isset($p['fields']) ? bson_encode($p['fields']) : '')
-			, true);
-
-		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), false, isset($p['parse_oplog']), isset($p['tailable'])];
+			, true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['col'], $cb, false, isset($p['parse_oplog']), isset($p['tailable'])];
+			});
 	}
 
 	/**
@@ -225,16 +234,16 @@ class Pool extends Client {
 	 * @param mixed Callback called when response received
 	 * @return void
 	 */
-	public function findOne($p, $callback) {
+	public function findOne($p, $cb) {
 		if (isset($p['cachekey'])) {
 			$db = $this;
-			$this->cache->get($p['cachekey'], function ($r) use ($db, $p, $callback) {
+			$this->cache->get($p['cachekey'], function ($r) use ($db, $p, $cb) {
 				if ($r->result !== NULL) {
-					call_user_func($callback, bson_decode($r->result));
+					call_user_func($cb, bson_decode($r->result));
 				}
 				else {
 					unset($p['cachekey']);
-					$db->findOne($p, $callback);
+					$db->findOne($p, $cb);
 				}
 			});
 
@@ -310,16 +319,20 @@ class Pool extends Client {
 		else {
 			$o = $p['where'];
 		}
-
-		$reqId = $this->request(self::OP_QUERY,
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY,
 								pack('V', $p['opts'])
 								. $p['col'] . "\x00"
 								. pack('VV', $p['offset'], -1)
 								. bson_encode($o)
 								. (isset($p['fields']) ? bson_encode($p['fields']) : '')
-			, true);
+			, true, null, function($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['col'], $cb, true];
+			});
 
-		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
 	}
 
 	/**
@@ -328,7 +341,7 @@ class Pool extends Client {
 	 * @param mixed Callback called when response received
 	 * @return void
 	 */
-	public function findCount($p, $callback) {
+	public function findCount($p, $cb) {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -374,15 +387,17 @@ class Pool extends Client {
 		) {
 			$query['query'] = $p['where'];
 		}
-
-		$packet = pack('V', $p['opts'])
-				. $e[0] . '.$cmd' . "\x00"
-				. pack('VV', $p['offset'], $p['limit'])
-				. bson_encode($query)
-				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
-
-		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $e[0] . '.$cmd' . "\x00"
+			. pack('VV', $p['offset'], $p['limit'])
+			. bson_encode($query)
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['col'], $cb, true];
+		});
 	}
 
 	/**
@@ -392,7 +407,7 @@ class Pool extends Client {
 	 * @param string Optional. Distribution key
 	 * @return void
 	 */
-	public function auth($p, $callback) {
+	public function auth($p, $cb) {
 		if (!isset($p['opts'])) {
 			$p['opts'] = 0;
 		}
@@ -404,21 +419,23 @@ class Pool extends Client {
 			'key'          => self::getAuthKey($p['user'], $p['password'], $p['nonce']),
 		];
 
-		$packet = pack('V', $p['opts'])
-				. $p['dbname'] . '.$cmd' . "\x00"
-				. pack('VV', 0, -1)
-				. bson_encode($query)
-				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
-
-		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['dbname'], CallbackWrapper::wrap($callback), true];
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $p['dbname'] . '.$cmd' . "\x00"
+			. pack('VV', 0, -1)
+			. bson_encode($query)
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['dbname'], $cb, true];
+		});
 	}
 
 	/**
 	 * Sends request of nonce
 	 * @return void
 	 */
-	public function getNonce($p, $callback) {
+	public function getNonce($p, $cb) {
 		if (!isset($p['opts'])) {
 			$p['opts'] = 0;
 		}
@@ -426,14 +443,17 @@ class Pool extends Client {
 		$query = [
 			'getnonce' => 1,
 		];
-
-		$packet                 = pack('V', $p['opts'])
-				. $p['dbname'] . '.$cmd' . "\x00"
-				. pack('VV', 0, -1)
-				. bson_encode($query)
-				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
-		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['dbname'], CallbackWrapper::wrap($callback), true];
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $p['dbname'] . '.$cmd' . "\x00"
+			. pack('VV', 0, -1)
+			. bson_encode($query)
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['dbname'], $cb, true];
+			});
 	}
 
 	/**
@@ -488,16 +508,21 @@ class Pool extends Client {
 	 * @param object Connection. Optional.
 	 * @return void
 	 */
-	public function lastError($db, $callback, $params = [], $conn = null) {
+	public function lastError($db, $cb, $params = [], $conn = null) {
 		$e                      = explode('.', $db, 2);
 		$params['getlasterror'] = 1;
-		$reqId                  = $this->request(self::OP_QUERY,
-												 pack('V', 0)
-												 . $e[0] . '.$cmd' . "\x00"
-												 . pack('VV', 0, -1)
-												 . bson_encode($params)
-			, true, $conn);
-		$this->requests[$reqId] = [$db, CallbackWrapper::wrap($callback), true];
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY,
+			pack('V', 0)
+			. $e[0] . '.$cmd' . "\x00"
+			. pack('VV', 0, -1)
+			. bson_encode($params)
+			, true, $conn, function ($conn, $reqId = null) use ($db, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$db, $cb, true];
+		});
 	}
 
 	/**
@@ -506,7 +531,7 @@ class Pool extends Client {
 	 * @param mixed Callback called when response received
 	 * @return void
 	 */
-	public function range($p, $callback) {
+	public function range($p, $cb) {
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -559,14 +584,17 @@ class Pool extends Client {
 			$query['query'] = $p['where'];
 		}
 
-		$packet = pack('V', $p['opts'])
-				. $e[0] . '.$cmd' . "\x00"
-				. pack('VV', $p['offset'], $p['limit'])
-				. bson_encode($query)
-				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
-
-		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $e[0] . '.$cmd' . "\x00"
+			. pack('VV', $p['offset'], $p['limit'])
+			. bson_encode($query)
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['col'], $cb, true];
+		});
 	}
 
 	/**
@@ -575,7 +603,7 @@ class Pool extends Client {
 	 * @param mixed  Callback called when response received
 	 * @return void
 	 */
-	public function evaluate($code, $callback) {
+	public function evaluate($code, $cb) {
 		$p = [];
 
 		if (!isset($p['offset'])) {
@@ -594,16 +622,17 @@ class Pool extends Client {
 			$p['db'] = $this->dbname;
 		}
 
-		$query = ['$eval' => new \MongoCode($code)];
-
-		$packet = pack('V', $p['opts'])
-				. $p['db'] . '.$cmd' . "\x00"
-				. pack('VV', $p['offset'], $p['limit'])
-				. bson_encode($query)
-				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
-
-		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['db'], CallbackWrapper::wrap($callback), true];
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $p['db'] . '.$cmd' . "\x00"
+			. pack('VV', $p['offset'], $p['limit'])
+			. bson_encode(['$eval' => new \MongoCode($code)])
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['db'], $cb, true];
+			});
 	}
 
 	/**
@@ -651,15 +680,17 @@ class Pool extends Client {
 		if (isset($p['where'])) {
 			$query['query'] = $p['where'];
 		}
-
-		$packet = pack('V', $p['opts'])
-				. $e[0] . '.$cmd' . "\x00"
-				. pack('VV', $p['offset'], $p['limit'])
-				. bson_encode($query)
-				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
-
-		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), true];
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $e[0] . '.$cmd' . "\x00"
+			. pack('VV', $p['offset'], $p['limit'])
+			. bson_encode($query)
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['col'], $cb, true];
+		});
 	}
 
 	/**
@@ -728,14 +759,18 @@ class Pool extends Client {
 			$query[$k] = $p[$k];
 		}
 
-		$packet = pack('V', $p['opts'])
-				. $e[0] . '.$cmd' . "\x00"
-				. pack('VV', $p['offset'], $p['limit'])
-				. bson_encode($query)
-				. (isset($p['fields']) ? bson_encode($p['fields']) : '');
 
-		$reqId                  = $this->request(self::OP_QUERY, $packet, true);
-		$this->requests[$reqId] = [$p['col'], CallbackWrapper::wrap($callback), false];
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $e[0] . '.$cmd' . "\x00"
+			. pack('VV', $p['offset'], $p['limit'])
+			. bson_encode($query)
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['col'], $cb, false];
+			});
 	}
 
 	/**
@@ -761,17 +796,20 @@ class Pool extends Client {
 			//if (!isset($data['_id'])) {$data['_id'] = new MongoId();}
 		}
 
-		$reqId = $this->request(self::OP_UPDATE,
-								"\x00\x00\x00\x00"
-								. $col . "\x00"
-								. pack('V', $flags)
-								. bson_encode($cond)
-								. bson_encode($data)
-		);
-
-		if ($cb !== NULL) {
-			$this->lastError($col, $cb, $params, $this->lastRequestConnection);
-		}
+		$this->request(self::OP_UPDATE,
+			"\x00\x00\x00\x00"
+			. $col . "\x00"
+			. pack('V', $flags)
+			. bson_encode($cond)
+			. bson_encode($data)
+		, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
+			if (!$conn) {
+				return;
+			}
+			if ($cb !== NULL) {
+				$this->lastError($col, $cb, $params, $conn);
+			}
+		});
 	}
 
 	/**
@@ -816,15 +854,15 @@ class Pool extends Client {
 			$doc['_id'] = new \MongoId();
 		}
 
-		$reqId = $this->request(self::OP_INSERT,
+		$this->request(self::OP_INSERT,
 								"\x00\x00\x00\x00"
 								. $col . "\x00"
 								. bson_encode($doc)
-		);
-
-		if ($cb !== NULL) {
-			$this->lastError($col, $cb, $params, $this->lastRequestConnection);
-		}
+		, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
+			if ($cb !== NULL) {
+				$this->lastError($col, $cb, $params, $conn);
+			}
+		});
 
 		return $doc['_id'];
 	}
@@ -870,12 +908,11 @@ class Pool extends Client {
 					   "\x00\x00\x00\x00"
 					   . $col . "\x00"
 					   . $bson
-		);
-
-		if ($cb !== NULL) {
-			$this->lastError($col, $cb, $params, $this->lastRequestConnection);
-		}
-
+		, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
+			if ($cb !== NULL) {
+				$this->lastError($col, $cb, $params, $conn);
+			}
+		});
 		return $ids;
 	}
 
@@ -900,11 +937,14 @@ class Pool extends Client {
 					   . $col . "\x00"
 					   . "\x00\x00\x00\x00"
 					   . bson_encode($cond)
-		);
-
-		if ($cb !== NULL) {
-			$this->lastError($col, $cb, $params, $this->lastRequestConnection);
-		}
+		, false, null, function ($conn, $reqId = null) use ($col, $cb, $params) {
+			if (!$conn) {
+				return;
+			}
+			if ($cb !== NULL) {
+				$this->lastError($col, $cb, $params, $conn);
+			}
+		});
 	}
 
 	/**
@@ -920,13 +960,17 @@ class Pool extends Client {
 			$col = $this->dbname . '.' . $col;
 		}
 
-		$reqId                  = $this->request(self::OP_GETMORE,
-												 "\x00\x00\x00\x00"
-												 . $col . "\x00"
-												 . pack('V', $number)
-												 . $id, false, $conn
+		$this->request(self::OP_GETMORE,
+			 "\x00\x00\x00\x00"
+			. $col . "\x00"
+			. pack('V', $number)
+			. $id, false, $conn, function ($conn, $reqId = null) use ($id) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$id];
+			}
 		);
-		$this->requests[$reqId] = [$id];
 	}
 
 	/**

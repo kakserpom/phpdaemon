@@ -26,8 +26,6 @@ ini_set('include_path', get_include_path()
 		. ':' . dirname(dirname(__FILE__)) . '/conf'
 		. ':/usr/share/phpdaemon:/etc/phpdaemon'
 );
-require 'PHPDaemon/Core/Daemon.php';
-require 'PHPDaemon/Core/Debug.php';
 $autoloader = function ($classname) {
 	$base = str_replace('\\', '/', $classname);
 	$subpath = array($base . '.php', $base . '.class.php');
@@ -57,8 +55,8 @@ spl_autoload_register(function ($classname) use ($autoloader, &$autoloadCache) {
 		$autoloadCache[$classname] = false;
 	}
 });
-
-class_exists('Debug');
+require 'PHPDaemon/Core/Daemon.php';
+require 'PHPDaemon/Core/Debug.php';
 $e = null;
 execute:
 try {

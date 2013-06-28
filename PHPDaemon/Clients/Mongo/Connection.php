@@ -4,6 +4,7 @@ namespace PHPDaemon\Clients\Mongo;
 use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\ClientConnection;
 
 class Connection extends ClientConnection
@@ -17,6 +18,8 @@ class Connection extends ClientConnection
 	protected $hdr;
 	const STATE_PACKET = 1;
 	public $cursors = []; // Active cursors
+	public $requests = []; // Pending requests
+	public $lastReqId = 0; // ID of the last request
 
 	public function onReady()
 	{
@@ -94,9 +97,9 @@ class Connection extends ClientConnection
 				$r             = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', binarySubstr($pct, 0, 20));
 				$r['cursorId'] = binarySubstr($pct, 4, 8);
 				$id            = (int)$this->hdr['responseTo'];
-				if (isset($this->pool->requests[$id]))
+				if (isset($this->requests[$id]))
 				{
-					$req = $this->pool->requests[$id];
+					$req = $this->requests[$id];
 				}
 				else
 				{
@@ -180,7 +183,7 @@ class Connection extends ClientConnection
 				{
 					call_user_func($cur->callback, $cur);
 				}
-				unset($this->pool->requests[$id], $req);
+				unset($this->requests[$id], $req);
 			}
 		}
 		goto start;

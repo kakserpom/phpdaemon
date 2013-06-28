@@ -2,7 +2,6 @@
 namespace PHPDaemon\Request;
 
 interface IRequestUpstream {
-	use \PHPDaemon\Traits\ClassWatchdog;
 
 	public function requestOut($req, $s);
 
