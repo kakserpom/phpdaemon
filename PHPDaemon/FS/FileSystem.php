@@ -616,7 +616,7 @@ class FileSystem {
 			$file->append = ($flags | EIO_O_APPEND) === $flags;
 			if ($file->append) {
 				$file->stat(function ($file, $stat) use ($cb, $noncache, $fdCacheKey) {
-					$file->pos = $stat['size'];
+					$file->offset = $stat['size'];
 					if (!$noncache) {
 						$file->fdCacheKey = $fdCacheKey;
 						FileSystem::$fdCache->put($fdCacheKey, $file);

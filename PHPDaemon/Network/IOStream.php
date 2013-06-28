@@ -170,6 +170,18 @@ abstract class IOStream {
 	protected $ssl = false;
 
 	/**
+	 * Read timeout
+	 * @var float
+	 */
+	protected $timeoutRead;
+
+	/**
+	 * Write timeout
+	 * @var float
+	 */
+	protected $timeoutWrite;
+
+	/**
 	 * IOStream constructor
 	 * @param resource File descriptor. Optional.
 	 * @param object   Pool. Optional.
