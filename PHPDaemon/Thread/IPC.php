@@ -57,6 +57,8 @@ class IPC extends Generic {
 	 */
 	public $reload = false;
 
+	public $IPCManager;
+
 	/**
 	 * Runtime of Worker process.
 	 * @return void

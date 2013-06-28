@@ -115,6 +115,7 @@ class ShellCommand extends IOStream {
 	 */
 	protected $EOF = false;
 
+	protected $onEOF;
 	protected $onRead;
 	protected $onReadData;
 
@@ -125,6 +126,10 @@ class ShellCommand extends IOStream {
 	public function onReadData($cb = NULL) {
 		$this->onReadData = CallbackWrapper::wrap($cb);
 		return $this;
+	}
+
+	public function getCmd() {
+		return $this->cmd;
 	}
 
 	/**
@@ -258,6 +263,25 @@ class ShellCommand extends IOStream {
 		}
 	}
 
+	public static function buildArgs($args) {
+		$ret = '';
+		foreach ($args as $k => $v) {
+			if (!is_int($v) && ($v !== null)) {
+				$v = escapeshellarg($v);
+			}
+			if (is_int($k)) {
+				$ret .= ' ' . $v;
+			} else {
+				if ($k{0} !== '-') {
+					$ret .= ' --' . $k . ($v !== null ? '=' . $v : '');
+				} else {
+					$ret .= ' ' . $k . ($v !== null ? '=' . $v : '');
+				}
+			}
+		}
+		return $ret;
+	}
+
 	/**
 	 * Execute
 	 * @param string $binPath Optional. Binpath.
@@ -277,16 +301,7 @@ class ShellCommand extends IOStream {
 		if ($args !== NULL) {
 			$this->args = $args;
 		}
-
-		$args = '';
-
-		if ($this->args !== NULL) {
-			foreach ($this->args as $a) {
-				$args .= ' ' . escapeshellcmd($a);
-			}
-		}
-
-		$this->cmd = $this->binPath . $args . ($this->outputErrors ? ' 2>&1' : '');
+		$this->cmd = $this->binPath . static::buildArgs($this->args) . ($this->outputErrors ? ' 2>&1' : '');
 
 		if (
 				isset($this->setUser)

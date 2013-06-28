@@ -15,6 +15,7 @@ class Generic {
 
 	public $defaultValue;
 	public $value;
+	public $valueType;
 	public $humanValue;
 	public $source;
 	public $revision;

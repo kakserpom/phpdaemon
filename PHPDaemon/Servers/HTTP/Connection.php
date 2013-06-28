@@ -48,14 +48,6 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
-	 * Constructor
-	 * @return void
-	 */
-	protected function init() {
-		$this->ctime = microtime(true);
-	}
-
-	/**
 	 * Read first line of HTTP request
 	 * @return boolean Success
 	 * @return void
@@ -277,7 +269,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 						}
 					}
 				}
-				Daemon::$process->timeLastReq = time();
+				Daemon::$process->timeLastActivity = time();
 			}
 		}
 	}

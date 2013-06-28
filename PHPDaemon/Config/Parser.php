@@ -69,6 +69,30 @@ class Parser {
 	protected $erroneous = false;
 
 	/**
+	 * Callbacks
+	 * @var array
+	 */
+	protected $tokens;
+
+	/**
+	 * File length
+	 * @var integer
+	 */
+	protected $length;
+
+	/**
+	 * Revision
+	 * @var integer
+	 */
+	protected $revision;
+
+	/**
+	 * Contents of config file
+	 * @var string
+	 */
+	protected $data;
+
+	/**
 	 * Errorneous?
 	 * @return boolean
 	 */
@@ -106,7 +130,7 @@ class Parser {
 		}
 
 		$this->data    = str_replace("\r", '', $this->data);
-		$this->len     = strlen($this->data);
+		$this->length     = strlen($this->data);
 		$this->state[] = [self::T_ALL, $this->target];
 		$this->tokens  = [
 			self::T_COMMENT => function ($c) {
@@ -118,7 +142,7 @@ class Parser {
 				$str = '';
 				++$this->p;
 
-				for (; $this->p < $this->len; ++$this->p) {
+				for (; $this->p < $this->length; ++$this->p) {
 					$c = $this->getCurrentChar();
 
 					if ($c === $q) {
@@ -139,7 +163,7 @@ class Parser {
 					}
 				}
 
-				if ($this->p >= $this->len) {
+				if ($this->p >= $this->length) {
 					$this->raiseError('Unexpected End-Of-File.');
 				}
 
@@ -167,7 +191,7 @@ class Parser {
 					$tokenType       = 0;
 					$newLineDetected = null;
 
-					for (; $this->p < $this->len; ++$this->p) {
+					for (; $this->p < $this->length; ++$this->p) {
 						$prePoint = [$this->line, $this->col - 1];
 						$c        = $this->getCurrentChar();
 
@@ -327,7 +351,7 @@ class Parser {
 			}
 		];
 
-		for (; $this->p < $this->len; ++$this->p) {
+		for (; $this->p < $this->length; ++$this->p) {
 			$c = $this->getCurrentChar();
 			$e = end($this->state);
 			$this->token($e[0], $c);

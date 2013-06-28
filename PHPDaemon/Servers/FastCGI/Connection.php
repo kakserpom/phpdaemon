@@ -267,7 +267,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 				}
 			}
 
-			Daemon::$process->timeLastReq = time();
+			Daemon::$process->timeLastActivity = time();
 		}
 		goto start;
 	}

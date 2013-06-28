@@ -66,6 +66,12 @@ abstract class Pool extends ObjectStorage {
 	protected $overload = false;
 
 	/**
+	 * Application instance object
+	 * @var object|null
+	 */
+	public $appInstance;
+
+	/**
 	 * Constructor
 	 * @param array Config variables
 	 * @return object
