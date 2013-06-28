@@ -13,6 +13,7 @@ use PHPDaemon\Core\Timer;
  */
 class FileWatcher {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	public $files = array();
 	public $inotify;

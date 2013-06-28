@@ -5,6 +5,7 @@ use PHPDaemon\Core\Daemon;
 
 class ShmEntity {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Path

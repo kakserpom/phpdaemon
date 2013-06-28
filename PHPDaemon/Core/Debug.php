@@ -12,6 +12,7 @@ use PHPDaemon\Core\Daemon;
  */
 class Debug {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Export binary data

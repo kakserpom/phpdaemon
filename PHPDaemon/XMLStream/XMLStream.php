@@ -7,6 +7,7 @@ use PHPDaemon\XMLStream\XMLStreamObject;
 class XMLStream {
 	use \PHPDaemon\Traits\EventHandlers;
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	protected $parser;
 	protected $xml_depth = 0;

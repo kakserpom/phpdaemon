@@ -18,6 +18,7 @@ use PHPDaemon\Utils\ShmEntity;
  */
 class Daemon {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	const SUPPORT_RUNKIT_SANDBOX         = 0;
 	const SUPPORT_RUNKIT_MODIFY          = 1;

@@ -3,6 +3,7 @@ namespace PHPDaemon\Utils;
 
 class IRC {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	public static $codes = [
 		'1' => 'RPL_WELCOME', 2 => 'RPL_YOURHOST',

@@ -18,6 +18,7 @@ use PHPDaemon\Utils\Terminal;
  */
 class Bootstrap {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Master process ID

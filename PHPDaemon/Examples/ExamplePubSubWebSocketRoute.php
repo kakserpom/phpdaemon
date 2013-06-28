@@ -2,6 +2,7 @@
 namespace PHPDaemon\Examples;
 
 class ExamplePubSubWebSocketRoute extends ExampleWebSocketRoute {
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Called when new frame received.

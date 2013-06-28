@@ -6,6 +6,7 @@ use PHPDaemon\Core\Daemon;
 
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	const STATE_FINISHED = 1;
 	const STATE_WAITING  = 2;

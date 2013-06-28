@@ -13,6 +13,7 @@ use PHPDaemon\Exceptions\ClearStack;
  */
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Process identificator
