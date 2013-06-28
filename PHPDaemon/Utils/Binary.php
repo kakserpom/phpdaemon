@@ -5,6 +5,7 @@ use PHPDaemon\Core\Debug;
 
 class Binary {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Build structure of labels

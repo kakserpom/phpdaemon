@@ -8,6 +8,7 @@ use PHPDaemon\Core\CallbackWrapper;
  */
 class ComplexJob {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	const STATE_WAITING = 1;
 	const STATE_RUNNING = 2;

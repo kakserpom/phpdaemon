@@ -11,6 +11,7 @@ namespace PHPDaemon\Config\Entry;
  */
 class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	public $defaultValue;
 	public $value;

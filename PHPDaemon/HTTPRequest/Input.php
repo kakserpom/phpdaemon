@@ -14,6 +14,7 @@ use PHPDaemon\FS\File;
  */
 class Input extends \EventBuffer {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Boundary

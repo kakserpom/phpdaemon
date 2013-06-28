@@ -3,6 +3,7 @@ namespace PHPDaemon\Clients\Mongo;
 
 class Cursor {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	public $id; // Cursor's ID.
 	public $col; // Collection's name.

@@ -10,6 +10,7 @@ namespace PHPDaemon\Core;
  */
 class CallbackWrapper {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Context

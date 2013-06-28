@@ -14,6 +14,7 @@ use PHPDaemon\Structures\StackCallbacks;
  */
 abstract class IOStream {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Associated pool

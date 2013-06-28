@@ -10,6 +10,7 @@ namespace PHPDaemon\Thread;
  */
 class Collection {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Array of threads

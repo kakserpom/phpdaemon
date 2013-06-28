@@ -13,6 +13,7 @@ use PHPDaemon\Structures\StackCallbacks;
  */
 class File {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Priority

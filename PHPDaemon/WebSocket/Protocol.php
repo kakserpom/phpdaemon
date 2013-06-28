@@ -9,6 +9,7 @@ use PHPDaemon\Core\Daemon;
 
 class Protocol {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	public $description;
 	public $conn;

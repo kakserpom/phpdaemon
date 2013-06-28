@@ -12,6 +12,7 @@ use PHPDaemon\Core\Daemon;
  */
 class Timer {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * @var int|null

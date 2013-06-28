@@ -10,6 +10,7 @@ namespace PHPDaemon\WebSocket;
  */
 class Route {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	public $client; // Remote client
 	public $appInstance;

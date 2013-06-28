@@ -12,6 +12,7 @@ use PHPDaemon\Structures\StackCallbacks;
  */
 class Item {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/** Value
 	 * @var mixed
