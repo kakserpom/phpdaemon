@@ -7,6 +7,7 @@ namespace PHPDaemon\Applications;
  */
 class WebSocketOverCOMETSession {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * @var \PHPDaemon\Request\Generic

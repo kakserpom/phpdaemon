@@ -17,6 +17,7 @@ use PHPDaemon\Core\Debug;
  */
 class Parser {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	const T_ALL     = 1;
 	const T_COMMENT = 2;

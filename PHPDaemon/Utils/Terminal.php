@@ -10,6 +10,7 @@ namespace PHPDaemon\Utils;
  */
 class Terminal {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Is color allowed in terminal?

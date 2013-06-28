@@ -15,6 +15,7 @@ use PHPDaemon\Core\Daemon;
  * @subpackage Config
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
+ * @dynamic_fields
  */
 class Object implements \ArrayAccess {
 	use \PHPDaemon\Traits\ClassWatchdog;

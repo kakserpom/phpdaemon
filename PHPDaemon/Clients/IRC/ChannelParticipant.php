@@ -5,6 +5,7 @@ use PHPDaemon\Utils\IRC;
 
 class ChannelParticipant {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	public $channel;
 	public $nick;

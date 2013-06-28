@@ -5,6 +5,7 @@ use PHPDaemon\Core\CallbackWrapper;
 
 class PriorityQueueCallbacks extends \SplPriorityQueue {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Insert callback

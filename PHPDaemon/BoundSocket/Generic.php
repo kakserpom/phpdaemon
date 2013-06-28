@@ -11,6 +11,7 @@ use PHPDaemon\FS\FileSystem;
  * @package Core
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
+ * @dynamic_fields
  */
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;

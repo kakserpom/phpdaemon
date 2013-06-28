@@ -10,6 +10,7 @@ namespace PHPDaemon\Core;
  */
 class ClassFinder {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 *

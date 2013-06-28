@@ -16,6 +16,7 @@ use PHPDaemon\Request\Generic;
  */
 class AppResolver {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/*
 	 * Preloads applications.

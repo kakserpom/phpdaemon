@@ -3,6 +3,7 @@ namespace PHPDaemon\Clients\Mongo;
 
 class Collection {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/** Related Pool object
 	 * @var Pool

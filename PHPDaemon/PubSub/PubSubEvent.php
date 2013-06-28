@@ -11,6 +11,7 @@ namespace PHPDaemon\PubSub;
 
 class PubSubEvent extends \SplObjectStorage {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Subscriptions

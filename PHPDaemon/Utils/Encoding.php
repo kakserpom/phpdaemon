@@ -11,6 +11,7 @@ namespace PHPDaemon\Utils;
 
 class Encoding {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	protected static $win1252ToUtf8 = array(
 		128 => "\xe2\x82\xac",

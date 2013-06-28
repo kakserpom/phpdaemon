@@ -14,6 +14,7 @@ namespace PHPDaemon\Cache;
  */
 abstract class CappedStorage {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Sorter function

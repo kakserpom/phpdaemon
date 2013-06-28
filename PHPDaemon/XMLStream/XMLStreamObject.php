@@ -3,6 +3,7 @@ namespace PHPDaemon\XMLStream;
 
 class XMLStreamObject {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Tag name
