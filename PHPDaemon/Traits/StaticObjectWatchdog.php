@@ -13,7 +13,8 @@ use PHPDaemon\Core\Debug;
 
 trait StaticObjectWatchdog {
 	/**
-	 * @param string $event
+	 * @param string $prop
+	 * @param string $value
 	 * @return null|mixed
 	 */
 	public function __set($prop, $value) {
@@ -21,10 +22,10 @@ trait StaticObjectWatchdog {
 		$this->{$prop} = $value;
 	}
 	/**
-	 * @param string $event
+	 * @param string $prop
 	 * @return null|mixed
 	 */
-	public function __unset($prop, $value) {
+	public function __unset($prop) {
 		Daemon::log('[CODE WARN] Unsetting property ' . json_encode($prop) . ' in object of class ' . get_class($this) . PHP_EOL . Debug::backtrace());
 		unset($this->{$prop});
 	}
