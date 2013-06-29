@@ -147,7 +147,7 @@ class ShellCommand extends IOStream {
 				$data .= $buf;
 			})
 			->onEOF(function($o) use (&$data, $cb) {
-				call_user_func($cb, $data);
+				call_user_func($cb, $o, $data);
 				$o->close();
 			})
 			->execute($binPath, $args, $env);
@@ -264,6 +264,9 @@ class ShellCommand extends IOStream {
 	}
 
 	public static function buildArgs($args) {
+		if (!is_array($args)) {
+			return '';
+		}
 		$ret = '';
 		foreach ($args as $k => $v) {
 			if (!is_int($v) && ($v !== null)) {

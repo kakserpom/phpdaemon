@@ -94,6 +94,17 @@ class Collection {
 	}
 
 	/**
+	 * Inserts an object
+	 * @param array Data
+	 * @param mixed Optional. Callback called when response received.
+	 * @param array Optional. Params.
+	 * @return MongoId
+	 */
+	public function insertOne($doc, $cb = null, $params = null) {
+		return $this->pool->insert($this->name, $doc, $cb, $params);
+	}
+
+	/**
 	 * Inserts several documents
 	 * @param array Array of docs
 	 * @param mixed Optional. Callback called when response received.
@@ -117,15 +128,28 @@ class Collection {
 		$this->pool->update($this->name, $cond, $data, $flags, $cb, $params);
 	}
 
+
 	/**
-	 * Updates several objects in collection
-	 * @param array Conditions
-	 * @param array Data
-	 * @param mixed Optional. Callback called when response received.
-	 * @param array Optional. Params.
+	 * Updates one object in collection
+	 * @param array   Conditions
+	 * @param array   Data
+	 * @param mixed   Optional. Callback called when response received.
+	 * @param array   Optional. Params.
 	 * @return void
 	 */
-	public function updateMulti($cond, $data, $cb = NULL, $params = null) {
+	public function updateOne($cond, $data, $cb = null, $params = null) {
+		$this->pool->updateOne($this->name, $cond, $data, $cb, $params);
+	}
+
+	/**
+	 * Updates one object in collection
+	 * @param array   Conditions
+	 * @param array   Data
+	 * @param mixed   Optional. Callback called when response received.
+	 * @param array   Optional. Params.
+	 * @return void
+	 */
+	public function updateMulti($cond, $data, $cb = null, $params = null) {
 		$this->pool->updateMulti($this->name, $cond, $data, $cb, $params);
 	}
 
@@ -140,6 +164,30 @@ class Collection {
 	 */
 	public function upsert($cond, $data, $multi = false, $cb = NULL, $params = null) {
 		$this->pool->upsert($this->name, $cond, $data, $multi, $cb, $params);
+	}
+
+	/**
+	 * Upserts an object (updates if exists,  insert if not exists)
+	 * @param array   Conditions
+	 * @param array   Data
+	 * @param mixed   Optional. Callback called when response received.
+	 * @param array   Optional. Params.
+	 * @return void
+	 */
+	public function upsertOne($cond, $data, $cb = NULL, $params = null) {
+		$this->pool->upsertOne($this->name, $cond, $data, $cb, $params);
+	}
+
+	/**
+	 * Upserts an object (updates if exists,  insert if not exists)
+	 * @param array   Conditions
+	 * @param array   Data
+	 * @param mixed   Optional. Callback called when response received.
+	 * @param array   Optional. Params.
+	 * @return void
+	 */
+	public function upsertMulti($cond, $data, $cb = NULL, $params = null) {
+		$this->pool->upsertMulti($this->name, $cond, $data, $cb, $params);
 	}
 
 	/**

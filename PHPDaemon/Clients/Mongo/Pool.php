@@ -488,6 +488,9 @@ class Pool extends Client {
 		if (isset($options['unique'])) {
 			$doc['unique'] = $options['unique'];
 		}
+		if (isset($options['sparse'])) {
+			$doc['sparse'] = $options['sparse'];
+		}
 		if (isset($options['version'])) {
 			$doc['v'] = $options['version'];
 		}
@@ -813,6 +816,19 @@ class Pool extends Client {
 	}
 
 	/**
+	 * Updates one object in collection
+	 * @param string   Collection's name
+	 * @param array    Conditions
+	 * @param array    Data
+	 * @param callback Callback (getLastError)
+	 * @param array    Parameters (getLastError).
+	 * @return void
+	 */
+	public function updateOne($col, $cond, $data, $cb = NULL, $params = []) {
+		$this->update($col, $cond, $data, 0, $cb, $params);	
+	}
+
+	/**
 	 * Updates several objects in collection
 	 * @param string   Collection's name
 	 * @param array    Conditions
@@ -830,11 +846,35 @@ class Pool extends Client {
 	 * @param string  Collection's name
 	 * @param array   Conditions
 	 * @param array   Data
-	 * @param boolean Optional. Multi-flag. | array Parameters.
+	 * @param array	  Parameters.
 	 * @return void
 	 */
 	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $params = []) {
 		$this->update($col, $cond, $data, $multi ? 3 : 1, $cb, $params);
+	}
+
+	/**
+	 * Upserts an object (updates if exists,  insert if not exists)
+	 * @param string  Collection's name
+	 * @param array   Conditions
+	 * @param array   Data
+	 * @param array	  Parameters.
+	 * @return void
+	 */
+	public function upsertOne($col, $cond, $data, $cb = NULL, $params = []) {
+		$this->update($col, $cond, $data, 1, $cb, $params);
+	}
+
+	/**
+	 * Upserts an object (updates if exists,  insert if not exists)
+	 * @param string  Collection's name
+	 * @param array   Conditions
+	 * @param array   Data
+	 * @param array	  Parameters.
+	 * @return void
+	 */
+	public function upsertMulti($col, $cond, $data, $cb = NULL, $params = []) {
+		$this->update($col, $cond, $data, 3, $cb, $params);
 	}
 
 	/**
