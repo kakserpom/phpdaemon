@@ -151,11 +151,9 @@ class Input extends \EventBuffer {
 			$this->req->attrs->raw = $this->read($l);
 			if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
 				Generic::parse_str($this->req->attrs->raw, $this->req->attrs->post);
-				unset($this->req->attrs->raw);
 			}
 			if (isset($this->req->contype['application/json'])) {
 				$this->req->attrs->post = json_decode($this->req->attrs->raw, true);
-				unset($this->req->attrs->raw);
 			}
 		}
 		$this->req->postPrepare();
