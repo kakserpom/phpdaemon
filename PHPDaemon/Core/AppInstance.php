@@ -137,7 +137,7 @@ class AppInstance {
 	 * Called when the worker is ready to go
 	 * @return void
 	 */
-	protected function onReady() {
+	public function onReady() {
 	}
 
 	/**
