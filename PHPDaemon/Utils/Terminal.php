@@ -96,7 +96,7 @@ class Terminal {
 
 		echo "\n";
 
-		$leftcolumn = array();
+		$leftcolumn = [];
 
 		$valstr = is_array($values) ? implode('|', array_keys($values)) : $values;
 

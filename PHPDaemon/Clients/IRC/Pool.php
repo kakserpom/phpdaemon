@@ -17,9 +17,9 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			'port' => 6667,
-		);
+		];
 	}
 
 	public function onReady() {

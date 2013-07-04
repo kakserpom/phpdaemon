@@ -88,7 +88,7 @@ class DeferredEvent {
 	 * @param callable $cb
 	 * @param array $params
 	 */
-	public function __invoke($cb, $params = array()) {
+	public function __invoke($cb, $params = []) {
 		$this->addListener($cb, $params);
 	}
 }

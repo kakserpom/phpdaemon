@@ -19,14 +19,14 @@ class Pool extends Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'expose'             => 1,
 			'listen'             => '0.0.0.0',
 			'port'               => 8047,
 			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
 			'fps-name'           => '',
-		);
+		];
 	}
 
 	/**

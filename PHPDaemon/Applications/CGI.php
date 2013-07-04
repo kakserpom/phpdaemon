@@ -14,13 +14,13 @@ class CGI extends \PHPDaemon\Core\AppInstance {
 	/**
 	 * @var array
 	 */
-	public $binAliases = array(
+	public $binAliases = [
 		'php5'   => '/usr/local/php/bin/php-cgi',
 		'php6'   => '/usr/local/php6/bin/php-cgi',
 		'perl'   => '/usr/bin/perl',
 		'python' => '/usr/local/bin/python',
 		'ruby'   => '/usr/local/bin/ruby',
-	);
+	];
 
 	/**
 	 * @var string

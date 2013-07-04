@@ -4,8 +4,8 @@ namespace PHPDaemon\Applications;
 class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 
 	public $WS;
-	public $requests = array();
-	public $sessions = array();
+	public $requests = [];
+	public $sessions = [];
 	public $enableRPC = true;
 	public $sessCounter = 0;
 	public $reqCounter = 0;
@@ -26,7 +26,7 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 			) {
 				\PHPDaemon\Core\Daemon::log(__METHOD__ . ': undefined route \'' . $route . '\'.');
 			}
-			return array('error' => 404);
+			return ['error' => 404];
 		}
 		$sess = new WebSocketOverCOMETSession(
 			$route,
@@ -34,11 +34,11 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 			sprintf('%x', crc32(microtime(true) . "\x00" . $req->attrs->server['REMOTE_ADDR']))
 		);
 		if (!$sess->downstream) {
-			return array('error' => 403);
+			return ['error' => 403];
 		}
 		$sess->server = $req->attrs->server;
 		$id           = \PHPDaemon\Core\Daemon::$process->id . '.' . $sess->id . '.' . $sess->authKey;
-		return array('id' => $id);
+		return ['id' => $id];
 	}
 
 	/**
@@ -58,12 +58,12 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 		}
 		$req = $this->requests[$reqId];
 		if ($req->jsid) {
-			$body = 'Response' . $req->jsid . ' = ' . json_encode(array('packets' => $packets)) . ";\n";
+			$body = 'Response' . $req->jsid . ' = ' . json_encode(['packets' => $packets]) . ";\n";
 		}
 		else {
 			$body = '<script type="text/javascript">';
 			foreach ($packets as $packet) {
-				$body .= 'WebSocket.onmessage(' . json_encode(array('type' => $packet[0], 'data' => $packet[1])) . ");\n";
+				$body .= 'WebSocket.onmessage(' . json_encode(['type' => $packet[0], 'data' => $packet[1]]) . ");\n";
 			}
 			$body .= "</script>\n";
 		}
@@ -101,7 +101,7 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 		if (!isset($sess->authKey) || $authKey !== $sess->authKey) {
 			return;
 		}
-		$sess->polling->push(array($pollWorker, $pollReqId));
+		$sess->polling->push([$pollWorker, $pollReqId]);
 		$sess->flushBufferedPackets($ts);
 		\PHPDaemon\Core\Timer::setTimeout($sess->finishTimer);
 

@@ -11,9 +11,9 @@ class XMLStream {
 
 	protected $parser;
 	protected $xml_depth = 0;
-	protected $current_ns = array();
-	protected $idhandlers = array();
-	protected $xpathhandlers = array();
+	protected $current_ns = [];
+	protected $idhandlers = [];
+	protected $xpathhandlers = [];
 	protected $default_ns;
 
 	public function __construct() {
@@ -207,19 +207,19 @@ class XMLStream {
 			$ns_tags = $regs[0];
 		}
 		else {
-			$ns_tags = array($xpath);
+			$ns_tags = [$xpath];
 		}
 		foreach ($ns_tags as $ns_tag) {
 			list($l, $r) = explode("}", $ns_tag);
 			if ($r != null) {
-				$xpart = array(substr($l, 1), $r);
+				$xpart = [substr($l, 1), $r];
 			}
 			else {
-				$xpart = array(null, $l);
+				$xpart = [null, $l];
 			}
 			$xpath_array[] = $xpart;
 		}
-		$this->xpathhandlers[] = array($xpath_array, $cb, $obj, $xpath);
+		$this->xpathhandlers[] = [$xpath_array, $cb, $obj, $xpath];
 	}
 
 }

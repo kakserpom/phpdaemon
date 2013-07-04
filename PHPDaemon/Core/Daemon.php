@@ -65,13 +65,13 @@ class Daemon {
 	 * Supported things array
 	 * @var string
 	 */
-	protected static $support = array();
+	protected static $support = [];
 
 	/** @var \PHPDaemon\Thread\IPC|\PHPDaemon\Thread\Master|\PHPDaemon\Thread\Worker */
 	public static $process;
 	/** @var  AppResolver */
 	public static $appResolver;
-	public static $appInstances = array();
+	public static $appInstances = [];
 	/** @var \PHPDaemon\HTTPRequest\Generic */
 	public static $req;
 	public static $context;
@@ -228,7 +228,7 @@ class Daemon {
 			return;
 		}
 
-		static $errtypes = array(
+		static $errtypes = [
 			E_ERROR             => 'Fatal error',
 			E_WARNING           => 'Warning',
 			E_PARSE             => 'Parse error',
@@ -241,7 +241,7 @@ class Daemon {
 			E_RECOVERABLE_ERROR => 'Fatal error (recoverable)',
 			E_DEPRECATED        => 'Deprecated',
 			E_USER_DEPRECATED   => 'Deprecated (userland)',
-		);
+		];
 		$errtype = $errtypes[$errno];
 		Daemon::log($errtype . ': ' . $errstr . ' in ' . $errfile . ':' . $errline . "\n" . Debug::backtrace());
 		if (Daemon::$req) {
@@ -259,8 +259,8 @@ class Daemon {
 
 		Daemon::$defaultErrorLevel    = error_reporting();
 		Daemon::$restrictErrorControl = (bool)Daemon::$config->restricterrorcontrol->value;
-		ob_start(array('\PHPDaemon\Core\Daemon', 'outputFilter'));
-		set_error_handler(array('\PHPDaemon\Core\Daemon', 'errorHandler'));
+		ob_start(['\PHPDaemon\Core\Daemon', 'outputFilter']);
+		set_error_handler(['\PHPDaemon\Core\Daemon', 'errorHandler']);
 
 		Daemon::checkSupports();
 
@@ -448,7 +448,7 @@ class Daemon {
 		$bufsize = min(1024, Daemon::SHM_WSTATE_SIZE);
 		$offset  = 0;
 
-		$stat = array(
+		$stat = [
 			'idle'      => 0,
 			'busy'      => 0,
 			'alive'     => 0,
@@ -457,7 +457,7 @@ class Daemon {
 			'waitinit'  => 0,
 			'init'      => 0,
 			'reloading' => 0,
-		);
+		];
 
 		Daemon::$shm_wstate->openAll();
 		$c = 0;

@@ -112,7 +112,7 @@ class IPC extends Generic {
 	 */
 	protected function prepareSystemEnv() {
 		proc_nice(Daemon::$config->ipcthreadpriority->value);
-		register_shutdown_function(array($this, 'shutdown'));
+		register_shutdown_function([$this, 'shutdown']);
 
 		$this->setTitle(
 			Daemon::$runName . ': IPC process'

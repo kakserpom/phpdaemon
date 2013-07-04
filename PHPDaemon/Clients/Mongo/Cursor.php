@@ -76,7 +76,7 @@ class Cursor {
 	 */
 	public function __destruct() {
 		if (binarySubstr($this->id, 0, 1) === 'c') {
-			$this->conn->pool->killCursors(array(binarySubstr($this->id, 1)));
+			$this->conn->pool->killCursors([binarySubstr($this->id, 1)]);
 		}
 	}
 }

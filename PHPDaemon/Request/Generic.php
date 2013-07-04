@@ -283,7 +283,7 @@ abstract class Generic {
 	 */
 	public static function getArray(&$var, $filter = null) {
 		if (!is_array($var)) {
-			return array();
+			return [];
 		}
 		if ($filter !== null) {
 			return array_filter($var, $filter);

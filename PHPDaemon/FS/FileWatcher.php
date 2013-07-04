@@ -15,9 +15,9 @@ class FileWatcher {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	public $files = array();
+	public $files = [];
 	public $inotify;
-	public $descriptors = array();
+	public $descriptors = [];
 
 	public function __construct() {
 		if (Daemon::loadModuleIfAbsent('inotify')) {
@@ -45,7 +45,7 @@ class FileWatcher {
 	public function addWatch($path, $subscriber, $flags = NULL) {
 		$path = realpath($path);
 		if (!isset($this->files[$path])) {
-			$this->files[$path] = array();
+			$this->files[$path] = [];
 			if ($this->inotify) {
 				$this->descriptors[inotify_add_watch($this->inotify, $path, $flags ? : IN_MODIFY)] = $path;
 			}
@@ -114,7 +114,7 @@ class FileWatcher {
 			}
 		}
 		else {
-			static $hash = array();
+			static $hash = [];
 
 			foreach (array_keys($this->files) as $path) {
 				if (!file_exists($path)) {

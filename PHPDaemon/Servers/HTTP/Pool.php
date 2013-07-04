@@ -28,7 +28,7 @@ class Pool extends \PHPDaemon\Network\Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			/**
 			 * Default servers
 			 * @var string|array
@@ -112,7 +112,7 @@ class Pool extends \PHPDaemon\Network\Server {
 			 * @var string
 			 */
 			'responder'               => null,
-		);
+		];
 	}
 
 	/**

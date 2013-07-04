@@ -24,14 +24,14 @@ class XMLStreamObject {
 	 *
 	 * @var array
 	 */
-	public $attrs = array();
+	public $attrs = [];
 
 	/**
 	 * Subs?
 	 *
 	 * @var array
 	 */
-	public $subs = array();
+	public $subs = [];
 
 	/**
 	 * Node data
@@ -48,7 +48,7 @@ class XMLStreamObject {
 	 * @param array $attrs
 	 * @param string $data
 	 */
-	public function __construct($name, $ns = '', $attrs = array(), $data = '') {
+	public function __construct($name, $ns = '', $attrs = [], $data = '') {
 		$this->name = strtolower($name);
 		$this->ns   = $ns;
 		if (is_array($attrs) && count($attrs)) {
