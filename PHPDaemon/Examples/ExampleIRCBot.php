@@ -20,9 +20,9 @@ class ExampleIRCBot extends \PHPDaemon\Core\AppInstance {
 	 */
 	protected function getConfigDefaults() {
 		$random = sprintf('%x', crc32(posix_getpid() . "\x00" . microtime(true)));
-		return array(
+		return [
 			'url' => 'irc://guest_' . $random . ':password@hobana.freenode.net/Bot_phpDaemon'
-		);
+		];
 	}
 
 	/**

@@ -347,11 +347,11 @@ class Connection extends ClientConnection {
 	public function getVCard($jid = null, $cb) {
 		$id = $this->getId();
 		$this->xml->addIdHandler($id, function ($xml) use ($cb) {
-			$vcard    = array();
+			$vcard    = [];
 			$vcardXML = $xml->sub('vcard');
 			foreach ($vcardXML->subs as $sub) {
 				if ($sub->subs) {
-					$vcard[$sub->name] = array();
+					$vcard[$sub->name] = [];
 					foreach ($sub->subs as $sub_child) {
 						$vcard[$sub->name][$sub_child->name] = $sub_child->data;
 					}

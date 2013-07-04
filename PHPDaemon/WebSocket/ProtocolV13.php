@@ -87,7 +87,7 @@ class ProtocolV13 extends Protocol {
 		$rsv1 = 0;
 		$rsv2 = 0;
 		$rsv3 = 0;
-		if (in_array($type, array('STRING', 'BINARY')) && ($this->outgoingCompression > 0) && in_array('deflate-frame', $this->conn->extensions)) {
+		if (in_array($type, ['STRING', 'BINARY']) && ($this->outgoingCompression > 0) && in_array('deflate-frame', $this->conn->extensions)) {
 			//$data = gzcompress($data, $this->outgoingCompression);
 			//$rsv1 = 1;
 		}

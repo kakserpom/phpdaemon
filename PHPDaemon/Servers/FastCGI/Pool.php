@@ -23,7 +23,7 @@ class Pool extends \PHPDaemon\Network\Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'expose'                  => 1,
 			'auto-read-body-file'     => 1,
@@ -38,7 +38,7 @@ class Pool extends \PHPDaemon\Network\Server {
 			'chunksize'               => new Size('8k'),
 			'defaultcharset'          => 'utf-8',
 			'upload-max-size'         => new Size(ini_get('upload_max_filesize')),
-		);
+		];
 	}
 
 	/**

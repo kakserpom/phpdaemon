@@ -174,27 +174,27 @@ class MongoNode extends \PHPDaemon\Core\AppInstance {
 								function ($item) {
 									$this->cacheObject($item);
 								},
-								array('where' => array('_id' => $item['o2']['_id']))
+								['where' => ['_id' => $item['o2']['_id']]]
 							);
 						}
 					}
 
 					unset($cursor->items[$k]);
 				}
-			}, array(
+			}, [
 				   'tailable'    => TRUE,
-				   'sort'        => array('$natural' => 1),
+				   'sort'        => ['$natural' => 1],
 				   'snapshot'    => 1,
-				   'where'       => array(
-					   'ts'      => array(
+				   'where'       => [
+					   'ts'      => [
 						   '$gt' => $point
-					   ),
-					   '$exists' => array(
+					   ],
+					   '$exists' => [
 						   '_key' => TRUE
-					   )
-				   ),
+					   ]
+				   ],
 				   'parse_oplog' => TRUE,
-			   )
+			   ]
 		);
 	}
 }

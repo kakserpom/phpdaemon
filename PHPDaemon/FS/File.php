@@ -116,17 +116,17 @@ class File {
 	public static function convertFlags($mode, $text = false) {
 		$plus = strpos($mode, '+') !== false;
 		$sync = strpos($mode, 's') !== false;
-		$type = strtr($mode, array('b' => '', '+' => '', 's' => '', '!' => ''));
+		$type = strtr($mode, ['b' => '', '+' => '', 's' => '', '!' => '']);
 		if ($text) {
 			return $type;
 		}
-		$types = array(
+		$types = [
 			'r' => $plus ? EIO_O_RDWR : EIO_O_RDONLY,
 			'w' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT | EIO_O_TRUNC,
 			'a' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT | EIO_O_APPEND,
 			'x' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_EXCL | EIO_O_CREAT,
 			'c' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT,
-		);
+		];
 		$m     = $types[$type];
 		if ($sync) {
 			$m |= EIO_O_FSYNC;
