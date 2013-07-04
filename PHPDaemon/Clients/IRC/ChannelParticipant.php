@@ -20,7 +20,7 @@ class ChannelParticipant {
 	 * @return $this
 	 */
 	public function setFlag($flag) {
-		$flag       = strtr($flag, array('H' => '', 'G' => '', '*' => ''));
+		$flag       = strtr($flag, ['H' => '', 'G' => '', '*' => '']);
 		$this->flag = $flag;
 		if ($flag === '@') {
 			$this->mode = 'o';

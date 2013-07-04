@@ -36,7 +36,7 @@ class WebSocketOverCOMETSession {
 	/**
 	 * @var array
 	 */
-	public $bufferedPackets = array();
+	public $bufferedPackets = [];
 	/**
 	 * @var bool
 	 */
@@ -64,7 +64,7 @@ class WebSocketOverCOMETSession {
 		if (!$this->downstream = call_user_func($this->appInstance->WS->routes[$route], $this)) {
 			return;
 		}
-		$this->finishTimer                      = setTimeout(array($this, 'finishTimer'), $this->timeout * 1e6);
+		$this->finishTimer                      = setTimeout([$this, 'finishTimer'], $this->timeout * 1e6);
 		$this->appInstance->sessions[$this->id] = $this;
 	}
 
@@ -109,7 +109,7 @@ class WebSocketOverCOMETSession {
 			return;
 		}
 		$this->callbacks->executeAll($this->downstream);
-		if (is_callable(array($this->downstream, 'onWrite'))) {
+		if (is_callable([$this->downstream, 'onWrite'])) {
 			$this->downstream->onWrite();
 		}
 	}
@@ -159,7 +159,7 @@ class WebSocketOverCOMETSession {
 		while (!$this->polling->isEmpty()) {
 			list ($workerId, $reqId) = $this->polling->pop();
 			$workerId = (int)$workerId;
-			$this->appInstance->directCall($workerId, 's2c', array($reqId, $this->id, $this->bufferedPackets, $ts));
+			$this->appInstance->directCall($workerId, 's2c', [$reqId, $this->id, $this->bufferedPackets, $ts]);
 		}
 
 		$this->onWrite();
@@ -173,7 +173,7 @@ class WebSocketOverCOMETSession {
 	 * @return boolean Success.
 	 */
 	public function sendFrame($data, $type = 0x00, $callback = NULL) {
-		$this->bufferedPackets[] = array($type, $data, microtime(TRUE));
+		$this->bufferedPackets[] = [$type, $data, microtime(TRUE)];
 		if ($callback !== null) {
 			$this->callbacks->push($callback);
 		}

@@ -38,7 +38,7 @@ class FileSystem {
 	 * Mode types
 	 * @var array
 	 */
-	public static $modeTypes = array(
+	public static $modeTypes = [
 		0140000 => 's',
 		0120000 => 'l',
 		0100000 => 'f',
@@ -46,7 +46,7 @@ class FileSystem {
 		0040000 => 'd',
 		0020000 => 'c',
 		0010000 => 'p',
-	);
+	];
 
 	/**
 	 * TTL for bad descriptors in seconds

@@ -15,10 +15,10 @@ class UDPEchoServer extends \PHPDaemon\Network\Server {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			'listen' => 'udp://0.0.0.0',
 			'port'   => 1111,
-		);
+		];
 	}
 
 	public function onConfigUpdated() {

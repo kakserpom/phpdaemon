@@ -79,14 +79,14 @@ if ($displaystate)
 </form>
 <pre>
 <?php
-var_dump(array(
+var_dump([
 			 '_GET'     => $_GET,
 			 '_POST'    => $_POST,
 			 '_COOKIE'  => $_COOKIE,
 			 '_REQUEST' => $_REQUEST,
 			 '_FILES'   => $_FILES,
 			 '_SERVER'  => $_SERVER,
-		 ));
+		 ]);
 ?></pre>
 <br/>Request took: <?php printf('%f', round(microtime(TRUE) - $_SERVER['REQUEST_TIME_FLOAT'], 6));
 //echo '<!-- '. str_repeat('x',1024*1024).' --->';

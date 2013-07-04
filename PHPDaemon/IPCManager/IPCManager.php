@@ -19,10 +19,10 @@ class IPCManager extends AppInstance {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// listen to
 			'mastersocket' => 'unix:///tmp/phpDaemon-ipc-%x.sock',
-		);
+		];
 	}
 
 	/**
@@ -32,7 +32,7 @@ class IPCManager extends AppInstance {
 	public function init() {
 		$this->socketurl = sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value . "\x00" . Daemon::$config->user->value . "\x00" . Daemon::$config->group->value));
 		if (Daemon::$process instanceof Thread\IPC) {
-			$this->pool              = MasterPool::getInstance(array('listen' => $this->socketurl));
+			$this->pool              = MasterPool::getInstance(['listen' => $this->socketurl]);
 			$this->pool->appInstance = $this;
 			$this->pool->onReady();
 		}
@@ -75,7 +75,7 @@ class IPCManager extends AppInstance {
 				else {
 					++$worker->instancesCount[$name];
 				}
-				$worker->sendPacket(array('op' => 'spawnInstance', 'appfullname' => $name));
+				$worker->sendPacket(['op' => 'spawnInstance', 'appfullname' => $name]);
 				--$v;
 			}
 		}
@@ -166,7 +166,7 @@ class IPCManager extends AppInstance {
 	 * @param array $args
 	 * @param callable $cb
 	 */
-	public function sendDirectCall($workerId, $appInstance, $method, $args = array(), $cb = null) {
+	public function sendDirectCall($workerId, $appInstance, $method, $args = [], $cb = null) {
 		$this->sendPacket([
 							  'op'          => 'directCall',
 							  'appfullname' => $appInstance,

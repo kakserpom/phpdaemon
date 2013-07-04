@@ -11,13 +11,13 @@ class Pool extends Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// listen to
 			'listen'     => 'tcp://127.0.0.1',
 			// port
 			'port'       => 8818,
 			'passphrase' => 'secret',
-		);
+		];
 	}
 
 	/**

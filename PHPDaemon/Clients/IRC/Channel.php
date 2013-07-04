@@ -17,7 +17,7 @@ class Channel extends ObjectStorage {
 
 	public $irc;
 	public $name;
-	public $nicknames = array();
+	public $nicknames = [];
 	public $self;
 	public $type;
 	public $topic;
@@ -62,7 +62,7 @@ class Channel extends ObjectStorage {
 	 * @return array
 	 */
 	public function exportNicksArray() {
-		$nicks = array();
+		$nicks = [];
 		foreach ($this as $participant) {
 			$nicks[] = $participant->flag . $participant->nick;
 		}

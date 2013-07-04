@@ -218,7 +218,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			return false;
 		}
 		if ($this->write($handshake)) {
-			if (is_callable(array($this->route, 'onHandshake'))) {
+			if (is_callable([$this->route, 'onHandshake'])) {
 				$this->route->onHandshake();
 			}
 		}

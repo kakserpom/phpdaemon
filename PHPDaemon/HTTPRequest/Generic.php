@@ -343,7 +343,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'])) {
 				$URLprefix = $this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'];
 				$l         = strlen($URLprefix);
-				foreach (array('PHP_SELF', 'REQUEST_URI', 'SCRIPT_NAME', 'DOCUMENT_URI') as $k) {
+				foreach (['PHP_SELF', 'REQUEST_URI', 'SCRIPT_NAME', 'DOCUMENT_URI'] as $k) {
 					if (!isset($this->attrs->server[$k])) {
 						continue;
 					}
@@ -358,7 +358,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 				if (strncmp($k, $prefix, $prefixlen) === 0) {
 					$e = explode('.', substr($k, $prefixlen));
 					if (!isset($this->attrs->files[$e[0]])) {
-						$this->attrs->files[$e[0]] = array('error' => UPLOAD_ERR_OK);
+						$this->attrs->files[$e[0]] = ['error' => UPLOAD_ERR_OK];
 					}
 					$this->attrs->files[$e[0]][$e[1]] = $v;
 				}

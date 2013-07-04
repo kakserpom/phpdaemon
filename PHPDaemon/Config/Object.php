@@ -487,9 +487,9 @@ class Object implements \ArrayAccess {
 	public static function loadCmdLineArgs($settings) {
 		$error = FALSE;
 
-		static $ktr = array(
+		static $ktr = [
 			'-' => '',
-		);
+		];
 
 		foreach ($settings as $k => $v) {
 			$k = strtolower(strtr($k, $ktr));

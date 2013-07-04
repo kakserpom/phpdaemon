@@ -20,7 +20,7 @@ abstract class Client extends Pool {
 	/**
 	 * @var Server[]
 	 */
-	protected $servers = array(); // Array of servers 
+	protected $servers = []; // Array of servers 
 	/**
 	 * @var bool
 	 */
@@ -95,7 +95,7 @@ abstract class Client extends Pool {
 		parent::applyConfig();
 		if (isset($this->config->servers)) {
 			$servers       = array_filter(array_map('trim', explode(',', $this->config->servers->value)), 'strlen');
-			$this->servers = array();
+			$this->servers = [];
 			foreach ($servers as $s) {
 				$this->addServer($s);
 			}

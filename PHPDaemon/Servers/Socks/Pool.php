@@ -10,7 +10,7 @@ class Pool extends Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// listen to
 			'listen'         => 'tcp://0.0.0.0',
 			// default port
@@ -23,6 +23,6 @@ class Pool extends Server {
 			'password'       => 'Password',
 			// allowed clients ip list
 			'allowedclients' => null,
-		);
+		];
 	}
 }
