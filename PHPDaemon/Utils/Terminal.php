@@ -54,7 +54,7 @@ class Terminal {
 	 * @return void
 	 */
 	public function setStyle($c) {
-		if ($this->enable_color) {
+		if ($this->enableColor) {
 			echo "\033[" . $c . 'm';
 		}
 	}
@@ -64,7 +64,7 @@ class Terminal {
 	 * @return void
 	 */
 	public function resetStyle() {
-		if ($this->enable_color) {
+		if ($this->enableColor) {
 			echo "\033[0m";
 		}
 	}

@@ -34,6 +34,10 @@ class DeferredEvent {
 	 * @var
 	 */
 	protected $onRun;
+	/**
+	 * @var
+	 */
+	protected $parent;
 
 	public function __construct($cb) {
 		$this->state     = self::STATE_WAITING;

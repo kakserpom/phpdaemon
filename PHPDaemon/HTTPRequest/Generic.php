@@ -137,6 +137,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	protected $sessionFlushing = false;
 	protected $sessionFp;
 
+	protected $onSessionStart;
+	protected $onSessionRead;
+
 	/**
 	 * File pointer to send output (X-Sendfile)
 	 * @var File
