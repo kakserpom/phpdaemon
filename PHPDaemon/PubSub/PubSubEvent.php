@@ -33,7 +33,6 @@ class PubSubEvent extends \SplObjectStorage {
 
 	/**
 	 * Constructor
-	 * @return object
 	 */
 	public function __construct() {
 		$this->storage = new \SplObjectStorage;
