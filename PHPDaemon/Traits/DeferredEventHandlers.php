@@ -16,6 +16,7 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
 trait DeferredEventHandlers {
 	/**
 	 * @param string $event
+	 * @throws UndefinedEventCalledException
 	 * @return null|mixed
 	 */
 	public function __get($event) {

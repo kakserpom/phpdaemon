@@ -18,7 +18,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends a request of type 'players'
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function requestPlayers($cb) {
@@ -33,7 +33,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends a request of type 'info'
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function requestInfo($cb) {
@@ -44,7 +44,7 @@ class Connection extends ClientConnection {
 	 * Sends a request
 	 * @param string   Type of request
 	 * @param string   Data
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function request($type, $data = null, $cb = null) {

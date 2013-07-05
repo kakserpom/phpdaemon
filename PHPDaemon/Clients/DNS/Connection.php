@@ -190,7 +190,7 @@ class Connection extends ClientConnection {
 	/**
 	 * Gets the host information
 	 * @param string   Hostname
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function get($hostname, $cb) {

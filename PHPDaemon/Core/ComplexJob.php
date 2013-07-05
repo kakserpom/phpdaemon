@@ -133,7 +133,7 @@ class ComplexJob {
 	/**
 	 * Adds job
 	 * @param string   Job name
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
 	public function addJob($name, $cb) {
@@ -160,7 +160,7 @@ class ComplexJob {
 
 	/**
 	 * Adds listener
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function addListener($cb) {

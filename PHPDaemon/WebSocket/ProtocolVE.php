@@ -9,10 +9,17 @@ use PHPDaemon\Core\Daemon;
  * @description Deprecated websocket protocol (IETF drafts 'hixie-76' or 'hybi-00')
  */
 class ProtocolVE extends Protocol {
+	/**
+	 * @TODO DESCR
+	 */
 	const STRING = 0x00;
+	/**
+	 * @TODO DESCR
+	 */
 	const BINARY = 0x80;
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	public function onHandshake() {
@@ -24,7 +31,6 @@ class ProtocolVE extends Protocol {
 	 * @param string Received data (no use in this class)
 	 * @return string Handshaked data
 	 */
-
 	public function getHandshakeReply($data) {
 		if ($this->onHandshake()) {
 			if (!isset($this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'])) {
@@ -53,7 +59,6 @@ class ProtocolVE extends Protocol {
 	 * @param string Key
 	 * @return string Result
 	 */
-
 	protected function _computeKey($key) {
 		$spaces = 0;
 		$digits = '';

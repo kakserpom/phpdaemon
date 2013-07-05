@@ -406,7 +406,7 @@ class Input extends \EventBuffer {
 	/**
 	 * Write current upload chunk to file descriptor
 	 * @param mixed    File destriptor
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
 	public function writeChunkToFd($fd, $cb = null) {

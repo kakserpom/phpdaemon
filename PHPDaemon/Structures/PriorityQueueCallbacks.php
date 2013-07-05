@@ -19,7 +19,8 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 
 	/**
 	 * Enqueue callback
-	 * @param callable Callback
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return void
 	 */
 	public function enqueue($cb, $pri = 0) {
@@ -36,6 +37,8 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 
 	/**
 	 * Compare two priorities
+	 * @param int $pri1
+	 * @param int $pri2
 	 * @return integer
 	 */
 	public function compare($pri1, $pri2) {

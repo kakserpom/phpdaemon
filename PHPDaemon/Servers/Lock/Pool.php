@@ -5,8 +5,16 @@ use PHPDaemon\Network\Server;
 
 class Pool extends Server {
 
-	public $lockState = []; // Jobs
-	public $lockConnState = []; // Array of connection's state
+	/**
+	 * Jobs
+	 * @var array
+	 */
+	public $lockState = [];
+	/**
+	 * Array of connection's state
+	 * @var array
+	 */
+	public $lockConnState = [];
 
 	/**
 	 * Setting default config options

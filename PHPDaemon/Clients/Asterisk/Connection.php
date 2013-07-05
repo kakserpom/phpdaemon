@@ -372,7 +372,7 @@ class Connection extends ClientConnection {
 	 * Variables:
 	 * ActionID: <id>    Action ID for this transaction. Will be returned.
 	 *
-	 * @param callable Callback called when response received.
+	 * @param callable $cb Callback called when response received.
 	 * @return void
 	 */
 	public function getSipPeers($cb) {
@@ -384,7 +384,7 @@ class Connection extends ClientConnection {
 	 * Synopsis: List IAX Peers
 	 * Privilege: system,reporting,all
 	 *
-	 * @param callable Callback called when response received.
+	 * @param callable $cb Callback called when response received.
 	 * @return void
 	 */
 	public function getIaxPeers($cb) {
@@ -401,7 +401,7 @@ class Connection extends ClientConnection {
 	 *   *Filename: Configuration filename (e.g. foo.conf)
 	 *   Category: Category in configuration file
 	 *
-	 * @param callable Callback called when response received.
+	 * @param callable $cb Callback called when response received.
 	 * @return void
 	 */
 	public function getConfig($filename, $cb) {
@@ -418,7 +418,7 @@ class Connection extends ClientConnection {
 	 * Variables:
 	 *    Filename: Configuration filename (e.g. foo.conf)
 	 *
-	 * @param callable Callback called when response received.
+	 * @param callable $cb Callback called when response received.
 	 * @return void
 	 */
 	public function getConfigJSON($filename, $cb) {
@@ -501,7 +501,7 @@ class Connection extends ClientConnection {
 	 * ActionID: Optional Action id for message matching.
 	 *
 	 * @param array $params
-	 * @param callable Callback called when response received.
+	 * @param callable $cb Callback called when response received.
 	 * @return void
 	 */
 	public function redirect(array $params, $cb) {
@@ -553,7 +553,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Called when event occured.
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function onEvent($cb) {

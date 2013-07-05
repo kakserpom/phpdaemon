@@ -18,6 +18,7 @@ class Protocol {
 	const BINARY = NULL;
 
 	/**
+	 * @TODO DESCR
 	 * @param $conn
 	 */
 	public function __construct($conn) {
@@ -25,6 +26,7 @@ class Protocol {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $type
 	 * @return int|mixed|null
 	 */
@@ -43,6 +45,7 @@ class Protocol {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	public function onHandshake() {
@@ -50,6 +53,7 @@ class Protocol {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $data
 	 * @param $type
 	 */

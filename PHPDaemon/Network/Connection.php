@@ -449,7 +449,7 @@ abstract class Connection extends IOStream {
 	/**
 	 * Connects to URL
 	 * @param string   URL
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
 	public function connect($url, $cb = null) {

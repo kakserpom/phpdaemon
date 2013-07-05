@@ -273,7 +273,7 @@ abstract class Client extends Pool {
 
 	/**
 	 * Returns available connection from the pool
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
 	public function getConnectionRR($cb = null) {

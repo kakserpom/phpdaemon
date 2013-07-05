@@ -27,14 +27,32 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $currentHeader;
 	protected $EOL = "\r\n";
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_FIRSTLINE  = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_HEADERS    = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_CONTENT    = 3;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_PROCESSING = 5;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_HANDSHAKED = 6;
 
+	/** @var string */
 	public $framebuf = '';
+	/** @var array */
 	public $server = [];
+	/** @var array */
 	public $cookie = [];
 
 	/**
@@ -47,6 +65,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when connection is inherited from HTTP request
+	 * @param $req
 	 * @return void
 	 */
 	public function onInheritanceFromRequest($req) {
@@ -59,12 +78,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Sends a frame.
-	 * @param string   Frame's data.
-	 * @param string   Frame's type. ("STRING" OR "BINARY")
-	 * @param callback Optional. Callback called when the frame is received by client.
+	 * @param string $data  Frame's data.
+	 * @param string $type  Frame's type. ("STRING" OR "BINARY")
+	 * @param callback $cb Optional. Callback called when the frame is received by client.
 	 * @return boolean Success.
 	 */
-
 	public function sendFrame($data, $type = null, $cb = null) {
 		if (!$this->handshaked) {
 			return false;
@@ -90,7 +108,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * Event of Connection.
 	 * @return void
 	 */
-
 	public function onFinish() {
 		if (isset($this->route)) {
 			$this->route->onFinish();
@@ -108,7 +125,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @param string Frame's type ("STRING" OR "BINARY").
 	 * @return boolean Success.
 	 */
-
 	public function onFrame($data, $type) {
 		if (!isset($this->route)) {
 			return false;
@@ -121,7 +137,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * Called when the connection is handshaked.
 	 * @return boolean Ready to handshake ?
 	 */
-
 	public function onHandshake() {
 
 		$e         = explode('/', $this->server['DOCUMENT_URI']);
@@ -177,7 +192,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * Called when the worker is going to shutdown.
 	 * @return boolean Ready to shutdown ?
 	 */
-
 	public function gracefulShutdown() {
 		if ((!$this->route) || $this->route->gracefulShutdown()) {
 			$this->finish();
@@ -188,9 +202,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when we're going to handshake.
+	 * @param $data
 	 * @return boolean Handshake status
 	 */
-
 	public function handshake($data) {
 
 		if (!$this->onHandshake()) {
@@ -309,7 +323,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * Called when new data received.
 	 * @return void
 	 */
-
 	protected function onRead() {
 		if (!$this->policyReqNotFound) {
 			$d = $this->drainIfMatch("<policy-file-request/>\x00");
@@ -375,6 +388,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	protected function httpProcessHeaders() {

@@ -27,6 +27,7 @@ class ProtocolV13 extends Protocol {
 	protected $outgoingCompression = 0;
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	public function onHandshake() {
@@ -45,7 +46,6 @@ class ProtocolV13 extends Protocol {
 	 * @param string Received data (no use in this class)
 	 * @return string Handshaked data
 	 */
-
 	public function getHandshakeReply($data) {
 		if ($this->onHandshake()) {
 			if (isset($this->conn->server['HTTP_ORIGIN'])) {
@@ -81,7 +81,6 @@ class ProtocolV13 extends Protocol {
 	 *
 	 * @see http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10#page-16
 	 */
-
 	protected function encodeFrame($data, $type = 'STRING') {
 		$fin  = 1;
 		$rsv1 = 0;
@@ -95,6 +94,7 @@ class ProtocolV13 extends Protocol {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $data
 	 * @param $type
 	 * @param int $fin
@@ -141,6 +141,7 @@ class ProtocolV13 extends Protocol {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $data
 	 * @param $mask
 	 * @return mixed
@@ -157,7 +158,6 @@ class ProtocolV13 extends Protocol {
 	 *
 	 * @see http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10#page-16
 	 */
-
 	public function onRead() {
 		while ($this->conn && (($buflen = $this->conn->getInputLength()) >= 2)) {
 			$first     = ord($this->conn->look(1)); // first byte integer (fin, opcode)
