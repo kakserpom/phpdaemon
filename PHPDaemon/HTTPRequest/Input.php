@@ -76,9 +76,21 @@ class Input extends \EventBuffer {
 	 */
 	protected $curChunkSize;
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_SEEKBOUNDARY = 0;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_HEADERS      = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_BODY         = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_UPLOAD       = 3;
 
 	/**

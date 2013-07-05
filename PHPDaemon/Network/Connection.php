@@ -583,15 +583,11 @@ abstract class Connection extends IOStream {
 		return true;
 	}
 
-	/** Establish UDP connection
-	 * @param string  Hostname
-	 * @param integer Port
-	 * @return boolean Success
-	 */
 	/**
-	 * @param $host
-	 * @param $port
-	 * @return bool
+	 * Establish UDP connection
+	 * @param string $host  Hostname
+	 * @param integer $port Port
+	 * @return string Success
 	 */
 	public function connectUdp($host, $port) {
 		$this->type = 'udp';
@@ -718,6 +714,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Set keepalive
+	 * @param $bool
 	 * @return void
 	 */
 	public function setKeepalive($bool) {

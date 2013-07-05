@@ -73,8 +73,8 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Constructor
-	 * @param array Config variables
-	 * @return object
+	 * @param array $config Config variables
+	 * @param bool $init
 	 */
 	public function __construct($config = [], $init = true) {
 		$this->config = $config;
@@ -155,8 +155,8 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Returns instance object
-	 * @param mixed String name / array config / ConfigSection
-	 * @param [boolean Spawn? Default is true]
+	 * @param string $arg name / array config / ConfigSection
+	 * @param boolean $spawn Spawn? Default is true
 	 * @return object
 	 */
 	public static function getInstance($arg = '', $spawn = true) {
@@ -236,6 +236,7 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Called when application instance is going to shutdown
+	 * @param bool $graceful
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown($graceful = false) {
@@ -273,8 +274,8 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Attach Connection
-	 * @param Connection
-	 * @param [mixed Info]
+	 * @param $conn Connection
+	 * @param mixed $inf Info
 	 * @return void
 	 */
 	public function attach($conn, $inf = null) {
@@ -290,8 +291,7 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Detach Connection
-	 * @param Connection
-	 * @param [mixed Info]
+	 * @param $conn Connection
 	 * @return void
 	 */
 	public function detach($conn) {
