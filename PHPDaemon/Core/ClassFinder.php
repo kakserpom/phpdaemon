@@ -13,7 +13,7 @@ class ClassFinder {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 *
+	 * @TODO DESCR
 	 * @param string|object $class Object or String
 	 * @return string Class
 	 */
@@ -26,9 +26,9 @@ class ClassFinder {
 	}
 
 	/**
-	 *
-	 * @param string Class
-	 * @param string Namespace
+	 * @TODO DESCR
+	 * @param string $class Class
+	 * @param string $namespace Namespace
 	 * @return string
 	 */
 	public static function find($class, $namespace = null) {

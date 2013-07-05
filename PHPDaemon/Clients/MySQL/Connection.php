@@ -21,13 +21,21 @@ class Connection extends ClientConnection {
 	 * @var integer
 	 */
 	public $clientFlags = 239237;
+	/** @var */
 	public $threadId;
+	/** @var */
 	public $scramble;
+	/** @var */
 	public $serverver;
+	/** @var */
 	public $serverCaps;
+	/** @var */
 	public $serverLang;
+	/** @var */
 	public $serverStatus;
+	/** @var */
 	public $warnCount;
+	/** @var */
 	public $message; // Flags of this MySQL client.
 
 	/**
@@ -60,7 +68,13 @@ class Connection extends ClientConnection {
 	 */
 	public $dbname = '';
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_STANDBY = 0;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_BODY    = 1;
 
 	/**
@@ -68,9 +82,21 @@ class Connection extends ClientConnection {
 	 * @var string
 	 */
 	protected $phase = 0;
+	/**
+	 * @TODO DESCR
+	 */
 	const PHASE_GOT_INIT   = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const PHASE_AUTH_SENT  = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const PHASE_AUTH_ERR   = 3;
+	/**
+	 * @TODO DESCR
+	 */
 	const PHASE_HANDSHAKED = 4;
 
 	/**
@@ -78,8 +104,17 @@ class Connection extends ClientConnection {
 	 * @var integer
 	 */
 	protected $rsState = 0;
+	/**
+	 * @TODO DESCR
+	 */
 	const RS_STATE_HEADER = 0;
+	/**
+	 * @TODO DESCR
+	 */
 	const RS_STATE_FIELD  = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const RS_STATE_ROW    = 2;
 
 	/**

@@ -36,6 +36,7 @@ class Pool extends Client {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param string $url
 	 * @param array $params
 	 */
@@ -56,6 +57,7 @@ class Pool extends Client {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param string $url
 	 * @param array $data
 	 * @param array $params
@@ -77,6 +79,7 @@ class Pool extends Client {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $mixed
 	 * @return bool|string
 	 */
@@ -108,6 +111,7 @@ class Pool extends Client {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $mixed
 	 * @return array|bool
 	 */

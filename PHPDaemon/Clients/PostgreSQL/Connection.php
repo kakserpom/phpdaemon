@@ -109,8 +109,17 @@ class Connection extends ClientConnection {
 	 */
 	public $backendKey;
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_AUTH_ERROR       = 3;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_AUTH_OK          = 4;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_AUTH_PACKET_SENT = 2;
 
 	/**

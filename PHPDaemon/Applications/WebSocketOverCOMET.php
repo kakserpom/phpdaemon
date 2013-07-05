@@ -3,11 +3,17 @@ namespace PHPDaemon\Applications;
 
 class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 
+	/** @var \PHPDaemon\Servers\Websocket\Pool */
 	public $WS;
+	/** @var array */
 	public $requests = [];
+	/** @var array */
 	public $sessions = [];
+	/** @var bool */
 	public $enableRPC = true;
+	/** @var int */
 	public $sessCounter = 0;
+	/** @var int */
 	public $reqCounter = 0;
 
 	/**
@@ -18,6 +24,12 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 		$this->WS = \PHPDaemon\Servers\Websocket\Pool::getInstance();
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $route
+	 * @param $req
+	 * @return array
+	 */
 	public function initSession($route, $req) {
 		if (!isset($this->WS->routes[$route])) {
 			if (
@@ -52,6 +64,13 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 		return $this->requests[$req->id] = $req;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $reqId
+	 * @param $sessId
+	 * @param $packets
+	 * @param $ts
+	 */
 	public function s2c($reqId, $sessId, $packets, $ts) {
 		if (!isset($this->requests[$reqId])) {
 			return;
@@ -71,6 +90,11 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 		$req->finish();
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $fullId
+	 * @param $body
+	 */
 	public function c2s($fullId, $body) {
 		list($sessId, $authKey) = explode('.', $fullId, 2);
 		$sessId = (int)$sessId;
@@ -88,6 +112,13 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 		\PHPDaemon\Core\Timer::setTimeout($sess->finishTimer);
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $pollWorker
+	 * @param $pollReqId
+	 * @param $fullId
+	 * @param $ts
+	 */
 	public function poll($pollWorker, $pollReqId, $fullId, $ts) {
 		list($sessId, $authKey) = explode('.', $fullId, 2);
 		$sessId = (int)$sessId;
@@ -107,4 +138,3 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 
 	}
 }
-

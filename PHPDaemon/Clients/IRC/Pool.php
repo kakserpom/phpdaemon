@@ -8,7 +8,13 @@ namespace PHPDaemon\Clients\IRC;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Client {
+	/**
+	 * @var
+	 */
 	public $identd;
+	/**
+	 * @var bool
+	 */
 	public $protologging = false;
 
 	/**
@@ -22,6 +28,9 @@ class Pool extends \PHPDaemon\Network\Client {
 		];
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onReady() {
 		$this->identd = \PHPDaemon\Servers\Ident\Pool::getInstance();
 		parent::onReady();

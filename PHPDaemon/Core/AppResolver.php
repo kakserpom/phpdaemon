@@ -18,14 +18,10 @@ class AppResolver {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/*
-	 * Preloads applications.
-	 * @param boolean Privileged.
-	 * @return void
-	 */
-
 	/**
-	 * @param bool $privileged
+	 * Preloads applications.
+	 * @param boolean $privileged.
+	 * @return void
 	 */
 	public function preload($privileged = false) {
 		foreach (Daemon::$config as $fullname => $section) {
@@ -59,8 +55,11 @@ class AppResolver {
 
 	/**
 	 * Gets instance of application
-	 * @param string Application name.
-	 * @return object AppInstance.
+	 * @param string $appName Application name.
+	 * @param string $instance
+	 * @param bool $spawn
+	 * @param bool $preload
+	 * @return object $instance AppInstance.
 	 */
 	public function getInstanceByAppName($appName, $instance = '', $spawn = true, $preload = false) {
 		return $this->getInstance($appName, $instance, $spawn, $preload);
@@ -68,8 +67,11 @@ class AppResolver {
 
 	/**
 	 * Gets instance of application
-	 * @param string Application name.
-	 * @return object AppInstance.
+	 * @param string $appName Application name.
+	 * @param string $instance
+	 * @param bool $spawn
+	 * @param bool $preload
+	 * @return object $instance AppInstance.
 	 */
 	public function getInstance($appName, $instance = '', $spawn = true, $preload = false) {
 		$class = ClassFinder::find($appName, 'Applications');

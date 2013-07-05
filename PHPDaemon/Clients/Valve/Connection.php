@@ -13,6 +13,7 @@ use PHPDaemon\Utils\Encoding;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
+	/** @var int */
 	public $timeout = 1;
 
 	/**

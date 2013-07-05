@@ -9,18 +9,34 @@ use PHPDaemon\Network\ClientConnection;
 
 class Connection extends ClientConnection
 {
+	/** @var */
 	public $url; // url
+	/** @var */
 	public $user; // Username
+	/** @var */
 	public $password; // Password
+	/** @var */
 	public $dbname; // Database name
+	/** @var int */
 	protected $lowMark = 16; // initial value of the minimal amout of bytes in buffer
+	/** @var int */
 	protected $highMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
+	/** @var */
 	protected $hdr;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_PACKET = 1;
+	/** @var array */
 	public $cursors = []; // Active cursors
+	/** @var array */
 	public $requests = []; // Pending requests
+	/** @var int */
 	public $lastReqId = 0; // ID of the last request
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onReady() {
 		if ($this->user === null) {
 			$this->connected = true;

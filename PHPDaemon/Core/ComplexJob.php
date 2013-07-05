@@ -10,8 +10,17 @@ class ComplexJob {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_WAITING = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_RUNNING = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_DONE    = 3;
 
 	/**
@@ -55,8 +64,8 @@ class ComplexJob {
 
 	/**
 	 * Constructor
-	 * @param callable Listener
-	 * @return object
+	 * @param callable $cb Listener
+	 * @return \PHPDaemon\Core\ComplexJob
 	 */
 	public function __construct($cb = null) {
 		$this->state = self::STATE_WAITING;
@@ -179,6 +188,8 @@ class ComplexJob {
 
 	/**
 	 * Adds new job or calls execute() method
+	 * @param mixed $name
+	 * @param callable $cb
 	 * @return void
 	 */
 	public function __invoke($name = null, $cb = null) {

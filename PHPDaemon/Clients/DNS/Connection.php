@@ -31,6 +31,9 @@ class Connection extends ClientConnection {
 	 */
 	public $response = [];
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_PACKET = 1;
 
 	/**
