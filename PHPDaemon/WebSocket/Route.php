@@ -12,13 +12,14 @@ class Route {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/** @var */
 	public $client; // Remote client
+	/** @var null */
 	public $appInstance;
 
 	/**
 	 * Called when client connected.
-	 * @param object Remote client (WebSocketSession).
-	 * @return void
+	 * @param object $client Remote client (WebSocketSession).
 	 */
 	public function __construct($client, $appInstance = null) {
 		$this->client = $client;

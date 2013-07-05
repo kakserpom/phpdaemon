@@ -19,6 +19,10 @@ class Connection extends ClientConnection {
 	 */
 	protected $seq = 0;
 
+	/**
+	 * @TODO DESCR
+	 * @var array
+	 */
 	protected static $unreachableCodes = [
 		0x0 => 'netUnreachable',
 		0x1 => 'hostUnreachable',

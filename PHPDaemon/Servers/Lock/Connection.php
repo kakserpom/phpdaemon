@@ -11,7 +11,9 @@ use PHPDaemon\Core\Debug;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
+	/** @var bool */
 	public $server = FALSE; // Is this S2S-session?
+	/** @var array */
 	public $locks = []; // State of locks.
 
 	/**

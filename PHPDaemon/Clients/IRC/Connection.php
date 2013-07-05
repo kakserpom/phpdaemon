@@ -14,18 +14,57 @@ use PHPDaemon\Utils\IRC;
 class Connection extends ClientConnection {
 	use \PHPDaemon\Traits\EventHandlers;
 
+	/**
+	 * @var string
+	 */
 	public $user = 'Guest'; // Username
+	/**
+	 * @var string
+	 */
 	public $password = ''; // Password
+	/**
+	 * @var string
+	 */
 	public $EOL = "\r\n";
+	/**
+	 * @var
+	 */
 	public $nick;
+	/**
+	 * @var
+	 */
 	public $realname;
+	/**
+	 * @var string
+	 */
 	public $mode = '';
+	/**
+	 * @var array
+	 */
 	public $buffers = [];
+	/**
+	 * @var
+	 */
 	public $servername;
+	/**
+	 * @var array
+	 */
 	public $channels = [];
+	/**
+	 * @var
+	 */
 	public $latency;
+	/**
+	 * @var
+	 */
 	public $lastPingTS;
+	/**
+	 * @var int
+	 */
 	public $timeout = 300;
+	/**
+	 * @var bool
+	 */
 	public $bevConnectEnabled = false; // to get local port number
 
 	/**
@@ -47,6 +86,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $cmd
 	 */
 	public function command($cmd) {
@@ -71,6 +111,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $cmd
 	 * @param array $args
 	 * @return bool
@@ -100,6 +141,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $channels
 	 */
 	public function join($channels) {
@@ -112,6 +154,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $channels
 	 * @param mixed $msg
 	 */
@@ -131,12 +174,16 @@ class Connection extends ClientConnection {
 		parent::onFinish();
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function ping() {
 		$this->lastPingTS = microtime(true);
 		$this->writeln('PING :' . $this->servername);
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $to
 	 * @param $msg
 	 */
@@ -145,6 +192,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $channel
 	 * @param $target
 	 * @param $mode
@@ -161,6 +209,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $channel
 	 * @param $target
 	 * @param $mode
@@ -173,6 +222,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $from
 	 * @param $cmd
 	 * @param $args
@@ -389,6 +439,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $chan
 	 * @return Channel
 	 */
@@ -400,6 +451,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $chan
 	 * @return bool
 	 */

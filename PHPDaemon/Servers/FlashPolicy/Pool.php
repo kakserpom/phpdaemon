@@ -27,6 +27,9 @@ class Pool extends Server {
 		];
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onReady() {
 		$this->onConfigUpdated();
 	}

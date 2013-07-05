@@ -164,8 +164,8 @@ abstract class Server extends Pool {
 
 	/**
 	 * Attach Generic
-	 * @param Generic
-	 * @param [mixed Info]
+	 * @param \PHPDaemon\BoundSocket\Generic $bound Generic
+	 * @param mixed $inf Info
 	 * @return void
 	 */
 	public function attachBound(\PHPDaemon\BoundSocket\Generic $bound, $inf = null) {
@@ -174,7 +174,7 @@ abstract class Server extends Pool {
 
 	/**
 	 * Detach Generic
-	 * @param Generic
+	 * @param \PHPDaemon\BoundSocket\Generic $bound Generic
 	 * @return void
 	 */
 	public function detachBound(\PHPDaemon\BoundSocket\Generic $bound) {
@@ -191,9 +191,10 @@ abstract class Server extends Pool {
 
 	/**
 	 * Called when a request to HTTP-server looks like another connection.
+	 * @param $req
+	 * @param $oldConn
 	 * @return boolean Success
 	 */
-
 	public function inheritFromRequest($req, $oldConn) {
 		if (!$oldConn || !$req) {
 			return false;

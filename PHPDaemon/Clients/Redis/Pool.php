@@ -10,7 +10,6 @@ use PHPDaemon\Network\Client;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class Pool extends Client {
 
 	/**
@@ -48,10 +47,12 @@ class Pool extends Client {
 
 	/**
 	 * Magic __call.
-	 * @method $name Command name
-	 * @param   .. Command-dependent set of arguments ..
-	 * @param   [callback Callback. Optional.
-	 * @example $redis->lpush('mylist', microtime(true));
+	 * @method $name 
+	 * @param string $name Command name
+	 * @param array $args
+	 * @usage $ .. Command-dependent set of arguments ..
+	 * @usage $ [callback Callback. Optional.
+	 * @example  $redis->lpush('mylist', microtime(true));
 	 * @return void
 	 */
 	public function __call($name, $args) {

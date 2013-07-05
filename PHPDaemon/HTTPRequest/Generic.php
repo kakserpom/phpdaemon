@@ -11,6 +11,7 @@ use PHPDaemon\Utils\MIME;
 use PHPDaemon\Traits\DeferredEventHandlers;
 use PHPDaemon\Traits\StaticObjectWatchdog;
 use PHPDaemon\Traits\ClassWatchdog;
+
 /**
  * HTTP request
  *
@@ -131,10 +132,14 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 */
 	protected $sessionId;
 
+	/** @var int */
 	protected $sessionStartTimeout = 10;
 
+	/** @var bool */
 	protected $sessionStarted = false;
+	/** @var bool */
 	protected $sessionFlushing = false;
+	/** @var */
 	protected $sessionFp;
 
 	protected $onSessionStart;
@@ -152,6 +157,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 */
 	protected $frozenInput = false;
 
+	/** @var */
 	protected $contype;
 
 	/**
@@ -181,9 +187,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Output whole contents of file
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path Path
+	 * @param callable $cb Callback
+	 * @param int $pri     priority
 	 * @return boolean Success
 	 */
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -431,7 +437,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Output some data
-	 * @param string String to out
+	 * @param string $s String to out
+	 * @param bool $flush
 	 * @return boolean Success
 	 */
 	public function out($s, $flush = true) {
@@ -580,8 +587,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Checks if headers have been sent
-	 * @var boolean
-	 *
+	 * @param $file
+	 * @param $line
 	 * @return boolean Success
 	 */
 	public function headers_sent(&$file, &$line) {
@@ -600,14 +607,14 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Set the cookie
-	 * @param string $name  Name of cookie
-	 * @param string $value Value
-	 * @param integer       . Optional. Max-Age. Default is 0.
-	 * @param string        . Optional. Path. Default is empty string.
-	 * @param boolean       . Optional. Secure. Default is false.
-	 * @param boolean       . Optional. HTTPOnly. Default is false.
+	 * @param string $name         Name of cookie
+	 * @param string $value        Value
+	 * @param integer $maxage      . Optional. Max-Age. Default is 0.
+	 * @param string $path         . Optional. Path. Default is empty string.
+	 * @param bool|string $domain  . Optional. Secure. Default is false.
+	 * @param boolean $secure      . Optional. HTTPOnly. Default is false.
+	 * @param bool $HTTPOnly
 	 * @return void
-	 * @throws RequestHeadersAlreadySent
 	 */
 	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
 		$this->header(
@@ -621,10 +628,10 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Send the header
-	 * @param string  Header. Example: 'Location: http://php.net/'
-	 * @param boolean Optional. Replace?
-	 * @param int     Optional. HTTP response code.
-	 * @throws RequestHeadersAlreadySent
+	 * @param string $s        Header. Example: 'Location: http://php.net/'
+	 * @param boolean $replace Optional. Replace?
+	 * @param bool|int $code   Optional. HTTP response code.
+	 * @throws \PHPDaemon\Request\RequestHeadersAlreadySent
 	 * @return boolean Success
 	 */
 	public function header($s, $replace = true, $code = false) {
@@ -688,6 +695,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Converts human-readable representation of size to number of bytes
+	 * @param $value
 	 * @return integer
 	 */
 	public static function parseSize($value) {
@@ -887,6 +895,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called after request finish
+	 * @param callable $cb
 	 * @return void
 	 */
 	protected function postFinishHandler($cb = null) {
@@ -904,26 +913,33 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		}
 		if (isset($this->attrs->session)) {
 			$this->sessionCommit($cb);
-		} else {
+		}
+		else {
 			if ($cb) {
 				call_user_func($cb);
 			}
 		}
 	}
+
+	/**
+	 * @TODO DESCR
+	 * @return bool
+	 */
 	public function sessionStarted() {
 		return $this->sessionStarted;
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return callable
 	 */
 	public function onSessionStartEvent() {
 		return function ($sessionStartEvent) {
 			/** @var DeferredEventCmp $sessionStartEvent */
 			$name = ini_get('session.name');
-			$sid = static::getString($this->attrs->cookie[$name]);
+			$sid  = static::getString($this->attrs->cookie[$name]);
 			if ($sid === '') {
-				$this->sessionStartNew(function() use ($sessionStartEvent) {
+				$this->sessionStartNew(function () use ($sessionStartEvent) {
 					$sessionStartEvent->setResult();
 				});
 				return;
@@ -931,7 +947,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 			$this->onSessionRead(function ($session) use ($sessionStartEvent) {
 				if (!$session) {
-					$this->sessionStartNew(function() use ($sessionStartEvent) {
+					$this->sessionStartNew(function () use ($sessionStartEvent) {
 						$sessionStartEvent->setResult();
 					});
 				}
@@ -941,6 +957,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return callable
 	 */
 	public function onSessionReadEvent() {
@@ -948,7 +965,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		return function ($sessionEvent) {
 			/** @var DeferredEventCmp $sessionEvent */
 			$name = ini_get('session.name');
-			$sid = static::getString($this->attrs->cookie[$name]);
+			$sid  = static::getString($this->attrs->cookie[$name]);
 			if ($sid === '') {
 				$sessionEvent->setResult();
 				return;
@@ -958,16 +975,16 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 				return;
 			}
 
-			$this->sessionRead($sid, function($data) use ($sessionEvent) {
+			$this->sessionRead($sid, function ($data) use ($sessionEvent) {
 				if ($data === false) {
-					$this->sessionStartNew(function() use ($sessionEvent) {
+					$this->sessionStartNew(function () use ($sessionEvent) {
 						$sessionEvent->setResult();
 					});
 					return;
 				}
 				$this->sessionDecode($data);
 				if ($this->attrs->session === false) {
-					$this->sessionStartNew(function() use ($sessionEvent) {
+					$this->sessionStartNew(function () use ($sessionEvent) {
 						$sessionEvent->setResult();
 					});
 					return;
@@ -977,19 +994,28 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		};
 	}
 
-	public function sessionRead($sid, $cb = null) {	
-		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($sid), 'r+!', function ($fp) use ($cb)  {
+	/**
+	 * @TODO DESCR
+	 * @param $sid
+	 * @param callable $cb
+	 */
+	public function sessionRead($sid, $cb = null) {
+		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($sid), 'r+!', function ($fp) use ($cb) {
 			if (!$fp) {
 				call_user_func($cb, false);
 				return;
 			}
-			$fp->readAll(function($fp, $data) use ($cb) {
+			$fp->readAll(function ($fp, $data) use ($cb) {
 				$this->sessionFp = $fp;
 				call_user_func($cb, $data);
 			});
 		});
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param callable $cb
+	 */
 	public function sessionCommit($cb = null) {
 		if (!$this->sessionFp || $this->sessionFlushing) {
 			if ($cb) {
@@ -998,9 +1024,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			return;
 		}
 		$this->sessionFlushing = true;
-		$data = $this->sessionEncode();
-		$l = strlen($data);
-		$this->sessionFp->write($data, function($file, $result) use ($l, $cb) {
+		$data                  = $this->sessionEncode();
+		$l                     = strlen($data);
+		$this->sessionFp->write($data, function ($file, $result) use ($l, $cb) {
 			$file->truncate($l, function ($file, $result) use ($cb) {
 				$this->sessionFlushing = false;
 				if ($cb) {
@@ -1012,6 +1038,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Session start
+	 * @param bool $force_start
 	 * @return void
 	 */
 	protected function sessionStart($force_start = true) {
@@ -1021,7 +1048,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		$this->sessionStarted = true;
 
 		$f = true; // hack to avoid a sort of "race condition"
-		$this->onSessionStart(function($event) use (&$f) {
+		$this->onSessionStart(function ($event) use (&$f) {
 			$f = false;
 			$this->wakeup();
 		});
@@ -1030,6 +1057,10 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param callable $cb
+	 */
 	protected function sessionStartNew($cb = null) {
 		FileSystem::tempnam(session_save_path(), 'php', function ($fp) use ($cb) {
 			if (!$fp) {
@@ -1039,7 +1070,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			$this->sessionFp = $fp;
 			$this->sessionId = substr(basename($fp->path), 3);
 			$this->setcookie(
-				  ini_get('session.name')
+				ini_get('session.name')
 				, $this->sessionId
 				, ini_get('session.cookie_lifetime')
 				, ini_get('session.cookie_path')
@@ -1051,6 +1082,10 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		});
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @return bool|string
+	 */
 	protected function sessionEncode() {
 		$type = ini_get('session.serialize_handler');
 		if ($type === 'php') {
@@ -1062,6 +1097,11 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		return false;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $str
+	 * @return bool
+	 */
 	protected function sessionDecode($str) {
 		$type = ini_get('session.serialize_handler');
 		if ($type === 'php') {

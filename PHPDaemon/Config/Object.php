@@ -274,6 +274,7 @@ class Object implements \ArrayAccess {
 	 */
 	public $eiosetminparallel = null;
 
+	/** @var int */
 	public static $lastRevision = 0;
 
 	/**
@@ -317,6 +318,7 @@ class Object implements \ArrayAccess {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $old
 	 * @param $new
 	 */

@@ -7,12 +7,33 @@ class ChannelParticipant {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/**
+	 * @var
+	 */
 	public $channel;
+	/**
+	 * @var
+	 */
 	public $nick;
+	/**
+	 * @var
+	 */
 	public $user;
+	/**
+	 * @var
+	 */
 	public $flag;
+	/**
+	 * @var
+	 */
 	public $mode;
+	/**
+	 * @var
+	 */
 	public $unverified;
+	/**
+	 * @var
+	 */
 	public $host;
 
 	/**
@@ -44,6 +65,9 @@ class ChannelParticipant {
 		$this->channel->attach($this);
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onModeUpdate() {
 		if (strpos($this->mode, 'o') !== false) {
 			$this->flag = '@';
@@ -60,6 +84,7 @@ class ChannelParticipant {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $user
 	 * @return $this
 	 */
@@ -69,6 +94,7 @@ class ChannelParticipant {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return string
 	 */
 	public function getUsermask() {
@@ -76,6 +102,7 @@ class ChannelParticipant {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $bool
 	 * @return $this
 	 */
@@ -85,6 +112,7 @@ class ChannelParticipant {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $host
 	 * @return $this
 	 */
@@ -94,6 +122,7 @@ class ChannelParticipant {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $mask
 	 * @return $this
 	 */
@@ -110,6 +139,7 @@ class ChannelParticipant {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $channel
 	 * @param $nick
 	 * @return static
@@ -122,6 +152,7 @@ class ChannelParticipant {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $nick
 	 * @return $this
 	 */
@@ -136,11 +167,15 @@ class ChannelParticipant {
 		return $this;
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function destroy() {
 		$this->channel->detach($this);
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $msg
 	 */
 	public function chanMessage($msg) {

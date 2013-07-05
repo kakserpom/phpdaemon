@@ -33,7 +33,6 @@ class PubSubEvent extends \SplObjectStorage {
 
 	/**
 	 * Constructor
-	 * @return object
 	 */
 	public function __construct() {
 		$this->storage = new \SplObjectStorage;
@@ -41,7 +40,7 @@ class PubSubEvent extends \SplObjectStorage {
 
 	/**
 	 * Sets onActivation callback.
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return \PHPDaemon\PubSub\PubSubEvent
 	 */
 	public function onActivation($cb) {
@@ -51,7 +50,7 @@ class PubSubEvent extends \SplObjectStorage {
 
 	/**
 	 * Sets onDeactivation callback.
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return \PHPDaemon\PubSub\PubSubEvent
 	 */
 	public function onDeactivation($cb) {

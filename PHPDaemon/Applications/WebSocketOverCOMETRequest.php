@@ -11,11 +11,17 @@ use PHPDaemon\HTTPRequest\Generic;
  */
 class WebSocketOverCOMETRequest extends Generic {
 
+	/** @var bool */
 	public $inited = FALSE;
+	/** @var */
 	public $authKey;
+	/** @var */
 	public $type;
+	/** @var */
 	public $reqIdAuthKey;
+	/** @var */
 	public $jsid;
+	/** @var */
 	public $id;
 
 	/**

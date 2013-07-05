@@ -21,7 +21,7 @@ class Pool extends Client {
 	 * @param string   Address
 	 * @param string   Type of request
 	 * @param string   Data
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function request($addr, $type, $data, $cb) {
@@ -38,7 +38,7 @@ class Pool extends Client {
 	/**
 	 * Sends echo-request
 	 * @param string   Address
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function ping($addr, $cb) {
@@ -58,7 +58,7 @@ class Pool extends Client {
 	/**
 	 * Sends a request of type 'info'
 	 * @param string   Address
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function requestInfo($addr, $cb) {
@@ -68,7 +68,7 @@ class Pool extends Client {
 	/**
 	 * Sends a request of type 'players'
 	 * @param string   Address
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function requestPlayers($addr, $cb) {

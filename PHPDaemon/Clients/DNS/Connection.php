@@ -31,6 +31,9 @@ class Connection extends ClientConnection {
 	 */
 	public $response = [];
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_PACKET = 1;
 
 	/**
@@ -187,7 +190,7 @@ class Connection extends ClientConnection {
 	/**
 	 * Gets the host information
 	 * @param string   Hostname
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function get($hostname, $cb) {

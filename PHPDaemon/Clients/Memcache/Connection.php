@@ -12,12 +12,19 @@ use PHPDaemon\Network\ClientConnection;
 
 class Connection extends ClientConnection {
 
+	/** @var */
 	public $result; // current result
+	/** @var */
 	public $valueFlags; // flags of incoming value
+	/** @var */
 	public $valueLength; // length of incoming value
+	/** @var */
 	public $error; // error message
+	/** @var */
 	public $key; // current incoming key
+	/** @TODO DESCR	 */
 	const STATE_DATA = 1;
+	/** @var string */
 	protected $EOL = "\r\n";
 
 	/**

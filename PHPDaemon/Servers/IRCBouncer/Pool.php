@@ -6,13 +6,22 @@ use PHPDaemon\Network\Server;
 use PHPDaemon\Structures\ObjectStorage;
 
 class Pool extends Server {
+	/** @var */
 	public $client;
+	/** @var */
 	public $conn;
+	/** @var bool */
 	public $protologging = false;
+	/** @var */
 	public $db;
+	/** @var */
 	public $messages;
+	/** @var */
 	public $channels;
 
+	/**
+	 * @TODO DESCR
+	 */
 	protected function init() {
 		$this->client               = Pool::getInstance();
 		$this->client->protologging = $this->protologging;
@@ -40,6 +49,9 @@ class Pool extends Server {
 		];
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function applyConfig() {
 		parent::applyConfig();
 		$this->protologging = (bool)$this->config->protologging->value;
@@ -48,6 +60,9 @@ class Pool extends Server {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onReady() {
 		parent::onReady();
 		$this->client->onReady();
@@ -55,6 +70,7 @@ class Pool extends Server {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param string $url
 	 */
 	public function getConnection($url) {
