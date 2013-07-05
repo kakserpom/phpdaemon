@@ -12,7 +12,8 @@ use PHPDaemon\Config\Entry\Time;
  */
 class Pool extends \PHPDaemon\Network\Server {
 
-	/** Variables order
+	/**
+	 * Variables order
 	 * @var string "GPC"
 	 */
 	public $variablesOrder;

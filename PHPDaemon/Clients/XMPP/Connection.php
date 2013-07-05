@@ -17,13 +17,19 @@ use PHPDaemon\XMLStream\XMLStream;
 class Connection extends ClientConnection {
 	use \PHPDaemon\Traits\EventHandlers;
 
+	/** @var bool */
 	public $use_encryption = false;
+	/** @var */
 	public $authorized;
+	/** @var int */
 	public $lastId = 0;
+	/** @var */
 	public $roster;
 	/** @var XMLStream */
 	public $xml;
+	/** @var */
 	public $fulljid;
+	/** @var */
 	public $keepaliveTimer;
 
 	/**
@@ -65,6 +71,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $s
 	 */
 	public function sendXML($s) {
@@ -73,7 +80,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function startXMLStream() {
 		$this->sendXML('<?xml version="1.0"?>' .
@@ -82,6 +89,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $xml
 	 * @param callable $cb
 	 * @return bool
@@ -97,6 +105,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $to
 	 * @param $xml
 	 * @param callable $cb
@@ -114,6 +123,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $xml
 	 * @param callable $cb
 	 * @return bool
@@ -129,6 +139,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $to
 	 * @param $xml
 	 * @param callable $cb
@@ -146,6 +157,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param mixed $to
 	 * @param mixed $cb
 	 * @return bool
@@ -162,6 +174,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $ns
 	 * @param callable $cb
 	 * @return bool
@@ -171,6 +184,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $ns
 	 * @param $xml
 	 * @param callable $cb
@@ -181,6 +195,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $to
 	 * @param $ns
 	 * @param $xml
@@ -192,7 +207,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function createXMLStream() {
 		$this->xml = new XMLStream();
@@ -341,6 +356,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param mixed $jid
 	 * @param callable $cb
 	 */

@@ -42,22 +42,35 @@ class Item {
 		$this->value     = $value;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @return int
+	 */
 	public function getHits() {
 		return $this->hits;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @return mixed
+	 */
 	public function getValue() {
 		++$this->hits;
 		return $this->value;
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param callable $cb
 	 */
 	public function addListener($cb) {
 		$this->listeners->push($cb);
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $value
+	 */
 	public function setValue($value) {
 		$this->value = $value;
 		$this->listeners->executeAll($this->value);

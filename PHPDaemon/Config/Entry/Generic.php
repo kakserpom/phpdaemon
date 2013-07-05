@@ -13,13 +13,21 @@ class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/** @var */
 	public $defaultValue;
+	/** @var */
 	public $value;
+	/** @var */
 	public $valueType;
+	/** @var */
 	public $humanValue;
+	/** @var */
 	public $source;
+	/** @var */
 	public $revision;
+	/** @var bool */
 	public $hasDefaultValue = FALSE;
+	/** @var bool */
 	protected $stackable = false;
 
 	/**
@@ -68,6 +76,7 @@ class Generic {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $value
 	 */
 	public function pushValue($value) {
@@ -98,6 +107,7 @@ class Generic {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $value
 	 */
 	public function pushHumanValue($value) {

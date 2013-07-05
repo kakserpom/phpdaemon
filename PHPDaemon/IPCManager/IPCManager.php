@@ -9,8 +9,11 @@ use PHPDaemon\IPCManager\WorkerConnection;
 use PHPDaemon\Thread;
 
 class IPCManager extends AppInstance {
+	/** @var */
 	public $pool;
+	/** @var */
 	public $conn;
+	/** @var */
 	public $socketurl;
 
 	/**
@@ -38,6 +41,9 @@ class IPCManager extends AppInstance {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function updatedWorkers() {
 		$perWorker      = 1;
 		$instancesCount = [];
@@ -83,6 +89,7 @@ class IPCManager extends AppInstance {
 
 	/**
 	 * Called when application instance is going to shutdown.
+	 * @param bool $graceful
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown($graceful = false) {
@@ -93,6 +100,7 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $workerId
 	 * @param $path
 	 * @return bool
@@ -106,11 +114,15 @@ class IPCManager extends AppInstance {
 		return true;
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function ensureConnection() {
 		$this->sendPacket('');
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $packet
 	 */
 	public function sendPacket($packet = null) {
@@ -130,6 +142,7 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $appInstance
 	 * @param $method
 	 * @param array $args
@@ -145,6 +158,7 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $appInstance
 	 * @param $method
 	 * @param array $args
@@ -160,6 +174,7 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $workerId
 	 * @param $appInstance
 	 * @param $method

@@ -14,6 +14,7 @@ use PHPDaemon\Config\Entry\Generic;
 class ExtFunc extends Generic {
 
 	/**
+	 * @TODO DESCR
 	 * @param $value
 	 * @return callable|null
 	 */

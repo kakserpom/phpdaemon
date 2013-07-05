@@ -76,9 +76,21 @@ class Input extends \EventBuffer {
 	 */
 	protected $curChunkSize;
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_SEEKBOUNDARY = 0;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_HEADERS      = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_BODY         = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_UPLOAD       = 3;
 
 	/**
@@ -394,7 +406,7 @@ class Input extends \EventBuffer {
 	/**
 	 * Write current upload chunk to file descriptor
 	 * @param mixed    File destriptor
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
 	public function writeChunkToFd($fd, $cb = null) {

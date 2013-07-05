@@ -528,6 +528,7 @@ class Bootstrap {
 
 	/**
 	 * Stop script.
+	 * @param int $mode
 	 * @return void
 	 */
 	public static function stop($mode = 1) {
@@ -552,7 +553,7 @@ class Bootstrap {
 
 	/**
 	 * Parses command-line arguments.
-	 * @param array $_SERVER['argv']
+	 * @param array $args $_SERVER ['argv']
 	 * @return array Arguments
 	 */
 	public static function getArgs($args) {

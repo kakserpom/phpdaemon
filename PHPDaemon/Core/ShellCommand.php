@@ -17,7 +17,9 @@ use PHPDaemon\Network\IOStream;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class ShellCommand extends IOStream {
+	/** @var */
 	public $writeState;
+	/** @var */
 	public $finishWrite;
 
 	/**
@@ -115,11 +117,15 @@ class ShellCommand extends IOStream {
 	 */
 	protected $EOF = false;
 
+	/** @var */
 	protected $onEOF;
+	/** @var */
 	protected $onRead;
+	/** @var */
 	protected $onReadData;
 
 	/**
+	 * @TODO DESCR
 	 * @param mixed $cb
 	 * @return $this
 	 */
@@ -128,6 +134,10 @@ class ShellCommand extends IOStream {
 		return $this;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @return string
+	 */
 	public function getCmd() {
 		return $this->cmd;
 	}
@@ -221,6 +231,9 @@ class ShellCommand extends IOStream {
 		return $this;
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onEofEvent() {
 		if ($this->EOF) {
 			return;
@@ -263,6 +276,11 @@ class ShellCommand extends IOStream {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $args
+	 * @return string
+	 */
 	public static function buildArgs($args) {
 		if (!is_array($args)) {
 			return '';
@@ -351,6 +369,7 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	public function finishWrite() {
@@ -378,11 +397,15 @@ class ShellCommand extends IOStream {
 		$this->onEOF = null;
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onFinish() {
 		$this->onEofEvent();
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return $this
 	 */
 	public function closeWrite() {
@@ -403,6 +426,7 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	public function eof() {
@@ -458,7 +482,8 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * @param mixed $cb
+	 * @TODO DESCR
+	 * @param callable $cb
 	 * @return $this
 	 */
 	public function onEOF($cb = NULL) {

@@ -15,12 +15,19 @@ use PHPDaemon\Utils\IRC;
 class Connection extends \PHPDaemon\Network\Connection {
 	use EventHandlers;
 
+	/** @var string */
 	public $EOL = "\r\n";
+	/** @var */
 	public $attachedServer;
+	/** @var */
 	public $usermask;
+	/** @var */
 	public $latency;
+	/** @var */
 	public $lastPingTS;
+	/** @var int */
 	public $timeout = 180;
+	/** @var bool */
 	public $protologging = false;
 
 	/**
@@ -34,6 +41,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}, 10e6);
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onFinish() {
 		if ($this->attachedServer) {
 			$this->attachedServer->attachedClients->detach($this);
@@ -42,6 +52,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		parent::onFinish();
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function ping() {
 		$this->lastPingTS = microtime(true);
 		$this->writeln('PING :' . $this->usermask);
@@ -49,6 +62,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $from
 	 * @param $cmd
 	 */
@@ -75,6 +89,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $from
 	 * @param $cmd
 	 * @param $args
@@ -104,6 +119,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function detach() {
 		if ($this->attachedServer) {
 			$this->attachedServer->attachedClients->detach($this);
@@ -111,6 +129,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function attachTo() {
 		if ($this->pool->conn) {
 			$this->attachedServer = $this->pool->conn;
@@ -128,6 +149,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $chan
 	 */
 	public function exportChannel($chan) {
@@ -147,6 +169,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $cmd
 	 * @param $args
 	 */
@@ -219,6 +242,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $msg
 	 */
 	public function msgFromBNC($msg) {

@@ -16,6 +16,7 @@ use PHPDaemon\Thread\Master;
 class ConfigFile extends Generic {
 
 	/**
+	 * @TODO DESCR
 	 * @param $old
 	 */
 	public function onUpdate($old) {

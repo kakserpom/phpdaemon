@@ -7,12 +7,22 @@ use PHPDaemon\Core\Timer;
 use PHPDaemon\Network\Connection;
 
 class WorkerConnection extends Connection {
+	/** @var null */
 	protected $timeout = null;
+	/** @var int */
 	protected $lowMark = 4; // initial value of the minimal amout of bytes in buffer
+	/** @var int */
 	protected $highMark = 0xFFFF; // initial value of the maximum amout of bytes in buffer
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_CONTENT = 1;
+	/** @var */
 	protected $packetLength;
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onReady() {
 		$this->sendPacket([
 							  'op'       => 'start',
@@ -66,6 +76,7 @@ class WorkerConnection extends Connection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $p
 	 */
 	public function sendPacket($p) {
@@ -77,6 +88,7 @@ class WorkerConnection extends Connection {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * Called when new data received.
 	 * @return void
 	 */

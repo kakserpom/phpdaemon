@@ -13,11 +13,12 @@ use PHPDaemon\Utils\Encoding;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
+	/** @var int */
 	public $timeout = 1;
 
 	/**
 	 * Sends a request of type 'players'
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function requestPlayers($cb) {
@@ -32,7 +33,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends a request of type 'info'
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function requestInfo($cb) {
@@ -43,7 +44,7 @@ class Connection extends ClientConnection {
 	 * Sends a request
 	 * @param string   Type of request
 	 * @param string   Data
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function request($type, $data = null, $cb = null) {

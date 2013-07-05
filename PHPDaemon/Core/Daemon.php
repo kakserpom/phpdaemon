@@ -20,17 +20,48 @@ class Daemon {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	const SUPPORT_RUNKIT_SANDBOX         = 0;
-	const SUPPORT_RUNKIT_MODIFY          = 1;
+	/**
+	 * @TODO DESCR
+	 */
+	const SUPPORT_RUNKIT_SANDBOX = 0;
+	/**
+	 * @TODO DESCR
+	 */
+	const SUPPORT_RUNKIT_MODIFY = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const SUPPORT_RUNKIT_INTERNAL_MODIFY = 2;
-	const SUPPORT_RUNKIT_IMPORT          = 3;
-	const WSTATE_IDLE                    = 1;
-	const WSTATE_BUSY                    = 2;
-	const WSTATE_SHUTDOWN                = 3;
-	const WSTATE_PREINIT                 = 4;
-	const WSTATE_WAITINIT                = 5;
-	const WSTATE_INIT                    = 6;
+	/**
+	 * @TODO DESCR
+	 */
+	const SUPPORT_RUNKIT_IMPORT = 3;
+	/**
+	 * @TODO DESCR
+	 */
+	const WSTATE_IDLE = 1;
+	/**
+	 * @TODO DESCR
+	 */
+	const WSTATE_BUSY = 2;
+	/**
+	 * @TODO DESCR
+	 */
+	const WSTATE_SHUTDOWN = 3;
+	/**
+	 * @TODO DESCR
+	 */
+	const WSTATE_PREINIT = 4;
+	/**
+	 * @TODO DESCR
+	 */
+	const WSTATE_WAITINIT = 5;
+	/**
+	 * @TODO DESCR
+	 */
+	const WSTATE_INIT = 6;
 
+	/** @var array */
 	public static $wstateRev = [
 		1 => 'IDLE',
 		2 => 'BUSY',
@@ -39,6 +70,9 @@ class Daemon {
 		5 => 'WAITINIT',
 		6 => 'INIT',
 	];
+	/**
+	 * @TODO DESCR
+	 */
 	const SHM_WSTATE_SIZE = 1024;
 
 	/**
@@ -59,6 +93,7 @@ class Daemon {
 	 */
 	public static $logpointer;
 
+	/** @var */
 	public static $logpointerAsync;
 
 	/**
@@ -71,13 +106,19 @@ class Daemon {
 	public static $process;
 	/** @var  AppResolver */
 	public static $appResolver;
+	/** @var array */
 	public static $appInstances = [];
 	/** @var \PHPDaemon\HTTPRequest\Generic */
 	public static $req;
+	/** @var */
 	public static $context;
+	/** @var */
 	protected static $workers;
+	/** @var */
 	protected static $masters;
+	/** @var */
 	protected static $initservervar;
+	/** @var */
 	public static $shm_wstate;
 
 	/**
@@ -86,17 +127,31 @@ class Daemon {
 	 * @var boolean
 	 */
 	public static $reusePort = false;
+	/** @var bool */
 	public static $compatMode = FALSE;
+	/** @var string */
 	public static $runName = 'phpdaemon';
 	/** @var  Config\Object */
 	public static $config;
+	/** @var */
 	public static $appResolverPath;
+	/** @var bool */
 	public static $restrictErrorControl = false;
+	/** @var */
 	public static $defaultErrorLevel;
-	public static $runworkerMode = false; // @TODO: refactoring
+	/**
+	 * @TODO: refactoring
+	 * @var bool
+	 */
+	public static $runworkerMode = false;
 
-	public static $obInStack = false; // whether if the current execution stack contains ob-filter
+	/**
+	 * whether if the current execution stack contains ob-filter
+	 * @var bool
+	 */
+	public static $obInStack = false;
 
+	/** @var bool */
 	public static $noError = false;
 
 	/**
@@ -117,6 +172,12 @@ class Daemon {
 		} // @TODO: FIXME: this is a BSD-only hack
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $pattern
+	 * @param int $flags
+	 * @return array
+	 */
 	public static function glob($pattern, $flags = 0) {
 		$r = [];
 		foreach (explode(':', get_include_path()) as $path) {
@@ -137,6 +198,13 @@ class Daemon {
 								   . (++$n) . mt_rand(0, mt_getrandmax()))));
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $mod
+	 * @param null $version
+	 * @param string $compare
+	 * @return bool|mixed
+	 */
 	public static function loadModuleIfAbsent($mod, $version = null, $compare = '>=') {
 		if (!extension_loaded($mod)) {
 			if (!get_cfg_var('enable_dl')) {
@@ -157,12 +225,19 @@ class Daemon {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public static function callAutoGC() {
 		if (self::checkAutoGC()) {
 			gc_collect_cycles();
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @return bool
+	 */
 	public static function checkAutoGC() {
 		if (
 				(Daemon::$config->autogc->value > 0)
@@ -177,7 +252,7 @@ class Daemon {
 
 	/**
 	 * Callback-function, output filter.
-	 * @param string - String.
+	 * @param string $s String.
 	 * @return string - buffer
 	 */
 	public static function outputFilter($s) {
@@ -203,6 +278,10 @@ class Daemon {
 		return '';
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param \Exception $e
+	 */
 	public static function uncaughtExceptionHandler(\Exception $e) {
 		if (Daemon::$context !== null) {
 			if (Daemon::$context->handleException($e)) {
@@ -216,6 +295,14 @@ class Daemon {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $errno
+	 * @param $errstr
+	 * @param $errfile
+	 * @param $errline
+	 * @param $errcontext
+	 */
 	public static function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
 		Daemon::$noError = 0;
 		$l               = error_reporting();
@@ -563,6 +650,9 @@ class Daemon {
 		return $thread->getPid();
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public static function runWorker() {
 		Daemon::$runworkerMode = true;
 		$thread                = new Thread\Worker;
@@ -571,6 +661,8 @@ class Daemon {
 
 	/**
 	 * Calculates a difference between two dates.
+	 * @param $st
+	 * @param $fin
 	 * @return array [seconds, minutes, hours, days, months, years]
 	 */
 	public static function date_period($st, $fin) {
@@ -624,6 +716,8 @@ class Daemon {
 
 	/**
 	 * Calculates a difference between two dates.
+	 * @param $date_start
+	 * @param $date_finish
 	 * @return string Something like this: 1 year. 2 mon. 6 day. 4 hours. 21 min. 10 sec.
 	 */
 	public static function date_period_text($date_start, $date_finish) {

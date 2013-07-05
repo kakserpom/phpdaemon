@@ -9,45 +9,21 @@ class WebSocketOverCOMETSession {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/**
-	 * @var \PHPDaemon\Request\Generic
-	 */
+	/** @var \PHPDaemon\Request\Generic */
 	public $downstream;
-	/**
-	 * @var \SplStack
-	 */
+	/** @var \SplStack */
 	public $polling;
-	/**
-	 * @var \PHPDaemon\Structures\StackCallbacks
-	 */
+	/** @var \PHPDaemon\Structures\StackCallbacks */
 	public $callbacks;
-	/**
-	 * @var
-	 */
 	public $authKey;
-	/**
-	 * @var
-	 */
 	public $id;
-	/**
-	 * @var
-	 */
 	public $appInstance;
-	/**
-	 * @var array
-	 */
+	/** @var array */
 	public $bufferedPackets = [];
-	/**
-	 * @var bool
-	 */
+	/** @var bool */
 	public $finished = false;
-	/**
-	 * @var int
-	 */
+	/** @var int */
 	public $timeout = 30; // 30
-	/**
-	 * @var
-	 */
 	public $server;
 
 	/**
@@ -69,7 +45,7 @@ class WebSocketOverCOMETSession {
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function finish() {
 		if ($this->finished) {
@@ -80,7 +56,7 @@ class WebSocketOverCOMETSession {
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function onFinish() {
 		if (isset($this->downstream)) {
@@ -95,6 +71,7 @@ class WebSocketOverCOMETSession {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $timer
 	 */
 	public function finishTimer($timer) {
@@ -102,7 +79,7 @@ class WebSocketOverCOMETSession {
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function onWrite() {
 		if ($this->finished) {
@@ -115,6 +92,7 @@ class WebSocketOverCOMETSession {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $a
 	 * @param $b
 	 * @param int $precision

@@ -21,9 +21,18 @@ class AppInstance {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	const EVENT_CONFIG_UPDATED = 1; // optional passphrase
-	const EVENT_GRACEFUL_SHUTDOWN = 2; // ready to start?
-	const EVENT_HARD_SHUTDOWN = 3; // name of instance
+	/**
+	 * optional passphrase
+	 */
+	const EVENT_CONFIG_UPDATED = 1; 
+	/**
+	 * ready to start?
+	 */
+	const EVENT_GRACEFUL_SHUTDOWN = 2;
+	/**
+	 * name of instance
+	 */
+	const EVENT_HARD_SHUTDOWN = 3;
 	/**
 	 * @var bool
 	 */
