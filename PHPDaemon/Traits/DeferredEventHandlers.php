@@ -25,9 +25,10 @@ trait DeferredEventHandlers {
 		if (!method_exists($this, $event . 'Event')) {
 			throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
 		}
-		$this->{$event} = new DeferredEvent($this->{$event . 'Event'}());
-		$this->{$event}->parent = $this;
-		return $this->{$event};
+		$e = new DeferredEvent($this->{$event . 'Event'}());
+		$e->parent = $this;
+		$this->{$event} = &$e;
+		return $e;
 	}
 
 	public function cleanup() {
