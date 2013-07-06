@@ -129,7 +129,7 @@ class Pool extends Client {
 	/**
 	 * Resolves the host
 	 * @param string   Hostname
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @param [boolean Noncache?]
 	 * @return void
 	 */
@@ -196,7 +196,7 @@ class Pool extends Client {
 	/**
 	 * Gets the host information
 	 * @param string   Hostname
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @param [boolean Noncache?]
 	 * @return void
 	 */

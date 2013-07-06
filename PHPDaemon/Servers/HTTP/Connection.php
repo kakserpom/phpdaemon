@@ -21,9 +21,21 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	protected $req;
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_FIRSTLINE  = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_HEADERS    = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_CONTENT    = 3;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_PROCESSING = 4;
 
 	protected $EOL = "\r\n";

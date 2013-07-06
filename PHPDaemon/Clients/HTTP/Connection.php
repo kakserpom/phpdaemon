@@ -15,18 +15,57 @@ use PHPDaemon\Network\ClientConnection;
  */
 class Connection extends ClientConnection {
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_HEADERS = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_BODY    = 2;
+	/**
+	 * @var array
+	 */
 	public $headers = [];
+	/**
+	 * @var int
+	 */
 	public $contentLength = -1;
+	/**
+	 * @var string
+	 */
 	public $body = '';
+	/**
+	 * @var string
+	 */
 	protected $EOL = "\r\n";
+	/**
+	 * @var array
+	 */
 	public $cookie = [];
+	/**
+	 * @var bool
+	 */
 	public $keepalive = false;
+	/**
+	 * @var
+	 */
 	public $curChunkSize;
+	/**
+	 * @var
+	 */
 	public $curChunk;
+	/**
+	 * @var bool
+	 */
 	public $chunked = false;
+	/**
+	 * @var
+	 */
 	public $protocolError;
+	/**
+	 * @var int
+	 */
 	public $responseCode = 0;
 
 	/**
@@ -249,6 +288,9 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onFinish() {
 		if ($this->protocolError) {
 			$this->executeAll($this, false);
@@ -261,6 +303,9 @@ class Connection extends ClientConnection {
 		parent::onFinish();
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function requestFinished() {
 		$this->onResponse->executeOne($this, true);
 		$this->state         = self::STATE_ROOT;

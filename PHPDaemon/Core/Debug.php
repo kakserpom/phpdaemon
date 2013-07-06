@@ -55,6 +55,11 @@ class Debug {
 		return $dump;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $var
+	 * @return mixed
+	 */
 	public static function refcount(&$var) {
 		ob_start();
 		debug_zval_dump([&$var]);

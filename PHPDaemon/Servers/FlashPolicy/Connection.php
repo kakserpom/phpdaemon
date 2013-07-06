@@ -8,7 +8,12 @@ namespace PHPDaemon\Servers\FlashPolicy;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
-	protected $lowMark = 23; // length of "<policy-file-request/>\x00"
+	/**
+	 * length of "<policy-file-request/>\x00"
+	 * @var int
+	 */
+	protected $lowMark = 23;
+	/** @var int */
 	protected $highMark = 23;
 
 	/**

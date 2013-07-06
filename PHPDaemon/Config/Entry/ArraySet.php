@@ -14,6 +14,7 @@ use PHPDaemon\Config\Entry\Generic;
 class ArraySet extends Generic {
 
 	/**
+	 * @TODO DESCR
 	 * @param array|string $value
 	 * @return array
 	 */

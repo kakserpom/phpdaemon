@@ -32,6 +32,9 @@ class XMLStream {
 		$this->default_ns = $ns;
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function finish() {
 		$this->xml_depth     = 0;
 		$this->current_ns    = [];
@@ -54,6 +57,9 @@ class XMLStream {
 		xml_parse($this->parser, $buf, false);
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function finalize() {
 		xml_parse($this->parser, '', true);
 	}
@@ -175,6 +181,7 @@ class XMLStream {
 	/**
 	 * Set SSL
 	 *
+	 * @param bool $use
 	 * @return integer
 	 */
 	public function useSSL($use = true) {
@@ -185,8 +192,7 @@ class XMLStream {
 	 * Add ID Handler
 	 *
 	 * @param integer $id
-	 * @param string $pointer
-	 * @param string $obj
+	 * @param $cb
 	 */
 	public function addIdHandler($id, $cb) {
 		if ($cb === null) {
@@ -199,8 +205,8 @@ class XMLStream {
 	 * Add XPath Handler
 	 *
 	 * @param string $xpath
-	 * @param string $pointer
-	 * @param
+	 * @param $cb
+	 * @param null $obj
 	 */
 	public function addXPathHandler($xpath, $cb, $obj = null) {
 		if (preg_match_all("/\(?{[^\}]+}\)?(\/?)[^\/]+/", $xpath, $regs)) {

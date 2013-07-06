@@ -18,16 +18,27 @@ use PHPDaemon\Thread\IPC;
  */
 class Master extends Generic {
 
+	/** @var bool */
 	public $delayedSigReg = true;
+	/** @var bool */
 	public $breakMainLoop = false;
+	/** @var bool */
 	public $reload = false;
+	/** @var int */
 	public $connCounter = 0;
+	/** @var */
 	public $callbacks;
+	/** @var */
 	public $workers;
+	/** @var */
 	public $ipcthreads;
+	/** @var */
 	public $eventBase;
+	/** @var */
 	public $eventBaseConfig;
+	/** @var */
 	public $lastMpmActionTs;
+	/** @var int */
 	public $minMpmActionInterval = 1; // in seconds
 	private $timerCb;
 

@@ -14,6 +14,7 @@ use PHPDaemon\Config\Entry\Generic;
 class Size extends Generic {
 
 	/**
+	 * @TODO DESCR
 	 * @param $value
 	 * @return int
 	 */

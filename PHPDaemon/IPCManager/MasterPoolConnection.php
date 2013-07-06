@@ -5,12 +5,21 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\Connection;
 
 class MasterPoolConnection extends Connection {
+	/** @var array */
 	public $instancesCount = [];
+	/** @var null */
 	protected $timeout = null;
+	/** @var int */
 	protected $lowMark = 4; // initial value of the minimal amout of bytes in buffer
+	/** @var int */
 	protected $highMark = 0xFFFF; // initial value of the maximum amout of bytes in buffer
+	/** @var */
 	protected $workerId;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_CONTENT = 1;
+	/** @var */
 	protected $packetLength;
 
 	/**
@@ -59,12 +68,16 @@ class MasterPoolConnection extends Connection {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onFinish() {
 		unset($this->pool->workers[$this->workerId]);
 		$this->pool->appInstance->updatedWorkers();
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $p
 	 */
 	public function sendPacket($p) {

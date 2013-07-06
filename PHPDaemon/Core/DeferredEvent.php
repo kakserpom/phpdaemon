@@ -10,8 +10,17 @@ class DeferredEvent {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_WAITING = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_RUNNING = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_DONE    = 3;
 
 	/**
@@ -39,6 +48,10 @@ class DeferredEvent {
 	 */
 	public $parent;
 
+	/**
+	 * @TODO DESCR
+	 * @param $cb
+	 */
 	public function __construct($cb) {
 		$this->state     = self::STATE_WAITING;
 		$this->onRun     = $cb;
@@ -61,6 +74,9 @@ class DeferredEvent {
 		$this->listeners->executeAll($this->result);
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function cleanup() {
 		$this->listeners = [];
 		$this->onRun     = null;
@@ -68,6 +84,7 @@ class DeferredEvent {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param callable $cb
 	 */
 	public function addListener($cb) {
@@ -89,6 +106,7 @@ class DeferredEvent {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param callable $cb
 	 * @param array $params
 	 */

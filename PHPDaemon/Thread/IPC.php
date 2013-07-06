@@ -57,6 +57,7 @@ class IPC extends Generic {
 	 */
 	public $reload = false;
 
+	/** @var */
 	public $IPCManager;
 
 	/**

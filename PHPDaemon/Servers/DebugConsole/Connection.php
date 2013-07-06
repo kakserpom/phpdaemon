@@ -9,6 +9,7 @@ namespace PHPDaemon\Servers\DebugConsole;
  */
 class Connection extends \PHPDaemon\Network\Connection {
 
+	/** @var int */
 	public $timeout = 5;
 
 	/**

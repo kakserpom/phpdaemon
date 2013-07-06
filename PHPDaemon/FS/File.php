@@ -89,8 +89,9 @@ class File {
 
 	/**
 	 * File constructor
-	 * @param resource File descriptor
-	 * @return void
+	 * @param \PHPDaemon\FS\File $fd resource descriptor
+	 * @param $path
+	 * @return \PHPDaemon\FS\File
 	 */
 	public function __construct($fd, $path) {
 		$this->fd          = $fd;
@@ -110,7 +111,7 @@ class File {
 	 * Converts string of flags to integer or standard text representation
 	 * @param string $mode  Mode
 	 * @param boolean $text Text?
-	 * @param priority
+	 * @param int $pri priority
 	 * @return mixed
 	 */
 	public static function convertFlags($mode, $text = false) {
@@ -136,9 +137,9 @@ class File {
 
 	/**
 	 * Truncates this file
-	 * @param integer  Offset, default is 0
-	 * @param callable Callback
-	 * @param priority
+	 * @param integer $offset Offset, default is 0
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -161,8 +162,8 @@ class File {
 
 	/**
 	 * Stat()
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
@@ -189,8 +190,8 @@ class File {
 
 	/**
 	 * Stat() non-cached
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function statRefresh($cb, $pri = EIO_PRI_DEFAULT) {
@@ -213,8 +214,8 @@ class File {
 
 	/**
 	 * Statvfs()
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function statvfs($cb, $pri = EIO_PRI_DEFAULT) {
@@ -242,8 +243,8 @@ class File {
 
 	/**
 	 * Sync()
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function sync($cb, $pri = EIO_PRI_DEFAULT) {
@@ -262,8 +263,8 @@ class File {
 
 	/**
 	 * Datasync()
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function datasync($cb, $pri = EIO_PRI_DEFAULT) {
@@ -282,10 +283,10 @@ class File {
 
 	/**
 	 * Writes data to file
-	 * @param string   Data
-	 * @param callable Callback
-	 * @param [integer Offset
-	 * @param priority
+	 * @param string $data  Data
+	 * @param callable $cb Callback
+	 * @param integer $offset Offset
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
@@ -323,10 +324,10 @@ class File {
 
 	/**
 	 * Changes ownership of this file
-	 * @param integer  User ID
-	 * @param integer  Group ID
-	 * @param callable Callback
-	 * @param priority
+	 * @param integer $uid User ID
+	 * @param integer $gid Group ID
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -351,10 +352,10 @@ class File {
 
 	/**
 	 * touch()
-	 * @param integer  Last modification time
-	 * @param integer  Last access time
-	 * @param callable Callback
-	 * @param priority
+	 * @param integer $mtime Last modification time
+	 * @param integer $atime Last access time
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function touch($mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -385,10 +386,10 @@ class File {
 
 	/**
 	 * Reads data from file
-	 * @param integer  Length
-	 * @param [integer Offset
-	 * @param callable Callback
-	 * @param priority
+	 * @param integer $length Length
+	 * @param integer $offset Offset
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -418,11 +419,12 @@ class File {
 
 	/**
 	 * sendfile()
-	 * @param mixed    File descriptor
-	 * @param callable Start callback
-	 * @param integer  Offset
-	 * @param integer  Length
-	 * @param priority
+	 * @param mixed $outfd      File descriptor
+	 * @param callable $cb
+	 * @param callable $startCb Start callback
+	 * @param integer $offset   Offset
+	 * @param integer $length   Length
+	 * @param int $pri          priority
 	 * @return boolean Success
 	 */
 	public function sendfile($outfd, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
@@ -498,10 +500,10 @@ class File {
 
 	/**
 	 * readahead()
-	 * @param integer  Length
-	 * @param integer  Offset
-	 * @param callable Callback
-	 * @param priority
+	 * @param integer $length Length
+	 * @param integer $offset Offset
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -528,6 +530,15 @@ class File {
 		);
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $cb
+	 * @param $size
+	 * @param $offset
+	 * @param $pri
+	 * @param $buf
+	 * @return callable
+	 */
 	protected function readAllGenHandler($cb, $size, &$offset, &$pri, &$buf) {
 		return function ($file, $data) use ($cb, $size, &$offset, &$pri, &$buf) {
 			$buf .= $data;
@@ -545,8 +556,8 @@ class File {
 
 	/**
 	 * Reads whole file
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return boolean Success
 	 */
 	public function readAll($cb, $pri = EIO_PRI_DEFAULT) {
@@ -571,6 +582,15 @@ class File {
 		return true;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $cb
+	 * @param $chunkcb
+	 * @param $size
+	 * @param $offset
+	 * @param $pri
+	 * @return callable
+	 */
 	protected function readAllChunkedGenHandler($cb, $chunkcb, $size, &$offset, $pri) {
 		return function ($file, $data) use ($cb, $chunkcb, $size, &$offset, $pri) {
 			call_user_func($chunkcb, $file, $data);
@@ -586,8 +606,9 @@ class File {
 
 	/**
 	 * Reads file chunk-by-chunk
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param mixed $chunkcb
+	 * @param int $pri     priority
 	 * @return resource
 	 */
 	public function readAllChunked($cb = null, $chunkcb = null, $pri = EIO_PRI_DEFAULT) {
@@ -618,7 +639,7 @@ class File {
 
 	/**
 	 * Set chunk size
-	 * @param integer Chunk size
+	 * @param integer $n Chunk size
 	 * @return void
 	 */
 	public function setChunkSize($n) {
@@ -627,9 +648,9 @@ class File {
 
 	/**
 	 * Move pointer to arbitrary position
-	 * @param integer  offset
-	 * @param callable Callback
-	 * @param priority
+	 * @param integer $offset offset
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public function seek($offset, $cb, $pri = EIO_PRI_DEFAULT) {

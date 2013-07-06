@@ -19,11 +19,29 @@ class Parser {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/**
+	 * @TODO DESCR
+	 */
 	const T_ALL     = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const T_COMMENT = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const T_VAR     = 3;
+	/**
+	 * @TODO DESCR
+	 */
 	const T_STRING  = 4;
+	/**
+	 * @TODO DESCR
+	 */
 	const T_BLOCK   = 5;
+	/**
+	 * @TODO DESCR
+	 */
 	const T_CVALUE  = 5;
 
 	/**
