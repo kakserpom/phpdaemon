@@ -51,14 +51,17 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	public function __call($name, $args) {
 		$name = strtolower($name);
-		if (!isset($this->opcodes[$name])) {
-			return false;
-		}
 		$onResponse = null;
 		if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
 			$onResponse = array_pop($args);
 		}
+		if (!isset($this->opCodes[$name])) {
+			if ($onResponse) {
+				call_user_func($onResponse, false);
+			}
+			return false;
+		}
 		$data = implode(' ', $args);
-		$this->requestByServer($server = null, pack('ls', strlen($data) + 2, $this->opcodes[$name]) . $data, $onResponse);
+		$this->requestByServer($server = null, pack('ls', strlen($data) + 2, $this->opCodes[$name]) . $data, $onResponse);
 	}
 }
