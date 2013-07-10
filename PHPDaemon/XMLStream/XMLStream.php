@@ -11,9 +11,9 @@ class XMLStream {
 
 	protected $parser;
 	protected $xml_depth = 0;
-	protected $current_ns = array();
-	protected $idhandlers = array();
-	protected $xpathhandlers = array();
+	protected $current_ns = [];
+	protected $idhandlers = [];
+	protected $xpathhandlers = [];
 	protected $default_ns;
 
 	public function __construct() {
@@ -32,6 +32,9 @@ class XMLStream {
 		$this->default_ns = $ns;
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function finish() {
 		$this->xml_depth     = 0;
 		$this->current_ns    = [];
@@ -54,6 +57,9 @@ class XMLStream {
 		xml_parse($this->parser, $buf, false);
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function finalize() {
 		xml_parse($this->parser, '', true);
 	}
@@ -175,6 +181,7 @@ class XMLStream {
 	/**
 	 * Set SSL
 	 *
+	 * @param bool $use
 	 * @return integer
 	 */
 	public function useSSL($use = true) {
@@ -185,8 +192,7 @@ class XMLStream {
 	 * Add ID Handler
 	 *
 	 * @param integer $id
-	 * @param string $pointer
-	 * @param string $obj
+	 * @param $cb
 	 */
 	public function addIdHandler($id, $cb) {
 		if ($cb === null) {
@@ -199,27 +205,27 @@ class XMLStream {
 	 * Add XPath Handler
 	 *
 	 * @param string $xpath
-	 * @param string $pointer
-	 * @param
+	 * @param $cb
+	 * @param null $obj
 	 */
 	public function addXPathHandler($xpath, $cb, $obj = null) {
 		if (preg_match_all("/\(?{[^\}]+}\)?(\/?)[^\/]+/", $xpath, $regs)) {
 			$ns_tags = $regs[0];
 		}
 		else {
-			$ns_tags = array($xpath);
+			$ns_tags = [$xpath];
 		}
 		foreach ($ns_tags as $ns_tag) {
 			list($l, $r) = explode("}", $ns_tag);
 			if ($r != null) {
-				$xpart = array(substr($l, 1), $r);
+				$xpart = [substr($l, 1), $r];
 			}
 			else {
-				$xpart = array(null, $l);
+				$xpart = [null, $l];
 			}
 			$xpath_array[] = $xpart;
 		}
-		$this->xpathhandlers[] = array($xpath_array, $cb, $obj, $xpath);
+		$this->xpathhandlers[] = [$xpath_array, $cb, $obj, $xpath];
 	}
 
 }

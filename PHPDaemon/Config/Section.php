@@ -24,7 +24,9 @@ use PHPDaemon\Config\Entry\Generic;
 class Section implements \ArrayAccess, \Countable {
 	use \PHPDaemon\Traits\ClassWatchdog;
 
+	/** @var */
 	public $source;
+	/** @var */
 	public $revision;
 
 	/**

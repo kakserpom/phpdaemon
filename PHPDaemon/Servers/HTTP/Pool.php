@@ -12,7 +12,8 @@ use PHPDaemon\Config\Entry\Time;
  */
 class Pool extends \PHPDaemon\Network\Server {
 
-	/** Variables order
+	/**
+	 * Variables order
 	 * @var string "GPC"
 	 */
 	public $variablesOrder;
@@ -28,7 +29,7 @@ class Pool extends \PHPDaemon\Network\Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			/**
 			 * Default servers
 			 * @var string|array
@@ -112,7 +113,7 @@ class Pool extends \PHPDaemon\Network\Server {
 			 * @var string
 			 */
 			'responder'               => null,
-		);
+		];
 	}
 
 	/**

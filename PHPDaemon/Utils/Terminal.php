@@ -54,7 +54,7 @@ class Terminal {
 	 * @return void
 	 */
 	public function setStyle($c) {
-		if ($this->enable_color) {
+		if ($this->enableColor) {
 			echo "\033[" . $c . 'm';
 		}
 	}
@@ -64,7 +64,7 @@ class Terminal {
 	 * @return void
 	 */
 	public function resetStyle() {
-		if ($this->enable_color) {
+		if ($this->enableColor) {
 			echo "\033[0m";
 		}
 	}
@@ -96,7 +96,7 @@ class Terminal {
 
 		echo "\n";
 
-		$leftcolumn = array();
+		$leftcolumn = [];
 
 		$valstr = is_array($values) ? implode('|', array_keys($values)) : $values;
 

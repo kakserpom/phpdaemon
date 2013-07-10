@@ -14,6 +14,7 @@ use PHPDaemon\Config\Entry\Generic;
 class Boolean extends Generic {
 
 	/**
+	 * @TODO DESCR
 	 * @param $value
 	 * @return bool
 	 */

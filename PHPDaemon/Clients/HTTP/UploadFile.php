@@ -9,11 +9,21 @@ class UploadFile {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/**
+	 * @var
+	 */
 	public $name;
+	/**
+	 * @var
+	 */
 	public $data;
+	/**
+	 * @var
+	 */
 	public $path;
 
 	/**
+	 * @TODO DESCR
 	 * @param string $path
 	 * @return UploadFile
 	 */
@@ -25,6 +35,7 @@ class UploadFile {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param string $str
 	 * @return UploadFile
 	 */
@@ -35,6 +46,7 @@ class UploadFile {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param string $name
 	 * @return $this
 	 */

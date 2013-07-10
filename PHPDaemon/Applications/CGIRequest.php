@@ -78,7 +78,7 @@ class CGIRequest extends Generic {
 			$this->proc->cwd = dirname($this->attrs->server['SCRIPT_FILENAME']);
 		}
 
-		$this->proc->setArgs(array($this->attrs->server['SCRIPT_FILENAME']));
+		$this->proc->setArgs([$this->attrs->server['SCRIPT_FILENAME']]);
 		$this->proc->setEnv($this->attrs->server);
 		$this->proc->execute();
 	}

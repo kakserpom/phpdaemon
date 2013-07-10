@@ -1,16 +1,12 @@
 <?php
 namespace PHPDaemon\Cache;
 
-	/**
-	 * CappedStorage
-	 *
-	 * @package Core
-	 *
-	 * @author  Zorin Vasily <maintainer@daemon.io>
-	 */
 /**
- * Class CappedStorage
- * @package PHPDaemon\Cache
+ * CappedStorage
+ *
+ * @package Core
+ *
+ * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class CappedStorage {
 	use \PHPDaemon\Traits\ClassWatchdog;

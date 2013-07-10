@@ -15,12 +15,14 @@ trait EventHandlers {
 	 */
 	protected $eventHandlers = [];
 
-	/** Unshift $this to arguments of callback?
+	/**
+	 * Unshift $this to arguments of callback?
 	 * @var boolean
 	 */
 	protected $addThisToEvents = true;
 
-	/** Propagate event
+	/**
+	 * Propagate event
 	 * @param string Event name
 	 * @param mixed  ... variable set of arguments ...
 	 * @return void
@@ -38,23 +40,26 @@ trait EventHandlers {
 		}
 	}
 
-	/** Alias of bind()
+	/**
+	 * Alias of bind()
 	 * @alias bind
 	 */
 	public function addEventHandler($event, $cb) { // @todo: remove in 1.0
 		return $this->bind($event, $cb);
 	}
 
-	/** Alias of unbind()
+	/**
+	 * Alias of unbind()
 	 * @alias unbind
 	 */
 	public function removeEventHandler($event, $cb = null) { // @todo: remove in 1.0
 		return $this->unbind($event, $cb);
 	}
 
-	/** Bind event
+	/**
+	 * Bind event
 	 * @param string   Event name
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
 	public function bind($event, $cb) {
@@ -65,7 +70,8 @@ trait EventHandlers {
 		return true;
 	}
 
-	/** Unbind event or callback from event
+	/**
+	 * Unbind event or callback from event
 	 * @param string Event name
 	 * @param [callable Callback, optional
 	 * @return boolean Success

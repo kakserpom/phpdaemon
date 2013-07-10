@@ -5,8 +5,16 @@ use PHPDaemon\Network\Server;
 
 class Pool extends Server {
 
-	public $lockState = array(); // Jobs
-	public $lockConnState = array(); // Array of connection's state
+	/**
+	 * Jobs
+	 * @var array
+	 */
+	public $lockState = [];
+	/**
+	 * Array of connection's state
+	 * @var array
+	 */
+	public $lockConnState = [];
 
 	/**
 	 * Setting default config options
@@ -14,7 +22,7 @@ class Pool extends Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// listen to
 			'listen'         => 'tcp://0.0.0.0',
 			// listen port
@@ -24,7 +32,7 @@ class Pool extends Server {
 			// disabled by default
 			'enable'         => 0,
 			'protologging'   => false,
-		);
+		];
 	}
 
 }

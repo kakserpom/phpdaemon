@@ -142,7 +142,7 @@ abstract class Generic {
 			) {
 				continue;
 			}
-			$ev = \Event::signal($this->eventBase, $no, array($this, 'eventSighandler'), array($no));
+			$ev = \Event::signal($this->eventBase, $no, [$this, 'eventSighandler'], [$no]);
 			if (!$ev) {
 				$this->log('Cannot event_set for ' . $name . ' signal');
 			}
@@ -240,10 +240,10 @@ abstract class Generic {
 	 * @return void
 	 */
 	protected function sighandler($signo) {
-		if (is_callable($c = array($this, strtolower(self::$signals[$signo])))) {
+		if (is_callable($c = [$this, strtolower(self::$signals[$signo])])) {
 			call_user_func($c);
 		}
-		elseif (is_callable($c = array($this, 'sigunknown'))) {
+		elseif (is_callable($c = [$this, 'sigunknown'])) {
 			call_user_func($c, $signo);
 		}
 	}

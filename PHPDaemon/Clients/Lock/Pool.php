@@ -14,7 +14,7 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// default server
 			'servers'      => '127.0.0.1',
 			// default port
@@ -22,7 +22,7 @@ class Pool extends \PHPDaemon\Network\Client {
 			// @todo add description
 			'prefix'       => '',
 			'protologging' => 0
-		);
+		];
 	}
 
 	/**
@@ -40,7 +40,7 @@ class Pool extends \PHPDaemon\Network\Client {
 			if (!$conn->connected) {
 				return;
 			}
-			$conn->pool->jobs[$name] = array($onRun, $onSuccess, $onFailure);
+			$conn->pool->jobs[$name] = [$onRun, $onSuccess, $onFailure];
 			$conn->writeln('acquire' . ($wait ? 'Wait' : '') . ' ' . $name);
 		});
 	}

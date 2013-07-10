@@ -14,6 +14,7 @@ class ProtocolV0 extends Protocol {
 	const BINARY = 0x80;
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	public function onHandshake() {
@@ -28,7 +29,6 @@ class ProtocolV0 extends Protocol {
 	 * @param string Received data (no use in this class)
 	 * @return string Handshaked data
 	 */
-
 	public function getHandshakeReply($data) {
 		if ($this->onHandshake()) {
 			if (strlen($data) < 8) {
@@ -69,7 +69,6 @@ class ProtocolV0 extends Protocol {
 	 * @param string Data
 	 * @return string Result
 	 */
-
 	protected function _computeFinalKey($key1, $key2, $data) {
 		if (strlen($data) < 8) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->conn->addr . '"');
@@ -84,7 +83,6 @@ class ProtocolV0 extends Protocol {
 	 * @param string Key
 	 * @return string Result
 	 */
-
 	protected function _computeKey($key) {
 		$spaces = 0;
 		$digits = '';
@@ -111,6 +109,7 @@ class ProtocolV0 extends Protocol {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $data
 	 * @param $type
 	 * @return string

@@ -15,10 +15,16 @@ class FileWatcher {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	public $files = array();
+	/** @var array */
+	public $files = [];
+	/** @var */
 	public $inotify;
-	public $descriptors = array();
+	/** @var array */
+	public $descriptors = [];
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function __construct() {
 		if (Daemon::loadModuleIfAbsent('inotify')) {
 			$this->inotify = inotify_init();
@@ -37,6 +43,7 @@ class FileWatcher {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $path
 	 * @param $subscriber
 	 * @param int $flags
@@ -45,7 +52,7 @@ class FileWatcher {
 	public function addWatch($path, $subscriber, $flags = NULL) {
 		$path = realpath($path);
 		if (!isset($this->files[$path])) {
-			$this->files[$path] = array();
+			$this->files[$path] = [];
 			if ($this->inotify) {
 				$this->descriptors[inotify_add_watch($this->inotify, $path, $flags ? : IN_MODIFY)] = $path;
 			}
@@ -56,6 +63,7 @@ class FileWatcher {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $path
 	 * @param $subscriber
 	 * @return bool
@@ -82,6 +90,7 @@ class FileWatcher {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $path
 	 */
 	public function onFileChanged($path) {
@@ -99,6 +108,9 @@ class FileWatcher {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function watch() {
 		if ($this->inotify) {
 			$events = inotify_read($this->inotify);
@@ -114,7 +126,7 @@ class FileWatcher {
 			}
 		}
 		else {
-			static $hash = array();
+			static $hash = [];
 
 			foreach (array_keys($this->files) as $path) {
 				if (!file_exists($path)) {

@@ -8,8 +8,17 @@ abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_FINISHED = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_WAITING  = 2;
+	/**
+	 * @TODO DESCR
+	 */
 	const STATE_RUNNING  = 3;
 
 	/**
@@ -92,7 +101,6 @@ abstract class Generic {
 	 * @param AppInstance $appInstance                        Parent AppInstance.
 	 * @param IRequestUpstream $upstream                      Upstream.
 	 * @param object $parent                                  Source request.
-	 * @return void
 	 */
 	public function __construct($appInstance, IRequestUpstream $upstream, $parent = null) {
 		$this->appInstance = $appInstance;
@@ -139,7 +147,8 @@ abstract class Generic {
 
 	/**
 	 * Output some data
-	 * @param string String to out
+	 * @param string $s String to out
+	 * @param bool $flush
 	 * @return boolean Success
 	 */
 	public function out($s, $flush = true) {
@@ -154,6 +163,7 @@ abstract class Generic {
 
 	/**
 	 * Event handler of Request, called by Evtimer
+	 * @param $arg
 	 * @return void
 	 */
 	public function eventCall($arg) {
@@ -283,7 +293,7 @@ abstract class Generic {
 	 */
 	public static function getArray(&$var, $filter = null) {
 		if (!is_array($var)) {
-			return array();
+			return [];
 		}
 		if ($filter !== null) {
 			return array_filter($var, $filter);
@@ -321,6 +331,7 @@ abstract class Generic {
 
 	/**
 	 * Adds new callback called before the request finished
+	 * @param callable $callback
 	 * @return void
 	 */
 	public function registerShutdownFunction($callback) {
@@ -329,6 +340,7 @@ abstract class Generic {
 
 	/**
 	 * Remove the given callback
+	 * @param callable $callback
 	 * @return void
 	 */
 	public function unregisterShutdownFunction($callback) {
@@ -353,9 +365,10 @@ abstract class Generic {
 
 	/**
 	 * Delays the request execution for the given number of seconds
+	 *
+	 * @param float|int $time Time to sleep in seconds
+	 * @param boolean $set    Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
 	 * @throws RequestSleep
-	 * @param float   Time to sleep in seconds
-	 * @param boolean Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
 	 * @return void
 	 */
 	public function sleep($time = 0, $set = false) {
@@ -381,6 +394,8 @@ abstract class Generic {
 
 	/**
 	 * Throws terminating exception
+	 * @param $s
+	 * @throws RequestTerminated
 	 * @return void
 	 */
 	public function terminate($s = NULL) {
@@ -537,6 +552,7 @@ abstract class Generic {
 
 	/**
 	 * Called after request finish
+	 * @param callable $cb
 	 * @return void
 	 */
 	protected function postFinishHandler($cb = null) {

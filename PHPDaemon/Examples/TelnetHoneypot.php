@@ -14,11 +14,11 @@ class TelnetHoneypot extends \PHPDaemon\Network\Server {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'listen' => '0.0.0.0',
 			'port'   => 23,
-		);
+		];
 	}
 }
 

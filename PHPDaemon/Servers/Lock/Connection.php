@@ -11,8 +11,10 @@ use PHPDaemon\Core\Debug;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
+	/** @var bool */
 	public $server = FALSE; // Is this S2S-session?
-	public $locks = array(); // State of locks.
+	/** @var array */
+	public $locks = []; // State of locks.
 
 	/**
 	 * Called when client is trying to acquire lock.
@@ -23,7 +25,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public function acquireLock($name, $wait = FALSE) {
 		if (!isset($this->pool->lockState[$name])) {
 			$this->pool->lockState[$name]     = 1;
-			$this->pool->lockConnState[$name] = array($this->connId => 1);
+			$this->pool->lockConnState[$name] = [$this->connId => 1];
 			$this->locks[$name]               = 1;
 
 			return 'RUN';

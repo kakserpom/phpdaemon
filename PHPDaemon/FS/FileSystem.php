@@ -38,7 +38,7 @@ class FileSystem {
 	 * Mode types
 	 * @var array
 	 */
-	public static $modeTypes = array(
+	public static $modeTypes = [
 		0140000 => 's',
 		0120000 => 'l',
 		0100000 => 'f',
@@ -46,7 +46,7 @@ class FileSystem {
 		0040000 => 'd',
 		0020000 => 'c',
 		0010000 => 'p',
-	);
+	];
 
 	/**
 	 * TTL for bad descriptors in seconds
@@ -165,7 +165,8 @@ class FileSystem {
 
 	/**
 	 * Prepare value of stat()
-	 * @return hash
+	 * @param $stat
+	 * @return array hash
 	 */
 	public static function statPrepare($stat) {
 		if ($stat === -1 || !$stat) {
@@ -177,9 +178,9 @@ class FileSystem {
 
 	/**
 	 * Gets stat() information
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -194,9 +195,9 @@ class FileSystem {
 
 	/**
 	 * Unlink file
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function unlink($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -212,10 +213,10 @@ class FileSystem {
 
 	/**
 	 * Rename
-	 * @param string   Path
-	 * @param string   New path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param string $newpath  New path
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function rename($path, $newpath, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -231,9 +232,9 @@ class FileSystem {
 
 	/**
 	 * statvfs()
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -246,9 +247,9 @@ class FileSystem {
 
 	/**
 	 * lstat()
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -263,9 +264,9 @@ class FileSystem {
 
 	/**
 	 * realpath()
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function realpath($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -278,9 +279,8 @@ class FileSystem {
 
 	/**
 	 * sync()
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function sync($cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -295,9 +295,8 @@ class FileSystem {
 
 	/**
 	 * statfs()
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function syncfs($cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -312,11 +311,11 @@ class FileSystem {
 
 	/**
 	 * touch()
-	 * @param string   Path
-	 * @param integer  Last modification time
-	 * @param integer  Last access time
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param integer $mtime Last modification time
+	 * @param integer $atime Last access time
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -332,9 +331,9 @@ class FileSystem {
 
 	/**
 	 * Removes empty directory
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -350,10 +349,10 @@ class FileSystem {
 
 	/**
 	 * Creates directory
-	 * @param string   Path
-	 * @param octal    Mode
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param int $mode  Mode (octal)
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -369,10 +368,10 @@ class FileSystem {
 
 	/**
 	 * Readdir()
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param integer  Flags
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback
+	 * @param integer $flags Flags
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function readdir($path, $cb = null, $flags, $pri = EIO_PRI_DEFAULT) {
@@ -388,9 +387,10 @@ class FileSystem {
 
 	/**
 	 * Truncate file
-	 * @param string   Path
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param int $offset
+	 * @param callable $cb  Callback
+	 * @param int $pri      priority
 	 * @return resource
 	 */
 	public static function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
@@ -407,12 +407,13 @@ class FileSystem {
 
 	/**
 	 * sendfile()
-	 * @param mixed    File descriptor
-	 * @param string   Path
-	 * @param callable Start callback
-	 * @param integer  Offset
-	 * @param integer  Length
-	 * @param priority
+	 * @param mixed $outfd      File descriptor
+	 * @param string $path      Path
+	 * @param $cb
+	 * @param callable $startCb Start callback
+	 * @param integer $offset   Offset
+	 * @param integer $length   Length
+	 * @param int $pri          priority
 	 * @return boolean Success
 	 */
 	public static function sendfile($outfd, $path, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
@@ -439,11 +440,11 @@ class FileSystem {
 
 	/**
 	 * Changes ownership of file/directory
-	 * @param string   Path
-	 * @param integer  User ID
-	 * @param integer  Group ID
-	 * @param callable Callback
-	 * @param priority
+	 * @param string $path  Path
+	 * @param integer $uid User ID
+	 * @param integer $gid Group ID
+	 * @param callable $cb Callback
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function chown($path, $uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -460,9 +461,9 @@ class FileSystem {
 
 	/**
 	 * Reads whole file
-	 * @param string   Path
-	 * @param callable Callback (Path, Contents)
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback (Path, Contents)
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -481,10 +482,10 @@ class FileSystem {
 
 	/**
 	 * Reads file chunk-by-chunk
-	 * @param string   Path
-	 * @param callable Callback (Path, Success)
-	 * @param callable Chunk callback (Path, Chunk)
-	 * @param priority
+	 * @param string $path  Path
+	 * @param callable $cb Callback (Path, Success)
+	 * @param callable $chunkcb Chunk callback (Path, Chunk)
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function readfileChunked($path, $cb, $chunkcb, $pri = EIO_PRI_DEFAULT) {
@@ -504,8 +505,8 @@ class FileSystem {
 
 	/**
 	 * Returns random temporary file name
-	 * @param string Directory
-	 * @param string Prefix
+	 * @param string $dir Directory
+	 * @param string $prefix Prefix
 	 * @return string Path
 	 */
 	public static function genRndTempnam($dir, $prefix) {
@@ -522,8 +523,8 @@ class FileSystem {
 
 	/**
 	 * Returns random temporary file name
-	 * @param string Directory
-	 * @param string Prefix
+	 * @param string $dir Directory
+	 * @param string $prefix Prefix
 	 * @return string Path
 	 */
 	public static function genRndTempnamPrefix($dir, $prefix) {
@@ -533,6 +534,13 @@ class FileSystem {
 		return $dir . '/' . $prefix;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $dir
+	 * @param $prefix
+	 * @param $cb
+	 * @param $tries
+	 */
 	protected static function tempnamHandler($dir, $prefix, $cb, &$tries) {
 		if (++$tries >= 3) {
 			call_user_func($cb, false);
@@ -550,10 +558,9 @@ class FileSystem {
 
 	/**
 	 * Obtain exclusive temporary file
-	 * @param string   Directory
-	 * @param string   Prefix
-	 * @param callable Callback (File)
-	 * @param priority
+	 * @param string $dir  Directory
+	 * @param string $prefix  Prefix
+	 * @param callable $cb Callback (File)
 	 * @return resource
 	 */
 	public static function tempnam($dir, $prefix, $cb) {
@@ -566,11 +573,11 @@ class FileSystem {
 
 	/**
 	 * Open file
-	 * @param string   Path
-	 * @param string   Flags
-	 * @param callable Callback (File)
-	 * @param integer  Mode (see EIO_S_I* constants)
-	 * @param priority
+	 * @param string $path  Path
+	 * @param string $flags Flags
+	 * @param callable $cb Callback (File)
+	 * @param integer $mode Mode (see EIO_S_I* constants)
+	 * @param int $pri priority
 	 * @return resource
 	 */
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {

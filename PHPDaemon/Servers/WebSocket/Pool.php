@@ -6,11 +6,19 @@ use PHPDaemon\Network\Server;
 use PHPDaemon\WebSocket\Route;
 
 class Pool extends Server {
+	/** @var array */
 	public $routes = [];
 
+	/**
+	 * @TODO DESCR
+	 */
 	const BINARY = 'BINARY';
+	/**
+	 * @TODO DESCR
+	 */
 	const STRING = 'STRING';
 
+	/** @var */
 	public $maxAllowedPacket;
 
 	/**
@@ -19,14 +27,14 @@ class Pool extends Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'expose'             => 1,
 			'listen'             => '0.0.0.0',
 			'port'               => 8047,
 			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
 			'fps-name'           => '',
-		);
+		];
 	}
 
 	/**
@@ -35,7 +43,6 @@ class Pool extends Server {
 	 * @param mixed  Route's callback.
 	 * @return boolean Success.
 	 */
-
 	public function addRoute($route, $cb) {
 		if (isset($this->routes[$route])) {
 			Daemon::log(__METHOD__ . ' Route \'' . $route . '\' is already defined.');
@@ -51,7 +58,6 @@ class Pool extends Server {
 	 * @param mixed  Route's callback.
 	 * @return boolean Success.
 	 */
-
 	public function setRoute($route, $cb) {
 		$this->routes[$route] = $cb;
 		return true;
@@ -62,7 +68,6 @@ class Pool extends Server {
 	 * @param string Route name.
 	 * @return boolean Success.
 	 */
-
 	public function removeRoute($route) {
 		if (!isset($this->routes[$route])) {
 			return false;
@@ -71,4 +76,3 @@ class Pool extends Server {
 		return true;
 	}
 }
-

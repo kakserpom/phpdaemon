@@ -15,11 +15,29 @@ use PHPDaemon\Utils\IRC;
 class Channel extends ObjectStorage {
 	use \PHPDaemon\Traits\EventHandlers;
 
+	/**
+	 * @var
+	 */
 	public $irc;
+	/**
+	 * @var
+	 */
 	public $name;
-	public $nicknames = array();
+	/**
+	 * @var array
+	 */
+	public $nicknames = [];
+	/**
+	 * @var
+	 */
 	public $self;
+	/**
+	 * @var
+	 */
 	public $type;
+	/**
+	 * @var
+	 */
 	public $topic;
 
 	/**
@@ -31,11 +49,15 @@ class Channel extends ObjectStorage {
 		$this->name = $name;
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function who() {
 		$this->irc->command('WHO', $this->name);
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param array|string $mask
 	 * @param mixed $msg
 	 */
@@ -52,6 +74,7 @@ class Channel extends ObjectStorage {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param string $type
 	 */
 	public function setChanType($type) {
@@ -59,10 +82,11 @@ class Channel extends ObjectStorage {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return array
 	 */
 	public function exportNicksArray() {
-		$nicks = array();
+		$nicks = [];
 		foreach ($this as $participant) {
 			$nicks[] = $participant->flag . $participant->nick;
 		}
@@ -70,6 +94,7 @@ class Channel extends ObjectStorage {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $msg
 	 */
 	public function setTopic($msg) {
@@ -77,6 +102,7 @@ class Channel extends ObjectStorage {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $nick
 	 * @param $mode
 	 */
@@ -92,6 +118,7 @@ class Channel extends ObjectStorage {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $target
 	 * @param $mode
 	 */
@@ -104,15 +131,22 @@ class Channel extends ObjectStorage {
 		$participant->onModeUpdate();
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function destroy() {
 		unset($this->irc->channels[$this->name]);
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function join() {
 		$this->irc->join($this->name);
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param mixed $msg
 	 */
 	public function part($msg = null) {
@@ -120,6 +154,7 @@ class Channel extends ObjectStorage {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $type
 	 * @return $this
 	 */
@@ -129,6 +164,7 @@ class Channel extends ObjectStorage {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param object $obj
 	 */
 	public function detach($obj) {

@@ -28,7 +28,7 @@ class ExampleDNSClientRequest extends Generic {
 
 		$job('resolve', function ($name, $job) { // registering job named 'showvar'
 			\PHPDaemon\Clients\DNS\Pool::getInstance()->resolve('phpdaemon.net', function ($ip) use ($name, $job) {
-				$job->setResult($name, array('phpdaemon.net resolved to' => $ip));
+				$job->setResult($name, ['phpdaemon.net resolved to' => $ip]);
 			});
 		});
 

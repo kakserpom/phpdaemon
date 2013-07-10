@@ -15,7 +15,7 @@ class XMPPRoster {
 	/**
 	 * @var array
 	 */
-	public $roster_array = array();
+	public $roster_array = [];
 	/**
 	 * @var bool
 	 */
@@ -36,7 +36,7 @@ class XMPPRoster {
 		$this->xmpp = $xmpp;
 
 		$this->xmpp->xml->addXPathHandler('{jabber:client}presence', function ($xml) {
-			$payload             = array();
+			$payload             = [];
 			$payload['type']     = (isset($xml->attrs['type'])) ? $xml->attrs['type'] : 'available';
 			$payload['show']     = (isset($xml->sub('show')->data)) ? $xml->sub('show')->data : $payload['type'];
 			$payload['from']     = $xml->attrs['from'];
@@ -92,9 +92,9 @@ class XMPPRoster {
 		$this->xmpp->queryGet($this->ns, function ($xml) use ($cb) {
 			$status    = "result";
 			$xmlroster = $xml->sub('query');
-			$contacts  = array();
+			$contacts  = [];
 			foreach ($xmlroster->subs as $item) {
-				$groups = array();
+				$groups = [];
 				if ($item->name == 'item') {
 					$jid          = $item->attrs['jid']; //REQUIRED
 					$name         = isset($item->attrs['name']) ? $item->attrs['name'] : ''; //MAY
@@ -104,7 +104,7 @@ class XMPPRoster {
 							$groups[] = $subitem->data;
 						}
 					}
-					$contacts[] = array($jid, $subscription, $name, $groups); //Store for action if no errors happen
+					$contacts[] = [$jid, $subscription, $name, $groups]; //Store for action if no errors happen
 				}
 				else {
 					$status = "error";
@@ -133,7 +133,7 @@ class XMPPRoster {
 	 * @param string $name
 	 * @param array $groups
 	 */
-	public function _addContact($jid, $subscription, $name = '', $groups = array()) {
+	public function _addContact($jid, $subscription, $name = '', $groups = []) {
 		$contact = ['jid' => $jid, 'subscription' => $subscription, 'name' => $name, 'groups' => $groups];
 		if ($this->isContact($jid)) {
 			$this->roster_array[$jid]['contact'] = $contact;

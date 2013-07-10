@@ -274,6 +274,7 @@ class Object implements \ArrayAccess {
 	 */
 	public $eiosetminparallel = null;
 
+	/** @var int */
 	public static $lastRevision = 0;
 
 	/**
@@ -317,6 +318,7 @@ class Object implements \ArrayAccess {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $old
 	 * @param $new
 	 */
@@ -487,9 +489,9 @@ class Object implements \ArrayAccess {
 	public static function loadCmdLineArgs($settings) {
 		$error = FALSE;
 
-		static $ktr = array(
+		static $ktr = [
 			'-' => '',
-		);
+		];
 
 		foreach ($settings as $k => $v) {
 			$k = strtolower(strtr($k, $ktr));

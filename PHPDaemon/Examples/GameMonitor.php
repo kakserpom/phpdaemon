@@ -76,7 +76,7 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance {
 				$app->servers->upsert(['_id' => $server['_id']], ['$set' => $set]);
 			} catch (\MongoException $e) {
 				\PHPDaemon\Core\Daemon::uncaughtExceptionHandler($e);
-				$app->servers->upsert(['_id' => $server['_id']], ['$set' => array('atime' => time())]);
+				$app->servers->upsert(['_id' => $server['_id']], ['$set' => ['atime' => time()]]);
 			}
 		});
 		$app->jobMap[$server['address']] = $job;
@@ -134,7 +134,7 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance {
 		}, [
 			   'where' => ['$or' => [
 				   ['atime' => ['$lte' => time() - 30], 'latency' => ['$ne' => false]],
-				   ['atime' => array('$lte' => time() - 120), 'latency' => false],
+				   ['atime' => ['$lte' => time() - 120], 'latency' => false],
 				   ['atime' => null],
 				   //['address' => 'dimon4ik.no-ip.org:27016'],
 

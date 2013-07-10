@@ -11,11 +11,17 @@ use PHPDaemon\HTTPRequest\Generic;
  */
 class WebSocketOverCOMETRequest extends Generic {
 
+	/** @var bool */
 	public $inited = FALSE;
+	/** @var */
 	public $authKey;
+	/** @var */
 	public $type;
+	/** @var */
 	public $reqIdAuthKey;
+	/** @var */
 	public $jsid;
+	/** @var */
 	public $id;
 
 	/**
@@ -39,7 +45,7 @@ class WebSocketOverCOMETRequest extends Generic {
 		$this->inited = true;
 		$data         = self::getString($_REQUEST['data']);
 		if ($data !== '') {
-			$ret = array();
+			$ret = [];
 			$id  = self::getString($_REQUEST['_id']);
 			if (strpos($id, '.') === false) {
 				$ret['error'] = 'Bad cookie.';
@@ -53,7 +59,7 @@ class WebSocketOverCOMETRequest extends Generic {
 			else {
 				list ($workerId, $this->reqIdAuthKey) = explode('.', $id, 2);
 				$workerId = (int)$workerId;
-				$this->appInstance->directCall($workerId, 'c2s', array($this->reqIdAuthKey, $data));
+				$this->appInstance->directCall($workerId, 'c2s', [$this->reqIdAuthKey, $data]);
 			}
 			if (sizeof($ret)) {
 				echo json_encode($ret);
@@ -109,7 +115,7 @@ class WebSocketOverCOMETRequest extends Generic {
 		if (isset($_REQUEST['_poll'])) {
 			$this->header('Content-Type: text/plain; charset=utf-8');
 
-			$ret = array();
+			$ret = [];
 			$id  = self::getString($_REQUEST['_id']);
 			if (strpos($id, '.') === false) {
 				$ret['error'] = 'Bad cookie.';
@@ -117,12 +123,12 @@ class WebSocketOverCOMETRequest extends Generic {
 			else {
 				list ($workerId, $this->reqIdAuthKey) = explode('.', $id, 2);
 				$workerId = (int)$workerId;
-				$this->appInstance->directCall($workerId, 'poll', array(
+				$this->appInstance->directCall($workerId, 'poll', [
 					\PHPDaemon\Core\Daemon::$process->id,
 					$this->id,
 					$this->reqIdAuthKey,
 					self::getString($_REQUEST['ts'])
-				));
+				]);
 			}
 
 			if (isset($this->attrs->get['_script'])) {

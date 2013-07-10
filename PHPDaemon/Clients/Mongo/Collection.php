@@ -197,7 +197,7 @@ class Collection {
 	 * @param array Optional. Params.
 	 * @return void
 	 */
-	public function remove($cond = array(), $cb = NULL, $params = null) {
+	public function remove($cond = [], $cb = NULL, $params = null) {
 		$this->pool->remove($this->name, $cond, $cb);
 	}
 

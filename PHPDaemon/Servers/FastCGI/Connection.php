@@ -60,6 +60,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	protected $content;
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	public function checkSendfileCap() { // @DISCUSS
@@ -67,6 +68,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @return bool
 	 */
 	public function checkChunkedEncCap() { // @DISCUSS
@@ -77,7 +79,6 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * Called when new data received.
 	 * @return void
 	 */
-
 	public function onRead() {
 		start:
 		if ($this->state === self::STATE_ROOT) {
@@ -298,6 +299,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $req
 	 * @param $chunk
 	 * @return bool
@@ -313,6 +315,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $req
 	 */
 	public function freeRequest($req) {
@@ -321,6 +324,9 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Handles the output from downstream requests.
+	 * @param $req
+	 * @param $appStatus
+	 * @param $protoStatus
 	 * @return void
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
@@ -346,6 +352,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Send Bad request
+	 * @param $req
 	 * @return void
 	 */
 	public function badRequest($req) {

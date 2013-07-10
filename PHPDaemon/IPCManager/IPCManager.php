@@ -9,8 +9,11 @@ use PHPDaemon\IPCManager\WorkerConnection;
 use PHPDaemon\Thread;
 
 class IPCManager extends AppInstance {
+	/** @var */
 	public $pool;
+	/** @var */
 	public $conn;
+	/** @var */
 	public $socketurl;
 
 	/**
@@ -19,10 +22,10 @@ class IPCManager extends AppInstance {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// listen to
 			'mastersocket' => 'unix:///tmp/phpDaemon-ipc-%x.sock',
-		);
+		];
 	}
 
 	/**
@@ -32,12 +35,15 @@ class IPCManager extends AppInstance {
 	public function init() {
 		$this->socketurl = sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value . "\x00" . Daemon::$config->user->value . "\x00" . Daemon::$config->group->value));
 		if (Daemon::$process instanceof Thread\IPC) {
-			$this->pool              = MasterPool::getInstance(array('listen' => $this->socketurl));
+			$this->pool              = MasterPool::getInstance(['listen' => $this->socketurl]);
 			$this->pool->appInstance = $this;
 			$this->pool->onReady();
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function updatedWorkers() {
 		$perWorker      = 1;
 		$instancesCount = [];
@@ -75,7 +81,7 @@ class IPCManager extends AppInstance {
 				else {
 					++$worker->instancesCount[$name];
 				}
-				$worker->sendPacket(array('op' => 'spawnInstance', 'appfullname' => $name));
+				$worker->sendPacket(['op' => 'spawnInstance', 'appfullname' => $name]);
 				--$v;
 			}
 		}
@@ -83,6 +89,7 @@ class IPCManager extends AppInstance {
 
 	/**
 	 * Called when application instance is going to shutdown.
+	 * @param bool $graceful
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown($graceful = false) {
@@ -93,6 +100,7 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $workerId
 	 * @param $path
 	 * @return bool
@@ -106,11 +114,15 @@ class IPCManager extends AppInstance {
 		return true;
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function ensureConnection() {
 		$this->sendPacket('');
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $packet
 	 */
 	public function sendPacket($packet = null) {
@@ -130,6 +142,7 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $appInstance
 	 * @param $method
 	 * @param array $args
@@ -145,6 +158,7 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $appInstance
 	 * @param $method
 	 * @param array $args
@@ -160,13 +174,14 @@ class IPCManager extends AppInstance {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $workerId
 	 * @param $appInstance
 	 * @param $method
 	 * @param array $args
 	 * @param callable $cb
 	 */
-	public function sendDirectCall($workerId, $appInstance, $method, $args = array(), $cb = null) {
+	public function sendDirectCall($workerId, $appInstance, $method, $args = [], $cb = null) {
 		$this->sendPacket([
 							  'op'          => 'directCall',
 							  'appfullname' => $appInstance,

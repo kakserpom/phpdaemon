@@ -1,16 +1,12 @@
 <?php
 namespace PHPDaemon\Cache;
 
-	/**
-	 * CappedStorageHits
-	 *
-	 * @package Core
-	 *
-	 * @author  Zorin Vasily <maintainer@daemon.io>
-	 */
 /**
- * Class CappedStorageHits
- * @package PHPDaemon\Cache
+ * CappedStorageHits
+ *
+ * @package Core
+ *
+ * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class CappedStorageHits extends CappedStorage {
 

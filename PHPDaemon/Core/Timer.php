@@ -48,6 +48,7 @@ class Timer {
 	static $counter = 0;
 
 	/**
+	 * @TODO DESCR
 	 * @param callable $cb
 	 * @param int $timeout
 	 * @param int|string $id
@@ -70,6 +71,7 @@ class Timer {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $arg
 	 */
 	public function eventCall($arg) {
@@ -82,6 +84,7 @@ class Timer {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $priority
 	 */
 	public function setPriority($priority) {
@@ -90,6 +93,7 @@ class Timer {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param callable $cb
 	 * @param int $timeout
 	 * @param int|string $id
@@ -102,6 +106,7 @@ class Timer {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param int|string $id
 	 * @param int $timeout
 	 * @return bool
@@ -115,6 +120,7 @@ class Timer {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $id
 	 */
 	public static function remove($id) {
@@ -124,6 +130,7 @@ class Timer {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param $id
 	 */
 	public static function cancelTimeout($id) {
@@ -133,6 +140,7 @@ class Timer {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param int $timeout
 	 */
 	public function timeout($timeout = null) {
@@ -143,28 +151,28 @@ class Timer {
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function cancel() {
 		$this->ev->del();
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function finish() {
 		$this->free();
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function __destruct() {
 		$this->free();
 	}
 
 	/**
-	 *
+	 * @TODO DESCR
 	 */
 	public function free() {
 		unset(self::$list[$this->id]);

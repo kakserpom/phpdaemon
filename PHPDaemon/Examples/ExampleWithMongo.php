@@ -46,7 +46,7 @@ class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest\Generic {
 		});
 
 		$collection = $this->appInstance->mongo->{'testdb.testcollection'};
-		$collection->insert(array('a' => microtime(true))); // just pushing something
+		$collection->insert(['a' => microtime(true)]); // just pushing something
 
 		$job('testquery', function ($name, $job) use ($collection) { // registering job named 'testquery'
 
@@ -54,7 +54,7 @@ class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest\Generic {
 
 				$job->setResult($name, $result);
 
-			}, array('sort' => array('$natural' => -1)));
+			}, ['sort' => ['$natural' => -1]]);
 		});
 
 		$job(); // let the fun begin

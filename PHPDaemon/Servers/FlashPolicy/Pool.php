@@ -19,14 +19,17 @@ class Pool extends Server {
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// @todo add description strings
 			'file'   => getcwd() . '/conf/crossdomain.xml',
 			'listen' => '0.0.0.0',
 			'port'   => 843,
-		);
+		];
 	}
 
+	/**
+	 * @TODO DESCR
+	 */
 	public function onReady() {
 		$this->onConfigUpdated();
 	}

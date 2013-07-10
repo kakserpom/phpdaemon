@@ -30,54 +30,54 @@ class Bootstrap {
 	 * List of commands
 	 * @var array
 	 */
-	protected static $commands = array(
+	protected static $commands = [
 		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker'
-	);
+	];
 
 	/**
 	 * Command-line params
 	 * @var array
 	 */
-	protected static $params = array(
-		'pid-file'     => array(
+	protected static $params = [
+		'pid-file'     => [
 			'val'  => '/path/to/pid-file',
 			'desc' => 'Pid file'
-		),
-		'max-requests' => array(
+		],
+		'max-requests' => [
 			'desc' => 'Maximum requests to worker before respawn',
-			'val'  => array(
+			'val'  => [
 				'n' => 'Count'
-			)
-		),
-		'path'         => array(
+			]
+		],
+		'path'         => [
 			'desc' => 'Path to your application resolver',
 			'val'  => '/path/to/resolver.php'
-		),
-		'config-file'  => array(
+		],
+		'config-file'  => [
 			'desc' => 'Paths to configuration file separated by semicolon. First found will be used.',
 			'val'  => '/path/to/file'
-		),
-		'logging'      => array(
+		],
+		'logging'      => [
 			'desc' => 'Logging status',
-			'val'  => array(
+			'val'  => [
 				'0' => 'Disabled',
 				'1' => 'Enabled'
-			)
-		),
-		'log-storage'  => array(
+			]
+		],
+		'log-storage'  => [
 			'desc' => 'Log storage',
 			'val'  => '/path/to/file'
-		),
-		'user'         => array(
+		],
+		'user'         => [
 			'desc' => 'User of master process',
 			'val'  => 'username'
-		),
-		'group'        => array(
+		],
+		'group'        => [
 			'desc' => 'Group of master process',
 			'val'  => 'groupname'
-		),
+		],
 		'help'         => 'This help information'
-	);
+	];
 
 	/**
 	 * Actions on early startup.
@@ -175,7 +175,7 @@ class Bootstrap {
 			$error = true;
 		}
 
-		$eventVer     = '1.6.0';
+		$eventVer     = '1.6.1';
 		$eventVerType = 'stable';
 		if (!Daemon::loadModuleIfAbsent('event', $eventVer . '-' . $eventVerType)) {
 			Core\Daemon::log('[EMERG] event extension >= ' . $eventVer . ' not found (or OUTDATED). You have to install it. `pecl install http://pecl.php.net/get/event-' . $eventVer . '.tgz`');
@@ -389,24 +389,24 @@ class Bootstrap {
 
 			echo "\n";
 
-			$rows = array();
+			$rows = [];
 
-			$rows[] = array(
+			$rows[] = [
 				'parameter' => 'PARAMETER',
 				'value'     => 'VALUE',
 				'_color'    => '37',
 				'_bold'     => true,
-			);
+			];
 
 			foreach (Core\Daemon::$config as $name => $entry) {
 				if (!$entry instanceof Generic) {
 					continue;
 				}
-
-				$row = array(
+				
+				$row = [
 					'parameter' => $name,
 					'value'     => var_export($entry->humanValue, true),
-				);
+				];
 
 				if ($entry->defaultValue != $entry->humanValue) {
 					$row['value'] .= ' (' . var_export($entry->defaultValue, true) . ')';
@@ -528,6 +528,7 @@ class Bootstrap {
 
 	/**
 	 * Stop script.
+	 * @param int $mode
 	 * @return void
 	 */
 	public static function stop($mode = 1) {
@@ -552,7 +553,7 @@ class Bootstrap {
 
 	/**
 	 * Parses command-line arguments.
-	 * @param array $_SERVER['argv']
+	 * @param array $args $_SERVER ['argv']
 	 * @return array Arguments
 	 */
 	public static function getArgs($args) {

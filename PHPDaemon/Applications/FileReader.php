@@ -20,10 +20,10 @@ class FileReader extends \PHPDaemon\Core\AppInstance {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			// index file names
 			'indexfiles' => 'index.html/index.htm'
-		);
+		];
 	}
 
 	/**

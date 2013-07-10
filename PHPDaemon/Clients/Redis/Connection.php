@@ -9,7 +9,6 @@ use PHPDaemon\Network\ClientConnection;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class Connection extends ClientConnection {
 
 	/**

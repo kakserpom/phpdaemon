@@ -9,6 +9,7 @@ namespace PHPDaemon\Servers\DebugConsole;
  */
 class Connection extends \PHPDaemon\Network\Connection {
 
+	/** @var int */
 	public $timeout = 5;
 
 	/**
@@ -115,7 +116,7 @@ Type "help" to get the list of allowed commands.');
 			$cmd = trim(strtolower($e[0]));
 			$arg = isset($e[1]) ? $e[1] : '';
 
-			if (in_array($cmd, array('quit', 'exit'))) {
+			if (in_array($cmd, ['quit', 'exit'])) {
 				$this->disconnect();
 			}
 			elseif (!$this->auth) {

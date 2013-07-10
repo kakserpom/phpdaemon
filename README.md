@@ -16,8 +16,6 @@ Main features and possibilites:
  * Automatic graceful reloading user's scripts when it's updated.
  * Graceful worker shutdown (and re-spawn if necessary) by the following limits: memory, query counter, idle time.
 
-Installation guide: http://github.com/kakserpom/phpdaemon/wiki/Installation-(common)
-
 Master process understands signals:
 	
 	SIGINT, SIGTERM, SIGQUIT - termination.
@@ -26,4 +24,5 @@ Master process understands signals:
 	SIGUSR2 - graceful restart all workers.
 
 Mail listing: phpdaemon@googlegroups.com
-Maintainer: kak.serpom.po.yaitsam@gmail.com
+Maintainer: maintainer@daemon.io
+Web-site: http://daemon.io/

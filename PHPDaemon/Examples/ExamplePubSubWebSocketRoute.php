@@ -16,11 +16,11 @@ class ExamplePubSubWebSocketRoute extends ExampleWebSocketRoute {
 		if ($req['type'] === 'subscribe') {
 			$eventName = $req['event'];
 			$this->appInstance->pubsub->sub($req['event'], $this, function ($data) use ($ws, $eventName) {
-				$ws->sendObject(array(
+				$ws->sendObject([
 									'type'  => 'event',
 									'event' => $eventName,
 									'data'  => $data,
-								));
+								]);
 			});
 		}
 	}

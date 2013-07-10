@@ -5,19 +5,35 @@ class Cursor {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	public $id; // Cursor's ID.
-	public $col; // Collection's name.
-	public $items = []; // Array of objects
-	public $item; // Current object
-	protected $conn; // Network connection
-	public $finished = false; // Is this cursor finished?
-	public $failure = false; // Is this query failured?
-	public $await = false; // awaitCapable?
-	public $destroyed = false; // Is this cursor destroyed?
+	/** @var mixed Cursor's ID */
+	public $id;
+	/** @var Collection's name */
+	public $col;
+	/** @var array Array of objects */
+	public $items = [];
+	/** @var mixed Current object */
+	public $item;
+	/** @var mixed Network connection */
+	protected $conn;
+	/** @var bool Is this cursor finished? */
+	public $finished = false;
+	/** @var bool Is this query failured? */
+	public $failure = false;
+	/** @var bool awaitCapable? */
+	public $await = false;
+	/** @var bool Is this cursor destroyed? */
+	public $destroyed = false;
+	/** @var bool */
 	public $parseOplog = false;
+	/** @var */
 	public $tailable;
+	/** @var */
 	public $callback;
 
+	/**
+	 * @TODO DESCR
+	 * @return bool
+	 */
 	public function isBusyConn() {
 		if (!$this->conn) {
 			return false;
@@ -25,10 +41,18 @@ class Cursor {
 		return $this->conn->isBusy();
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @return mixed
+	 */
 	public function getConn() {
 		return $this->conn;
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @return bool
+	 */
 	public function isFinished() {
 		return $this->finished;
 	}
@@ -76,7 +100,7 @@ class Cursor {
 	 */
 	public function __destruct() {
 		if (binarySubstr($this->id, 0, 1) === 'c') {
-			$this->conn->pool->killCursors(array(binarySubstr($this->id, 1)));
+			$this->conn->pool->killCursors([binarySubstr($this->id, 1)]);
 		}
 	}
 }

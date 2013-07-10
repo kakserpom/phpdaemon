@@ -26,9 +26,9 @@ class CallbackWrapper {
 
 	/**
 	 * Constructor
-	 * @param callable Callback
-	 * @param mixed    Context
-	 * @return object
+	 * @param callable $cb
+	 * @param \PHPDaemon\Core\TransportContext $context
+	 * @return \PHPDaemon\Core\CallbackWrapper
 	 */
 	public function __construct($cb, $context = null) {
 		$this->cb      = $cb;
@@ -47,6 +47,7 @@ class CallbackWrapper {
 	/**
 	 * Wraps callback
 	 * @static
+	 * @param callable $cb
 	 * @return object
 	 */
 	public static function wrap($cb) {

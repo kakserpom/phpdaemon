@@ -15,21 +15,51 @@ use PHPDaemon\Core\Debug;
  */
 class Pool extends Client {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
+
+	/** @var bool */
 	public $noSAF = true;
+	/** @var array */
 	public $collections = []; // Objects of MongoClientAsyncCollection
+	/** @var string */
 	public $dbname = ''; // Current database
+	/** @var */
 	public $lastRequestConnection; // Holds last used MongoClientAsyncConnection object.
 
 	/* Codes of operations */
+	/**
+	 * @TODO DESCR
+	 */
 	const OP_REPLY        = 1;
+	/**
+	 * @TODO DESCR
+	 */
 	const OP_MSG          = 1000;
+	/**
+	 * @TODO DESCR
+	 */
 	const OP_UPDATE       = 2001;
+	/**
+	 * @TODO DESCR
+	 */
 	const OP_INSERT       = 2002;
+	/**
+	 * @TODO DESCR
+	 */
 	const OP_QUERY        = 2004;
+	/**
+	 * @TODO DESCR
+	 */
 	const OP_GETMORE      = 2005;
+	/**
+	 * @TODO DESCR
+	 */
 	const OP_DELETE       = 2006;
+	/**
+	 * @TODO DESCR
+	 */
 	const OP_KILL_CURSORS = 2007;
 
+	/** @var */
 	public $cache; // object of MemcacheClient
 
 	/**
@@ -102,6 +132,14 @@ class Pool extends Client {
 		}
 	}
 
+	/**
+	 * @TODO DESCR
+	 * @param $opcode
+	 * @param $data
+	 * @param bool $reply
+	 * @param null $sentcb
+	 * @return callable
+	 */
 	protected function requestCbProducer($opcode, $data, $reply = false, $sentcb = null) {
 		return function ($conn) use ($opcode, $data, $reply, $sentcb) {
 			if ($conn->isFinished()) {
@@ -457,6 +495,7 @@ class Pool extends Client {
 	}
 
 	/**
+	 * @TODO DESCR
 	 * @param array $keys
 	 * @return string
 	 */

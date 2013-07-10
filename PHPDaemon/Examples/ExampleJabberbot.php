@@ -19,9 +19,9 @@ class ExampleJabberbot extends \PHPDaemon\Core\AppInstance {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			'url' => 'xmpp://user:password@host/phpDaemon'
-		);
+		];
 	}
 
 	/**

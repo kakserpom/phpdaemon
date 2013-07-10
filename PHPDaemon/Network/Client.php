@@ -19,25 +19,29 @@ use PHPDaemon\Structures\PriorityQueueCallbacks;
 abstract class Client extends Pool {
 
 	/**
+	 * Array of servers
 	 * @var Server[]
 	 */
-	protected $servers = array(); // Array of servers 
+	protected $servers = [];
 	/**
+	 * Enables tags for distribution
 	 * @var bool
 	 */
-	protected $dtags_enabled = false; // Enables tags for distribution
+	protected $dtags_enabled = false;
 	/**
+	 * Active connections
 	 * @var Connection[]
 	 */
-	protected $servConn = []; // Active connections
+	protected $servConn = [];
 	/**
 	 * @var Connection[]
 	 */
 	protected $servConnFree = [];
 	/**
+	 * Prefix for all keys
 	 * @var string
 	 */
-	protected $prefix = ''; // Prefix for all keys
+	protected $prefix = '';
 	/**
 	 * @var int
 	 */
@@ -96,7 +100,7 @@ abstract class Client extends Pool {
 		parent::applyConfig();
 		if (isset($this->config->servers)) {
 			$servers       = array_filter(array_map('trim', explode(',', $this->config->servers->value)), 'strlen');
-			$this->servers = array();
+			$this->servers = [];
 			foreach ($servers as $s) {
 				$this->addServer($s);
 			}
@@ -182,8 +186,7 @@ abstract class Client extends Pool {
 
 	/**
 	 * Detach Connection
-	 * @param Connection
-	 * @param [mixed Info]
+	 * @param $conn Connection
 	 * @return void
 	 */
 	public function detach($conn) {
@@ -193,8 +196,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Mark connection as free
-	 * @param Connection
-	 * @param URL
+	 * @param ClientConnection $conn Connection
+	 * @param string $url            URL
 	 * @return void
 	 */
 	public function markConnFree(ClientConnection $conn, $url) {
@@ -206,8 +209,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Mark connection as busy
-	 * @param Connection
-	 * @param URL
+	 * @param ClientConnection $conn Connection
+	 * @param string $url            URL
 	 * @return void
 	 */
 	public function markConnBusy(ClientConnection $conn, $url) {
@@ -219,11 +222,11 @@ abstract class Client extends Pool {
 
 	/**
 	 * Detaches connection from URL
-	 * @param Connection
-	 * @param URL
+	 * @param ClientConnection $conn Connection
+	 * @param string $url URL
 	 * @return void
 	 */
-	public function detachConnFromUrl(Network\ClientConnection $conn, $url) {
+	public function detachConnFromUrl(ClientConnection $conn, $url) {
 		if (!isset($this->servConnFree[$url]) || !isset($this->servConn[$url])) {
 			return;
 		}
@@ -233,7 +236,7 @@ abstract class Client extends Pool {
 
 	/**
 	 * Touch pending "requests for connection"
-	 * @param URL
+	 * @param string $url URL
 	 * @return void
 	 */
 	public function touchPending($url) {
@@ -246,7 +249,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Returns available connection from the pool by key
-	 * @param string Key
+	 * @param string $key Key
+	 * @param callable $cb
 	 * @return boolean Success.
 	 */
 	public function getConnectionByKey($key, $cb = null) {
@@ -270,7 +274,7 @@ abstract class Client extends Pool {
 
 	/**
 	 * Returns available connection from the pool
-	 * @param callable Callback
+	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
 	public function getConnectionRR($cb = null) {
