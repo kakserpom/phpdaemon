@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Network;
 
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Network\Pool;
 use PHPDaemon\Network;
@@ -290,6 +291,7 @@ abstract class Client extends Pool {
 			srand();
 			$server = array_rand($this->servers);
 		}
+
 		$this->getConnection($server, function ($conn) use ($data, $onResponse) {
 			if (!$conn->isConnected()) {
 				return;

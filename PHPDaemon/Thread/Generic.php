@@ -19,7 +19,7 @@ abstract class Generic {
 	 * Process identificator
 	 * @var int
 	 */
-	protected $id;
+	public $id;
 
 	/**
 	 * PID

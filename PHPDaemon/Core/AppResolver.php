@@ -81,7 +81,7 @@ class AppResolver {
 		}
 		$fullname = $this->getAppFullname($appName, $instance);
 		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Core\\AppInstance')) {
-			Daemon::$process->log(__METHOD__ . ': cannot find application class \'' . $class . '\'');
+			Daemon::$process->log(__METHOD__ . ': cannot find application class \'' . $class);
 			return false;
 		}
 		$fullnameClass = $this->getAppFullname($class, $instance);
@@ -97,7 +97,8 @@ class AppResolver {
 				return false;
 			}
 		}
-		return new $class($instance);
+
+            return new $class($instance);
 	}
 
 	/**
