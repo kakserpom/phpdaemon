@@ -59,15 +59,16 @@ class GibsonTestRequest extends Generic{
 
             $val = rand(0, 10000);
 
-            $gibson->set('testval', $val);
-            $newVal = $gibson->get('testval', $val);
+            $gibson->set(100, 'testval', $val, function ($gibson) use ($name, $job, $val) {
+                $gibson->get('testval', function($gibson) use ($val, $job){
+                    if($gibson->result === $val){
+                        $job->setResult('testval', 1);
+                    } else {
+                        $job->setResult('testval', 0);
+                    }
+                });
 
-            if($newVal === $val){
-                $job->setResult($name, 1);
-            } else {
-                $job->setResult($name, 0);
-            }
-
+            });
         });
 
         $job(); // let the fun begin
