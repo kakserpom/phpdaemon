@@ -34,8 +34,8 @@ class Connection extends ClientConnection {
 	public $responseLength;
 	public $result;
 	public $isFinal;
-	public $resultTotalNum;
-	public $resultReadedNum;
+	public $totalNum;
+	public $readedNum;
 
 	protected $currentKey;
 
@@ -58,8 +58,8 @@ class Connection extends ClientConnection {
 				}
 				$this->encoding = Binary::getByte($hdr);
 				$this->responseLength = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
-				$this->resultTotalNum = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
-				$this->pctReaded = 0;
+				$this->totalNum = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				$this->readedNum = 0;
 				$this->state = static::STATE_PACKET_DATA;
 
 			} else {
@@ -69,17 +69,37 @@ class Connection extends ClientConnection {
 				$this->encoding = Binary::getByte($hdr);
 				$this->responseLength = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
 				if ($this->responseCode === static::REPL_ERR_NOT_FOUND) {
-					$this->response = null;
+					$this->result = null;
+					$this->isFinal = true;
+					$this->totalNum = 0;
+					$this->readedNum = 0;
+					$this->executeCb();
 				}
 				elseif ($this->responseCode === static::REPL_OK) {
-					$this->response = true;
+					$this->result = true;
+					$this->isFinal = true;
+					$this->totalNum = 0;
+					$this->readedNum = 0;
+					$this->executeCb();
 				}
 				elseif (($this->responseCode === static::REPL_ERR_MEM) ||
 						($this->responseCode === static::REPL_ERR_NAN) ||
 						($this->responseCode === static::REPL_ERR_LOCKED)) {
-					$this->response = false;
+					$this->result = false;
+					$this->isFinal = true;
+					$this->totalNum = 0;
+					$this->readedNum = 0;
+					$this->executeCb();
 				} else {
-					$this->state = static::STATE_PACKET_DATA;
+					if ($this->responseCode === static::REPL_KVAL && $this->totalNum <= 0) {
+						$this->isFinal = true;
+						$this->totalNum = 0;
+						$this->readedNum = 0;
+						$this->result = [];
+						$this->executeCb();
+					} else {
+						$this->state = static::STATE_PACKET_DATA;
+					}
 				}
 			}
 		}
@@ -113,22 +133,21 @@ class Connection extends ClientConnection {
 				$valLen = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
 				if (($key = $this->lookExact($this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true)) === false) {
 					return;
-				}
-				
-				if (++$this->resultReadedNum >= $this->resultTotalNum) {
+				}				
+				if (++$this->readedNum >= $this->totalNum) {
 					$this->isFinal = true;
 				} else {
 					goto nextElement;
 				}
-				:
+				
 			} else {
 				if (($this->result = $this->readExact($this->responseLength)) === false) {
 					$this->setWatermark($this->responseLength);
 					return;
 				}
 				$this->isFinal = true;
-				$this->resultTotalNum = 1;
-				$this->resultReadedNum = 1;
+				$this->totalNum = 1;
+				$this->readedNum = 1;
 			}
 			Daemon::log(Debug::dump([
 					'responseCode' => $this->responseCode,
@@ -136,19 +155,18 @@ class Connection extends ClientConnection {
 					'len' => $this->responseLength,
 					'result' => $this->result,
 			]));
-			if ($this->isFinal) {
-				$this->state = static::STATE_STANDBY;
-				$this->onResponse->executeOne($this);
-				$this->encoding = null;
-				$this->responseLength = null;
-				$this->result = null;
-				$this->resultTotalNum = null;
-				$this->resultReadedNum = null;
-				$this->isFinal = null;
-			} else {
-				$this->onResponse->executeAndKeepOne($this);
-			}
 		}
 		goto start;
+	}
+
+	protected function executeCb() {
+		$this->state = static::STATE_STANDBY;
+		$this->onResponse->executeOne($this);
+		$this->encoding = null;
+		$this->responseLength = null;
+		$this->result = null;
+		$this->totalNum = null;
+		$this->readedNum = null;
+		$this->isFinal = null;
 	}
 }
