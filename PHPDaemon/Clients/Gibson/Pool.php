@@ -16,7 +16,7 @@ class Pool extends \PHPDaemon\Network\Client {
 			 * Default servers
 			 * @var string|array
 			 */
-			'servers'        => 'tcp://127.0.0.1',
+			'servers'        => 'unix:///var/run/gibson.sock',
 
 			/**
 			 * Default port

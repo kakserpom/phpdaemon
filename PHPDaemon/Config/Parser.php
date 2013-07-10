@@ -121,6 +121,8 @@ class Parser {
 		$this->revision = ++Object::$lastRevision;
 		$this->data     = file_get_contents($file);
 
+		Daemon::log('Loaded config file: '. escapeshellarg($file));
+
 		if (substr($this->data, 0, 2) === '#!') {
 			if (!is_executable($file)) {
 				$this->raiseError('Shebang (#!) detected in the first line, but file hasn\'t +x mode.');

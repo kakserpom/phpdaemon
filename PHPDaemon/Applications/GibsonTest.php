@@ -10,13 +10,14 @@ use PHPDaemon\Core\Daemon;
  */
 class GibsonTest extends \PHPDaemon\Core\AppInstance{
 
-
+    public $gibson;
     /**
      * Called when the worker is ready to go.
      * @return void
      */
     public function onReady(){
         Daemon::log('GIBSON READY');
+        $this->gibson = \PHPDaemon\Clients\Gibson\Pool::getInstance();
     }
 
     /**
@@ -53,15 +54,13 @@ class GibsonTestRequest extends Generic{
             $req->wakeup(); // wake up the request immediately
         });
 
-        $gibson = \PHPDaemon\Clients\Gibson\Pool::getInstance();
-
-        $job('testquery', function ($name, $job) use ($gibson){ // registering job named 'testquery'
+        $job('testquery', function ($name, $job) { // registering job named 'testquery'
 
             $val = rand(0, 10000);
 
-            $gibson->set(100, 'testval', $val, function ($gibson) use ($name, $job, $val) {
-                $gibson->get('testval', function($gibson) use ($val, $job){
-                    if($gibson->result === $val){
+            $this->appInstance->gibson->set(100, 'testval', $val, function ($conn) use ($name, $job, $val) {
+                $this->appInstance->gibson->get('testval', function($conn) use ($val, $job){
+                    if ($conn->result === $val){
                         $job->setResult('testval', 1);
                     } else {
                         $job->setResult('testval', 0);

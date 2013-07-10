@@ -11,12 +11,13 @@ use PHPDaemon\HTTPRequest\Generic;
  */
 class ExampleWithRedis extends \PHPDaemon\Core\AppInstance {
 
+	public $redis;
 	/**
 	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 	public function onReady() {
-		$redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
+		$this->redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
 		/*$redis->subscribe('testchannel', function($redis) {
 			\PHPDaemon\Daemon::log(\PHPDaemon\Debug::dump($redis->result));
 			
@@ -52,14 +53,13 @@ class ExampleWithRedisRequest extends Generic {
 
 		});
 
-		$redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
-		$redis->lpush('mylist', microtime(true)); // just pushing something
+		$this->appInstance->redis->lpush('mylist', microtime(true)); // just pushing something
 
-		$job('testquery', function ($name, $job) use ($redis) { // registering job named 'testquery'
+		$job('testquery', function ($name, $job)  { // registering job named 'testquery'
 
-			$redis->lrange('mylist', 0, 10, function ($redis) use ($name, $job) { // calling lrange Redis command
+			$this->appInstance->redis->lrange('mylist', 0, 10, function ($conn) use ($name, $job) { // calling lrange Redis command
 
-				$job->setResult($name, $redis->result); // setting job result
+				$job->setResult($name, $conn->result); // setting job result
 
 			});
 		});

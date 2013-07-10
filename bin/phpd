@@ -1,6 +1,5 @@
 #!/usr/bin/env php
 <?php
-
 /**************************************************************************/
 /* phpDaemon
 /* Web: http://github.com/kakserpom/phpdaemon
@@ -27,25 +26,24 @@ ini_set('include_path', get_include_path()
 		. ':/usr/share/phpdaemon:/etc/phpdaemon'
 );
 $autoloader = function ($classname) {
-    if(!class_exists($classname)){
-        	$base = str_replace('\\', '/', $classname);
-        	$subpath = array($base . '.php', $base . '.class.php');
-        	$e       = explode(':', get_include_path());
-        	foreach ($e as $path) {
-        		foreach ($subpath as $item) {
-        			$file = rtrim($path, '/') . '/' . $item;
-        			if (file_exists($file)) {
-        				if (!is_readable($file)) {
-        					if (class_exists('PHPDaemon\Core\Daemon', false)) {
-        						PHPDaemon\Core\Daemon::log('autoloader: \''.$file.'\' does exist but is not readable');
-        					}
-        				}
-        				require $file;
-        				return true;
-        			}
-        		}
-        	}
-    }
+	$base = str_replace('\\', '/', $classname);
+	$subpath = array($base . '.php', $base . '.class.php');
+	$e       = explode(':', get_include_path());
+	foreach ($e as $path) {
+		foreach ($subpath as $item) {
+			$file = rtrim($path, '/') . '/' . $item;
+			if (file_exists($file)) {
+				if (!is_readable($file)) {
+					if (class_exists('PHPDaemon\Core\Daemon', false)) {
+						PHPDaemon\Core\Daemon::log('autoloader: \''.$file.'\' does exist but is not readable');
+					}
+				} else {
+					require $file;
+					return true;
+				}
+			}
+		}
+	}
 	return false;
 };
 $autoloadCache = array();
