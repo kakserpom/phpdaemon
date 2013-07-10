@@ -40,6 +40,22 @@ class StackCallbacks extends \SplStack {
 	}
 
 	/**
+	 * Executes one callback from the top with given arguments without taking it out
+	 * @return void
+	 */
+	public function executeAndKeepOne() {
+		if ($this->isEmpty()) {
+			return false;
+		}
+		$cb = $this->shift();
+		$this->unshift($cb);
+		if ($cb) {
+			call_user_func_array($cb, func_get_args());
+		}
+		return true;
+	}
+
+	/**
 	 * Executes all callbacks with given arguments.
 	 * @return void
 	 */

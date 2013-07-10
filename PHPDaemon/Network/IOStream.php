@@ -437,7 +437,8 @@ abstract class IOStream {
 
 	/**
 	 * Reads exact $n bytes of buffer without draining
-	 * @param integer Number of bytes to read
+	 * @param integer $n Number of bytes to read
+	 * @param integer [$offset Offset
 	 * @return string|false
 	 */
 	public function lookExact($n, $o = 0) {

@@ -33,13 +33,16 @@ class Connection extends ClientConnection {
 	public $encoding;
 	public $responseLength;
 	public $result;
+	public $isFinal;
+	public $resultTotalNum;
+	public $resultReadedNum;
 
 	protected $currentKey;
 
 	protected function onRead() {
 		start:
 		if ($this->state === static::STATE_STANDBY) {
-			Daemon::log(Debug::exportBytes($this->look(1024)));
+			Daemon::log(Debug::exportBytes($this->look(1024), true));
 			if (($hdr = $this->readExact(2)) === false) {
 				return; // not enough data
 			}
@@ -50,10 +53,13 @@ class Connection extends ClientConnection {
 		if ($this->state === static::STATE_PACKET_HDR) {
 			if ($this->responseCode === static::REPL_KVAL) {
 				$this->result = [];
-				if (($hdr = $this->readExact($this->arch64 ? 8 : 4))) === false) {
+				if (($hdr = $this->readExact(1 + ($this->arch64 ? 16 : 8))) === false) {
 					return; // not enough data
 				}
+				$this->encoding = Binary::getByte($hdr);
 				$this->responseLength = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				$this->resultTotalNum = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				$this->pctReaded = 0;
 				$this->state = static::STATE_PACKET_DATA;
 
 			} else {
@@ -78,24 +84,70 @@ class Connection extends ClientConnection {
 			}
 		}
 		if ($this->state === static::STATE_PACKET_DATA) {
+			Daemon::log(Debug::dump([
+					'responseCode' => $this->responseCode,
+					'enc' => $this->encoding,
+					'len' => $this->responseLength,
+					'num' => $this->resultNum,
+					'result' => $this->result,
+			]));
 			if ($this->responseCode === static::REPL_KVAL) {
-				goto start;
+				nextElement:
+				$l = $this->getInputLength();
+				Daemon::log(Debug::exportBytes($this->look(1024), true));
+				if ($l < 9) {
+					return;
+				}
+				if (($hdr = $this->lookExact($o = $this->arch64 ? 8 : 4)) === false) {
+					return;
+				}
+				$keyLen = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				if (($key = $this->lookExact($keyLen, $o) === false) {
+					return;
+				}
+				$o += $keyLen;
+				$valLenLen = $this->arch64 ? 8 : 4;
+				if (($hdr = $this->lookExact($valLenLen, $o)) === false) {
+					return;
+				}
+				$valLen = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				if (($key = $this->lookExact($this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true)) === false) {
+					return;
+				}
+				
+				if (++$this->resultReadedNum >= $this->resultTotalNum) {
+					$this->isFinal = true;
+				} else {
+					goto nextElement;
+				}
+				:
+			} else {
+				if (($this->result = $this->readExact($this->responseLength)) === false) {
+					$this->setWatermark($this->responseLength);
+					return;
+				}
+				$this->isFinal = true;
+				$this->resultTotalNum = 1;
+				$this->resultReadedNum = 1;
 			}
-			if (($this->result = $this->readExact($this->dataLength)) === false) {
-				$this->setWatermark($this->dataLength);
-				return;
-			}
-			$this->state = static::STATE_STANDBY;
 			Daemon::log(Debug::dump([
 					'responseCode' => $this->responseCode,
 					'enc' => $this->encoding,
 					'len' => $this->responseLength,
 					'result' => $this->result,
 			]));
-			$this->onResponse->executeOne($this);
-			$this->encoding = null;
-			$this->responseLength = null;
-			$this->result = null;
+			if ($this->isFinal) {
+				$this->state = static::STATE_STANDBY;
+				$this->onResponse->executeOne($this);
+				$this->encoding = null;
+				$this->responseLength = null;
+				$this->result = null;
+				$this->resultTotalNum = null;
+				$this->resultReadedNum = null;
+				$this->isFinal = null;
+			} else {
+				$this->onResponse->executeAndKeepOne($this);
+			}
 		}
 		goto start;
 	}
