@@ -24,7 +24,7 @@ abstract class Server extends Pool {
 	 * @var array|null
 	 */
 	public $allowedClients = null;
-
+	
 	/**
 	 * Constructor
 	 * @param array Config variables
