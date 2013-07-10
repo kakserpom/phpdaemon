@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Traits;
+use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * Event handlers trait
@@ -39,23 +40,7 @@ trait EventHandlers {
 			}
 		}
 	}
-
-	/**
-	 * Alias of bind()
-	 * @alias bind
-	 */
-	public function addEventHandler($event, $cb) { // @todo: remove in 1.0
-		return $this->bind($event, $cb);
-	}
-
-	/**
-	 * Alias of unbind()
-	 * @alias unbind
-	 */
-	public function removeEventHandler($event, $cb = null) { // @todo: remove in 1.0
-		return $this->unbind($event, $cb);
-	}
-
+	
 	/**
 	 * Bind event
 	 * @param string   Event name
@@ -63,6 +48,9 @@ trait EventHandlers {
 	 * @return boolean Success
 	 */
 	public function bind($event, $cb) {
+		if ($cb !== null) {
+			$cb = CallbackWrapper::wrap($cb);
+		}
 		if (!isset($this->eventHandlers[$event])) {
 			$this->eventHandlers[$event] = [];
 		}
@@ -77,6 +65,9 @@ trait EventHandlers {
 	 * @return boolean Success
 	 */
 	public function unbind($event, $cb = null) {
+		if ($cb !== null) {
+			$cb = CallbackWrapper::wrap($cb);
+		}
 		if (!isset($this->eventHandlers[$event])) {
 			return false;
 		}

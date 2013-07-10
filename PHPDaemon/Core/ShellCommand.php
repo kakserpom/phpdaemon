@@ -17,6 +17,7 @@ use PHPDaemon\Network\IOStream;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class ShellCommand extends IOStream {
+
 	/** @var */
 	public $writeState;
 	/** @var */
@@ -117,23 +118,6 @@ class ShellCommand extends IOStream {
 	 */
 	protected $EOF = false;
 
-	/** @var */
-	protected $onEOF;
-	/** @var */
-	protected $onRead;
-	/** @var */
-	protected $onReadData;
-
-	/**
-	 * @TODO DESCR
-	 * @param mixed $cb
-	 * @return $this
-	 */
-	public function onReadData($cb = NULL) {
-		$this->onReadData = CallbackWrapper::wrap($cb);
-		return $this;
-	}
-
 	/**
 	 * @TODO DESCR
 	 * @return string
@@ -153,14 +137,14 @@ class ShellCommand extends IOStream {
 	public static function exec($binPath = null, $cb = null, $args = null, $env = null) {
 		$o = new static;
 		$data = '';
-		$o	->onReadData(function($o, $buf) use (&$data, $o) {
-				$data .= $buf;
-			})
-			->onEOF(function($o) use (&$data, $cb) {
-				call_user_func($cb, $o, $data);
-				$o->close();
-			})
-			->execute($binPath, $args, $env);
+		$o->bind('read', function($o, $buf) use (&$data, $o) {
+			$data .= $buf;
+		});
+		$o->bind('eof', function($o) use (&$data, $cb) {
+			call_user_func($cb, $o, $data);
+			$o->close();
+		});
+		$o->execute($binPath, $args, $env);
 	}
 
 
@@ -240,9 +224,7 @@ class ShellCommand extends IOStream {
 		}
 		$this->EOF = true;
 
-		if ($this->onEOF !== null) {
-			call_user_func($this->onEOF, $this);
-		}
+		$this->event('eof');
 	}
 
 	/**
@@ -265,15 +247,7 @@ class ShellCommand extends IOStream {
 			$this->onRead = func_get_arg(0);
 			return $this;
 		}
-		if ($this->onReadData === null) {
-			if ($this->onRead !== null) {
-				call_user_func($this->onRead, $this);
-			}
-			return;
-		}
-		while (($buf = $this->read($this->readPacketSize)) !== false) {
-			call_user_func($this->onReadData, $this, $buf);
-		}
+		$this->event('read');
 	}
 
 	/**
@@ -392,9 +366,6 @@ class ShellCommand extends IOStream {
 		if (is_resource($this->pd)) {
 			proc_close($this->pd);
 		}
-		$this->onReadData = null;
-		$this->onRead = null;
-		$this->onEOF = null;
 	}
 
 	/**

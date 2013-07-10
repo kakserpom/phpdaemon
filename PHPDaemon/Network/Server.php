@@ -57,7 +57,7 @@ abstract class Server extends Pool {
 	 * @return integer Number of bound.
 	 */
 	public function bindSockets($addrs = [], $max = 0) {
-		if (is_string($addrs)) { // @TODO: remove in 1.0
+		if (is_string($addrs)) {
 			$addrs = array_map('trim', explode(',', $addrs));
 		}
 		$n = 0;

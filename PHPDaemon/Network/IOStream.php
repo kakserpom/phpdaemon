@@ -5,6 +5,7 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\File;
 use PHPDaemon\Structures\StackCallbacks;
 
+
 /**
  * IOStream
  *
@@ -15,6 +16,7 @@ use PHPDaemon\Structures\StackCallbacks;
 abstract class IOStream {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
+	use \PHPDaemon\Traits\EventHandlers;
 
 	/**
 	 * Associated pool
@@ -33,13 +35,6 @@ abstract class IOStream {
 	 * @var integer
 	 */
 	protected $EOLS;
-
-	/**
-	 * Number of bytes on each read() in default onRead() implementation
-	 * @deprecated Remove in 1.0 or earlier
-	 * @var integer 8192
-	 */
-	public $readPacketSize = 8192;
 
 	/**
 	 * EventBufferEvent
@@ -248,16 +243,6 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Set the size of data to read at each reading
-	 * @param integer Size
-	 * @return object This
-	 */
-	public function setReadPacketSize($n) {
-		$this->readPacketSize = $n;
-		return $this;
-	}
-
-	/**
 	 * Sets context mode
 	 * @param object  Context
 	 * @param integer Mode
@@ -399,24 +384,6 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Read a first line ended with \n from buffer, removes it from buffer and returns the line
-	 * @return string Line. Returns false when failed to get a line
-	 */
-	public function gets() { // @TODO: deprecate in favor of readln
-		$p = strpos($this->buf, $this->EOL);
-
-		if ($p === false) {
-			return false;
-		}
-
-		$sEOL      = strlen($this->EOL);
-		$r         = binarySubstr($this->buf, 0, $p + $sEOL);
-		$this->buf = binarySubstr($this->buf, $p + $sEOL);
-
-		return $r;
-	}
-
-	/**
 	 * Reads line from buffer
 	 * @param [integer EOLS_*]
 	 * @return string|null
@@ -544,25 +511,6 @@ abstract class IOStream {
 	 */
 	public function search($what, $start = 0, $end = -1) {
 		return $this->bev->input->search($what, $start, $end);
-	}
-
-	/**
-	 * @TODO DESCR
-	 * @param $n
-	 * @return bool|string
-	 */
-	public function readFromBufExact($n) { // @TODO: deprecate
-		if ($n === 0) {
-			return '';
-		}
-		if (strlen($this->buf) < $n) {
-			return false;
-		}
-		else {
-			$r         = binarySubstr($this->buf, 0, $n);
-			$this->buf = binarySubstr($this->buf, $n);
-			return $r;
-		}
 	}
 
 	/**
@@ -724,16 +672,6 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Called when new data received
-	 * @param string $buf New received data
-	 * @return void
-	 * @deprecated
-	 * @TODO: remove in 1.0
-	 */
-	protected function stdin($buf) {
-	}
-
-	/**
 	 * Close the connection
 	 * @return void
 	 */
@@ -795,10 +733,7 @@ abstract class IOStream {
 	 * Called when new data received
 	 * @return boolean
 	 */
-	protected function onRead() { // @todo: remove this default implementation in 1.0
-		while (($buf = $this->read($this->readPacketSize)) !== false) {
-			$this->stdin($buf);
-		}
+	protected function onRead() {
 	}
 
 	/**
