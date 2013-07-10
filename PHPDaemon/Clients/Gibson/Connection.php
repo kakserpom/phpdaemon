@@ -34,7 +34,10 @@ class Connection extends ClientConnection {
 	public $responseLength;
 	public $result;
 
+	protected $currentKey;
+
 	protected function onRead() {
+		start:
 		if ($this->state === static::STATE_STANDBY) {
 			Daemon::log(Debug::exportBytes($this->look(1024)));
 			if (($hdr = $this->readExact(2)) === false) {
@@ -47,12 +50,18 @@ class Connection extends ClientConnection {
 		if ($this->state === static::STATE_PACKET_HDR) {
 			if ($this->responseCode === static::REPL_KVAL) {
 				$this->result = [];
+				if (($hdr = $this->readExact($this->arch64 ? 8 : 4))) === false) {
+					return; // not enough data
+				}
+				$this->responseLength = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				$this->state = static::STATE_PACKET_DATA;
+
 			} else {
 				if (($hdr = $this->readExact(1 + ($this->arch64 ? 8 : 4))) === false) {
 					return; // not enough data
 				}
 				$this->encoding = Binary::getByte($hdr);
-				$this->responseLength = Binary::getQword($hdr, true);
+				$this->responseLength = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
 				if ($this->responseCode === static::REPL_ERR_NOT_FOUND) {
 					$this->response = null;
 				}
@@ -69,6 +78,9 @@ class Connection extends ClientConnection {
 			}
 		}
 		if ($this->state === static::STATE_PACKET_DATA) {
+			if ($this->responseCode === static::REPL_KVAL) {
+				goto start;
+			}
 			if (($this->result = $this->readExact($this->dataLength)) === false) {
 				$this->setWatermark($this->dataLength);
 				return;
@@ -85,5 +97,6 @@ class Connection extends ClientConnection {
 			$this->responseLength = null;
 			$this->result = null;
 		}
+		goto start;
 	}
 }
