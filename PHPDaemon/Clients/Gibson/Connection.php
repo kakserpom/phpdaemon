@@ -27,6 +27,7 @@ class Connection extends ClientConnection {
 	const STATE_PACKET_HDR = 0x01;
 	const STATE_PACKET_DATA = 0x02;
 
+
 	/**
 	 * Default low mark. Minimum number of bytes in buffer.
 	 * @var integer
@@ -173,6 +174,7 @@ class Connection extends ClientConnection {
 				$this->isFinal = true;
 				$this->totalNum = 1;
 				$this->readedNum = 1;
+				$this->executeCb();
 			}
 		}
 		goto start;

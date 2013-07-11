@@ -16,8 +16,6 @@ use PHPDaemon\Core\Debug;
 class Pool extends Client {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/** @var bool */
-	public $noSAF = true;
 	/** @var array */
 	public $collections = []; // Objects of MongoClientAsyncCollection
 	/** @var string */

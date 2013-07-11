@@ -42,12 +42,6 @@ class Connection extends ClientConnection {
 	protected $EOL = "\r\n";
 
 	/**
-	 * No Send-and-Forget?
-	 * @var boolean
-	 */
-	protected $noSAF = true;
-
-	/**
 	 * In the middle of binary response part
 	 * @const integer
 	 */

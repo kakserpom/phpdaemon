@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Network;
 
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\Connection;
 use PHPDaemon\Structures\StackCallbacks;
 
@@ -60,7 +62,11 @@ class ClientConnection extends Connection {
 	 * @return void
 	 */
 	public function onResponse($cb) {
+		if ($cb === null && !$this->noSAF) {
+			return;
+		}
 		$this->onResponse->push($cb);
+		$this->checkFree();
 	}
 
 	/**

@@ -54,7 +54,7 @@ class ExampleGibsonRequest extends Generic{
         });
 
         if (isset($_GET['fill'])) {
-            for ($i = 0; $i < 100; ++$i) {
+            for ($i = 0; $i < 10; ++$i) {
                 $this->appInstance->gibson->set(3600, 'key' . $i, 'val' . $i);
             }
         }

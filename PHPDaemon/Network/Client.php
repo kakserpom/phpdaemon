@@ -50,10 +50,7 @@ abstract class Client extends Pool {
 	 * @var bool
 	 */
 	protected $acquireOnGet = false;
-	/**
-	 * @var bool
-	 */
-	protected $noSAF = false;
+	
 	/**
 	 * @var Connection[]
 	 */
@@ -300,13 +297,7 @@ abstract class Client extends Pool {
 			if (!$conn->isConnected()) {
 				return;
 			}
-			if ($onResponse !== null) {
-				$conn->onResponse($onResponse);
-				$conn->setFree(false);
-			}
-			elseif ($conn->noSAF) {
-				$conn->onResponse(null);
-			}
+			$conn->onResponse($onResponse);
 			$conn->write($data);
 		});
 		return true;
@@ -324,13 +315,7 @@ abstract class Client extends Pool {
 			if (!$conn->isConnected()) {
 				return;
 			}
-			if ($onResponse !== NULL) {
-				$conn->onResponse($onResponse);
-				$conn->setFree(false);
-			}
-			elseif ($conn->noSAF) {
-				$conn->onResponse(null);
-			}
+			$conn->onResponse($onResponse);
 			$conn->write($data);
 		});
 		return true;
