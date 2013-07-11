@@ -1,4 +1,10 @@
 <?php
+/**
+ * @package    Examples
+ * @subpackage ExampleGibson
+ *
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ */
 namespace PHPDaemon\Clients\Gibson;
 
 use PHPDaemon\Core\Daemon;
@@ -33,16 +39,30 @@ class Connection extends ClientConnection {
 	public $encoding;
 	public $responseLength;
 	public $result;
-	public $isFinal;
+	public $isFinal = false;
 	public $totalNum;
 	public $readedNum;
 
 	protected $currentKey;
 
+	public function onReady() {
+		parent::onReady();
+	}
+	public function isFinal() {
+		return $this->isFinal;
+	}
+	public function getTotalNum() {
+		return $this->totalNum;
+	}
+	public function getReadedNum() {
+		return $this->readedNum;
+	}
+	public function getResponseCode() {
+		return $this->responseCode;
+	}
 	protected function onRead() {
 		start:
 		if ($this->state === static::STATE_STANDBY) {
-			Daemon::log(Debug::exportBytes($this->look(1024), true));
 			if (($hdr = $this->readExact(2)) === false) {
 				return; // not enough data
 			}
@@ -104,41 +124,46 @@ class Connection extends ClientConnection {
 			}
 		}
 		if ($this->state === static::STATE_PACKET_DATA) {
-			Daemon::log(Debug::dump([
-					'responseCode' => $this->responseCode,
-					'enc' => $this->encoding,
-					'len' => $this->responseLength,
-					'num' => $this->resultNum,
-					'result' => $this->result,
-			]));
 			if ($this->responseCode === static::REPL_KVAL) {
 				nextElement:
 				$l = $this->getInputLength();
-				Daemon::log(Debug::exportBytes($this->look(1024), true));
 				if ($l < 9) {
-					return;
+					goto cursorCall;
 				}
 				if (($hdr = $this->lookExact($o = $this->arch64 ? 8 : 4)) === false) {
-					return;
+					goto cursorCall;
 				}
 				$keyLen = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
-				if (($key = $this->lookExact($keyLen, $o) === false) {
-					return;
+				if (($key = $this->lookExact($keyLen, $o)) === false) {
+					goto cursorCall;
 				}
 				$o += $keyLen;
+				if (($encoding = $this->lookExact(1, $o)) === false) {
+					goto cursorCall;
+				}
+				$encoding = ord($encoding);
+				++$o;
 				$valLenLen = $this->arch64 ? 8 : 4;
 				if (($hdr = $this->lookExact($valLenLen, $o)) === false) {
-					return;
+					goto cursorCall;
 				}
+				$o += $valLenLen;
 				$valLen = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
-				if (($key = $this->lookExact($this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true)) === false) {
-					return;
-				}				
+				if ($o + $valLen > $l) {
+					goto cursorCall;
+				}
+				$this->drain($o);
+				$this->result[$key] = $this->read($valLen);
 				if (++$this->readedNum >= $this->totalNum) {
 					$this->isFinal = true;
+					$this->executeCb();
+					goto start;
 				} else {
 					goto nextElement;
 				}
+				cursorCall:
+				$this->onResponse->executeAndKeepOne($this);
+				return;
 				
 			} else {
 				if (($this->result = $this->readExact($this->responseLength)) === false) {
@@ -149,12 +174,6 @@ class Connection extends ClientConnection {
 				$this->totalNum = 1;
 				$this->readedNum = 1;
 			}
-			Daemon::log(Debug::dump([
-					'responseCode' => $this->responseCode,
-					'enc' => $this->encoding,
-					'len' => $this->responseLength,
-					'result' => $this->result,
-			]));
 		}
 		goto start;
 	}
@@ -167,6 +186,7 @@ class Connection extends ClientConnection {
 		$this->result = null;
 		$this->totalNum = null;
 		$this->readedNum = null;
-		$this->isFinal = null;
+		$this->isFinal = false;
+		$this->checkFree();
 	}
 }

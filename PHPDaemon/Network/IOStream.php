@@ -445,11 +445,10 @@ abstract class IOStream {
 		if (!isset($this->bev)) {
 			return false;
 		}
-		$data = $this->bev->input->substr($o, $n);
-		if (strlen($data) < $n) {
+		if ($o + $n > $this->bev->input->length) {
 			return false;
 		}
-		return $data;
+		return $this->bev->input->substr($o, $n);
 	}
 
 	/**
@@ -485,6 +484,9 @@ abstract class IOStream {
 	public function look($n, $o = 0) {
 		if (!isset($this->bev)) {
 			return false;
+		}
+		if ($this->bev->input->length <= $o) {
+			return '';
 		}
 		return $this->bev->input->substr($o, $n);
 	}

@@ -1,7 +1,14 @@
 <?php
+/**
+ * @package    Examples
+ * @subpackage ExampleGibson
+ *
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ */
 namespace PHPDaemon\Examples;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\HTTPRequest\Generic;
 
 /**
@@ -46,9 +53,17 @@ class ExampleGibsonRequest extends Generic{
             $req->wakeup(); // wake up the request immediately
         });
 
+        if (isset($_GET['fill'])) {
+            for ($i = 0; $i < 100; ++$i) {
+                $this->appInstance->gibson->set(3600, 'key' . $i, 'val' . $i);
+            }
+        }
+
         $job('testquery', function ($jobname, $job) { // registering job named 'testquery'
             $this->appInstance->gibson->mget('key', function($conn) use ($job, $jobname){
-                $job->setResult($jobname, $conn->result);
+                if ($conn->isFinal()) {
+                    $job->setResult($jobname, $conn->result);
+                }
             });
         });
 

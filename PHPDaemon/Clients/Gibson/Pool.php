@@ -1,8 +1,12 @@
 <?php
+/**
+ * @package    Clients
+ * @subpackage Gibson
+ *
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ */
 namespace PHPDaemon\Clients\Gibson;
-
-
-use PHPDaemon\Core\Daemon;
+use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 class Pool extends \PHPDaemon\Network\Client {
 
@@ -48,7 +52,17 @@ class Pool extends \PHPDaemon\Network\Client {
 		];
 	}
 
-
+	/**
+	 * Magic __call.
+	 * @method $name 
+	 * @param string $name Command name
+	 * @param array $args
+	 * @usage $ .. Command-dependent set of arguments ..
+	 * @usage $ [callback Callback. Optional.
+	 * @example  $gibson->set(3600, 'key', 'value');
+	 * @example  $gibson->get('key', function ($conn) {...});
+	 * @return void
+	 */
 	public function __call($name, $args) {
 		$name = strtolower($name);
 		$onResponse = null;
@@ -56,10 +70,7 @@ class Pool extends \PHPDaemon\Network\Client {
 			$onResponse = array_pop($args);
 		}
 		if (!isset($this->opCodes[$name])) {
-			if ($onResponse) {
-				call_user_func($onResponse, false);
-			}
-			return false;
+			throw new UndefinedMethodCalled;
 		}
 		$data = implode(' ', $args);
 		$this->requestByServer(null, pack('LS', strlen($data) + 2, $this->opCodes[$name]) . $data, $onResponse);

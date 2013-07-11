@@ -109,8 +109,8 @@ abstract class Generic {
 		if ($this->priority !== null) {
 			$this->ev->priority = $this->priority;
 		}
-		$this->onWakeup();
 		$this->preinit($parent);
+		$this->onWakeup();
 		$this->init();
 		$this->onSleep();
 	}
