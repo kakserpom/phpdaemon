@@ -3,6 +3,7 @@
  * @package    Clients
  * @subpackage Gibson
  *
+ * @protocol http://gibson-db.in/protocol.php
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 namespace PHPDaemon\Clients\Gibson;
@@ -72,7 +73,7 @@ class Pool extends \PHPDaemon\Network\Client {
 		if (!isset($this->opCodes[$name])) {
 			throw new UndefinedMethodCalled;
 		}
-		$data = implode(' ', $args);
+		$data = implode("\x20", $args);
 		$this->requestByServer(null, pack('LS', strlen($data) + 2, $this->opCodes[$name]) . $data, $onResponse);
 	}
 }

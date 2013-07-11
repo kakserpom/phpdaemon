@@ -3,6 +3,7 @@
  * @package    Examples
  * @subpackage ExampleGibson
  *
+ * @protocol http://gibson-db.in/protocol.php
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 namespace PHPDaemon\Clients\Gibson;
@@ -37,7 +38,7 @@ class Connection extends ClientConnection {
 	 * Default low mark. Minimum number of bytes in buffer.
 	 * @var integer
 	 */
-//    protected $lowMark = 2;
+    protected $lowMark = 2;
 
 	protected $arch64 = true;
 
@@ -72,6 +73,7 @@ class Connection extends ClientConnection {
 			if (($hdr = $this->readExact(2)) === false) {
 				return; // not enough data
 			}
+
 			$u = unpack('S', $hdr);
 			$this->responseCode = $u[1];
 			$this->state = static::STATE_PACKET_HDR;
@@ -160,9 +162,10 @@ class Connection extends ClientConnection {
 				}
 				$this->drain($o);
 				if ($encoding === static::GB_ENC_NUMBER) {
+					$val = $this->read($valLen);
 					$this->result[$key] = $valLen === 8
-											? Binary::getQword($this->read($valLen), true)
-											: Binary::getDword($this->read($valLen), true);
+											? Binary::getQword($val, true)
+											: Binary::getDword($val, true);
 				} else {
 					$this->result[$key] = $this->read($valLen);
 				}
@@ -182,6 +185,7 @@ class Connection extends ClientConnection {
 					$this->setWatermark($this->responseLength);
 					return;
 				}
+				$this->setWatermark(2);
 				if ($this->encoding === static::GB_ENC_NUMBER) {
 					$this->result = $this->responseLength === 8
 									? Binary::getQword($this->result, true)
