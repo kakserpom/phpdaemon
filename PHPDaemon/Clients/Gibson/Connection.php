@@ -27,6 +27,11 @@ class Connection extends ClientConnection {
 	const STATE_PACKET_HDR = 0x01;
 	const STATE_PACKET_DATA = 0x02;
 
+	const GB_ENC_PLAIN = 0x00;			//	Raw string data follows.
+	const GB_ENC_LZF	= 0x01;			//	Compressed data, this is a reserved value not used for replies.
+	const GB_ENC_NUMBER = 0x02;			// Packed long number follows, four bytes for 32bit architectures, eight bytes for 64bit.
+
+
 
 	/**
 	 * Default low mark. Minimum number of bytes in buffer.
@@ -154,7 +159,13 @@ class Connection extends ClientConnection {
 					goto cursorCall;
 				}
 				$this->drain($o);
-				$this->result[$key] = $this->read($valLen);
+				if ($encoding === static::GB_ENC_NUMBER) {
+					$this->result[$key] = $valLen === 8
+											? Binary::getQword($this->read($valLen), true)
+											: Binary::getDword($this->read($valLen), true);
+				} else {
+					$this->result[$key] = $this->read($valLen);
+				}
 				if (++$this->readedNum >= $this->totalNum) {
 					$this->isFinal = true;
 					$this->executeCb();
@@ -170,6 +181,11 @@ class Connection extends ClientConnection {
 				if (($this->result = $this->readExact($this->responseLength)) === false) {
 					$this->setWatermark($this->responseLength);
 					return;
+				}
+				if ($this->encoding === static::GB_ENC_NUMBER) {
+					$this->result = $this->responseLength === 8
+									? Binary::getQword($this->result, true)
+									: Binary::getDword($this->result, true);
 				}
 				$this->isFinal = true;
 				$this->totalNum = 1;

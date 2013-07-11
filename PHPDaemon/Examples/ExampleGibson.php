@@ -60,7 +60,7 @@ class ExampleGibsonRequest extends Generic{
         }
 
         $job('testquery', function ($jobname, $job) { // registering job named 'testquery'
-            $this->appInstance->gibson->mget('key', function($conn) use ($job, $jobname){
+            $this->appInstance->gibson->inc('counter', function($conn) use ($job, $jobname){
                 if ($conn->isFinal()) {
                     $job->setResult($jobname, $conn->result);
                 }
