@@ -40,8 +40,6 @@ class Connection extends ClientConnection {
 	 */
     protected $lowMark = 2;
 
-	protected $arch64 = true;
-
 	public $responseCode;
 	public $encoding;
 	public $responseLength;
@@ -49,8 +47,6 @@ class Connection extends ClientConnection {
 	public $isFinal = false;
 	public $totalNum;
 	public $readedNum;
-
-	protected $currentKey;
 
 	public function onReady() {
 		parent::onReady();
@@ -81,21 +77,21 @@ class Connection extends ClientConnection {
 		if ($this->state === static::STATE_PACKET_HDR) {
 			if ($this->responseCode === static::REPL_KVAL) {
 				$this->result = [];
-				if (($hdr = $this->readExact(1 + ($this->arch64 ? 16 : 8))) === false) {
+				if (($hdr = $this->readExact(9)) === false) {
 					return; // not enough data
 				}
 				$this->encoding = Binary::getByte($hdr);
-				$this->responseLength = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
-				$this->totalNum = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				$this->responseLength = Binary::getDword($hdr, true);
+				$this->totalNum = Binary::getDword($hdr, true);
 				$this->readedNum = 0;
 				$this->state = static::STATE_PACKET_DATA;
 
 			} else {
-				if (($hdr = $this->readExact(1 + ($this->arch64 ? 8 : 4))) === false) {
+				if (($hdr = $this->readExact(5)) === false) {
 					return; // not enough data
 				}
 				$this->encoding = Binary::getByte($hdr);
-				$this->responseLength = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				$this->responseLength = Binary::getDword($hdr, true);
 				if ($this->responseCode === static::REPL_ERR_NOT_FOUND) {
 					$this->result = null;
 					$this->isFinal = true;
@@ -138,10 +134,10 @@ class Connection extends ClientConnection {
 				if ($l < 9) {
 					goto cursorCall;
 				}
-				if (($hdr = $this->lookExact($o = $this->arch64 ? 8 : 4)) === false) {
+				if (($hdr = $this->lookExact($o = 4)) === false) {
 					goto cursorCall;
 				}
-				$keyLen = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				$keyLen = Binary::getDword($hdr, true);
 				if (($key = $this->lookExact($keyLen, $o)) === false) {
 					goto cursorCall;
 				}
@@ -151,12 +147,11 @@ class Connection extends ClientConnection {
 				}
 				$encoding = ord($encoding);
 				++$o;
-				$valLenLen = $this->arch64 ? 8 : 4;
-				if (($hdr = $this->lookExact($valLenLen, $o)) === false) {
+				if (($hdr = $this->lookExact(4, $o)) === false) {
 					goto cursorCall;
 				}
-				$o += $valLenLen;
-				$valLen = $this->arch64 ? Binary::getQword($hdr, true) : Binary::getDword($hdr, true);
+				$o += 4;
+				$valLen = Binary::getDword($hdr, true);
 				if ($o + $valLen > $l) {
 					goto cursorCall;
 				}
