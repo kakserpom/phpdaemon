@@ -43,7 +43,7 @@ class Item {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Get hits number
 	 * @return int
 	 */
 	public function getHits() {
@@ -51,7 +51,7 @@ class Item {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Get value
 	 * @return mixed
 	 */
 	public function getValue() {
@@ -60,7 +60,7 @@ class Item {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Adds listener callback
 	 * @param callable $cb
 	 */
 	public function addListener($cb) {
@@ -68,7 +68,7 @@ class Item {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Sets the value
 	 * @param $value
 	 */
 	public function setValue($value) {

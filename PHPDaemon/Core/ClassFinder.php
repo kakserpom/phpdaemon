@@ -13,7 +13,7 @@ class ClassFinder {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @TODO DESCR
+	 * Get base class name of the given class or object
 	 * @param string|object $class Object or String
 	 * @return string Class
 	 */
@@ -26,7 +26,7 @@ class ClassFinder {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Find class
 	 * @param string $class Class
 	 * @param string $namespace Namespace
 	 * @return string

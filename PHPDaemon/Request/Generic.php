@@ -9,15 +9,20 @@ abstract class Generic {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @TODO DESCR
+	 * State: finished.
+	 * @var integer
 	 */
 	const STATE_FINISHED = 1;
+	
 	/**
-	 * @TODO DESCR
+	 * State: waiting.
+	 * @var integer
 	 */
 	const STATE_WAITING  = 2;
+	
 	/**
-	 * @TODO DESCR
+	 * State: running.
+	 * @var integer
 	 */
 	const STATE_RUNNING  = 3;
 

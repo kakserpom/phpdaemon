@@ -56,9 +56,9 @@ class Debug {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $var
-	 * @return mixed
+	 * Get refcount of the given variable
+	 * @param &$var
+	 * @return integer
 	 */
 	public static function refcount(&$var) {
 		ob_start();

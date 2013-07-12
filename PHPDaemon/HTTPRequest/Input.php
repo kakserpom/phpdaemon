@@ -77,21 +77,28 @@ class Input extends \EventBuffer {
 	protected $curChunkSize;
 
 	/**
-	 * @TODO DESCR
+	 * State: seek nearest boundary
+	 * @var integer
 	 */
 	const STATE_SEEKBOUNDARY = 0;
+	
 	/**
-	 * @TODO DESCR
+	 * State: headers
+	 * @var integer
 	 */
-	const STATE_HEADERS      = 1;
+	const STATE_HEADERS = 1;
+	
 	/**
-	 * @TODO DESCR
+	 * State: body
+	 * @var integer
 	 */
-	const STATE_BODY         = 2;
+	const STATE_BODY = 2;
+	
 	/**
-	 * @TODO DESCR
+	 * State: upload
+	 * @var integer
 	 */
-	const STATE_UPLOAD       = 3;
+	const STATE_UPLOAD = 3;
 
 	/**
 	 * Set boundary
@@ -109,7 +116,7 @@ class Input extends \EventBuffer {
 	 */
 	public function freeze($at_front = false) {
 		$this->frozen = true;
-		//parent::freeze($at_front);
+		//parent::freeze($at_front); // @TODO: discuss related pecl-event/libevent bug
 	}
 
 	/**
@@ -119,7 +126,7 @@ class Input extends \EventBuffer {
 	 */
 	public function unfreeze($at_front = false) {
 		$this->frozen = false;
-		//parent::unfreeze($at_front);
+		//parent::unfreeze($at_front); // @TODO: discuss related pecl-event/libevent bug
 		$this->onRead();
 		$this->req->checkIfReady();
 	}

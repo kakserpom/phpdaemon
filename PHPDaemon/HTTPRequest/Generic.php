@@ -919,7 +919,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Is session started?
 	 * @return bool
 	 */
 	public function sessionStarted() {
@@ -927,7 +927,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Deferred event 'onSessionStart'
 	 * @return callable
 	 */
 	public function onSessionStartEvent() {
@@ -954,7 +954,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Deferred event 'onSessionRead'
 	 * @return callable
 	 */
 	public function onSessionReadEvent() {
@@ -992,9 +992,10 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Reads session data
 	 * @param $sid
 	 * @param callable $cb
+	 * @return void
 	 */
 	public function sessionRead($sid, $cb = null) {
 		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($sid), 'r+!', function ($fp) use ($cb) {
@@ -1010,8 +1011,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Commmit session data
 	 * @param callable $cb
+	 * @return void
 	 */
 	public function sessionCommit($cb = null) {
 		if (!$this->sessionFp || $this->sessionFlushing) {
@@ -1055,7 +1057,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Start new session
 	 * @param callable $cb
 	 */
 	protected function sessionStartNew($cb = null) {
@@ -1080,7 +1082,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Encodes session data
 	 * @return bool|string
 	 */
 	protected function sessionEncode() {
@@ -1095,7 +1097,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Decodes session data
 	 * @param $str
 	 * @return bool
 	 */

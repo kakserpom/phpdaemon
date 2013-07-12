@@ -344,7 +344,7 @@ abstract class Connection extends IOStream {
 		if ($this->dgram) {
 			return $this->parentSocket->sendTo($data, $this->finished ? MSG_EOF : 0, $this->host, $this->port);
 		}
-		return parent::write($data); // @todo
+		return parent::write($data);
 	}
 
 	/**

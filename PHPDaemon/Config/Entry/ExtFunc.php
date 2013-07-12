@@ -14,7 +14,7 @@ use PHPDaemon\Config\Entry\Generic;
 class ExtFunc extends Generic {
 
 	/**
-	 * @TODO DESCR
+	 * Converts human-readable value to plain
 	 * @param $value
 	 * @return callable|null
 	 */

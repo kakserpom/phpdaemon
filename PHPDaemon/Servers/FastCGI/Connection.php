@@ -60,7 +60,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	protected $content;
 
 	/**
-	 * @TODO DESCR
+	 * Is this upstream suitable for sendfile()?
 	 * @return bool
 	 */
 	public function checkSendfileCap() { // @DISCUSS
@@ -68,7 +68,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Is this upstream suitable for chunked encoding?
 	 * @return bool
 	 */
 	public function checkChunkedEncCap() { // @DISCUSS
@@ -299,7 +299,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Sends a chunk
 	 * @param $req
 	 * @param $chunk
 	 * @return bool
@@ -315,7 +315,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Frees request
 	 * @param $req
 	 */
 	public function freeRequest($req) {
@@ -356,7 +356,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * @return void
 	 */
 	public function badRequest($req) {
-		// TODO: Implement badRequest() method.
+		// @TODO: Implement badRequest() method.
 	}
 }
 

@@ -76,8 +76,9 @@ class Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Push plain value
 	 * @param $value
+	 * @return void
 	 */
 	public function pushValue($value) {
 		$old = $this->value;
@@ -107,8 +108,9 @@ class Generic {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Push human-readable value
 	 * @param $value
+	 * @return void
 	 */
 	public function pushHumanValue($value) {
 		$this->pushValue(static::HumanToPlain($value));

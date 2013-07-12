@@ -11,17 +11,22 @@ class ComplexJob {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @TODO DESCR
+	 * State: waiting. It means there are no listeners yet.
+	 * @var integer
 	 */
 	const STATE_WAITING = 1;
+	
 	/**
-	 * @TODO DESCR
+	 * State: running. Event handler in progress.
+	 * @var integer
 	 */
 	const STATE_RUNNING = 2;
+	
 	/**
-	 * @TODO DESCR
+	 * State: done. Event handler is finished, result is saved.
+	 * @var integer
 	 */
-	const STATE_DONE    = 3;
+	const STATE_DONE = 3;
 
 	/**
 	 * Listeners

@@ -14,7 +14,7 @@ use PHPDaemon\Config\Entry\Generic;
 class ArraySet extends Generic {
 
 	/**
-	 * @TODO DESCR
+	 * Converts human-readable value to plain
 	 * @param array|string $value
 	 * @return array
 	 */

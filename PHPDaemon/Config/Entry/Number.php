@@ -14,7 +14,7 @@ use PHPDaemon\Config\Entry\Generic;
 class Number extends Generic {
 
 	/**
-	 * @TODO DESCR
+	 * Converts human-readable value to plain
 	 * @param $value
 	 * @return int|null
 	 */

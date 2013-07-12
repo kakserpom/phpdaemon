@@ -48,11 +48,12 @@ class Timer {
 	static $counter = 0;
 
 	/**
-	 * @TODO DESCR
+	 * Constructor
 	 * @param callable $cb
 	 * @param int $timeout
 	 * @param int|string $id
 	 * @param int $priority
+	 * @return \PHPDaemon\Core\Timer
 	 */
 	public function __construct($cb, $timeout = null, $id = null, $priority = null) {
 		if ($id === null) {
@@ -71,10 +72,11 @@ class Timer {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $arg
+	 * Called when timer is triggered
+	 * @param mixed $arg
+	 * @return void
 	 */
-	public function eventCall($arg) {
+	public function eventCall() {
 		try {
 			//Daemon::log('cb - '.Debug::zdump($this->cb));
 			call_user_func($this->cb, $this);
@@ -84,8 +86,9 @@ class Timer {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Set prioriry
 	 * @param $priority
+	 * @return void
 	 */
 	public function setPriority($priority) {
 		$this->priority     = $priority;
@@ -93,7 +96,7 @@ class Timer {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Adds timer
 	 * @param callable $cb
 	 * @param int $timeout
 	 * @param int|string $id
@@ -106,7 +109,7 @@ class Timer {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Sets timeout
 	 * @param int|string $id
 	 * @param int $timeout
 	 * @return bool
@@ -120,8 +123,9 @@ class Timer {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Removes timer by ID
 	 * @param $id
+	 * @return void
 	 */
 	public static function remove($id) {
 		if (isset(self::$list[$id])) {
@@ -130,8 +134,9 @@ class Timer {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Cancels timer by ID
 	 * @param $id
+	 * @return void
 	 */
 	public static function cancelTimeout($id) {
 		if (isset(self::$list[$id])) {
@@ -140,8 +145,9 @@ class Timer {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Sets timeout
 	 * @param int $timeout
+	 * @return void
 	 */
 	public function timeout($timeout = null) {
 		if ($timeout !== null) {
@@ -151,28 +157,31 @@ class Timer {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Cancels timer
+	 * @return void
 	 */
 	public function cancel() {
 		$this->ev->del();
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Finishes timer
+	 * @return void
 	 */
 	public function finish() {
 		$this->free();
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Destructor
+	 * @return void
 	 */
 	public function __destruct() {
 		$this->free();
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Frees the timer
 	 */
 	public function free() {
 		unset(self::$list[$this->id]);

@@ -28,31 +28,51 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $EOL = "\r\n";
 
 	/**
-	 * @TODO DESCR
+	 * State: first line
+	 * @var integer
 	 */
 	const STATE_FIRSTLINE  = 1;
+	
 	/**
-	 * @TODO DESCR
+	 * State: headers
+	 * @var integer
 	 */
 	const STATE_HEADERS    = 2;
+	
 	/**
-	 * @TODO DESCR
+	 * State: content
+	 * @var integer
 	 */
 	const STATE_CONTENT    = 3;
+	
 	/**
-	 * @TODO DESCR
+	 * State: processing
+	 * @var integer
 	 */
 	const STATE_PROCESSING = 5;
+	
 	/**
-	 * @TODO DESCR
+	 * State: handshaked
+	 * @var integer
 	 */
 	const STATE_HANDSHAKED = 6;
 
-	/** @var string */
+	/**
+	 * Frame buffer
+	 * @var string
+	 */
 	public $framebuf = '';
-	/** @var array */
+
+	/**
+	 * _SERVER
+	 * @var array
+	 */
 	public $server = [];
-	/** @var array */
+
+	/**
+	 * _COOKIE
+	 * @var array
+	 */
 	public $cookie = [];
 
 	/**
@@ -388,7 +408,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Process headers
 	 * @return bool
 	 */
 	protected function httpProcessHeaders() {
