@@ -21,57 +21,73 @@ class Daemon {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @TODO DESCR
+	 * Support of runkit sandbox functionality
+	 * @var integer
 	 */
 	const SUPPORT_RUNKIT_SANDBOX = 0;
+
 	/**
-	 * @TODO DESCR
+	 * Support of runkit on-the-fly userland code modification functionality
+	 * @var integer
 	 */
 	const SUPPORT_RUNKIT_MODIFY = 1;
+
 	/**
-	 * @TODO DESCR
+	 * Support of runkit on-the-fly internal code modification functionality
+	 * @var integer
 	 */
 	const SUPPORT_RUNKIT_INTERNAL_MODIFY = 2;
+
 	/**
-	 * @TODO DESCR
+	 * Support of runkit on-the-fly userland code import functionality
+	 * @var integer
 	 */
 	const SUPPORT_RUNKIT_IMPORT = 3;
+
 	/**
-	 * @TODO DESCR
+	 * Worker state: idle. It means that the worker IS NOT in the middle of execution valuable callback (e.g. request) at this moment of time. Currently, it does not mean that worker not have any pending operations.
+	 * @var integer
 	 */
 	const WSTATE_IDLE = 1;
+
 	/**
-	 * @TODO DESCR
+	 * Worker state: busy. It means that the worker IS in the middle of execution valuable callback. 
 	 */
 	const WSTATE_BUSY = 2;
+
 	/**
-	 * @TODO DESCR
+	 * Worker state: shutdown. It means that worker is shutdown. Nothing special.
+	 * @var integer
 	 */
 	const WSTATE_SHUTDOWN = 3;
+	
 	/**
-	 * @TODO DESCR
+	 * Worker state: shutdown. It means that worker is shutdown.
+	 * @var integer
 	 */
 	const WSTATE_PREINIT = 4;
-	/**
-	 * @TODO DESCR
-	 */
-	const WSTATE_WAITINIT = 5;
-	/**
-	 * @TODO DESCR
-	 */
-	const WSTATE_INIT = 6;
 
-	/** @var array */
+	/**
+	 * Worker state: initialization. It means that worker is starting right now.
+	 * @var integer
+	 */
+	const WSTATE_INIT = 5;
+
+	/**
+	 * Hash of possible worker states
+	 * @var array
+	 */
 	public static $wstateRev = [
 		1 => 'IDLE',
 		2 => 'BUSY',
 		3 => 'SHUTDOWN',
 		4 => 'PREINIT',
-		5 => 'WAITINIT',
-		6 => 'INIT',
+		5 => 'INIT',
 	];
+	
 	/**
-	 * @TODO DESCR
+	 * Shared memory WSTATE segment size
+	 * @var integer
 	 */
 	const SHM_WSTATE_SIZE = 1024;
 
@@ -93,7 +109,10 @@ class Daemon {
 	 */
 	public static $logpointer;
 
-	/** @var */
+	/**
+	 * Log file async. resource
+	 * @var object
+	 */
 	public static $logpointerAsync;
 
 	/**
@@ -102,23 +121,58 @@ class Daemon {
 	 */
 	protected static $support = [];
 
-	/** @var \PHPDaemon\Thread\IPC|\PHPDaemon\Thread\Master|\PHPDaemon\Thread\Worker */
+	/**
+	 * Current thread object
+	 * @var object \PHPDaemon\Thread\*
+	 */
 	public static $process;
-	/** @var  AppResolver */
+
+	/**
+	 * AppResolver
+	 * @var object \PHPDaemon\Core\AppResolver
+	 */
 	public static $appResolver;
-	/** @var array */
+	
+	/**
+	 * Running application instances
+	 * @var array
+	 */
 	public static $appInstances = [];
-	/** @var \PHPDaemon\HTTPRequest\Generic */
+	
+	/**
+	 * Running request
+	 * @var object \PHPDaemon\Request\Generic
+	 */
 	public static $req;
-	/** @var */
+	
+	/**
+	 * Running context
+	 * @var object
+	 */
 	public static $context;
-	/** @var */
+
+	/**
+	 * Collection of workers
+	 * @var object \PHPDaemon\Thread\Collection
+	 */
 	protected static $workers;
-	/** @var */
+	
+	/**
+	 * Collection of masters
+	 * @var object \PHPDaemon\Thread\Collection
+	 */
 	protected static $masters;
-	/** @var */
+	
+	/**
+	 * Copy of $_SERVER on the daemon start
+	 * @var array
+	 */
 	protected static $initservervar;
-	/** @var */
+
+	/**
+	 * Shared memory 'WSTATE' entity
+	 * @var object \PHPDaemon\Thread\Collection
+	 */
 	public static $shm_wstate;
 
 	/**
@@ -127,31 +181,60 @@ class Daemon {
 	 * @var boolean
 	 */
 	public static $reusePort = false;
-	/** @var bool */
-	public static $compatMode = FALSE;
-	/** @var string */
-	public static $runName = 'phpdaemon';
-	/** @var  Config\Object */
-	public static $config;
-	/** @var */
-	public static $appResolverPath;
-	/** @var bool */
-	public static $restrictErrorControl = false;
-	/** @var */
-	public static $defaultErrorLevel;
+
 	/**
-	 * @TODO: refactoring
+	 * Running under Apache/PHP-FPM in compatibility mode?
+	 * @var boolean
+	 */
+	public static $compatMode = false;
+
+	/**
+	 * Base name of daemon instance
+	 * @var string
+	 */
+	public static $runName = 'phpdaemon';
+
+	/**
+	 * Configuration object
+	 * @var object \PHPDaemon\Config\Object
+	 */
+	public static $config;
+
+	/**
+	 * Path to application resolver
+	 * @var string
+	 */
+	public static $appResolverPath;
+	
+
+	/**
+	 * Restrict error control. When true, operator '@' means nothing.
+	 * @var boolean
+	 */
+	public static $restrictErrorControl = false;
+	
+	/**
+	 * Default error reporting level
+	 * @var integer
+	 */
+	public static $defaultErrorLevel;
+	
+	/**
+	 * Is it running under master-less 'runworker' mode? 
 	 * @var bool
 	 */
 	public static $runworkerMode = false;
 
 	/**
-	 * whether if the current execution stack contains ob-filter
+	 * Whether if the current execution stack contains ob-filter
 	 * @var bool
 	 */
 	public static $obInStack = false;
 
-	/** @var bool */
+	/**
+	 * Mechanism of catching errors. Set it to true, then run your suspect code, and then check this property again. If false, there was error message.
+	 * @var bool
+	 */
 	public static $noError = false;
 
 	/**
@@ -304,7 +387,7 @@ class Daemon {
 	 * @param $errcontext
 	 */
 	public static function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
-		Daemon::$noError = 0;
+		Daemon::$noError = false;
 		$l               = error_reporting();
 		if ($l === 0) {
 			if (!Daemon::$restrictErrorControl) {
@@ -541,7 +624,6 @@ class Daemon {
 			'alive'     => 0,
 			'shutdown'  => 0,
 			'preinit'   => 0,
-			'waitinit'  => 0,
 			'init'      => 0,
 			'reloading' => 0,
 		];
@@ -585,12 +667,6 @@ class Daemon {
 						// pre-init
 						++$stat['alive'];
 						++$stat['preinit'];
-						++$stat['idle'];
-					}
-					elseif ($code === Daemon::WSTATE_WAITINIT) {
-						// wait-init
-						++$stat['alive'];
-						++$stat['waitinit'];
 						++$stat['idle'];
 					}
 					elseif ($code === Daemon::WSTATE_INIT) { // init
