@@ -16,6 +16,10 @@ class XMLStream {
 	protected $xpathhandlers = [];
 	protected $default_ns;
 
+	/**
+	 * Constructor
+	 * @return void
+	 */
 	public function __construct() {
 		$this->parser = xml_parser_create('UTF-8');
 		xml_parser_set_option($this->parser, XML_OPTION_SKIP_WHITE, 1);
@@ -26,14 +30,17 @@ class XMLStream {
 	}
 
 	/**
-	 * @param $ns
+	 * Set default namespace
+	 * @param string $ns
+	 * @return void
 	 */
 	public function setDefaultNS($ns) {
 		$this->default_ns = $ns;
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Finishes the stream
+	 * @return void
 	 */
 	public function finish() {
 		$this->xml_depth     = 0;
@@ -43,6 +50,10 @@ class XMLStream {
 		$this->eventHandlers = [];
 	}
 
+	/**
+	 * Destructor
+	 * @return void
+	 */
 	public function __destroy() {
 		if ($this->parser) {
 			xml_parse($this->parser, '', true);
@@ -51,23 +62,30 @@ class XMLStream {
 	}
 
 	/**
-	 * @param $buf
+	 * Feed stream
+	 * @param string $buf
+	 * @return void
 	 */
 	public function feed($buf) {
 		xml_parse($this->parser, $buf, false);
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Finalize stream
+	 * @return void
 	 */
 	public function finalize() {
 		xml_parse($this->parser, '', true);
 	}
 
 	/**
-	 * @param $parser
-	 * @param $name
-	 * @param $attr
+	 * XML start callback
+	 *
+	 * @see xml_set_element_handler
+	 * @param resource $parser
+	 * @param string $name
+	 * @param array $attr
+	 * @return void
 	 */
 	public function startXML($parser, $name, $attr) {
 		++$this->xml_depth;
@@ -82,13 +100,13 @@ class XMLStream {
 		}
 		$ns = $this->current_ns[$this->xml_depth];
 		foreach ($attr as $key => $value) {
-			if (strstr($key, ':')) {
+			if (strpos($key, ':') !== false) {
 				$key                = explode(':', $key);
 				$key                = $key[1];
 				$this->ns_map[$key] = $value;
 			}
 		}
-		if (!strstr($name, ":") === false) {
+		if (strpos($name, ':') !== false) {
 			$name = explode(':', $name);
 			$ns   = $this->ns_map[$name[0]];
 			$name = $name[1];
@@ -107,6 +125,7 @@ class XMLStream {
 	 *
 	 * @param resource $parser
 	 * @param string $name
+	 * @return void
 	 */
 	public function endXML($parser, $name) {
 		--$this->xml_depth;

@@ -10,11 +10,14 @@ class Pool extends Server {
 	public $routes = [];
 
 	/**
-	 * @TODO DESCR
+	 * Binary packet type
+	 * @var string
 	 */
 	const BINARY = 'BINARY';
+	
 	/**
-	 * @TODO DESCR
+	 * String packet type
+	 * @var string
 	 */
 	const STRING = 'STRING';
 

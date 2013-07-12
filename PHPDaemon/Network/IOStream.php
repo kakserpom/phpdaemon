@@ -191,6 +191,15 @@ abstract class IOStream {
 		if ($pool) {
 			$this->pool = $pool;
 			$this->pool->attach($this);
+			if (isset($this->pool->config->timeout->value)) {
+				$this->timeout = $this->pool->config->timeout->value;
+			}
+			if (isset($this->pool->config->timeoutread->value)) {
+				$this->timeoutRead = $this->pool->config->timeoutread->value;
+			}
+			if (isset($this->pool->config->timeoutwrite->value)) {
+				$this->timeoutWrite = $this->pool->config->timeoutwrite->value;
+			}
 		}
 
 		if ($fd !== null) {
@@ -302,7 +311,8 @@ abstract class IOStream {
 			$this->bev->priority = $this->priority;
 		}
 		if ($this->timeout !== null) {
-			$this->setTimeout($this->timeout);
+			$this->setTimeouts($this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
+								$this->timeoutWrite!== null ? $this->timeoutWrite : $this->timeout);
 		}
 		if ($this->bevConnect && ($this->fd === null)) {
 			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port);
