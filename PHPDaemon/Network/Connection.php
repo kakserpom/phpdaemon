@@ -74,6 +74,18 @@ abstract class Connection extends IOStream {
 	protected $timeout = 120;
 
 	/**
+	 * Timeout
+	 * @var integer
+	 */
+	protected $timeoutRead;
+
+	/**
+	 * Timeout
+	 * @var integer
+	 */
+	protected $timeoutWrite;
+
+	/**
 	 * Local address
 	 * @var string
 	 */
@@ -742,8 +754,8 @@ abstract class Connection extends IOStream {
 	public function setTimeouts($read, $write) {
 		parent::setTimeouts($read, $write);
 		if ($this->fd !== null) {
-			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_SNDTIMEO, ['sec' => $this->timeoutWrite, 'usec' => 0]);
+			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_RCVTIMEO, ['sec' => $this->timeoutREad, 'usec' => 0]);
 		}
 	}
 

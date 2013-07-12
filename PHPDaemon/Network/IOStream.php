@@ -96,11 +96,11 @@ abstract class IOStream {
 	 */
 	protected $state = 0; // stream state of the connection (application protocol level)
 	/**
-	 * @TODO DESCR
+	 * Alias of STATE_STANDBY
 	 */
 	const STATE_ROOT = 0;
 	/**
-	 * @TODO DESCR
+	 * Standby state (default state)
 	 */
 	const STATE_STANDBY = 0;
 
@@ -702,8 +702,9 @@ abstract class IOStream {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $m
+	 * Send message to log
+	 * @param string $message
+	 * @return void
 	 */
 	protected function log($m) {
 		Daemon::log(get_class($this) . ': ' . $m);
@@ -747,8 +748,9 @@ abstract class IOStream {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Push callback which will be called only once, when writing is available next time 
 	 * @param callable $cb
+	 * @return void
 	 */
 	public function onWriteOnce($cb) {
 		if (!$this->writing) {

@@ -23,7 +23,8 @@ class FileWatcher {
 	public $descriptors = [];
 
 	/**
-	 * @TODO DESCR
+	 * Constructor
+	 * @return object
 	 */
 	public function __construct() {
 		if (Daemon::loadModuleIfAbsent('inotify')) {
@@ -43,7 +44,7 @@ class FileWatcher {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Adds your subscription on object in FS
 	 * @param $path
 	 * @param $subscriber
 	 * @param int $flags
@@ -63,7 +64,7 @@ class FileWatcher {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Cancels your subscription on object in FS
 	 * @param $path
 	 * @param $subscriber
 	 * @return bool
@@ -90,8 +91,9 @@ class FileWatcher {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when file $path is changed
 	 * @param $path
+	 * @return void
 	 */
 	public function onFileChanged($path) {
 		if (!Daemon::lintFile($path)) {
@@ -109,7 +111,8 @@ class FileWatcher {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Check the file system, triggered by timer
+	 * @return void
 	 */
 	public function watch() {
 		if ($this->inotify) {

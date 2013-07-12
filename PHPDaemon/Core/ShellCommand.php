@@ -59,51 +59,51 @@ class ShellCommand extends IOStream {
 	 */
 	protected $outputErrors = true;
 
-	// @todo make methods setUser and setGroup, variables change to $user and $group with null values
 	/**
+	 * SUID
 	 * @var string
 	 */
-	public $setUser; // optinal SUID.
+	public $setUser;
 	/**
+	 * SGID
 	 * @var string
 	 */
-	public $setGroup; // optional SGID.
-
-	// @todo the same, make a method setChroot
-	/**
-	 * @var string
-	 */
-	public $chroot = '/'; // optional chroot.
+	public $setGroup;
 
 	/**
+	 * Chroot
+	 * @var string
+	 */
+	public $chroot = '/';
+
+	/**
+	 * Hash of environment's variables
 	 * @var array
 	 */
-	protected $env = []; // hash of environment's variables
+	protected $env = []; // 
 
-	// @todo setCwd
 	/**
+	 * Chdir
 	 * @var string
 	 */
-	public $cwd; // optional chdir
+	public $cwd;
 	/**
+	 * Path to error logfile
 	 * @var string
 	 */
-	protected $errlogfile = null; // path to error logfile
+	protected $errlogfile = null;
 	/**
+	 * Array of arguments
 	 * @var array
 	 */
-	protected $args; // array of arguments
+	protected $args;
 
-	// @todo setNice
 	/**
+	 * Process priority
 	 * @var int
 	 */
-	protected $nice; // optional priority
+	protected $nice;
 
-	/**
-	 * @var \EventBufferEvent
-	 */
-	protected $bev;
 	/**
 	 * @var \EventBufferEvent
 	 */
@@ -114,16 +114,57 @@ class ShellCommand extends IOStream {
 	protected $bevErr;
 
 	/**
+	* Got EOF?
 	 * @var bool
 	 */
 	protected $EOF = false;
 
 	/**
-	 * @TODO DESCR
+	 * Get command string
 	 * @return string
 	 */
 	public function getCmd() {
 		return $this->cmd;
+	}
+
+	/**
+	 * Set group
+	 * @param string $group
+	 * @return object $this
+	 */
+	public function setGroup($val) {
+		$this->setGroup = $val;
+		return $this;
+	}
+
+	/**
+	 * Set cwd
+	 * @param string $dir
+	 * @return object $this
+	 */
+	public function setCwd($dir) {
+		$this->cwd = $dir;
+		return $this;
+	}
+
+	/**
+	 * Set group
+	 * @param string $user
+	 * @return object $this
+	 */
+	public function setUser($val) {
+		$this->setUser = $val;
+		return $this;
+	}
+
+	/**
+	 * Set chroot
+	 * @param string $dir
+	 * @return object $this
+	 */
+	public function setChroot($dir) {
+		$this->chroot = $dir;
+		return $this;
 	}
 
 	/**
@@ -216,7 +257,8 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when got EOF
+	 * @return void
 	 */
 	public function onEofEvent() {
 		if ($this->EOF) {
@@ -251,8 +293,8 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $args
+	 * Build arguments string from associative/enumerated array (may be mixed)
+	 * @param array $args
 	 * @return string
 	 */
 	public static function buildArgs($args) {
@@ -343,7 +385,7 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Finish write stream
 	 * @return bool
 	 */
 	public function finishWrite() {
@@ -369,14 +411,14 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when stream is finished
 	 */
 	public function onFinish() {
 		$this->onEofEvent();
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Close write stream
 	 * @return $this
 	 */
 	public function closeWrite() {
@@ -397,7 +439,7 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Got EOF?
 	 * @return bool
 	 */
 	public function eof() {
@@ -453,7 +495,7 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Sets callback which will be called once when got EOF 
 	 * @param callable $cb
 	 * @return $this
 	 */

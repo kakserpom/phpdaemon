@@ -32,8 +32,6 @@ class Connection extends ClientConnection {
 	const GB_ENC_LZF	= 0x01;			//	Compressed data, this is a reserved value not used for replies.
 	const GB_ENC_NUMBER = 0x02;			// Packed long number follows, four bytes for 32bit architectures, eight bytes for 64bit.
 
-
-
 	/**
 	 * Default low mark. Minimum number of bytes in buffer.
 	 * @var integer

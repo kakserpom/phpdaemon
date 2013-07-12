@@ -531,7 +531,7 @@ class File {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Generates closure-callback for readAl
 	 * @param $cb
 	 * @param $size
 	 * @param $offset
@@ -583,7 +583,7 @@ class File {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Generates closure-callback for readAllChunked
 	 * @param $cb
 	 * @param $chunkcb
 	 * @param $size

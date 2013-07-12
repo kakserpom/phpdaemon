@@ -535,7 +535,7 @@ class FileSystem {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Generates closure tempnam handler
 	 * @param $dir
 	 * @param $prefix
 	 * @param $cb
