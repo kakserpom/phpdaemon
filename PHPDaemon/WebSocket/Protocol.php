@@ -4,7 +4,7 @@ namespace PHPDaemon\WebSocket;
 use PHPDaemon\Core\Daemon;
 
 /**
- * Websocket protocol abstract class
+ * WebSocket protocol abstract class
  */
 
 class Protocol {

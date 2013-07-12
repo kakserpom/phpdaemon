@@ -3,7 +3,7 @@ namespace PHPDaemon\Applications;
 
 class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 
-	/** @var \PHPDaemon\Servers\Websocket\Pool */
+	/** @var \PHPDaemon\Servers\WebSocket\Pool */
 	public $WS;
 	/** @var array */
 	public $requests = [];
@@ -21,7 +21,7 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 	 * @return void
 	 */
 	public function init() {
-		$this->WS = \PHPDaemon\Servers\Websocket\Pool::getInstance();
+		$this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance();
 	}
 
 	/**
@@ -108,7 +108,7 @@ class WebSocketOverCOMET extends \PHPDaemon\Core\AppInstance {
 		if (!isset($sess->downstream)) {
 			return;
 		}
-		$sess->downstream->onFrame($body, \PHPDaemon\Servers\Websocket\Pool::STRING);
+		$sess->downstream->onFrame($body, \PHPDaemon\Servers\WebSocket\Pool::STRING);
 		\PHPDaemon\Core\Timer::setTimeout($sess->finishTimer);
 	}
 

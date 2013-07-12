@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\Servers\Websocket;
+namespace PHPDaemon\Servers\WebSocket;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\HTTPRequest\Generic;

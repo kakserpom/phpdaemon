@@ -1,5 +1,6 @@
 <?php
-namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
+namespace PHPDaemon\Examples;
+use PHPDaemon\HTTPRequest\Generic;
 /**
  * @package    Examples
  * @subpackage WebSocket
@@ -14,7 +15,7 @@ class ExampleWebSocket extends \PHPDaemon\Core\AppInstance {
 	public function onReady() {
 		$appInstance = $this; // a reference to this application instance for ExampleWebSocketRoute
 		// URI /exampleApp should be handled by ExampleWebSocketRoute
-		\PHPDaemon\Servers\Websocket\Pool::getInstance()->addRoute('exampleApp', function ($client) use ($appInstance) {
+		\PHPDaemon\Servers\WebSocket\Pool::getInstance()->addRoute('exampleApp', function ($client) use ($appInstance) {
 			return new ExampleWebSocketRoute($client, $appInstance);
 		});
 	}
