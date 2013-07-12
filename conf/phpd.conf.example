@@ -1,0 +1,17 @@
+## Config file
+
+user nobody;
+group nobody;
+
+max-workers	8;
+min-workers	8;
+start-workers	8;
+max-idle	0;
+
+\Your\Application {
+	# config of your application which class is "\Your\Application"
+}
+
+# other applications...
+
+include conf.d/*.conf;
