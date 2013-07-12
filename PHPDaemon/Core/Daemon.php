@@ -256,8 +256,8 @@ class Daemon {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $pattern
+	 * Glob function with support of include_path
+	 * @param string $pattern
 	 * @param int $flags
 	 * @return array
 	 */
@@ -282,11 +282,11 @@ class Daemon {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $mod
-	 * @param null $version
+	 * Load PHP extension (module) if absent
+	 * @param string $mod
+	 * @param string $version
 	 * @param string $compare
-	 * @return bool|mixed
+	 * @return bool $success
 	 */
 	public static function loadModuleIfAbsent($mod, $version = null, $compare = '>=') {
 		if (!extension_loaded($mod)) {
@@ -309,7 +309,8 @@ class Daemon {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Call automatic garbage collector
+	 * @return void
 	 */
 	public static function callAutoGC() {
 		if (self::checkAutoGC()) {
@@ -318,7 +319,7 @@ class Daemon {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Check if we need to run automatic garbage collector
 	 * @return bool
 	 */
 	public static function checkAutoGC() {
@@ -334,9 +335,9 @@ class Daemon {
 	}
 
 	/**
-	 * Callback-function, output filter.
-	 * @param string $s String.
-	 * @return string - buffer
+	 * Output filter
+	 * @param string $str Input
+	 * @return string Output
 	 */
 	public static function outputFilter($s) {
 		static $n = 0; // recursion counter
@@ -362,8 +363,9 @@ class Daemon {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Uncaught exception handler
 	 * @param \Exception $e
+	 * @return void
 	 */
 	public static function uncaughtExceptionHandler(\Exception $e) {
 		if (Daemon::$context !== null) {
@@ -379,16 +381,16 @@ class Daemon {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $errno
-	 * @param $errstr
-	 * @param $errfile
-	 * @param $errline
-	 * @param $errcontext
+	 * Error handler
+	 * @param integer $errno
+	 * @param string $errstr
+	 * @param string $errfile
+	 * @param integer $errline
+	 * @param array $errcontext
 	 */
 	public static function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
 		Daemon::$noError = false;
-		$l               = error_reporting();
+		$l = error_reporting();
 		if ($l === 0) {
 			if (!Daemon::$restrictErrorControl) {
 				return;
@@ -727,11 +729,12 @@ class Daemon {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Run worker thread
+	 * @return void
 	 */
 	public static function runWorker() {
 		Daemon::$runworkerMode = true;
-		$thread                = new Thread\Worker;
+		$thread = new Thread\Worker;
 		$thread();
 	}
 

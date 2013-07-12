@@ -11,62 +11,83 @@ class DeferredEvent {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @TODO DESCR
+	 * State: waiting. It means there are no listeners yet.
+	 * @var integer
 	 */
 	const STATE_WAITING = 1;
+	
 	/**
-	 * @TODO DESCR
+	 * State: running. Event handler in progress.
+	 * @var integer
 	 */
 	const STATE_RUNNING = 2;
+	
 	/**
-	 * @TODO DESCR
+	 * State: done. Event handler is finished, result is saved.
+	 * @var integer
 	 */
-	const STATE_DONE    = 3;
+	const STATE_DONE = 3;
 
 	/**
-	 * @var \PHPDaemon\Structures\StackCallbacks
+	 * Stack of listeners
+	 * @var object \PHPDaemon\Structures\StackCallbacks
 	 */
 	protected $listeners;
+
 	/**
+	 * Result of deferred event
 	 * @var mixed
 	 */
 	protected $result;
+	
 	/**
+	 * State of event. One of STATE_*
 	 * @var int
 	 */
 	protected $state;
+
 	/**
-	 * @var
+	 * Arguments which passed to __invoke
+	 * @var array
 	 */
 	protected $args;
+
 	/**
-	 * @var
+	 * Event handler (producer)
+	 * @var callable
 	 */
-	protected $onRun;
+	protected $producer;
+
 	/**
-	 * @var
+	 * Parent object
+	 * @var object
 	 */
 	public $parent;
 
 	/**
-	 * @TODO DESCR
+	 * Constructor
 	 * @param $cb
+	 * @return \DeferredEvent
 	 */
 	public function __construct($cb) {
 		$this->state     = self::STATE_WAITING;
-		$this->onRun     = $cb;
+		$this->producer     = $cb;
 		$this->listeners = new StackCallbacks;
 	}
 
 	/**
+	 * Set producer callback
 	 * @param callable $cb
+	 * @return void
 	 */
 	public function setProducer($cb) {
-		$this->onRun = $cb;
+		$this->producer = $cb;
 	}
 
 	/**
+	 * Set result
 	 * @param mixed $result
+	 * @return void
 	 */
 	public function setResult($result = null) {
 		$this->result = $result;
@@ -75,17 +96,19 @@ class DeferredEvent {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Clean up
+	 * @return void
 	 */
 	public function cleanup() {
 		$this->listeners = [];
-		$this->onRun     = null;
+		$this->producer  = null;
 		$this->args      = [];
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Add listener
 	 * @param callable $cb
+	 * @return void
 	 */
 	public function addListener($cb) {
 		if ($this->state === self::STATE_DONE) {
@@ -101,14 +124,15 @@ class DeferredEvent {
 				++$i;
 			}
 			$this->state = self::STATE_RUNNING;
-			call_user_func($this->onRun, $this);
+			call_user_func($this->producer, $this);
 		}
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when object is invoked as function.
 	 * @param callable $cb
 	 * @param array $params
+	 * @return void
 	 */
 	public function __invoke($cb, $params = []) {
 		$this->addListener($cb, $params);
