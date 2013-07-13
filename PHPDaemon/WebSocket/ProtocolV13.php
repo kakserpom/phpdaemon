@@ -158,7 +158,6 @@ class ProtocolV13 extends Protocol {
 	 * @see http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10#page-16
 	 * @return void
 	 */
-	 */
 	public function onRead() {
 		while ($this->conn && (($buflen = $this->conn->getInputLength()) >= 2)) {
 			$first     = ord($this->conn->look(1)); // first byte integer (fin, opcode)
