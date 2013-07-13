@@ -28,6 +28,12 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $EOL = "\r\n";
 
 	/**
+	 * Is this connection running right now?
+	 * @var boolean
+	 */
+	protected $running = false;
+
+	/**
 	 * State: first line
 	 * @var integer
 	 */
