@@ -75,4 +75,13 @@ class Pool extends \PHPDaemon\Network\Client {
 		$data = implode("\x20", $args);
 		$this->requestByServer(null, pack('LS', strlen($data) + 2, $this->opCodes[$name]) . $data, $onResponse);
 	}
+
+	/**
+	 * Is command?
+ 	 * @param string $name
+	 * @return boolean
+	 */
+	public function isCommand($name) {
+		return isset($this->opCodes[strtolower($name)]);
+	}
 }
