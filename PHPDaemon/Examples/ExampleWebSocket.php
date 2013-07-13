@@ -46,8 +46,20 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 					\PHPDaemon\Core\Daemon::log('ExampleWebSocket: \'pong\' received by client.');
 				}
 			);
+			throw new \Exception;
 		}
 	}
+
+	/**
+	 * Uncaught exception handler
+	 * @param $e
+	 * @return boolean Handled?
+	 */
+	public function handleException($e) {
+		$this->client->sendFrame('pong from exception');
+		return true;
+	}
+
 
 }
 

@@ -140,6 +140,18 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * Uncaught exception handler
+	 * @param $e
+	 * @return boolean Handled?
+	 */
+	public function handleException($e) {
+		if (!isset($this->route)) {
+			return false;
+		}
+		return $this->route->handleException($e);
+	}
+
+	/**
 	 * Called when new frame received.
 	 * @param string Frame's data.
 	 * @param string Frame's type ("STRING" OR "BINARY").
@@ -149,7 +161,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		if (!isset($this->route)) {
 			return false;
 		}
+		Daemon::$context = $this;
 		$this->route->onFrame($data, $type);
+		Daemon::$context = null;
 		return true;
 	}
 
@@ -172,7 +186,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$route = $this->pool->routes[$routeName];
 		if (is_string($route)) { // if we have a class name
 			if (class_exists($route)) {
+				Daemon::$context = $this;
 				new $route($this);
+				Daemon::$context = null;
 			}
 			else {
 				return false;

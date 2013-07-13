@@ -37,6 +37,16 @@ class Route {
 	}
 
 	/**
+	 * Uncaught exception handler
+	 * @param $e
+	 * @return boolean Handled?
+	 */
+	public function handleException($e) {
+		return false;
+	}
+
+
+	/**
 	 * Called when session finished.
 	 * @return void
 	 */

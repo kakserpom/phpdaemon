@@ -121,7 +121,9 @@ abstract class Generic {
 	}
 
 	/**
+	 * Uncaught exception handler
 	 * @param $e
+	 * @return boolean Handled?
 	 */
 	public function handleException($e) {
 	}
