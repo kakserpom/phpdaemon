@@ -18,15 +18,16 @@ class Protocol {
 	const BINARY = NULL;
 
 	/**
-	 * @TODO DESCR
-	 * @param $conn
+	 * Constructor
+	 * @param \PHPDaemon\Servers\WebSocket\Connection $conn
+	 * @return void
 	 */
 	public function __construct($conn) {
 		$this->conn = $conn;
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Get real frame type identificator
 	 * @param $type
 	 * @return int|mixed|null
 	 */
@@ -45,7 +46,7 @@ class Protocol {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when client and server are handshaking
 	 * @return bool
 	 */
 	public function onHandshake() {
@@ -53,7 +54,7 @@ class Protocol {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Send frame
 	 * @param $data
 	 * @param $type
 	 */

@@ -14,7 +14,7 @@ class ProtocolV0 extends Protocol {
 	const BINARY = 0x80;
 
 	/**
-	 * @TODO DESCR
+	 * Called when client and server are handshaking
 	 * @return bool
 	 */
 	public function onHandshake() {
@@ -109,7 +109,7 @@ class ProtocolV0 extends Protocol {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Encodes frame
 	 * @param $data
 	 * @param $type
 	 * @return string
@@ -145,6 +145,10 @@ class ProtocolV0 extends Protocol {
 		}
 	}
 
+	/**
+	 * Called when new data received 
+	 * @return void
+	 */
 	public function onRead() {
 		while ($this->conn && (($buflen = $this->conn->getInputLength()) >= 2)) {
 			$hdr       = $this->conn->look(10);

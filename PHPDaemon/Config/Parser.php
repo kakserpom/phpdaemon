@@ -84,7 +84,7 @@ class Parser {
 	 * Errorneous?
 	 * @var boolean
 	 */
-	protected $erroneous = false;
+	protected $errorneous = false;
 
 	/**
 	 * Callbacks
@@ -115,7 +115,7 @@ class Parser {
 	 * @return boolean
 	 */
 	public function isErrorneous() {
-		return $this->erroneous;
+		return $this->errorneous;
 	}
 
 	/**

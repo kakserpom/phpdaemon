@@ -745,7 +745,7 @@ abstract class IOStream {
 
 	/**
 	 * Called when new data received
-	 * @return boolean
+	 * @return void
 	 */
 	protected function onRead() {
 	}

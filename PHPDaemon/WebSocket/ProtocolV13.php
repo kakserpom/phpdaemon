@@ -141,7 +141,7 @@ class ProtocolV13 extends Protocol {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Apply mask
 	 * @param $data
 	 * @param $mask
 	 * @return mixed
@@ -154,9 +154,10 @@ class ProtocolV13 extends Protocol {
 	}
 
 	/**
-	 * Data decoding, according to related IETF draft
-	 *
+	 * Called when new data received
 	 * @see http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10#page-16
+	 * @return void
+	 */
 	 */
 	public function onRead() {
 		while ($this->conn && (($buflen = $this->conn->getInputLength()) >= 2)) {
