@@ -20,7 +20,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		if (isset($this->attrs->server['SUBPATH'])) {
 			$e = explode('/', $this->attrs->server['SUBPATH']);
 			$this->cmd = array_shift($e);
-			$this->args = sizeof($e) ? $e : null;
+			$this->args = sizeof($e) ? array_map('urldecode', $e) : null;
 		} else {
     		$this->cmd = static::getString($_GET['cmd']);
     	}

@@ -9,6 +9,7 @@ use PHPDaemon\WebSocket\ProtocolVE;
 use PHPDaemon\WebSocket\Route;
 
 class Connection extends \PHPDaemon\Network\Connection {
+	use \PHPDaemon\Traits\Sessions;
 
 	/**
 	 * Timeout
