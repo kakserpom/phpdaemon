@@ -84,6 +84,26 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * Called when the request wakes up
+	 * @return void
+	 */
+	public function onWakeup() {
+		$this->running   = true;
+		Daemon::$context = $this;
+		Daemon::$process->setState(Daemon::WSTATE_BUSY);
+	}
+
+	/**
+	 * Called when the request starts sleep
+	 * @return void
+	 */
+	public function onSleep() {
+		Daemon::$context = null;
+		$this->running   = false;
+		Daemon::$process->setState(Daemon::WSTATE_IDLE);
+	}
+
+	/**
 	 * Called when connection is inherited from HTTP request
 	 * @param $req
 	 * @return void
@@ -161,9 +181,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		if (!isset($this->route)) {
 			return false;
 		}
-		Daemon::$context = $this;
+		$this->onWakeup();
 		$this->route->onFrame($data, $type);
-		Daemon::$context = null;
+		$this->onSleep();
 		return true;
 	}
 
@@ -186,9 +206,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$route = $this->pool->routes[$routeName];
 		if (is_string($route)) { // if we have a class name
 			if (class_exists($route)) {
-				Daemon::$context = $this;
+				$this->onWakeup();
 				new $route($this);
-				Daemon::$context = null;
+				$this->onSleep();
 			}
 			else {
 				return false;
