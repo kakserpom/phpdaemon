@@ -12,17 +12,16 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
 class Pool extends \PHPDaemon\Network\Client {
 
 	protected  $opCodes = [
-		'set' => 1,		'ttl' => 2,
-		'get' => 3,		'del' => 4,
-		'inc' => 5,		'dec' => 6,
+		'set' => 1,	'ttl' => 2,
+		'get' => 3,	'del' => 4,
+		'inc' => 5,	'dec' => 6,
 		'lock' => 7,	'unlock' => 8,
 		'mset' => 9,	'mttl' => 10,
 		'mget' => 11,	'mdel' => 12,
 		'minc' => 13,	'mdec' => 14,
 		'mlock' => 15,	'munlock' => 16,
 		'count' => 17,	'stats' => 18,
-		'ping' => 19,	'sizeof' => 20,
-		'msizeof' => 21,'encof' => 22,
+		'ping' => 19,	'meta' => 20,
 		'end' => 255,
 	];
 
