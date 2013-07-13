@@ -178,8 +178,8 @@ class ShellCommand extends IOStream {
 	public static function exec($binPath = null, $cb = null, $args = null, $env = null) {
 		$o = new static;
 		$data = '';
-		$o->bind('read', function($o, $buf) use (&$data, $o) {
-			$data .= $buf;
+		$o->bind('read', function($o) use (&$data, $o) {
+			$data .= $o->readUnlimited();
 		});
 		$o->bind('eof', function($o) use (&$data, $cb) {
 			call_user_func($cb, $o, $data);

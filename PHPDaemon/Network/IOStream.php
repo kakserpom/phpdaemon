@@ -895,4 +895,19 @@ abstract class IOStream {
 		}
 		return $read;
 	}
+
+	/**
+	 * Reads all data from the connection's buffer
+	 * @return string Readed data
+	 */
+	public function readUnlimited() {
+		if (!isset($this->bev)) {
+			return false;
+		}
+		$read = $this->bev->read($this->bev->input->length);
+		if ($read === null) {
+			return false;
+		}
+		return $read;
+	}
 }

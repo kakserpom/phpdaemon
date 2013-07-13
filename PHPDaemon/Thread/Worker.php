@@ -383,6 +383,7 @@ class Worker extends Generic {
 			$su = posix_getpwnam(Daemon::$config->user->value);
 		}
 
+		$flushCache = false;
 		if (Daemon::$config->chroot->value !== '/') {
 			if (posix_getuid() != 0) {
 				Daemon::log('You must have the root privileges to change root.');
@@ -392,6 +393,7 @@ class Worker extends Generic {
 				Daemon::log('Couldn\'t change root to \'' . Daemon::$config->chroot->value . '\'.');
 				exit(0);
 			}
+			$flushCache = true;
 		}
 
 		if (isset(Daemon::$config->group->value)) {
@@ -406,6 +408,7 @@ class Worker extends Generic {
 				Daemon::log('Couldn\'t change group to \'' . Daemon::$config->group->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
 			}
+			$flushCache = true;
 		}
 
 		if (isset(Daemon::$config->user->value)) {
@@ -420,12 +423,16 @@ class Worker extends Generic {
 				Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
 				exit(0);
 			}
+			$flushCache = true;
 		}
-
+		if ($flushCache) {
+			clearstatcache(true);
+		}
 		if (Daemon::$config->cwd->value !== '.') {
 			if (!@chdir(Daemon::$config->cwd->value)) {
 				Daemon::log('Couldn\'t change directory to \'' . Daemon::$config->cwd->value . '.');
 			}
+			clearstatcache(true);
 		}
 	}
 

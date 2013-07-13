@@ -33,9 +33,11 @@ $autoloader = function ($classname) {
 		foreach ($subpath as $item) {
 			$file = rtrim($path, '/') . '/' . $item;
 			if (file_exists($file)) {
-				if (!is_readable($file)) {
-					if (class_exists('PHPDaemon\Core\Daemon', false)) {
-						PHPDaemon\Core\Daemon::log('autoloader: \''.$file.'\' does exist but is not readable');
+				if (!@fopen($file,'r')) {
+					if (class_exists('\PHPDaemon\Core\Daemon', false)) {
+						$user = posix_getpwuid(posix_getuid());
+						$group = posix_getgrgid(posix_getgid());
+						\PHPDaemon\Core\Daemon::log('[EMERG] Autoloader: \''.$file.'\' exists but not readable by '. $user['name'] .':'.$group['name']);
 					}
 				} else {
 					require $file;
@@ -57,6 +59,9 @@ spl_autoload_register(function ($classname) use ($autoloader, &$autoloadCache) {
 });
 require 'PHPDaemon/Core/Daemon.php';
 require 'PHPDaemon/Core/Debug.php';
+require 'PHPDaemon/FS/File.php';
+//require 'PHPDaemon/IPCManager/IPCManager.php';
+//require 'PHPDaemon/Core/Timer.php';
 $e = null;
 execute:
 try {

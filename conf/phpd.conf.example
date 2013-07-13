@@ -1,7 +1,7 @@
 ## Config file
 
-user nobody;
-group nobody;
+#user john;
+#group workgroup;
 
 max-workers	8;
 min-workers	8;
