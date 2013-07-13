@@ -57,7 +57,6 @@ if ($displaystate)
 <br/>Total alive: <?php echo $stat['alive']; ?>
 <br/>Shutdown: <?php echo $stat['shutdown']; ?>
 <br/>Pre-init: <?php echo $stat['preinit']; ?>
-<br/>Wait-init: <?php echo $stat['waitinit']; ?>
 <br/>Init: <?php echo $stat['init']; ?>
 <br/>
 <?php
