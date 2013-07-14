@@ -20,6 +20,10 @@ class App extends \PHPDaemon\Core\AppInstance {
 	protected function getConfigDefaults() {
 		return [
 			'gibson-name' => '',
+			'auth' => 0,
+			'username' => 'admin',
+			'password' => 'gibson',
+			'credver' => 1,
 		];
 	}
 
