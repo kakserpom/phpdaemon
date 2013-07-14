@@ -100,9 +100,19 @@ class DeferredEvent {
 	 * @return void
 	 */
 	public function cleanup() {
-		$this->listeners = [];
+		$this->listeners = null;
 		$this->producer  = null;
 		$this->args      = [];
+	}
+
+	/**
+	 * Reset
+	 * @return $this
+	 */
+	public function reset() {
+		$this->state = self::STATE_WAITING;
+		$this->result = null;
+		return $this;
 	}
 
 	/**

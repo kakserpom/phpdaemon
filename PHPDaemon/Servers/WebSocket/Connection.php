@@ -9,6 +9,7 @@ use PHPDaemon\WebSocket\ProtocolVE;
 use PHPDaemon\WebSocket\Route;
 
 class Connection extends \PHPDaemon\Network\Connection {
+	use \PHPDaemon\Traits\DeferredEventHandlers;
 	use \PHPDaemon\Traits\Sessions;
 
 	/**
@@ -27,6 +28,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $policyReqNotFound = false;
 	protected $currentHeader;
 	protected $EOL = "\r\n";
+	public $session;
 
 	/**
 	 * Is this connection running right now?
@@ -89,6 +91,35 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public function init() {
 		$this->setWatermark(null, $this->pool->maxAllowedPacket + 100);
 	}
+
+
+	/**
+	 * Get cookie by name
+	 * @param string $name Name of cookie
+	 * @return string Contents
+	 */
+	protected function getCookieStr($name) {
+		return \PHPDaemon\HTTPRequest\Generic::getString($this->cookie[$name]);
+	}
+
+
+	/**
+	 * Set session state
+	 * @param mixed
+	 * @return void
+	 */
+	protected function setSessionState($var) {
+		$this->session = $var;
+	}
+
+	/**
+	 * Get session state
+	 * @return mixed
+	 */
+	protected function getSessionState() {
+		return $this->session;
+	}
+
 
 	/**
 	 * Called when the request wakes up
@@ -294,17 +325,15 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$this->finish();
 			return false;
 		}
-		if ($this->write($handshake)) {
-			if (is_callable([$this->route, 'onHandshake'])) {
-				$this->route->onHandshake();
-			}
-		}
-		else {
+		if (!$this->write($handshake)) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake send failure for client "' . $this->addr . '"');
 			$this->finish();
 			return false;
 		}
 		$this->handshaked = true;
+		if (is_callable([$this->route, 'onHandshake'])) {
+			$this->route->onHandshake();
+		}
 		return true;
 	}
 

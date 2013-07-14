@@ -46,7 +46,7 @@ trait Sessions {
 		return function ($sessionStartEvent) {
 			/** @var DeferredEventCmp $sessionStartEvent */
 			$name = ini_get('session.name');
-			$sid  = static::getString($this->attrs->cookie[$name]);
+			$sid = $this->getCookieStr($name);
 			if ($sid === '') {
 				$this->sessionStartNew(function () use ($sessionStartEvent) {
 					$sessionStartEvent->setResult();
@@ -55,7 +55,7 @@ trait Sessions {
 			}
 
 			$this->onSessionRead(function ($session) use ($sessionStartEvent) {
-				if ($this->attrs->session === false) {
+				if ($this->getSessionState() === false) {
 					$this->sessionStartNew(function () use ($sessionStartEvent) {
 						$sessionStartEvent->setResult();
 					});
@@ -74,12 +74,12 @@ trait Sessions {
 		return function ($sessionEvent) {
 			/** @var DeferredEventCmp $sessionEvent */
 			$name = ini_get('session.name');
-			$sid  = static::getString($this->attrs->cookie[$name]);
+			$sid  = $this->getCookieStr($name);
 			if ($sid === '') {
 				$sessionEvent->setResult();
 				return;
 			}
-			if ($this->attrs->session) {
+			if ($this->getSessionState()) {
 				$sessionEvent->setResult();
 				return;
 			}
@@ -151,7 +151,10 @@ trait Sessions {
 			return;
 		}
 		$this->sessionStarted = true;
-
+		if (!$this instanceof \PHPDaemon\HTTPRequest\Generic) {
+			Daemon::log('Called ' . get_class($this). '(trait \PHPDaemon\Traits\Sessions)->sessionStart() outside of Request. You should use onSessionStart.');
+			return;
+		}
 		$f = true; // hack to avoid a sort of "race condition"
 		$this->onSessionStart(function ($event) use (&$f) {
 			$f = false;
@@ -194,10 +197,10 @@ trait Sessions {
 	protected function sessionEncode() {
 		$type = ini_get('session.serialize_handler');
 		if ($type === 'php') {
-			return serialize($this->attrs->session);
+			return serialize($this->getSessionState());
 		}
 		if ($type === 'php_binary') {
-			return igbinary_serialize($this->attrs->session);
+			return igbinary_serialize($this->getSessionState());
 		}
 		return false;
 	}
@@ -210,11 +213,11 @@ trait Sessions {
 	protected function sessionDecode($str) {
 		$type = ini_get('session.serialize_handler');
 		if ($type === 'php') {
-			$this->attrs->session = unserialize($str);
+			$this->setSessionState(unserialize($str));
 			return true;
 		}
 		if ($type === 'php_binary') {
-			$this->attrs->session = igbinary_unserialize($str);
+			$this->setSessionState(igbinary_unserialize($str));
 			return true;
 		}
 		return false;

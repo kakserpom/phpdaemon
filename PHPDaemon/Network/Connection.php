@@ -755,7 +755,7 @@ abstract class Connection extends IOStream {
 		parent::setTimeouts($read, $write);
 		if ($this->fd !== null) {
 			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_SNDTIMEO, ['sec' => $this->timeoutWrite, 'usec' => 0]);
-			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_RCVTIMEO, ['sec' => $this->timeoutREad, 'usec' => 0]);
+			$this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_RCVTIMEO, ['sec' => $this->timeoutRead, 'usec' => 0]);
 		}
 	}
 

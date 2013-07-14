@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Examples;
 use PHPDaemon\HTTPRequest\Generic;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 /**
  * @package    Examples
  * @subpackage WebSocket
@@ -34,6 +36,21 @@ class ExampleWebSocket extends \PHPDaemon\Core\AppInstance {
 class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 
 	/**
+	 * Called when the connection is handshaked.
+	 * @return void
+	 */
+	public function onHandshake() {
+		$this->client->onSessionStart(function ($event) {
+			if (!isset($this->client->session['counter'])) {
+				$this->client->session['counter'] = 0;
+			}
+			++$this->client->session['counter'];
+			$this->client->sendFrame('counter in session = ' . $this->client->session['counter']);
+			$this->client->sessionCommit();
+		});
+	}
+
+	/**
 	 * Called when new frame received.
 	 * @param string  Frame's contents.
 	 * @param integer Frame's type.
@@ -59,11 +76,7 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 		$this->client->sendFrame('pong from exception');
 		return true;
 	}
-
-
 }
-
-
 
 class ExampleWebSocketTestPageRequest extends Generic {
 
