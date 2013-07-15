@@ -38,13 +38,13 @@ class Pool extends AppInstance {
 			$realclass = ClassFinder::find($class);
 			if ($realclass !== $class) {
 				$base = '\\PHPDaemon\\Core\\Pool:';
-				Daemon::$config->renameSection($base . $class, $base . $realclass);
+				Daemon::$config->renameSection($base . $class . ($name !== '' ? ':' . $name : ''), $base . $realclass . ($name !== '' ? ':' . $name : ''));
 			}
 			if (!class_exists($realclass)) {
 				Daemon::log($realclass . ' class not exists.');
 				return;
 			}
-			$this->pool              = call_user_func([$realclass, 'getInstance'], $name);
+			$this->pool = call_user_func([$realclass, 'getInstance'], $name);
 			$this->pool->appInstance = $this;
 		}
 	}
