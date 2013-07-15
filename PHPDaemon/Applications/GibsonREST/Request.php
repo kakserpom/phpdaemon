@@ -41,6 +41,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				 $this->result = ['$ok' => 1];
 				 $this->wakeup();
 				 return;
+			} elseif ($this->cmd === 'LOGOUT') {
+				 unset($this->attrs->session['logged']);
+				 $this->result = ['$ok' => 1];
+				 $this->wakeup();
+				 return;
 			}
 			if (!isset($this->attrs->session['logged']) || $this->attrs->session['logged'] < $this->appInstance->config->credver) {
 				$this->result = ['$err' => 'You must be authenticated.'];
@@ -62,7 +67,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		} else {
 			$this->cmd = static::getString($_GET['cmd']);
 		}
-		if (!$this->appInstance->gibson->isCommand($this->cmd) && !in_array($this->cmd, ['LOGIN'])) {
+		if (!$this->appInstance->gibson->isCommand($this->cmd) && !in_array($this->cmd, ['LOGIN', 'LOGOUT'])) {
 			$this->result = ['$err' => 'Unrecognized command'];
 			return false;
 		}
