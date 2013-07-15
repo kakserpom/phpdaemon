@@ -20,7 +20,7 @@ class Pool extends \PHPDaemon\Network\Client {
 		'mget' => 11,	'mdel' => 12,
 		'minc' => 13,	'mdec' => 14,
 		'mlock' => 15,	'munlock' => 16,
-		'count' => 17,	'stats' => 18,
+		'mcount' => 17,	'stats' => 18,
 		'ping' => 19,	'meta' => 20,
 		'end' => 255,
 	];
