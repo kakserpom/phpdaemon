@@ -91,6 +91,7 @@ class Connection extends ClientConnection {
 				$this->encoding = Binary::getByte($hdr);
 				$this->responseLength = Binary::getDword($hdr, true);
 				if ($this->responseCode === static::REPL_ERR_NOT_FOUND) {
+					$this->drain($this->responseLength);
 					$this->result = null;
 					$this->isFinal = true;
 					$this->totalNum = 0;
@@ -98,6 +99,7 @@ class Connection extends ClientConnection {
 					$this->executeCb();
 				}
 				elseif ($this->responseCode === static::REPL_OK) {
+					$this->drain($this->responseLength);
 					$this->result = true;
 					$this->isFinal = true;
 					$this->totalNum = 0;
@@ -107,6 +109,7 @@ class Connection extends ClientConnection {
 				elseif (($this->responseCode === static::REPL_ERR_MEM) ||
 						($this->responseCode === static::REPL_ERR_NAN) ||
 						($this->responseCode === static::REPL_ERR_LOCKED)) {
+					$this->drain($this->responseLength);
 					$this->result = false;
 					$this->isFinal = true;
 					$this->totalNum = 0;
