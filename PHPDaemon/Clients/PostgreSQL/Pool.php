@@ -1,6 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\PostgreSQL;
-class Pool extends Client {
+class Pool extends \PHPDaemon\Network\Client {
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults

@@ -3,9 +3,7 @@ namespace PHPDaemon\Clients\Valve;
 
 // https://developer.valvesoftware.com/wiki/Server_queries
 
-use PHPDaemon\Network\Client;
-
-class Pool extends Client {
+class Pool extends \PHPDaemon\Network\Client {
 	const A2S_INFO                     = "\x54";
 	const S2A_INFO                     = "\x49";
 	const S2A_INFO_SOURCE              = "\x6d";
