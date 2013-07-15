@@ -1,6 +1,5 @@
 <?php
-namespace PHPDaemon\Clients;
-
+namespace PHPDaemon\Clients\PostgreSQL;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\ClientConnection;
@@ -152,10 +151,10 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function onConnected($cb) {
-		if ($this->state == PostgreSQL\self::STATE_AUTH_ERROR) {
+		if ($this->state == self::STATE_AUTH_ERROR) {
 			call_user_func($cb, $this, false);
 		}
-		elseif ($this->state === PostgreSQL\self::STATE_AUTH_OK) {
+		elseif ($this->state === self::STATE_AUTH_OK) {
 			call_user_func($cb, $this, true);
 		}
 		else {
@@ -369,7 +368,7 @@ class Connection extends ClientConnection {
 	 * @return boolean Success
 	 */
 	public function command($cmd, $q = '', $cb = NULL) {
-		if ($this->state !== PostgreSQL\self::STATE_AUTH_OK) {
+		if ($this->state !== self::STATE_AUTH_OK) {
 			return FALSE;
 		}
 
@@ -438,7 +437,7 @@ class Connection extends ClientConnection {
 					Daemon::log(__CLASS__ . ': auth. ok.');
 				}
 
-				$this->state = PostgreSQL\self::STATE_AUTH_OK;
+				$this->state = self::STATE_AUTH_OK;
 
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, TRUE);
@@ -447,36 +446,36 @@ class Connection extends ClientConnection {
 			elseif ($authType === 2) {
 				// KerberosV5
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: KerberosV5.');
-				$this->state = PostgreSQL\self::STATE_AUTH_ERROR; // Auth. error
+				$this->state = self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 			elseif ($authType === 3) {
 				// Cleartext
 				$this->sendPacket('p', $this->password); // Password Message
-				$this->state = PostgreSQL\self::STATE_AUTH_PACKET_SENT;
+				$this->state = self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 4) {
 				// Crypt
 				$salt = binarySubstr($packet, 4, 2);
 				$this->sendPacket('p', crypt($this->password, $salt)); // Password Message
-				$this->state = PostgreSQL\self::STATE_AUTH_PACKET_SENT;
+				$this->state = self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 5) {
 				// MD5
 				$salt = binarySubstr($packet, 4, 4);
 				$this->sendPacket('p', 'md5' . md5(md5($this->password . $this->user) . $salt)); // Password Message
-				$this->state = PostgreSQL\self::STATE_AUTH_PACKET_SENT;
+				$this->state = self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 6) {
 				// SCM
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: SCM.');
-				$this->state = PostgreSQL\self::STATE_AUTH_ERROR; // Auth. error
+				$this->state = self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 			elseif ($authType == 9) {
 				// GSS
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: GSS.');
-				$this->state = PostgreSQL\self::STATE_AUTH_ERROR; // Auth. error
+				$this->state = self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
 		}
@@ -583,13 +582,13 @@ class Connection extends ClientConnection {
 			$this->errno  = -1;
 			$this->errmsg = $message;
 
-			if ($this->state == PostgreSQL\self::STATE_AUTH_PACKET_SENT) {
+			if ($this->state == self::STATE_AUTH_PACKET_SENT) {
 				// Auth. error
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, FALSE);
 				}
 
-				$this->state = PostgreSQL\self::STATE_AUTH_ERROR;
+				$this->state = self::STATE_AUTH_ERROR;
 			}
 
 			$this->onError();
@@ -696,9 +695,9 @@ class Connection extends ClientConnection {
 		$this->resultRows   = [];
 		$this->resultFields = [];
 
-		if ($this->state === PostgreSQL\self::STATE_AUTH_PACKET_SENT) {
+		if ($this->state === self::STATE_AUTH_PACKET_SENT) {
 			// in case of auth error
-			$this->state = PostgreSQL\self::STATE_AUTH_ERROR;
+			$this->state = self::STATE_AUTH_ERROR;
 			$this->finish();
 		}
 
