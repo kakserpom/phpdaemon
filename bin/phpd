@@ -60,8 +60,6 @@ spl_autoload_register(function ($classname) use ($autoloader, &$autoloadCache) {
 require 'PHPDaemon/Core/Daemon.php';
 require 'PHPDaemon/Core/Debug.php';
 require 'PHPDaemon/FS/File.php';
-//require 'PHPDaemon/IPCManager/IPCManager.php';
-//require 'PHPDaemon/Core/Timer.php';
 $e = null;
 execute:
 try {

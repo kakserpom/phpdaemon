@@ -56,11 +56,13 @@ class Crypt {
 	 * @return boolean Equal?
 	 */
 	public static function compareStrings($a, $b) {
-    	if (strlen($a) !== strlen($b)) {
+		$al = strlen($a);
+		$bl = strlen($b);
+    	if ($al !== $bl) {
 	        return false;
     	}
     	$d = 0;
-    	for ($i = 0; $i < strlen($a); ++$i) {
+    	for ($i = 0; $i < $al; ++$i) {
         	$d |= ord($a[$i]) ^ ord($b[$i]);
     	}
     	return $d === 0;

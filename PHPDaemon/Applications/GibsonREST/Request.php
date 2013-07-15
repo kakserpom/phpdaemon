@@ -60,12 +60,11 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	 * @return void
 	 */
 	protected function importCmdArgs() {
-		if (isset($this->attrs->server['SUBPATH'])) {
-			$e = explode('/', $this->attrs->server['SUBPATH']);
+		$this->cmd = static::getString($_GET['cmd']);
+		if ($this->cmd === '') {
+			$e = explode('/', isset($this->attrs->server['SUBPATH']) ? $this->attrs->server['SUBPATH'] : $this->attrs->server['DOCUMENT_URI']);
 			$this->cmd = array_shift($e);
 			$this->args = sizeof($e) ? array_map('urldecode', $e) : [];
-		} else {
-			$this->cmd = static::getString($_GET['cmd']);
 		}
 		if (!$this->appInstance->gibson->isCommand($this->cmd) && !in_array($this->cmd, ['LOGIN', 'LOGOUT'])) {
 			$this->result = ['$err' => 'Unrecognized command'];
