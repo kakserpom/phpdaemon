@@ -110,17 +110,17 @@ class Connection extends ClientConnection {
 	public $backendKey;
 
 	/**
-	 * @TODO DESCR
+	 * State: authentication packet sent
+	 */
+	const STATE_AUTH_PACKET_SENT = 2;
+	/**
+	 * State: authencation error
 	 */
 	const STATE_AUTH_ERROR       = 3;
 	/**
-	 * @TODO DESCR
+	 * State: authentication passed
 	 */
 	const STATE_AUTH_OK          = 4;
-	/**
-	 * @TODO DESCR
-	 */
-	const STATE_AUTH_PACKET_SENT = 2;
 
 	/**
 	 * Called when the connection is ready to accept new data
@@ -340,7 +340,7 @@ class Connection extends ClientConnection {
 	 * @return boolean Success
 	 */
 	public function ping($callback = NULL) {
-		// @todo ???????
+		// @todo There is no command for echo-request.
 		//return $this->command(, '', $callback);
 	}
 

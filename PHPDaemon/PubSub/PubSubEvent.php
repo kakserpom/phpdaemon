@@ -105,8 +105,7 @@ class PubSubEvent extends \SplObjectStorage {
 	 */
 	public function pub($data) {
 		foreach ($this as $obj) {
-			$cb = $this->getInfo();
-			call_user_func($cb, $data);
+			call_user_func($this->getInfo(), $data);
 		}
 		return $this;
 	}

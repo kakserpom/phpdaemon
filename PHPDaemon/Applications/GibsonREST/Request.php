@@ -1,12 +1,14 @@
 <?php
 namespace PHPDaemon\Applications\GibsonREST;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 class Request extends \PHPDaemon\HTTPRequest\Generic {
 
 	protected $result;
 	protected $cmd;
 	protected $args;
+	protected $performed = false;
 
 	/*
 	 * Constructor.
@@ -20,7 +22,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		if (!$this->importCmdArgs()) {
 			return;
 		}
+		$this->sleep(5, true); // setting timeout 5 seconds */
 		$this->onSessionStart(function() {
+			$this->wakeup();
 			if ($this->cmd === 'LOGIN') {
 				if (sizeof($this->args) !== 2) {
 					$this->result = ['$err' => 'You must pass exactly 2 arguments.'];
@@ -31,7 +35,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				$c2 = \PHPDaemon\Utils\Crypt::compareStrings($this->appInstance->config->password->value, $this->args[1]) ? 0 : 1;
 				if ($c1 + $c2 > 0) {
 				 	$this->result = ['$err' => 'Wrong username and/or password.'];
-				 	$this->wakeup();
 				 	return;
 				 }
 				 $this->attrs->session['logged'] = $this->appInstance->config->credver;
@@ -44,9 +47,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 				$this->wakeup();
 				return;
 			}
-			$this->performCommand();
 		});   
-		$this->sleep(5, true); // setting timeout 5 seconds */
 	}
 
 	/*
@@ -57,7 +58,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		if (isset($this->attrs->server['SUBPATH'])) {
 			$e = explode('/', $this->attrs->server['SUBPATH']);
 			$this->cmd = array_shift($e);
-			$this->args = sizeof($e) ? array_map('urldecode', $e) : null;
+			$this->args = sizeof($e) ? array_map('urldecode', $e) : [];
 		} else {
 			$this->cmd = static::getString($_GET['cmd']);
 		}
@@ -65,10 +66,21 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->result = ['$err' => 'Unrecognized command'];
 			return false;
 		}
-		if ($this->args === null) {
-			$this->args = static::getArray($_GET['args']);
-		}
 		return true;
+	}
+
+	/*
+	 * Import command name and arguments from input
+	 * @return void
+	 */
+	protected function importCmdArgsFromPost() {
+		if ($this->result === null) {
+			foreach (static::getArray($_POST['args']) as $arg) {
+				if (is_string($arg)) {
+					array_push($this->args, $arg);
+				}
+			}
+		}
 	}
 
 	/*
@@ -92,6 +104,15 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 	 * @return integer Status.
 	 */
 	public function run() {
+		if (!$this->performed && $this->result === null) {
+			$this->performed = true;
+			$this->importCmdArgsFromPost();
+			$this->performCommand();
+			if ($this->result === null) {
+				$this->sleep(5);
+				return;
+			}
+		}
 		echo json_encode($this->result);
 	}
 }

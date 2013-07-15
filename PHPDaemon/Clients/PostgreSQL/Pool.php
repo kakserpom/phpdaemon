@@ -12,7 +12,7 @@ class Pool extends Client {
 	protected function getConfigDefaults() {
 		return [
 			// default server
-			'server'       => 'pg://root@127.0.0.1',
+			'server'       => 'tcp://root@127.0.0.1',
 			// default port
 			'port'         => 5432,
 			// @todo add description
