@@ -2,7 +2,6 @@
 namespace PHPDaemon\Clients\Redis;
 
 use PHPDaemon\Core\CallbackWrapper;
-use PHPDaemon\Network\Client;
 
 /**
  * @package    NetworkClients
@@ -10,7 +9,7 @@ use PHPDaemon\Network\Client;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Pool extends Client {
+class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Subcriptions

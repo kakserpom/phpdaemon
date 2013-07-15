@@ -128,6 +128,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public function onWakeup() {
 		$this->running   = true;
 		Daemon::$context = $this;
+		$_SESSION = &$this->session;
 		Daemon::$process->setState(Daemon::WSTATE_BUSY);
 	}
 
@@ -138,6 +139,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public function onSleep() {
 		Daemon::$context = null;
 		$this->running   = false;
+		unset($_SESSION);
 		Daemon::$process->setState(Daemon::WSTATE_IDLE);
 	}
 
