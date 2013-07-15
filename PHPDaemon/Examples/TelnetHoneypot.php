@@ -29,7 +29,6 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 	 * @return void
 	 */
 	public function onRead() {
-        $finish = false;
 
 		while (!is_null($line = $this->readline())) {
             $finish =
@@ -55,13 +54,16 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 			else {
 				$this->writeln('Unknown command "' . $cmd . '"');
 			}
+
+            if (
+                (strlen($line) > 1024)
+                || $finish
+            ) {
+                $this->finish();
+            }
+
 		}
 
-		if (
-				(strlen($line) > 1024)
-				|| $finish
-		) {
-			$this->finish();
-		}
+
 	}
 }
