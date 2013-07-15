@@ -117,6 +117,7 @@ class Connection extends ClientConnection {
 					$this->executeCb();
 				} else {
 					if ($this->responseCode === static::REPL_KVAL && $this->totalNum <= 0) {
+						$this->drain($this->responseLength);
 						$this->isFinal = true;
 						$this->totalNum = 0;
 						$this->readedNum = 0;
