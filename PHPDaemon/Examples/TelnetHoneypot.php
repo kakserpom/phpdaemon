@@ -26,19 +26,20 @@ class TelnetHoneypot extends \PHPDaemon\Network\Server {
 class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 	/**
 	 * Called when new data received.
-	 * @param string New data.
 	 * @return void
 	 */
-	public function stdin($buf) {
-		$this->buf .= $buf;
-		$finish =
-				(strpos($this->buf, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
-				|| (strpos($this->buf, $s = "\xff\xec") !== FALSE)
-				|| (strpos($this->buf, $s = "\x03") !== FALSE)
-				|| (strpos($this->buf, $s = "\x04") !== FALSE);
+	public function onRead() {
+        $finish = false;
 
-		while (($line = $this->gets()) !== FALSE) {
+		while (!is_null($line = $this->readline())) {
+            $finish =
+                (strpos($line, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
+                    || (strpos($line, $s = "\xff\xec") !== FALSE)
+                    || (strpos($line, $s = "\x03") !== FALSE)
+                    || (strpos($line, $s = "\x04") !== FALSE);
+
 			$e   = explode(' ', rtrim($line, "\r\n"), 2);
+
 			$cmd = trim($e[0]);
 
 			if ($cmd === 'ping') {
@@ -57,7 +58,7 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 		}
 
 		if (
-				(strlen($this->buf) > 1024)
+				(strlen($line) > 1024)
 				|| $finish
 		) {
 			$this->finish();
