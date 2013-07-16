@@ -140,7 +140,10 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 */
 	protected $frozenInput = false;
 
-	/** @var */
+	/**
+	 * Content type parameters
+	 * @var array
+	 */
 	protected $contype;
 
 	/**

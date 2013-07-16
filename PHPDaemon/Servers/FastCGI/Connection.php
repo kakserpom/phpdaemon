@@ -154,7 +154,6 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 			$req->attrs->chunked    = false;
 			$req->attrs->noHttpVer  = true;
 			$req->queueId           = $rid;
-			$req->conn              = $this;
 			$this->requests[$rid]   = $req;
 		}
 		elseif (isset($this->requests[$rid])) {
@@ -179,7 +178,6 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 				$req->attrs->paramsDone = true;
 
 				$req       = Daemon::$appResolver->getRequest($req, $this);
-				$req->conn = $this;
 
 				if ($req instanceof \stdClass) {
 					$this->endRequest($req, 0, 0);
