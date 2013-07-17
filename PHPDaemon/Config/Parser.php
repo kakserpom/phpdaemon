@@ -20,29 +20,36 @@ class Parser {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @TODO DESCR
+	 * State: standby
 	 */
 	const T_ALL     = 1;
 	/**
-	 * @TODO DESCR
+	 * State: comment
 	 */
 	const T_COMMENT = 2;
 	/**
-	 * @TODO DESCR
+	 * State: variable definition block
 	 */
 	const T_VAR     = 3;
 	/**
-	 * @TODO DESCR
+	 * Single-quoted string
 	 */
 	const T_STRING  = 4;
+	
 	/**
-	 * @TODO DESCR
+	 * Double-quoted
 	 */
-	const T_BLOCK   = 5;
+	const T_STRING_DOUBLE = 5;
+	
 	/**
-	 * @TODO DESCR
+	 * Block
 	 */
-	const T_CVALUE  = 5;
+	const T_BLOCK   = 6;
+	
+	/**
+	 * Value defined by constant (keyword) or number
+	 */
+	const T_CVALUE  = 7;
 
 	/**
 	 * Config file path
@@ -158,7 +165,63 @@ class Parser {
 					array_pop($this->state);
 				}
 			},
-			self::T_STRING  => function ($q) {
+			self::T_STRING_DOUBLE  => function ($q) {
+				$str = '';
+				++$this->p;
+
+				for (; $this->p < $this->length; ++$this->p) {
+					$c = $this->getCurrentChar();
+
+					if ($c === $q) {
+						++$this->p;
+						break;
+					}
+					elseif ($c === '\\') {
+						next:
+						$n = $this->getNextChar();
+						if ($n === $q) {
+							$str .= $q;
+							++$this->p;
+						}
+						elseif (ctype_digit($n)) {
+							$def = $n;
+							++$this->p;
+							for (; $this->p < min($this->length, $this->p + 2); ++$this->p) {
+								$n = $this->getNextChar();
+								if (!ctype_digit($n)) {
+									break;
+								}
+								$def .= $n;
+							}
+							$str .= chr((int) $def);
+						}
+						elseif (($n === 'x') || ($n === 'X')) {
+							$def = $n;
+							++$this->p;
+							for (; $this->p < min($this->length, $this->p + 2); ++$this->p) {
+								$n = $this->getNextChar();
+								if (!ctype_xdigit($n)) {
+									break;
+								}
+								$def .= $n;
+							}
+							$str .= chr((int) hexdec($def));
+						}
+						else {
+							$str .= $c;
+						}
+					}
+					else {
+						$str .= $c;
+					}
+				}
+
+				if ($this->p >= $this->length) {
+					$this->raiseError('Unexpected End-Of-File.');
+				}
+				return $str;
+			},
+			self::T_STRING => function ($q) {
 				$str = '';
 				++$this->p;
 
@@ -186,7 +249,6 @@ class Parser {
 				if ($this->p >= $this->length) {
 					$this->raiseError('Unexpected End-Of-File.');
 				}
-
 				return $str;
 			},
 			self::T_ALL     => function ($c) {
@@ -224,10 +286,7 @@ class Parser {
 								$elTypes[$i] = null;
 							}
 						}
-						elseif (
-								($c === '"')
-								|| ($c === '\'')
-						) {
+						elseif ($c === '\'') {
 							if ($elTypes[$i] != null) {
 								$this->raiseError('Unexpected T_STRING.');
 							}
@@ -238,6 +297,19 @@ class Parser {
 							if ($elTypes[$i] === null) {
 								$elements[$i] = $string;
 								$elTypes[$i]  = Parser::T_STRING;
+							}
+						}
+						elseif ($c === '"') {
+							if ($elTypes[$i] != null) {
+								$this->raiseError('Unexpected T_STRING_DOUBLE.');
+							}
+
+							$string = $this->token(Parser::T_STRING_DOUBLE, $c);
+							--$this->p;
+
+							if ($elTypes[$i] === null) {
+								$elements[$i] = $string;
+								$elTypes[$i]  = Parser::T_STRING_DOUBLE;
 							}
 						}
 						elseif ($c === '}') {
