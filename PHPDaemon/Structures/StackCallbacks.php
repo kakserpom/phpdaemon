@@ -75,6 +75,10 @@ class StackCallbacks extends \SplStack {
 		return $n;
 	}
 
+	/**
+	 * Shifts all callbacks sequentially
+	 * @return void
+	 */
 	public function reset() {
 		do {
 			$this->shift();
