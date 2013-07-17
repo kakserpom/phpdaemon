@@ -4,6 +4,7 @@ use PHPDaemon\Core\DeferredEvent;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
+use PHPDaemon\Exceptions\UndefinedEventCalledException;
 
 /**
  * Deferred event handlers trait
@@ -14,12 +15,17 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
  */
 
 trait DeferredEventHandlers {
+	protected $DefEvHandlersUsed = false;
 	/**
 	 * @param string $event
 	 * @throws UndefinedEventCalledException
 	 * @return null|mixed
 	 */
 	public function __get($event) {
+		if (!$this->DefEvHandlersUsed) {
+			$this->DefEvHandlersUsed = true;
+			$this->firstDeferredEventUsed();
+		}
 		if (substr($event, 0, 2) !== 'on') {
 			return $this->{$event};
 		}
@@ -27,17 +33,22 @@ trait DeferredEventHandlers {
 			throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
 		}
 		$e = new DeferredEvent($this->{$event . 'Event'}());
+		$e->name = $event;
 		$e->parent = $this;
+		Daemon::log('>>>> '. get_class($this) . ': created event '.json_encode($event));
 		$this->{$event} = &$e;
 		return $e;
 	}
 
-	public function cleanup() {
+	protected function firstDeferredEventUsed() {
+		
+	}
+
+	public function cleanupDeferredEventHandlers() {
 		foreach ($this as $key => $property) {
 			if ($property instanceof DeferredEvent) {
 				$property->cleanup();
 			}
-			unset($this->{$key});
 		}
 	}
 

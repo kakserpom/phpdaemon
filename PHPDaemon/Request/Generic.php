@@ -7,6 +7,7 @@ use PHPDaemon\Core\Daemon;
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
+	use \PHPDaemon\Traits\EventHandlers;
 
 	/**
 	 * State: finished.
@@ -114,6 +115,7 @@ abstract class Generic {
 		if ($this->priority !== null) {
 			$this->ev->priority = $this->priority;
 		}
+		$this->bind('finish', [$this, 'cleanupEventHandlers']);
 		$this->preinit($parent);
 		$this->onWakeup();
 		$this->init();
@@ -489,12 +491,7 @@ abstract class Generic {
 				)
 				&& !Daemon::$compatMode
 		) {
-			if (
-					!isset($this->upstream->keepalive->value)
-					|| !$this->upstream->keepalive->value
-			) {
 				$this->upstream->endRequest($this);
-			}
 		}
 		else {
 			$this->finish(-1);
@@ -530,7 +527,9 @@ abstract class Generic {
 			$this->onSleep();
 		}
 
+		$this->event('finish');
 		$this->onFinish();
+		$this->cleanupEventHandlers();
 
 		if (Daemon::$compatMode) {
 			return;
@@ -548,7 +547,9 @@ abstract class Generic {
 
 		if ($status !== -1) {
 			$appStatus = 0;
+			Daemon::log('postFinishHandler 1');
 			$this->postFinishHandler(function () use ($appStatus, $status) {
+				Daemon::log('postFinishHandler 2');
 				if (isset($this->upstream)) {
 					$this->upstream->endRequest($this, $appStatus, $status);
 				}

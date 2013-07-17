@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Traits;
 use PHPDaemon\Core\CallbackWrapper;
+use PHPDaemon\Core\Daemon;
 
 /**
  * Event handlers trait
@@ -80,5 +81,13 @@ trait EventHandlers {
 		}
 		unset($this->eventHandlers[$event][$p]);
 		return true;
+	}
+
+	/**
+	 * Clean up all events
+	 * @return void
+	 */
+	protected function cleanupEventHandlers() {
+		$this->eventHandlers = [];
 	}
 }

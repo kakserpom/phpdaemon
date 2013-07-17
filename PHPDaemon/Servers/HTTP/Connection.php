@@ -305,6 +305,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * @return boolean Succcess.
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
+		Daemon::log('endRequest');
 		if ($protoStatus === -1) {
 			$this->close();
 		}
@@ -345,6 +346,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * @return void
 	 */
 	public function onFinish() {
+		Daemon::log('connection '.$this->addr. ' finished');
 		if ($this->req !== null && $this->req instanceof Generic) {
 			if (!$this->req->isFinished()) {
 				$this->req->abort();

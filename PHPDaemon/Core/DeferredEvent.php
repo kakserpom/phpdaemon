@@ -2,6 +2,8 @@
 namespace PHPDaemon\Core;
 
 use PHPDaemon\Structures\StackCallbacks;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 /**
  * DeferredEvent class.
@@ -65,6 +67,12 @@ class DeferredEvent {
 	public $parent;
 
 	/**
+	 * Name of event
+	 * @var string
+	 */
+	public $name;
+
+	/**
 	 * Constructor
 	 * @param $cb
 	 * @return \DeferredEvent
@@ -92,7 +100,9 @@ class DeferredEvent {
 	public function setResult($result = null) {
 		$this->result = $result;
 		$this->state  = self::STATE_DONE;
-		$this->listeners->executeAll($this->result);
+		if ($this->listeners) {
+			$this->listeners->executeAll($this->result);
+		}
 	}
 
 	/**

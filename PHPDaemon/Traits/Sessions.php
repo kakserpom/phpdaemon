@@ -49,7 +49,7 @@ trait Sessions {
 			$sid = $this->getCookieStr($name);
 			if ($sid === '') {
 				$this->sessionStartNew(function () use ($sessionStartEvent) {
-					$sessionStartEvent->setResult();
+					$sessionStartEvent->setResult(true);
 				});
 				return;
 			}
@@ -57,7 +57,7 @@ trait Sessions {
 			$this->onSessionRead(function ($session) use ($sessionStartEvent) {
 				if ($this->getSessionState() === false) {
 					$this->sessionStartNew(function () use ($sessionStartEvent) {
-						$sessionStartEvent->setResult();
+						$sessionStartEvent->setResult(true);
 					});
 				}
 				$sessionStartEvent->setResult(true);
@@ -143,7 +143,7 @@ trait Sessions {
 
 	/**
 	 * Session start
-	 * @param bool $force_start
+	 * @param bool $force_start = true
 	 * @return void
 	 */
 	protected function sessionStart($force_start = true) {
@@ -158,9 +158,11 @@ trait Sessions {
 		$f = true; // hack to avoid a sort of "race condition"
 		$this->onSessionStart(function ($event) use (&$f) {
 			$f = false;
+			Daemon::log('wakeup');
 			$this->wakeup();
 		});
 		if ($f) {
+			Daemon::log('sleep');
 			$this->sleep($this->sessionStartTimeout);
 		}
 	}

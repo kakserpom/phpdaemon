@@ -74,4 +74,10 @@ class StackCallbacks extends \SplStack {
 		} while (!$this->isEmpty());
 		return $n;
 	}
+
+	public function reset() {
+		do {
+			$this->shift();
+		} while (!$this->isEmpty());
+	}
 }

@@ -12,13 +12,13 @@ class ExampleRequest extends Generic
  */
 public function run()
 {
+	$this->sessionStart();
 try {
 	$this->header('Content-Type: text/html');
 	$this->setcookie('testcookie', '1');
 } catch (\PHPDaemon\Request\RequestHeadersAlreadySent $e) {
 }
 $this->registerShutdownFunction(function() {?></html><?php });
-$this->sessionStart();
 if (!isset($_SESSION['counter'])) {
 	$_SESSION['counter'] = 0;
 }
@@ -92,5 +92,8 @@ var_dump([
 //echo '<!-- '. str_repeat('x',1024*1024).' --->';
 //echo '<!-- '. str_repeat('x',1024*1024).' --->';
 ?></body><?php
+}
+public function __destruct() {
+	Daemon::log('destructed example request');
 }
 }

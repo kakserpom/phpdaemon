@@ -6,9 +6,9 @@ use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
-use PHPDaemon\Servers\HTTP\Connection;
 use PHPDaemon\Utils\MIME;
 use PHPDaemon\Traits\DeferredEventHandlers;
+use PHPDaemon\Traits\EventHandlers;
 use PHPDaemon\Traits\StaticObjectWatchdog;
 use PHPDaemon\Traits\ClassWatchdog;
 
@@ -171,6 +171,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		$this->parseParams();
 	}
 
+	public function firstDeferredEventUsed () {
+		$this->bind('finish', [$this, 'cleanupDeferredEventHandlers']);
+	}
 	/**
 	 * Output whole contents of file
 	 * @param string $path Path
@@ -430,7 +433,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if ($this->attrs->chunked) {
 			$this->header('Transfer-Encoding: chunked');
 		}
-		if ($this->upstream instanceof Connection) {
+		if ($this->upstream instanceof \PHPDaemon\Servers\HTTP\Connection) {
 			$this->header('Connection: close');
 		}
 
