@@ -35,14 +35,11 @@ trait DeferredEventHandlers {
 		$e = new DeferredEvent($this->{$event . 'Event'}());
 		$e->name = $event;
 		$e->parent = $this;
-		Daemon::log('>>>> '. get_class($this) . ': created event '.json_encode($event));
 		$this->{$event} = &$e;
 		return $e;
 	}
 
-	protected function firstDeferredEventUsed() {
-		
-	}
+	protected function firstDeferredEventUsed() {}
 
 	public function cleanupDeferredEventHandlers() {
 		foreach ($this as $key => $property) {

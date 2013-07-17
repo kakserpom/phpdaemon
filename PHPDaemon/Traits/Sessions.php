@@ -158,11 +158,9 @@ trait Sessions {
 		$f = true; // hack to avoid a sort of "race condition"
 		$this->onSessionStart(function ($event) use (&$f) {
 			$f = false;
-			Daemon::log('wakeup');
 			$this->wakeup();
 		});
 		if ($f) {
-			Daemon::log('sleep');
 			$this->sleep($this->sessionStartTimeout);
 		}
 	}

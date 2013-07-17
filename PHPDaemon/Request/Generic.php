@@ -547,9 +547,7 @@ abstract class Generic {
 
 		if ($status !== -1) {
 			$appStatus = 0;
-			Daemon::log('postFinishHandler 1');
 			$this->postFinishHandler(function () use ($appStatus, $status) {
-				Daemon::log('postFinishHandler 2');
 				if (isset($this->upstream)) {
 					$this->upstream->endRequest($this, $appStatus, $status);
 				}
