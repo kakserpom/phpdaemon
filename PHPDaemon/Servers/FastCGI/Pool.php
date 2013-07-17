@@ -27,7 +27,7 @@ class Pool extends \PHPDaemon\Network\Server {
 			// @todo add description strings
 			'expose'                  => 1,
 			'auto-read-body-file'     => 1,
-			'listen'                  => '127.0.0.1,unix:/tmp/phpdaemon.fcgi.sock',
+			'listen'                  => 'tcp://127.0.0.1,unix:///tmp/phpdaemon.fcgi.sock',
 			'port'                    => 9000,
 			'allowed-clients'         => '127.0.0.1',
 			'send-file'               => 0,

@@ -36,6 +36,10 @@ class Pool extends AppInstance {
 		if ($this->isEnabled()) {
 			list ($class, $name) = explode(':', $this->name . ':');
 			$realclass = ClassFinder::find($class);
+			$e = explode('\\', $realclass);
+			if (($e[sizeof($e) - 1] !== 'Pool') && class_exists($realclass . '\\Pool')) {
+				$realclass .= '\\Pool';
+			}
 			if ($realclass !== $class) {
 				$base = '\\PHPDaemon\\Core\\Pool:';
 				Daemon::$config->renameSection($base . $class . ($name !== '' ? ':' . $name : ''), $base . $realclass . ($name !== '' ? ':' . $name : ''));

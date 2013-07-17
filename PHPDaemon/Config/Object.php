@@ -318,14 +318,18 @@ class Object implements \ArrayAccess {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $old
-	 * @param $new
+	 * Renames section
+	 * @param string $old
+	 * @param string $new
+	 * @param booelan $log Log?
+	 * @return void
 	 */
-	public function renameSection($old, $new) {
+	public function renameSection($old, $new, $log = false) {
 		Daemon::$config->{$new} = Daemon::$config->{$old};
-		Daemon::log('Config section \'' . $old . '\' -> \'' . $new . '\'');
 		unset(Daemon::$config->{$old});
+		if ($log) {
+			Daemon::log('Config section \'' . $old . '\' -> \'' . $new . '\'');
+		}		
 	}
 
 	/**
