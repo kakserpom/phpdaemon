@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
-
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\HTTPRequest\Generic;
 
 class ExampleHTTPClientRequest extends Generic {
@@ -16,8 +17,8 @@ class ExampleHTTPClientRequest extends Generic {
 		} catch (\Exception $e) {
 		}
 
-		$this->appInstance->httpclient->post(
-			['https://phpdaemon.net/Example/', 'foo' => 'bar'], ['postField' => 'value'],
+		$this->appInstance->httpclient->get(
+			['http://www.cmyip.com/'],
 			function ($conn, $success) {
 				echo $conn->body;
 				\PHPDaemon\Core\Daemon::$req->finish();

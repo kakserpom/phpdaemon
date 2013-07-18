@@ -124,7 +124,7 @@ trait Sessions {
 	public function sessionCommit($cb = null) {
 		if (!$this->sessionFp || $this->sessionFlushing) {
 			if ($cb) {
-				call_user_func(false);
+				call_user_func($cb, false);
 			}
 			return;
 		}

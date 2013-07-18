@@ -115,7 +115,6 @@ abstract class Generic {
 		if ($this->priority !== null) {
 			$this->ev->priority = $this->priority;
 		}
-		$this->bind('finish', [$this, 'cleanupEventHandlers']);
 		$this->preinit($parent);
 		$this->onWakeup();
 		$this->init();

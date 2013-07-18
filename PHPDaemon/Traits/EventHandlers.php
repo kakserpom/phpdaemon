@@ -2,6 +2,7 @@
 namespace PHPDaemon\Traits;
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 /**
  * Event handlers trait
@@ -89,5 +90,6 @@ trait EventHandlers {
 	 */
 	protected function cleanupEventHandlers() {
 		$this->eventHandlers = [];
+		//Daemon::log('clean up event handlers '.get_class($this). ' -- '.$this->attrs->server['REQUEST_URI']. PHP_EOL .Debug::backtrace());
 	}
 }

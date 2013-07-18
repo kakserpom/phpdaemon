@@ -4,6 +4,7 @@ namespace PHPDaemon\Clients\HTTP;
 use PHPDaemon\Clients\HTTP\Pool;
 use PHPDaemon\Clients\HTTP\UploadFile;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Network\ClientConnection;
 
@@ -16,11 +17,13 @@ use PHPDaemon\Network\ClientConnection;
 class Connection extends ClientConnection {
 
 	/**
-	 * @TODO DESCR
+	 * State: headers
+	 * @var integer
 	 */
 	const STATE_HEADERS = 1;
 	/**
-	 * @TODO DESCR
+	 * State: body
+	 * @var integer
 	 */
 	const STATE_BODY    = 2;
 	/**
@@ -69,6 +72,12 @@ class Connection extends ClientConnection {
 	public $responseCode = 0;
 
 	/**
+	 * Last requested URL
+	 * @var string
+	 */
+	public $lastURL;
+
+	/**
 	 * @param string $url
 	 * @param array $params
 	 */
@@ -84,6 +93,7 @@ class Connection extends ClientConnection {
 				}
 				return;
 			}
+			$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 			list ($params['host'], $params['uri']) = $prepared;
 		}
 		if (!isset($params['version'])) {
@@ -141,6 +151,7 @@ class Connection extends ClientConnection {
 				}
 				return;
 			}
+			$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 			list ($params['host'], $params['uri']) = $prepared;
 		}
 		if (!isset($params['version'])) {
@@ -179,14 +190,12 @@ class Connection extends ClientConnection {
 	 * @param string New data
 	 * @return void
 	 */
-	public function stdin($buf) {
+	public function onRead() {
 		if ($this->state === self::STATE_BODY) {
 			goto body;
 		}
-		$this->buf .= $buf;
-		$buf = '';
-		while (($line = $this->gets()) !== FALSE) {
-			if ($line === $this->EOL) {
+		while (($line = $this->readLine()) !== null) {
+			if ($line === '') {
 				if (isset($this->headers['HTTP_CONTENT_LENGTH'])) {
 					$this->contentLength = (int)$this->headers['HTTP_CONTENT_LENGTH'];
 				}
@@ -204,21 +213,17 @@ class Connection extends ClientConnection {
 					$e               = explode(', ', strtolower($this->headers['HTTP_CONNECTION']));
 					$this->keepalive = in_array('keep-alive', $e, true);
 				}
-				if (!$this->chunked) {
-					$this->body .= $this->buf;
-					$this->buf = '';
-				}
 				$this->state = self::STATE_BODY;
 				break;
 			}
 			if ($this->state === self::STATE_ROOT) {
-				$this->headers['STATUS'] = rtrim($line);
+				$this->headers['STATUS'] = $line;
 				$e                       = explode(' ', $this->headers['STATUS']);
 				$this->responseCode      = isset($e[1]) ? (int)$e[1] : 0;
 				$this->state             = self::STATE_HEADERS;
 			}
 			elseif ($this->state === self::STATE_HEADERS) {
-				$e = explode(': ', rtrim($line));
+				$e = explode(': ', $line);
 
 				if (isset($e[1])) {
 					$this->headers['HTTP_' . strtoupper(strtr($e[0], Generic::$htr))] = $e[1];
@@ -231,17 +236,15 @@ class Connection extends ClientConnection {
 		body:
 
 		if ($this->chunked) {
-			$this->buf .= $buf;
 			chunk:
 			if ($this->curChunkSize === null) { // outside of chunk
-				$l = $this->gets();
-				if ($l === $this->EOL) { // skip empty line
+				$l = $this->readLine();
+				if ($l === '') { // skip empty line
 					goto chunk;
 				}
-				if ($l === false) {
+				if ($l === null) {
 					return; // not enough data yet
 				}
-				$l = rtrim($l);
 				if (!ctype_xdigit($l)) {
 					$this->protocolError = __LINE__;
 					$this->finish(); // protocol error
@@ -251,7 +254,7 @@ class Connection extends ClientConnection {
 			}
 			if ($this->curChunkSize !== null) {
 				if ($this->curChunkSize === 0) {
-					if ($this->gets() === $this->EOL) {
+					if ($this->readLine() === '') {
 						$this->requestFinished();
 						return;
 					}
@@ -261,16 +264,8 @@ class Connection extends ClientConnection {
 						return;
 					}
 				}
-				$len = strlen($this->buf);
 				$n   = $this->curChunkSize - strlen($this->curChunk);
-				if ($n >= $len) {
-					$this->curChunk .= $this->buf;
-					$this->buf = '';
-				}
-				else {
-					$this->curChunk .= binarySubstr($this->buf, 0, $n);
-					$this->buf = binarySubstr($this->buf, $n);
-				}
+				$this->curChunk .= $this->read($n);
 				if ($this->curChunkSize <= strlen($this->curChunk)) {
 					$this->body .= $this->curChunk;
 					$this->curChunkSize = null;
@@ -281,7 +276,7 @@ class Connection extends ClientConnection {
 
 		}
 		else {
-			$this->body .= $buf;
+			$this->body .= $this->read($this->contentLength - strlen($this->body));
 			if (($this->contentLength !== -1) && (strlen($this->body) >= $this->contentLength)) {
 				$this->requestFinished();
 			}

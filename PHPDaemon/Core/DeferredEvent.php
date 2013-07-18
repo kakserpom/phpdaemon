@@ -113,6 +113,7 @@ class DeferredEvent {
 		$this->listeners = null;
 		$this->producer  = null;
 		$this->args      = [];
+		$this->parent = null;
 	}
 
 	/**
