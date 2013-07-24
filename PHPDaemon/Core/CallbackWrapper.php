@@ -14,9 +14,9 @@ class CallbackWrapper {
 
 	/**
 	 * Context
-	 * @var mixed
+	 * @var object
 	 */
-	public $context;
+	protected $context;
 
 	/**
 	 * Callback
@@ -25,14 +25,23 @@ class CallbackWrapper {
 	protected $cb;
 
 	/**
+	 * Timer
+	 * @var callable
+	 */
+	protected $timer;
+
+	/**
 	 * Constructor
 	 * @param callable $cb
-	 * @param \PHPDaemon\Core\TransportContext $context
+	 * @param object $context
 	 * @return \PHPDaemon\Core\CallbackWrapper
 	 */
-	public function __construct($cb, $context = null) {
+	public function __construct($cb, $context = null, $timeout = null) {
 		$this->cb      = $cb;
 		$this->context = $context;
+		if ($timeout !== null) {
+			$this->timer = Timer::add($this, $timeout);
+		}
 	}
 
 	/**
@@ -42,16 +51,21 @@ class CallbackWrapper {
 	public function cancel() {
 		$this->cb      = null;
 		$this->context = null;
+		if ($this->timer !== null) {
+			$this->timer->free();
+			$this->timer = null;
+		}
 	}
 
 	/**
 	 * Wraps callback
 	 * @static
 	 * @param callable $cb
+	 * @param double $timeout = null
 	 * @return object
 	 */
-	public static function wrap($cb) {
-		if ($cb instanceof CallbackWrapper || (Daemon::$context === null)) {
+	public static function wrap($cb, $timeout = null) {
+		if ($cb instanceof CallbackWrapper || ((Daemon::$context === null) && ($timeout === null))) {
 			return $cb;
 		}
 		if ($cb === null) {
@@ -61,7 +75,7 @@ class CallbackWrapper {
 			\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump($cb));
 
 		}
-		return new static($cb, Daemon::$context);
+		return new static($cb, Daemon::$context, $timeout);
 	}
 
 	/**

@@ -343,7 +343,6 @@ class Bootstrap {
 				echo "\tBusy: " . $stat['busy'] . "\n";
 				echo "\tShutdown: " . $stat['shutdown'] . "\n";
 				echo "\tPre-init: " . $stat['preinit'] . "\n";
-				echo "\tWait-init: " . $stat['waitinit'] . "\n";
 				echo "\tInit: " . $stat['init'] . "\n";
 			}
 
@@ -385,7 +384,7 @@ class Bootstrap {
 		}
 		elseif ($runmode == 'configtest') {
 			$term               = new Terminal();
-			$term->enable_color = true;
+			$term->enableColor = true;
 
 			echo "\n";
 

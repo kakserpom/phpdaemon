@@ -35,6 +35,9 @@ class StackCallbacks extends \SplStack {
 		$cb = $this->shift();
 		if ($cb) {
 			call_user_func_array($cb, func_get_args());
+			if ($cb instanceof CallbackWrapper) {
+				$cb->cancel();
+			}
 		}
 		return true;
 	}
@@ -70,6 +73,9 @@ class StackCallbacks extends \SplStack {
 			if ($cb) {
 				call_user_func_array($cb, $args);
 				++$n;
+				if ($cb instanceof CallbackWrapper) {
+					$cb->cancel();
+				}
 			}
 		} while (!$this->isEmpty());
 		return $n;
