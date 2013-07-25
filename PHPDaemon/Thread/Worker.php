@@ -535,7 +535,9 @@ class Worker extends Generic {
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $name => $appInstance) {
 				if (!$appInstance->handleStatus(AppInstance::EVENT_GRACEFUL_SHUTDOWN)) {
-					$this->log(__METHOD__ . ': waiting for ' . $k . ':' . $name);
+					if (Daemon::$config->logevents->value) {
+						$this->log(__METHOD__ . ': waiting for ' . $k . ':' . $name);
+					}
 					$ready = false;
 				}
 			}

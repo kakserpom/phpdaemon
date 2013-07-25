@@ -71,6 +71,7 @@ abstract class Generic {
 		SIGALRM   => 'SIGALRM',
 		SIGTERM   => 'SIGTERM',
 		SIGSTOP   => 'SIGSTOP',
+		SIGINT   => 'SIGINT',
 		SIGCHLD   => 'SIGCHLD',
 		SIGTTIN   => 'SIGTTIN',
 		SIGTTOU   => 'SIGTTOU',

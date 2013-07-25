@@ -129,8 +129,11 @@ class ComplexJob {
 		if ($this->resultsNum >= $this->jobsNum) {
 			$this->jobs  = [];
 			$this->state = self::STATE_DONE;
-			while ($cb = array_pop($this->listeners)) {
+			foreach ($this->listeners as $cb) {
 				call_user_func($cb, $this);
+			}
+			if ($this->resultsNum >= $this->jobsNum) {
+				$this->cleanup();
 			}
 		}
 	}
@@ -148,6 +151,7 @@ class ComplexJob {
 		$this->jobs[$name] = CallbackWrapper::wrap($cb);
 		++$this->jobsNum;
 		if (($this->state === self::STATE_RUNNING) || ($this->state === self::STATE_DONE)) {
+			$this->state = self::STATE_RUNNING;
 			call_user_func($cb, $name, $this);
 		}
 		return true;

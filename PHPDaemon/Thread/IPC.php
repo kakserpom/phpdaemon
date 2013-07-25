@@ -34,6 +34,13 @@ class IPC extends Generic {
 	protected $reloadReady = false;
 
 	/**
+	 * Update?
+	 * @var boolean
+	 */
+	public $update = false;
+
+
+	/**
 	 * If true, we do not register signals automatically at start
 	 * @var boolean
 	 */
