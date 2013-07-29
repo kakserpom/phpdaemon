@@ -32,7 +32,7 @@ class AppInstance {
 	/**
 	 * name of instance
 	 */
-	const EVENT_HARD_SHUTDOWN = 3;
+	const EVENT_SHUTDOWN = 3;
 	/**
 	 * @var bool
 	 */
@@ -286,7 +286,7 @@ class AppInstance {
 		elseif ($ret === self::EVENT_GRACEFUL_SHUTDOWN) {
 			return $this->onShutdown(true);
 		}
-		elseif ($ret === self::EVENT_HARD_SHUTDOWN) {
+		elseif ($ret === self::EVENT_SHUTDOWN) {
 			return $this->onShutdown();
 		}
 		return false;

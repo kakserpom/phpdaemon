@@ -529,12 +529,12 @@ class Worker extends Generic {
 	 * Asks the running applications the whether we can go to shutdown current (old) worker.
 	 * @return boolean - Ready?
 	 */
-	protected function appInstancesReloadReady() {
+	protected function appInstancesReloadReady($graceful = false) {
 		$ready = true;
 
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $name => $appInstance) {
-				if (!$appInstance->handleStatus(AppInstance::EVENT_GRACEFUL_SHUTDOWN)) {
+				if (!$appInstance->handleStatus($graceful ? AppInstance::EVENT_GRACEFUL_SHUTDOWN : AppInstance::EVENT_SHUTDOWN)) {
 					if (Daemon::$config->logevents->value) {
 						$this->log(__METHOD__ . ': waiting for ' . $k . ':' . $name);
 					}
@@ -583,7 +583,7 @@ class Worker extends Generic {
 			exit(0);
 		}
 
-		$this->reloadReady = $this->appInstancesReloadReady();
+		$this->reloadReady = $this->appInstancesReloadReady(Daemon::$process->reload);
 
 		if ($this->reload === TRUE) {
 			$this->reloadReady = $this->reloadReady && (microtime(TRUE) > $this->reloadTime);
