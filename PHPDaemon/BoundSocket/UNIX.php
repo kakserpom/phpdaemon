@@ -88,7 +88,7 @@ class UNIX extends Generic {
 	 * @return boolean Success.
 	 */
 	public function bindSocket() {
-		if ($this->errorneous) {
+		if ($this->erroneous) {
 			return false;
 		}
 

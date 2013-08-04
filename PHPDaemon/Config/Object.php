@@ -340,7 +340,7 @@ class Object implements \ArrayAccess {
 	public function loadFile($path) {
 		$parser = new Parser($path, $this);
 		$this->onLoad();
-		return !$parser->isErrorneous();
+		return !$parser->isErroneous();
 	}
 
 	/**

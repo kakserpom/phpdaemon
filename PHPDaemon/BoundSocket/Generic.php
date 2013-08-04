@@ -83,10 +83,10 @@ abstract class Generic {
 	protected $ssl = false;
 
 	/**
-	 * Errorneous?
+	 * Erroneous?
 	 * @var boolean
 	 */
-	protected $errorneous = false;
+	protected $erroneous = false;
 
 	/**
 	 * Private key file
@@ -226,7 +226,7 @@ abstract class Generic {
 	protected function initSSLContext() {
 		if (!\EventUtil::sslRandPoll()) {
 			Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
-			$this->errorneous = true;
+			$this->erroneous = true;
 			return;
 		}
 		if (!FileSystem::checkFileReadable($this->certfile) || !FileSystem::checkFileReadable($this->pkfile)) {

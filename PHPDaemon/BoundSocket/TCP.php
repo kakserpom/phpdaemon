@@ -63,7 +63,7 @@ class TCP extends Generic {
 	 * @return boolean Success.
 	 */
 	public function bindSocket() {
-		if ($this->errorneous) {
+		if ($this->erroneous) {
 			return false;
 		}
 		$port = $this->getPort();

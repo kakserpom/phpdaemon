@@ -88,10 +88,10 @@ class Parser {
 	protected $target;
 
 	/**
-	 * Errorneous?
+	 * Erroneous?
 	 * @var boolean
 	 */
-	protected $errorneous = false;
+	protected $erroneous = false;
 
 	/**
 	 * Callbacks
@@ -118,11 +118,11 @@ class Parser {
 	protected $data;
 
 	/**
-	 * Errorneous?
+	 * Erroneous?
 	 * @return boolean
 	 */
-	public function isErrorneous() {
-		return $this->errorneous;
+	public function isErroneous() {
+		return $this->erroneous;
 	}
 
 	/**
@@ -498,7 +498,7 @@ class Parser {
 	 */
 	public function raiseError($msg, $level = 'emerg', $line = null, $col = null) {
 		if ($level === 'emerg') {
-			$this->errorneous = true;
+			$this->erroneous = true;
 		}
 		if ($line === null) {
 			$line = $this->line;

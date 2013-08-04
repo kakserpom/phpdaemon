@@ -1,7 +1,9 @@
 <?php
 namespace PHPDaemon\Clients\Mongo;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
-class Cursor {
+class Cursor implements \Iterator {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
@@ -29,6 +31,30 @@ class Cursor {
 	public $tailable;
 	/** @var */
 	public $callback;
+
+	public function error() {
+		return isset($this->items['$err']) ? $this->items['$err'] : false;
+	}
+	public function rewind() {
+		reset($this->items);
+	}
+  
+	public function current() {
+		return isset($this->items[0]) ? $this->items[0] : null;
+	}
+  
+	public function key() {
+		return key($this->items);
+	}
+  
+	public function next() {
+		array_shift($this->items);
+	}
+  
+	public function valid() {
+		$key = key($this->items);
+		return ($key !== NULL && $key !== FALSE);
+	}
 
 	/**
 	 * @TODO DESCR
