@@ -21,7 +21,7 @@ class ExampleHTTPClientRequest extends Generic {
 			['http://www.cmyip.com/'],
 			function ($conn, $success) {
 				echo $conn->body;
-				\PHPDaemon\Core\Daemon::$req->finish();
+				$this->finish();
 			}
 		);
 
