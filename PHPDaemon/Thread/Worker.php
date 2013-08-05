@@ -29,6 +29,8 @@ class Worker extends Generic {
 	 */
 	public $reload = false;
 
+	protected $graceful = false;
+
 	/**
 	 * Reload time
 	 * @var integer
@@ -521,6 +523,7 @@ class Worker extends Generic {
 	 */
 	public function gracefulRestart() {
 		$this->reload     = true;
+		$this->graceful = true;
 		$this->reloadTime = microtime(true) + $this->reloadDelay;
 		$this->setState($this->state);
 	}
@@ -534,7 +537,7 @@ class Worker extends Generic {
 
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $name => $appInstance) {
-				if (!$appInstance->handleStatus(AppInstance::EVENT_GRACEFUL_SHUTDOWN)) {
+				if (!$appInstance->handleStatus($this->graceful ? AppInstance::EVENT_GRACEFUL_SHUTDOWN : AppInstance::EVENT_SHUTDOWN)) {
 					$this->log(__METHOD__ . ': waiting for ' . $k . ':' . $name);
 					$ready = false;
 				}
@@ -566,7 +569,7 @@ class Worker extends Generic {
 
 		@ob_flush();
 
-		if ($this->terminated === TRUE) {
+		if ($this->terminated === true) {
 			if ($hard) {
 				exit(0);
 			}
@@ -574,7 +577,7 @@ class Worker extends Generic {
 			return;
 		}
 
-		$this->terminated = TRUE;
+		$this->terminated = true;
 
 		if ($hard) {
 			$this->setState(Daemon::WSTATE_SHUTDOWN);
@@ -583,7 +586,7 @@ class Worker extends Generic {
 
 		$this->reloadReady = $this->appInstancesReloadReady();
 
-		if ($this->reload === TRUE) {
+		if ($this->reload && $this->graceful) {
 			$this->reloadReady = $this->reloadReady && (microtime(TRUE) > $this->reloadTime);
 		}
 
@@ -662,6 +665,7 @@ class Worker extends Generic {
 			$this->log('caught SIGTERM.');
 		}
 
+		$this->graceful = false;
 		$this->breakMainLoop = true;
 		$this->eventBase->exit();
 	}
