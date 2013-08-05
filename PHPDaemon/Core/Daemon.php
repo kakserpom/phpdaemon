@@ -641,6 +641,7 @@ class Daemon {
 						// reloaded (shutdown)
 						$code -= 100;
 						if ($code !== Daemon::WSTATE_SHUTDOWN) {
+							++$stat['alive'];
 							if (Daemon::$process instanceof Thread\Master) {
 								Daemon::$process->reloadWorker($offset + $i + 1);
 								++$stat['reloading'];

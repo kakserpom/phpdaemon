@@ -487,7 +487,7 @@ class Worker extends Generic {
 		) {
 			$this->log('\'maxmemory\' exceed. Graceful shutdown.');
 
-			$this->initReload();
+			$this->gracefulRestart();
 		}
 
 		if (
@@ -496,7 +496,7 @@ class Worker extends Generic {
 		) {
 			$this->log('\'max-requests\' exceed. Graceful shutdown.');
 
-			$this->initReload();
+			$this->gracefulRestart();
 		}
 
 		if (
@@ -506,7 +506,7 @@ class Worker extends Generic {
 		) {
 			$this->log('\'maxworkeridle\' exceed. Graceful shutdown.');
 
-			$this->initReload();
+			$this->gracefulRestart();
 		}
 
 		if ($this->update === true) {
@@ -516,10 +516,10 @@ class Worker extends Generic {
 	}
 
 	/**
-	 * Start reloading procedure
-	 * @var Connection
+	 * Graceful restart
+	 * @return void
 	 */
-	protected function initReload() {
+	public function gracefulRestart() {
 		$this->reload     = true;
 		$this->reloadTime = microtime(true) + $this->reloadDelay;
 		$this->setState($this->state);
@@ -529,15 +529,13 @@ class Worker extends Generic {
 	 * Asks the running applications the whether we can go to shutdown current (old) worker.
 	 * @return boolean - Ready?
 	 */
-	protected function appInstancesReloadReady($graceful = false) {
+	protected function appInstancesReloadReady() {
 		$ready = true;
 
 		foreach (Daemon::$appInstances as $k => $app) {
 			foreach ($app as $name => $appInstance) {
-				if (!$appInstance->handleStatus($graceful ? AppInstance::EVENT_GRACEFUL_SHUTDOWN : AppInstance::EVENT_SHUTDOWN)) {
-					if (Daemon::$config->logevents->value) {
-						$this->log(__METHOD__ . ': waiting for ' . $k . ':' . $name);
-					}
+				if (!$appInstance->handleStatus(AppInstance::EVENT_GRACEFUL_SHUTDOWN)) {
+					$this->log(__METHOD__ . ': waiting for ' . $k . ':' . $name);
 					$ready = false;
 				}
 			}
@@ -583,7 +581,7 @@ class Worker extends Generic {
 			exit(0);
 		}
 
-		$this->reloadReady = $this->appInstancesReloadReady(Daemon::$process->reload);
+		$this->reloadReady = $this->appInstancesReloadReady();
 
 		if ($this->reload === TRUE) {
 			$this->reloadReady = $this->reloadReady && (microtime(TRUE) > $this->reloadTime);
@@ -627,9 +625,6 @@ class Worker extends Generic {
 			return true;
 		}
 		if (!$this->id) {
-			return false;
-		}
-		if ($int === $this->state) {
 			return false;
 		}
 
@@ -721,16 +716,6 @@ class Worker extends Generic {
 		}
 
 		$this->gracefulRestart();
-	}
-
-	/**
-	 * Graceful restart
-	 * @return void
-	 */
-	public function gracefulRestart() {
-		$this->reload     = true;
-		$this->reloadTime = microtime(true) + $this->reloadDelay;
-		$this->setState($this->state);
 	}
 
 	/**

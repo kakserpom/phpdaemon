@@ -2,6 +2,7 @@
 namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
@@ -170,11 +171,10 @@ class Master extends Generic {
 				$state['alive'] - Daemon::$config->minworkers->value //downToMinWorkers
 			);
 		}
-		$a['downToMaxWorkers'] = $state['alive'] - Daemon::$config->maxworkers->value;
+		$a['downToMaxWorkers'] = $state['alive'] - $state['reloading'] - Daemon::$config->maxworkers->value;
 		$n                     = max($a);
 		if ($n > 0) {
-			//Daemon::log('downToMaxWorkers = '.$downToMaxWorkers);
-			//Daemon::log('downToMaxSpareWorkers = '.$downToMaxSpareWorkers);
+			//Daemon::log('down = ' . json_encode($a));
 			//Daemon::log(json_encode($state));
 			Daemon::log('Stopping ' . $n . ' worker(s)');
 			$this->stopWorkers($n);
@@ -299,6 +299,9 @@ class Master extends Generic {
 	 * @return boolean - success
 	 */
 	protected function stopWorkers($n = 1) {
+
+		Daemon::log('--'.$n.'-- '.Debug::backtrace().'-----');
+
 		$n = (int)$n;
 		$i = 0;
 
@@ -308,6 +311,10 @@ class Master extends Generic {
 			}
 
 			if ($w->shutdown) {
+				continue;
+			}
+
+			if ($w->reloaded) {
 				continue;
 			}
 
