@@ -104,10 +104,10 @@ class WorkerConnection extends Connection {
 		}
 		if ($this->state === self::STATE_CONTENT) {
 			if (false === ($packet = $this->readExact($this->packetLength))) {
-				$this->setWatermark($this->packetLength);
+				$this->setWatermark($this->packetLength, $this->packetLength);
 				return; // not ready yet
 			}
-			$this->setWatermark(4);
+			$this->setWatermark(4, 0xFFFF);
 			$this->state = self::STATE_ROOT;
 			$this->onPacket(\igbinary_unserialize($packet));
 		}
