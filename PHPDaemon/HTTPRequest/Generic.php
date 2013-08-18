@@ -870,7 +870,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		}
 		FileSystem::readfileChunked($this->attrs->server['REQUEST_BODY_FILE'],
 			function ($file, $success) {
-				$this->attrs->bodyDone = true;
+				$this->attrs->inputDone = true;
 				if ($this->sleepTime === 0) {
 					$this->wakeup();
 				}

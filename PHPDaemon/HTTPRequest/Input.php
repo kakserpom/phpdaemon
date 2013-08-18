@@ -125,9 +125,13 @@ class Input extends \EventBuffer {
 	 * @return void
 	 */
 	public function unfreeze($at_front = false) {
+		$f = $this->frozen;
 		$this->frozen = false;
 		//parent::unfreeze($at_front); // @TODO: discuss related pecl-event/libevent bug
 		$this->onRead();
+		if ($f && $this->EOF) {
+			$this->onEOF();
+		}
 		$this->req->checkIfReady();
 	}
 
@@ -164,6 +168,13 @@ class Input extends \EventBuffer {
 		if (!$this->req) {
 			return;
 		}
+		if ($this->frozen) {
+			return;
+		}
+		if ($this->req->attrs->inputDone) {
+			return;
+		}
+		$this->curPart =& $foo;
 		$this->req->attrs->inputDone = true;
 		$this->req->attrs->raw       = '';
 		if (($l = $this->length) > 0) {
@@ -241,6 +252,21 @@ class Input extends \EventBuffer {
 		}
 	}
 
+
+	/**
+	 * Read from buffer without draining
+	 * @param integer Number of bytes to read
+	 * @param integer [Offset
+	 * @return string|false
+	 */
+	public function look($n, $o = 0) {
+		if ($this->length <= $o) {
+			return '';
+		}
+		return $this->substr($o, $n);
+	}
+
+
 	/**
 	 * Parses multipart
 	 * @return void
@@ -258,7 +284,9 @@ class Input extends \EventBuffer {
 			// we have found the nearest boundary at position $p
 			if ($p > 0) {
 				$extra = $this->read($p);
-				$this->log('parseBody(): SEEKBOUNDARY: got unexpected data before boundary (length = ' . $p . '): ' . Debug::exportBytes($extra));
+				if ($extra !== "\r\n") {
+					$this->log('parseBody(): SEEKBOUNDARY: got unexpected data before boundary (length = ' . $p . '): ' . Debug::exportBytes($extra));
+				}
 			}
 			$this->drain(strlen($this->boundary) + 4); // drain
 			$this->state = self::STATE_HEADERS;
@@ -357,7 +385,8 @@ class Input extends \EventBuffer {
 					}
 				}
 			}
-			else {
+			else {	/* we have entire Part in buffer */
+
 				if ($chunkEnd1 === false) {
 					$l        = $chunkEnd2;
 					$endOfMsg = true;
@@ -366,14 +395,13 @@ class Input extends \EventBuffer {
 					$l        = $chunkEnd1;
 					$endOfMsg = false;
 				}
-				/* we have entire Part in buffer */
 				if (
 						($this->state === self::STATE_BODY)
 						&& isset($this->curPartDisp['name'])
 				) {
 					$this->curPart .= $this->read($l);
 					if ($this->curPartDisp['name'] === 'MAX_FILE_SIZE') {
-						$this->maxFileSize = (int)$chunk;
+						$this->maxFileSize = (int) $this->curPart;
 					}
 				}
 				elseif (
@@ -385,13 +413,12 @@ class Input extends \EventBuffer {
 					$this->req->onUploadFileChunk($this, true);
 				}
 
+				$this->state    = self::STATE_SEEKBOUNDARY;
 				if ($endOfMsg) { // end of whole message
-					$this->state    = self::STATE_SEEKBOUNDARY;
-					$this->bodyDone = true;
+					$this->sendEOF();
 				}
 				else {
-					$this->state = self::STATE_HEADERS; // let's read the next part
-					goto start;
+					goto start; // let's read the next part
 				}
 			}
 		}

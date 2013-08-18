@@ -85,11 +85,15 @@ class Connection extends ClientConnection {
 				$this->state = static::STATE_PACKET_DATA;
 
 			} else {
-				if (($hdr = $this->readExact(5)) === false) {
+				if (($hdr = $this->lookExact(5)) === false) {
+					return; // not enough data
+				}
+				$pl = Binary::getDword($hdr, true);;
+				if ($this->getInputLength() < 5 + $pl) {
 					return; // not enough data
 				}
 				$this->encoding = Binary::getByte($hdr);
-				$this->responseLength = Binary::getDword($hdr, true);
+				$this->responseLength = $pl;
 				if ($this->responseCode === static::REPL_ERR_NOT_FOUND) {
 					$this->drain($this->responseLength);
 					$this->result = null;
@@ -179,10 +183,10 @@ class Connection extends ClientConnection {
 				
 			} else {
 				if (($this->result = $this->readExact($this->responseLength)) === false) {
-					$this->setWatermark($this->responseLength);
+					$this->setWatermark($this->responseLength, $this->responseLength);
 					return;
 				}
-				$this->setWatermark(2);
+				$this->setWatermark(2, 0xFFFF);
 				if ($this->encoding === static::GB_ENC_NUMBER) {
 					$this->result = $this->responseLength === 8
 									? Binary::getQword($this->result, true)
