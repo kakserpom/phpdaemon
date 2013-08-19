@@ -47,10 +47,9 @@ class ExampleGibsonRequest extends Generic{
      * @return void
      */
     public function init(){
-        $req = $this;
 
-        $job = $this->job = new \PHPDaemon\Core\ComplexJob(function () use ($req){ // called when job is done
-            $req->wakeup(); // wake up the request immediately
+        $job = $this->job = new \PHPDaemon\Core\ComplexJob(function () { // called when job is done
+            $this->wakeup(); // wake up the request immediately
         });
 
         if (isset($_GET['fill'])) {
