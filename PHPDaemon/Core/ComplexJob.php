@@ -67,6 +67,8 @@ class ComplexJob {
 	/** @var \PHPDaemon\HTTPRequest\Generic */
 	public $req;
 
+	protected $keep = false;
+
 	/**
 	 * Constructor
 	 * @param callable $cb Listener
@@ -77,6 +79,15 @@ class ComplexJob {
 		if ($cb !== null) {
 			$this->addListener($cb);
 		}
+	}
+
+	/**
+	 * Keep
+	 * @param boolean Keep?
+	 * @return void
+	 */
+	public function keep($keep = true) {
+		$this->keep = (boolean) $keep;
 	}
 
 	/**
@@ -132,7 +143,7 @@ class ComplexJob {
 			foreach ($this->listeners as $cb) {
 				call_user_func($cb, $this);
 			}
-			if ($this->resultsNum >= $this->jobsNum) {
+			if (!$this->keep && $this->resultsNum >= $this->jobsNum) {
 				$this->cleanup();
 			}
 		}
