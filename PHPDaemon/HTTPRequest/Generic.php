@@ -95,7 +95,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * Replacement pairs for processing some header values in parse_str()
 	 * @var array hash
 	 */
-	public static $hvaltr = [';' => '&', ' ' => ''];
+	public static $hvaltr = ['; ' => '&', ';' => '&', ' ' => '%20'];
 
 	/**
 	 * State
