@@ -45,11 +45,11 @@ class ExampleWithRedisRequest extends Generic {
 	 * @return void
 	 */
 	public function init() {
-		$req = $this;
 
-		$job = $this->job = new \PHPDaemon\Core\ComplexJob(function () use ($req) { // called when job is done
+		$job = $this->job = new \PHPDaemon\Core\ComplexJob(function () { // called when job is done
 
-			$req->wakeup(); // wake up the request immediately
+			$this->keep(); // prevent cleaning up results
+			$this->wakeup(); // wake up the request immediately
 
 		});
 
