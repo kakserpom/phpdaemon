@@ -41,6 +41,15 @@ class Terminal {
 	}
 
 	/**
+	 * Enables/disable color
+	 * @param [boolean $bool Enable?
+	 * @return void
+	 */
+	public function enableColor($bool = true) {
+		$this->enableColor = $bool;
+	}
+
+	/**
 	 * Clear the terminal with CLR
 	 * @return void
 	 */

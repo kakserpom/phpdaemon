@@ -383,8 +383,8 @@ class Bootstrap {
 			Bootstrap::start();
 		}
 		elseif ($runmode == 'configtest') {
-			$term               = new Terminal();
-			$term->enableColor = true;
+			$term = new Terminal;
+			$term->enableColor();
 
 			echo "\n";
 
