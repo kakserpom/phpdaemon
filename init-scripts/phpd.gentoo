@@ -1,0 +1,104 @@
+#!/sbin/runscript
+
+set_phpdvars() {
+	PHPD_SLOT=${SVCNAME#phpd-}
+
+	if [ ${PHPD_SLOT} = 'phpd' ] ; then
+        PHPD_SLOT=( $(eselect phpdaemon show) )
+        PHPD_SLOT=${PHPD_SLOT[2]}
+	fi
+
+	PHPD_PID="/run/phpdaemon-${PHPD_SLOT}.pid"
+	PHPD_CONF="/etc/phpd/${PHPD_SLOT}/phpd.conf"
+}
+
+extra_commands="depend"
+extra_started_commands="configtest fullstatus log reload update"
+
+depend() {
+	need net
+}
+
+start() {
+    ebegin "Starting PHPDaemon Process Manager"
+    set_phpdvars
+
+    start-stop-daemon --start --pidfile ${PHPD_PID} --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd start -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+    local i=0
+    local timeout=5
+    while [ ! -f ${PHPD_PID} ] && [ $i -le $timeout ]; do
+        sleep 1
+        i=$(($i + 1))
+    done
+        
+    [ $timeout -gt $i ]
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping PHPDaemon Process Manager"
+    set_phpdvars
+    start-stop-daemon --stop --pidfile ${PHPD_PID} --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd stop -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+
+
+    eend $?
+}
+
+status() {
+    ebegin "Status PHPDaemon Process Manager"
+    set_phpdvars
+    start-stop-daemon --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd status -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+    eend $?
+}
+
+reload() {
+    ebegin "Reloading PHPDaemon Process Manager"
+    set_phpdvars
+    start-stop-daemon --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd reload -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+    eend $?
+}
+
+restart() {
+    ebegin "Restart PHPDaemon Process Manager"
+    set_phpdvars
+    start-stop-daemon --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd restart -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+    eend $?
+}
+
+configtest() {
+    ebegin "Full status of PHPDaemon Process Manager"
+    set_phpdvars
+    start-stop-daemon --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd configtest -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+    eend $?
+}
+
+fullstatus() {
+    ebegin "Full status of PHPDaemon Process Manager"
+    set_phpdvars
+    start-stop-daemon --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd fullstatus -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+    eend $?
+}
+
+log() {
+    ebegin "Log of PHPDaemon Process Manager"
+    set_phpdvars
+    start-stop-daemon --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd log -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+    eend $?
+}
+
+update() {
+    ebegin "Update PHPDaemon Process Manager"
+    set_phpdvars
+    start-stop-daemon --exec \
+        /usr/lib/phpdaemon/${PHPD_SLOT}/bin/phpd update -- --config-file="${PHPD_CONF}" --pid-file="${PHPD_PID}"
+    eend $?
+}
+
