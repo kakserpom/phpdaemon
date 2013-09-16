@@ -88,13 +88,9 @@ class Master extends Generic {
 			}
 
 			if (($c % 10 == 0)) {
-				$this->workers->removeTerminated(true);
-				$this->ipcthreads->removeTerminated(true);
-				gc_collect_cycles();
-			}
-			else {
 				$this->workers->removeTerminated();
 				$this->ipcthreads->removeTerminated();
+				gc_collect_cycles();
 			}
 
 			if (!$this->lastMpmActionTs || ((microtime(true) - $this->lastMpmActionTs) > $this->minMpmActionInterval)) {

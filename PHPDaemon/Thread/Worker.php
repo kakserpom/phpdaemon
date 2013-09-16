@@ -752,6 +752,14 @@ class Worker extends Generic {
 	}
 
 	/**
+	 * Called (in master) when process is terminated
+	 * @return void
+	 */
+	public function onTerminated() {
+		$this->setState(Daemon::WSTATE_SHUTDOWN);
+	}
+
+	/**
 	 * Destructor of worker thread.
 	 * @return void
 	 */

@@ -7,7 +7,6 @@ namespace PHPDaemon\Utils;
  */
 class Crypt {
 	use \PHPDaemon\Traits\ClassWatchdog;
-	use \PHPDaemon\Traits\StaticObjectWatchdog;
 	/**
 	 * Generate keccak hash for string with salt
 	 * @param string $str

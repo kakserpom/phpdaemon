@@ -2,6 +2,7 @@
 namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Exceptions\ClearStack;
 
 /**
@@ -44,15 +45,6 @@ abstract class Generic {
 	 * @var array
 	 */
 	protected $collections = [];
-
-	/**
-	 * Array of known signal numbers
-	 * @var array
-	 */
-	protected static $signalsno = [
-		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
-		18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
-	];
 
 	/**
 	 * Storage of signal handler events
@@ -116,6 +108,13 @@ abstract class Generic {
 	 */
 	public function isTerminated() {
 		return $this->terminated;
+	}
+
+	protected function onTerminated() {}
+
+	public function setTerminated() {
+		$this->terminated = true;
+		$this->onTerminated();
 	}
 
 	/**
@@ -345,10 +344,11 @@ abstract class Generic {
 		start:
 		$pid = \pcntl_waitpid(-1, $status, WNOHANG);
 		if ($pid > 0) {
-			foreach ($this->collections as &$col) {
-				foreach ($col->threads as $k => &$t) {
+			foreach ($this->collections as $col) {
+				foreach ($col->threads as $k => $t) {
 					if ($t->pid === $pid) {
-						$t->terminated = true;
+						$t->setTerminated();
+						unset($col->threads[$k]);
 						goto start;
 					}
 				}
@@ -442,7 +442,7 @@ abstract class Generic {
 	 */
 	protected function sigwait($sec = 0, $nano = 0.3e9) {
 		$siginfo = null;
-		$signo   = @\pcntl_sigtimedwait(self::$signalsno, $siginfo, $sec, $nano);
+		$signo   = @\pcntl_sigtimedwait(array_keys(static::$signals), $siginfo, $sec, $nano);
 
 		if (is_bool($signo)) {
 			return $signo;

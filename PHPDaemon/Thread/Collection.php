@@ -66,19 +66,18 @@ class Collection {
 
 	/**
 	 * Remove terminated threads from the collection
-	 * @param boolean Whether to check the threads using signal
 	 * @return integer Rest threads count
 	 */
-	public function removeTerminated($check = FALSE) {
+	public function removeTerminated() {
 		$n = 0;
 		foreach ($this->threads as $id => $thread) {
-			if ($thread->isTerminated() || !$thread->getPid() || ($check && !$thread->ifExists())) {
+			if (!$thread->getPid() || !$thread->ifExists()) {
+				$thread->setTerminated();
 				unset($this->threads[$id]);
 				continue;
 			}
 			++$n;
 		}
-
 		return $n;
 	}
 
