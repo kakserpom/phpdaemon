@@ -240,6 +240,10 @@ abstract class Generic {
 	 * @return void
 	 */
 	protected function sighandler($signo) {
+		if (!isset(self::$signals[$signo])) {
+			$this->log('caught unknown signal #' . $signo);
+			return;
+		}
 		if (is_callable($c = [$this, strtolower(self::$signals[$signo])])) {
 			call_user_func($c);
 		}
