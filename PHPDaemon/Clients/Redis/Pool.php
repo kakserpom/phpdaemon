@@ -15,7 +15,7 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * Subcriptions
 	 * @var array
 	 */
-	protected $subscribeCb = [];
+	public $subscribeCb = [];
 
 	/**
 	 * Setting default config options
