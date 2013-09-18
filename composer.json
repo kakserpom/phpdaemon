@@ -1,15 +1,33 @@
 {
-    "name": "kakserpom/phpdaemon",
-    "description": "phpdaemon lib",
+    "name"  : "kakserpom/phpdaemon",
+    "type"  : "library",
     "keywords": ["phpdaemon"],
     "homepage": "https://github.com/kakserpom/phpdaemon",
+    "license" : "GPL-3.0+",
+    "description": "Asynchronous server-side framework for Web and network applications implemented in PHP using libevent. phpDaemon can handle thousands of simultaneous connections.",
+    "authors" : [
+        {
+            "name"      : "Vasily Zorin",
+            "email"     : "phpdaemon@googlegroups.com",
+            "homepage"  : "http://daemon.io",
+            "role"      : "Developer"
+        }
+    ],
+    "support" : {
+        "email" : "phpdaemon@googlegroups.com",
+        "issues": "https://github.com/kakserpom/phpdaemon/issues",
+        "forum" : "https://groups.google.com/forum/?hl=ru#!forum/phpdaemon",
+        "wiki"  : "https://github.com/kakserpom/phpdaemon/wiki",
+        "source": "https://github.com/kakserpom/phpdaemon/releases"
+    },
     "require": {
         "php": ">=5.4",
-        "ext-event": "1.6.0",
-        "ext-pcntl": "*",
-        "ext-sockets": "*",
-        "ext-shmop": "*"
+        "ext-event" : ">=1.6.0",
+        "ext-pcntl" : "*",
+        "ext-shmop" : "*",
+        "ext-sockets": "*"
     },
+    "bin": ["bin/phpd"],
     "autoload": {
         "psr-0": { "PHPDaemon": "" }
     }
