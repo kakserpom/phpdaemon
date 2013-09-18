@@ -107,7 +107,7 @@ class Connection extends ClientConnection {
 			else { // request callback
 				$this->onResponse->executeOne($this);
 			}
-			if (!$this->subConn) {
+			if (!$this->subscribed) {
 				$this->checkFree();
 			}
 			$this->resultLength = 0;
