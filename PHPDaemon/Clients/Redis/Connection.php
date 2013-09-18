@@ -2,6 +2,8 @@
 namespace PHPDaemon\Clients\Redis;
 
 use PHPDaemon\Network\ClientConnection;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 /**
  * @package    NetworkClients
@@ -47,11 +49,21 @@ class Connection extends ClientConnection {
 	 */
 	protected $EOL = "\r\n";
 
+	protected $subscribed = false;
+
 	/**
 	 * In the middle of binary response part
 	 * @const integer
 	 */
 	const STATE_BINARY = 1;
+
+
+	public function subscribed() {
+		if ($this->subscribed) {
+			return;
+		}
+		$this->subscribed = true;
+	}
 
 	/**
 	 * Check if arrived data is message from subscription
@@ -60,11 +72,14 @@ class Connection extends ClientConnection {
 		if (sizeof($this->result) < 3) {
 			return false;
 		}
+		if (!$this->subscribed) {
+			return false;
+		}
 		$mtype = strtolower($this->result[0]);
 		if ($mtype !== 'message' && $mtype !== 'pmessage') {
 			return false;
 		}
-		return true;
+		return $mtype;
 	}
 
 	/**
@@ -74,12 +89,15 @@ class Connection extends ClientConnection {
 	protected function onRead() {
 		start:
 		if (($this->result !== null) && (sizeof($this->result) >= $this->resultLength)) {
-			if ($this->isSubMessage()) { // sub callback
-				$pchan   = $this->result[1];
-				$sub_cbs = $this->pool->subscribeCb;
-				if (in_array($pchan, array_keys($sub_cbs))) {
-					$cbs = $sub_cbs[$pchan];
-					foreach ($cbs as $cb) {
+			if (($mtype = $this->isSubMessage()) !== false) { // sub callback
+				$chan = $this->result[1];
+				if ($mtype === 'pmessage') {
+					$t = $this->pool->psubscribeCb;
+				} else {
+					$t = $this->pool->subscribeCb;
+				}
+				if (isset($t[$chan])) {
+					foreach ($t[$chan] as $cb) {
 						if (is_callable($cb)) {
 							call_user_func($cb, $this);
 						}
@@ -89,7 +107,9 @@ class Connection extends ClientConnection {
 			else { // request callback
 				$this->onResponse->executeOne($this);
 			}
-			$this->checkFree();
+			if (!$this->subConn) {
+				$this->checkFree();
+			}
 			$this->resultLength = 0;
 			$this->result       = null;
 			$this->error        = false;

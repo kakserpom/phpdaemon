@@ -130,7 +130,6 @@ abstract class Client extends Pool {
 			$url = null;
 		}
 		if ($url === null) {
-
 			if (isset($this->config->server->value)) {
 				$url = $this->config->server->value;
 			}
@@ -169,7 +168,7 @@ abstract class Client extends Pool {
 			}
 		}
 		else {
-			$this->servConn[$url]     = new ObjectStorage();
+			$this->servConn[$url]     = new ObjectStorage;
 			$this->servConnFree[$url] = new ObjectStorage;
 		}
 		$conn = $this->connect($url, $cb);
@@ -224,11 +223,12 @@ abstract class Client extends Pool {
 	 * @return void
 	 */
 	public function detachConnFromUrl(ClientConnection $conn, $url) {
-		if (!isset($this->servConnFree[$url]) || !isset($this->servConn[$url])) {
-			return;
+		if (isset($this->servConnFree[$url])) {
+			$this->servConnFree[$url]->detach($conn);
 		}
-		$this->servConnFree[$url]->detach($conn);
-		$this->servConn[$url]->detach($conn);
+		if (isset($this->servConn[$url])) {
+			$this->servConn[$url]->detach($conn);
+		}
 	}
 
 	/**
@@ -275,8 +275,7 @@ abstract class Client extends Pool {
 	 * @return boolean Success
 	 */
 	public function getConnectionRR($cb = null) {
-		$addr = array_rand($this->servers);
-		return $this->getConnection($addr, $cb);
+		return $this->getConnection(null, $cb);
 	}
 
 	/**
@@ -287,12 +286,6 @@ abstract class Client extends Pool {
 	 * @return boolean Success.
 	 */
 	public function requestByServer($server, $data, $onResponse = null) {
-
-		if ($server === NULL) {
-			srand();
-			$server = array_rand($this->servers);
-		}
-
 		$this->getConnection($server, function ($conn) use ($data, $onResponse) {
 			if (!$conn->isConnected()) {
 				return;

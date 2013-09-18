@@ -381,18 +381,23 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			foreach ($this->attrs->post as $k => $v) {
 				if (strncmp($k, $prefix, $prefixlen) === 0) {
 					$e = explode('.', substr($k, $prefixlen));
+					if (!isset($e[1])) {
+						$e = ['file', $e[0]];
+					}
 					if (!isset($this->attrs->files[$e[0]])) {
 						$this->attrs->files[$e[0]] = ['error' => UPLOAD_ERR_OK];
 					}
 					$this->attrs->files[$e[0]][$e[1]] = $v;
+					unset($this->attrs->post[$k]);
 				}
 			}
+			Daemon::log(Debug::dump($this->attrs->files));
 			$uploadTmp = $this->getUploadTempDir();
 			foreach ($this->attrs->files as $k => &$file) {
 				if (!isset($file['tmp_name'])
 						|| !isset($file['name'])
 						|| !ctype_digit(basename($file['tmp_name']))
-						|| pathinfo($file['tmp_name'], PATHINFO_DIRNAME) !== $uploadTmp
+						|| (strpos(pathinfo($file['tmp_name'], PATHINFO_DIRNAME), $uploadTmp) !== 0)
 				) {
 					unset($this->attrs->files[$k]);
 					continue;

@@ -2,6 +2,10 @@
 namespace PHPDaemon\Clients\Redis;
 
 use PHPDaemon\Core\CallbackWrapper;
+use PHPDaemon\Network\ClientConnection;
+use PHPDaemon\Structures\ObjectStorage;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 /**
  * @package    NetworkClients
@@ -16,6 +20,25 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * @var array
 	 */
 	public $subscribeCb = [];
+	public $psubscribeCb = [];
+
+	protected $servConnSub = [];
+
+	/**
+	 * Detaches connection from URL
+	 * @param ClientConnection $conn Connection
+	 * @param string $url URL
+	 * @return void
+	 */
+	public function detachConnFromUrl(ClientConnection $conn, $url) {
+		 parent::detachConnFromUrl($conn, $url);
+		 if (isset($this->servConnSub[$url])) {
+			$this->servConnSub[$url]->detach($conn);
+			if ($this->servConnSub[$url]->count() === 0) {
+				unset($this->servConnSub[$url]);
+			}
+		}
+	}
 
 	/**
 	 * Setting default config options
@@ -63,22 +86,29 @@ class Pool extends \PHPDaemon\Network\Client {
 		$name = strtoupper($name);
 		array_unshift($args, $name);
 		$s = sizeof($args);
-		$r = '*' . $s . "\r\n";
+		$data = '*' . $s . "\r\n";
 		foreach ($args as $arg) {
-			$r .= '$' . strlen($arg) . "\r\n" . $arg . "\r\n";
-		}
-		$this->requestByServer($server = null, $r, $onResponse);
+			$data .= '$' . strlen($arg) . "\r\n" . $arg . "\r\n";
+		}	
+
+		$sub = false; 
 
 		// PUB/SUB handling
-		if (($name === 'SUBSCRIBE') || ($name === 'PSUBSCRIBE')) {
+		if ($name === 'SUBSCRIBE') {
 			for ($i = 1; $i < $s; ++$i) {
 				$arg = $args[$i];
-				// @TODO: check if $onResponse already in subscribeCb[$arg]?
 				$this->subscribeCb[$arg][] = CallbackWrapper::wrap($onResponse);
 			}
+			$sub = true;
 		}
-
-		if (($name === 'UNSUBSCRIBE') || ($name === 'PUNSUBSCRIBE')) {
+		elseif ($name === 'PSUBSCRIBE') {
+			for ($i = 1; $i < $s; ++$i) {
+				$arg = $args[$i];
+				$this->psubscribeCb[$arg][] = CallbackWrapper::wrap($onResponse);
+			}
+			$sub = true;
+		}
+		elseif ($name === 'UNSUBSCRIBE') {
 			for ($i = 1; $i < $s; ++$i) {
 				$arg = $args[$i];
 				if (isset($this->subscribeCb[$arg])) {
@@ -86,5 +116,43 @@ class Pool extends \PHPDaemon\Network\Client {
 				}
 			}
 		}
+		elseif ($name === 'PUNSUBSCRIBE') {
+			for ($i = 1; $i < $s; ++$i) {
+				$arg = $args[$i];
+				if (isset($this->psubscribeCb[$arg])) {
+					unset($this->psubscribeCb[$arg]);
+				}
+			}
+		}
+
+		if ($sub) {
+			foreach ($this->servConnSub as $subOS)  {
+				foreach ($subOS as $conn) {
+					$conn->onResponse(null);
+					$conn->write($data);
+					return;
+				}
+				break;
+			}
+
+		}
+
+		$this->getConnection(null, function ($conn) use ($data, $onResponse, $sub) {
+			if (!$conn->isConnected()) {
+				return;
+			}
+			if ($sub) {
+				$url = $conn->url;
+				if (!isset($this->servConnSub[$url])) {
+					$this->servConnSub[$url] = new ObjectStorage;
+				}
+				$this->servConnSub[$url]->attach($conn);
+				$conn->onResponse(null/*@TODO: sub success cb?*/);
+				$conn->subscribed();
+			} else {
+				$conn->onResponse($onResponse);
+			}
+			$conn->write($data);
+		});
 	}
 }

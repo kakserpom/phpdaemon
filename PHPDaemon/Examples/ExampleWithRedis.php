@@ -2,6 +2,8 @@
 namespace PHPDaemon\Examples;
 
 use PHPDaemon\HTTPRequest\Generic;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 /**
  * @package    Examples
@@ -18,10 +20,13 @@ class ExampleWithRedis extends \PHPDaemon\Core\AppInstance {
 	 */
 	public function onReady() {
 		$this->redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
-		/*$redis->subscribe('testchannel', function($redis) {
-			\PHPDaemon\Daemon::log(\PHPDaemon\Debug::dump($redis->result));
+		$this->redis->subscribe('te3st', function($redis) {
+			Daemon::log(Debug::dump($redis->result));
+		});
+		$this->redis->psubscribe('test*', function($redis) {
+			Daemon::log(Debug::dump($redis->result));
 			
-		});*/
+		});
 	}
 
 	/**
