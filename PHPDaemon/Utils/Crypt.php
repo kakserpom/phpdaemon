@@ -39,7 +39,7 @@ class Crypt {
 		return base64_encode($hash);
 	}
 
-	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.:') {
+	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.') {
 		$r = '';
 		$m = strlen($chars) - 1;
 		for ($i = 0; $i < $len; ++$i) {

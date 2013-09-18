@@ -217,9 +217,23 @@ class Collection {
 	 * @return void
 	 */
 	public function autoincrement($cb) {
-		$this->evaluate('function () { '
-						. 'return db.autoincrement.findAndModify({ '
-						. 'query: {"_id":' . json_encode($this->name) . '}, update: {$inc:{"id":1}}, new: true, upsert: true }); }',
-						$cb);
+		$e = explode('.', $this->name);
+		$col = (isset($e[1]) ? $e[0] . '.' : '') . 'autoincrement';
+		$this->pool->{$col}->findAndModify([
+			'query' => ['_id' => isset($e[1]) ? $e[1] : $e[0]],
+			'update' => ['$inc' => ['seq' => 1]],
+			'new' => true,
+			'upsert' => true,
+		], $cb);
+	}
+
+	/**
+	 * Generation autoincrement
+	 * @param Closure $cb called when response received
+	 * @return void
+	 */
+	public function findAndModify($p, $cb) {
+		$p['col'] = $this->name;
+		$this->pool->findAndModify($p, $cb);
 	}
 }

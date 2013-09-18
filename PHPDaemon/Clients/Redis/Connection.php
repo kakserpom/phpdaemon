@@ -36,6 +36,12 @@ class Connection extends ClientConnection {
 	protected $resultLength = 0;
 
 	/**
+	 * Current value length
+	 * @var integer
+	 */
+	protected $valueLength = 0;
+
+	/**
 	 * EOL
 	 * @var string "\r\n"
 	 */

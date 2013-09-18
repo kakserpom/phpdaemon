@@ -189,22 +189,7 @@ class Pool extends Client {
 			$p['where'] = [];
 		}
 
-		if (strpos($p['col'], '.') === false) {
-			$p['col'] = $this->dbname . '.' . $p['col'];
-		}
-
-		if (isset($p['fields'])	&& is_string($p['fields'])) {
-			$e           = explode(',', $p['fields']);
-			$p['fields'] = [];
-
-			foreach ($e as &$f) {
-				$p['fields'][$f] = 1;
-			}
-		}
-
-		if (is_string($p['where'])) {
-			$p['where'] = new \MongoCode($p['where']);
-		}
+		$this->_params($p);
 
 		$o = [];
 		$s = false;
@@ -226,9 +211,6 @@ class Pool extends Client {
 				elseif ($k === 'parse_oplog') {
 				}
 				elseif ($k == 'rp') {
-					if (is_string($v)) {
-						$v = ['mode' => $v];
-					}
 					$o['$readPreference'] = $v;
 				}
 				else {
@@ -285,38 +267,11 @@ class Pool extends Client {
 
 			return;
 		}
-
-		if (!isset($p['offset'])) {
-			$p['offset'] = 0;
-		}
-
-		if (!isset($p['opts'])) {
-			$p['opts'] = 0;
-		}
-
 		if (!isset($p['where'])) {
 			$p['where'] = [];
 		}
 
-		if (strpos($p['col'], '.') === false) {
-			$p['col'] = $this->dbname . '.' . $p['col'];
-		}
-
-		if (
-				isset($p['fields'])
-				&& is_string($p['fields'])
-		) {
-			$e           = explode(',', $p['fields']);
-			$p['fields'] = [];
-
-			foreach ($e as &$f) {
-				$p['fields'][$f] = 1;
-			}
-		}
-
-		if (is_string($p['where'])) {
-			$p['where'] = new \MongoCode($p['where']);
-		}
+		$this->_params($p);
 
 		$o = [];
 		$s = false;
@@ -338,9 +293,6 @@ class Pool extends Client {
 				elseif ($k === 'parse_oplog') {
 				}
 				elseif ($k == 'rp') {
-					if (is_string($v)) {
-						$v = ['mode' => $v];
-					}
 					$o['$readPreference'] = $v;
 				}
 				else {
@@ -681,27 +633,8 @@ class Pool extends Client {
 	 * @param mixed Callback called when response received
 	 * @return void
 	 */
-	public function distinct($p, $callback) {
-		if (!isset($p['offset'])) {
-			$p['offset'] = 0;
-		}
-
-		if (!isset($p['limit'])) {
-			$p['limit'] = -1;
-		}
-
-		if (!isset($p['opts'])) {
-			$p['opts'] = 0;
-		}
-
-		if (!isset($p['key'])) {
-			$p['key'] = '';
-		}
-
-		if (strpos($p['col'], '.') === false) {
-			$p['col'] = $this->dbname . '.' . $p['col'];
-		}
-
+	public function distinct($p, $cb) {
+		$this->_params($p);
 		$e = explode('.', $p['col'], 2);
 
 		$query = [
@@ -733,13 +666,44 @@ class Pool extends Client {
 		});
 	}
 
-	/**
-	 * Groupping function
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
-	 * @param mixed Callback called when response received
-	 * @return void
-	 */
-	public function group($p, $callback) {
+	protected function _paramFields($f) {
+		if (is_string($f)) {
+			$f = array_map('trim', explode(',', $f));
+		}
+		if (!is_array($f) || sizeof($f) == 0) {
+			return [];
+		}
+		if (!isset($f[0])) {
+			return $f;
+		}
+		$p = [];
+		foreach ($f as $k) {
+			$p[$k] = 1;
+		}
+		return $p;
+	}
+
+	protected function _params(&$p) {
+		foreach ($p as $k => &$v) {
+			if ($k === 'fields' || $k === 'sort') {
+				$v = $this->_paramFields($v);
+			} elseif ($k === 'where') {
+				if (is_string($v)) {
+					$v = new \MongoCode($v);
+				}
+			}
+			elseif ($k === 'reduce') {
+				if (is_string($v)) {
+					$v = new \MongoCode($v);
+				}
+			}
+			elseif ($k === 'rp') {
+				if (is_string($v)) {
+					$v = ['mode' => $v];
+				}
+			}
+		}
+
 		if (!isset($p['offset'])) {
 			$p['offset'] = 0;
 		}
@@ -752,17 +716,81 @@ class Pool extends Client {
 			$p['opts'] = 0;
 		}
 
-		if (!isset($p['reduce'])) {
-			$p['reduce'] = '';
-		}
-
-		if (is_string($p['reduce'])) {
-			$p['reduce'] = new \MongoCode($p['reduce']);
+		if (!isset($p['key'])) {
+			$p['key'] = '';
 		}
 
 		if (strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
+	}
+
+	/**
+	 * Find and modify
+	 * @param array Hash of properties
+	 * @param mixed Callback called when response received
+	 * @return void
+	 */
+	public function findAndModify($p, $cb) {
+		$this->_params($p);
+		$e = explode('.', $p['col'], 2);
+		$query = [
+			'findAndModify' => $e[1],
+		];
+
+		if (isset($p[$k = 'rp'])) {
+			$v = $p[$k];
+			if (is_string($v)) {
+				$v = ['mode' => $v];
+			}
+			$query['$readPreference'] = $v;
+		}
+
+		if (isset($p['sort'])) {
+			$query['sort'] = $p['sort'];
+		}
+		if (isset($p['update'])) {
+			$query['update'] = $p['update'];
+		}
+		if (isset($p['new'])) {
+			$query['new'] = (boolean) $p['new'];
+		}
+		if (isset($p['remove'])) {
+			$query['remove'] = (boolean) $p['remove'];
+		}
+		if (isset($p['upsert'])) {
+			$query['upsert'] = (boolean) $p['upsert'];
+		}
+		if (isset($p['where'])) {
+			$query['query'] = $p['where'];
+		}
+		elseif (isset($p['query'])) {
+			$query['query'] = $p['query'];
+		}
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $e[0] . '.$cmd' . "\x00"
+			. pack('VV', $p['offset'], $p['limit'])
+			. bson_encode($query)
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['col'], $cb, true];
+		});
+	}
+
+	/**
+	 * Groupping function
+	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
+	 * @param mixed Callback called when response received
+	 * @return void
+	 */
+	public function group($p, $cb) {
+		if (!isset($p['reduce'])) {
+			$p['reduce'] = '';
+		}
+		$this->_params($p);
 
 		$e = explode('.', $p['col'], 2);
 
@@ -779,12 +807,8 @@ class Pool extends Client {
 			$query['group'][$k] = $p[$k];
 		}
 
-		if (isset($p[$k = 'rp'])) {
-			$v = $p[$k];
-			if (is_string($v)) {
-				$v = ['mode' => $v];
-			}
-			$query['$readPreference'] = $v;
+		if (isset($p['rp'])) {
+			$query['$readPreference'] = $p['rp'];
 		}
 
 		if (isset($p[$k = 'finalize'])) {
