@@ -40,7 +40,8 @@ class ExampleWithMongoRequest extends \PHPDaemon\HTTPRequest\Generic {
 	 */
 	public function init() {
 		$job = $this->job = new \PHPDaemon\Core\ComplexJob(function () { // called when job is done
-
+			
+			$this->keep(); // prevent cleaning up results
 			$this->wakeup(); // wake up the request immediately
 
 		});
