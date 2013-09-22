@@ -75,6 +75,7 @@ class ClientConnection extends Connection {
 	 */
 	public function onReady() {
 		parent::onReady();
+		$this->setWatermark(null, $this->pool->maxAllowedPacket);
 		if ($this->url === null) {
 			return;
 		}

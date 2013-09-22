@@ -174,13 +174,14 @@ class Connection extends ClientConnection {
 			}
 		}
 		$this->writeln('Content-Type: ' . $params['contentType']);
-		$body = http_build_query($data, '&', PHP_QUERY_RFC3986);
+		$body = http_build_query($data, '', '&', PHP_QUERY_RFC3986);
 		$this->writeln('Content-Length: ' . strlen($body));
 		if (isset($params['headers'])) {
 			$this->customRequestHeaders($params['headers']);
 		}
 		$this->writeln('');
 		$this->write($body);
+		$this->writeln('');
 		$this->onResponse->push($params['resultcb']);
 		$this->checkFree();
 	}

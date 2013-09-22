@@ -24,6 +24,8 @@ abstract class Server extends Pool {
 	 * @var array|null
 	 */
 	public $allowedClients = null;
+
+	public $maxAllowedPacket;
 	
 	/**
 	 * Constructor
@@ -118,26 +120,11 @@ abstract class Server extends Pool {
 		parent::applyConfig();
 		foreach ($this->config as $k => $v) {
 			if (is_object($v) && $v instanceof \PHPDaemon\Config\Entry\Generic) {
-				$v = $v->value;
+				$v = $v->getValue();
 			}
 			$k = strtolower($k);
-			if ($k === 'connectionclass') {
-				$this->connectionClass = $v;
-			}
-			elseif ($k === 'name') {
-				$this->name = $v;
-			}
-			elseif ($k === 'allowedclients') {
+			if ($k === 'allowedclients') {
 				$this->allowedClients = $v;
-			}
-			elseif ($k === 'maxallowedpacket') {
-				if ($v instanceof \PHPDaemon\Config\Entry\Generic) {
-					$v = $v->getValue();
-				}
-				$this->maxAllowedPacket = (int)$v;
-			}
-			elseif ($k === 'maxconcurrency') {
-				$this->maxConcurrency = (int)$v;
 			}
 		}
 	}

@@ -48,6 +48,12 @@ abstract class Pool extends ObjectStorage {
 	public $maxConcurrency = 0;
 
 	/**
+	 * Max allowed packet
+	 * @var integer
+	 */
+	public $maxAllowedPacket = 0;
+
+	/**
 	 * Is finished?
 	 * @var boolean
 	 */
@@ -130,7 +136,7 @@ abstract class Pool extends ObjectStorage {
 	protected function applyConfig() {
 		foreach ($this->config as $k => $v) {
 			if (is_object($v) && $v instanceof Config\Entry\Generic) {
-				$v = $v->value;
+				$v = $v->getValue();
 			}
 			$k = strtolower($k);
 			if ($k === 'connectionclass') {
@@ -141,6 +147,9 @@ abstract class Pool extends ObjectStorage {
 			}
 			elseif ($k === 'maxallowedpacket') {
 				$this->maxAllowedPacket = (int)$v;
+			}
+			elseif ($k === 'maxconcurrency') {
+				$this->maxConcurrency = (int)$v;
 			}
 		}
 	}

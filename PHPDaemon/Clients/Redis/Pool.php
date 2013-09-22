@@ -60,6 +60,12 @@ class Pool extends \PHPDaemon\Network\Client {
 			'port'           => 6379,
 
 			/**
+			 * Max. allowed packet
+			 * @var integer
+			 */
+			'maxallowedpacket'           => '16M',
+
+			/**
 			 * Maximum connections per server
 			 * @var integer
 			 */
