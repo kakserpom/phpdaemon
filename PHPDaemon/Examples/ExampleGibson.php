@@ -48,8 +48,9 @@ class ExampleGibsonRequest extends Generic{
      */
     public function init(){
 
-        $job = $this->job = new \PHPDaemon\Core\ComplexJob(function () { // called when job is done
+        $job = $this->job = new \PHPDaemon\Core\ComplexJob(function ($job) { // called when job is done
             $this->wakeup(); // wake up the request immediately
+            $job->keep(); // prevent from cleaning
         });
 
         if (isset($_GET['fill'])) {
@@ -104,6 +105,3 @@ class ExampleGibsonRequest extends Generic{
     }
 
 }
-
-
-

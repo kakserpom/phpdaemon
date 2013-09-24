@@ -85,7 +85,7 @@ class Connection extends ClientConnection {
 					return; // not enough data
 				}
 				$this->encoding = Binary::getByte($hdr);
-				$this->responseLength = Binary::getDword($hdr, true);
+				$this->responseLength = Binary::getDword($hdr, true) - 4;
 				$this->totalNum = Binary::getDword($hdr, true);
 				$this->readedNum = 0;
 				$this->state = static::STATE_PACKET_DATA;
@@ -94,12 +94,18 @@ class Connection extends ClientConnection {
 				if (($hdr = $this->lookExact(5)) === false) {
 					return; // not enough data
 				}
-				$pl = Binary::getDword($hdr, true);;
+				$this->encoding = Binary::getByte($hdr);
+				$pl = Binary::getDword($hdr, true);
 				if ($this->getInputLength() < 5 + $pl) {
 					return; // not enough data
 				}
-				$this->encoding = Binary::getByte($hdr);
+				$this->drain(5);
 				$this->responseLength = $pl;
+				if ($this->responseLength > $this->pool->maxAllowedPacket) {
+					$this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
+					$this->finish();
+					return;
+				}
 				if ($this->responseCode === static::REPL_ERR_NOT_FOUND) {
 					$this->drain($this->responseLength);
 					$this->result = null;
@@ -141,6 +147,7 @@ class Connection extends ClientConnection {
 		}
 		if ($this->state === static::STATE_PACKET_DATA) {
 			if ($this->responseCode === static::REPL_KVAL) {
+				$keyAdded = false;
 				nextElement:
 				$l = $this->getInputLength();
 				if ($l < 9) {
@@ -176,6 +183,7 @@ class Connection extends ClientConnection {
 				} else {
 					$this->result[$key] = $this->read($valLen);
 				}
+				$keyAdded = true;
 				if (++$this->readedNum >= $this->totalNum) {
 					$this->isFinal = true;
 					$this->executeCb();
@@ -184,15 +192,17 @@ class Connection extends ClientConnection {
 					goto nextElement;
 				}
 				cursorCall:
-				$this->onResponse->executeAndKeepOne($this);
+				if ($keyAdded) {
+					$this->onResponse->executeAndKeepOne($this);
+				}
 				return;
 				
 			} else {
 				if (($this->result = $this->readExact($this->responseLength)) === false) {
-					$this->setWatermark($this->responseLength, $this->responseLength);
+					$this->setWatermark($this->responseLength);
 					return;
 				}
-				$this->setWatermark(2, 0xFFFF);
+				$this->setWatermark(2, $this->pool->maxAllowedPacket);
 				if ($this->encoding === static::GB_ENC_NUMBER) {
 					$this->result = $this->responseLength === 8
 									? Binary::getQword($this->result, true)

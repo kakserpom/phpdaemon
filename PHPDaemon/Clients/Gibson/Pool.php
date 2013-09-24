@@ -48,7 +48,7 @@ class Pool extends \PHPDaemon\Network\Client {
 			 * Maximum connections per server
 			 * @var integer
 			 */
-			'maxconnperserv' => 32
+			'maxconnperserv' => 32,
 
 			/**
 			 * Maximum allowed size of packet
