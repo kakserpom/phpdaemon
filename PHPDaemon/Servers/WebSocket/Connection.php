@@ -85,10 +85,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public $cookie = [];
 
 	/**
-	 * Contructor
+	 * Called when the stream is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
 	 */
-	public function init() {
+	public function onReady() {
 		$this->setWatermark(null, $this->pool->maxAllowedPacket + 100);
 	}
 

@@ -377,10 +377,10 @@ abstract class IOStream {
 	 * @return void
 	 */
 	public function setWatermark($low = null, $high = null) {
-		if ($low != null) {
+		if ($low !== null) {
 			$this->lowMark = $low;
 		}
-		if ($high != null) {
+		if ($high !== null) {
 			$this->highMark = $high;
 		}
 		$this->bev->setWatermark(\Event::READ, $this->lowMark, $this->highMark);

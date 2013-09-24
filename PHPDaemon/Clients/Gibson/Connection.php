@@ -46,9 +46,6 @@ class Connection extends ClientConnection {
 	public $totalNum;
 	public $readedNum;
 
-	public function onReady() {
-		parent::onReady();
-	}
 	public function isFinal() {
 		return $this->isFinal;
 	}

@@ -44,6 +44,10 @@ class CallbackWrapper {
 		}
 	}
 
+	public function getCallback() {
+		return $this->cb;
+	}
+
 	/**
 	 * Cancel
 	 * @return void
@@ -55,6 +59,41 @@ class CallbackWrapper {
 			$this->timer->free();
 			$this->timer = null;
 		}
+	}
+
+	public static function addToArray(&$arr, $cb) {
+		if ($arr === null) {
+			$arr = [];
+		}
+		$e = static::extractCb($cb);
+		foreach ($arr as $item) {
+			if (static::extractCb($item) === $e) {
+				return false;
+			}
+		}
+		$arr[] = $cb;
+		return $arr;
+	}
+
+	public static function removeFromArray(&$arr, $cb) {
+		if ($arr === null) {
+			$arr = [];
+		}
+		$e = static::extractCb($cb);
+		foreach ($arr as $k => $item) {
+			if (static::extractCb($item) === $e) {
+				unset($arr[$k]);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static function extractCb($cb) {
+		if ($cb instanceof CallbackWrapper) {
+			return $cb->getCallback();
+		}
+		return $cb;
 	}
 
 	/**

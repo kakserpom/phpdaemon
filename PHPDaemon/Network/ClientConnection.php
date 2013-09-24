@@ -128,11 +128,10 @@ class ClientConnection extends Connection {
 	 */
 	public function onFinish() {
 		$this->onResponse->executeAll($this, false);
-		unset($this->onResponse);
+		$this->onResponse = null;
 		if ($this->pool && ($this->url !== null)) {
 			$this->pool->detachConnFromUrl($this, $this->url);
 		}
 		parent::onFinish();
 	}
-
 }

@@ -49,6 +49,12 @@ class Pool extends \PHPDaemon\Network\Client {
 			 * @var integer
 			 */
 			'maxconnperserv' => 32
+
+			/**
+			 * Maximum allowed size of packet
+			 * @var integer
+			 */
+			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
 		];
 	}
 

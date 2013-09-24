@@ -21,9 +21,6 @@ class Pool extends Server {
 	 */
 	const STRING = 'STRING';
 
-	/** @var */
-	public $maxAllowedPacket;
-
 	/**
 	 * Setting default config options
 	 * Overriden from ConnectionPool::getConfigDefaults

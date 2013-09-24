@@ -31,6 +31,8 @@ class PubSubEvent extends \SplObjectStorage {
 	 */
 	public $deactCb;
 
+	protected $storage;
+
 	/**
 	 * Constructor
 	 */

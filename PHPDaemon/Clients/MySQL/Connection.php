@@ -39,12 +39,6 @@ class Connection extends ClientConnection {
 	public $message; // Flags of this MySQL client.
 
 	/**
-	 * Maximum packet size
-	 * @var integer
-	 */
-	protected $maxPacketSize = 0x1000000; // Maximum packet size.
-
-	/**
 	 * Charset number (see MySQL charset list)
 	 * @var integer
 	 */
@@ -327,7 +321,7 @@ class Connection extends ClientConnection {
 				Pool::CLIENT_MULTI_RESULTS;
 
 		$this->sendPacket(
-			$packet = pack('VVc', $this->clientFlags, $this->maxPacketSize, $this->charsetNumber)
+			$packet = pack('VVc', $this->clientFlags, $this->pool->maxAllowedPacket, $this->charsetNumber)
 					. "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 					. $this->user . "\x00"
 					. ($this->password === '' ? "\x00" : $this->buildLenEncodedBinary(
