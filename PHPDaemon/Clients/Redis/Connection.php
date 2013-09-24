@@ -187,7 +187,6 @@ class Connection extends ClientConnection {
 	 */
 	protected function onRead() {
 		start:
-		Daemon::log(json_encode([$this->state, $this->lowMark, $this->highMark, $this->look(1024)]));
 		if (($this->result !== null) && (sizeof($this->result) >= $this->resultLength)) {
 			if (($mtype = $this->isSubMessage()) !== false) { // sub callback
 				$chan = $this->result[1];
@@ -215,7 +214,7 @@ class Connection extends ClientConnection {
 			$this->error        = false;
 		}
 
-		if ($this->state === self::STATE_ROOT) { // outside of packet
+		if ($this->state === self::STATE_STANDBY) { // outside of packet
 			while (($l = $this->readline()) !== null) {
 				if ($l === '') {
 					continue;
@@ -244,10 +243,20 @@ class Connection extends ClientConnection {
 				}
 				elseif ($char === '$') { // defines size of the data block
 					$this->valueLength = (int)substr($l, 1);
+					if ($this->valueLength + 2 > $this->pool->maxAllowedPacket) {
+						$this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
+						$this->finish();
+						return;
+					}
 					$this->setWatermark($this->valueLength + 2);
 					$this->state = self::STATE_BINARY; // binary data block
 					break; // stop reading line-by-line
 				}
+			}
+			if ($this->state === self::STATE_STANDBY && $this->getInputLength() > $this->pool->maxAllowedPacket) {
+				$this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
+				$this->finish();
+				return;
 			}
 		}
 
@@ -260,8 +269,8 @@ class Connection extends ClientConnection {
 				$this->finish();
 				return;
 			}
-			$this->state = self::STATE_ROOT;
-			$this->setWatermark(1);
+			$this->state = self::STATE_STANDBY;
+			$this->setWatermark(3);
 			$this->result[] = $value;
 			goto start;
 		}

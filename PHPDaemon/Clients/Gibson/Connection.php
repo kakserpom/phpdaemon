@@ -46,6 +46,15 @@ class Connection extends ClientConnection {
 	public $totalNum;
 	public $readedNum;
 
+	/**
+	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+	 * @return void
+	 */
+	public function onReady() {
+		parent::onReady();
+		$this->setWatermark(null, $this->pool->maxAllowedPacket);
+	}
+
 	public function isFinal() {
 		return $this->isFinal;
 	}
