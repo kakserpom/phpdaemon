@@ -71,7 +71,7 @@ class Connection extends ClientConnection {
 	 */
 	public function onReady() {
 		parent::onReady();
-		$this->setWatermark(null, $this->pool->maxAllowedPacket);
+		$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
 	}
 
 
@@ -137,11 +137,10 @@ class Connection extends ClientConnection {
 			$args = [$args];
 		}
  		array_unshift($args, $name);
-		$s = sizeof($args);
-		$this->writeln('*' . $s);
+		$this->writeln('*' . sizeof($args));
+		//Daemon::log(json_encode($args));
 		foreach ($args as $arg) {
-			$this->writeln('$' . strlen($arg));
-			$this->writeln($arg);
+			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
 		}
  	}
 
@@ -187,7 +186,9 @@ class Connection extends ClientConnection {
 	 */
 	protected function onRead() {
 		start:
+		//Daemon::log(json_encode(['onRead',  $this->look(1024)]));
 		if (($this->result !== null) && (sizeof($this->result) >= $this->resultLength)) {
+			//Daemon::log(json_encode(['onRead',  $this->result]));
 			if (($mtype = $this->isSubMessage()) !== false) { // sub callback
 				$chan = $this->result[1];
 				if ($mtype === 'pmessage') {
