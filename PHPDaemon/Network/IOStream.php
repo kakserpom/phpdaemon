@@ -829,7 +829,7 @@ abstract class IOStream {
 		if ($events & \EventBufferEvent::CONNECTED) {
 			$this->onWriteEv($bev);
 		}
-		elseif ($events & (\EventBufferEvent::ERROR | \EventBufferEvent::EOF)) {
+		elseif ($events & (\EventBufferEvent::ERROR | \EventBufferEvent::EOF| \EventBufferEvent::TIMEOUT)) {
 			try {
 				if ($this->finished) {
 					return;

@@ -138,7 +138,6 @@ class Connection extends ClientConnection {
 		}
  		array_unshift($args, $name);
 		$this->writeln('*' . sizeof($args));
-		//Daemon::log(json_encode($args));
 		foreach ($args as $arg) {
 			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
 		}
@@ -186,9 +185,7 @@ class Connection extends ClientConnection {
 	 */
 	protected function onRead() {
 		start:
-		//Daemon::log(json_encode(['onRead',  $this->look(1024)]));
 		if (($this->result !== null) && (sizeof($this->result) >= $this->resultLength)) {
-			//Daemon::log(json_encode(['onRead',  $this->result]));
 			if (($mtype = $this->isSubMessage()) !== false) { // sub callback
 				$chan = $this->result[1];
 				if ($mtype === 'pmessage') {
