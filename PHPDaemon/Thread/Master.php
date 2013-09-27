@@ -436,6 +436,19 @@ class Master extends Generic {
 	}
 
 	/**
+	 * Handler for the SIGTSTP (graceful stop all workers) signal in master process
+	 * @return void
+	 */
+	protected function sigtstp() {
+		if (Daemon::$config->logsignals->value) {
+			$this->log('Caught SIGTSTP (graceful stop all workers).');
+		}
+
+		$this->signalToChildren(SIGTSTP);
+		$this->shutdown(SIGTSTP);
+	}
+
+	/**
 	 * Handler for the SIGTTIN signal in master process
 	 * Used as "ping" signal
 	 * @return void

@@ -75,6 +75,7 @@ abstract class Generic {
 		SIGWINCH  => 'SIGWINCH',
 		SIGUSR1   => 'SIGUSR1',
 		SIGUSR2   => 'SIGUSR2',
+		SIGTSTP	  => 'SIGTSTP',
 	];
 
 	/**
