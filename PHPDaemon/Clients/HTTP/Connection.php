@@ -174,7 +174,13 @@ class Connection extends ClientConnection {
 			}
 		}
 		$this->writeln('Content-Type: ' . $params['contentType']);
-		$body = http_build_query($data, '', '&', PHP_QUERY_RFC3986);
+		if ($params['contentType'] === 'application/x-www-form-urlencoded') {
+			$body = http_build_query($data, '', '&', PHP_QUERY_RFC3986);
+		} elseif ($params['contentType'] === 'application/x-json') {
+			$body = json_encode($data);
+		} else {
+			$body = 'unsupported Content-Type';	
+		}
 		$this->writeln('Content-Length: ' . strlen($body));
 		if (isset($params['headers'])) {
 			$this->customRequestHeaders($params['headers']);

@@ -73,26 +73,41 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * @return void
 	 */
 	public function __call($cmd, $args) {
-		$cb = null;
 		if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
 			$cb = array_pop($args);
+		} else {
+			$cb = null;
 		}
 		reset($args);
 		$cmd = strtoupper($cmd);
 
-		if (in_array($cmd, ['SUBSCRIBE', 'PSUBSCRIBE', 'UNSUBSCRIBE', 'PUNSUBSCRIBE'])) {
-			foreach ($this->servConnSub as $conn)  {
-				$conn->command($cmd, $args, $cb);
-				return;
-			}
-
+		if ($this->sendSubCommand($cmd, $args, $cb)) {
+			return;
 		}
 
 		$this->getConnection(null, function ($conn) use ($cmd, $args, $cb) {
-			if (!$conn->isConnected()) {
+			
+			if ($this->sendSubCommand($cmd, $args, $cb)) {
 				return;
 			}
+
+			if (!$conn->isConnected()) {
+				call_user_func($cb, false);
+				return;
+			}
+
 			$conn->command($cmd, $args, $cb);
 		});
+	}
+
+	protected function sendSubCommand($cmd, $args, $cb) {
+		if (in_array($cmd, ['SUBSCRIBE', 'PSUBSCRIBE', 'UNSUBSCRIBE', 'PUNSUBSCRIBE'])) {
+			foreach ($this->servConnSub as $conn)  {
+				$conn->command($cmd, $args, $cb);
+				return true;
+			}
+
+		}
+		return false;
 	}
 }

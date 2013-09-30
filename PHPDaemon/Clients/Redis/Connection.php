@@ -52,6 +52,8 @@ class Connection extends ClientConnection {
 
 	protected $subscribed = false;
 
+	protected $timeoutRead = 5;
+
 	/**
 	 * Subcriptions
 	 * @var array
@@ -74,7 +76,6 @@ class Connection extends ClientConnection {
 		$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
 	}
 
-
 	public function subscribed() {
 		if ($this->subscribed) {
 			return;
@@ -82,6 +83,7 @@ class Connection extends ClientConnection {
 		$this->subscribed = true;
 		$this->pool->servConnSub[$this->url] = $this;
 		$this->checkFree();
+		$this->setTimeouts(86400, 86400); // @TODO: remove timeout
 	}
 
 	public function isSubscribed() {
@@ -90,11 +92,20 @@ class Connection extends ClientConnection {
 
 	public function command($name, $args, $cb = null) {
 		// PUB/SUB handling
+		if (substr($name, -9) === 'SUBSCRIBE') {
+			if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
+				$opcb = $cb;
+				$cb = array_pop($args);
+			} else {
+				$obcb = null;
+			}
+			reset($args);
+		}
 		$cb = CallbackWrapper::wrap($cb);
 		if ($name === 'SUBSCRIBE') {
 			foreach ($args as $arg) {
 				if (!isset($this->subscribeCb[$arg])) {
-					$this->sendCommand($name, $arg);
+					$this->sendCommand($name, $arg, $opcb);
 				}
 				CallbackWrapper::addToArray($this->subscribeCb[$arg], $cb);
 			}
@@ -103,7 +114,7 @@ class Connection extends ClientConnection {
 		elseif ($name === 'PSUBSCRIBE') {
 			foreach ($args as $arg) {
 				if (!isset($this->psubscribeCb[$arg])) {
-					$this->sendCommand($name, $arg);
+					$this->sendCommand($name, $arg, $opcb);
 				}
 				CallbackWrapper::addToArray($this->psubscribeCb[$arg], $cb);
 			}
@@ -113,7 +124,7 @@ class Connection extends ClientConnection {
 			foreach ($args as $arg) {
 				CallbackWrapper::removeFromArray($this->subscribeCb[$arg], $cb);
 				if (sizeof($this->subscribeCb[$arg]) === 0) {
-					$this->sendCommand($name, $arg);
+					$this->sendCommand($name, $arg, $opcb);
 					unset($this->subscribeCb[$arg]);
 				}
 			}
@@ -122,7 +133,7 @@ class Connection extends ClientConnection {
 			foreach ($args as $arg) {
 				CallbackWrapper::removeFromArray($this->psubscribeCb[$arg], $cb);
 				if (sizeof($this->psubscribeCb[$arg]) === 0) {
-					$this->sendCommand($name, $arg);
+					$this->sendCommand($name, $arg, $opcb);
 					unset($this->psubscribeCb[$arg]);
 				}
 			}

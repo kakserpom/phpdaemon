@@ -4,6 +4,8 @@ namespace PHPDaemon\Clients\DNS;
 use PHPDaemon\Clients\DNS\Pool;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 /**
  * @package    NetworkClients
@@ -37,7 +39,7 @@ class Connection extends ClientConnection {
 	const STATE_PACKET = 1;
 
 	/**
-	 * Current packet sie
+	 * Current packet size
 	 * @var boolean
 	 */
 	protected $pctSize = 0;
@@ -166,7 +168,7 @@ class Connection extends ClientConnection {
 	public function onRead() {
 		start:
 		if ($this->type === 'udp') {
-			$this->onUdpPacket($this->read($this->highMark));
+			$this->onUdpPacket($this->read($this->getInputLength()));
 		}
 		if ($this->state === self::STATE_ROOT) {
 			if (false === ($hdr = $this->readExact(2))) {
