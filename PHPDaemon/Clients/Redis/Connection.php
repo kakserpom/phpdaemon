@@ -97,7 +97,7 @@ class Connection extends ClientConnection {
 				$opcb = $cb;
 				$cb = array_pop($args);
 			} else {
-				$obcb = null;
+				$opcb = null;
 			}
 			reset($args);
 		}
