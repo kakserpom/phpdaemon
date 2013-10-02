@@ -313,4 +313,14 @@ abstract class Client extends Pool {
 		});
 		return true;
 	}
+
+	/**
+	 * Called when application instance is going to shutdown
+	 * @param bool $graceful
+	 * @return boolean Ready to shutdown?
+	 */
+	public function onShutdown($graceful = false) {
+		return $graceful ? true : $this->finish();
+	}
+
 }
