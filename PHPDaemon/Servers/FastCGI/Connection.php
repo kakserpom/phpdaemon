@@ -2,6 +2,7 @@
 namespace PHPDaemon\Servers\FastCGI;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\IRequestUpstream;
 
 /**
@@ -247,22 +248,18 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 				$req->attrs->inputDone
 				&& $req->attrs->paramsDone
 		) {
-			if ($this->pool->variablesOrder === null) {
-				$req->attrs->request = $req->attrs->get + $req->attrs->post + $req->attrs->cookie;
-			}
-			else {
-				for ($i = 0, $s = strlen($this->pool->variablesOrder); $i < $s; ++$i) {
-					$char = $this->pool->variablesOrder[$i];
+			$order = $this->pool->variablesOrder ?: 'GPC';
+			for ($i = 0, $s = strlen($order); $i < $s; ++$i) {
+				$char = $order[$i];
 
-					if ($char == 'G') {
-						$req->attrs->request += $req->attrs->get;
-					}
-					elseif ($char == 'P') {
-						$req->attrs->request += $req->attrs->post;
-					}
-					elseif ($char == 'C') {
-						$req->attrs->request += $req->attrs->cookie;
-					}
+				if ($char == 'G' && is_array($req->attrs->get)) {
+					$req->attrs->request += $req->attrs->get;
+				}
+				elseif ($char == 'P' && is_array($req->attrs->post)) {
+					$req->attrs->request += $req->attrs->post;
+				}
+				elseif ($char == 'C' && is_array($req->attrs->cookie)) {
+					$req->attrs->request += $req->attrs->cookie;
 				}
 			}
 
