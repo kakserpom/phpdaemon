@@ -46,6 +46,8 @@ class Connection extends ClientConnection {
 	public $totalNum;
 	public $readedNum;
 
+	protected $maxQueue = 10;
+
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void

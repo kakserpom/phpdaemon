@@ -27,6 +27,7 @@ class Connection extends ClientConnection {
 	/** @var string */
 	protected $EOL = "\r\n";
 
+	protected $maxQueue = 10;
 	/**
 	 * Called when new data received
 	 * @return void

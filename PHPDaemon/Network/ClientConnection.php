@@ -39,6 +39,8 @@ class ClientConnection extends Connection {
 	 */
 	protected $onResponse;
 
+	protected $maxQueue = 1;
+
 	/**
 	 * Constructor
 	 * @param mixed $fd   File descriptor
@@ -119,7 +121,7 @@ class ClientConnection extends Connection {
 	 * @return void
 	 */
 	public function checkFree() {
-		$this->setFree(!$this->finished && $this->onResponse && $this->onResponse->isEmpty());
+		$this->setFree(!$this->finished && $this->onResponse && $this->onResponse->count() < $this->maxQueue);
 	}
 
 	/**

@@ -61,6 +61,8 @@ class Connection extends ClientConnection {
 	public $subscribeCb = [];
 	public $psubscribeCb = [];
 
+	protected $maxQueue = 10;
+
 	/**
 	 * In the middle of binary response part
 	 * @const integer

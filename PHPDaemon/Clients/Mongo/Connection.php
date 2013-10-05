@@ -34,6 +34,7 @@ class Connection extends ClientConnection
 	/** @var int */
 	public $lastReqId = 0; // ID of the last request
 
+	protected $maxQueue = 10;
 	/**
 	 * @TODO DESCR
 	 */
