@@ -217,9 +217,7 @@ class Connection extends ClientConnection {
 			else { // request callback
 				$this->onResponse->executeOne($this);
 			}
-			if (!$this->subscribed) {
-				$this->checkFree();
-			}
+			$this->checkFree();
 			$this->resultLength = 0;
 			$this->result       = null;
 			$this->error        = false;
@@ -285,5 +283,13 @@ class Connection extends ClientConnection {
 			$this->result[] = $value;
 			goto start;
 		}
+	}
+
+	/**
+	 * Set connection free/busy according to onResponse emptiness and ->finished
+	 * @return void
+	 */
+	public function checkFree() {
+		$this->setFree(!$this->finished && !$this->subscribed && $this->onResponse && $this->onResponse->count() < $this->maxQueue);
 	}
 }
