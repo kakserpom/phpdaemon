@@ -68,7 +68,7 @@ class Collection {
 	 * Remove terminated threads from the collection
 	 * @return integer Rest threads count
 	 */
-	public function removeTerminated() {
+	public function removeTerminated() { // @TODO: remove
 		$n = 0;
 		foreach ($this->threads as $id => $thread) {
 			if (!$thread->getPid() || !$thread->ifExists()) {

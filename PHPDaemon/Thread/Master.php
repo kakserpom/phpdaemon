@@ -88,8 +88,6 @@ class Master extends Generic {
 			}
 
 			if (($c % 10 == 0)) {
-				$this->workers->removeTerminated();
-				$this->ipcthreads->removeTerminated();
 				gc_collect_cycles();
 			}
 

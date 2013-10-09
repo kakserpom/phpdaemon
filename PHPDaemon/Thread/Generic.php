@@ -376,10 +376,7 @@ abstract class Generic {
 	 * @return boolean Success
 	 */
 	public function ifExists() {
-		if (\file_exists('/proc')) {
-			return \file_exists('/proc/' . $this->pid);
-		}
-		return \posix_kill($this->pid, SIGTTIN);
+		return \posix_kill($this->pid, 0);
 	}
 
 	/**
@@ -389,10 +386,7 @@ abstract class Generic {
 	 * @return boolean Success
 	 */
 	public static function ifExistsByPid($pid) {
-		if (\file_exists('/proc')) {
-			return \file_exists('/proc/' . $pid);
-		}
-		return \posix_kill($pid, SIGTTIN);
+		return \posix_kill($pid, 0);
 	}
 
 	/**
