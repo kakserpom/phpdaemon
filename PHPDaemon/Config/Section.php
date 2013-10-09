@@ -21,7 +21,7 @@ use PHPDaemon\Config\Entry\Generic;
  * @author     Zorin Vasily <maintainer@daemon.io>
  * @dynamic_fields
  */
-class Section implements \ArrayAccess, \Countable {
+class Section implements \ArrayAccess {
 	use \PHPDaemon\Traits\ClassWatchdog;
 
 	/** @var */
