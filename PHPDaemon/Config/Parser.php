@@ -469,7 +469,7 @@ class Parser {
 			elseif ($obj instanceof Section) {
 
 				if ($obj->source === 'config' && ($obj->revision < $this->revision)) {
-					if (sizeof($obj) === 0) {
+					if ($obj->count() === 0) {
 						unset($scope->{$name});
 					}
 					elseif (isset($obj->enable)) {
