@@ -53,9 +53,8 @@ trait Sessions {
 				});
 				return;
 			}
-
 			$this->onSessionRead(function ($session) use ($sessionStartEvent) {
-				if ($this->getSessionState() === false) {
+				if (!$this->getSessionState()) {
 					$this->sessionStartNew(function () use ($sessionStartEvent) {
 						$sessionStartEvent->setResult(true);
 					});
@@ -85,13 +84,9 @@ trait Sessions {
 			}
 
 			$this->sessionRead($sid, function ($data) use ($sessionEvent) {
-				if ($data === false) {
-					$this->sessionStartNew(function () use ($sessionEvent) {
-						$sessionEvent->setResult();
-					});
-					return;
+				if ($data !== false) {
+					$this->sessionDecode($data);
 				}
-				$this->sessionDecode($data);
 				$sessionEvent->setResult();
 			});
 		};

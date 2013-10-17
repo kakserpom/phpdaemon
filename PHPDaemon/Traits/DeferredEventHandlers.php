@@ -45,6 +45,7 @@ trait DeferredEventHandlers {
 		foreach ($this as $key => $property) {
 			if ($property instanceof DeferredEvent) {
 				$property->cleanup();
+				$this->{$key} = null;
 			}
 		}
 	}
