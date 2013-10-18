@@ -15,8 +15,6 @@ use PHPDaemon\Traits\EventHandlers;
  */
 class Connection extends ClientConnection {
 
-	use \PHPDaemon\Traits\EventHandlers;
-
 	/**
 	 * @TODO DESCR
 	 */
