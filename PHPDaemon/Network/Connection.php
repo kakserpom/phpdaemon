@@ -42,6 +42,21 @@ abstract class Connection extends IOStream {
 	 * @var integer
 	 */
 	protected $port;
+	
+	
+	/**
+	 * User name
+	 * @var string
+	 */
+	protected $user;
+
+	
+	/**
+	 * Password
+	 * @var string
+	 */
+	protected $password;
+	
 
 	/**
 	 * Address
