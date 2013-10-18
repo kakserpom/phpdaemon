@@ -12,7 +12,6 @@ use PHPDaemon\Utils\IRC;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
-	use \PHPDaemon\Traits\EventHandlers;
 
 	/**
 	 * @var string

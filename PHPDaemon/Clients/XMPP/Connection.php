@@ -15,7 +15,6 @@ use PHPDaemon\XMLStream\XMLStream;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
-	use \PHPDaemon\Traits\EventHandlers;
 
 	/** @var bool */
 	public $use_encryption = false;
