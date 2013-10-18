@@ -202,7 +202,7 @@ class Connection extends ClientConnection {
 			if (($ver = $this->readline()) === null) {
 				return;
 			}
-			$this->pool->setAmiVersion($this->$addr, $ver);
+			$this->pool->setAmiVersion($this->addr, $ver);
 			$this->state = self::CONN_STATE_GOT_INITIAL_PACKET;
 			$this->auth();
 		}
