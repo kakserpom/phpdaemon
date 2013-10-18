@@ -507,6 +507,35 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * Action: Originate
+	 * Synopsis: Originate a call
+	 * Privilege: call,all
+	 * Description: first the Channel is rung. Then, when that answers, the Extension is dialled within the Context
+	 *  to initiate the other end of the call.
+	 * Variables: (Names marked with * are required)
+	 * *Channel: Channel on which to originate the call (The same as you specify in the Dial application command)
+	 * *Context: Context to use on connect (must use Exten & Priority with it)
+	 * *Exten: Extension to use on connect (must use Context & Priority with it)
+	 * *Priority: Priority to use on connect (must use Context & Exten with it)
+	 * Timeout: Timeout (in milliseconds) for the originating connection to happen(defaults to 30000 milliseconds)
+	 * *CallerID: CallerID to use for the call
+	 * Variable: Channels variables to set (max 32). Variables will be set for both channels (local and connected).
+	 * Account: Account code for the call
+	 * Application: Application to use on connect (use Data for parameters)
+	 * Data : Data if Application parameter is used
+	 * ActionID: Optional Action id for message matching.
+	 *
+	 * @param array $params
+	 * @param callable $cb Callback called when response received.
+	 * @return void
+	 */
+	public function originate(array $params, $cb) {
+		$params['Async'] = 1;
+
+		$this->command("Action: Originate\r\n" . $this->implodeParams($params), $cb);
+	}
+
+	/**
 	 * Action: Ping
 	 * Description: A 'Ping' action will ellicit a 'Pong' response.  Used to keep the
 	 *   manager connection open.
