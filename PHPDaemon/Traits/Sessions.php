@@ -58,6 +58,7 @@ trait Sessions {
 					$this->sessionStartNew(function () use ($sessionStartEvent) {
 						$sessionStartEvent->setResult(true);
 					});
+					return;
 				}
 				$sessionStartEvent->setResult(true);
 			});
