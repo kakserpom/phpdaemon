@@ -1,9 +1,11 @@
 <?php
 namespace PHPDaemon\Examples;
 
+use PHPDaemon\Clients\Redis\Pool;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Request\IRequestUpstream;
 
 /**
  * @package    Examples
@@ -13,26 +15,30 @@ use PHPDaemon\Core\Debug;
  */
 class ExampleWithRedis extends \PHPDaemon\Core\AppInstance {
 
+	/**
+	 * @var Pool
+	 */
 	public $redis;
+
 	/**
 	 * Called when the worker is ready to go.
 	 * @return void
 	 */
 	public function onReady() {
-		$this->redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
+		$this->redis = Pool::getInstance();
 		$this->redis->subscribe('te3st', function($redis) {
 			Daemon::log(Debug::dump($redis->result));
 		});
 		$this->redis->psubscribe('test*', function($redis) {
 			Daemon::log(Debug::dump($redis->result));
-			
+
 		});
 	}
 
 	/**
 	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
+	 * @param $req object Request.
+	 * @param $upstream IRequestUpstream Upstream application instance.
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
@@ -43,6 +49,14 @@ class ExampleWithRedis extends \PHPDaemon\Core\AppInstance {
 
 class ExampleWithRedisRequest extends Generic {
 
+	/**
+	 * @var $appInstance ExampleWithRedis
+	 */
+	public $appInstance;
+
+	/**
+	 * @var \PHPDaemon\Core\ComplexJob
+	 */
 	public $job;
 
 	/**
@@ -53,6 +67,9 @@ class ExampleWithRedisRequest extends Generic {
 
 		$job = $this->job = new \PHPDaemon\Core\ComplexJob(function ($job) { // called when job is done
 
+			/**
+			 * @var $job \PHPDaemon\Core\ComplexJob
+			 */
 			$job->keep(); // prevent cleaning up results
 			$this->wakeup(); // wake up the request immediately
 
@@ -64,6 +81,9 @@ class ExampleWithRedisRequest extends Generic {
 
 			$this->appInstance->redis->lrange('mylist', 0, 10, function ($conn) use ($name, $job) { // calling lrange Redis command
 
+				/**
+				 * @var $job \PHPDaemon\Core\ComplexJob
+				 */
 				$job->setResult($name, $conn->result); // setting job result
 
 			});

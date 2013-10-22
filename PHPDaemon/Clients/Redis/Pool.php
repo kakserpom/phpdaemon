@@ -1,11 +1,8 @@
 <?php
 namespace PHPDaemon\Clients\Redis;
 
-use PHPDaemon\Core\CallbackWrapper;
-use PHPDaemon\Network\ClientConnection;
-use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
+use PHPDaemon\Network\ClientConnection;
 
 /**
  * @package    NetworkClients
@@ -64,8 +61,8 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Magic __call.
-	 * @method $name 
-	 * @param string $name Command name
+	 * @method $cmd
+	 * @param string $cmd
 	 * @param array $args
 	 * @usage $ .. Command-dependent set of arguments ..
 	 * @usage $ [callback Callback. Optional.
@@ -86,7 +83,9 @@ class Pool extends \PHPDaemon\Network\Client {
 		}
 
 		$this->getConnection(null, function ($conn) use ($cmd, $args, $cb) {
-			
+			/**
+			 * @var $conn Connection
+			 */
 			if ($this->sendSubCommand($cmd, $args, $cb)) {
 				return;
 			}
@@ -101,6 +100,9 @@ class Pool extends \PHPDaemon\Network\Client {
 	}
 
 	protected function sendSubCommand($cmd, $args, $cb) {
+		/**
+		 * @var $conn Connection
+		 */
 		if (in_array($cmd, ['SUBSCRIBE', 'PSUBSCRIBE', 'UNSUBSCRIBE', 'PUNSUBSCRIBE'])) {
 			foreach ($this->servConnSub as $conn)  {
 				$conn->command($cmd, $args, $cb);

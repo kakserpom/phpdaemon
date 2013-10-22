@@ -6,11 +6,6 @@ use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
 
 class Connection extends ClientConnection {
-	/**
-	 * URL
-	 * @var string
-	 */
-	public $url;
 
 	/**
 	 * Protocol version
@@ -40,13 +35,13 @@ class Connection extends ClientConnection {
 	 * Username
 	 * @var string
 	 */
-	public $user = 'root';
+	protected $user = 'root';
 
 	/**
 	 * Password
 	 * @var string
 	 */
-	public $password = '';
+	protected $password = '';
 
 	/**
 	 * Default options

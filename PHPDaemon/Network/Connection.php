@@ -42,21 +42,21 @@ abstract class Connection extends IOStream {
 	 * @var integer
 	 */
 	protected $port;
-	
-	
+
+
 	/**
 	 * User name
 	 * @var string
 	 */
 	protected $user;
 
-	
+
 	/**
 	 * Password
 	 * @var string
 	 */
 	protected $password;
-	
+
 
 	/**
 	 * Address
@@ -87,18 +87,6 @@ abstract class Connection extends IOStream {
 	 * @var integer
 	 */
 	protected $timeout = 120;
-
-	/**
-	 * Timeout
-	 * @var integer
-	 */
-	protected $timeoutRead;
-
-	/**
-	 * Timeout
-	 * @var integer
-	 */
-	protected $timeoutWrite;
 
 	/**
 	 * Local address
@@ -141,18 +129,6 @@ abstract class Connection extends IOStream {
 	 * @var boolean
 	 */
 	protected $bevConnectEnabled = true;
-
-	/**
-	 * SSL?
-	 * @var boolean
-	 */
-	protected $ssl = false;
-
-	/**
-	 * URL
-	 * @var string
-	 */
-	protected $url;
 
 	/**
 	 * URI information
@@ -246,18 +222,17 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Getter
-	 * @param string Name
+	 * @param string $name Name
 	 * @return mixed
 	 */
 	public function __get($name) {
 		if (in_array($name, [
-			'connected', 'hostReal', 'host', 'port', 'finished',
-			'alive', 'freed', 'url'
+			'connected', 'hostReal', 'host', 'port'
 		])
 		) {
 			return $this->{$name};
 		}
-		return null;
+		return parent::__get($name);
 	}
 
 	/**
@@ -276,8 +251,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Sets parent socket
-	 * @param BoundSocket
-	 * @return boolean Success
+	 * @param \PHPDaemon\BoundSocket\Generic $sock
 	 */
 	public function setParentSocket(Generic $sock) {
 		$this->parentSocket = $sock;
@@ -285,6 +259,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Called when new UDP packet received
+	 * @param $pct
 	 * @return void
 	 */
 	public function onUdpPacket($pct) {

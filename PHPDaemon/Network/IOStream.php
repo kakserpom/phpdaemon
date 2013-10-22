@@ -220,6 +220,23 @@ abstract class IOStream {
 	}
 
 	/**
+	 * Getter
+	 * @param string $name Name
+	 * @return mixed
+	 */
+	public function __get($name)
+	{
+		if (in_array($name, [
+			'finished', 'alive', 'freed', 'url'
+		])
+		) {
+			return $this->{$name};
+		}
+		return NULL;
+	}
+
+
+	/**
 	 * Freed?
 	 * @return boolean
 	 */
@@ -757,7 +774,7 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Push callback which will be called only once, when writing is available next time 
+	 * Push callback which will be called only once, when writing is available next time
 	 * @param callable $cb
 	 * @return void
 	 */

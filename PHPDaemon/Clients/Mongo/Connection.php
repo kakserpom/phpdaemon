@@ -4,17 +4,10 @@ namespace PHPDaemon\Clients\Mongo;
 use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\ClientConnection;
 
 class Connection extends ClientConnection
 {
-	/** @var */
-	public $url; // url
-	/** @var */
-	public $user; // Username
-	/** @var */
-	public $password; // Password
 	/** @var */
 	public $dbname; // Database name
 	/** @var int */

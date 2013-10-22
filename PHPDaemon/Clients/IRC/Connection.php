@@ -16,11 +16,11 @@ class Connection extends ClientConnection {
 	/**
 	 * @var string
 	 */
-	public $user = 'Guest'; // Username
+	protected $user = 'Guest'; // Username
 	/**
 	 * @var string
 	 */
-	public $password = ''; // Password
+	protected $password = ''; // Password
 	/**
 	 * @var string
 	 */
@@ -64,7 +64,7 @@ class Connection extends ClientConnection {
 	/**
 	 * @var bool
 	 */
-	public $bevConnectEnabled = false; // to get local port number
+	protected $bevConnectEnabled = false; // to get local port number
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data

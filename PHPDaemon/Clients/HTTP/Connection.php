@@ -47,10 +47,6 @@ class Connection extends ClientConnection {
 	 */
 	public $cookie = [];
 	/**
-	 * @var bool
-	 */
-	public $keepalive = false;
-	/**
 	 * @var
 	 */
 	public $curChunkSize;
@@ -179,7 +175,7 @@ class Connection extends ClientConnection {
 		} elseif ($params['contentType'] === 'application/x-json') {
 			$body = json_encode($data);
 		} else {
-			$body = 'unsupported Content-Type';	
+			$body = 'unsupported Content-Type';
 		}
 		$this->writeln('Content-Length: ' . strlen($body));
 		if (isset($params['headers'])) {
