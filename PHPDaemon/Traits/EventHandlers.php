@@ -2,7 +2,6 @@
 namespace PHPDaemon\Traits;
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 
 /**
  * Event handlers trait
@@ -42,10 +41,10 @@ trait EventHandlers {
 			}
 		}
 	}
-	
+
 	/**
-	 * Bind event
-	 * @param string   Event name
+	 * Bind event or events
+	 * @param string|array   Event name
 	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
@@ -53,35 +52,44 @@ trait EventHandlers {
 		if ($cb !== null) {
 			$cb = CallbackWrapper::wrap($cb);
 		}
-		if (!isset($this->eventHandlers[$event])) {
-			$this->eventHandlers[$event] = [];
+		is_array($event) or $event = [$event];
+		foreach ($event as $e) {
+			if (!isset($this->eventHandlers[$e])) {
+				$this->eventHandlers[$e] = [];
+			}
+			$this->eventHandlers[$e][] = $cb;
 		}
-		$this->eventHandlers[$event][] = $cb;
 		return true;
 	}
 
 	/**
-	 * Unbind event or callback from event
-	 * @param string Event name
-	 * @param [callable Callback, optional
+	 * Unbind event(s) or callback from event(s)
+	 * @param string|array Event name
+	 * @param callable Callback, optional
 	 * @return boolean Success
 	 */
 	public function unbind($event, $cb = null) {
 		if ($cb !== null) {
 			$cb = CallbackWrapper::wrap($cb);
 		}
-		if (!isset($this->eventHandlers[$event])) {
-			return false;
+		is_array($event) or $event = [$event];
+		$success = true;
+		foreach ($event as $e) {
+			if (!isset($this->eventHandlers[$e])) {
+				$success = false;
+				continue;
+			}
+			if ($cb === null) {
+				unset($this->eventHandlers[$e]);
+				continue;
+			}
+			if (($p = array_search($cb, $this->eventHandlers[$e], true)) === false) {
+				$success = false;
+				continue;
+			}
+			unset($this->eventHandlers[$e][$p]);
 		}
-		if ($cb === null) {
-			unset($this->eventHandlers[$event]);
-			return true;
-		}
-		if (($p = array_search($cb, $this->eventHandlers[$event], true)) === false) {
-			return false;
-		}
-		unset($this->eventHandlers[$event][$p]);
-		return true;
+		return $success;
 	}
 
 	/**
