@@ -166,7 +166,7 @@ abstract class Pool extends ObjectStorage {
 	 * Returns instance object
 	 * @param string $arg name / array config / ConfigSection
 	 * @param boolean $spawn Spawn? Default is true
-	 * @return object
+	 * @return Pool
 	 */
 	public static function getInstance($arg = '', $spawn = true) {
 		if ($arg === 'default') {

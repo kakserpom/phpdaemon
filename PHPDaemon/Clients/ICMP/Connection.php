@@ -36,7 +36,7 @@ class Connection extends ClientConnection {
 	 * Enable bevConnect?
 	 * @var boolean
 	 */
-	public $bevConnectEnabled = false;
+	protected $bevConnectEnabled = false;
 
 	/**
 	 * Send echo-request

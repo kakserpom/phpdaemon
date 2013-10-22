@@ -3,7 +3,6 @@ namespace PHPDaemon\Clients\Redis;
 
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
 
 /**
@@ -52,6 +51,10 @@ class Connection extends ClientConnection {
 
 	protected $subscribed = false;
 
+	/**
+	 * Timeout
+	 * @var float
+	 */
 	protected $timeoutRead = 5;
 
 	/**
@@ -184,7 +187,7 @@ class Connection extends ClientConnection {
 		}
 		return $mtype;
 	}
-	
+
 	/**
 	 * Called when connection finishes
 	 * @return void

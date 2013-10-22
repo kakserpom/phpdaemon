@@ -48,13 +48,13 @@ class Connection extends ClientConnection {
 	 * User name
 	 * @var string
 	 */
-	public $user = 'root'; // Username
+	protected $user = 'root';
 
 	/**
 	 * Password
 	 * @var string
 	 */
-	public $password = ''; // Password
+	protected $password = '';
 
 	/**
 	 * Database name
@@ -283,8 +283,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Generates auth. token
-	 * @param string Scramble string
-	 * @param string Password
+	 * @param string $scramble Scramble string
+	 * @param string $password Password
 	 * @return string Result
 	 */
 	public function getAuthToken($scramble, $password) {
@@ -293,8 +293,6 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends auth. packet
-	 * @param string Scramble string
-	 * @param string Password
 	 * @return string Result
 	 */
 	public function auth() {
@@ -484,7 +482,7 @@ class Connection extends ClientConnection {
 				$this->onResultDone();
 			}
 			elseif ($fieldCount === 0xFE) {
-				// EOF Packet		
+				// EOF Packet
 				if ($this->rsState === self::RS_STATE_ROW) {
 					$this->onResultDone();
 				}
