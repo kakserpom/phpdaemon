@@ -74,8 +74,20 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function onReady() {
-		parent::onReady();
-		$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
+		if (!isset($this->password)) {
+			parent::onReady();
+			$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
+			return;
+		}
+		$this->sendCommand('AUTH', [$this->password], function () {
+			$ret = &$this->result[0];
+			if ($ret !== 'OK') {
+				$this->log('Auth. error: ' . json_encode($ret));
+				$this->finish();
+			}
+			parent::onReady();
+			$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
+		});
 	}
 
 	public function subscribed() {
