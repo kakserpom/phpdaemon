@@ -102,20 +102,29 @@ class Cursor implements \Iterator {
 	 * @return void
 	 */
 	public function getMore($number = 0) {
-		/*if ($this->tailable && $this->await) {
-			return;
-		}*/
 		if (binarySubstr($this->id, 0, 1) === 'c') {
 			$this->conn->pool->getMore($this->col, binarySubstr($this->id, 1), $number, $this->conn);
 		}
+	}
+
+	public function isDead() {
+		return $this->finished || $this->destroyed;
 	}
 
 	/**
 	 * Destroys the cursors
 	 * @return boolean Success
 	 */
-	public function destroy() {
+	public function destroy($notify = false) {
+		if ($this->destroyed) {
+			return;
+		}
 		$this->destroyed = true;
+		if ($notify) {
+			if ($this->callback) {
+				call_user_func($this->callback, $this);
+			}
+		}
 		unset($this->conn->cursors[$this->id]);
 		return true;
 	}
@@ -126,7 +135,7 @@ class Cursor implements \Iterator {
 	 */
 	public function __destruct() {
 		if (binarySubstr($this->id, 0, 1) === 'c') {
-			$this->conn->pool->killCursors([binarySubstr($this->id, 1)]);
+			$this->conn->pool->killCursors([binarySubstr($this->id, 1)], $this->conn);
 		}
 	}
 }

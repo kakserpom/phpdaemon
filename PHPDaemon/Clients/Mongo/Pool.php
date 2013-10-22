@@ -180,11 +180,6 @@ class Pool extends Client {
 			$p['opts'] = '01000100';
 		}
 
-		if (isset($p['tailable'])) {
-			// comment this to use AwaitData
-			$p['opts'] = '01000000';
-		}
-
 		if (!isset($p['where'])) {
 			$p['where'] = [];
 		}
@@ -971,14 +966,15 @@ class Pool extends Client {
 	/**
 	 * Sends a request to kill certain cursors on the server side
 	 * @param array Array of cursors
+	 * @param object Connection
 	 * @return void
 	 */
-	public function killCursors($cursors = []) {
+	public function killCursors($cursors = [], $conn) {
 		$this->request(self::OP_KILL_CURSORS,
 					   "\x00\x00\x00\x00"
 					   . pack('V', sizeof($cursors))
 					   . implode('', $cursors)
-		);
+		, false, $conn);
 	}
 
 	/**

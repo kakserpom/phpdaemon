@@ -266,6 +266,7 @@ class Connection extends ClientConnection {
 					// Event
 					if (isset($packet['event']) && !isset($packet['actionid'])) {
 						$this->event('event_' . $packet['event'], $packet);
+						$this->event('event', $packet);
 					}
 					// Response
 					elseif (isset($packet['actionid'])) {
@@ -581,10 +582,11 @@ class Connection extends ClientConnection {
 	/**
 	 * Called when event occured.
 	 * @param callable $cb Callback
+	 * @deprecated Replaced with ->bind('event', ...)
 	 * @return void
 	 */
 	public function onEvent($cb) {
-		$this->onEvent = $cb;
+		$this->bind('event', $cb);
 	}
 
 	/**
