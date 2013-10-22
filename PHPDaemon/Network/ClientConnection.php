@@ -124,6 +124,14 @@ class ClientConnection extends Connection {
 		$this->setFree(!$this->finished && $this->onResponse && $this->onResponse->count() < $this->maxQueue);
 	}
 
+	public function getQueueLength() {
+		return $this->onResponse->count();
+	}
+
+	public function isQueueEmpty() {
+		return $this->onResponse->count() === 0;
+	}
+
 	/**
 	 * Called when connection finishes
 	 * @return void

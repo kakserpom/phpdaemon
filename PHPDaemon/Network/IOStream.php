@@ -511,8 +511,7 @@ abstract class IOStream {
 		if (!isset($this->bev)) {
 			return false;
 		}
-		$this->bev->input->substr($o, $n);
-		return $data;
+		return $this->bev->input->substr($o, $n);
 	}
 
 	/**

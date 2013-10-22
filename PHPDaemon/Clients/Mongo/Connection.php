@@ -111,7 +111,7 @@ class Connection extends ClientConnection
 				$flagBits = str_pad(strrev(decbin($r['flag'])), 8, '0', STR_PAD_LEFT);
 				$curId    = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00" ? 'c'.$r['cursorId'] : 'r'.$this->hdr['responseTo']);
 
-				if ($req && isset($req[2]) && ($req[2]===false) && !isset($this->cursors[$curId])) {
+				if ($req && isset($req[2]) && ($req[2] === false) && !isset($this->cursors[$curId])) {
 					$cur                   = new Cursor($curId, $req[0], $this);
 					$this->cursors[$curId] = $cur;
 					$cur->failure          = $flagBits[1] === '1';
@@ -175,5 +175,16 @@ class Connection extends ClientConnection
 			}
 		}
 		goto start;
+	}
+
+	public function onFinish() {
+		foreach ($this->cursors as $curId => $cur) {
+			if ($cur instanceof Cursor) {
+				$cur->destroy(true);
+			}
+		}
+		$this->cursors = null;
+		$this->requests = null;
+		parent::onFinish();
 	}
 }

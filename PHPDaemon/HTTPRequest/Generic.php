@@ -391,7 +391,6 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 					unset($this->attrs->post[$k]);
 				}
 			}
-			Daemon::log(Debug::dump($this->attrs->files));
 			$uploadTmp = $this->getUploadTempDir();
 			foreach ($this->attrs->files as $k => &$file) {
 				if (!isset($file['tmp_name'])
