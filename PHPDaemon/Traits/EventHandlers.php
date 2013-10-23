@@ -48,6 +48,9 @@ trait EventHandlers {
 		}
 	}
 
+	/** Use it to define event name, when one callback was bind to more than one events
+	 * @return string
+	 */
 	public function getLastEventName() {
 		return $this->lastEventName;
 	}
