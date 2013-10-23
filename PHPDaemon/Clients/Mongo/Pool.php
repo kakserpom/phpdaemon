@@ -159,7 +159,7 @@ class Pool extends Client {
 
 	/**
 	 * Finds objects in collection
-	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
+	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  await, where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
 	 * @param mixed Callback called when response received
 	 * @return void
 	 */
@@ -176,8 +176,8 @@ class Pool extends Client {
 			$p['opts'] = '0';
 		}
 
-		if (isset($p['tailable'])) {
-			$p['opts'] = '01000100';
+		if (isset($p['tailable']) && $p['tailable']) {
+			$p['opts'] = '01000'.(isset($p['await']) && $p['await']?'1':'0').'00';
 		}
 
 		if (!isset($p['where'])) {
