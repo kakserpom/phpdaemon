@@ -40,7 +40,7 @@ class CallbackWrapper {
 		$this->cb      = $cb;
 		$this->context = $context;
 		if ($timeout !== null) {
-			$this->timeout($timeout);
+			$this->setTimeout($timeout);
 		}
 	}
 
@@ -150,7 +150,7 @@ class CallbackWrapper {
 			return null;
 		}
 		if ($this->timer !== null) {
-			$this->timer->free();
+			Timer::remove($this->timer);
 			$this->timer = null;
 		}
 		if ($this->context === null || Daemon::$context !== null) {
