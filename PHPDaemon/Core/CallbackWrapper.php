@@ -40,7 +40,22 @@ class CallbackWrapper {
 		$this->cb      = $cb;
 		$this->context = $context;
 		if ($timeout !== null) {
-			$this->timer = Timer::add($this, $timeout);
+			$this->timeout($timeout);
+		}
+	}
+
+	public function setTimeout($timeout) {
+		if ($timeout !== null) {
+			$this->timer = Timer::add(function ($timer) {
+				$this();
+			}, $timeout);
+		}
+	}
+
+	public function cancelTimeout() {
+		if ($this->timer !== null) {
+			$this->timer->free();
+			$this->timer = null;
 		}
 	}
 
@@ -133,6 +148,10 @@ class CallbackWrapper {
 	public function __invoke() {
 		if ($this->cb === null) {
 			return null;
+		}
+		if ($this->timer !== null) {
+			$this->timer->free();
+			$this->timer = null;
 		}
 		if ($this->context === null || Daemon::$context !== null) {
 			return call_user_func_array($this->cb, func_get_args());
