@@ -31,7 +31,7 @@ class Pool extends Client {
 	 * Beginning of the string in the header or value that indicates whether the save value case.
 	 * @var array
 	 */
-	public static $safeCaseValues = ['dialstring', 'callerid'];
+	public static $safeCaseValues = ['dialstring', 'callerid', 'connectedline'];
 
 	/** Sets AMI version
 	 * @param string $addr Address
