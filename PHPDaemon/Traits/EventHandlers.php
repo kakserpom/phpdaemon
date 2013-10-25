@@ -23,11 +23,6 @@ trait EventHandlers {
 	 */
 	protected $addThisToEvents = true;
 
-	/** Last called event name
-	 * @var string
-	 */
-	protected $lastEventName;
-
 	/**
 	 * Propagate event
 	 * @param string Event name
@@ -41,15 +36,10 @@ trait EventHandlers {
 			array_unshift($args, $this);
 		}
 		if (isset($this->eventHandlers[$name])) {
-			$this->lastEventName = $name;
 			foreach ($this->eventHandlers[$name] as $cb) {
 				call_user_func_array($cb, $args);
 			}
 		}
-	}
-
-	public function getLastEventName() {
-		return $this->lastEventName;
 	}
 
 	/**
