@@ -92,6 +92,12 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public $get = [];
 
 	/**
+	 * _POST
+	 * @var null
+	 */
+	public $post = null;
+
+	/**
 	 * Called when the stream is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
 	 */
