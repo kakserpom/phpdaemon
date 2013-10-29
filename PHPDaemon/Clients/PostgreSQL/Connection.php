@@ -320,8 +320,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Send SQL-query
-	 * @param string   Query
-	 * @param callback Optional. Callback called when response received.
+	 * @param string $q  Query
+	 * @param callable $callback Optional. Callback called when response received.
 	 * @return boolean Success
 	 */
 	public function query($q, $callback = NULL) {
