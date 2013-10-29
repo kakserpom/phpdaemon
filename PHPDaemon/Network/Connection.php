@@ -656,7 +656,7 @@ abstract class Connection extends IOStream {
 		if ($pton === false) { // dirty check
 			\PHPDaemon\Clients\DNS\Pool::getInstance()->resolve($this->host, function ($result) use ($host, $port) {
 				if ($result === false) {
-					Daemon::log(get_class($this) . '->connectTcp : enable to resolve hostname: ' . $host);
+					Daemon::log(get_class($this) . '->connectTcp : unable to resolve hostname: ' . $host);
 					$this->onStateEv($this->bev, \EventBufferEvent::ERROR);
 					return;
 				}
