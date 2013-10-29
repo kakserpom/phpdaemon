@@ -84,6 +84,19 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 */
 	public $cookie = [];
 
+
+	/**
+	 * _GET
+	 * @var array
+	 */
+	public $get = [];
+
+	/**
+	 * _POST
+	 * @var null
+	 */
+	public $post = null;
+
 	/**
 	 * Called when the stream is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
@@ -129,6 +142,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$this->running   = true;
 		Daemon::$context = $this;
 		$_SESSION = &$this->session;
+		$_GET = &$this->get;
+		$_POST = &$this->post; // supposed to be null
+		$_COOKIE = &$this->cookie;
 		Daemon::$process->setState(Daemon::WSTATE_BUSY);
 	}
 
@@ -139,7 +155,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public function onSleep() {
 		Daemon::$context = null;
 		$this->running   = false;
-		unset($_SESSION);
+		unset($_SESSION, $_GET, $_POST, $_COOKIE);
 		Daemon::$process->setState(Daemon::WSTATE_IDLE);
 	}
 
@@ -152,6 +168,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$this->state  = self::STATE_HEADERS;
 		$this->addr   = $req->attrs->server['REMOTE_ADDR'];
 		$this->server = $req->attrs->server;
+		$this->get = $req->attrs->get;
 		$this->prependInput("\r\n");
 		$this->onRead();
 	}
@@ -502,6 +519,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 		if (isset($this->server['HTTP_COOKIE'])) {
 			Generic::parse_str(strtr($this->server['HTTP_COOKIE'], Generic::$hvaltr), $this->cookie);
+		}
+		if (isset($this->server['QUERY_STRING'])) {
+			Generic::parse_str($this->server['QUERY_STRING'], $this->get);
 		}
 		// ----------------------------------------------------------
 		// Protocol discovery, based on HTTP headers...
