@@ -24,6 +24,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $extensions = [];
 	protected $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
 	protected $buf = '';
+	/**
+	 * @var \PHPDaemon\WebSocket\Protocol
+	 */
 	protected $protocol;
 	protected $policyReqNotFound = false;
 	protected $currentHeader;
@@ -41,25 +44,25 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @var integer
 	 */
 	const STATE_FIRSTLINE  = 1;
-	
+
 	/**
 	 * State: headers
 	 * @var integer
 	 */
 	const STATE_HEADERS    = 2;
-	
+
 	/**
 	 * State: content
 	 * @var integer
 	 */
 	const STATE_CONTENT    = 3;
-	
+
 	/**
 	 * State: processing
 	 * @var integer
 	 */
 	const STATE_PROCESSING = 5;
-	
+
 	/**
 	 * State: handshaked
 	 * @var integer
