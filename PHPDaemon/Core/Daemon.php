@@ -51,7 +51,7 @@ class Daemon {
 	const WSTATE_IDLE = 1;
 
 	/**
-	 * Worker state: busy. It means that the worker IS in the middle of execution valuable callback. 
+	 * Worker state: busy. It means that the worker IS in the middle of execution valuable callback.
 	 */
 	const WSTATE_BUSY = 2;
 
@@ -60,7 +60,7 @@ class Daemon {
 	 * @var integer
 	 */
 	const WSTATE_SHUTDOWN = 3;
-	
+
 	/**
 	 * Worker state: shutdown. It means that worker is shutdown.
 	 * @var integer
@@ -84,7 +84,7 @@ class Daemon {
 		4 => 'PREINIT',
 		5 => 'INIT',
 	];
-	
+
 	/**
 	 * Shared memory WSTATE segment size
 	 * @var integer
@@ -123,28 +123,28 @@ class Daemon {
 
 	/**
 	 * Current thread object
-	 * @var object \PHPDaemon\Thread\*
+	 * @var \PHPDaemon\Thread\*
 	 */
 	public static $process;
 
 	/**
 	 * AppResolver
-	 * @var object \PHPDaemon\Core\AppResolver
+	 * @var \PHPDaemon\Core\AppResolver
 	 */
 	public static $appResolver;
-	
+
 	/**
 	 * Running application instances
 	 * @var array
 	 */
 	public static $appInstances = [];
-	
+
 	/**
 	 * Running request
-	 * @var object \PHPDaemon\Request\Generic
+	 * @var \PHPDaemon\Request\Generic
 	 */
 	public static $req;
-	
+
 	/**
 	 * Running context
 	 * @var object
@@ -153,16 +153,16 @@ class Daemon {
 
 	/**
 	 * Collection of workers
-	 * @var object \PHPDaemon\Thread\Collection
+	 * @var \PHPDaemon\Thread\Collection
 	 */
 	protected static $workers;
-	
+
 	/**
 	 * Collection of masters
-	 * @var object \PHPDaemon\Thread\Collection
+	 * @var \PHPDaemon\Thread\Collection
 	 */
 	protected static $masters;
-	
+
 	/**
 	 * Copy of $_SERVER on the daemon start
 	 * @var array
@@ -171,7 +171,7 @@ class Daemon {
 
 	/**
 	 * Shared memory 'WSTATE' entity
-	 * @var object \PHPDaemon\Thread\Collection
+	 * @var \PHPDaemon\Thread\Collection
 	 */
 	public static $shm_wstate;
 
@@ -196,7 +196,7 @@ class Daemon {
 
 	/**
 	 * Configuration object
-	 * @var object \PHPDaemon\Config\Object
+	 * @var \PHPDaemon\Config\Object
 	 */
 	public static $config;
 
@@ -205,22 +205,22 @@ class Daemon {
 	 * @var string
 	 */
 	public static $appResolverPath;
-	
+
 
 	/**
 	 * Restrict error control. When true, operator '@' means nothing.
 	 * @var boolean
 	 */
 	public static $restrictErrorControl = false;
-	
+
 	/**
 	 * Default error reporting level
 	 * @var integer
 	 */
 	public static $defaultErrorLevel;
-	
+
 	/**
-	 * Is it running under master-less 'runworker' mode? 
+	 * Is it running under master-less 'runworker' mode?
 	 * @var bool
 	 */
 	public static $runworkerMode = false;
