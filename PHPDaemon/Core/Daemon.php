@@ -701,6 +701,7 @@ class Daemon {
 
 		$mt = explode(' ', microtime());
 
+		//$msg = substr($msg, 0, 1024) . Debug::backtrace();
 		if (is_resource(STDERR)) {
 			fwrite(STDERR, '[PHPD] ' . $msg . "\n");
 		}

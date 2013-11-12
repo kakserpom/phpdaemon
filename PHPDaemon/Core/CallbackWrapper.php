@@ -150,7 +150,7 @@ class CallbackWrapper {
 			return null;
 		}
 		if ($this->timer !== null) {
-			Timer::remove($this->timer);
+			$this->timer->free();
 			$this->timer = null;
 		}
 		if ($this->context === null || Daemon::$context !== null) {
