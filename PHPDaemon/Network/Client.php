@@ -50,7 +50,7 @@ abstract class Client extends Pool {
 	 * @var bool
 	 */
 	protected $acquireOnGet = false;
-	
+
 	/**
 	 * @var Connection[]
 	 */

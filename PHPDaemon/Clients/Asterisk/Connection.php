@@ -537,6 +537,23 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * Action: ExtensionState
+	 * Synopsis: Get an extension's state.
+	 * Description: function can be used to retrieve the state from any	hinted extension.
+	 * Variables: (Names marked with * are required)
+	 * *Exten: Extension to get state
+	 * Context: Context for exten
+	 * ActionID: Optional Action id for message matching.
+	 *
+	 * @param array $params
+	 * @param callable $cb Callback called when response received.
+	 * @return void
+	 */
+	public function extensionState(array $params, $cb) {
+		$this->command("Action: ExtensionState\r\n" . $this->implodeParams($params), $cb);
+	}
+
+	/**
 	 * Action: Ping
 	 * Description: A 'Ping' action will ellicit a 'Pong' response.  Used to keep the
 	 *   manager connection open.
