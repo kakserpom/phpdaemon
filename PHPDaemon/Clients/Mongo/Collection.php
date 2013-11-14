@@ -216,7 +216,7 @@ class Collection {
 	 * @param Closure $cb called when response received
 	 * @return void
 	 */
-	public function autoincrement($cb) {
+	public function autoincrement($cb, $plain = false) {
 		$e = explode('.', $this->name);
 		$col = (isset($e[1]) ? $e[0] . '.' : '') . 'autoincrement';
 		$this->pool->{$col}->findAndModify([
@@ -224,7 +224,9 @@ class Collection {
 			'update' => ['$inc' => ['seq' => 1]],
 			'new' => true,
 			'upsert' => true,
-		], $cb);
+		], $plain ? function ($lastError) use ($cb) {
+			call_user_func($cb, isset($lastError['value']['seq']) ? $lastError['value']['seq'] : false);
+		} : $cb);
 	}
 
 	/**
