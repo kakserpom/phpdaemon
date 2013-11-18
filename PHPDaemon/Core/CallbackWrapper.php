@@ -87,12 +87,13 @@ class CallbackWrapper {
 			}
 		}
 		$arr[] = $cb;
-		return $arr;
+		return true;
 	}
 
 	public static function removeFromArray(&$arr, $cb) {
 		if ($arr === null) {
 			$arr = [];
+			return false;
 		}
 		$e = static::extractCb($cb);
 		foreach ($arr as $k => $item) {
