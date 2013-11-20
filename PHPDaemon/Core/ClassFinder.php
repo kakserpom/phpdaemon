@@ -31,7 +31,7 @@ class ClassFinder {
 	 * @param string $namespace Namespace
 	 * @return string
 	 */
-	public static function find($class, $namespace = null) {
+	public static function find($class, $namespace = null, $rootns = null) {
 		$e = explode('\\', $class);
 		if ($e[0] === '') {
 			return $class;
@@ -63,7 +63,7 @@ class ClassFinder {
 		if ($namespace !== null && sizeof($e) < 2) {
 			array_unshift($e, $namespace);
 		}
-		array_unshift($e, '\\' . Daemon::$config->defaultns->value);
+		array_unshift($e, '\\' . ($rootns !== null ? $rootns : Daemon::$config->defaultns->value));
 		return implode('\\', $e);
 	}
 
