@@ -78,7 +78,7 @@ class Connection extends ClientConnection {
 				return; //we do not have a whole packet
 			}
 			$this->state = self::STATE_ROOT;
-			$this->setWatermark(0);
+			$this->setWatermark(1);
 			goto start;
 		}
 	}

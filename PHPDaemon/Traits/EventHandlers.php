@@ -32,7 +32,7 @@ trait EventHandlers {
 	 * Propagate event
 	 * @param string Event name
 	 * @param mixed  ... variable set of arguments ...
-	 * @return void
+	 * @return object $this
 	 */
 	public function event() {
 		$args = func_get_args();
@@ -46,15 +46,42 @@ trait EventHandlers {
 				call_user_func_array($cb, $args);
 			}
 		}
+		return $this;
+	}
+
+	/**
+	 * Propagate event
+	 * @param string Event name
+	 * @param mixed  ... variable set of arguments ...
+	 * @return void
+	 */
+	public function trigger() {
+		return call_user_func_array([$this, 'event'], func_gets_args());
 	}
 
 	/**
 	 * Use it to define event name, when one callback was bind to more than one events
 	 * @return string
 	 */
-	public function getLastEventName()
-	{
+	public function getLastEventName() {
 		return $this->lastEventName;
+	}
+
+	/**
+	 * Bind event or events
+	 * @param string|array   Event name
+	 * @param callable $cb Callback
+	 * @return object $this
+	 */
+	public function bind($event, $cb) {
+		if ($cb !== null) {
+			$cb = CallbackWrapper::wrap($cb);
+		}
+		is_array($event) or $event = [$event];
+		foreach ($event as $e) {
+			CallbackWrapper::addToArray($this->eventHandlers[$e], $cb);
+		}
+		return $this;
 	}
 
 	/**
@@ -63,25 +90,15 @@ trait EventHandlers {
 	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
-	public function bind($event, $cb) {
-		if ($cb !== null) {
-			$cb = CallbackWrapper::wrap($cb);
-		}
-		is_array($event) or $event = [$event];
-		foreach ($event as $e) {
-			if (!isset($this->eventHandlers[$e])) {
-				$this->eventHandlers[$e] = [];
-			}
-			$this->eventHandlers[$e][] = $cb;
-		}
-		return true;
+	public function on($event, $cb) {
+		return $this->bind($event, $cb);
 	}
 
 	/**
 	 * Unbind event(s) or callback from event(s)
 	 * @param string|array Event name
 	 * @param callable Callback, optional
-	 * @return boolean Success
+	 * @return object $this
 	 */
 	public function unbind($event, $cb = null) {
 		if ($cb !== null) {
@@ -98,13 +115,19 @@ trait EventHandlers {
 				unset($this->eventHandlers[$e]);
 				continue;
 			}
-			if (($p = array_search($cb, $this->eventHandlers[$e], true)) === false) {
-				$success = false;
-				continue;
-			}
-			unset($this->eventHandlers[$e][$p]);
+			CallbackWrapper::removeFromArray($this->eventHandlers[$e], $cb);
 		}
-		return $success;
+		return $this;
+	}
+
+	/**
+	 * Unbind event(s) or callback from event(s)
+	 * @param string|array Event name
+	 * @param callable Callback, optional
+	 * @return object $this
+	 */
+	public function off($event, $cb) {
+		return $this->unbind($event, $cb);
 	}
 
 	/**
