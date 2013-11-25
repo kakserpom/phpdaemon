@@ -56,7 +56,7 @@ trait EventHandlers {
 	 * @return void
 	 */
 	public function trigger() {
-		return call_user_func_array([$this, 'event'], func_gets_args());
+		return call_user_func_array([$this, 'event'], func_get_args());
 	}
 
 	/**
