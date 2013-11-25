@@ -5,9 +5,9 @@ use PHPDaemon\Network;
 use PHPDaemon\Config\Entry;
 
 /**
- * Class Pool
- * @package networkClients
- * @subpackages WebSocketClient
+ * Class Connection
+ * @package Clients
+ * @subpackage WebSocket
  *
  * @author Kozin Denis <kozin.alizarin.denis@gmail.com>
  */

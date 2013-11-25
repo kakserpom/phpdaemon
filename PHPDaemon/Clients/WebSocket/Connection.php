@@ -9,8 +9,8 @@ use PHPDaemon\Utils\Crypt;
 
 /**
  * Class Connection
- * @package networkClients
- * @subpackages WebSocketClient
+ * @package Clients
+ * @subpackage WebSocket
  *
  * @author Kozin Denis <kozin.alizarin.denis@gmail.com>
  * @author Vasily Zorin <maintainer@daemon.io>
@@ -169,7 +169,7 @@ class Connection extends ClientConnection {
 	 * @param string $type
 	 * @param bool $isMasked
 	 */
-	public function sendFrame($payload, $type = Pool::TYPE_TEXT, $isMasked = false) {
+	public function sendFrame($payload, $type = Pool::TYPE_TEXT, $isMasked = true) {
 		$payloadLength = strlen($payload);
 		if($payloadLength > $this->pool->maxAllowedPacket) {
 			Daemon::$process->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
