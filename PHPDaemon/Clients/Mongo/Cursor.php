@@ -50,6 +50,12 @@ class Cursor implements \Iterator {
 	public function next() {
 		array_shift($this->items);
 	}
+
+	public function grab() {
+		$items = $this->items;
+		$this->items = [];
+		return $items;
+	}
   
 	public function valid() {
 		$key = key($this->items);

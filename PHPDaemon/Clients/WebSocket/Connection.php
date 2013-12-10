@@ -80,7 +80,7 @@ class Connection extends ClientConnection {
 				$this->type = $this->opCodes[$opCode];
 			}
 			else {
-				Daemon::$process->log('opCode: '. $opCode . ' - unknown type frame');
+				$this->log('opCode: '. $opCode . ': unknown frame type');
 				$this->finish();
 				return;
 			}
@@ -142,7 +142,7 @@ class Connection extends ClientConnection {
 							$this->onConnected->executeAll($this);
 							$this->onConnected = null;
 						}
-						$this->event('connected');
+						$this->trigger('connected');
 						goto start;
 					}
 					else {
@@ -224,6 +224,11 @@ class Connection extends ClientConnection {
 		} else {
 			$this->write($payload);
 		}
+	}
+
+	public function onFinish() {
+		parent::onFinish();
+		$this->trigger('disconnected');
 	}
 
 	protected static function mask($mask, $str) {

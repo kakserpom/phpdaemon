@@ -3,6 +3,7 @@ namespace PHPDaemon\Request;
 
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
@@ -197,7 +198,9 @@ abstract class Generic {
 			} catch (RequestTerminated $e) {
 				$this->state = Generic::STATE_FINISHED;
 			} catch (\Exception $e) {
-				$throw = true;
+				if (!$this->handleException($e)) {
+					$throw = true;
+				}
 			}
 			if ($this->state === Generic::STATE_FINISHED) {
 				$this->finish();

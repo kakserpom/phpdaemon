@@ -6,7 +6,7 @@ use PHPDaemon\Core\CallbackWrapper;
 /**
  * ComplexJob class.
  */
-class ComplexJob {
+class ComplexJob implements \ArrayAccess {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
@@ -80,7 +80,16 @@ class ComplexJob {
 			$this->addListener($cb);
 		}
 	}
-
+	public function offsetExists($j) {
+		return isset($this->results[$j]);
+	}
+	public function offsetGet($j) {
+		return isset($this->results[$j]) ? $this->results[$j] : null;
+	}
+	public function offsetSet($j, $v) {
+		$this->setResult($j, $v);
+	}
+	public function offsetUnset($j) {}
 	/**
 	 * Keep
 	 * @param boolean Keep?

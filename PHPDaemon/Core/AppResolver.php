@@ -82,8 +82,12 @@ class AppResolver {
 			return false;
 		}
 		$fullname = $this->getAppFullname($appName, $instance);
-		if (!class_exists($class) || !is_subclass_of($class, '\\PHPDaemon\\Core\\AppInstance')) {
-			Daemon::$process->log(__METHOD__ . ': cannot find application class '. json_encode($class) . '\'');
+		if (!class_exists($class)) {
+			Daemon::$process->log(__METHOD__ . ': unable to find application class '. json_encode($class) . '\'');
+			return false;
+		}
+		if (!is_subclass_of($class, '\\PHPDaemon\\Core\\AppInstance')) {
+			Daemon::$process->log(__METHOD__ . ': class '. json_encode($class) . '\' found, but skipped as long as it is not subclass of \\PHPDaemon\\Core\\AppInstance');
 			return false;
 		}
 		$fullnameClass = $this->getAppFullname($class, $instance);
