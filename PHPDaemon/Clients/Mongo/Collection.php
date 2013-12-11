@@ -38,6 +38,17 @@ class Collection {
 	}
 
 	/**
+	 * Finds objects in collection and fires callback when got all objects
+	 * @param mixed Callback called when response received
+	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
+	 * @return void
+	 */
+	public function findAll($cb, $p = []) {
+		$p['col'] = $this->name;
+		$this->pool->findAll($p, $cb);
+	}
+
+	/**
 	 * Finds one object in collection
 	 * @param mixed Callback called when response received
 	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)

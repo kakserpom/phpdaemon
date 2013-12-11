@@ -158,6 +158,22 @@ class Pool extends Client {
 	}
 
 	/**
+	 * Finds objects in collection and fires callback when got all objects
+	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  await, where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
+	 * @param mixed Callback called when response received
+	 * @return void
+	 */
+	public function findAll($p, $cb) {
+		$this->find($p, function($cursor) use ($cb) {
+			if (!$cursor->isFinished()) {
+				$cursor->getMore();
+			} else {
+				call_user_func($cb, $cursor);
+			}
+		});
+	}
+
+	/**
 	 * Finds objects in collection
 	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  await, where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
 	 * @param mixed Callback called when response received
