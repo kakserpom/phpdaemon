@@ -682,7 +682,7 @@ class Pool extends Client {
 			$f = array_map('trim', explode(',', $f));
 		}
 		if (!is_array($f) || sizeof($f) == 0) {
-			return [];
+			return null;
 		}
 		if (!isset($f[0])) {
 			return $f;
