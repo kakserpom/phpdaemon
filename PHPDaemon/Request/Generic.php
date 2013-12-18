@@ -297,6 +297,15 @@ abstract class Generic {
 	}
 
 	/**
+	 * Get string value from the given variable
+	 * @param Reference of variable.
+	 * @return string Value.
+	 */
+	public static function getMixed(&$var) {
+		return $var;
+	}
+
+	/**
 	 * Get array value from the given variable
 	 * @param Reference of variable.
 	 * @param array     Optional. Filter callback.
