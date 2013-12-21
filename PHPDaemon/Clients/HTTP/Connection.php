@@ -188,6 +188,18 @@ class Connection extends ClientConnection {
 		$this->checkFree();
 	}
 
+	public function getBody() {
+		return $this->body;
+	}
+
+	public function getHeaders() {
+		return $this->headers;
+	}
+
+	public function getHeader($name) {
+		return &$this->headers['HTTP_' . strtoupper(strtr($name, Generic::$htr))];
+	}
+
 	/**
 	 * Called when new data received
 	 * @param string New data
