@@ -197,7 +197,8 @@ class Connection extends ClientConnection {
 	}
 
 	public function getHeader($name) {
-		return &$this->headers['HTTP_' . strtoupper(strtr($name, Generic::$htr))];
+		$k = 'HTTP_' . strtoupper(strtr($name, Generic::$htr));
+		return isset($this->headers[$k]) ? $this->headers[$k] : null;
 	}
 
 	/**
