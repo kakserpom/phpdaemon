@@ -100,7 +100,7 @@ trait Sessions {
 	 * @return void
 	 */
 	public function sessionRead($sid, $cb = null) {
-		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($sid), 'r+!', function ($fp) use ($cb) {
+		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'sess') . basename($sid), 'r+!', function ($fp) use ($cb) {
 			if (!$fp) {
 				call_user_func($cb, false);
 				return;
