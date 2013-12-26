@@ -100,7 +100,7 @@ trait Sessions {
 	 * @return void
 	 */
 	public function sessionRead($sid, $cb = null) {
-		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'sess') . basename($sid), 'r+!', function ($fp) use ($cb) {
+		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'sess_') . basename($sid), 'r+!', function ($fp) use ($cb) {
 			if (!$fp) {
 				call_user_func($cb, false);
 				return;
@@ -193,7 +193,7 @@ trait Sessions {
 	protected function sessionEncode() {
 		$type = ini_get('session.serialize_handler');
 		if ($type === 'php') {
-			return serialize($this->getSessionState());
+			return $this->serialize_php($this->getSessionState());
 		}
 		if ($type === 'php_binary') {
 			return igbinary_serialize($this->getSessionState());
@@ -209,7 +209,7 @@ trait Sessions {
 	protected function sessionDecode($str) {
 		$type = ini_get('session.serialize_handler');
 		if ($type === 'php') {
-			$this->setSessionState(unserialize($str));
+			$this->setSessionState($this->unserialize_php($str));
 			return true;
 		}
 		if ($type === 'php_binary') {
@@ -218,4 +218,66 @@ trait Sessions {
 		}
 		return false;
 	}
+
+    /**
+     * session_encode() - clone, which not require session_start()
+     *
+     * @see http://www.php.net/manual/en/function.session-encode.php
+     * @param $array
+     * @param bool $safe
+     *
+     * @return string
+     */
+    public function serialize_php($array, $safe = true)
+    {
+        // the session is passed as refernece, even if you dont want it to
+        if ($safe) {
+            $array = unserialize(serialize($array));
+        }
+        $raw = '';
+        $line = 0;
+        $keys = array_keys($array);
+        foreach ($keys as $key) {
+            $value = $array[$key];
+            $line++;
+            $raw .= $key . '|';
+            if (is_array($value) && isset($value['huge_recursion_blocker_we_hope'])) {
+                $raw .= 'R:' . $value['huge_recursion_blocker_we_hope'] . ';';
+            } else {
+                $raw .= serialize($value);
+            }
+            $array[$key] = array('huge_recursion_blocker_we_hope' => $line);
+        }
+
+        return $raw;
+    }
+
+    /**
+     * session_decode() - clone, which not require session_start()
+     *
+     * @see http://www.php.net/manual/en/function.session-decode.php#108037
+     * @param $session_data
+     *
+     * @return array
+     * @throws \Exception
+     */
+    private function unserialize_php($session_data)
+    {
+        $return_data = array();
+        $offset = 0;
+        while ($offset < strlen($session_data)) {
+            if (!strstr(substr($session_data, $offset), "|")) {
+                throw new \Exception("invalid session data, remaining: " . substr($session_data, $offset));
+            }
+            $pos = strpos($session_data, "|", $offset);
+            $num = $pos - $offset;
+            $varname = substr($session_data, $offset, $num);
+            $offset += $num + 1;
+            $data = unserialize(substr($session_data, $offset));
+            $return_data[$varname] = $data;
+            $offset += strlen(serialize($data));
+        }
+
+        return $return_data;
+    }
 }
