@@ -222,6 +222,18 @@ class Collection {
 		$this->pool->evaluate($code, $cb);
 	}
 
+
+	/**
+	 * Aggregate
+	 * @param array Params
+	 * @param mixed  Callback called when response received
+	 * @return void
+	 */
+	public function aggregate($p, $cb) {
+		$p['col'] = $this->name;
+		$this->pool->aggregate($p, $cb);
+	}
+
 	/**
 	 * Generation autoincrement
 	 * @param Closure $cb called when response received

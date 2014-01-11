@@ -849,6 +849,42 @@ class Pool extends Client {
 	}
 
 	/**
+	 * Aggregate function
+	 * @param array Hash of properties (offset,  limit,  opts,  key,  col)
+	 * @param mixed Callback called when response received
+	 * @return void
+	 */
+	public function aggregate($p, $cb) {
+		$this->_params($p);
+
+		$e = explode('.', $p['col'], 2);
+		$query = [
+			'aggregate' => $e[1]
+		];
+
+		if (isset($p['rp'])) {
+			$query['$readPreference'] = $p['rp'];
+			unset($p['rp']);
+		}
+		foreach ($p as $k => $v) {
+			if (substr($k, 0, 1) === '$' || $k === 'pipeline') {
+				$query[$k] = $v;
+			}
+		}
+		$cb = CallbackWrapper::wrap($cb);
+		$this->request(self::OP_QUERY, pack('V', $p['opts'])
+			. $e[0] . '.$cmd' . "\x00"
+			. pack('VV', $p['offset'], $p['limit'])
+			. bson_encode($query)
+			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+				if (!$conn) {
+					return;
+				}
+				$conn->requests[$reqId] = [$p['col'], $cb, false];
+			});
+	}
+
+	/**
 	 * Updates one object in collection
 	 * @param string   Collection's name
 	 * @param array    Conditions
