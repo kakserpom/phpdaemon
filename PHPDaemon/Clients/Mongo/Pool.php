@@ -237,6 +237,10 @@ class Pool extends Client {
 			$o = $p['where'];
 		}
 
+		if (empty($o['orderby'])) {
+			unset($o['orderby']);
+		}
+
 		$bson = bson_encode($o);
 
 		if (isset($p['parse_oplog'])) {
@@ -310,6 +314,9 @@ class Pool extends Client {
 					$o[$k] = $v;
 				}
 			}
+		}
+		if (empty($o['orderby'])) {
+			unset($o['orderby']);
 		}
 
 		if ($s) {
