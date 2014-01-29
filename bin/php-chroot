@@ -1,0 +1,80 @@
+#!/usr/bin/env php
+<?php
+
+/* 
+  PHP wrapper: 
+  Runs sudo'ed and chroot'ed php script.
+  Root username is not allowed.
+*/
+
+if ($_SERVER['argc'] < 2) {
+	echo <<<EOF
+
+Usage: {$argv[0]} <script_filename>
+
+Environment variables:
+
+	PHPCHROOT_USER	- run as username (optional, default: file owner user)
+	PHPCHROOT_GROUP	- run as groupname (optional, default: file owner group)
+	PHPCHROOT	- chroot to directory (optional)
+
+EOF;
+
+	exit;
+}
+
+$_SERVER["SCRIPT_NAME"] = $_SERVER["SCRIPT_FILENAME"] = $argv[1];
+
+$filename = (isset($_SERVER["PHPCHROOT"]) ? $_SERVER["PHPCHROOT"] . "/" : null ) . $argv[1];
+
+if (
+	!file_exists($filename) 
+	|| !is_file($filename)
+) {
+	exit('php-chroot: PHP file not found');
+}
+
+$user  = isset($_SERVER['PHPCHROOT_USER']) 
+		? posix_getpwnam($_SERVER['PHPCHROOT_USER']) 
+		: array('uid' => fileowner($filename));
+
+if (!$user) {
+	exit('php-chroot: Invalid PHPCHROOT_USER');
+}
+
+$group = isset($_SERVER['PHPCHROOT_GROUP']) 
+              ? posix_getgrnam($_SERVER['PHPCHROOT_GROUP'])
+              : array( 'gid' => filegroup($filename));
+
+if (!$group) {
+	exit('PHP chroot: Invalid PHPCHROOT_GROUP');
+}
+
+if (
+	!$user['uid'] 
+	|| !$group['gid']
+) {
+	exit('php-chroot: Root uid/gid are not allowed');
+}
+
+if (isset($_SERVER['PHPCHROOT'])) {
+	chroot($_SERVER['PHPCHROOT']);
+	unset($_SERVER['PHPCHROOT']);
+}
+
+posix_setuid($user['uid']);
+posix_setgid($group['gid']);
+
+if (isset($_SERVER['PHPCHROOT_USER'])) {
+	unset($_SERVER['PHPCHROOT_USER']);
+}
+
+if (isset($_SERVER['PHPCHROOT_GROUP'])) {
+	unset($_SERVER['PHPCHROOT_GROUP']);
+}
+
+unset($user,$group);
+
+include $_SERVER['argv'][1];
+
+exit;

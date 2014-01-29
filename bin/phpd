@@ -1,0 +1,76 @@
+#!/usr/bin/env php
+<?php
+/**************************************************************************/
+/* phpDaemon
+/* Web: http://github.com/kakserpom/phpdaemon
+/* ===========================
+/* @author kak.serpom.po.yaitsam@gmail.com
+/* @description Bootstrap init script.
+/**************************************************************************/
+@ob_end_clean(); // clear shebang
+error_reporting(E_ALL);
+if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
+	echo 'PHP >= 5.4.0 required.' . PHP_EOL;
+	return;
+}
+
+foreach (array('/usr/share/phpdaemon', dirname(dirname(__FILE__))) as $d) {
+	if (@chdir($d)) {
+		break;
+	}
+}
+
+ini_set('include_path', get_include_path()
+		. ':' . dirname(dirname(__FILE__))
+		. ':' . dirname(dirname(__FILE__)) . '/conf'
+		. ':/usr/share/phpdaemon:/etc/phpdaemon'
+);
+$autoloader = function ($classname) {
+	$base = str_replace('\\', '/', $classname);
+	$subpath = array($base . '.php', $base . '.class.php');
+	$e       = explode(':', get_include_path());
+	foreach ($e as $path) {
+		foreach ($subpath as $item) {
+			$file = rtrim($path, '/') . '/' . $item;
+			if (file_exists($file)) {
+				if (!@fopen($file,'r')) {
+					if (class_exists('\PHPDaemon\Core\Daemon', false)) {
+						$user = posix_getpwuid(posix_getuid());
+						$group = posix_getgrgid(posix_getgid());
+						\PHPDaemon\Core\Daemon::log('[EMERG] Autoloader: \''.$file.'\' exists but not readable by '. $user['name'] .':'.$group['name']);
+					}
+				} else {
+					require $file;
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+};
+$autoloadCache = array();
+spl_autoload_register(function ($classname) use ($autoloader, &$autoloadCache) {
+	if (isset($autoloadCache[$classname])) {
+		return $autoloadCache[$classname];
+	}
+	if ($autoloader($classname) === false) {
+		$autoloadCache[$classname] = false;
+	}
+});
+require 'PHPDaemon/Core/Daemon.php';
+require 'PHPDaemon/Core/Debug.php';
+require 'PHPDaemon/FS/File.php';
+$e = null;
+execute:
+try {
+	if ($e) {
+		$thread = $e->getThread();
+		$e      = null;
+		$thread();
+	}
+	else {
+		\PHPDaemon\Core\Bootstrap::init(isset($configFile) ? $configFile : null);
+	}
+} catch (\PHPDaemon\Exceptions\ClearStack $e) {
+	goto execute;
+}
