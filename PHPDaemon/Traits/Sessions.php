@@ -166,7 +166,7 @@ trait Sessions {
 	 * @param callable $cb
 	 */
 	protected function sessionStartNew($cb = null) {
-		FileSystem::tempnam(session_save_path(), 'php', function ($fp) use ($cb) {
+		FileSystem::tempnam(session_save_path(), 'sess_', function ($fp) use ($cb) {
 			if (!$fp) {
 				call_user_func($cb, false);
 				return;
