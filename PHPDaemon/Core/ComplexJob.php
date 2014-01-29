@@ -69,6 +69,11 @@ class ComplexJob implements \ArrayAccess {
 
 	protected $keep = false;
 
+
+	protected $maxConcurrency = -1;
+
+	protected $queue;
+
 	/**
 	 * Constructor
 	 * @param callable $cb Listener
@@ -120,16 +125,25 @@ class ComplexJob implements \ArrayAccess {
 		return call_user_func_array($this->{$name}, $args);
 	}
 
+	public function maxConcurrency($n = 1) {
+		$this->maxConcurrency = $n;
+		return $this;
+	}
+
 	/**
 	 * Set result
 	 * @param string Job name
 	 * @param mixed  Result
-	 * @return void
+	 * @return boolean
 	 */
 	public function setResult($jobname, $result = null) {
+		if (isset($this->results[$jobname])) {
+			return false;
+		}
 		$this->results[$jobname] = $result;
 		++$this->resultsNum;
 		$this->checkIfAllReady();
+		return true;
 	}
 
 	/**
@@ -146,6 +160,7 @@ class ComplexJob implements \ArrayAccess {
 	 * @return void
 	 */
 	protected function checkIfAllReady() {
+		$this->checkQueue();
 		if ($this->resultsNum >= $this->jobsNum) {
 			$this->jobs  = [];
 			$this->state = self::STATE_DONE;
@@ -155,6 +170,29 @@ class ComplexJob implements \ArrayAccess {
 			if (!$this->keep && $this->resultsNum >= $this->jobsNum) {
 				$this->cleanup();
 			}
+		}
+	}
+
+	public function checkQueue() {
+		if ($this->queue === null) {
+			return;
+		}
+		while (!$this->queue->isEmpty()) {
+			if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
+				return;
+			}
+			list ($name, $cb) = $this->queue->shift();
+			$this->addJob($name, $cb);
+		}
+		$this->more();
+	}
+
+	public function more($cb = null) {
+		if ($cb !== null) {
+			$this->more = $cb;
+		}
+		if ($this->more !== null) {
+			call_user_func($this->more, $this);
 		}
 	}
 
@@ -168,7 +206,15 @@ class ComplexJob implements \ArrayAccess {
 		if (isset($this->jobs[$name])) {
 			return false;
 		}
-		$this->jobs[$name] = CallbackWrapper::wrap($cb);
+		$cb = CallbackWrapper::wrap($cb);
+		if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
+			if ($this->queue === null) {
+				$this->queue = new \SplStack;
+			}
+			$this->queue->push([$name, $cb]);
+			return true;
+		}
+		$this->jobs[$name] = $cb;
 		++$this->jobsNum;
 		if (($this->state === self::STATE_RUNNING) || ($this->state === self::STATE_DONE)) {
 			$this->state = self::STATE_RUNNING;

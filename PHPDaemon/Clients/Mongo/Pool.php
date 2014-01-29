@@ -1006,7 +1006,7 @@ class Pool extends Client {
 		}
 
 		if (!isset($doc['_id'])) {
-			$doc['_id'] = new \MongoId();
+			$doc['_id'] = new MongoId();
 		}
 
 		$this->request(self::OP_INSERT,
@@ -1052,7 +1052,7 @@ class Pool extends Client {
 
 		foreach ($docs as &$doc) {
 			if (!isset($doc['_id'])) {
-				$doc['_id'] = new \MongoId();
+				$doc['_id'] = new MongoId();
 			}
 
 			$bson .= bson_encode($doc);

@@ -21,6 +21,8 @@ class Route {
 	 */
 	public $appInstance;
 
+	protected $running = false;
+
 	/**
 	 * Called when client connected.
 	 * @param \PHPDaemon\Servers\WebSocket\Connection $client Remote client
