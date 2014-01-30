@@ -42,7 +42,7 @@ abstract class Generic {
 
 	/**
 	 * Collections of childrens
-	 * @var array
+	 * @var array|Collection[]
 	 */
 	protected $collections = [];
 
