@@ -32,7 +32,7 @@ class DeferredEvent {
 
 	/**
 	 * Stack of listeners
-	 * @var object \PHPDaemon\Structures\StackCallbacks
+	 * @var \PHPDaemon\Structures\StackCallbacks
 	 */
 	protected $listeners;
 
@@ -75,7 +75,7 @@ class DeferredEvent {
 	/**
 	 * Constructor
 	 * @param $cb
-	 * @return \DeferredEvent
+	 * @return DeferredEvent
 	 */
 	public function __construct($cb) {
 		$this->state     = self::STATE_WAITING;
