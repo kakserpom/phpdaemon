@@ -123,7 +123,7 @@ class Daemon {
 
 	/**
 	 * Current thread object
-	 * @var \PHPDaemon\Thread\*
+	 * @var \PHPDaemon\Thread\Master|\PHPDaemon\Thread\IPC|\PHPDaemon\Thread\Worker
 	 */
 	public static $process;
 

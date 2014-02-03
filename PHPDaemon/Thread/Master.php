@@ -27,13 +27,13 @@ class Master extends Generic {
 	public $reload = false;
 	/** @var int */
 	public $connCounter = 0;
-	/** @var */
+	/** @var StackCallbacks */
 	public $callbacks;
-	/** @var */
+	/** @var Collection */
 	public $workers;
-	/** @var */
+	/** @var Collection */
 	public $ipcthreads;
-	/** @var */
+	/** @var EventBase */
 	public $eventBase;
 	/** @var */
 	public $eventBaseConfig;
@@ -237,6 +237,7 @@ class Master extends Generic {
 			$thread = new Worker;
 			$this->workers->push($thread);
 			$this->callbacks->push(function ($self) use ($thread) {
+                //@check - is it possible to run iterate of main event loop without child termination?
 				$thread->start();
 				$pid = $thread->getPid();
 				if ($pid < 0) {
