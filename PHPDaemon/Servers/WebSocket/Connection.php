@@ -354,7 +354,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 		$this->handshaked = true;
 		if (is_callable([$this->route, 'onHandshake'])) {
-			$this->onSleep();
+			$this->onWakeup();
 			$this->route->onHandshake();
 			$this->onSleep();
 		}
