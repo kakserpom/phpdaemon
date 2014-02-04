@@ -44,19 +44,19 @@ trait Sessions {
 	 */
 	public function onSessionStartEvent() {
 		return function ($sessionStartEvent) {
-			/** @var DeferredEventCmp $sessionStartEvent */
+			/** @var \PHPDaemon\Core\DeferredEvent $sessionStartEvent */
 			$name = ini_get('session.name');
 			$sid = $this->getCookieStr($name);
 			if ($sid === '') {
-				$this->sessionStartNew(function () use ($sessionStartEvent) {
-					$sessionStartEvent->setResult(true);
+				$this->sessionStartNew(function ($success) use ($sessionStartEvent) {
+					$sessionStartEvent->setResult($success);
 				});
 				return;
 			}
 			$this->onSessionRead(function ($session) use ($sessionStartEvent) {
-				if (!$this->getSessionState()) {
-					$this->sessionStartNew(function () use ($sessionStartEvent) {
-						$sessionStartEvent->setResult(true);
+				if ($this->getSessionState() === null) {
+					$this->sessionStartNew(function ($success) use ($sessionStartEvent) {
+						$sessionStartEvent->setResult($success);
 					});
 					return;
 				}
@@ -72,23 +72,21 @@ trait Sessions {
 	public function onSessionReadEvent() {
 
 		return function ($sessionEvent) {
-			/** @var DeferredEventCmp $sessionEvent */
+			/** @var \PHPDaemon\Core\DeferredEvent $sessionEvent */
 			$name = ini_get('session.name');
 			$sid  = $this->getCookieStr($name);
 			if ($sid === '') {
-				$sessionEvent->setResult();
+				$sessionEvent->setResult(false);
 				return;
 			}
-			if ($this->getSessionState()) {
-				$sessionEvent->setResult();
+			if ($this->getSessionState() !== null) { //empty session is the session too
+				$sessionEvent->setResult(true);
 				return;
 			}
 
 			$this->sessionRead($sid, function ($data) use ($sessionEvent) {
-				if ($data !== false) {
-					$this->sessionDecode($data);
-				}
-				$sessionEvent->setResult();
+				$canDecode = $data !== false && $this->sessionDecode($data);
+				$sessionEvent->setResult($canDecode);
 			});
 		};
 	}
