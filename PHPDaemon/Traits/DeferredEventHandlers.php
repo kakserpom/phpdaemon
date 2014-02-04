@@ -30,7 +30,7 @@ trait DeferredEventHandlers {
 			return $this->{$event};
 		}
 		if (!method_exists($this, $event . 'Event')) {
-			throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
+			throw new \PHPDaemon\Exceptions\UndefinedEventCalled('Undefined event called: ' . get_class($this). '->' . $event);
 		}
 		$e = new DeferredEvent($this->{$event . 'Event'}());
 		$e->name = $event;

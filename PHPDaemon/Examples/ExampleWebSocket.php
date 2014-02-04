@@ -40,7 +40,12 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 	 * @return void
 	 */
 	public function onHandshake() {
-		$this->client->onSessionStart(function ($event) {
+		$this->client->onSessionStart(function ($success) {
+			if (!$success) {
+				//session didn't start
+				return false;
+			}
+			//you can use $session or $this->client->session
 			if (!isset($this->client->session['counter'])) {
 				$this->client->session['counter'] = 0;
 			}
