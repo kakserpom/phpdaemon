@@ -261,64 +261,64 @@ class Worker extends Generic {
 			runkit_function_rename('header', 'header_native');
 
 			function header() {
-				if (!$this->isValidRequest(Daemon::$req)) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$req, 'header'], func_get_args());
+				return call_user_func_array([Daemon::$context, 'header'], func_get_args());
 			}
 
 			runkit_function_rename('is_uploaded_file', 'is_uploaded_file_native');
 
 			function is_uploaded_file() {
-				if (!$this->isValidRequest(Daemon::$req)) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$req, 'isUploadedFile'], func_get_args());
+				return call_user_func_array([Daemon::$context, 'isUploadedFile'], func_get_args());
 			}
 
 			runkit_function_rename('move_uploaded_file', 'move_uploaded_file_native');
 
 			function move_uploaded_file() {
-				if (!$this->isValidRequest(Daemon::$req)) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$req, 'moveUploadedFile'], func_get_args());
+				return call_user_func_array([Daemon::$context, 'moveUploadedFile'], func_get_args());
 			}
 
 			runkit_function_rename('headers_sent', 'headers_sent_native');
 
 			function headers_sent(&$file, &$line) {
-				if (!$this->isValidRequest(Daemon::$req)) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return Daemon::$req->headers_sent($file, $line);
+				return Daemon::$context->headers_sent($file, $line);
 			}
 
 			runkit_function_rename('headers_list', 'headers_list_native');
 
 			function headers_list() {
-				if (!$this->isValidRequest(Daemon::$req)) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return Daemon::$req->headers_list();
+				return Daemon::$context->headers_list();
 			}
 
 			runkit_function_rename('setcookie', 'setcookie_native');
 
 			function setcookie() {
-				if (!$this->isValidRequest(Daemon::$req)) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$req, 'setcookie'], func_get_args());
+				return call_user_func_array([Daemon::$context, 'setcookie'], func_get_args());
 			}
 
 			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
 
 			function register_shutdown_function($cb) {
-				if (!$this->isValidRequest(Daemon::$req)) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return Daemon::$req->registerShutdownFunction($cb);
+				return Daemon::$context->registerShutdownFunction($cb);
 			}
 
 			runkit_function_copy('create_function', 'create_function_native');
@@ -436,10 +436,6 @@ class Worker extends Generic {
 			}
 			clearstatcache(true);
 		}
-	}
-
-	public function isValidRequest($request) {
-		return $request && $request instanceof \PHPDaemon\Request\Generic;
 	}
 
 	/**

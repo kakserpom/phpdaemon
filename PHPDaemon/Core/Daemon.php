@@ -347,12 +347,8 @@ class Daemon {
 		}
 		++$n;
 		Daemon::$obInStack = true;
-		if (
-				Daemon::$config->obfilterauto->value
-				&& (Daemon::$req !== NULL)
-		) {
-			Daemon::$req->out($s, false);
-
+		if (Daemon::$config->obfilterauto->value && Daemon::$context instanceof \PHPDaemon\Request\Generic) {
+			Daemon::$context->out($s, false);
 		}
 		else {
 			Daemon::log('Unexcepted output (len. ' . strlen($s) . '): \'' . $s . '\'');
@@ -375,8 +371,8 @@ class Daemon {
 		}
 		$msg = $e->getMessage();
 		Daemon::log('Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')' . (strlen($msg) ? ': ' . $msg : '') . ".\n" . $e->getTraceAsString());
-		if (Daemon::$req) {
-			Daemon::$req->out('<b>Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')</b>' . (strlen($msg) ? ': ' . $msg : '') . '.<br />');
+		if (Daemon::$context instanceof \PHPDaemon\Request\Generic) {
+			Daemon::$context->out('<b>Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')</b>' . (strlen($msg) ? ': ' . $msg : '') . '.<br />');
 		}
 	}
 
@@ -416,8 +412,8 @@ class Daemon {
 		];
 		$errtype = $errtypes[$errno];
 		Daemon::log($errtype . ': ' . $errstr . ' in ' . $errfile . ':' . $errline . "\n" . Debug::backtrace());
-		if (Daemon::$req) {
-			Daemon::$req->out('<strong>' . $errtype . '</strong>: ' . $errstr . ' in ' . basename($errfile) . ':' . $errline . '<br />');
+		if (Daemon::$context instanceof \PHPDaemon\Request\Generic) {
+			Daemon::$context->out('<strong>' . $errtype . '</strong>: ' . $errstr . ' in ' . basename($errfile) . ':' . $errline . '<br />');
 		}
 	}
 

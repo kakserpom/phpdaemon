@@ -60,6 +60,8 @@ class Pool extends Client {
 	/** @var */
 	public $cache; // object of MemcacheClient
 
+	protected $safeMode = true;
+
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -73,6 +75,17 @@ class Pool extends Client {
 			'port'           => 27017,
 			'maxconnperserv' => 32,
 		];
+	}
+
+	public static function safeModeEnc(&$o) {
+		foreach ($o as $k => &$v) {
+			if (is_array($v)) {
+				static::safeModeEnc($v);
+			} elseif ($v instanceof MongoId) {
+				$v = $v->getPlainObject();
+			}
+		}
+
 	}
 
 	/**
@@ -241,6 +254,9 @@ class Pool extends Client {
 			unset($o['orderby']);
 		}
 
+		if ($this->safeMode) {
+			static::safeModeEnc($o);
+		}
 		$bson = bson_encode($o);
 
 		if (isset($p['parse_oplog'])) {
@@ -326,6 +342,9 @@ class Pool extends Client {
 			$o = $p['where'];
 		}
 		$cb = CallbackWrapper::wrap($cb);
+		if ($this->safeMode) {
+			static::safeModeEnc($o);
+		}
 		$this->request(self::OP_QUERY,
 								pack('V', $p['opts'])
 								. $p['col'] . "\x00"
@@ -394,6 +413,9 @@ class Pool extends Client {
 			$query['query'] = $p['where'];
 		}
 		$cb = CallbackWrapper::wrap($cb);
+		if ($this->safeMode) {
+			static::safeModeEnc($query);
+		}
 		$this->request(self::OP_QUERY, pack('V', $p['opts'])
 			. $e[0] . '.$cmd' . "\x00"
 			. pack('VV', $p['offset'], $p['limit'])
@@ -424,7 +446,9 @@ class Pool extends Client {
 			'nonce'        => $p['nonce'],
 			'key'          => self::getAuthKey($p['user'], $p['password'], $p['nonce']),
 		];
-
+		if ($this->safeMode) {
+			static::safeModeEnc($query);
+		}
 		$this->request(self::OP_QUERY, pack('V', $p['opts'])
 			. $p['dbname'] . '.$cmd' . "\x00"
 			. pack('VV', 0, -1)
@@ -595,6 +619,9 @@ class Pool extends Client {
 		}
 
 		$cb = CallbackWrapper::wrap($cb);
+		if ($this->safeMode) {
+			static::safeModeEnc($query);
+		}
 		$this->request(self::OP_QUERY, pack('V', $p['opts'])
 			. $e[0] . '.$cmd' . "\x00"
 			. pack('VV', $p['offset'], $p['limit'])
@@ -785,6 +812,9 @@ class Pool extends Client {
 		elseif (isset($p['query'])) {
 			$query['query'] = $p['query'];
 		}
+		if ($this->safeMode) {
+			static::safeModeEnc($query);
+		}
 		$cb = CallbackWrapper::wrap($cb);
 		$this->request(self::OP_QUERY, pack('V', $p['opts'])
 			. $e[0] . '.$cmd' . "\x00"
@@ -840,8 +870,9 @@ class Pool extends Client {
 		if (isset($p[$k = 'keyf'])) {
 			$query[$k] = $p[$k];
 		}
-
-
+		if ($this->safeMode) {
+			static::safeModeEnc($query);
+		}
 		$cb = CallbackWrapper::wrap($cb);
 		$this->request(self::OP_QUERY, pack('V', $p['opts'])
 			. $e[0] . '.$cmd' . "\x00"
@@ -1006,9 +1037,11 @@ class Pool extends Client {
 		}
 
 		if (!isset($doc['_id'])) {
-			$doc['_id'] = new MongoId();
+			$doc['_id'] = new \MongoId;
 		}
-
+		if ($this->safeMode) {
+			static::safeModeEnc($doc);
+		}
 		$this->request(self::OP_INSERT,
 								"\x00\x00\x00\x00"
 								. $col . "\x00"
