@@ -475,7 +475,7 @@ class File {
 		};
 		if ($length !== null) {
 			if ($startCb !== null) {
-				if (!call_user_func($startCb, $file, $length, $handler)) {
+				if (!call_user_func($startCb, $this, $length, $handler)) {
 					$handler($this);
 				}
 			}
