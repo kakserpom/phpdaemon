@@ -29,6 +29,7 @@ trait Sessions {
 	protected $sessionFlushing = false;
 	/** @var */
 	protected $sessionFp;
+	protected $sessionPrefix = 'sess_';
 
 	/**
 	 * Is session started?
@@ -98,7 +99,7 @@ trait Sessions {
 	 * @return void
 	 */
 	public function sessionRead($sid, $cb = null) {
-		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'sess_') . basename($sid), 'r+!', function ($fp) use ($cb) {
+		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), $this->sessionPrefix) . basename($sid), 'r+!', function ($fp) use ($cb) {
 			if (!$fp) {
 				call_user_func($cb, false);
 				return;
@@ -164,13 +165,13 @@ trait Sessions {
 	 * @param callable $cb
 	 */
 	protected function sessionStartNew($cb = null) {
-		FileSystem::tempnam(session_save_path(), 'sess_', function ($fp) use ($cb) {
+		FileSystem::tempnam(session_save_path(), $this->sessionPrefix, function ($fp) use ($cb) {
 			if (!$fp) {
 				call_user_func($cb, false);
 				return;
 			}
 			$this->sessionFp = $fp;
-			$this->sessionId = substr(basename($fp->path), 3);
+			$this->sessionId = substr(basename($fp->path), strlen($this->sessionPrefix));
 			$this->setcookie(
 				ini_get('session.name')
 				, $this->sessionId
