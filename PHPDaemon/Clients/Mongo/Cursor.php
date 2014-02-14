@@ -108,6 +108,9 @@ class Cursor implements \Iterator {
 	 * @return void
 	 */
 	public function getMore($number = 0) {
+		if ($this->finished || $this->destroyed) {
+			return;
+		}
 		if (binarySubstr($this->id, 0, 1) === 'c') {
 			$this->conn->pool->getMore($this->col, binarySubstr($this->id, 1), $number, $this->conn);
 		}

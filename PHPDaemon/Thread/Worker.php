@@ -260,7 +260,7 @@ class Worker extends Generic {
 
 			runkit_function_rename('header', 'header_native');
 
-			function header() {
+			function \header() {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
@@ -269,7 +269,7 @@ class Worker extends Generic {
 
 			runkit_function_rename('is_uploaded_file', 'is_uploaded_file_native');
 
-			function is_uploaded_file() {
+			function \is_uploaded_file() {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
@@ -278,7 +278,7 @@ class Worker extends Generic {
 
 			runkit_function_rename('move_uploaded_file', 'move_uploaded_file_native');
 
-			function move_uploaded_file() {
+			function \move_uploaded_file() {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
@@ -287,7 +287,7 @@ class Worker extends Generic {
 
 			runkit_function_rename('headers_sent', 'headers_sent_native');
 
-			function headers_sent(&$file, &$line) {
+			function \headers_sent(&$file, &$line) {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
@@ -296,7 +296,7 @@ class Worker extends Generic {
 
 			runkit_function_rename('headers_list', 'headers_list_native');
 
-			function headers_list() {
+			function \headers_list() {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
@@ -305,7 +305,7 @@ class Worker extends Generic {
 
 			runkit_function_rename('setcookie', 'setcookie_native');
 
-			function setcookie() {
+			function \setcookie() {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
@@ -314,7 +314,7 @@ class Worker extends Generic {
 
 			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
 
-			function register_shutdown_function($cb) {
+			function \register_shutdown_function($cb) {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
@@ -324,7 +324,7 @@ class Worker extends Generic {
 			runkit_function_copy('create_function', 'create_function_native');
 			runkit_function_redefine('create_function', '$arg,$body', 'return __create_function($arg,$body);');
 
-			function __create_function($arg, $body) {
+			function \__create_function($arg, $body) {
 				static $cache = [];
 				static $maxCacheSize = 128;
 				static $sorter;
