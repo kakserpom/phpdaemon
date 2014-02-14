@@ -78,7 +78,7 @@ class Pool extends Client {
 	}
 
 	public static function safeModeEnc(&$o) {
-		foreach ($o as $k => &$v) {
+		foreach ($o as &$v) {
 			if (is_array($v)) {
 				static::safeModeEnc($v);
 			} elseif ($v instanceof MongoId) {
