@@ -4,7 +4,7 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
 class MongoId extends \MongoId {
-	public static function import($id) {
+	public static function import($id, $tolerance = true) {
 		if ($id instanceof static) {
 			return $id;
 		}
@@ -20,6 +20,12 @@ class MongoId extends \MongoId {
 			}
 		} elseif (ctype_alnum($id)) {
 			$id = gmp_strval(gmp_init($id, 62), 16);
+			if (strlen($id) > 24) {
+				return false;
+			}
+			if (strlen($id) < 24) {
+				$id = str_pad($id, 24, '0', STR_PAD_LEFT);
+			}
 		} else {
 			return false;
 		}
@@ -28,6 +34,11 @@ class MongoId extends \MongoId {
 	public function __construct($id = null) {
 		if ($id !== null && strlen($id) < 20 && ctype_alnum($id)) {
 			$id = gmp_strval(gmp_init($id, 62), 16);
+			if (strlen($id) > 24) {
+				$id = 'FFFFFFFFFFFFFFFFFFFFFFFF';
+			} elseif (strlen($id) < 24) {
+				$id = str_pad($id, 24, '0', STR_PAD_LEFT);
+			}
 		}
 		parent::__construct($id);
 	}

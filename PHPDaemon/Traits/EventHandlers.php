@@ -56,7 +56,42 @@ trait EventHandlers {
 	 * @return void
 	 */
 	public function trigger() {
-		return call_user_func_array([$this, 'event'], func_get_args());
+		$args = func_get_args();
+		$name = array_shift($args);
+		if ($this->addThisToEvents) {
+			array_unshift($args, $this);
+		}
+		if (isset($this->eventHandlers[$name])) {
+			$this->lastEventName = $name;
+			foreach ($this->eventHandlers[$name] as $cb) {
+				call_user_func_array($cb, $args);
+			}
+		}
+		return $this;
+	}
+
+	/**
+	 * Propagate event
+	 * @param string Event name
+	 * @param mixed  ... variable set of arguments ...
+	 * @return void
+	 */
+	public function triggerAndCount() {
+		$args = func_get_args();
+		$name = array_shift($args);
+		if ($this->addThisToEvents) {
+			array_unshift($args, $this);
+		}
+		$cnt = 0;
+		if (isset($this->eventHandlers[$name])) {
+			$this->lastEventName = $name;
+			foreach ($this->eventHandlers[$name] as $cb) {
+				if (call_user_func_array($cb, $args) !== 0) {
+					++$cnt;
+				}
+			}
+		}
+		return $cnt;
 	}
 
 	/**
