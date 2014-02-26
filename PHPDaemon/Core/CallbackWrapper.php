@@ -126,10 +126,6 @@ class CallbackWrapper {
 		if ($cb === null) {
 			return null;
 		}
-		if (!is_callable($cb)) {
-			\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump($cb));
-
-		}
 		return new static($cb, Daemon::$context, $timeout);
 	}
 
@@ -158,8 +154,13 @@ class CallbackWrapper {
 			return call_user_func_array($this->cb, func_get_args());
 		}
 		$this->context->onWakeup();
-		$result = call_user_func_array($this->cb, func_get_args());
-		$this->context->onSleep();
-		return $result;
+		try {
+			$result = call_user_func_array($this->cb, func_get_args());
+			$this->context->onSleep();
+			return $result;
+		} catch (\Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+			$this->context->onSleep();
+		} 
 	}
 }
