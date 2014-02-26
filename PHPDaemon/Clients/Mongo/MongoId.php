@@ -4,7 +4,7 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
 class MongoId extends \MongoId {
-	public static function import($id, $tolerance = true) {
+	public static function import($id) {
 		if ($id instanceof static) {
 			return $id;
 		}
@@ -19,7 +19,7 @@ class MongoId extends \MongoId {
 				return false;
 			}
 		} elseif (ctype_alnum($id)) {
-			$id = gmp_strval(gmp_init($id, 62), 16);
+			$id = gmp_strval(gmp_init(strrev($id), 62), 16);
 			if (strlen($id) > 24) {
 				return false;
 			}
@@ -33,7 +33,7 @@ class MongoId extends \MongoId {
 	}
 	public function __construct($id = null) {
 		if ($id !== null && strlen($id) < 20 && ctype_alnum($id)) {
-			$id = gmp_strval(gmp_init($id, 62), 16);
+			$id = gmp_strval(gmp_init(strrev($id), 62), 16);
 			if (strlen($id) > 24) {
 				$id = 'FFFFFFFFFFFFFFFFFFFFFFFF';
 			} elseif (strlen($id) < 24) {
@@ -43,7 +43,7 @@ class MongoId extends \MongoId {
 		parent::__construct($id);
 	}
 	public function __toString() {
-		return gmp_strval(gmp_init(parent::__toString(), 16), 62);
+		return strrev(gmp_strval(gmp_init(parent::__toString(), 16), 62));
 	}
 	public function toHex() {
 		return parent::__toString();

@@ -26,7 +26,7 @@ class StackCallbacks extends \SplStack {
 
 	/**
 	 * Executes one callback from the top with given arguments.
-	 * @return void
+	 * @return boolean
 	 */
 	public function executeOne() {
 		if ($this->isEmpty()) {

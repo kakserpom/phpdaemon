@@ -164,7 +164,8 @@ class Connection extends ClientConnection
 				elseif ($cur) {
 					call_user_func($cur->callback, $cur);
 				}
-				unset($this->requests[$id], $req);
+				unset($this->requests[$id]);
+				$req = null;
 			}
 		}
 		goto start;

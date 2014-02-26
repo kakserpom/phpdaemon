@@ -32,23 +32,34 @@ class Cursor implements \Iterator {
 	/** @var */
 	public $callback;
 
+	protected $pos = 0;
+
+	protected $keep = false;
+
 	public function error() {
 		return isset($this->items['$err']) ? $this->items['$err'] : false;
+	}
+	public function keep($bool = true) {
+		$this->keep = (bool) $bool;
 	}
 	public function rewind() {
 		reset($this->items);
 	}
   
 	public function current() {
-		return isset($this->items[0]) ? $this->items[0] : null;
+		return isset($this->items[$this->pos]) ? $this->items[$this->pos] : null;
 	}
   
 	public function key() {
-		return key($this->items);
+		return $this->pos;
 	}
   
 	public function next() {
-		array_shift($this->items);
+		if ($this->keep) {
+			++$this->pos;
+		} else {
+			array_shift($this->items);
+		}
 	}
 
 	public function grab() {
@@ -58,7 +69,7 @@ class Cursor implements \Iterator {
 	}
   
 	public function valid() {
-		$key = key($this->items);
+		$key = isset($this->items[$this->pos]) ? $this->items[$this->pos] :null;
 		return ($key !== NULL && $key !== FALSE);
 	}
 

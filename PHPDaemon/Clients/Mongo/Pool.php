@@ -357,7 +357,6 @@ class Pool extends Client {
 				}
 				$conn->requests[$reqId] = [$p['col'], $cb, true];
 			});
-
 	}
 
 	/**
@@ -944,7 +943,10 @@ class Pool extends Client {
 		if ($flags) {
 			//if (!isset($data['_id'])) {$data['_id'] = new MongoId();}
 		}
-
+		if ($this->safeMode) {
+			static::safeModeEnc($cond);
+			static::safeModeEnc($data);
+		}
 		$this->request(self::OP_UPDATE,
 			"\x00\x00\x00\x00"
 			. $col . "\x00"
