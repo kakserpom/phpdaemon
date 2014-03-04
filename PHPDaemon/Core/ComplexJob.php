@@ -47,8 +47,8 @@ class ComplexJob implements \ArrayAccess {
 	public $state;
 
 	/**
-	 * Hash of results
-	 * @var array [jobname -> result, ...]
+	 * Hash of jobs
+	 * @var array [jobname -> callback, ...]
 	 */
 	public $jobs = [];
 
@@ -94,7 +94,12 @@ class ComplexJob implements \ArrayAccess {
 	public function offsetSet($j, $v) {
 		$this->setResult($j, $v);
 	}
-	public function offsetUnset($j) {}
+	public function offsetUnset($j) {
+		unset($this->results[$j]);
+	}
+	public function getResults() {
+		return $this->results;
+	}
 	/**
 	 * Keep
 	 * @param boolean Keep?

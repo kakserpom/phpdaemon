@@ -1,6 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\Mongo;
 
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Clients\Mongo\Cursor;
 use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
@@ -97,6 +98,9 @@ class Connection extends ClientConnection
 				$id            = (int)$this->hdr['responseTo'];
 				if (isset($this->requests[$id])) {
 					$req = $this->requests[$id];
+					if (sizeof($req) === 1) { // get more
+						$r['cursorId'] = $req[0];
+					}
 				}
 				else {
 					$req = false;

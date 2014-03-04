@@ -1123,6 +1123,10 @@ class Pool extends Client {
 			$cond = new \MongoCode($cond);
 		}
 
+		if ($this->safeMode && is_array($cond)) {
+			static::safeModeEnc($cond);
+		}
+
 		$this->request(self::OP_DELETE,
 					   "\x00\x00\x00\x00"
 					   . $col . "\x00"
