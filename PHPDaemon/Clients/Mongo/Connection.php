@@ -143,6 +143,7 @@ class Connection extends ClientConnection
 							$doc['ts'] = $tsdata['sec'].' '.$tsdata['inc'];
 						}
 						$cur->items[] = $doc;
+						++$cur->counter;
 					}
 					else {
 						$items[] = $doc;

@@ -32,6 +32,8 @@ class Cursor implements \Iterator {
 	/** @var */
 	public $callback;
 
+	public $counter = 0;
+
 	protected $pos = 0;
 
 	protected $keep = false;
