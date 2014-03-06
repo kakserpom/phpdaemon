@@ -90,9 +90,8 @@ class Connection extends ClientConnection {
 			return;
 		}
 		$this->sendCommand('AUTH', [$this->password], function () {
-			$ret = &$this->result[0];
-			if ($ret !== 'OK') {
-				$this->log('Auth. error: ' . json_encode($ret));
+			if ($this->result !== 'OK') {
+				$this->log('Auth. error: ' . json_encode($this->result));
 				$this->finish();
 			}
 			parent::onReady();
