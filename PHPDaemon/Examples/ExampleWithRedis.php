@@ -26,6 +26,11 @@ class ExampleWithRedis extends \PHPDaemon\Core\AppInstance {
 	 */
 	public function onReady() {
 		$this->redis = Pool::getInstance();
+
+		/*$this->redis->eval("return {'a','b','c', {'d','e','f', {'g','h','i'}} }",0, function($redis) {
+			Daemon::log(Debug::dump($redis->result));
+		});*/
+
 		$this->redis->subscribe('te3st', function($redis) {
 			Daemon::log(Debug::dump($redis->result));
 		});
@@ -78,7 +83,6 @@ class ExampleWithRedisRequest extends Generic {
 		$this->appInstance->redis->lpush('mylist', microtime(true)); // just pushing something
 
 		$job('testquery', function ($name, $job)  { // registering job named 'testquery'
-
 			$this->appInstance->redis->lrange('mylist', 0, 10, function ($conn) use ($name, $job) { // calling lrange Redis command
 
 				/**

@@ -3,6 +3,7 @@ namespace PHPDaemon\Clients\Redis;
 
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
 
 /**
@@ -31,17 +32,23 @@ class Connection extends ClientConnection {
 	 */
 	protected $key;
 
-	/**
-	 * Current result length
-	 * @var integer
-	 */
-	protected $resultLength = 0;
+
+	protected $stack = [];
+	
+	protected $ptr;
 
 	/**
 	 * Current value length
 	 * @var integer
 	 */
 	protected $valueLength = 0;
+
+
+	/**
+	 * Current level length
+	 * @var integer
+	 */
+	protected $levelLength = null;
 
 	/**
 	 * EOL
@@ -207,37 +214,82 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	protected function onPacket() {
+		$this->result = $this->ptr;
+		if (($mtype = $this->isSubMessage()) !== false) { // sub callback
+			$chan = $this->result[1];
+			if ($mtype === 'pmessage') {
+				$t = $this->psubscribeCb;
+			} else {
+				$t = $this->subscribeCb;
+			}
+			if (isset($t[$chan])) {
+				foreach ($t[$chan] as $cb) {
+					if (is_callable($cb)) {
+						call_user_func($cb, $this);
+					}
+				}
+			}
+		}
+		else { // request callback
+			$this->onResponse->executeOne($this);
+		}
+		$this->checkFree();
+		$this->result       = null;
+		$this->error        = false;
+	}
+
+	public function pushValue($val) {
+		if (is_array($this->ptr)) {
+			$this->ptr[] = $val;
+			$this->popLevelTry();
+		} else {
+			$this->ptr = $val;
+		}
+	}
+
+	public function pushLevel($length) {
+		$ptr = [];
+		
+		if (is_array($this->ptr)) {
+			$this->ptr[] =& $ptr;
+		} else {
+			$this->ptr =& $ptr;
+		}
+
+		$this->ptr =& $ptr;
+		$this->stack[] = [&$ptr, $length];
+		$this->levelLength = $length;
+		$this->ptr =& $ptr;
+	}
+	public function popLevelTry() {
+		start:
+		if (sizeof($this->ptr) < $this->levelLength) {
+			return;
+		}
+		array_pop($this->stack);
+		if (!sizeof($this->stack)) {
+			$this->levelLength = null;
+			$this->onPacket();
+			$this->ptr =& $dummy;
+			$this->ptr = null;
+			return;
+		}
+
+		$this->ptr =& $dummy;
+
+		list ($this->ptr, $this->levelLength) = end($this->stack);
+
+		goto start;
+	}
+
+
 	/**
 	 * Called when new data received
 	 * @return void
 	 */
 	protected function onRead() {
 		start:
-		if (($this->result !== null) && (sizeof($this->result) >= $this->resultLength)) {
-			if (($mtype = $this->isSubMessage()) !== false) { // sub callback
-				$chan = $this->result[1];
-				if ($mtype === 'pmessage') {
-					$t = $this->psubscribeCb;
-				} else {
-					$t = $this->subscribeCb;
-				}
-				if (isset($t[$chan])) {
-					foreach ($t[$chan] as $cb) {
-						if (is_callable($cb)) {
-							call_user_func($cb, $this);
-						}
-					}
-				}
-			}
-			else { // request callback
-				$this->onResponse->executeOne($this);
-			}
-			$this->checkFree();
-			$this->resultLength = 0;
-			$this->result       = null;
-			$this->error        = false;
-		}
-
 		if ($this->state === self::STATE_STANDBY) { // outside of packet
 			while (($l = $this->readline()) !== null) {
 				if ($l === '') {
@@ -245,24 +297,16 @@ class Connection extends ClientConnection {
 				}
 				$char = $l{0};
 				if ($char === ':') { // inline integer
-					if ($this->result !== null) {
-						$this->result[] = (int)binarySubstr($l, 1);
-					}
-					else {
-						$this->resultLength = 1;
-						$this->result       = [(int)binarySubstr($l, 1)];
-					}
+					$this->pushValue((int) substr($l, 1));
 					goto start;
 				}
 				elseif (($char === '+') || ($char === '-')) { // inline string
-					$this->resultLength = 1;
 					$this->error        = ($char === '-');
-					$this->result       = [binarySubstr($l, 1)];
+					$this->pushValue(substr($l, 1));
 					goto start;
 				}
 				elseif ($char === '*') { // defines number of elements of incoming array
-					$this->resultLength = (int)substr($l, 1);
-					$this->result       = [];
+					$this->pushLevel((int) substr($l, 1));
 					goto start;
 				}
 				elseif ($char === '$') { // defines size of the data block
@@ -295,7 +339,7 @@ class Connection extends ClientConnection {
 			}
 			$this->state = self::STATE_STANDBY;
 			$this->setWatermark(3);
-			$this->result[] = $value;
+			$this->pushValue($value);
 			goto start;
 		}
 	}
