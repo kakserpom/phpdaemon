@@ -4,6 +4,7 @@ namespace PHPDaemon\Core;
 use PHPDaemon\Config\Entry\Generic;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Thread;
+use PHPDaemon\Utils\DateTime;
 use PHPDaemon\Utils\ShmEntity;
 use PHPDaemon\Utils\Terminal;
 
@@ -329,7 +330,7 @@ class Bootstrap {
 					$status
 					&& ($runmode == 'fullstatus')
 			) {
-				echo 'Uptime: ' . Daemon::date_period_text(filemtime(Daemon::$config->pidfile->value), time()) . "\n";
+				echo 'Uptime: ' . DateTime::diffAsText(filemtime(Daemon::$config->pidfile->value), time()) . "\n";
 
 				Daemon::$shm_wstate = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate');
 
