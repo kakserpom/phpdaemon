@@ -2,6 +2,7 @@
 namespace PHPDaemon\Applications;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Utils\DateTime;
 use PHPDaemon\HTTPRequest\Generic;
 
 /**
@@ -28,7 +29,7 @@ class ServerStatusRequest extends Generic {
 		<title>Server status.</title>
 	</head>
 	<body>
-	<br/>Uptime: <b><?php echo Daemon::date_period_text(Daemon::$startTime, time()); ?></b>
+	<br/>Uptime: <b><?php echo DateTime::diffAsText(Daemon::$startTime, time()); ?></b>
 	<br/><br/><b>State of workers:</b><?php $stat = Daemon::getStateOfWorkers(); ?>
 	<br/>Idle: <?php echo $stat['idle']; ?>
 	<br/>Busy: <?php echo $stat['busy']; ?>
