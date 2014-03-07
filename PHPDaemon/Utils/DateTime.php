@@ -3,25 +3,22 @@ namespace PHPDaemon\Utils;
 
 class DateTime extends \DateTime
 {
-
     /**
-     * create new object from timestamp or available date format
-     * @see http://www.php.net/manual/en/datetime.formats.date.php
+     * Support timestamp and available date format
      *
-     * @param $datetime
-     *
-     * @return static
+     * @param string $time
+     * @param DateTimeZone $timezone
+     * @return DateTime
+     * @link http://php.net/manual/en/datetime.construct.php
      */
-    public static function createObject($datetime)
+    public function __construct($time = 'now', DateTimeZone $timezone = null)
     {
-        if (is_int($datetime)) {
-            $newObject = new static;
-            $newObject->setTimestamp($datetime);
+        if (is_int($time)) {
+            parent::__construct('now', $timezone);
+            $this->setTimestamp($time);
         } else {
-            $newObject = new static($datetime);
+            parent::__construct($time, $timezone);
         }
-
-        return $newObject;
     }
 
     /**
@@ -37,10 +34,10 @@ class DateTime extends \DateTime
     public static function diffAsText($datetime1, $datetime2, $absolute = false)
     {
         if (!($datetime1 instanceof \DateTimeInterface)) {
-            $datetime1 = static::createObject($datetime1);
+            $datetime1 = new static($datetime1);
         }
         if (!($datetime2 instanceof \DateTimeInterface)) {
-            $datetime2 = static::createObject($datetime2);
+            $datetime2 = new static($datetime2);
         }
 
         $interval = $datetime1->diff($datetime2, $absolute);
