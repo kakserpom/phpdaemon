@@ -81,6 +81,14 @@ class StackCallbacks extends \SplStack {
 		return $n;
 	}
 
+	public function toArray() {
+		$arr = [];
+		do {
+			$arr[] = $this->shift();
+		} while (!$this->isEmpty());
+		return $arr;
+	}
+
 	/**
 	 * Shifts all callbacks sequentially
 	 * @return void

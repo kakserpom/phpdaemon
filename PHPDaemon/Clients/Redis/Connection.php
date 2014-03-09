@@ -84,6 +84,7 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function onReady() {
+		$this->ptr =& $this->result;
 		if (!isset($this->password)) {
 			parent::onReady();
 			$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
@@ -241,27 +242,9 @@ class Connection extends ClientConnection {
 	public function pushValue($val) {
 		if (is_array($this->ptr)) {
 			$this->ptr[] = $val;
-			$this->popLevelTry();
 		} else {
 			$this->ptr = $val;
 		}
-	}
-
-	public function pushLevel($length) {
-		$ptr = [];
-		
-		if (is_array($this->ptr)) {
-			$this->ptr[] =& $ptr;
-		} else {
-			$this->ptr =& $ptr;
-		}
-
-		$this->ptr =& $ptr;
-		$this->stack[] = [&$ptr, $length];
-		$this->levelLength = $length;
-		$this->ptr =& $ptr;
-	}
-	public function popLevelTry() {
 		start:
 		if (sizeof($this->ptr) < $this->levelLength) {
 			return;
@@ -282,6 +265,20 @@ class Connection extends ClientConnection {
 		goto start;
 	}
 
+	public function pushLevel($length) {
+		$ptr = [];
+		
+		if (is_array($this->ptr)) {
+			$this->ptr[] =& $ptr;
+		} else {
+			$this->ptr =& $ptr;
+		}
+
+		$this->ptr =& $ptr;
+		$this->stack[] = [&$ptr, $length];
+		$this->levelLength = $length;
+		$this->ptr =& $ptr;
+	}
 
 	/**
 	 * Called when new data received
