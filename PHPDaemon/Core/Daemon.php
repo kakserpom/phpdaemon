@@ -437,7 +437,6 @@ class Daemon {
 		Daemon::$shm_wstate    = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate', true);
 		Daemon::openLogs();
 
-		require 'PHPDaemon/Utils/func.php';
 	}
 
 	/**

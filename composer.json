@@ -29,6 +29,9 @@
     },
     "bin": ["bin/phpd"],
     "autoload": {
-        "psr-0": { "PHPDaemon": "" }
+        "psr-0": { "PHPDaemon": "" },
+        "file": [
+            "PHPDaemon/Utils/func.php"
+        ]
     }
 }
