@@ -30,7 +30,7 @@
     "bin": ["bin/phpd"],
     "autoload": {
         "psr-0": { "PHPDaemon": "" },
-        "file": [
+        "files": [
             "PHPDaemon/Utils/func.php"
         ]
     }
