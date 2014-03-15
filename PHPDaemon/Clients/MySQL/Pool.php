@@ -269,8 +269,34 @@ class Pool extends Client {
 			'\''   => '\\\'',
 			'"'    => '\\"'
 		];
-
 		return strtr($string, $sqlescape);
+	}
+
+	/**
+	 * 
+	 * @param $string
+	 * @return string
+	 */
+	public static function value($mixed) {
+		if (is_string($mixed)) {
+			return '\''. static::escape($mixed) . '\'';
+		} elseif (is_integer($mixed)) {
+			return (string) $mixed;
+		} elseif (is_float($mixed)) {
+			return '\'' . $mixed . '\'';
+		}
+		return 'null'; 
+	}
+
+	public static function values($arr) {
+		if (!is_array($arr)) {
+			return '';
+		}
+		$arr = array_values($arr);
+		foreach ($arr as &$v) {
+			$v = static::value($v);
+		}
+		return implode(',', $arr);
 	}
 
 	/**
