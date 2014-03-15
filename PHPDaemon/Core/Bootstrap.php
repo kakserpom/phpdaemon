@@ -88,6 +88,12 @@ class Bootstrap {
 			Daemon::log('PHP >= 5.4.0 required.');
 			return;
 		}
+
+        //run without composer
+        if (!function_exists('setTimeout')) {
+            require 'PHPDaemon/Utils/func.php';
+        }
+
 		Daemon::initSettings();
 		FileSystem::init();
 		Daemon::$runName = basename($_SERVER['argv'][0]);

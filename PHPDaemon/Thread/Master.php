@@ -55,7 +55,7 @@ class Master extends Generic {
 		class_exists('Timer'); // ensure loading this class
 		gc_enable();
 
-		//$this->eventBase = new EventBase;
+		$this->eventBase = new \EventBase;
 
 		if ($this->eventBase) {
 			$this->registerEventSignals();
