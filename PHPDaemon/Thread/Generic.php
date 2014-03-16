@@ -440,7 +440,12 @@ abstract class Generic {
 	 */
 	protected function sigwait($sec = 0, $nano = 0.3e9) {
 		$siginfo = null;
-		$signo   = @\pcntl_sigtimedwait(array_keys(static::$signals), $siginfo, $sec, $nano);
+
+		if (!function_exists('pcntl_sigtimedwait')) {
+			$signo   = $this->sigtimedwait(array_keys(static::$signals), $siginfo, $sec, $nano);
+		} else {
+			$signo   = @\pcntl_sigtimedwait(array_keys(static::$signals), $siginfo, $sec, $nano);
+		}
 
 		if (is_bool($signo)) {
 			return $signo;
@@ -454,10 +459,17 @@ abstract class Generic {
 
 		return false;
 	}
-}
 
-if (!function_exists('pcntl_sigtimedwait')) { // For Mac OS where missing the orignal function
-	function pcntl_sigtimedwait($signals, $siginfo, $sec, $nano) {
+	/**
+	 * Implementation of pcntl_sigtimedwait for Mac.
+	 *
+	 * @param array Signal
+	 * @param null|array SigInfo
+	 * @param int Seconds
+	 * @param int Nanoseconds
+	 * @return boolean Success
+	 */
+	protected function sigtimedwait($signals, $siginfo, $sec, $nano) {
 		\pcntl_signal_dispatch();
 		if (\time_nanosleep($sec, $nano) === true) {
 			return false;
