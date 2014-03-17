@@ -55,9 +55,8 @@ class Master extends Generic {
 		class_exists('Timer'); // ensure loading this class
 		gc_enable();
 
-		/*if (Daemon::$runworkerMode) {
-			$this->eventBase = new \EventBase;
-		}*/
+		/* This line must be commented according to current libevent binding implementation. May be uncommented in future. */
+		//$this->eventBase = new \EventBase; 
 
 		if ($this->eventBase) {
 			$this->registerEventSignals();

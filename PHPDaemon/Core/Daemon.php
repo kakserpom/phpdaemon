@@ -612,7 +612,6 @@ class Daemon {
 	 * @return array - information.
 	 */
 	public static function getStateOfWorkers() {
-		$bufsize = min(1024, Daemon::SHM_WSTATE_SIZE);
 		$offset  = 0;
 
 		$stat = [
@@ -624,59 +623,53 @@ class Daemon {
 			'init'      => 0,
 			'reloading' => 0,
 		];
-
-		Daemon::$shm_wstate->openAll();
-		$c = 0;
-		foreach (Daemon::$shm_wstate->getSegments() as $shm) {
-			while ($offset < Daemon::SHM_WSTATE_SIZE) {
-				$buf = shmop_read($shm, $offset, $bufsize);
-				for ($i = 0, $buflen = strlen($buf); $i < $buflen; ++$i) {
-					$code = ord($buf[$i]);
-					if ($code >= 100) {
-						// reloaded (shutdown)
-						$code -= 100;
-						if ($code !== Daemon::WSTATE_SHUTDOWN) {
-							++$stat['alive'];
-							if (Daemon::$process instanceof Thread\Master) {
-								Daemon::$process->reloadWorker($offset + $i + 1);
-								++$stat['reloading'];
-								continue;
-							}
+		$readed = 0;
+		$readedStr = '';
+		while (($buf = Daemon::$shm_wstate->read($readed, 1024)) !== false) {
+			$readed += strlen($buf);
+			$readedStr .= $buf;
+			for ($i = 0, $buflen = strlen($buf); $i < $buflen; ++$i) {
+				$code = ord($buf[$i]);
+				if ($code >= 100) {
+					// reloaded (shutdown)
+					$code -= 100;
+					if ($code !== Daemon::WSTATE_SHUTDOWN) {
+						++$stat['alive'];
+						if (Daemon::$process instanceof Thread\Master) {
+							Daemon::$process->reloadWorker($offset + $i + 1);
+							++$stat['reloading'];
+							continue;
 						}
 					}
-					if ($code === 0) {
-						break 2;
-					}
-					elseif ($code === Daemon::WSTATE_IDLE) {
-						// idle
-						++$stat['alive'];
-						++$stat['idle'];
-					}
-					elseif ($code === Daemon::WSTATE_BUSY) {
-						// busy
-						++$stat['alive'];
-						++$stat['busy'];
-					}
-					elseif ($code === Daemon::WSTATE_SHUTDOWN) {
-						// shutdown
-						++$stat['shutdown'];
-					}
-					elseif ($code === Daemon::WSTATE_PREINIT) {
-						// pre-init
-						++$stat['alive'];
-						++$stat['preinit'];
-						++$stat['idle'];
-					}
-					elseif ($code === Daemon::WSTATE_INIT) { // init
-						++$stat['alive'];
-						++$stat['init'];
-						++$stat['idle'];
-					}
-					++$c;
 				}
-				$offset += $bufsize;
+				if ($code === Daemon::WSTATE_IDLE) {
+					// idle
+					++$stat['alive'];
+					++$stat['idle'];
+				}
+				elseif ($code === Daemon::WSTATE_BUSY) {
+					// busy
+					++$stat['alive'];
+					++$stat['busy'];
+				}
+				elseif ($code === Daemon::WSTATE_SHUTDOWN) {
+					// shutdown
+					++$stat['shutdown'];
+				}
+				elseif ($code === Daemon::WSTATE_PREINIT) {
+					// pre-init
+					++$stat['alive'];
+					++$stat['preinit'];
+					++$stat['idle'];
+				}
+				elseif ($code === Daemon::WSTATE_INIT) { // init
+					++$stat['alive'];
+					++$stat['init'];
+					++$stat['idle'];
+				}
 			}
 		}
+		//Daemon::log('readedStr: '.Debug::exportBytes($readedStr, true));
 		return $stat;
 	}
 
