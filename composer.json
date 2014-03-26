@@ -1,8 +1,8 @@
 {
-    "name"  : "kakserpom/phpdaemon",
+    "name"  : "podarok/phpdaemon",
     "type"  : "library",
     "keywords": ["phpdaemon"],
-    "homepage": "https://github.com/kakserpom/phpdaemon",
+    "homepage": "https://github.com/podarok/phpdaemon",
     "license" : "GPL-3.0+",
     "description": "Asynchronous server-side framework for Web and network applications implemented in PHP using libevent. phpDaemon can handle thousands of simultaneous connections.",
     "authors" : [
