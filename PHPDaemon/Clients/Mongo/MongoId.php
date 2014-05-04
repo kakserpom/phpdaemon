@@ -40,7 +40,7 @@ class MongoId extends \MongoId {
 				$id = str_pad($id, 24, '0', STR_PAD_LEFT);
 			}
 		}
-		parent::__construct($id);
+		@parent::__construct($id);
 	}
 	public function __toString() {
 		return strrev(gmp_strval(gmp_init(parent::__toString(), 16), 62));

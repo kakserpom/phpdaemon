@@ -97,7 +97,7 @@ class Connection extends ClientConnection {
 		}
 		$this->writeln('GET ' . $params['uri'] . ' HTTP/' . $params['version']);
 		$this->writeln('Host: ' . $params['host']);
-		if ($this->pool->config->expose->value) {
+		if ($this->pool->config->expose->value && !isset($params['headers']['User-Agent'])) {
 			$this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
 		}
 		if (isset($params['cookie']) && sizeof($params['cookie'])) {
@@ -158,7 +158,7 @@ class Connection extends ClientConnection {
 		}
 		$this->writeln('POST ' . $params['uri'] . ' HTTP/' . $params['version']);
 		$this->writeln('Host: ' . $params['host']);
-		if ($this->pool->config->expose->value) {
+		if ($this->pool->config->expose->value && !isset($params['headers']['User-Agent'])) {
 			$this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
 		}
 		if (isset($params['cookie']) && sizeof($params['cookie'])) {

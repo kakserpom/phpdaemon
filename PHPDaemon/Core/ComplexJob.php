@@ -68,6 +68,9 @@ class ComplexJob implements \ArrayAccess {
 	public $req;
 
 	protected $keep = false;
+	
+
+	protected $more = null;
 
 
 	protected $maxConcurrency = -1;
@@ -179,26 +182,48 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	public function checkQueue() {
-		if ($this->queue === null) {
-			return;
-		}
-		while (!$this->queue->isEmpty()) {
-			if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
-				return;
+		if ($this->queue !== null) {
+			while (!$this->queue->isEmpty()) {
+				if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
+					return;
+				}
+				list ($name, $cb) = $this->queue->shift();
+				$this->addJob($name, $cb);
 			}
-			list ($name, $cb) = $this->queue->shift();
-			$this->addJob($name, $cb);
 		}
-		$this->more();
+		if ($this->more !== null) {
+			$this->more();
+		}
 	}
 
 	public function more($cb = null) {
 		if ($cb !== null) {
 			$this->more = $cb;
+			return $this;
 		}
 		if ($this->more !== null) {
-			call_user_func($this->more, $this);
+			if ($this->more instanceof \Iterator) {
+				iterator:
+				if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
+					return $this;
+				}
+				$it = $this->more;
+				while ($it->valid()) {
+					$this->addJob($it->key(), $it->current());
+					$it->next();
+				}
+			} else {
+				if (($r = call_user_func($this->more, $this)) instanceof \Iterator) {
+					$this->more = $r;
+					goto iterator;
+				}
+			}
+			return $this;
 		}
+	}
+
+	public function isQueueFull() {
+		return $this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency);
 	}
 
 	/**
@@ -236,6 +261,7 @@ class ComplexJob implements \ArrayAccess {
 		$this->listeners = [];
 		$this->results   = [];
 		$this->jobs      = [];
+		$this->more      = null;
 	}
 
 	/**
