@@ -96,6 +96,11 @@ class Connection extends ClientConnection {
 			$params['version'] = '1.1';
 		}
 		$this->writeln('GET ' . $params['uri'] . ' HTTP/' . $params['version']);
+		if (isset($params['proxy'])) {
+			if (isset($params['proxy']['auth'])) {
+				$this->writeln('Proxy-Authorization: basic ' . base64_encode($params['proxy']['auth']['username'] . ':' . $params['proxy']['auth']['password']));
+			}
+		}
 		$this->writeln('Host: ' . $params['host']);
 		if ($this->pool->config->expose->value && !isset($params['headers']['User-Agent'])) {
 			$this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
@@ -107,7 +112,7 @@ class Connection extends ClientConnection {
 			$this->customRequestHeaders($params['headers']);
 		}
 		$this->writeln('');
-		$this->onResponse->push($params['resultcb']);
+		$this->onResponse($params['resultcb']);
 		$this->checkFree();
 	}
 
@@ -157,6 +162,14 @@ class Connection extends ClientConnection {
 			$params['contentType'] = 'application/x-www-form-urlencoded';
 		}
 		$this->writeln('POST ' . $params['uri'] . ' HTTP/' . $params['version']);
+		if (isset($params['proxy'])) {
+			if (isset($params['proxy']['auth'])) {
+				$this->writeln('Proxy-Authorization: basic ' . base64_encode($params['proxy']['auth']['username'] . ':' . $params['proxy']['auth']['password']));
+			}
+		}
+		if (!isset($params['keepalive']) || !$params['keepalive']) {
+			$this->writeln('Connection: close');
+		}
 		$this->writeln('Host: ' . $params['host']);
 		if ($this->pool->config->expose->value && !isset($params['headers']['User-Agent'])) {
 			$this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
@@ -184,8 +197,7 @@ class Connection extends ClientConnection {
 		$this->writeln('');
 		$this->write($body);
 		$this->writeln('');
-		$this->onResponse->push($params['resultcb']);
-		$this->checkFree();
+		$this->onResponse($params['resultcb']);
 	}
 
 	public function getBody() {
@@ -250,7 +262,6 @@ class Connection extends ClientConnection {
 			return; // not enough data yet
 		}
 		body:
-
 		if ($this->chunked) {
 			chunk:
 			if ($this->curChunkSize === null) { // outside of chunk

@@ -47,9 +47,15 @@ class Pool extends Client {
 		if (!isset($params['uri']) || !isset($params['host'])) {
 			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = self::prepareUrl($url);
 		}
-		$ssl = $params['scheme'] === 'https';
-		$this->getConnection(
-			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($ssl ? '#ssl' : ''),
+		if (isset($params['proxy'])) {
+			if ($params['proxy']['type'] === 'http') {
+				$dest = 'tcp://' . $params['proxy']['addr'];
+			}
+		}
+		else {
+			$dest = 'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($params['scheme'] === 'https' ? '#ssl' : '');
+		}
+		$this->getConnection($dest,
 			function ($conn) use ($url, $params) {
 				$conn->get($url, $params);
 			}
@@ -69,13 +75,17 @@ class Pool extends Client {
 		if (!isset($params['uri']) || !isset($params['host'])) {
 			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = self::prepareUrl($url);
 		}
-		$ssl = $params['scheme'] === 'https';
-		$this->getConnection(
-			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($ssl ? '#ssl' : ''),
-			function ($conn) use ($url, $data, $params) {
-				$conn->post($url, $data, $params);
+		if (isset($params['proxy'])) {
+			if ($params['proxy']['type'] === 'http') {
+				$dest = 'tcp://' . $params['proxy']['addr'];
 			}
-		);
+		}
+		else {
+			$dest = 'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($params['scheme'] === 'https' ? '#ssl' : '');
+		}
+		$this->getConnection($dest, function ($conn) use ($url, $data, $params) {
+			$conn->post($url, $data, $params);
+		});
 	}
 
 	/**
