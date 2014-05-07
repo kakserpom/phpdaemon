@@ -509,7 +509,7 @@ class FileSystem {
 	 * @param string $prefix Prefix
 	 * @return string Path
 	 */
-	public static function genRndTempnam($dir, $prefix) {
+	public static function genRndTempnam($dir = null, $prefix = 'php') {
 		if (!$dir) {
 			$dir = sys_get_temp_dir();
 		}

@@ -257,24 +257,31 @@ class Pool extends Client {
 		if ($this->safeMode) {
 			static::safeModeEnc($o);
 		}
-		$bson = bson_encode($o);
+		try {
+			$bson = bson_encode($o);
 
-		if (isset($p['parse_oplog'])) {
-			$bson = str_replace("\x11\$gt", "\x09\$gt", $bson);
-		}
-		$cb = CallbackWrapper::wrap($cb);
-		$this->request(self::OP_QUERY,
-								chr(bindec(strrev($p['opts']))) . "\x00\x00\x00"
-								. $p['col'] . "\x00"
-								. pack('VV', $p['offset'], $p['limit'])
-								. $bson
-								. (isset($p['fields']) ? bson_encode($p['fields']) : '')
-			, true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['col'], $cb, false, isset($p['parse_oplog']), isset($p['tailable'])];
-			});
+			if (isset($p['parse_oplog'])) {
+				$bson = str_replace("\x11\$gt", "\x09\$gt", $bson);
+			}
+			$cb = CallbackWrapper::wrap($cb);
+			$this->request(self::OP_QUERY,
+									chr(bindec(strrev($p['opts']))) . "\x00\x00\x00"
+									. $p['col'] . "\x00"
+									. pack('VV', $p['offset'], $p['limit'])
+									. $bson
+									. (isset($p['fields']) ? bson_encode($p['fields']) : '')
+				, true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['col'], $cb, false, isset($p['parse_oplog']), isset($p['tailable'])];
+				});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $o, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -345,18 +352,25 @@ class Pool extends Client {
 		if ($this->safeMode) {
 			static::safeModeEnc($o);
 		}
-		$this->request(self::OP_QUERY,
-								pack('V', $p['opts'])
-								. $p['col'] . "\x00"
-								. pack('VV', $p['offset'], -1)
-								. bson_encode($o)
-								. (isset($p['fields']) ? bson_encode($p['fields']) : '')
-			, true, null, function($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['col'], $cb, true];
-			});
+		try {
+			$this->request(self::OP_QUERY,
+									pack('V', $p['opts'])
+									. $p['col'] . "\x00"
+									. pack('VV', $p['offset'], -1)
+									. bson_encode($o)
+									. (isset($p['fields']) ? bson_encode($p['fields']) : '')
+				, true, null, function($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['col'], $cb, true];
+				});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $o, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -415,16 +429,23 @@ class Pool extends Client {
 		if ($this->safeMode) {
 			static::safeModeEnc($query);
 		}
-		$this->request(self::OP_QUERY, pack('V', $p['opts'])
-			. $e[0] . '.$cmd' . "\x00"
-			. pack('VV', $p['offset'], $p['limit'])
-			. bson_encode($query)
-			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['col'], $cb, true];
-		});
+		try {
+			$this->request(self::OP_QUERY, pack('V', $p['opts'])
+				. $e[0] . '.$cmd' . "\x00"
+				. pack('VV', $p['offset'], $p['limit'])
+				. bson_encode($query)
+				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['col'], $cb, true];
+			});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -448,16 +469,23 @@ class Pool extends Client {
 		if ($this->safeMode) {
 			static::safeModeEnc($query);
 		}
-		$this->request(self::OP_QUERY, pack('V', $p['opts'])
-			. $p['dbname'] . '.$cmd' . "\x00"
-			. pack('VV', 0, -1)
-			. bson_encode($query)
-			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['dbname'], $cb, true];
-		});
+		try {
+			$this->request(self::OP_QUERY, pack('V', $p['opts'])
+				. $p['dbname'] . '.$cmd' . "\x00"
+				. pack('VV', 0, -1)
+				. bson_encode($query)
+				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['dbname'], $cb, true];
+			});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -473,16 +501,23 @@ class Pool extends Client {
 			'getnonce' => 1,
 		];
 		$cb = CallbackWrapper::wrap($cb);
-		$this->request(self::OP_QUERY, pack('V', $p['opts'])
-			. $p['dbname'] . '.$cmd' . "\x00"
-			. pack('VV', 0, -1)
-			. bson_encode($query)
-			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['dbname'], $cb, true];
-			});
+		try {
+			$this->request(self::OP_QUERY, pack('V', $p['opts'])
+				. $p['dbname'] . '.$cmd' . "\x00"
+				. pack('VV', 0, -1)
+				. bson_encode($query)
+				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['dbname'], $cb, true];
+				});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -545,17 +580,24 @@ class Pool extends Client {
 		$e                      = explode('.', $db, 2);
 		$params['getlasterror'] = 1;
 		$cb = CallbackWrapper::wrap($cb);
-		$this->request(self::OP_QUERY,
-			pack('V', 0)
-			. $e[0] . '.$cmd' . "\x00"
-			. pack('VV', 0, -1)
-			. bson_encode($params)
-			, true, $conn, function ($conn, $reqId = null) use ($db, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$db, $cb, true];
-		});
+		try {
+			$this->request(self::OP_QUERY,
+				pack('V', 0)
+				. $e[0] . '.$cmd' . "\x00"
+				. pack('VV', 0, -1)
+				. bson_encode($params)
+				, true, $conn, function ($conn, $reqId = null) use ($db, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$db, $cb, true];
+			});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage()]);
+			}
+		} 
 	}
 
 	/**
@@ -621,16 +663,23 @@ class Pool extends Client {
 		if ($this->safeMode) {
 			static::safeModeEnc($query);
 		}
-		$this->request(self::OP_QUERY, pack('V', $p['opts'])
-			. $e[0] . '.$cmd' . "\x00"
-			. pack('VV', $p['offset'], $p['limit'])
-			. bson_encode($query)
-			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['col'], $cb, true];
-		});
+		try {
+			$this->request(self::OP_QUERY, pack('V', $p['opts'])
+				. $e[0] . '.$cmd' . "\x00"
+				. pack('VV', $p['offset'], $p['limit'])
+				. bson_encode($query)
+				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['col'], $cb, true];
+			});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -659,16 +708,23 @@ class Pool extends Client {
 		}
 
 		$cb = CallbackWrapper::wrap($cb);
-		$this->request(self::OP_QUERY, pack('V', $p['opts'])
-			. $p['db'] . '.$cmd' . "\x00"
-			. pack('VV', $p['offset'], $p['limit'])
-			. bson_encode(['$eval' => new \MongoCode($code)])
-			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['db'], $cb, true];
-			});
+		try {
+			$this->request(self::OP_QUERY, pack('V', $p['opts'])
+				. $p['db'] . '.$cmd' . "\x00"
+				. pack('VV', $p['offset'], $p['limit'])
+				. bson_encode(['$eval' => new \MongoCode($code)])
+				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['db'], $cb, true];
+				});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -815,16 +871,23 @@ class Pool extends Client {
 			static::safeModeEnc($query);
 		}
 		$cb = CallbackWrapper::wrap($cb);
-		$this->request(self::OP_QUERY, pack('V', $p['opts'])
-			. $e[0] . '.$cmd' . "\x00"
-			. pack('VV', $p['offset'], $p['limit'])
-			. bson_encode($query)
-			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['col'], $cb, true];
-		});
+		try {
+			$this->request(self::OP_QUERY, pack('V', $p['opts'])
+				. $e[0] . '.$cmd' . "\x00"
+				. pack('VV', $p['offset'], $p['limit'])
+				. bson_encode($query)
+				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['col'], $cb, true];
+			});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -873,16 +936,23 @@ class Pool extends Client {
 			static::safeModeEnc($query);
 		}
 		$cb = CallbackWrapper::wrap($cb);
-		$this->request(self::OP_QUERY, pack('V', $p['opts'])
-			. $e[0] . '.$cmd' . "\x00"
-			. pack('VV', $p['offset'], $p['limit'])
-			. bson_encode($query)
-			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['col'], $cb, false];
-			});
+		try {
+			$this->request(self::OP_QUERY, pack('V', $p['opts'])
+				. $e[0] . '.$cmd' . "\x00"
+				. pack('VV', $p['offset'], $p['limit'])
+				. bson_encode($query)
+				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['col'], $cb, false];
+				});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -909,16 +979,23 @@ class Pool extends Client {
 			}
 		}
 		$cb = CallbackWrapper::wrap($cb);
-		$this->request(self::OP_QUERY, pack('V', $p['opts'])
-			. $e[0] . '.$cmd' . "\x00"
-			. pack('VV', $p['offset'], $p['limit'])
-			. bson_encode($query)
-			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
-				if (!$conn) {
-					return;
-				}
-				$conn->requests[$reqId] = [$p['col'], $cb, false];
-			});
+		try {
+			$this->request(self::OP_QUERY, pack('V', $p['opts'])
+				. $e[0] . '.$cmd' . "\x00"
+				. pack('VV', $p['offset'], $p['limit'])
+				. bson_encode($query)
+				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+					if (!$conn) {
+						return;
+					}
+					$conn->requests[$reqId] = [$p['col'], $cb, false];
+				});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		} 
 	}
 
 	/**
@@ -1044,17 +1121,26 @@ class Pool extends Client {
 		if ($this->safeMode) {
 			static::safeModeEnc($doc);
 		}
-		$this->request(self::OP_INSERT,
-								"\x00\x00\x00\x00"
-								. $col . "\x00"
-								. bson_encode($doc)
-		, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
-			if ($cb !== NULL) {
-				$this->lastError($col, $cb, $params, $conn);
-			}
-		});
+		try {
+			$this->request(self::OP_INSERT,
+									"\x00\x00\x00\x00"
+									. $col . "\x00"
+									. bson_encode($doc)
+			, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
+				if ($cb !== NULL) {
+					$this->lastError($col, $cb, $params, $conn);
+				}
+			});
 
-		return $doc['_id'];
+			return $doc['_id'];
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				if ($cb !== null) {
+					call_user_func($cb, ['$err' => $e->getMessage(), '$doc' => $doc]);
+				}
+			}
+		} 
 	}
 
 	/**
@@ -1089,8 +1175,14 @@ class Pool extends Client {
 			if (!isset($doc['_id'])) {
 				$doc['_id'] = new MongoId();
 			}
-
-			$bson .= bson_encode($doc);
+			try {
+				$bson .= bson_encode($doc);
+			} catch (\MongoException $e) {
+				Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+				if ($cb !== null) {
+					call_user_func($cb, ['$err' => $e->getMessage(), '$doc' => $doc]);
+				}
+			} 
 
 			$ids[] = $doc['_id'];
 		}
@@ -1126,20 +1218,26 @@ class Pool extends Client {
 		if ($this->safeMode && is_array($cond)) {
 			static::safeModeEnc($cond);
 		}
-
-		$this->request(self::OP_DELETE,
-					   "\x00\x00\x00\x00"
-					   . $col . "\x00"
-					   . "\x00\x00\x00\x00"
-					   . bson_encode($cond)
-		, false, null, function ($conn, $reqId = null) use ($col, $cb, $params) {
-			if (!$conn) {
-				return;
+		try {
+			$this->request(self::OP_DELETE,
+						   "\x00\x00\x00\x00"
+						   . $col . "\x00"
+						   . "\x00\x00\x00\x00"
+						   . bson_encode($cond)
+			, false, null, function ($conn, $reqId = null) use ($col, $cb, $params) {
+				if (!$conn) {
+					return;
+				}
+				if ($cb !== NULL) {
+					$this->lastError($col, $cb, $params, $conn);
+				}
+			});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $cond]);
 			}
-			if ($cb !== NULL) {
-				$this->lastError($col, $cb, $params, $conn);
-			}
-		});
+		} 
 	}
 
 	/**

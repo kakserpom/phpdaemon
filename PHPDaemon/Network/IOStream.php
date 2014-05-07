@@ -2,6 +2,7 @@
 namespace PHPDaemon\Network;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\Structures\StackCallbacks;
 
@@ -327,10 +328,8 @@ abstract class IOStream {
 		if ($this->priority !== null) {
 			$this->bev->priority = $this->priority;
 		}
-		if ($this->timeout !== null) {
-			$this->setTimeouts($this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
-								$this->timeoutWrite!== null ? $this->timeoutWrite : $this->timeout);
-		}
+		$this->setTimeouts($this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
+							$this->timeoutWrite!== null ? $this->timeoutWrite : $this->timeout);
 		if ($this->bevConnect && ($this->fd === null)) {
 			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port);
 			$this->bev->connect($this->addr);
@@ -902,6 +901,9 @@ abstract class IOStream {
 	 * @return string Readed data
 	 */
 	public function read($n) {
+		if ($n <= 0) {
+			return '';
+		}
 		if (!isset($this->bev)) {
 			return false;
 		}

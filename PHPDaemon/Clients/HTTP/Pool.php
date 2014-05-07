@@ -55,11 +55,13 @@ class Pool extends Client {
 		else {
 			$dest = 'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($params['scheme'] === 'https' ? '#ssl' : '');
 		}
-		$this->getConnection($dest,
-			function ($conn) use ($url, $params) {
-				$conn->get($url, $params);
+		$this->getConnection($dest,	function ($conn) use ($url, $params) {
+			if (!$conn->isConnected()) {
+				call_user_func($params['resultcb'], false);
+				return;
 			}
-		);
+			$conn->get($url, $params);
+		});
 	}
 
 	/**
@@ -84,6 +86,10 @@ class Pool extends Client {
 			$dest = 'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($params['scheme'] === 'https' ? '#ssl' : '');
 		}
 		$this->getConnection($dest, function ($conn) use ($url, $data, $params) {
+			if (!$conn->isConnected()) {
+				call_user_func($params['resultcb'], false);
+				return;
+			}
 			$conn->post($url, $data, $params);
 		});
 	}

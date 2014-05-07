@@ -522,7 +522,7 @@ abstract class Connection extends IOStream {
 		$this->type = 'unix';
 
 		if (!$this->bevConnectEnabled) {
-			$fd = socket_create(\EventUtil::AF_UNIX, \EventUtil::SOCK_STREAM, 0);
+			$fd = socket_create(AF_UNIX, SOCK_STREAM, 0);
 			if (!$fd) {
 				return false;
 			}
@@ -682,13 +682,13 @@ abstract class Connection extends IOStream {
 		if ($l === 4) {
 			$this->addr = $host . ':' . $port;
 			if (!$this->bevConnectEnabled) {
-				$fd = socket_create(\EventUtil::AF_INET, \EventUtil::SOCK_STREAM, \EventUtil::SOL_TCP);
+				$fd = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 			}
 		}
 		elseif ($l === 16) {
 			$this->addr = '[' . $host . ']:' . $port;
 			if (!$this->bevConnectEnabled) {
-				$fd = socket_create(\EventUtil::AF_INET6, \EventUtil::SOCK_STREAM, \EventUtil::SOL_TCP);
+				$fd = socket_create(AF_INET6, SOCK_STREAM, SOL_TCP);
 			}
 		}
 		else {
@@ -701,7 +701,10 @@ abstract class Connection extends IOStream {
 			socket_set_nonblock($fd);
 		}
 		if (!$this->bevConnectEnabled) {
-			@socket_connect($fd, $host, $port);
+			$this->fd = $fd;
+			$this->setTimeouts($this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
+							$this->timeoutWrite!== null ? $this->timeoutWrite : $this->timeout);
+			socket_connect($fd, $host, $port);
 			socket_getsockname($fd, $this->locAddr, $this->locPort);
 		}
 		else {
@@ -763,5 +766,19 @@ abstract class Connection extends IOStream {
 		else {
 			\EventUtil::setSocketOption($this->fd, $level, $optname, $val);
 		}
+	}
+
+	/**
+	 * Called when connection finishes
+	 * @return void
+	 */
+	public function onFinish() {
+		if (!$this->connected) {
+			if ($this->onConnected) {
+				$this->onConnected->executeAll($this);
+				$this->onConnected = null;
+			}
+		}
+		parent::onFinish();
 	}
 }

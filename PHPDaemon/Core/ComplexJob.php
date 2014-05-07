@@ -204,11 +204,8 @@ class ComplexJob implements \ArrayAccess {
 		if ($this->more !== null) {
 			if ($this->more instanceof \Iterator) {
 				iterator:
-				if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
-					return $this;
-				}
 				$it = $this->more;
-				while ($it->valid()) {
+				while (!$this->isQueueFull() && $it->valid()) {
 					$this->addJob($it->key(), $it->current());
 					$it->next();
 				}
@@ -223,7 +220,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	public function isQueueFull() {
-		return $this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency);
+		return $this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum >= $this->maxConcurrency);
 	}
 
 	/**
