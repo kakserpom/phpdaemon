@@ -38,6 +38,10 @@ class Debug {
 			}, $str);
 	}
 
+	public static function prettyJson($m) {
+		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+	}
+
 	public static function proxy($cb, $name = null) {
 		static $i = 0;
 		$n = ++$i;
@@ -100,8 +104,8 @@ class Debug {
 	 * Returns textual backtrace.
 	 * @return string
 	 */
-	public static function backtrace() {
-		if (Daemon::$obInStack) {
+	public static function backtrace($bool = false) {
+		if (Daemon::$obInStack || $bool) {
 			try {
 				throw new \Exception;
 			} catch (\Exception $e) {

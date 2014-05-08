@@ -4,6 +4,7 @@ namespace PHPDaemon\Network;
 use PHPDaemon\BoundSocket;
 use PHPDaemon\Config;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Thread;
 

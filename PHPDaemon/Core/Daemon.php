@@ -2,7 +2,6 @@
 namespace PHPDaemon\Core;
 
 use PHPDaemon\Config;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Thread;
@@ -686,7 +685,6 @@ class Daemon {
 		else {
 			$msg = Debug::dump($args);
 		}
-
 		$mt = explode(' ', microtime());
 
 		//$msg = substr($msg, 0, 1024) . Debug::backtrace();

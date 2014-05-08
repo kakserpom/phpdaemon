@@ -138,6 +138,9 @@ class Pool extends Client {
 			}
 			$cb($conn);
 		}
+		elseif ($this->finished) {
+			call_user_func($cb, false);
+		}
 		else {
 			$this->getConnectionRR($cb);
 		}

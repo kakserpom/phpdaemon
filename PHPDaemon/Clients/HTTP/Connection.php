@@ -293,7 +293,6 @@ class Connection extends ClientConnection {
 				}
 				$n   = $this->curChunkSize - strlen($this->curChunk);
 				$this->curChunk .= $this->read($n);
-				Daemon::log(Debug::dump($n));
 				if ($this->curChunkSize <= strlen($this->curChunk)) {
 					$this->body .= $this->curChunk;
 					$this->curChunkSize = null;
