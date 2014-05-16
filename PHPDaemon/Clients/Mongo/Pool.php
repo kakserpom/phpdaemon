@@ -156,7 +156,13 @@ class Pool extends Client {
 	 */
 	protected function requestCbProducer($opcode, $data, $reply = false, $sentcb = null) {
 		return function ($conn) use ($opcode, $data, $reply, $sentcb) {
-			if ($conn->isFinished()) {
+			if (!$conn || $conn->isFinished()) {
+				if ($this->finished) {
+					if ($sentcb !== null) {
+						call_user_func($sentcb, false);
+					}
+					return;
+				}
 				$this->getConnectionRR($this->requestCbProducer($opcode, $data, $reply, $sentcb));
 				return;
 			}
@@ -275,6 +281,7 @@ class Pool extends Client {
 									. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 				, true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, false, isset($p['parse_oplog']), isset($p['tailable'])];
@@ -364,6 +371,7 @@ class Pool extends Client {
 									. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 				, true, null, function($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -439,6 +447,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -479,6 +488,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['dbname'], $cb, true];
@@ -511,6 +521,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['dbname'], $cb, true];
@@ -591,6 +602,7 @@ class Pool extends Client {
 				. bson_encode($params)
 				, true, $conn, function ($conn, $reqId = null) use ($db, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$db, $cb, true];
@@ -673,6 +685,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -718,6 +731,7 @@ class Pool extends Client {
 				. bson_encode(['$eval' => new \MongoCode($code)])
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['db'], $cb, true];
@@ -763,6 +777,7 @@ class Pool extends Client {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 				if (!$conn) {
+					!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 					return;
 				}
 				$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -881,6 +896,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -946,6 +962,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, false];
@@ -989,6 +1006,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, false];
@@ -1035,6 +1053,7 @@ class Pool extends Client {
 			. bson_encode($data)
 		, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
 			if (!$conn) {
+				!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 				return;
 			}
 			if ($cb !== NULL) {
@@ -1229,6 +1248,7 @@ class Pool extends Client {
 						   . bson_encode($cond)
 			, false, null, function ($conn, $reqId = null) use ($col, $cb, $params) {
 				if (!$conn) {
+					!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 					return;
 				}
 				if ($cb !== NULL) {
@@ -1262,6 +1282,7 @@ class Pool extends Client {
 			. pack('V', $number)
 			. $id, false, $conn, function ($conn, $reqId = null) use ($id) {
 				if (!$conn) {
+					!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 					return;
 				}
 				$conn->requests[$reqId] = [$id];

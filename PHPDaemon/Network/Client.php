@@ -2,6 +2,7 @@
 namespace PHPDaemon\Network;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Network\Pool;
 use PHPDaemon\Network;
@@ -171,6 +172,7 @@ abstract class Client extends Pool {
 			$this->servConn[$url]     = new ObjectStorage;
 			$this->servConnFree[$url] = new ObjectStorage;
 		}
+		//Daemon::log($url . "\n" . Debug::dump($this->finished) . "\n" . Debug::backtrace(true));
 		$conn = $this->connect($url, $cb);
 
 		if (!$conn || $conn->isFinished()) {

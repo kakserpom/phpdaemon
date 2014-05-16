@@ -250,7 +250,7 @@ abstract class Pool extends ObjectStorage {
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown($graceful = false) {
-		return $this->finish();
+		return $this->finish($graceful);
 	}
 
 	/**
@@ -265,20 +265,26 @@ abstract class Pool extends ObjectStorage {
 	 * @return boolean Success
 	 */
 
-	public function finish() {
-		$this->disable();
-
-		$result = true;
-
-		foreach ($this as $conn) {
-			if (!$conn->gracefulShutdown()) {
-				$result = false;
-			}
-		}
-		if ($result && !$this->finished) {
+	public function finish($graceful = false) {
+		if (!$this->finished) {
 			$this->finished = true;
 			$this->onFinish();
 		}
+
+		$this->disable();
+		
+		$result = true;
+
+		foreach ($this as $conn) {
+			if ($graceful) {
+				if (!$conn->gracefulShutdown()) {
+					$result = false;
+				}
+			} else {
+				$conn->finish();
+			}
+		}
+
 		return $result;
 	}
 

@@ -677,7 +677,7 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Finish the session. You shouldn't care about pending buffers, it will be flushed properly.
+	 * Finish the session. You should not worry about buffers, they are going to be flushed properly.
 	 * @return void
 	 */
 	public function finish() {

@@ -48,9 +48,9 @@ abstract class Server extends Pool {
 	 * @return boolean Success
 	 */
 
-	public function finish() {
+	public function finish($graceful = false) {
 		$this->closeBound();
-		return parent::finish();
+		return parent::finish($graceful);
 	}
 
 	/**

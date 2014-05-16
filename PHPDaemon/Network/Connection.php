@@ -7,6 +7,7 @@ use PHPDaemon\Cache\CappedStorage;
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Config;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\IOStream;
 use PHPDaemon\Structures\StackCallbacks;
 
@@ -596,7 +597,7 @@ abstract class Connection extends IOStream {
 		$pton       = @inet_pton($host);
 		if ($pton === false) { // dirty check
 			\PHPDaemon\Clients\DNS\Pool::getInstance()->resolve($host, function ($result) use ($host, $port) {
-				if ($result === false) {
+				if (!$result) {
 					Daemon::log(get_class($this) . '->connectUdp : enable to resolve hostname: ' . $host);
 					$this->onStateEv($this->bev, \EventBufferEvent::ERROR);
 					return;
@@ -655,13 +656,16 @@ abstract class Connection extends IOStream {
 		$fd         = null;
 		if ($pton === false) { // dirty check
 			\PHPDaemon\Clients\DNS\Pool::getInstance()->resolve($this->host, function ($result) use ($host, $port) {
-				if ($result === false) {
+				if (!$result) {
 					Daemon::log(get_class($this) . '->connectTcp : unable to resolve hostname: ' . $host);
 					$this->onStateEv($this->bev, \EventBufferEvent::ERROR);
 					return;
 				}
 				// @todo stack of addrs
 				if (is_array($result)) {
+					if (!sizeof($result)) {
+						return;
+					}
 					srand(Daemon::$process->getPid());
 					$real = $result[rand(0, sizeof($result) - 1)];
 					srand();
