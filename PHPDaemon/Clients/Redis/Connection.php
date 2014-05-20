@@ -114,6 +114,27 @@ class Connection extends ClientConnection {
 		return $this->subscribed;
 	}
 
+	/**
+	 * Magic __call.
+	 * @method $cmd
+	 * @param string $cmd
+	 * @param array $args
+	 * @usage $ .. Command-dependent set of arguments ..
+	 * @usage $ [callback Callback. Optional.
+	 * @example  $redis->lpush('mylist', microtime(true));
+	 * @return void
+	 */
+	public function __call($cmd, $args) {
+		if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
+			$cb = array_pop($args);
+		} else {
+			$cb = null;
+		}
+		reset($args);
+		$cmd = strtoupper($cmd);
+		$this->command($cmd, $args, $cb);
+	}
+
 	public function command($name, $args, $cb = null) {
 		// PUB/SUB handling
 		if (substr($name, -9) === 'SUBSCRIBE') {
