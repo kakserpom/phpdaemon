@@ -2,6 +2,7 @@
 namespace PHPDaemon\DNode;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 /**
  * Generic
@@ -179,7 +180,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 		if (strncmp($m, 'remote_', 7) === 0) {
 			$this->callRemoteArray(substr($m, 7), $args);
 		} else {
-			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
+			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $m);
 		}
 	}
 
