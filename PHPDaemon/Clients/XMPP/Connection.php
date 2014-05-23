@@ -209,29 +209,27 @@ class Connection extends ClientConnection {
 	 * @TODO DESCR
 	 */
 	public function createXMLStream() {
-		$this->xml = new XMLStream();
+		$this->xml = new XMLStream;
 		$this->xml->setDefaultNS('jabber:client');
-		$this->xml->conn = $this;
-		$conn            = $this;
-		$this->xml->addXPathHandler('{http://etherx.jabber.org/streams}features', function ($xml) use ($conn) {
+		$this->xml->addXPathHandler('{http://etherx.jabber.org/streams}features', function ($xml) {
 			/** @var XMLStream $xml */
 			if ($xml->hasSub('starttls') and $this->use_encryption) {
-				$conn->sendXML("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'><required /></starttls>");
+				$this->sendXML("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'><required /></starttls>");
 			}
 			elseif ($xml->hasSub('bind') and $this->authorized) {
 				$id = $this->getId();
-				$this->iqSet('<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><resource>' . $this->path . '</resource></bind>', function ($xml) use ($conn) {
+				$this->iqSet('<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><resource>' . $this->path . '</resource></bind>', function ($xml) {
 					if ($xml->attrs['type'] == 'result') {
-						$conn->fulljid = $xml->sub('bind')->sub('jid')->data;
+						$this->fulljid = $xml->sub('bind')->sub('jid')->data;
 						$jidarray      = explode('/', $this->fulljid);
-						$conn->jid     = $jidarray[0];
+						$this->jid     = $jidarray[0];
 					}
-					$conn->iqSet('<session xmlns="urn:ietf:params:xml:ns:xmpp-session" />', function ($xml) use ($conn) {
-						$conn->roster = new XMPPRoster($conn);
-						if ($conn->onConnected) {
-							$conn->connected = true;
-							$conn->onConnected->executeAll($conn, $this);
-							$conn->onConnected = null;
+					$this->iqSet('<session xmlns="urn:ietf:params:xml:ns:xmpp-session" />', function ($xml) {
+						$this->roster = new XMPPRoster($this);
+						if ($this->onConnected) {
+							$this->connected = true;
+							$this->onConnected->executeAll($this);
+							$this->onConnected = null;
 						}
 						$this->event('connected');
 					});
@@ -322,6 +320,9 @@ class Connection extends ClientConnection {
 		}
 		$to     = htmlspecialchars($to);
 		$status = htmlspecialchars($status);
+		$show = htmlspecialchars($show);
+		$type = htmlspecialchars($type);
+		$priority = htmlspecialchars($priority);
 		if ($show == 'unavailable') {
 			$type = 'unavailable';
 		}
@@ -378,6 +379,8 @@ class Connection extends ClientConnection {
 			$vcard['from'] = $xml->attrs['from'];
 			call_user_func($cb, $vcard);
 		});
+		$id = htmlspecialchars($id);
+		$jid = htmlspecialchars($jid);
 		if ($jid) {
 			$this->send('<iq type="get" id="' . $id . '" to="' . $jid . '"><vCard xmlns="vcard-temp" /></iq>');
 		}
