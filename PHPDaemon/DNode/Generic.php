@@ -15,6 +15,8 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	protected $callbacks = [];
+	protected $persistentCallbacks = [];
+	protected $persistentMode = false;
 	protected $counter = 0;
 	protected $remoteMethods = [];
 	protected $localMethods = [];
@@ -31,8 +33,24 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 		foreach ($arr as $k => $v) {
 			$this->localMethods[$k] = $v;
 		}
+		$this->persistentMode = true;
 		$this->callRemote('methods', $arr);
+		$this->persistentMode = false;
+	}
 
+	public static function ensureCallback(&$arg) {
+		if ($arg instanceof \Closure) {
+			return true;
+		}
+		if (is_array($arg) && sizeof($arg) === 2) {
+			if (isset($arg[0]) && $arg[0] instanceof \PHPDaemon\WebSocket\Route) {
+				if (isset($arg[1]) && is_string($arg[1]) && strncmp($arg[1], 'remote_', 7) === 0) {
+					return true;
+				}
+			}
+		}
+		$arg = null;
+		return false;
 	}
 
 	public function extractCallbacks($args, &$list, &$path) {
@@ -43,7 +61,11 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 				array_pop($path);
 			} elseif (is_callable($v)) {
 				$id = ++$this->counter;
-				$this->callbacks[$id] = $v;
+				if ($this->persistentMode) {
+					$this->persistentCallbacks[$id] = $v;
+				} else {
+					$this->callbacks[$id] = $v;
+				}
 				$list[$id] = array_merge($path, [$k]);
 			}
 		}
@@ -111,16 +133,27 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 			return $this;
 		}
 		$method = array_shift($args);
-		if (sizoef($args)) {
+		$p = [
+			'method' => $method,
+		];
+		if (sizeof($args)) {
 			$path = [];
 			$this->fakeIncomingCallExtractCallbacks($args, $callbacks, $path);
-			$p = [
-				'method' => $method,
-				'arguments' => $args,
-				'callbacks' => $callbacks,
-			];
+			$p['arguments'] = $args;
+			$p['callbacks'] = $callbacks;
 		}
 		$this->onFrame(json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n", 'STRING');
+	}
+
+	/**
+	 * Called when session finished.
+	 * @return void
+	 */
+	public function onFinish() {
+		parent::onFinish();
+		$this->remoteMethods = [];
+		$this->localMethods = [];
+		$this->callbacks = [];
 	}
 
 	protected static function setPath(&$m, $path, $val) {
@@ -175,6 +208,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 					unset($r);
 				}
 			}
+
 			if (is_string($m)) {
 				if (isset($this->localMethods[$m])) {
 					call_user_func_array($this->localMethods[$m], $args);
@@ -187,11 +221,18 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 				}
 			}
 			elseif (is_int($m)) {
-				if (!isset($this->callbacks[$m])) {
+				if (isset($this->callbacks[$m])) {
+					if (!call_user_func_array($this->callbacks[$m], $args)) {
+						unset($this->callbacks[$m]);
+					}
+				}
+				elseif (isset($this->persistentCallbacks[$m])) {
+					call_user_func_array($this->persistentCallbacks[$m], $args);
+				}
+				else {
 					$this->handleException(new UndefinedMethodException);
 					continue;
 				}
-				call_user_func_array($this->callbacks[$m], $args);
 			} else {
 				$this->handleException(new ProtoException);
 				continue;

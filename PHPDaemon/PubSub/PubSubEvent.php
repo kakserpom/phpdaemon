@@ -36,7 +36,13 @@ class PubSubEvent extends \SplObjectStorage {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	public function __construct($act = null, $deact = null) {
+		if ($act !== null) {
+			$this->actCb = $act;
+		}
+		if ($deact !== null) {
+			$this->deactCb = $deact;
+		}
 		$this->storage = new \SplObjectStorage;
 	}
 

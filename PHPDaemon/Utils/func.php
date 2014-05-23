@@ -21,6 +21,11 @@ else {
 	}
 }
 }
+if (!function_exists('D')) {
+	function D() {
+		\PHPDaemon\Core\Daemon::log(call_user_func_array('\PHPDaemon\Core\Debug::dump', func_get_args()));
+	}
+}
 if (!function_exists('igbinary_serialize')) {
 	function igbinary_serialize($m) {
 		return serialize($m);

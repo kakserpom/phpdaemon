@@ -21,6 +21,10 @@ class PubSub {
 	 */
 	protected $events = [];
 
+	public function eventExists($id) {
+		return isset($this->events[$id]);
+	}
+
 	/**
 	 * Subcribe to event
 	 * @param string $id   Event ID
