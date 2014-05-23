@@ -327,6 +327,10 @@ class Connection extends ClientConnection {
 					goto start;
 				}
 				elseif ($char === '$') { // defines size of the data block
+					if ($l{1} === '-') {
+						$this->pushValue(null);
+						goto start;
+					}
 					$this->valueLength = (int)substr($l, 1);
 					if ($this->valueLength + 2 > $this->pool->maxAllowedPacket) {
 						$this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
