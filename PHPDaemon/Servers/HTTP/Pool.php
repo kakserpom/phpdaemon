@@ -139,6 +139,6 @@ class Pool extends \PHPDaemon\Network\Server {
 	 */
 	public function onReady() {
 		parent::onReady();
-		$this->WS = Pool::getInstance($this->config->wssname->value, false);
+		$this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance($this->config->wssname->value, false);
 	}
 }

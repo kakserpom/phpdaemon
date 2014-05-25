@@ -2,6 +2,7 @@
 namespace PHPDaemon\DNode;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\Timer;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 /**
@@ -21,12 +22,21 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	protected $counter = 0;
 	protected $remoteMethods = [];
 	protected $localMethods = [];
+	protected $ioMode = false;
+	protected $timer;
 
 	/**
 	 * Called when the connection is handshaked.
 	 * @return void
 	 */
 	public function onHandshake() {
+		if ($this->ioMode) {
+			$this->client->sendFrame('o');
+			$this->timer = setTimeout(function($event) {
+				$this->client->sendFrame('h');
+				$event->timeout();
+			}, 15e6);
+		}
 		parent::onHandshake();
 	}
 
@@ -60,7 +70,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 				$path[] = $k;
 				$this->extractCallbacks($v, $list, $path);
 				array_pop($path);
-			} elseif (is_callable($v)) {
+			} elseif ($v instanceof \Closure) {
 				$id = ++$this->counter;
 				if ($this->persistentMode) {
 					$this->persistentCallbacks[$id] = $v;
@@ -106,11 +116,43 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 		$this->remoteMethods = $methods;
 	}
 
+	public function toJson($p) {
+		return json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+	}
+
+	public function toJsonDebugResursive(&$a) {
+		foreach ($a as $k => &$v) {
+			if ($v instanceof \Closure) {
+				$v = '__CALLBACK__';
+			}
+			elseif (is_array($v)) {
+				if (sizeof($v) === 2 && isset($v[0]) && $v[0] instanceof \PHPDaemon\WebSocket\Route) {
+					if (isset($v[1]) && is_string($v[1]) && strncmp($v[1], 'remote_', 7) === 0) {
+						$v = '__CALLBACK__';
+					}
+				} else {
+					$this->toJsonDebugResursive($v);
+				}
+			}
+		}
+	}
+	public function toJsonDebug($p) {
+		$this->toJsonDebugResursive($p);
+		return $this->toJson($p);
+	}
+
 	public function sendPacket($p) {
 		if (is_string($p['method']) && ctype_digit($p['method'])) {
 			$p['method'] = (int) $p['method'];
 		}
-		$this->client->sendFrame(json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n", 'STRING');
+		if ($this->ioMode) {
+			$this->client->sendFrame('a' . $this->toJson([$this->toJson($p) . "\n"], 'STRING'));
+		} else {
+			$this->client->sendFrame($this->toJson($p) . "\n", 'STRING');
+		}
+		if ($this->timer) {
+			Timer::setTimeout($this->timer);
+		}
 	}
 
 	
@@ -120,7 +162,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 				$path[] = $k;
 				$this->fakeIncomingCallExtractCallbacks($v, $list, $path);
 				array_pop($path);
-			} elseif (is_callable($v)) {
+			} elseif ($v instanceof \Closure) {
 				$id = ++$this->counter;
 				$this->callbacks[$id] = $v;
 				$list[$id] = array_merge($path, [$k]);
@@ -143,7 +185,11 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 			$p['arguments'] = $args;
 			$p['callbacks'] = $callbacks;
 		}
-		$this->onFrame(json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)."\n", 'STRING');
+		if ($this->ioMode) {
+			$this->onFrame($this->toJson([$this->toJson($p) . "\n"], 'STRING'));
+		} else {
+			$this->onFrame($this->toJson($p)."\n", 'STRING');
+		}
 	}
 
 	/**
@@ -152,6 +198,10 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	 */
 	public function onFinish() {
 		parent::onFinish();
+		if ($this->timer) {
+			Timer::remove($this->timer);
+			$this->timer = null;
+		}
 		$this->remoteMethods = [];
 		$this->localMethods = [];
 		$this->callbacks = [];
@@ -183,7 +233,51 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $m);
 		}
 	}
+	public function onPacket($pct) {
+		$m = isset($pct['method']) ? $pct['method'] : null;
+		$args = isset($pct['arguments']) ? $pct['arguments'] : [];
+		if (isset($pct['callbacks']) && is_array($pct['callbacks'])) {
+			foreach ($pct['callbacks'] as $id => $path) {
+				static::setPath($args, $path, [$this, 'remote_' . $id]);
+			}
+		}
+		if (isset($pct['links']) && is_array($pct['links'])) {
+			foreach ($pct['links'] as $link) {
+				static::setPath($args, $link['to'], static::getPath($args, $link['from']));
+				unset($r);
+			}
+		}
 
+		if (is_string($m)) {
+			if (isset($this->localMethods[$m])) {
+				call_user_func_array($this->localMethods[$m], $args);
+			}
+			elseif (method_exists($this, $m . 'Method')) {
+				call_user_func_array([$this, $m . 'Method'], $args);
+			} else {
+				$this->handleException(new UndefinedMethodCalled);
+			}
+		}
+		elseif (is_int($m)) {
+			if (isset($this->callbacks[$m])) {
+				if (!call_user_func_array($this->callbacks[$m], $args)) {
+					unset($this->callbacks[$m]);
+				}
+			}
+			elseif (isset($this->persistentCallbacks[$m])) {
+				if ($name = array_search($this->persistentCallbacks[$m], $this->localMethods, true)) {
+					//D($args);
+					Daemon::log('===>'.$name.'('.$this->toJsonDebug($args).')');
+				}
+				call_user_func_array($this->persistentCallbacks[$m], $args);
+			}
+			else {
+				$this->handleException(new UndefinedMethodCalled);
+			}
+		} else {
+			$this->handleException(new ProtoException);
+		}
+	}
 	/**
 	 * Called when new frame received.
 	 * @param string  Frame's contents.
@@ -196,47 +290,12 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 				continue;
 			}
 			$pct = json_decode($pct, true);
-			$m = isset($pct['method']) ? $pct['method'] : null;
-			$args = isset($pct['arguments']) ? $pct['arguments'] : [];
-			if (isset($pct['callbacks']) && is_array($pct['callbacks'])) {
-				foreach ($pct['callbacks'] as $id => $path) {
-					static::setPath($args, $path, [$this, 'remote_' . $id]);
-				}
-			}
-			if (isset($pct['links']) && is_array($pct['links'])) {
-				foreach ($pct['links'] as $link) {
-					static::setPath($args, $link['to'], static::getPath($args, $link['from']));
-					unset($r);
-				}
-			}
-
-			if (is_string($m)) {
-				if (isset($this->localMethods[$m])) {
-					call_user_func_array($this->localMethods[$m], $args);
-				}
-				elseif (is_callable($c = [$this, $m . 'Method'])) {
-					call_user_func_array($c, $args);
-				} else {
-					$this->handleException(new UndefinedMethodException);
-					continue;
-				}
-			}
-			elseif (is_int($m)) {
-				if (isset($this->callbacks[$m])) {
-					if (!call_user_func_array($this->callbacks[$m], $args)) {
-						unset($this->callbacks[$m]);
-					}
-				}
-				elseif (isset($this->persistentCallbacks[$m])) {
-					call_user_func_array($this->persistentCallbacks[$m], $args);
-				}
-				else {
-					$this->handleException(new UndefinedMethodException);
-					continue;
+			if (isset($pct[0])) {
+				foreach ($pct as $i) {
+					$this->onPacket(json_decode(rtrim($i), true));
 				}
 			} else {
-				$this->handleException(new ProtoException);
-				continue;
+				$this->onPacket($pct);
 			}
 		}
 	}
