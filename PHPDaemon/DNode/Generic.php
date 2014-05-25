@@ -24,6 +24,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	protected $localMethods = [];
 	protected $ioMode = false;
 	protected $timer;
+	protected $traceCalls = false;
 
 	/**
 	 * Called when the connection is handshaked.
@@ -265,9 +266,10 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 				}
 			}
 			elseif (isset($this->persistentCallbacks[$m])) {
-				if ($name = array_search($this->persistentCallbacks[$m], $this->localMethods, true)) {
-					//D($args);
-					Daemon::log('===>'.$name.'('.$this->toJsonDebug($args).')');
+				if ($this->traceCalls) {
+					if ($name = array_search($this->persistentCallbacks[$m], $this->localMethods, true)) {
+						Daemon::log('===>'.$name.'('.$this->toJsonDebug($args).')');
+					}
 				}
 				call_user_func_array($this->persistentCallbacks[$m], $args);
 			}
