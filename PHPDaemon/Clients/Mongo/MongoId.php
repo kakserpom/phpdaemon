@@ -12,6 +12,9 @@ class MongoId extends \MongoId {
 			$id = (string) $id;
 		}
 		elseif (!is_string($id)) {
+			if (is_array($id) && isset($id['$id'])) {
+				return static::import($id['$id']);
+			}
 			return false;
 		}
 		elseif (strlen($id) === 24) {

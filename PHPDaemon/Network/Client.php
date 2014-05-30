@@ -141,7 +141,7 @@ abstract class Client extends Pool {
 				if ($cb) {
 					call_user_func($cb, false);
 				}
-				return true;
+				return false;
 			}
 		}
 		$conn = false;
@@ -156,7 +156,7 @@ abstract class Client extends Pool {
 			}
 			elseif ($storage->count() >= $this->maxConnPerServ) {
 				if (!isset($this->pending[$url])) {
-					$this->pending[$url] = new PriorityQueueCallbacks();
+					$this->pending[$url] = new PriorityQueueCallbacks;
 				}
 				$this->pending[$url]->enqueue($cb, $pri);
 				return true;

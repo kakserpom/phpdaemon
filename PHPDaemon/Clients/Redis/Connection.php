@@ -148,22 +148,22 @@ class Connection extends ClientConnection {
 		}
 		$cb = CallbackWrapper::wrap($cb);
 		if ($name === 'SUBSCRIBE') {
+			$this->subscribed();
 			foreach ($args as $arg) {
 				if (!isset($this->subscribeCb[$arg])) {
 					$this->sendCommand($name, $arg, $opcb);
 				}
 				CallbackWrapper::addToArray($this->subscribeCb[$arg], $cb);
 			}
-			$this->subscribed();
 		}
 		elseif ($name === 'PSUBSCRIBE') {
+			$this->subscribed();
 			foreach ($args as $arg) {
 				if (!isset($this->psubscribeCb[$arg])) {
 					$this->sendCommand($name, $arg, $opcb);
 				}
 				CallbackWrapper::addToArray($this->psubscribeCb[$arg], $cb);
 			}
-			$this->subscribed();
 		}
 		elseif ($name === 'UNSUBSCRIBE') {
 			foreach ($args as $arg) {

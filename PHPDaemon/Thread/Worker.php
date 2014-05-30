@@ -263,12 +263,6 @@ class Worker extends Generic {
 	protected function overrideNativeFuncs() {
 		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
 
-			function session_start() {
-				Daemon::log((string) new \Exception);
-			}
-			$this->override('session_start');
-
-
 			function define($k, $v) {
 				if (defined($k)) {
 					runkit_constant_redefine($k, $v);
