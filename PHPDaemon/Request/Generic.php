@@ -531,7 +531,12 @@ abstract class Generic {
 		}
 
 		while (($c = array_shift($this->shutdownFuncs)) !== NULL) {
-			call_user_func($c, $this);
+			try {
+				call_user_func($c, $this);
+			} catch (\Exception $e) {
+				Daemon::uncaughtExceptionHandler($e);
+				// @TODO: break?
+			}
 		}
 
 		if (!$r) {

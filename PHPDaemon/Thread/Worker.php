@@ -263,6 +263,21 @@ class Worker extends Generic {
 	protected function overrideNativeFuncs() {
 		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
 
+			function session_start() {
+				Daemon::log((string) new \Exception);
+			}
+			$this->override('session_start');
+
+
+			function define($k, $v) {
+				if (defined($k)) {
+					runkit_constant_redefine($k, $v);
+				} else {
+					runkit_constant_add($k, $v);
+				}
+			}
+			$this->override('define');
+
 			function header() {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
@@ -287,13 +302,14 @@ class Worker extends Generic {
 			}
 			$this->override('move_uploaded_file');
 
-			function headers_sent(&$file, &$line) {
+			function headers_sent(&$file = null, &$line = null) {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
 				return Daemon::$context->headers_sent($file, $line);
 			}
-			$this->override('headers_sent');
+
+			//$this->override('headers_sent');
 
 			function headers_list() {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
