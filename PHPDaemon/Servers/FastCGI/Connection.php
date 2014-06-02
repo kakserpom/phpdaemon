@@ -134,7 +134,6 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 				. ' (' . strlen($pad) . ')');*/
 
 		if ($type == self::FCGI_BEGIN_REQUEST) {
-			++Daemon::$process->reqCounter;
 			$u = unpack('nrole/Cflags', $this->content);
 
 			$req                    = new \stdClass();

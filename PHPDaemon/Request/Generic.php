@@ -110,6 +110,7 @@ abstract class Generic {
 	 * @param object $parent                                  Source request.
 	 */
 	public function __construct($appInstance, IRequestUpstream $upstream, $parent = null) {
+		++Daemon::$process->reqCounter;
 		$this->appInstance = $appInstance;
 		$this->upstream    = $upstream;
 		$this->ev          = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
