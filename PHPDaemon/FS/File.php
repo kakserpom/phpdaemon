@@ -3,6 +3,7 @@ namespace PHPDaemon\FS;
 
 use PHPDaemon\Network\IOStream;
 use PHPDaemon\Structures\StackCallbacks;
+use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * File
@@ -143,6 +144,7 @@ class File {
 	 * @return resource
 	 */
 	public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -167,6 +169,7 @@ class File {
 	 * @return resource
 	 */
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -195,6 +198,7 @@ class File {
 	 * @return resource
 	 */
 	public function statRefresh($cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -219,6 +223,7 @@ class File {
 	 * @return resource
 	 */
 	public function statvfs($cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -248,6 +253,7 @@ class File {
 	 * @return resource
 	 */
 	public function sync($cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -268,6 +274,7 @@ class File {
 	 * @return resource
 	 */
 	public function datasync($cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -290,6 +297,7 @@ class File {
 	 * @return resource
 	 */
 	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -331,6 +339,7 @@ class File {
 	 * @return resource
 	 */
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -359,6 +368,7 @@ class File {
 	 * @return resource
 	 */
 	public function touch($mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -393,6 +403,7 @@ class File {
 	 * @return resource
 	 */
 	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -428,6 +439,7 @@ class File {
 	 * @return boolean Success
 	 */
 	public function sendfile($outfd, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -507,6 +519,7 @@ class File {
 	 * @return resource
 	 */
 	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -561,6 +574,7 @@ class File {
 	 * @return boolean Success
 	 */
 	public function readAll($cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -612,6 +626,7 @@ class File {
 	 * @return resource
 	 */
 	public function readAllChunked($cb = null, $chunkcb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
 				call_user_func($cb, $this, false);
@@ -654,6 +669,7 @@ class File {
 	 * @return resource
 	 */
 	public function seek($offset, $cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!\EIO::$supported) {
 			fseek($this->fd, $offset);
 			return false;

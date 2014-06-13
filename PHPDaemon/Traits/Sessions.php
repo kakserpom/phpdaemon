@@ -80,11 +80,10 @@ trait Sessions {
 				$sessionEvent->setResult(false);
 				return;
 			}
-			if ($this->getSessionState() !== null) { //empty session is the session too
+			if ($this->getSessionState() !== null) {
 				$sessionEvent->setResult(true);
 				return;
 			}
-
 			$this->sessionRead($sid, function ($data) use ($sessionEvent) {
 				$canDecode = $data !== false && $this->sessionDecode($data);
 				$sessionEvent->setResult($canDecode);
@@ -260,7 +259,7 @@ trait Sessions {
      * @return array
      * @throws \Exception
      */
-    private function unserialize_php($session_data)
+    protected function unserialize_php($session_data)
     {
         $return_data = array();
         $offset = 0;
@@ -276,7 +275,6 @@ trait Sessions {
             $return_data[$varname] = $data;
             $offset += strlen(serialize($data));
         }
-
         return $return_data;
     }
 }

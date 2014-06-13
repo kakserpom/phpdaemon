@@ -79,7 +79,7 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 	 */
 	public function handleException($e) {
 		$this->client->sendFrame('pong from exception');
-		return true;
+		//return true;
 	}
 }
 

@@ -4,6 +4,7 @@ namespace PHPDaemon\FS;
 use PHPDaemon\Cache\CappedStorage;
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * FileSystem
@@ -184,6 +185,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			call_user_func($cb, $path, FileSystem::statPrepare(@stat($path)));
 			return true;
@@ -201,6 +203,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function unlink($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			$r = unlink($path);
 			if ($cb) {
@@ -220,6 +223,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function rename($path, $newpath, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			$r = rename($path, $newpath);
 			if ($cb) {
@@ -238,6 +242,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			call_user_func($cb, $path, false);
 			return false;
@@ -253,6 +258,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			call_user_func($cb, $path, FileSystem::statPrepare(lstat($path)));
 			return true;
@@ -270,6 +276,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function realpath($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			call_user_func($cb, $path, realpath($path));
 			return true;
@@ -284,6 +291,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function sync($cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			if ($cb) {
 				call_user_func($cb, false);
@@ -300,6 +308,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function syncfs($cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			if ($cb) {
 				call_user_func($cb, false);
@@ -319,6 +328,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			$r = touch($path, $mtime, $atime);
 			if ($cb) {
@@ -337,6 +347,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			$r = rmdir($path);
 			if ($cb) {
@@ -356,6 +367,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			$r = mkdir($path, $mode);
 			if ($cb) {
@@ -375,6 +387,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function readdir($path, $cb = null, $flags, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			$r = glob($path);
 			if ($cb) {
@@ -394,6 +407,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			$fp = fopen($path, 'r+');
 			$r  = $fp && ftruncate($fp, $offset);
@@ -417,6 +431,7 @@ class FileSystem {
 	 * @return boolean Success
 	 */
 	public static function sendfile($outfd, $path, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			call_user_func($cb, $path, false);
 			return false;
@@ -448,6 +463,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function chown($path, $uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			$r = chown($path, $uid);
 			if ($gid !== -1) {
@@ -467,6 +483,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			call_user_func($cb, $path, file_get_contents($path));
 			return true;
@@ -489,6 +506,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function readfileChunked($path, $cb, $chunkcb, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			call_user_func($chunkcb, $path, $r = readfile($path));
 			call_user_func($cb, $r !== false);
@@ -542,6 +560,7 @@ class FileSystem {
 	 * @param $tries
 	 */
 	protected static function tempnamHandler($dir, $prefix, $cb, &$tries) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (++$tries >= 3) {
 			call_user_func($cb, false);
 			return;
@@ -564,6 +583,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function tempnam($dir, $prefix, $cb) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			FileSystem::open(tempnam($dir, $prefix), 'w!', $cb);
 		}
@@ -581,6 +601,7 @@ class FileSystem {
 	 * @return resource
 	 */
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {
+		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			$mode = File::convertFlags($flags, true);
 			$fd   = fopen($path, $mode);

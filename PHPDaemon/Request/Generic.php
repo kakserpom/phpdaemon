@@ -119,7 +119,13 @@ abstract class Generic {
 		}
 		$this->preinit($parent);
 		$this->onWakeup();
-		$this->init();
+		try {
+			$this->init();
+		} catch (\Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+			$this->finish();
+			return;
+		}
 		$this->onSleep();
 	}
 

@@ -130,6 +130,23 @@ class CallbackWrapper {
 	}
 
 	/**
+	 * Wraps callback even without context
+	 * @static
+	 * @param callable $cb
+	 * @param double $timeout = null
+	 * @return object
+	 */
+	public static function forceWrap($cb, $timeout = null) {
+		if ($cb instanceof CallbackWrapper) {
+			return $cb;
+		}
+		if ($cb === null) {
+			return null;
+		}
+		return new static($cb, Daemon::$context, $timeout);
+	}
+
+	/**
 	 * Unwraps callback
 	 * @return callable
 	 */
@@ -151,7 +168,12 @@ class CallbackWrapper {
 			$this->timer = null;
 		}
 		if ($this->context === null || Daemon::$context !== null) {
-			return call_user_func_array($this->cb, func_get_args());
+			try {
+				return call_user_func_array($this->cb, func_get_args());
+			} catch (\Exception $e) {
+				Daemon::uncaughtExceptionHandler($e);
+			}
+			return;
 		}
 		$this->context->onWakeup();
 		try {

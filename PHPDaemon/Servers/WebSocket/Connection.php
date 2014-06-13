@@ -158,7 +158,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 		return $this->session;
 	}
 
-
 	/**
 	 * Called when the request wakes up
 	 * @return void
