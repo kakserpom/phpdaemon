@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Traits;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 
@@ -125,6 +125,7 @@ trait Sessions {
 		$this->sessionFlushing = true;
 		$data                  = $this->sessionEncode();
 		$l                     = strlen($data);
+		$cb = CallbackWrapper::wrap($cb);
 		$this->sessionFp->write($data, function ($file, $result) use ($l, $cb) {
 			$file->truncate($l, function ($file, $result) use ($cb) {
 				$this->sessionFlushing = false;
@@ -226,12 +227,7 @@ trait Sessions {
      *
      * @return string
      */
-    public function serialize_php($array, $safe = true)
-    {
-        // the session is passed as refernece, even if you dont want it to
-        if ($safe) {
-            $array = unserialize(serialize($array));
-        }
+    public function serialize_php($array) {
         $raw = '';
         $line = 0;
         $keys = array_keys($array);
@@ -265,7 +261,8 @@ trait Sessions {
         $offset = 0;
         while ($offset < strlen($session_data)) {
             if (!strstr(substr($session_data, $offset), "|")) {
-                throw new \Exception("invalid session data, remaining: " . substr($session_data, $offset));
+            	return $return_data;
+                //throw new \Exception("invalid session data, remaining: " . substr($session_data, $offset));
             }
             $pos = strpos($session_data, "|", $offset);
             $num = $pos - $offset;

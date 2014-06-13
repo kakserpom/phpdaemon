@@ -50,8 +50,11 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 				$this->client->session['counter'] = 0;
 			}
 			++$this->client->session['counter'];
-			$this->client->sendFrame('counter in session = ' . $this->client->session['counter']);
-			$this->client->sessionCommit($cb);
+			$this->client->sessionCommit(function() use ($cb) {
+				$cb(function() {
+					$this->client->sendFrame('counter in session = ' . $this->client->session['counter']);
+				});
+			});
 		});
 	}
 
@@ -68,7 +71,6 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 					\PHPDaemon\Core\Daemon::log('ExampleWebSocket: \'pong\' received by client.');
 				}
 			);
-			throw new \Exception;
 		}
 	}
 
@@ -78,8 +80,7 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 	 * @return boolean Handled?
 	 */
 	public function handleException($e) {
-		$this->client->sendFrame('pong from exception');
-		//return true;
+		$this->client->sendFrame('exception ...');
 	}
 }
 

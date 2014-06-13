@@ -60,10 +60,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 	const STATE_CONTENT    = 3;
 
 	/**
-	 * State: processing
+	 * State: prehandshake
 	 * @var integer
 	 */
-	const STATE_PROCESSING = 5;
+	const STATE_PREHANDSHAKE = 5;
 
 	/**
 	 * State: handshaked
@@ -340,10 +340,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when we're going to handshake.
-	 * @param $data
 	 * @return boolean Handshake status
 	 */
-	public function handshake($data, $extraHeaders = null) {
+	public function handshake($extraHeaders = null) {
 
 		if (!$this->onHandshake()) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot handshake session for client "' . $this->addr . '"');
@@ -351,13 +350,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 			return false;
 		}
 
-		if (!isset($this->protocol)) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client "' . $this->addr . '"');
-			$this->finish();
-			return false;
-		}
 		// Handshaking...
-		$handshake = $this->protocol->getHandshakeReply($data, $extraHeaders);
+		$handshake = $this->protocol->getHandshakeReply($this->buf, $extraHeaders);
 		if ($handshake === 0) { // not enough data yet
 			return 0;
 		}
@@ -366,25 +360,35 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$this->finish();
 			return false;
 		}
-
 		if ($extraHeaders === null && is_callable([$this->route, 'onBeforeHandshake'])) {
 			$this->onWakeup();
-			$this->route->onBeforeHandshake(function() use ($data) {
+			$this->route->onBeforeHandshake(function($cb) {
 				$h = '';
 				foreach ($this->headers as $k => $line) {
 					if ($k !== 'STATUS') {
 						$h .= $line . "\r\n";
 					}
 				}
-				$this->handshake($data, $h);
+				if ($this->handshake($h)) {
+					if ($cb !== null) {
+						call_user_func($cb);
+					}
+				}
 			});
 			$this->onSleep();
 			return;
 		}
-		
+
+		if (!isset($this->protocol)) {
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client "' . $this->addr . '"');
+			$this->finish();
+			return false;
+		}
 		$this->write($handshake);
+		$this->buf   = '';
 		$this->handshaked = true;
 		$this->headers_sent = true;
+		$this->state = static::STATE_HANDSHAKED;
 		if (is_callable([$this->route, 'onHandshake'])) {
 			$this->onWakeup();
 			$this->route->onHandshake();
@@ -398,7 +402,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @return void
 	 */
 	public function badRequest() {
-		$this->state = self::STATE_ROOT;
+		$this->state = self::STATE_STANDBY;
 		$this->write("400 Bad Request\r\n\r\n<html><head><title>400 Bad Request</title></head><body bgcolor=\"white\"><center><h1>400 Bad Request</h1></center></body></html>");
 		$this->finish();
 	}
@@ -492,7 +496,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 		if ($this->finished) {
 			return;
 		}
-		if ($this->state === self::STATE_ROOT) {
+		if ($this->state === self::STATE_STANDBY) {
 			$this->state = self::STATE_FIRSTLINE;
 		}
 		if ($this->state === self::STATE_FIRSTLINE) {
@@ -513,16 +517,14 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$this->state = self::STATE_CONTENT;
 		}
 		if ($this->state === self::STATE_CONTENT) {
-			$this->state = self::STATE_PROCESSING;
+			$this->state = self::STATE_PREHANDSHAKE;
 		}
 
-		if ($this->state === self::STATE_PROCESSING) {
+		if ($this->state === self::STATE_PREHANDSHAKE) {
 			$this->buf .= $this->read(1024);
-			if (!$this->handshake($this->buf)) {
+			if (!$this->handshake()) {
 				return;
 			}
-			$this->buf   = '';
-			$this->state = self::STATE_HANDSHAKED;
 		}
 		if ($this->state === self::STATE_HANDSHAKED) {
 			if (!isset($this->protocol)) {
@@ -540,7 +542,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @return bool
 	 */
 	protected function httpProcessHeaders() {
-		$this->state = self::STATE_PROCESSING;
+		$this->state = self::STATE_PREHANDSHAKE;
 		if (isset($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS'])) {
 			$str              = strtolower($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS']);
 			$str              = preg_replace($this->extensionsCleanRegex, '', $str);
@@ -663,7 +665,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 				}
 			}
 		}
-D('3');
 		if ($k === 'SET_COOKIE') {
 			$k .= '_' . ++$this->cookieNum;
 		}
