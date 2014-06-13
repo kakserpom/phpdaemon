@@ -11,9 +11,10 @@ class Crypt {
 	 * Generate keccak hash for string with salt
 	 * @param string $str
 	 * @param string $salt
+	 * @param boolean $plain = false
 	 * @return string
 	 */
-	public static function hash($str, $salt = '') {
+	public static function hash($str, $salt = '', $plain = false) {
 		$size = 512;
 		$rounds = 1;
 		if (strncmp($salt, '$', 1) === 0) {
@@ -36,6 +37,9 @@ class Crypt {
 		for ($i = 0; $i < $rounds; ++$i) {
 			$hash = keccak_hash($hash, $size);
 		}
+		if ($plain) {
+            return $hash;
+        }
 		return base64_encode($hash);
 	}
 
