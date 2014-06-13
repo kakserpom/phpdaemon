@@ -654,7 +654,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * @return boolean Success
 	 */
 	public function header($s, $replace = true, $code = false) {
-		if ($code !== null) {
+		if (!$code) {
 			$this->status($code);
 		}
 

@@ -31,7 +31,7 @@ class ProtocolVE extends Protocol {
 	 * @param string Received data (no use in this class)
 	 * @return string Handshaked data
 	 */
-	public function getHandshakeReply($data) {
+	public function getHandshakeReply($data, $extraHeaders = '') {
 		if ($this->onHandshake()) {
 			if (!isset($this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'])) {
 				$this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '';
@@ -48,7 +48,7 @@ class ProtocolVE extends Protocol {
 			if (isset($this->conn->server['HTTP_SEC_WEBSOCKET_PROTOCOL'])) {
 				$reply .= "Sec-WebSocket-Protocol: " . $this->conn->server['HTTP_SEC_WEBSOCKET_PROTOCOL'] . "\r\n";
 			}
-			$reply .= "\r\n";
+			$reply .= $extraHeaders . "\r\n";
 			return $reply;
 		}
 		return false;

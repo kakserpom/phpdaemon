@@ -73,6 +73,8 @@ class Connection extends ClientConnection {
 	 */
 	public $lastURL;
 
+	public $rawHeaders = null;
+
 	/**
 	 * @param string $url
 	 * @param array $params
@@ -106,10 +108,13 @@ class Connection extends ClientConnection {
 			$this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
 		}
 		if (isset($params['cookie']) && sizeof($params['cookie'])) {
-			$this->writeln('Cookie: ' . http_build_query($this->cookie, '', '; '));
+			$this->writeln('Cookie: ' . http_build_query($params['cookie'], '', '; '));
 		}
 		if (isset($params['headers'])) {
 			$this->customRequestHeaders($params['headers']);
+		}
+		if (isset($params['rawHeaders']) && $params['rawHeaders']) {
+			$this->rawHeaders = [];
 		}
 		$this->writeln('');
 		$this->onResponse($params['resultcb']);
@@ -175,7 +180,7 @@ class Connection extends ClientConnection {
 			$this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
 		}
 		if (isset($params['cookie']) && sizeof($params['cookie'])) {
-			$this->writeln('Cookie: ' . http_build_query($this->cookie, '', '; '));
+			$this->writeln('Cookie: ' . http_build_query($params['cookie'], '', '; '));
 		}
 		foreach ($data as $val) {
 			if (is_object($val) && $val instanceof UploadFile) {
@@ -223,7 +228,12 @@ class Connection extends ClientConnection {
 			goto body;
 		}
 		while (($line = $this->readLine()) !== null) {
-			if ($line === '') {
+			if ($line !== '') {
+				if ($this->rawHeaders !== null) {
+					$this->rawHeaders[] = $line;
+				}
+			}
+			else {
 				if (isset($this->headers['HTTP_CONTENT_LENGTH'])) {
 					$this->contentLength = (int)$this->headers['HTTP_CONTENT_LENGTH'];
 				}
@@ -335,6 +345,7 @@ class Connection extends ClientConnection {
 		$this->curChunkSize  = null;
 		$this->chunked       = false;
 		$this->headers       = [];
+		$this->rawHeaders    = null;
 		$this->body          = '';
 		$this->responseCode  = 0;
 		if (!$this->keepalive) {

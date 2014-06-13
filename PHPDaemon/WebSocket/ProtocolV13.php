@@ -46,7 +46,7 @@ class ProtocolV13 extends Protocol {
 	 * @param string Received data (no use in this class)
 	 * @return string Handshaked data
 	 */
-	public function getHandshakeReply($data) {
+	public function getHandshakeReply($data, $extraHeaders = '') {
 		if ($this->onHandshake()) {
 			if (isset($this->conn->server['HTTP_ORIGIN'])) {
 				$this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = $this->conn->server['HTTP_ORIGIN'];
@@ -69,7 +69,7 @@ class ProtocolV13 extends Protocol {
 				$reply .= 'X-Powered-By: phpDaemon/' . Daemon::$version . "\r\n";
 			}
 
-			$reply .= "\r\n";
+			$reply .= $extraHeaders . "\r\n";
 			return $reply;
 		}
 

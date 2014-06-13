@@ -39,8 +39,8 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 	 * Called when the connection is handshaked.
 	 * @return void
 	 */
-	public function onHandshake() {
-		$this->client->onSessionStart(function ($success) {
+	public function onBeforeHandshake($cb) {
+		$this->client->onSessionStart(function ($success) use ($cb) {
 			if (!$success) {
 				//session didn't start
 				return false;
@@ -51,7 +51,7 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 			}
 			++$this->client->session['counter'];
 			$this->client->sendFrame('counter in session = ' . $this->client->session['counter']);
-			$this->client->sessionCommit();
+			$this->client->sessionCommit($cb);
 		});
 	}
 

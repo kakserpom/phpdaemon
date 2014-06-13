@@ -33,6 +33,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $EOL = "\r\n";
 	public $session;
 
+	protected $headers = [];
+
 	/**
 	 * Is this connection running right now?
 	 * @var boolean
@@ -87,6 +89,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 */
 	public $cookie = [];
 
+	protected $headers_sent = false;
+
 
 	/**
 	 * _GET
@@ -99,6 +103,24 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @var null
 	 */
 	public $post = null;
+
+	/**
+	 * Content length from header() method
+	 * @var integer
+	 */
+	protected $contentLength;
+
+	/**
+	 * Number of outgoing cookie-headers
+	 * @var integer
+	 */
+	protected $cookieNum = 0;
+
+	/**
+	 * Replacement pairs for processing some header values in parse_str()
+	 * @var array hash
+	 */
+	public static $hvaltr = ['; ' => '&', ';' => '&', ' ' => '%20'];
 
 	/**
 	 * Called when the stream is handshaked (at low-level), and peer is ready to recv. data
@@ -316,12 +338,13 @@ class Connection extends \PHPDaemon\Network\Connection {
 		return FALSE;
 	}
 
+
 	/**
 	 * Called when we're going to handshake.
 	 * @param $data
 	 * @return boolean Handshake status
 	 */
-	public function handshake($data) {
+	public function handshake($data, $extraHeaders = null) {
 
 		if (!$this->onHandshake()) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot handshake session for client "' . $this->addr . '"');
@@ -334,25 +357,35 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$this->finish();
 			return false;
 		}
-
 		// Handshaking...
-		$handshake = $this->protocol->getHandshakeReply($data);
-
+		$handshake = $this->protocol->getHandshakeReply($data, $extraHeaders);
 		if ($handshake === 0) { // not enough data yet
 			return 0;
 		}
-
 		if (!$handshake) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"');
 			$this->finish();
 			return false;
 		}
-		if (!$this->write($handshake)) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake send failure for client "' . $this->addr . '"');
-			$this->finish();
-			return false;
+
+		if ($extraHeaders === null && is_callable([$this->route, 'onBeforeHandshake'])) {
+			$this->onWakeup();
+			$this->route->onBeforeHandshake(function() use ($data) {
+				$h = '';
+				foreach ($this->headers as $k => $line) {
+					if ($k !== 'STATUS') {
+						$h .= $line . "\r\n";
+					}
+				}
+				$this->handshake($data, $h);
+			});
+			$this->onSleep();
+			return;
 		}
+		
+		$this->write($handshake);
 		$this->handshaked = true;
+		$this->headers_sent = true;
 		if (is_callable([$this->route, 'onHandshake'])) {
 			$this->onWakeup();
 			$this->route->onHandshake();
@@ -555,4 +588,104 @@ class Connection extends \PHPDaemon\Network\Connection {
 		// ----------------------------------------------------------
 		return true;
 	}
+
+	/**
+	 * Set the cookie
+	 * @param string $name         Name of cookie
+	 * @param string $value        Value
+	 * @param integer $maxage      . Optional. Max-Age. Default is 0.
+	 * @param string $path         . Optional. Path. Default is empty string.
+	 * @param bool|string $domain  . Optional. Secure. Default is false.
+	 * @param boolean $secure      . Optional. HTTPOnly. Default is false.
+	 * @param bool $HTTPOnly
+	 * @return void
+	 */
+	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
+		$this->header(
+			'Set-Cookie: ' . $name . '=' . rawurlencode($value)
+			. (empty($domain) ? '' : '; Domain=' . $domain)
+			. (empty($maxage) ? '' : '; Max-Age=' . $maxage)
+			. (empty($path) ? '' : '; Path=' . $path)
+			. (!$secure ? '' : '; Secure')
+			. (!$HTTPOnly ? '' : '; HttpOnly'), false);
+	}
+
+
+	/**
+	 * Send HTTP-status
+	 * @throws RequestHeadersAlreadySent
+	 * @param int $code Code
+	 * @return boolean Success
+	 */
+	public function status($code = 200) {
+		return false;
+	}
+
+	/**
+	 * Send the header
+	 * @param string $s        Header. Example: 'Location: http://php.net/'
+	 * @param boolean $replace Optional. Replace?
+	 * @param bool|int $code   Optional. HTTP response code.
+	 * @throws \PHPDaemon\Request\RequestHeadersAlreadySent
+	 * @return boolean Success
+	 */
+	public function header($s, $replace = true, $code = false) {
+		if ($code) {
+			$this->status($code);
+		}
+
+		if ($this->headers_sent) {
+			throw new RequestHeadersAlreadySent;
+		}
+		$s = strtr($s, "\r\n", '  ');
+
+		$e = explode(':', $s, 2);
+
+		if (!isset($e[1])) {
+			$e[0] = 'STATUS';
+
+			if (strncmp($s, 'HTTP/', 5) === 0) {
+				$s = substr($s, 9);
+			}
+		}
+
+		$k = strtr(strtoupper($e[0]), Generic::$htr);
+
+		if ($k === 'CONTENT_TYPE') {
+			self::parse_str(strtolower($e[1]), $ctype, true);
+			if (!isset($ctype['charset'])) {
+				$ctype['charset'] = $this->upstream->pool->config->defaultcharset->value;
+
+				$s = $e[0] . ': ';
+				$i = 0;
+				foreach ($ctype as $k => $v) {
+					$s .= ($i > 0 ? '; ' : '') . $k . ($v !== '' ? '=' . $v : '');
+					++$i;
+				}
+			}
+		}
+D('3');
+		if ($k === 'SET_COOKIE') {
+			$k .= '_' . ++$this->cookieNum;
+		}
+		elseif (!$replace && isset($this->headers[$k])) {
+			return false;
+		}
+
+		$this->headers[$k] = $s;
+
+		if ($k === 'CONTENT_LENGTH') {
+			$this->contentLength = (int)$e[1];
+		}
+		elseif ($k === 'LOCATION') {
+			$this->status(301);
+		}
+
+		if (Daemon::$compatMode) {
+			is_callable('header_native') ? header_native($s) : header($s);
+		}
+
+		return true;
+	}
+
 }
