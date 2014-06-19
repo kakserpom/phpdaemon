@@ -360,7 +360,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$this->finish();
 			return false;
 		}
-		if ($extraHeaders === null && method_exists([$this->route, 'onBeforeHandshake'])) {
+		if ($extraHeaders === null && method_exists($this->route, 'onBeforeHandshake')) {
 			$this->onWakeup();
 			$this->route->onBeforeHandshake(function($cb) {
 				$h = '';
