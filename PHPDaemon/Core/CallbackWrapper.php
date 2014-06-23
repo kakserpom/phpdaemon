@@ -46,15 +46,19 @@ class CallbackWrapper {
 
 	public function setTimeout($timeout) {
 		if ($timeout !== null) {
-			$this->timer = Timer::add(function ($timer) {
+			$this->timer = Timer::add(function() {
 				$this();
+				if ($this->timer !== null) {
+					Timer::cancelTimeout($this->timer);
+					$this->timer = null;
+				}
 			}, $timeout);
 		}
 	}
 
 	public function cancelTimeout() {
 		if ($this->timer !== null) {
-			$this->timer->free();
+			Timer::remove($this->timer);
 			$this->timer = null;
 		}
 	}
@@ -71,7 +75,7 @@ class CallbackWrapper {
 		$this->cb      = null;
 		$this->context = null;
 		if ($this->timer !== null) {
-			$this->timer->free();
+			Timer::remove($this->timer);
 			$this->timer = null;
 		}
 	}
@@ -119,14 +123,14 @@ class CallbackWrapper {
 	 * @param double $timeout = null
 	 * @return object
 	 */
-	public static function wrap($cb, $timeout = null) {
+	public static function wrap($cb, $timeout = null, $ctx = false) {
 		if ($cb instanceof CallbackWrapper || ((Daemon::$context === null) && ($timeout === null))) {
 			return $cb;
 		}
 		if ($cb === null) {
 			return null;
 		}
-		return new static($cb, Daemon::$context, $timeout);
+		return new static($cb, $ctx !== false ? $ctx : Daemon::$context, $timeout);
 	}
 
 	/**
@@ -160,12 +164,12 @@ class CallbackWrapper {
 	 * @return void
 	 */
 	public function __invoke() {
+		if ($this->timer !== null) {
+			Timer::remove($this->timer);
+			$this->timer = null;
+		}
 		if ($this->cb === null) {
 			return null;
-		}
-		if ($this->timer !== null) {
-			$this->timer->free();
-			$this->timer = null;
 		}
 		if ($this->context === null || Daemon::$context !== null) {
 			try {

@@ -573,9 +573,11 @@ abstract class Generic {
 			$this->postFinishHandler(function () use ($appStatus, $status) {
 				if (isset($this->upstream)) {
 					$this->upstream->endRequest($this, $appStatus, $status);
+					$this->free();
 				}
 			});
-
+		} else {
+			$this->free();
 		}
 	}
 

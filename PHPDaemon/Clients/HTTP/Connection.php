@@ -264,7 +264,24 @@ class Connection extends ClientConnection {
 				$e = explode(': ', $line);
 
 				if (isset($e[1])) {
-					$this->headers['HTTP_' . strtoupper(strtr($e[0], Generic::$htr))] = $e[1];
+					$k = 'HTTP_' . strtoupper(strtr($e[0], Generic::$htr));
+					if ($k === 'HTTP_SET_COOKIE') {
+						parse_str(strtr($e[1], [';' => '&', ' ' => '']), $p);
+						if (sizeof($p)) {
+							$this->cookie[$k = key($p)] =& $p;
+							$p['value'] = $p[$k];
+							unset($p[$k], $p);
+						}
+					}
+					if (isset($this->headers[$k])) {
+						if (is_array($this->headers[$k])) {
+							$this->headers[$k][] = $e[1];
+						} else {
+							$this->headers[$k] = [$this->headers[$k], $e[1]];
+						}
+					} else {
+						$this->headers[$k] = $e[1];
+					}
 				}
 			}
 		}
