@@ -287,6 +287,11 @@ class Connection extends ClientConnection {
 	}
 
 	public function pushLevel($length) {
+		if ($length <= 0) {
+			$this->pushValue([]);
+			return;
+		}
+
 		$ptr = [];
 		
 		if (is_array($this->ptr)) {
