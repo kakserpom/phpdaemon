@@ -46,10 +46,47 @@ class Crypt {
 	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.') {
 		$r = '';
 		$m = strlen($chars) - 1;
-		for ($i = 0; $i < $len; ++$i) {
-			$r .= $chars[mt_rand(0, $m)];
+		if ($m < 1) {
+			// Invalid parameter for $chars
+			return '';
 		}
-		return $r;
+		while (strlen($r) < $len) {
+			$c = self::randomBytes(1);
+			if(strpos($chars, $c) !== false) {
+				$r .= $c;
+			}
+		}
+		return substr($r, 0, $len);
+	}
+
+	public static function randomBytes($bytes = 64) {
+		$buf = '';
+		// http://sockpuppet.org/blog/2014/02/25/safely-generate-random-numbers/
+		// Use /dev/urandom over all other methods
+		if (is_readable('/dev/urandom')) {
+			$fp = fopen('/dev/urandom', 'rb');
+			if ($fp !== false) {
+				$buf = fread($fp, $bytes);
+				fclose($fp);
+				if ($buf !== FALSE) {
+					return $buf;
+				}
+			}
+		}
+		if (function_exists('mcrypt_create_iv')) {
+			$buf = mcrypt_create_iv($bytes, MCRYPT_DEV_URANDOM);
+			if($buf !== FALSE) {
+				return $buf;
+			}
+		}
+		if (function_exists('openssl_random_pseudo_bytes')) {
+			$strong = false;
+			$buf = openssl_random_pseudo_bytes($bytes, $strong);
+			if ($strong) {
+				return $buf;
+			}
+		}
+		die("No suitable random number generator exists!");
 	}
 
 	/**
