@@ -41,7 +41,7 @@ class ServerStatusRequest extends Generic {
 	<br/>
 	<br/>Request took: <?php printf('%f', round(microtime(TRUE) - $stime, 6)); ?>
 	</body>
-		</html><?
+		</html><?php
 	}
 
 }
