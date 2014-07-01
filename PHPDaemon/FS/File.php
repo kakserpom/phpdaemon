@@ -298,7 +298,7 @@ class File {
 	 */
 	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
-		if (!$this->fd) {
+		if (!$this->fd || $data === '') {
 			if ($cb) {
 				call_user_func($cb, $this, false);
 			}
