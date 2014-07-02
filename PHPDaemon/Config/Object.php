@@ -304,7 +304,7 @@ class Object implements \ArrayAccess {
 		static $sizes = ['maxmemoryusage'];
 		static $times = ['maxidle', 'autoreload', 'mpmdelay', 'eiosetmaxpolltime', 'lambdacachettl'];
 		static $numbers = [
-			'maxrequests', 'autogc', 'minworkers', 'maxworkers', 'minspareworkers', 'maxspareworkers', 'masterpriority', 'ipcthreadpriority',
+			'maxrequests', 'autogc', 'startworkers', 'workerpriority', 'minworkers', 'maxworkers', 'minspareworkers', 'maxspareworkers', 'masterpriority', 'ipcthreadpriority',
 			'eiosetmaxidle', 'eiosetmaxparallel', 'eiosetmaxpollreqs', 'eiosetminparallel', 'verbose', 'verbosetty',
 			'lambdacachemaxsize', 'lambdacachecapwindow',
 		];
