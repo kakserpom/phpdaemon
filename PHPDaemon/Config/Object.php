@@ -177,6 +177,24 @@ class Object implements \ArrayAccess {
 	public $workerpriority = 4;
 
 	/**
+	 * Lambda cache size
+	 * @var integer
+	 */
+	public $lambdacachemaxsize = 128;
+
+	/**
+	 * Lambda cache cap window
+	 * @var integer
+	 */
+	public $lambdacachecapwindow = 32;
+
+	/**
+	 * Lambda cache ttl
+	 * @var integer
+	 */
+	public $lambdacachettl = 0;
+
+	/**
 	 * Throw exception on shutdown?
 	 * @var boolean
 	 */
@@ -284,10 +302,11 @@ class Object implements \ArrayAccess {
 
 	public function __construct() {
 		static $sizes = ['maxmemoryusage'];
-		static $times = ['maxidle', 'autoreload', 'mpmdelay', 'eiosetmaxpolltime'];
+		static $times = ['maxidle', 'autoreload', 'mpmdelay', 'eiosetmaxpolltime', 'lambdacachettl'];
 		static $numbers = [
 			'maxrequests', 'autogc', 'minworkers', 'maxworkers', 'minspareworkers', 'maxspareworkers', 'masterpriority', 'ipcthreadpriority',
-			'eiosetmaxidle', 'eiosetmaxparallel', 'eiosetmaxpollreqs', 'eiosetminparallel', 'verbose', 'verbosetty'
+			'eiosetmaxidle', 'eiosetmaxparallel', 'eiosetmaxpollreqs', 'eiosetminparallel', 'verbose', 'verbosetty',
+			'lambdacachemaxsize', 'lambdacachecapwindow',
 		];
 
 		foreach ($this as $name => $value) {

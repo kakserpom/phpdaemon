@@ -36,6 +36,26 @@ abstract class CappedStorage {
 	 */
 	public $cache = [];
 
+
+	/**
+	 * Sets cache size
+	 * @param integer Maximum number of elements.
+	 * @return void
+	 */
+	public function setMaxCacheSize($size) {
+		$this->maxCacheSize = $size;
+	}
+
+
+	/**
+	 * Sets cap window
+	 * @param integer
+	 * @return void
+	 */
+	public function setCapWindow($w) {
+		$this->capWindow = $w;
+	}
+
 	/**
 	 * Hash function
 	 * @param string Key
@@ -115,6 +135,12 @@ abstract class CappedStorage {
 			return null;
 		}
 		$item = $this->cache[$k];
+		if (isset($item->expire)) {
+			if (microtime(true) >= $item->expire) {
+				unset($this->cache[$k]);
+				return null;
+			}
+		}
 		return $item->getValue();
 	}
 }

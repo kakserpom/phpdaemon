@@ -7,6 +7,7 @@ use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
+use PHPDaemon\Cache\CappedStorageHits;
 
 /**
  * Implementation of the worker thread
@@ -130,11 +131,17 @@ class Worker extends Generic {
 	/** @var \PHPDaemon\IPCManager\IPCManager */
 	public $IPCManager;
 
+	public $lambdaCache;
+
 	/**
 	 * Runtime of Worker process.
 	 * @return void
 	 */
 	protected function run() {
+		$this->lambdaCache = new CappedStorageHits;
+		$this->lambdaCache->setMaxCacheSize(Daemon::$config->lambdacachemaxsize->value);
+		$this->lambdaCache->setCapWindow(Daemon::$config->lambdacachecapwindow->value);
+
 		$this->callbacks = new StackCallbacks();
 		if (Daemon::$process instanceof Master) {
 			Daemon::$process->unregisterSignals();
@@ -330,42 +337,25 @@ class Worker extends Generic {
 			$this->override('register_shutdown_function');
 
 			runkit_function_copy('create_function', 'create_function_native');
-			runkit_function_redefine('create_function', '$arg,$body', 'return \PHPDaemon\Thread\__create_function($arg,$body);');
-
-			function __create_function($arg, $body) {
-				static $cache = [];
-				static $maxCacheSize = 128;
-				static $sorter;
-				static $window = 32;
-
-				if ($sorter === NULL) {
-					$sorter = function ($a, $b) {
-						if ($a->hits == $b->hits) {
-							return 0;
-						}
-
-						return ($a->hits < $b->hits) ? 1 : -1;
-					};
-				}
-
-				$source = $arg . "\x00" . $body;
-				$key    = md5($source, true) . pack('l', crc32($source));
-
-				if (isset($cache[$key])) {
-					++$cache[$key][1];
-
-					return $cache[$key][0];
-				}
-
-				if (sizeof($cache) >= $maxCacheSize + $window) {
-					uasort($cache, $sorter);
-					$cache = array_slice($cache, $maxCacheSize);
-				}
-
-				$cache[$key] = [$cb = eval('return function(' . $arg . '){' . $body . '};'), 0];
-				return $cb;
-			}
+			runkit_function_redefine('create_function', '$arg,$body', 'return \PHPDaemon\Thread\Worker::createFunction($arg,$body);');
 		}
+	}
+
+	/**
+	 * Creates anonymous function (old-fashioned) like create_function()
+	 * @return void
+	 */
+	public function createFunction($args, $body, $ttl = null) {
+		$key = $args . "\x00" . $body;
+		if (($f = $this->lambdaCache->getValue($key)) !== null) {
+			return $f;
+		}
+		$f = eval('return function(' . $args . '){' . $body . '};');
+		if ($ttl === null && Daemon::$config->lambdacachettl->value) {
+			$ttl = Daemon::$config->lambdacachettl->value;
+		}
+		$this->lambdaCache->put($key, $f, $ttl);
+		return $f;
 	}
 
 	/**
