@@ -304,6 +304,12 @@ class File {
 			}
 			return false;
 		}
+		if ($data === '') {
+			if ($cb) {
+				call_user_func($cb, $this, 0);
+			}
+			return false;
+		}
 		if (!FileSystem::$supported) {
 			if ($offset !== null) {
 				fseek($data, $offset);
