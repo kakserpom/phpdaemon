@@ -246,6 +246,7 @@ class Bootstrap {
 			if (@is_file($path)) {
 				Daemon::$appResolverPath = $path;
 				$found                        = true;
+				break;
 			}
 		}
 		if (!$found) {
