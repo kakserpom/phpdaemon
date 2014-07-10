@@ -45,7 +45,7 @@ class Pool extends Client {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = self::prepareUrl($url);
+			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = static::parseUrl($url);
 		}
 		if (isset($params['proxy'])) {
 			if ($params['proxy']['type'] === 'http') {
@@ -75,7 +75,7 @@ class Pool extends Client {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = self::prepareUrl($url);
+			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = static::parseUrl($url);
 		}
 		if (isset($params['proxy'])) {
 			if ($params['proxy']['type'] === 'http') {
@@ -127,11 +127,11 @@ class Pool extends Client {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $mixed
+	 * Parse URL
+	 * @param $mixed Look Pool::buildUrl()
 	 * @return array|bool
 	 */
-	public static function prepareUrl($mixed) {
+	public static function parseUrl($mixed) {
 		$url = static::buildUrl($mixed);
 		if (false === $url) {
 			return false;

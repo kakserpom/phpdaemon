@@ -477,7 +477,7 @@ class Object implements \ArrayAccess {
 		}
 		$hash  = '#' . $u['fragment'];
 		$error = false;
-		preg_replace_callback('~(#+)(.+?)(?=#|$)|(.+)~', function ($m) use (&$u, &$error, $uri) { // @TODO: refactoring
+		preg_replace_callback('~(#+)(.+?)(?=#|$)|(.+)~', function ($m) use (&$u, &$error, $uri) {
 			if ($error) {
 				return;
 			}

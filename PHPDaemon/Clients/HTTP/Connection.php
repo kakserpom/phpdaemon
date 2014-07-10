@@ -84,7 +84,7 @@ class Connection extends ClientConnection {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			$prepared = Pool::prepareUrl($url);
+			$prepared = Pool::parseUrl($url);
 			if (!$prepared) {
 				if (isset($params['resultcb'])) {
 					call_user_func($params['resultcb'], false);
