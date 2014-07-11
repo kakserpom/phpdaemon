@@ -27,14 +27,17 @@ class Connection extends ClientConnection {
 	 */
 	const STATE_BODY    = 2;
 	/**
+	 * Associative array of headers
 	 * @var array
 	 */
 	public $headers = [];
 	/**
+	 * Content length
 	 * @var int
 	 */
 	public $contentLength = -1;
 	/**
+	 * Contains response body
 	 * @var string
 	 */
 	public $body = '';
@@ -43,17 +46,19 @@ class Connection extends ClientConnection {
 	 */
 	protected $EOL = "\r\n";
 	/**
+	 * Associative array of Cookies
 	 * @var array
 	 */
 	public $cookie = [];
 	/**
-	 * @var
+	 * Size of current chunk
+	 * @var integer
 	 */
-	public $curChunkSize;
+	protected $curChunkSize;
 	/**
 	 * @var
 	 */
-	public $curChunk;
+	protected $curChunk;
 	/**
 	 * @var bool
 	 */
@@ -73,9 +78,14 @@ class Connection extends ClientConnection {
 	 */
 	public $lastURL;
 
+	/**
+	 * Raw headers array
+	 * @var array
+	 */
 	public $rawHeaders = null;
 
 	/**
+	 * Performs GET-request
 	 * @param string $url
 	 * @param array $params
 	 */
@@ -140,7 +150,8 @@ class Connection extends ClientConnection {
 		}
 	}
 
-	/**
+	/** 
+	 * Performs POST-request
 	 * @param string $url
 	 * @param array $data
 	 * @param array $params
@@ -338,7 +349,8 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when connection finishes
+	 * @return void
 	 */
 	public function onFinish() {
 		if ($this->protocolError) {
@@ -353,9 +365,9 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when request is finished
 	 */
-	public function requestFinished() {
+	protected function requestFinished() {
 		$this->onResponse->executeOne($this, true);
 		$this->state         = self::STATE_ROOT;
 		$this->contentLength = -1;
