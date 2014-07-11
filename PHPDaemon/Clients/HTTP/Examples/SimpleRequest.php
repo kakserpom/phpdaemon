@@ -1,10 +1,11 @@
 <?php
-namespace PHPDaemon\Examples;
+namespace PHPDaemon\Clients\HTTP\Examples;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\HTTPRequest\Generic;
 
-class ExampleHTTPClientRequest extends Generic {
+class SimpleRequest extends Generic {
 
 	/**
 	 * Constructor.
