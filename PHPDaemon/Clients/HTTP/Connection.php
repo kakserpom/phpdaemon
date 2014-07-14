@@ -84,6 +84,10 @@ class Connection extends ClientConnection {
 	 */
 	public $rawHeaders = null;
 
+
+	public $contentType;
+	public $charset;
+
 	/**
 	 * Performs GET-request
 	 * @param string $url
@@ -262,6 +266,13 @@ class Connection extends ClientConnection {
 					$e               = explode(', ', strtolower($this->headers['HTTP_CONNECTION']));
 					$this->keepalive = in_array('keep-alive', $e, true);
 				}
+				if (isset($this->headers['HTTP_CONTENT_TYPE'])) {
+					parse_str('type='.strtr($this->headers['HTTP_CONTENT_TYPE'], [';' => '&', ' ' => '']), $p);
+					$this->contentType = $p['type'];
+					if (isset($p['charset'])) {
+						$this->charset = strtolower($p['charset']);
+					}
+				}
 				$this->state = self::STATE_BODY;
 				break;
 			}
@@ -375,6 +386,8 @@ class Connection extends ClientConnection {
 		$this->chunked       = false;
 		$this->headers       = [];
 		$this->rawHeaders    = null;
+		$this->contentType    = null;
+		$this->charset    = null;
 		$this->body          = '';
 		$this->responseCode  = 0;
 		if (!$this->keepalive) {
