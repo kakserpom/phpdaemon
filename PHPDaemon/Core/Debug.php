@@ -42,6 +42,10 @@ class Debug {
 		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 	}
 
+	public static function json($m) {
+		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+	}
+
 	public static function proxy($cb, $name = null) {
 		static $i = 0;
 		$n = ++$i;
