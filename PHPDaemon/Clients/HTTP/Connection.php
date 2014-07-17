@@ -365,7 +365,7 @@ class Connection extends ClientConnection {
 	 */
 	public function onFinish() {
 		if ($this->protocolError) {
-			$this->executeAll($this, false);
+			$this->onResponse->executeAll($this, false);
 		}
 		else {
 			if (($this->state !== self::STATE_ROOT) && !$this->onResponse->isEmpty()) {
