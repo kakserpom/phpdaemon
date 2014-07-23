@@ -47,7 +47,10 @@ class Pool extends Client {
 		if (!isset($params['uri']) || !isset($params['host'])) {
 			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = static::parseUrl($url);
 		}
-		if (isset($params['proxy']) && $params['proxy']) {
+		if (isset($params['connect'])) {
+			$dest = $params['connect'];
+		}
+		elseif (isset($params['proxy']) && $params['proxy']) {
 			if ($params['proxy']['type'] === 'http') {
 				$dest = 'tcp://' . $params['proxy']['addr'];
 			}
@@ -77,7 +80,10 @@ class Pool extends Client {
 		if (!isset($params['uri']) || !isset($params['host'])) {
 			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = static::parseUrl($url);
 		}
-		if (isset($params['proxy']) && $params['proxy']) {
+		if (isset($params['connect'])) {
+			$dest = $params['connect'];
+		}
+		elseif (isset($params['proxy']) && $params['proxy']) {
 			if ($params['proxy']['type'] === 'http') {
 				$dest = 'tcp://' . $params['proxy']['addr'];
 			}

@@ -105,9 +105,9 @@ class Connection extends ClientConnection {
 				}
 				return;
 			}
-			$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 			list ($params['host'], $params['uri']) = $prepared;
 		}
+		$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 		if (!isset($params['version'])) {
 			$params['version'] = '1.1';
 		}
@@ -172,9 +172,9 @@ class Connection extends ClientConnection {
 				}
 				return;
 			}
-			$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 			list ($params['host'], $params['uri']) = $prepared;
 		}
+		$this->lastURL = 'http://' . $params['host'] . $params['uri'];		
 		if (!isset($params['version'])) {
 			$params['version'] = '1.1';
 		}
@@ -213,6 +213,9 @@ class Connection extends ClientConnection {
 		$this->writeln('Content-Length: ' . strlen($body));
 		if (isset($params['headers'])) {
 			$this->customRequestHeaders($params['headers']);
+		}
+		if (isset($params['rawHeaders']) && $params['rawHeaders']) {
+			$this->rawHeaders = [];
 		}
 		$this->writeln('');
 		$this->write($body);

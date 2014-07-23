@@ -198,7 +198,7 @@ class Connection extends ClientConnection {
 			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
 		}
  	}
-
+ 	
 	/**
 	 * Check if arrived data is message from subscription
 	 */
