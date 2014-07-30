@@ -123,6 +123,7 @@ class DeferredEvent {
 	public function reset() {
 		$this->state = self::STATE_WAITING;
 		$this->result = null;
+		$this->args = [];
 		return $this;
 	}
 
@@ -152,10 +153,10 @@ class DeferredEvent {
 	/**
 	 * Called when object is invoked as function.
 	 * @param callable $cb
-	 * @param array $params
+	 * @param .. params ..
 	 * @return void
 	 */
-	public function __invoke($cb, $params = []) {
-		$this->addListener($cb, $params);
+	public function __invoke() {
+		call_user_func_array([$this, 'addListener'], func_get_args());
 	}
 }
