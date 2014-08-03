@@ -11,19 +11,19 @@ class ComplexJob implements \ArrayAccess {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * State: waiting. It means there are no listeners yet.
+	 * State: waiting
 	 * @var integer
 	 */
 	const STATE_WAITING = 1;
 	
 	/**
-	 * State: running. Event handler in progress.
+	 * State: running
 	 * @var integer
 	 */
 	const STATE_RUNNING = 2;
 	
 	/**
-	 * State: done. Event handler is finished, result is saved.
+	 * State: done
 	 * @var integer
 	 */
 	const STATE_DONE = 3;
@@ -64,9 +64,6 @@ class ComplexJob implements \ArrayAccess {
 	 */
 	public $jobsNum = 0;
 
-	/** @var \PHPDaemon\HTTPRequest\Generic */
-	public $req;
-
 	protected $keep = false;
 	
 
@@ -75,7 +72,7 @@ class ComplexJob implements \ArrayAccess {
 
 	protected $maxConcurrency = -1;
 
-	protected $queue;
+	protected $backlog;
 
 	/**
 	 * Constructor
@@ -120,20 +117,7 @@ class ComplexJob implements \ArrayAccess {
 		return $this->state === self::STATE_DONE;
 	}
 
-	/**
-	 * Proxy call
-	 * @param string Name
-	 * @param array  Arguments
-	 * @return boolean
-	 */
-	public function __call($name, $args) {
-		if (!isset($this->{$name})) {
-			return false;
-		}
-		return call_user_func_array($this->{$name}, $args);
-	}
-
-	public function maxConcurrency($n = 1) {
+	public function maxConcurrency($n = -1) {
 		$this->maxConcurrency = $n;
 		return $this;
 	}
@@ -182,12 +166,12 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	public function checkQueue() {
-		if ($this->queue !== null) {
-			while (!$this->queue->isEmpty()) {
+		if ($this->backlog !== null) {
+			while (!$this->backlog->isEmpty()) {
 				if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
 					return;
 				}
-				list ($name, $cb) = $this->queue->shift();
+				list ($name, $cb) = $this->backlog->shift();
 				$this->addJob($name, $cb);
 			}
 		}
@@ -235,10 +219,10 @@ class ComplexJob implements \ArrayAccess {
 		}
 		$cb = CallbackWrapper::wrap($cb);
 		if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
-			if ($this->queue === null) {
-				$this->queue = new \SplStack;
+			if ($this->backlog === null) {
+				$this->backlog = new \SplStack;
 			}
-			$this->queue->push([$name, $cb]);
+			$this->backlog->push([$name, $cb]);
 			return true;
 		}
 		$this->jobs[$name] = $cb;

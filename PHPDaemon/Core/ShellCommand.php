@@ -19,9 +19,7 @@ use PHPDaemon\Network\IOStream;
 class ShellCommand extends IOStream {
 
 	/** @var */
-	public $writeState;
-	/** @var */
-	public $finishWrite;
+	protected $finishWrite;
 
 	/**
 	 * Command string
@@ -389,7 +387,7 @@ class ShellCommand extends IOStream {
 	 * @return bool
 	 */
 	public function finishWrite() {
-		if (!$this->writeState) {
+		if (!$this->writing) {
 			$this->closeWrite();
 		}
 

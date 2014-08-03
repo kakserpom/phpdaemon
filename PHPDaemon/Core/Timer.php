@@ -21,7 +21,7 @@ class Timer {
 	/**
 	 * @var \EventBufferEvent
 	 */
-	public $ev; // event resource
+	protected $ev; // event resource
 	/**
 	 * @var
 	 */
@@ -37,7 +37,7 @@ class Timer {
 	/**
 	 * @var Timer[]
 	 */
-	public static $list = []; // list of timers
+	protected static $list = []; // list of timers
 	/**
 	 * @var int
 	 */
