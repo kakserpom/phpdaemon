@@ -88,6 +88,8 @@ class Connection extends ClientConnection {
 	public $contentType;
 	public $charset;
 
+	public $eofTerminated = false;
+
 	/**
 	 * Performs GET-request
 	 * @param string $url
@@ -276,6 +278,9 @@ class Connection extends ClientConnection {
 						$this->charset = strtolower($p['charset']);
 					}
 				}
+				if ($this->contentLength === -1 && !$this->keepalive) {
+					$this->eofTerminated = true;
+				}
 				$this->state = self::STATE_BODY;
 				break;
 			}
@@ -314,6 +319,10 @@ class Connection extends ClientConnection {
 			return; // not enough data yet
 		}
 		body:
+		if ($this->eofTerminated) {
+			$this->body .= $this->readUnlimited();
+			return;
+		}
 		if ($this->chunked) {
 			chunk:
 			if ($this->curChunkSize === null) { // outside of chunk
@@ -367,6 +376,12 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function onFinish() {
+		if ($this->eofTerminated) {
+			$this->requestFinished();
+			$this->onResponse->executeAll($this, false);
+			parent::onFinish();
+			return;
+		}
 		if ($this->protocolError) {
 			$this->onResponse->executeAll($this, false);
 		}
@@ -387,6 +402,7 @@ class Connection extends ClientConnection {
 		$this->contentLength = -1;
 		$this->curChunkSize  = null;
 		$this->chunked       = false;
+		$this->eofTerminated = false;
 		$this->headers       = [];
 		$this->rawHeaders    = null;
 		$this->contentType    = null;
