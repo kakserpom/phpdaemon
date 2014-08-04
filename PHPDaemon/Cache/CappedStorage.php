@@ -77,6 +77,9 @@ abstract class CappedStorage {
 		if (isset($this->cache[$k])) {
 			$item = $this->cache[$k];
 			$item->setValue($value);
+			if ($ttl !== null) {
+				$item->expire = microtime(true) + $ttl;
+			}
 			return $item;
 		}
 		$item = new Item($value);

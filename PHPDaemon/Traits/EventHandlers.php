@@ -74,7 +74,7 @@ trait EventHandlers {
 	 * Propagate event
 	 * @param string Event name
 	 * @param mixed  ... variable set of arguments ...
-	 * @return void
+	 * @return integer
 	 */
 	public function triggerAndCount() {
 		$args = func_get_args();

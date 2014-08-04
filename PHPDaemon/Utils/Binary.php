@@ -26,7 +26,8 @@ class Binary {
 
 	/**
 	 * Parse structure of labels
-	 * @param binary
+	 * @param string Binary data
+	 * @param string Original packet
 	 * @return string Dot-separated labels list
 	 */
 	public static function parseLabels(&$data, $orig = null) {
@@ -324,8 +325,8 @@ class Binary {
 	/**
 	 * @alias int2bytes
 	 */
-	public static function i2b($bytes, $int = 0, $l = false) {
-		return static::int2bytes($bytes, $int, $l);
+	public static function i2b($len, $int = 0, $l = false) {
+		return static::int2bytes($len, $int, $l);
 	}
 
 	/**
@@ -349,8 +350,8 @@ class Binary {
 	/**
 	 * @alias bytes2int
 	 */
-	public static function b2i($hex = 0, $l = false) {
-		return static::bytes2int($hex, $l);
+	public static function b2i($str = 0, $l = false) {
+		return static::bytes2int($str, $l);
 	}
 
 	/**
@@ -366,7 +367,7 @@ class Binary {
 			$r .= chr((int)bindec(binarySubstr($bitmap, $i * 8, 8)));
 		}
 		if ($check_len && (strlen($r) != $check_len)) {
-			echo "Warning! Bitmap incorrect.\n";
+			return false;
 		}
 		return $r;
 	}
