@@ -68,7 +68,7 @@ class Crypt {
 		$charsLen = strlen($chars);
 		$mask = static::getMinimalBitMask($charsLen - 1);
 		$iterLimit = max($len, $len * 64);
-		static::randomInts(1 * $len, function($ints) use ($cb, $chars, $charsLen, $len, $mask, &$iterLimit) {
+		static::randomInts(2 * $len, function($ints) use ($cb, $chars, $charsLen, $len, $mask, &$iterLimit) {
 			if ($ints === false) {
 				call_user_func($cb, false);
 				return;
@@ -103,7 +103,6 @@ class Crypt {
 	 * @param int $idx
 	 * @return string
 	 */
-	// 
     public static function stringIdx($str, $idx) {
         // FIXME: Make the const-time hack below work for all integer sizes, or
         // check it properly.
