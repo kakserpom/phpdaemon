@@ -592,7 +592,7 @@ class Worker extends Generic {
 			$this->log('reloadReady = ' . Debug::dump($this->reloadReady));
 		}
 
-		unset(Timer::$list['breakMainLoopCheck']);
+		Timer::remove('breakMainLoopCheck');
 
 		Timer::add(function ($event) {
 			$self = Daemon::$process;
