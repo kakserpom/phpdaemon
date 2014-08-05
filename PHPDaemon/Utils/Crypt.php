@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Utils;
+use PHPDaemon\FS\FileSystem;
 
 /**
  * Class Crypt
@@ -43,13 +44,42 @@ class Crypt {
 		return base64_encode($hash);
 	}
 
-	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.') {
-		$r = '';
-		$m = strlen($chars) - 1;
-		for ($i = 0; $i < $len; ++$i) {
-			$r .= $chars[mt_rand(0, $m)];
+	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.', $cb = null, $pri = 0, $hang = false) {
+		if ($cb === null) {
+			Daemon::log('[CODE WARN] \\PHPDaemon\\Utils\\Crypt::randomString: non-callback way is not secure.'
+					.' Please rewrite your code with callback function in third argument' . PHP_EOL . Debug::backtrace());
+
+			$r = '';
+			$m = strlen($chars) - 1;
+			for ($i = 0; $i < $len; ++$i) {
+				$r .= $chars[mt_rand(0, $m)];
+			}
+			return $r;
 		}
-		return $r;
+		static::randomBytes($len, function($bytes) use ($cb, $chars) {
+			if ($bytes === false) {
+				call_user_func($cb, false);
+				return;
+			}
+			$len = strlen($bytes);
+			$m = strlen($chars) - 1;
+			$r = '';
+			for ($i = 0; $i < $len; ++$i) {
+				$r .= $chars[ord($bytes[$i]) % $m]; 
+			}
+			call_user_func($cb, $r);
+		}, $pri, $hang);
+	}
+
+	public static function randomBytes($len, $cb, $pri = 0, $hang = false) {
+		FileSystem::open('/dev/' . ($hang ? '' : 'u') . 'random', 'r', function ($file) use ($len, $cb, $pri) {
+			if (!$file) {
+				call_user_func($cb, false);
+			}
+			$file->read($len, 0, function($file, $data) use ($cb) {
+				call_user_func($cb, $data);
+			}, $pri);
+		}, null, $pri);
 	}
 
 	/**
