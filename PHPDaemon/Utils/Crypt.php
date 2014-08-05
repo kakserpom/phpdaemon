@@ -44,6 +44,15 @@ class Crypt {
 		return base64_encode($hash);
 	}
 
+	/**
+	 * Returns string of pseudo random characters
+	 * @param int $len Length of desired string
+	 * @param string $chars String of allowed characters
+	 * @param callable $cb Callback (string)
+	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
+	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @return string
+	 */
 	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.', $cb = null, $pri = 0, $hang = false) {
 		if ($cb === null) {
 			Daemon::log('[CODE WARN] \\PHPDaemon\\Utils\\Crypt::randomString: non-callback way is not secure.'
@@ -88,7 +97,13 @@ class Crypt {
 		}, $pri, $hang);
 	}
 
-	// Returns the character at index $index in $string in constant time.
+	/**
+	 * Returns the character at index $idx in $str in constant time.
+	 * @param string $str
+	 * @param int $idx
+	 * @return string
+	 */
+	// 
     public static function stringIdx($str, $idx) {
         // FIXME: Make the const-time hack below work for all integer sizes, or
         // check it properly.
@@ -105,6 +120,14 @@ class Crypt {
         return chr($r);
     }
 
+	/**
+	 * Returns string of pseudo random bytes
+	 * @param int $len Length of desired string
+	 * @param callable $cb Callback (string)
+	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
+	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @return int
+	 */
 	public static function randomBytes($len, $cb, $pri = 0, $hang = false) {
 		FileSystem::open('/dev/' . ($hang ? '' : 'u') . 'random', 'r', function ($file) use ($len, $cb, $pri) {
 			if (!$file) {
@@ -116,6 +139,14 @@ class Crypt {
 		}, null, $pri);
 	}
 
+	/**
+	 * Returns array of pseudo random integers
+	 * @param int $numInts Number of integers
+	 * @param callable $cb Callback (array)
+	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
+	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @return int
+	 */
 	public static function randomInts($numInts, $cb, $pri, $hang = false) {
 		static::randomBytes(PHP_INT_SIZE * $numInts, function($bytes) use ($cb, $numInts) {
 			if ($bytes === false) {
