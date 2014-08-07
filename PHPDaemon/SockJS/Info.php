@@ -11,14 +11,24 @@ use PHPDaemon\Utils\Crypt;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class InfoRequest extends Generic {
+class Info extends Generic {
+	use Traits\Request;
+
+	/**
+	 * Constructor.
+	 * @return void
+	 */
+	public function init() {
+		$this->CORS();
+		$this->contentType('application/json');
+		$this->noncache();
+	}
 
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
-		$this->header('Content-Type: application/json; charset=UTF-8');
 		Crypt::randomInts(1, function($ints) {
 			echo json_encode([
 				'websocket' => true,

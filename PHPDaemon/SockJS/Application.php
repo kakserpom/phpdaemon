@@ -11,6 +11,7 @@ use PHPDaemon\Core\Debug;
  */
 class Application extends \PHPDaemon\Core\AppInstance {
 	public $redis;
+	public $wss;
 	/**
 	 * Setting default config options
 	 * @return array|bool
@@ -56,7 +57,10 @@ class Application extends \PHPDaemon\Core\AppInstance {
 			$serverId = array_pop($e);
 		}
 		$path = implode('/', $e);
-		$class = __NAMESPACE__ . '\\' .strtr(ucfirst($method), ['_' => '']) . 'Request';
-		return new $class($this, $upstream, $req);
+		$class = __NAMESPACE__ . '\\' .strtr(ucfirst($method), ['_' => '']);
+		$req = new $class($this, $upstream, $req);
+		$req->setSessId($sessId);
+		$req->setServerId($serverId);
+		return $req;
 	}
 }
