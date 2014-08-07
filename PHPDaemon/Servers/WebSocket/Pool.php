@@ -52,11 +52,11 @@ class Pool extends Server {
 		return true;
 	}
 
-	public function getRoute($route) {
+	public function getRoute($route, $client) {
 		if (!isset($this->routes[$route])) {
 			return false;
 		}
-		return call_user_func($this->routes[$route], $this);
+		return call_user_func($this->routes[$route], $client);
 	}
 
 	/**

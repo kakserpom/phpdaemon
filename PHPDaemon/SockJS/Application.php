@@ -28,7 +28,6 @@ class Application extends \PHPDaemon\Core\AppInstance {
 
 
 	public function subscribe($chan, $cb, $opcb = null) {
-		D($this->config->redisprefix->value . $chan);
 		$this->redis->subscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
 
@@ -50,12 +49,14 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$this->sessions = new SessionsStorage;
 	}
 
-	public function beginSession($path, $server) {
-		if (!$route = $this->wss->getRoute($path)) {
+	public function beginSession($path, $sessId, $server) {
+		$session = new Session($this, $sessId, $server);
+		if (!$session->route = $this->wss->getRoute($path, $session)) {
 			return false;
 		}
-		$this->sessions->attach($sess = new Session($route, $appInstance, $sessId, $server));
-		return $sess;
+		$this->sessions->attach($session);
+		$session->onHandshake();
+		return $session;
 	}
 
 	/**
@@ -78,12 +79,11 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		elseif ($method === 'info') {
 
 		} elseif (in_array($method, ['xhr', 'xhr_send'])) {
-			D($e);
 			$sessId = array_pop($e);
 			$serverId = array_pop($e);
 		}
-		$path = implode('/', $e);
-		$class = __NAMESPACE__ . '\\' .strtr(ucfirst($method), ['_' => '']);
+		$path = ltrim(implode('/', $e), '/');
+		$class = __NAMESPACE__ . '\\' .strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);
 		$req = new $class($this, $upstream, $req);
 		$req->setSessId($sessId);
 		$req->setServerId($serverId);

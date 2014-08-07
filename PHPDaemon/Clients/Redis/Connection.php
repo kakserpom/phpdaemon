@@ -125,12 +125,18 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function __call($cmd, $args) {
-		if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
-			$cb = array_pop($args);
-		} else {
-			$cb = null;
+		$cb = null;
+		for ($i = sizeof($args) - 1; $i >= 0; --$i) {
+			$a = $args[$i];
+			if ((is_array($a) || is_object($a)) && is_callable($a)) {
+				$cb = CallbackWrapper::wrap($a);
+				$args = array_slice($args, 0, $i);
+				break;
+			}
+			elseif ($a !== null) {
+				break;
+			}
 		}
-		reset($args);
 		$cmd = strtoupper($cmd);
 		$this->command($cmd, $args, $cb);
 	}
@@ -138,15 +144,20 @@ class Connection extends ClientConnection {
 	public function command($name, $args, $cb = null) {
 		// PUB/SUB handling
 		if (substr($name, -9) === 'SUBSCRIBE') {
-			if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
-				$opcb = $cb;
-				$cb = array_pop($args);
-			} else {
-				$opcb = null;
+			$opcb = null;
+			for ($i = sizeof($args) - 1; $i >= 0; --$i) {
+				$a = $args[$i];
+				if ((is_array($a) || is_object($a)) && is_callable($a)) {
+					$opcb = $cb;
+					$cb = CallbackWrapper::wrap($a);
+					$args = array_slice($args, 0, $i);
+					break;
+				}
+				elseif ($a !== null) {
+					break;
+				}
 			}
-			reset($args);
 		}
-		$cb = CallbackWrapper::wrap($cb);
 		if ($name === 'SUBSCRIBE') {
 			$this->subscribed();
 			foreach ($args as $arg) {

@@ -13,7 +13,6 @@ use PHPDaemon\Utils\Crypt;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
- */
 class Session {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
@@ -42,16 +41,18 @@ class Session {
 	public $timeout = 60;
 	public $server;
 
+
+	protected $finishTimer;
+
 	/**
 	 * @param $route
 	 * @param $appInstance
 	 * @param $authKey
 	 */
-	public function __construct($route, $appInstance, $id, $server) {
+	public function __construct($appInstance, $id, $server) {
 		$this->onWrite   = new StackCallbacks;
 		$this->id     = $id;
 		$this->appInstance = $appInstance;
-		$this->route = $route;
 		$this->server = $server;
 		$this->finishTimer = setTimeout([$this, 'finishTimer'], $this->timeout * 1e6);
 		
@@ -69,12 +70,21 @@ class Session {
 			return;
 		}
 		foreach ($frames as $frame) {
+			//D(['onFrame' => $frame]);
 			$this->route->onFrame($frame, \PHPDaemon\Servers\WebSocket\Pool::STRING);
 		}
 	}
 
 	public function poll($redis) {
+		Timer::setTimeout($this->finishTimer, $this->timeout * 1e6); 
 		$this->flush();
+	}
+	
+	/**
+	 * @TODO DESCR
+	 */
+	public function onHandshake() {
+		$this->route->onHandshake();
 	}
 
 	/**
@@ -85,7 +95,7 @@ class Session {
 			return;
 		}
 		$this->onWrite->executeAll($this->route);
-		if (is_callable([$this->route, 'onWrite'])) {
+		if (method_exists($this->route, 'onWrite')) {
 			$this->route->onWrite();
 		}
 	}
@@ -111,10 +121,8 @@ class Session {
 			$this->route->onFinish();
 		}
 		unset($this->route);
-		if ($this->finishTimer !== null) {
-			\PHPDaemon\Core\Timer::remove($this->finishTimer);
-			$this->finishTimer = null;
-		}
+		Timer::remove($this->finishTimer);
+		$this->finishTimer = null;
 	}
 
 	/**
@@ -134,8 +142,10 @@ class Session {
 		if ($this->flushing) {
 			return;
 		}
+		if (!$s = sizeof($this->buffer)) {
+			return;
+		}
 		$this->flushing = true;
-		$s = sizeof($this->buffer);
 		$this->appInstance->publish(
 			's2c:' . $this->id,
 			json_encode($this->buffer, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
@@ -164,6 +174,7 @@ class Session {
 	 * @return boolean Success.
 	 */
 	public function sendFrame($data, $type = 0x00, $cb = null) {
+		//D(['sendFrame' => $data]);
 		$this->buffer[] = $data;
 		if ($cb !== null) {
 			$this->onWrite->push($cb);

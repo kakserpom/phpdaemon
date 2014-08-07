@@ -76,7 +76,7 @@ class Crypt {
 			$r = '';
 			for ($i = 0, $s = sizeof($ints); $i < $s; ++$i) {
 				// This is wasteful, but RNGs are fast and doing otherwise adds complexity and bias.
-				$c = $ints[$i++] & $mask;
+				$c = $ints[$i] & $mask;
 				// Only use the random number if it is in range, otherwise try another (next iteration).
 				if ($c < $charsLen) {
 					$r .= static::stringIdx($chars, $c);
