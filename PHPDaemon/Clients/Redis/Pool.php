@@ -2,6 +2,7 @@
 namespace PHPDaemon\Clients\Redis;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Network\ClientConnection;
 
 /**
@@ -70,10 +71,17 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * @return void
 	 */
 	public function __call($cmd, $args) {
-		if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
-			$cb = array_pop($args);
-		} else {
-			$cb = null;
+		$cb = null;
+		for ($i = sizeof($args) - 1; $i >= 0; --$i) {
+			$a = $args[$i];
+			if ((is_array($a) || is_object($a)) && is_callable($a)) {
+				$cb = CallbackWrapper::wrap($a);
+				$args = array_slice($args, 0, $i);
+				break;
+			}
+			elseif ($a !== null) {
+				break;
+			}
 		}
 		reset($args);
 		$cmd = strtoupper($cmd);
