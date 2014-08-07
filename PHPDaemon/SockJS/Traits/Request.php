@@ -16,6 +16,7 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
 trait Request {
 	protected $sessId;
 	protected $serverId;
+	protected $path;
 
 	protected function contentType($type) {
 		$this->header('Content-Type: '.$type.'; charset=UTF-8');
@@ -38,6 +39,16 @@ trait Request {
 	 */
 	public function setSessId($val) {
 		$this->sessId = $val;
+	}
+	
+
+	/**
+	 * Sets path
+	 * @param string $val
+	 * @return void
+	 */
+	public function setPath($val) {
+		$this->path = $val;
 	}
 	
 	/**

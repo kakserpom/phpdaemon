@@ -52,6 +52,13 @@ class Pool extends Server {
 		return true;
 	}
 
+	public function getRoute($route) {
+		if (!isset($this->routes[$route])) {
+			return false;
+		}
+		return call_user_func($this->routes[$route], $this);
+	}
+
 	/**
 	 * Force add/replace a route.
 	 * @param string Route name.

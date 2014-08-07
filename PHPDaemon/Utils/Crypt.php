@@ -139,7 +139,7 @@ class Crypt {
 	}
 
 	/**
-	 * Returns array of pseudo random integers
+	 * Returns array of pseudo random integers of machine-dependent size
 	 * @param int $numInts Number of integers
 	 * @param callable $cb Callback (array)
 	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
@@ -160,6 +160,34 @@ class Crypt {
 				}
 				// Absolute value in two's compliment (with min int going to zero)
 				$thisInt = $thisInt & PHP_INT_MAX;
+				$ints[] = $thisInt;
+			}
+			call_user_func($cb, $ints);
+		}, $pri, $hang);
+	}
+
+	/**
+	 * Returns array of pseudo random 32-bit integers
+	 * @param int $numInts Number of integers
+	 * @param callable $cb Callback (array)
+	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
+	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @return int
+	 */
+	public static function randomInts32($numInts, $cb, $pri = 0, $hang = false) {
+		static::randomBytes(4 * $numInts, function($bytes) use ($cb, $numInts) {
+			if ($bytes === false) {
+				call_user_func($cb, false);
+				return;
+			}
+			$ints = [];
+			for ($i = 0; $i < $numInts; ++$i) {
+				$thisInt = 0;
+				for ($j = 0; $j < 4; ++$j) {
+					$thisInt = ($thisInt << 8) | (ord($bytes[$i * 4 + $j]) & 0xFF);
+				}
+				// Absolute value in two's compliment (with min int going to zero)
+				$thisInt = $thisInt & 0xFFFFFFFF;
 				$ints[] = $thisInt;
 			}
 			call_user_func($cb, $ints);

@@ -150,19 +150,29 @@ class Connection extends ClientConnection {
 		if ($name === 'SUBSCRIBE') {
 			$this->subscribed();
 			foreach ($args as $arg) {
-				if (!isset($this->subscribeCb[$arg])) {
-					$this->sendCommand($name, $arg, $opcb);
-				}
+				$b = !isset($this->subscribeCb[$arg]);
 				CallbackWrapper::addToArray($this->subscribeCb[$arg], $cb);
+				if ($b) {
+					$this->sendCommand($name, $arg, $opcb);
+				} else {
+					if ($opcb !== null) {
+						call_user_func($opcb, $this);
+					}
+				}
 			}
 		}
 		elseif ($name === 'PSUBSCRIBE') {
 			$this->subscribed();
 			foreach ($args as $arg) {
-				if (!isset($this->psubscribeCb[$arg])) {
-					$this->sendCommand($name, $arg, $opcb);
-				}
+				$b = !isset($this->psubscribeCb[$arg]);
 				CallbackWrapper::addToArray($this->psubscribeCb[$arg], $cb);
+				if ($b) {
+					$this->sendCommand($name, $arg, $opcb);
+				} else {
+					if ($opcb !== null) {
+						call_user_func($opcb, $this);
+					}
+				}
 			}
 		}
 		elseif ($name === 'UNSUBSCRIBE') {
@@ -171,6 +181,10 @@ class Connection extends ClientConnection {
 				if (sizeof($this->subscribeCb[$arg]) === 0) {
 					$this->sendCommand($name, $arg, $opcb);
 					unset($this->subscribeCb[$arg]);
+				} else {
+					if ($opcb !== null) {
+						call_user_func($opcb, $this);
+					}
 				}
 			}
 		}
@@ -180,7 +194,11 @@ class Connection extends ClientConnection {
 				if (sizeof($this->psubscribeCb[$arg]) === 0) {
 					$this->sendCommand($name, $arg, $opcb);
 					unset($this->psubscribeCb[$arg]);
-				}
+				} else {
+					if ($opcb !== null) {
+						call_user_func($opcb, $this);
+					}
+				}				
 			}
 		} else {
 			$this->sendCommand($name, $args, $cb);

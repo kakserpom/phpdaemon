@@ -5,8 +5,8 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Utils\Crypt;
 /**
- * @package    Blamper
- * @subpackage DNode
+ * @package    Libraries
+ * @subpackage SockJS
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
@@ -29,7 +29,7 @@ class Info extends Generic {
 	 * @return integer Status.
 	 */
 	public function run() {
-		Crypt::randomInts(1, function($ints) {
+		Crypt::randomInts32(1, function($ints) {
 			echo json_encode([
 				'websocket' => true,
 				'origins' => ['*:*'],

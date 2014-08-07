@@ -12,6 +12,8 @@ use PHPDaemon\Core\Debug;
 class Application extends \PHPDaemon\Core\AppInstance {
 	public $redis;
 	public $wss;
+
+	protected $sessions;
 	/**
 	 * Setting default config options
 	 * @return array|bool
@@ -24,6 +26,20 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		];
 	}
 
+
+	public function subscribe($chan, $cb) {
+		D($this->config->redisprefix->value . $chan);
+		$this->redis->subscribe($this->config->redisprefix->value . $chan, $cb);
+	}
+
+	public function unsubscribe($chan, $cb, $opcb = null) {
+		$this->redis->unsubscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
+	}
+
+	public function publish($chan, $cb, $opcb = null) {
+		$this->redis->publish($this->config->redisprefix->value . $chan, $cb, $opcb);
+	}
+
 	/**
 	 * Called when the worker is ready to go.
 	 * @return void
@@ -31,6 +47,15 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	public function onReady() {
 		$this->redis = \PHPDaemon\Clients\Redis\Pool::getInstance($this->config->redisname->value);
 		$this->wss = \PHPDaemon\Servers\WebSocket\Pool::getInstance($this->config->wssname->value);
+		$this->sessions = new SessionsStorage;
+	}
+
+	public function beginSession($path, $server) {
+		if (!$route = $this->wss->getRoute($path)) {
+			return false;
+		}
+		$this->sessions->attach($sess = new Session($route, $appInstance, $sessId, $server));
+		return $sess;
 	}
 
 	/**
@@ -53,6 +78,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		elseif ($method === 'info') {
 
 		} elseif (in_array($method, ['xhr', 'xhr_send'])) {
+			D($e);
 			$sessId = array_pop($e);
 			$serverId = array_pop($e);
 		}
@@ -61,6 +87,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$req = new $class($this, $upstream, $req);
 		$req->setSessId($sessId);
 		$req->setServerId($serverId);
+		$req->setPath($path);
 		return $req;
 	}
 }
