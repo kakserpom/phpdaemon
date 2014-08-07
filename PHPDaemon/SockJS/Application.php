@@ -10,7 +10,7 @@ use PHPDaemon\Core\Debug;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Application extends \PHPDaemon\Core\AppInstance {
-	public $redis;
+	protected $redis;
 	public $wss;
 
 	protected $sessions;
