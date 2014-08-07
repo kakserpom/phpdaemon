@@ -64,6 +64,13 @@ class Session {
 		if ($msg === '') {
 			return;
 		}
+		$frames = json_decode($msg, true);
+		if (!is_array($frames)) {
+			return;
+		}
+		foreach ($frames as $frame) {
+			$this->route->onFrame($frame, \PHPDaemon\Servers\WebSocket\Pool::STRING);
+		}
 	}
 
 	public function poll($redis) {
@@ -134,13 +141,14 @@ class Session {
 			json_encode($this->buffer, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
 			function($redis) use ($s) {
 				$this->flushing = false;
-				list ($chan, $n) = $redis->result;
-				if ($n === 0) {
+				if ($redis->result === 0) {
 					return;
 				}
 				if (sizeof($this->buffer) > $s) {
 					$this->buffer = array_slice($this->buffer, $s);
 					$this->flush();
+				} else {
+					$this->buffer = [];
 				}
 
 			}

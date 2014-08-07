@@ -12,7 +12,6 @@ use PHPDaemon\Utils\Crypt;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
- */
 class SessionsStorage extends ObjectStorage {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;

@@ -27,9 +27,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	}
 
 
-	public function subscribe($chan, $cb) {
+	public function subscribe($chan, $cb, $opcb = null) {
 		D($this->config->redisprefix->value . $chan);
-		$this->redis->subscribe($this->config->redisprefix->value . $chan, $cb);
+		$this->redis->subscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
 
 	public function unsubscribe($chan, $cb, $opcb = null) {

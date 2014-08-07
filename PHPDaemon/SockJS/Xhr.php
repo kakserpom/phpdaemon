@@ -57,7 +57,13 @@ class Xhr extends Generic {
 		$this->CORS();
 		$this->contentType('application/json');
 		$this->noncache();
-		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c']);
+		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
+			$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) {
+				if ($redis->result === 0) {
+					$this->appInstance->beginSession($this->path, $this->attrs->server);
+				}
+			});
+		});
 		$this->sleep(30);
 	}
 }
