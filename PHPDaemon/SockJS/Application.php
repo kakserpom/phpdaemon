@@ -78,9 +78,11 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		}
 		elseif ($method === 'info') {
 
-		} elseif (in_array($method, ['xhr', 'xhr_send'])) {
+		} elseif (in_array($method, ['xhr', 'xhr_send', 'xhr_streaming', 'eventsource'])) {
 			$sessId = array_pop($e);
 			$serverId = array_pop($e);
+		} else {
+			return false;
 		}
 		$path = ltrim(implode('/', $e), '/');
 		$class = __NAMESPACE__ . '\\' .strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);

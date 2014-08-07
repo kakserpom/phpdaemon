@@ -37,7 +37,6 @@ class Xhr extends Generic {
 			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
 				foreach ($this->frames as $frame) {
 					$this->out($frame . "\n");
-					//$this->out(json_encode($frame, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n");
 				}
 				$this->finish();
 			});
@@ -45,7 +44,7 @@ class Xhr extends Generic {
 	}
 
 	public function onFinish() {
-		//$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
+		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
 		parent::onFinish();
 	}
 
