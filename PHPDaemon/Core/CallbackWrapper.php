@@ -46,7 +46,9 @@ class CallbackWrapper {
 
 	public function setTimeout($timeout) {
 		if ($timeout !== null) {
-			$this->timer = Timer::add(function() {$this();}, $timeout);
+			$this->timer = Timer::add(function() {
+				$this();
+			}, $timeout);
 		}
 	}
 

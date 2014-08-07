@@ -146,7 +146,7 @@ class Crypt {
 	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
 	 * @return int
 	 */
-	public static function randomInts($numInts, $cb, $pri, $hang = false) {
+	public static function randomInts($numInts, $cb, $pri = 0, $hang = false) {
 		static::randomBytes(PHP_INT_SIZE * $numInts, function($bytes) use ($cb, $numInts) {
 			if ($bytes === false) {
 				call_user_func($cb, false);
