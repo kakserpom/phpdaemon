@@ -27,6 +27,10 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	}
 
 
+	public function getLocalSubscribersCount($chan) {
+		return $this->redis->getLocalSubscribersCount($this->config->redisprefix->value . $chan);
+	}
+
 	public function subscribe($chan, $cb, $opcb = null) {
 		$this->redis->subscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
@@ -75,12 +79,17 @@ class Application extends \PHPDaemon\Core\AppInstance {
 				$sessId = array_pop($e);
 				$serverId = array_pop($e);
 			}
-		}
-		elseif ($method === 'info') {
+		} elseif ($method === 'info') {
 
-		} elseif (in_array($method, ['xhr', 'xhr_send'])) {
+		} elseif (in_array($method, ['xhr', 'xhr_send', 'xhr_streaming', 'eventsource', 'jsonp', 'jsonp_send'])) {
 			$sessId = array_pop($e);
 			$serverId = array_pop($e);
+		} elseif (preg_match('~^iframe(?:-([^/]+))?\.html$~', $method, $m)) {
+			$method = 'Iframe';
+			$version = isset($m[1]) ? $m[1] : null;
+
+		} else {
+			return false;
 		}
 		$path = ltrim(implode('/', $e), '/');
 		$class = __NAMESPACE__ . '\\' .strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);
@@ -88,6 +97,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$req->setSessId($sessId);
 		$req->setServerId($serverId);
 		$req->setPath($path);
+		if ($method === 'Iframe' && $version !== null) {
+			$req->setVersion($version);
+		}
 		return $req;
 	}
 }

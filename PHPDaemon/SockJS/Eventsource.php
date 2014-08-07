@@ -12,11 +12,11 @@ use PHPDaemon\Utils\Crypt;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class Xhr extends Generic {
+class Eventsource extends Generic {
 	use Traits\Request;
 	protected $stage = 0;
-	protected $frames = [];
-	protected $timer;
+	protected $bytesSent = 0;
+	protected $gc = false;
 
 	public function s2c($redis) {
 		list (, $chan, $msg) = $redis->result;
@@ -25,22 +25,26 @@ class Xhr extends Generic {
 			return;
 		}
 		foreach ($frames as $frame) {
-			$this->frames[] = $frame;
+			$this->out('data: '.$frame . "\n\n");
 		}
-		$this->delayedStop();
-	}
 
-	public function delayedStop() {
-		Timer::setTimeout($this->timer, 0.15e6) || $this->timer = setTimeout(function($timer) {
-			$this->timer = true;
-			$timer->free();
+		if (!$this->gc && $this->bytesSent > 128 * 1024) {
+			$this->gc = true;
 			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-				foreach ($this->frames as $frame) {
-					$this->out($frame . "\n");
-				}
 				$this->finish();
 			});
-		}, 0.15e6);
+		}
+	}
+
+	/**
+	 * Output some data
+	 * @param string $s String to out
+	 * @param bool $flush
+	 * @return boolean Success
+	 */
+	public function out($s, $flush = true) {
+		$this->bytesSent += strlen($s);
+		parent::out($s, $flush);
 	}
 
 	public function onFinish() {
@@ -54,11 +58,13 @@ class Xhr extends Generic {
 	 */
 	public function run() {
 		if ($this->stage++ > 0) {
+			$this->sleep(300);
 			return;
 		}
 		$this->CORS();
-		$this->contentType('application/json');
+		$this->contentType('text/event-stream');
 		$this->noncache();
+		$this->out("\n", false);
 		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
 			$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) {
 				if ($redis->result === 0) {
@@ -67,8 +73,9 @@ class Xhr extends Generic {
 						$this->finish();
 					}
 				}
+
 			});
 		});
-		$this->sleep(30);
+		$this->sleep(300);
 	}
 }

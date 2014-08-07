@@ -17,6 +17,37 @@ trait Request {
 	protected $sessId;
 	protected $serverId;
 	protected $path;
+	protected $errors = [
+		2010 => 'Another connection still open',
+	];
+
+	protected function acquire($cb) {
+		$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
+			if ($redis->result > 0) {
+				$this->error(2010);
+				$this->finish();
+				return;
+			}
+			if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 0) {
+				$this->error(2010);
+				return;
+			}
+			$this->appInstance->subscribe('w8in:' . $this->sessId, [$this, 'w8in'], function($redis) use ($cb) {
+				$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
+					if ($redis->result > 1) {
+						$this->error(2010);
+						$this->finish();
+						return;
+					}
+					call_user_func($cb);
+				});
+			});
+		});
+	}
+
+	protected function error($code) {
+		$this->out('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]) . "\n");
+	}
 
 	protected function contentType($type) {
 		$this->header('Content-Type: '.$type.'; charset=UTF-8');
