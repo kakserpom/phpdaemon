@@ -38,7 +38,7 @@ class Session {
 	public $flushing = false;
 	
 	/** @var int */
-	public $timeout = 60;
+	public $timeout = 5;
 	public $server;
 
 
@@ -60,7 +60,9 @@ class Session {
 		$this->id     = $id;
 		$this->appInstance = $appInstance;
 		$this->server = $server;
-		$this->finishTimer = setTimeout([$this, 'finishTimer'], $this->timeout * 1e6);
+		$this->finishTimer = setTimeout(function($timer) {
+			$this->finish();
+		}, $this->timeout * 1e6);
 		
 		$this->appInstance->subscribe('c2s:' . $this->id, [$this, 'c2s']);
 		$this->appInstance->subscribe('poll:' . $this->id, [$this, 'poll']);
@@ -138,15 +140,7 @@ class Session {
 		Timer::remove($this->finishTimer);
 		$this->finishTimer = null;
 	}
-
-	/**
-	 * @TODO DESCR
-	 * @param $timer
-	 */
-	public function finishTimer($timer) {
-		$this->finish();
-	}
-
+	
 	/**
 	 * Flushes buffered packets
 	 * @return void

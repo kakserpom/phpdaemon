@@ -45,7 +45,7 @@ class Timer {
 	/**
 	 * @var int
 	 */
-	static $counter = 0;
+	static $counter = 1;
 
 	/**
 	 * Constructor
@@ -58,6 +58,9 @@ class Timer {
 	public function __construct($cb, $timeout = null, $id = null, $priority = null) {
 		if ($id === null) {
 			$id = ++self::$counter;
+		}
+		else {
+			$id = (string) $id;
 		}
 		$this->id = $id;
 		$this->cb = $cb;
