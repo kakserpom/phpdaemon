@@ -16,8 +16,7 @@ class XhrStreaming extends Generic {
 	use Traits\Request;
 	protected $stage = 0;
 	protected $fillerSent = false;
-	protected $bytesSent = 0;
-	protected $gc = false;
+	protected $maxBytesSent = 131072;
 
 	public function s2c($redis) {
 		list (, $chan, $msg) = $redis->result;
@@ -33,37 +32,8 @@ class XhrStreaming extends Generic {
 			$this->out($frame . "\n");
 		}
 
-		if (!$this->gc && $this->bytesSent > 128 * 1024) {
-			$this->gc = true;
-			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-				$this->finish();
-			});
-		}
+		$this->gcCheck();
 	}
-
-	public function w8in($redis) {
-	}
-
-	/**
-	 * Output some data
-	 * @param string $s String to out
-	 * @param bool $flush
-	 * @return boolean Success
-	 */
-	public function out($s, $flush = true) {
-		$this->bytesSent += strlen($s);
-		parent::out($s, $flush);
-	}
-
-	public function onFinish() {
-		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
-		$this->appInstance->unsubscribe('w8in:' . $this->sessId, [$this, 'w8in']);
-		parent::onFinish();
-	}
-
-	protected function poll() {
-	}
-
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
@@ -77,17 +47,7 @@ class XhrStreaming extends Generic {
 		$this->contentType('application/json');
 		$this->noncache();
 		$this->acquire(function() {
-			$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-				$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) {
-					if ($redis->result > 0) {
-						return;
-					}
-					if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
-						$this->header('404 Not Found');
-						$this->finish();
-					}
-				});
-			});
+			$this->poll();
 		});
 		$this->sleep(300);
 	}

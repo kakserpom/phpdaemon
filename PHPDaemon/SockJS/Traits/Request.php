@@ -17,10 +17,60 @@ trait Request {
 	protected $sessId;
 	protected $serverId;
 	protected $path;
+	protected $maxBytesSent = 0;
 	protected $errors = [
 		2010 => 'Another connection still open',
 	];
 
+	protected $bytesSent = 0;
+	protected $gc = false;
+
+	public function w8in($redis) {
+	}
+
+	public function gcCheck() {
+		if ($this->maxBytesSent > 0 && !$this->gc && $this->bytesSent > $this->maxBytesSent) {
+			$this->gc = true;
+			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
+				$this->finish();
+			});
+		}
+	}
+
+	/**
+	 * Output some data
+	 * @param string $s String to out
+	 * @param bool $flush
+	 * @return boolean Success
+	 */
+	public function out($s, $flush = true) {
+		$this->bytesSent += strlen($s);
+		parent::out($s, $flush);
+	}
+
+	public function onFinish() {
+		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
+		$this->appInstance->unsubscribe('w8in:' . $this->sessId, [$this, 'w8in']);
+		parent::onFinish();
+	}
+
+	protected function poll($cb = null) {
+		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) use ($cb) {
+			$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) use ($cb) {
+				if ($redis->result === 0) {
+					if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
+						$this->header('404 Not Found');
+						$this->finish();
+						return;
+					}
+				}
+				if ($cb !== null) {
+					call_user_func($cb);
+				}
+			});
+		});
+	}
+	
 	protected function acquire($cb) {
 		$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
 			if ($redis->result > 0) {

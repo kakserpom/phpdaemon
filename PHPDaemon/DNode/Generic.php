@@ -22,9 +22,9 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	protected $counter = 0;
 	protected $remoteMethods = [];
 	protected $localMethods = [];
-	protected $ioMode = false;
 	protected $timer;
-	protected $traceCalls = false;
+
+	public $ioMode = false; // @TODO: remove
 
 	/**
 	 * Called when the connection is handshaked.
@@ -156,43 +156,6 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 		}
 	}
 
-	
-	public function fakeIncomingCallExtractCallbacks($args, &$list, &$path) {
-		foreach ($args as $k => &$v) {
-			if (is_array($v)) {
-				$path[] = $k;
-				$this->fakeIncomingCallExtractCallbacks($v, $list, $path);
-				array_pop($path);
-			} elseif ($v instanceof \Closure) {
-				$id = ++$this->counter;
-				$this->callbacks[$id] = $v;
-				$list[$id] = array_merge($path, [$k]);
-			}
-		}
-	}
-
-	public function fakeIncomingCall() {
-		$args = func_get_args();
-		if (!sizeof($args)) {
-			return $this;
-		}
-		$method = array_shift($args);
-		$p = [
-			'method' => $method,
-		];
-		if (sizeof($args)) {
-			$path = [];
-			$this->fakeIncomingCallExtractCallbacks($args, $callbacks, $path);
-			$p['arguments'] = $args;
-			$p['callbacks'] = $callbacks;
-		}
-		if ($this->ioMode) {
-			$this->onFrame($this->toJson([$this->toJson($p) . "\n"], 'STRING'));
-		} else {
-			$this->onFrame($this->toJson($p)."\n", 'STRING');
-		}
-	}
-
 	/**
 	 * Called when session finished.
 	 * @return void
@@ -266,11 +229,6 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 				}
 			}
 			elseif (isset($this->persistentCallbacks[$m])) {
-				if ($this->traceCalls) {
-					if ($name = array_search($this->persistentCallbacks[$m], $this->localMethods, true)) {
-						Daemon::log('===>'.$name.'('.$this->toJsonDebug($args).')');
-					}
-				}
 				call_user_func_array($this->persistentCallbacks[$m], $args);
 			}
 			else {
@@ -291,13 +249,14 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 			if ($pct === '') {
 				continue;
 			}
-			$pct = json_decode($pct, true);
-			if (isset($pct[0])) {
+			// ["{method: ...   }\n"]
+			if ($this->ioMode) {
+				$pct = json_decode($pct, true);
 				foreach ($pct as $i) {
 					$this->onPacket(json_decode(rtrim($i), true));
 				}
 			} else {
-				$this->onPacket($pct);
+				$this->onPacket(json_decode(rtrim($pct), true));
 			}
 		}
 	}

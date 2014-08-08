@@ -58,6 +58,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		if (!$session->route = $this->wss->getRoute($path, $session)) {
 			return false;
 		}
+		$session->route->ioMode = false;
 		$this->sessions->attach($session);
 		$session->onHandshake();
 		return $session;

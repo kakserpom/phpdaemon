@@ -43,6 +43,12 @@ class Session {
 
 
 	protected $finishTimer;
+	
+	protected $timer;
+
+	protected function toJson($m) {
+		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+	}
 
 	/**
 	 * @param $route
@@ -65,12 +71,15 @@ class Session {
 		if ($msg === '') {
 			return;
 		}
+		$this->onFrame($msg, \PHPDaemon\Servers\WebSocket\Pool::STRING);
+	}
+
+	public function onFrame($msg, $type) {
 		$frames = json_decode($msg, true);
 		if (!is_array($frames)) {
 			return;
 		}
 		foreach ($frames as $frame) {
-			//D(['onFrame' => $frame]);
 			$this->route->onFrame($frame, \PHPDaemon\Servers\WebSocket\Pool::STRING);
 		}
 	}
@@ -84,7 +93,12 @@ class Session {
 	 * @TODO DESCR
 	 */
 	public function onHandshake() {
+		$this->sendPacket('o');
 		$this->route->onHandshake();
+		$this->timer = setTimeout(function($event) {
+			$this->sendPacket('h');
+			$event->timeout();
+		}, 15e6);
 	}
 
 	/**
@@ -135,7 +149,6 @@ class Session {
 
 	/**
 	 * Flushes buffered packets
-	 * @param string Optional. Last timestamp.
 	 * @return void
 	 */
 	public function flush() {
@@ -148,7 +161,7 @@ class Session {
 		$this->flushing = true;
 		$this->appInstance->publish(
 			's2c:' . $this->id,
-			json_encode($this->buffer, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+			$this->toJson($this->buffer),
 			function($redis) use ($s) {
 				$this->flushing = false;
 				if ($redis->result === 0) {
@@ -166,6 +179,14 @@ class Session {
 		$this->onWrite();
 	}
 
+	public function sendPacket($pct, $cb = null) {
+		$this->buffer[] = $pct;
+		if ($cb !== null) {
+			$this->onWrite->push($cb);
+		}
+		$this->flush();
+	}
+
 	/**
 	 * Sends a frame.
 	 * @param string   Frame's data.
@@ -174,12 +195,7 @@ class Session {
 	 * @return boolean Success.
 	 */
 	public function sendFrame($data, $type = 0x00, $cb = null) {
-		//D(['sendFrame' => $data]);
-		$this->buffer[] = $data;
-		if ($cb !== null) {
-			$this->onWrite->push($cb);
-		}
-		$this->flush();
+		$this->sendPacket('a' . $this->toJson([$data]), $cb);
 		return true;
 	}
 

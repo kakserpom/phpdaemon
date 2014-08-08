@@ -44,11 +44,6 @@ class Jsonp extends Generic {
 		}), 0.15e6);
 	}
 
-	public function onFinish() {
-		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
-		parent::onFinish();
-	}
-
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
@@ -64,15 +59,8 @@ class Jsonp extends Generic {
 			$this->header('400 Bad Request');
 			return;
 		}
-		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-			$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) {
-				if ($redis->result === 0) {
-					if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
-						$this->header('404 Not Found');
-						$this->finish();
-					}
-				}
-			});
+		$this->acquire(function() {
+			$this->poll();
 		});
 		$this->sleep(30);
 	}

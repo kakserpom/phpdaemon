@@ -15,9 +15,7 @@ use PHPDaemon\Utils\Crypt;
 class Eventsource extends Generic {
 	use Traits\Request;
 	protected $stage = 0;
-	protected $bytesSent = 0;
-	protected $gc = false;
-
+	protected $maxBytesSent = 131072;
 	public function s2c($redis) {
 		list (, $chan, $msg) = $redis->result;
 		$frames = json_decode($msg, true);
@@ -28,28 +26,7 @@ class Eventsource extends Generic {
 			$this->out('data: '.$frame . "\n\n");
 		}
 
-		if (!$this->gc && $this->bytesSent > 128 * 1024) {
-			$this->gc = true;
-			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-				$this->finish();
-			});
-		}
-	}
-
-	/**
-	 * Output some data
-	 * @param string $s String to out
-	 * @param bool $flush
-	 * @return boolean Success
-	 */
-	public function out($s, $flush = true) {
-		$this->bytesSent += strlen($s);
-		parent::out($s, $flush);
-	}
-
-	public function onFinish() {
-		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
-		parent::onFinish();
+		$this->gcCheck();
 	}
 
 	/**
@@ -65,16 +42,8 @@ class Eventsource extends Generic {
 		$this->contentType('text/event-stream');
 		$this->noncache();
 		$this->out("\n", false);
-		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-			$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) {
-				if ($redis->result === 0) {
-					if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
-						$this->header('404 Not Found');
-						$this->finish();
-					}
-				}
-
-			});
+		$this->acquire(function() {
+			$this->poll();
 		});
 		$this->sleep(300);
 	}
