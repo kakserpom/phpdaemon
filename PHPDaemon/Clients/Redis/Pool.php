@@ -60,6 +60,13 @@ class Pool extends \PHPDaemon\Network\Client {
 		];
 	}
 
+	public function getLocalSubscribersCount($chan) {
+		foreach ($this->servConnSub as $conn)  {
+			return $conn->getLocalSubscribersCount($chan);
+		}
+		return 0;
+	}
+
 	/**
 	 * Magic __call.
 	 * @method $cmd

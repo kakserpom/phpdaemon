@@ -87,7 +87,6 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		} elseif (preg_match('~^iframe(?:-([^/]+))?\.html$~', $method, $m)) {
 			$method = 'Iframe';
 			$version = isset($m[1]) ? $m[1] : null;
-
 		} else {
 			return false;
 		}

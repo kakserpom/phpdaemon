@@ -45,6 +45,7 @@ class Xhr extends Generic {
 
 	public function onFinish() {
 		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
+		Timer::remove($this->timer);
 		parent::onFinish();
 	}
 
@@ -59,14 +60,16 @@ class Xhr extends Generic {
 		$this->CORS();
 		$this->contentType('application/json');
 		$this->noncache();
-		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-			$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) {
-				if ($redis->result === 0) {
-					if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
-						$this->header('404 Not Found');
-						$this->finish();
+		$this->acquire(function() {
+			$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
+				$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) {
+					if ($redis->result === 0) {
+						if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
+							$this->header('404 Not Found');
+							$this->finish();
+						}
 					}
-				}
+				});
 			});
 		});
 		$this->sleep(30);

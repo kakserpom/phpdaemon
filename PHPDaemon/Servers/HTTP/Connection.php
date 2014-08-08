@@ -2,6 +2,7 @@
 namespace PHPDaemon\Servers\HTTP;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\HTTPRequest\Input;
@@ -183,6 +184,18 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		}
 		return true;
 	}
+
+	/* Used for debugging protocol issues */
+	/*public function readline() {
+		$s = parent::readline();
+		Daemon::log(Debug::json($s));
+		return $s;
+	}
+
+	public function write($s) {
+		Daemon::log(Debug::json($s));
+		parent::write($s);
+	}*
 
 	/**
 	 * Called when new data received.
