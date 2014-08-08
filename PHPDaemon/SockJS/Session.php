@@ -38,7 +38,7 @@ class Session {
 	public $flushing = false;
 	
 	/** @var int */
-	public $timeout = 5;
+	public $timeout = 60;
 	public $server;
 
 
@@ -87,7 +87,7 @@ class Session {
 	}
 
 	public function poll($redis) {
-		Timer::setTimeout($this->finishTimer, $this->timeout * 1e6); 
+		Timer::setTimeout($this->finishTimer); 
 		$this->flush();
 	}
 	
@@ -97,9 +97,9 @@ class Session {
 	public function onHandshake() {
 		$this->sendPacket('o');
 		$this->route->onHandshake();
-		$this->timer = setTimeout(function($event) {
+		$this->timer = setTimeout(function($timer) {
 			$this->sendPacket('h');
-			$event->timeout();
+			$timer->timeout();
 		}, 15e6);
 	}
 
@@ -110,6 +110,7 @@ class Session {
 		if ($this->finished) {
 			return;
 		}
+		Timer::setTimeout($this->finishTimer); 
 		$this->onWrite->executeAll($this->route);
 		if (method_exists($this->route, 'onWrite')) {
 			$this->route->onWrite();
