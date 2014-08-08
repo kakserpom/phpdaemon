@@ -134,10 +134,14 @@ class DeferredEvent {
 	 */
 	public function addListener($cb) {
 		if ($this->state === self::STATE_DONE) {
-			call_user_func($cb, $this);
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
 			return;
 		}
-		$this->listeners->push($cb);
+		if ($cb !== null) {
+			$this->listeners->push($cb);
+		}
 		if ($this->state === self::STATE_WAITING) {
 			$i = 1;
 			$n = func_num_args();
