@@ -155,7 +155,8 @@ class Session {
 		if ($this->flushing) {
 			return;
 		}
-		if (!$s = sizeof($this->buffer)) {
+		$s = sizeof($this->buffer);
+		if ($s === 0) {
 			return;
 		}
 		$this->flushing = true;
