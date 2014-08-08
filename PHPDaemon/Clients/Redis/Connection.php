@@ -79,6 +79,13 @@ class Connection extends ClientConnection {
 	 */
 	const STATE_BINARY = 1;
 
+	public function getLocalSubscribersCount($chan) {
+		if (!isset($this->subscribeCb[$chan])) {
+			return 0;
+		}
+		return sizeof($this->subscribeCb[$chan]);
+	}
+
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
