@@ -24,20 +24,11 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	protected $localMethods = [];
 	protected $timer;
 
-	public $ioMode = false; // @TODO: remove
-
 	/**
 	 * Called when the connection is handshaked.
 	 * @return void
 	 */
 	public function onHandshake() {
-		if ($this->ioMode) {
-			$this->client->sendFrame('o');
-			$this->timer = setTimeout(function($event) {
-				$this->client->sendFrame('h');
-				$event->timeout();
-			}, 15e6);
-		}
 		parent::onHandshake();
 	}
 
@@ -146,11 +137,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 		if (is_string($p['method']) && ctype_digit($p['method'])) {
 			$p['method'] = (int) $p['method'];
 		}
-		if ($this->ioMode) {
-			$this->client->sendFrame('a' . $this->toJson([$this->toJson($p) . "\n"], 'STRING'));
-		} else {
-			$this->client->sendFrame($this->toJson($p) . "\n", 'STRING');
-		}
+		$this->client->sendFrame($this->toJson($p) . "\n", 'STRING');
 		if ($this->timer) {
 			Timer::setTimeout($this->timer);
 		}
@@ -161,14 +148,15 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	 * @return void
 	 */
 	public function onFinish() {
-		parent::onFinish();
 		if ($this->timer) {
 			Timer::remove($this->timer);
 			$this->timer = null;
 		}
 		$this->remoteMethods = [];
 		$this->localMethods = [];
+		$this->persistentCallbacks = [];
 		$this->callbacks = [];
+		parent::onFinish();
 	}
 
 	protected static function setPath(&$m, $path, $val) {
@@ -249,15 +237,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 			if ($pct === '') {
 				continue;
 			}
-			// ["{method: ...   }\n"]
-			if ($this->ioMode) {
-				$pct = json_decode($pct, true);
-				foreach ($pct as $i) {
-					$this->onPacket(json_decode(rtrim($i), true));
-				}
-			} else {
-				$this->onPacket(json_decode(rtrim($pct), true));
-			}
+			$this->onPacket(json_decode(rtrim($pct), true));
 		}
 	}
 }

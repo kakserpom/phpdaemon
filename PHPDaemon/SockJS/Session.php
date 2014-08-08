@@ -128,6 +128,10 @@ class Session {
 		$this->onFinish();
 	}
 
+	/*public function __destruct() {
+		D('destructed session '.$this->id);
+	}*/
+
 	/**
 	 * @TODO DESCR
 	 */
@@ -137,9 +141,11 @@ class Session {
 		if (isset($this->route)) {
 			$this->route->onFinish();
 		}
-		unset($this->route);
+		$this->onWrite->reset();
+		$this->route = null;
 		Timer::remove($this->finishTimer);
-		$this->finishTimer = null;
+		Timer::remove($this->timer);
+		$this->appInstance->endSession($this);
 	}
 	
 	/**

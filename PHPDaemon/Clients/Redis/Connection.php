@@ -170,6 +170,7 @@ class Connection extends ClientConnection {
 			foreach ($args as $arg) {
 				$b = !isset($this->subscribeCb[$arg]);
 				CallbackWrapper::addToArray($this->subscribeCb[$arg], $cb);
+				//D([$name, $arg, $b]);
 				if ($b) {
 					$this->sendCommand($name, $arg, $opcb);
 				} else {
@@ -195,8 +196,16 @@ class Connection extends ClientConnection {
 		}
 		elseif ($name === 'UNSUBSCRIBE') {
 			foreach ($args as $arg) {
+				//D([$name, $arg, 'pre']);
+				if (!isset($this->subscribeCb[$arg]) || !sizeof($this->subscribeCb[$arg])) {
+					if ($opcb !== null) {
+						call_user_func($opcb, $this);
+					}
+					continue;
+				}
 				CallbackWrapper::removeFromArray($this->subscribeCb[$arg], $cb);
 				if (sizeof($this->subscribeCb[$arg]) === 0) {
+					//D([$name, $arg, 'send']);
 					$this->sendCommand($name, $arg, $opcb);
 					unset($this->subscribeCb[$arg]);
 				} else {

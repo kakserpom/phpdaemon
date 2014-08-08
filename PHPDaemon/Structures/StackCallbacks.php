@@ -83,9 +83,9 @@ class StackCallbacks extends \SplStack {
 
 	public function toArray() {
 		$arr = [];
-		do {
+		while (!$this->isEmpty()) {
 			$arr[] = $this->shift();
-		} while (!$this->isEmpty());
+		}
 		return $arr;
 	}
 
@@ -94,8 +94,8 @@ class StackCallbacks extends \SplStack {
 	 * @return void
 	 */
 	public function reset() {
-		do {
+		while (!$this->isEmpty()) {
 			$this->shift();
-		} while (!$this->isEmpty());
+		}
 	}
 }

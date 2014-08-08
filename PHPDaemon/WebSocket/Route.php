@@ -52,12 +52,12 @@ class Route {
 		return false;
 	}
 
-
 	/**
 	 * Called when session finished.
 	 * @return void
 	 */
 	public function onFinish() {
+		$this->client = null;
 	}
 
 	/**

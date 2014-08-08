@@ -72,17 +72,21 @@ trait Request {
 	}
 	
 	protected function acquire($cb) {
+		if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 0) {
+			$this->error(2010);
+			return;
+		}
 		$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
 			if ($redis->result > 0) {
 				$this->error(2010);
 				$this->finish();
 				return;
 			}
-			if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 0) {
-				$this->error(2010);
-				return;
-			}
 			$this->appInstance->subscribe('w8in:' . $this->sessId, [$this, 'w8in'], function($redis) use ($cb) {
+				if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
+					$this->error(2010);
+					return;
+				}
 				$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
 					if ($redis->result > 1) {
 						$this->error(2010);
@@ -110,6 +114,9 @@ trait Request {
 	protected function CORS() {
 		if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
 			$this->header('Access-Control-Allow-Headers: '.$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+		}
+		if (isset($_COOKIE['JSESSIONID']) && is_string($_COOKIE['JSESSIONID'])) {
+			$this->setcookie('JSESSIONID', $_COOKIE['JSESSIONID'], 0, '/');
 		}
 	}
 

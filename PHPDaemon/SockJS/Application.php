@@ -64,6 +64,10 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return $session;
 	}
 
+	public function endSession($session) {
+		$this->sessions->detach($session);
+	}
+
 	/**
 	 * Creates Request.
 	 * @param object Request.
