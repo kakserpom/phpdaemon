@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\SockJS;
+namespace PHPDaemon\SockJS\Methods;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
@@ -15,6 +15,8 @@ class IFrame extends Generic {
 	use Traits\Request;
 
 	protected $version = '0.3';
+	protected $contentType = 'text/html';
+	protected $cacheable = true;
 
 
 	/**
@@ -31,8 +33,7 @@ class IFrame extends Generic {
 	 * @return void
 	 */
 	public function init() {
-		$this->CORS();
-		$this->contentType('text/html');
+		parent::init();
 		$this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0, no-transform');
 		$this->header('Expires: '.date('r', strtotime('+1 year')));
 		$html = '<!DOCTYPE html>

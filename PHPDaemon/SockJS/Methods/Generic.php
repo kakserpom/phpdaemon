@@ -1,7 +1,8 @@
 <?php
-namespace PHPDaemon\SockJS\Traits;
+namespace PHPDaemon\SockJS\Methods;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\Timer;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 /**
@@ -13,44 +14,103 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 
-trait Request {
+abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
+	protected $stage = 0;
 	protected $sessId;
 	protected $serverId;
 	protected $path;
-	protected $maxBytesSent = 0;
+	protected $timer;
+	
+	protected $delayedStopEnabled = false;
+	protected $callbackParamEnabled = false;
+	protected $frames = [];
+
 	protected $errors = [
 		2010 => 'Another connection still open',
 	];
 
-	protected $bytesSent = 0;
-	protected $gc = false;
+	protected $fillerSent = false;
+	protected $fillerEnabled = false;
 
-	public function w8in($redis) {
-	}
+	protected $cacheable = false;
+	protected $poll = false;
 
-	public function gcCheck() {
-		if ($this->maxBytesSent > 0 && !$this->gc && $this->bytesSent > $this->maxBytesSent) {
-			$this->gc = true;
-			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
+	public function init() {
+		$this->CORS();
+		$this->contentType($this->contentType);
+		if (!$this->cacheable) {
+			$this->noncache();
+		}
+		if ($this->callbackParamEnabled) {
+			if (!isset($_GET['c']) || !is_string($_GET['c']) || preg_match('~[^_\.a-zA-Z0-9]~', $_GET['c'])) {
+				$this->header('400 Bad Request');
 				$this->finish();
+				return;
+			}
+		}
+		if ($this->poll) {
+			$this->acquire(function() {
+				$this->poll();
 			});
 		}
 	}
 
+
 	/**
-	 * Output some data
-	 * @param string $s String to out
-	 * @param bool $flush
-	 * @return boolean Success
+	 * Called when request iterated.
+	 * @return integer Status.
 	 */
-	public function out($s, $flush = true) {
-		$this->bytesSent += strlen($s);
-		parent::out($s, $flush);
+	public function run() {
+		$this->sleep(30);
 	}
+
+
+	public function w8in($redis) {}
+	
+	public function s2c($redis) {
+		list (, $chan, $msg) = $redis->result;
+		$frames = json_decode($msg, true);
+		if (!is_array($frames) || !sizeof($frames)) {
+			return;
+		}
+		if ($this->fillerEnabled && !$this->fillerSent) {
+			$this->sendFrame(str_repeat('h', 2048) . "\n");
+			$this->fillerSent = true;
+		}
+		if ($this->delayedStopEnabled) {
+			foreach ($frames as $frame) {
+				$this->frames[] = $frame;
+			}
+			$this->delayedStop();
+		}
+ 		else {
+ 			foreach ($frames as $frame) {
+				$this->sendFrame($frame);
+			}
+			if (isset($this->gc)) {
+				$this->gcCheck();
+			}
+		}
+	}
+
+	public function delayedStop() {
+		Timer::setTimeout($this->timer, 0.15e6) || $this->timer = setTimeout(function($timer) {
+			$this->timer = true;
+			$timer->free();
+			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
+				foreach ($this->frames as $frame) {
+					$this->sendFrame($frame);
+				}
+				$this->finish();
+			});
+		}, 0.15e6);
+	}
+
 
 	public function onFinish() {
 		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
 		$this->appInstance->unsubscribe('w8in:' . $this->sessId, [$this, 'w8in']);
+		$this->timer === null || Timer::remove($this->timer);
 		parent::onFinish();
 	}
 
@@ -79,7 +139,6 @@ trait Request {
 		$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
 			if ($redis->result > 0) {
 				$this->error(2010);
-				$this->finish();
 				return;
 			}
 			$this->appInstance->subscribe('w8in:' . $this->sessId, [$this, 'w8in'], function($redis) use ($cb) {
@@ -90,7 +149,6 @@ trait Request {
 				$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
 					if ($redis->result > 1) {
 						$this->error(2010);
-						$this->finish();
 						return;
 					}
 					call_user_func($cb);
@@ -100,7 +158,8 @@ trait Request {
 	}
 
 	protected function error($code) {
-		$this->out('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]) . "\n");
+		$this->sendFrame('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]) . "\n");
+		$this->finish();
 	}
 
 	protected function contentType($type) {

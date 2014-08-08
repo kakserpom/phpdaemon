@@ -1,6 +1,5 @@
 <?php
-namespace PHPDaemon\SockJS;
-use PHPDaemon\HTTPRequest\Generic;
+namespace PHPDaemon\SockJS\Methods;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Utils\Crypt;
@@ -12,23 +11,10 @@ use PHPDaemon\Utils\Crypt;
  */
 
 class Info extends Generic {
-	use Traits\Request;
 
-	/**
-	 * Constructor.
-	 * @return void
-	 */
+	protected $contentType = 'application/json';
+
 	public function init() {
-		$this->CORS();
-		$this->contentType('application/json');
-		$this->noncache();
-	}
-
-	/**
-	 * Called when request iterated.
-	 * @return integer Status.
-	 */
-	public function run() {
 		Crypt::randomInts32(1, function($ints) {
 			echo json_encode([
 				'websocket' => true,
@@ -38,7 +24,15 @@ class Info extends Generic {
 			]);
 			$this->finish();
 		}, 9);
-		$this->sleep(5);
+		$this->sleep(5, true);
+	}
+
+	/**
+	 * Called when request iterated.
+	 * @return integer Status.
+	 */
+	public function run() {
+		$this->header('500 Server Too Busy');
 	}
 
 }

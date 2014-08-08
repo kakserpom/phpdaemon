@@ -1,6 +1,5 @@
 <?php
-namespace PHPDaemon\SockJS;
-use PHPDaemon\HTTPRequest\Generic;
+namespace PHPDaemon\SockJS\Methods;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
@@ -12,25 +11,33 @@ use PHPDaemon\Utils\Crypt;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class XhrSend extends Generic {
+class JsonpSend extends Generic {
 	use Traits\Request;
-	protected $stage = 0;
+	protected $contentType = 'text/plain';
+
+	public function init() {
+		parent::init();
+		if ($this->isFinished()) {
+			return;
+		}
+		if (!isset($_POST['d']) || !is_string($_POST['d'])) {
+			$this->header('400 Bad Request');
+			return;
+		}
+	}
+
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
-		if ($this->stage++ > 0) {
-			return;
-		}
-		$this->CORS();
-		$this->contentType('text/plain');
 		$this->noncache();
-		$this->appInstance->publish('c2s:' . $this->sessId, $this->attrs->raw, function($redis) {
+
+		$this->appInstance->publish('c2s:' . $this->sessId, $_POST['d'], function($redis) {
 			if ($redis->result === 0) {
 				$this->header('404 Not Found');
 			} else {
-				$this->header('204 No Content');
+				echo 'ok';
 			}
 			$this->finish();
 		});

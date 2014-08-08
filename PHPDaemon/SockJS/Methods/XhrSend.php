@@ -1,5 +1,5 @@
 <?php
-namespace PHPDaemon\SockJS;
+namespace PHPDaemon\SockJS\Methods;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
@@ -12,7 +12,7 @@ use PHPDaemon\Utils\Crypt;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 
-class JsonpSend extends Generic {
+class XhrSend extends Generic {
 	use Traits\Request;
 	protected $stage = 0;
 	/**
@@ -26,15 +26,11 @@ class JsonpSend extends Generic {
 		$this->CORS();
 		$this->contentType('text/plain');
 		$this->noncache();
-		if (!isset($_POST['d']) || !is_string($_POST['d'])) {
-			$this->header('400 Bad Request');
-			return;
-		}
-		$this->appInstance->publish('c2s:' . $this->sessId, $_POST['d'], function($redis) {
+		$this->appInstance->publish('c2s:' . $this->sessId, $this->attrs->raw, function($redis) {
 			if ($redis->result === 0) {
 				$this->header('404 Not Found');
 			} else {
-				echo 'ok';
+				$this->header('204 No Content');
 			}
 			$this->finish();
 		});

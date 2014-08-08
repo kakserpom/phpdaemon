@@ -58,7 +58,6 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		if (!$session->route = $this->wss->getRoute($path, $session)) {
 			return false;
 		}
-		$session->route->ioMode = false;
 		$this->sessions->attach($session);
 		$session->onHandshake();
 		return $session;
@@ -86,17 +85,25 @@ class Application extends \PHPDaemon\Core\AppInstance {
 			}
 		} elseif ($method === 'info') {
 
-		} elseif (in_array($method, ['xhr', 'xhr_send', 'xhr_streaming', 'eventsource', 'jsonp', 'jsonp_send'])) {
-			$sessId = array_pop($e);
-			$serverId = array_pop($e);
 		} elseif (preg_match('~^iframe(?:-([^/]+))?\.html$~', $method, $m)) {
 			$method = 'Iframe';
 			$version = isset($m[1]) ? $m[1] : null;
 		} else {
-			return false;
+			if (sizeof($e) < 2) {
+				return false;
+			}
+			$sessId = array_pop($e);
+			$serverId = array_pop($e);
 		}
 		$path = ltrim(implode('/', $e), '/');
-		$class = __NAMESPACE__ . '\\' .strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);
+		$name = strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);
+		if (strtolower($name) === 'generic') {
+			return false;
+		}
+		$class = __NAMESPACE__ . '\\Methods\\' . $name;
+		if (!class_exists($class)) {
+			return false;
+		}
 		$req = new $class($this, $upstream, $req);
 		$req->setSessId($sessId);
 		$req->setServerId($serverId);

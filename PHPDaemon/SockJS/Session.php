@@ -175,10 +175,9 @@ class Session {
 				} else {
 					$this->buffer = [];
 				}
-
+				$this->onWrite();
 			}
 		);
-		$this->onWrite();
 	}
 
 	public function sendPacket($pct, $cb = null) {
