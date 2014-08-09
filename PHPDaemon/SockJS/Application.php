@@ -88,12 +88,14 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$sessId = array_pop($e);
 		$serverId = array_pop($e);
 		$path = implode('/', $e);
-		$route = $ws->getRoute($path, new WebSocketConnectionProxy($this, $client), true);
+		$client = new WebSocketConnectionProxy($this, $client);
+		$route = $ws->getRoute($path, $client, true);
 		if (!$route) {
 			$state($route);
 			return false;
 		}
-		$state(new WebSocketRouteProxy($this, $route));
+		$route = new WebSocketRouteProxy($this, $route);
+		$state($route);
 		return true;
 	}
 

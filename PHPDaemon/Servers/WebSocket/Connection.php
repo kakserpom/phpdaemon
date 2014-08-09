@@ -365,6 +365,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 		return true;
 	}
 
+	public function write($s) {
+		parent::write($s);
+	}
+	
 	/**
 	 * Send Bad request
 	 * @return void

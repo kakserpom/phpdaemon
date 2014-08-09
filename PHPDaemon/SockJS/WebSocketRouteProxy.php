@@ -15,8 +15,6 @@ use PHPDaemon\Utils\Crypt;
 
 class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
-	
-	protected $finishTimer;
 
 	protected $pingTimer;
 
@@ -33,23 +31,33 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	}
 
 	public function __call($method, $args) {
-		D(['route', $method] , Debug::backtrace());
 		return call_user_func_array([$this->realRoute, $method], $args);
 	}
 
-	public function handleException($e) {
-		Daemon::log((string) $e);
-		return$this->realRoute->handleException($e);
+	/**
+	 * Called when new frame received.
+	 * @param string  Frame's contents.
+	 * @param integer Frame's type.
+	 * @return void
+	 */
+	public function onFrame($data, $type) {
+		foreach (explode("\n", $data) as $pct) {
+			if ($pct === '') {
+				continue;
+			}
+			$pct = json_decode($pct, true);
+			if (isset($pct[0])) {
+				foreach ($pct as $i) {
+					$this->onPacket(rtrim($i, "\n"), $type);
+				}
+			} else {
+				$this->onPacket($pct, $type);
+			}
+		}
 	}
 
-	public function onFrame($msg, $type) {
-		$frames = json_decode($msg, true);
-		if (!is_array($frames)) {
-			return;
-		}
-		foreach ($frames as $frame) {
-			$this->realRoute->onFrame($frame, $type);
-		}
+	public function onPacket($frame, $type) {
+		$this->realRoute->onFrame($frame, $type);
 	}
 
 	/**
@@ -72,15 +80,11 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 			$this->realRoute->onWrite();
 		}
 	}
-	/*public function __destruct() {
-		D('destructed session '.$this->id);
-	}*/
-
+	
 	/**
 	 * @TODO DESCR
 	 */
 	public function onFinish() {
-		Timer::remove($this->finishTimer);
 		Timer::remove($this->pingTimer);
 		if ($this->realRoute) {
 			$this->realRoute->onFinish();

@@ -56,7 +56,7 @@ class ProtocolV13 extends Protocol {
 			}
 			$reply = "HTTP/1.1 101 Switching Protocols\r\n"
 					. "Upgrade: WebSocket\r\n"
-					. "connection: Upgrade\r\n"
+					. "Connection: Upgrade\r\n"
 					. "Date: " . date('r') . "\r\n"
 					. "Sec-WebSocket-Origin: " . $this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'] . "\r\n"
 					. "Sec-WebSocket-Location: ws://" . $this->conn->server['HTTP_HOST'] . $this->conn->server['REQUEST_URI'] . "\r\n"
@@ -164,6 +164,7 @@ class ProtocolV13 extends Protocol {
 			$firstBits = decbin($first);
 			$opcode    = (int)bindec(substr($firstBits, 4, 4));
 			if ($opcode === 0x8) { // CLOSE
+				D('GOT CLOSE FRAME');
 				$this->conn->finish();
 				return;
 			}

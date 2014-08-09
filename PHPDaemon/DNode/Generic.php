@@ -135,7 +135,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 		if (is_string($p['method']) && ctype_digit($p['method'])) {
 			$p['method'] = (int) $p['method'];
 		}
-		$this->client->sendFrame($this->toJson($p) . "\n", 'STRING');
+		$this->client->sendFrame($this->toJson($p) . "\n");
 	}
 
 	/**
@@ -228,7 +228,7 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 			if ($pct === '') {
 				continue;
 			}
-			$this->onPacket(json_decode(rtrim($pct), true));
+			$this->onPacket(json_decode($pct, true));
 		}
 	}
 }

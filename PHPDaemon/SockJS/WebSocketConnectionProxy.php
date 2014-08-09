@@ -27,9 +27,16 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface {
 		return $this->realConn->{$k};
 	}
 
+	public function __isset($k) {
+		return isset($this->realConn->{$k});
+	}
+
 	public function __call($method, $args) {
-		D(['conn', $method]);
 		return call_user_func_array([$this->realConn, $method], $args);
+	}
+
+	public function toJson($p) {
+		return json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 	}
 	
 	/**
@@ -39,8 +46,8 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	 * @param callback Optional. Callback called when the frame is received by client.
 	 * @return boolean Success.
 	 */
-	public function sendFrame($data, $type = 0x00, $cb = null) {
-		$this->realConn->sendFrame('a' . json_encode([$data], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $cb);
+	public function sendFrame($data, $type = null, $cb = null) {
+		$this->realConn->sendFrame('a' . $this->toJson([$data]), $type, $cb);
 		return true;
 	}
 
@@ -51,7 +58,7 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	 * @param callback Optional. Callback called when the frame is received by client.
 	 * @return boolean Success.
 	 */
-	public function sendFrameReal($data, $type = 0x00, $cb = null) {
+	public function sendFrameReal($data, $type = null, $cb = null) {
 		$this->realConn->sendFrame($data, $type, $cb);
 		return true;
 	}
