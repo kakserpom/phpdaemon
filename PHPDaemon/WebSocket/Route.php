@@ -8,7 +8,7 @@ namespace PHPDaemon\WebSocket;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class Route {
+class Route implements RouteInterface {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 

@@ -2,7 +2,6 @@
 namespace PHPDaemon\DNode;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
-use PHPDaemon\Core\Timer;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 /**
@@ -22,7 +21,6 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	protected $counter = 0;
 	protected $remoteMethods = [];
 	protected $localMethods = [];
-	protected $timer;
 
 	/**
 	 * Called when the connection is handshaked.
@@ -138,9 +136,6 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 			$p['method'] = (int) $p['method'];
 		}
 		$this->client->sendFrame($this->toJson($p) . "\n", 'STRING');
-		if ($this->timer) {
-			Timer::setTimeout($this->timer);
-		}
 	}
 
 	/**
@@ -148,10 +143,6 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	 * @return void
 	 */
 	public function onFinish() {
-		if ($this->timer) {
-			Timer::remove($this->timer);
-			$this->timer = null;
-		}
 		$this->remoteMethods = [];
 		$this->localMethods = [];
 		$this->persistentCallbacks = [];

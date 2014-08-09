@@ -230,7 +230,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @return void
 	 */
 	public function onFinish() {
-		if (isset($this->route)) {
+		if ($this->route) {
 			$this->route->onFinish();
 		}
 		$this->route = null;
@@ -274,42 +274,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 */
 	public function onHandshake() {
 
-		$e         = explode('/', $this->server['DOCUMENT_URI']);
-		$routeName = isset($e[1]) ? $e[1] : '';
-
-		if (!isset($this->pool->routes[$routeName])) {
-			if (Daemon::$config->logerrors->value) {
-				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : undefined route "' . $routeName . '" for client "' . $this->addr . '"');
-			}
-
-			return false;
-		}
-		$route = $this->pool->routes[$routeName];
-		if (is_string($route)) { // if we have a class name
-			if (class_exists($route)) {
-				$this->onWakeup();
-				new $route($this);
-				$this->onSleep();
-			}
-			else {
-				return false;
-			}
-		}
-		elseif (is_array($route) || is_object($route)) { // if we have a lambda object or callback reference
-			if (is_callable($route)) {
-				$ret = call_user_func($route, $this); // calling the route callback
-				if ($ret instanceof Route) {
-					$this->route = $ret;
-				}
-				else {
-					return false;
-				}
-			}
-			else {
-				return false;
-			}
-		}
-		else {
+		$this->onWakeup();
+		$this->route = $this->pool->getRoute($this->server['DOCUMENT_URI'], $this);
+		$this->onSleep();
+		if (!$this->route) {
 			return false;
 		}
 

@@ -27,6 +27,8 @@ class Session {
 
 	public $appInstance;
 
+	public $addr;
+
 
 	/** @var array */
 	public $buffer = [];
@@ -44,7 +46,7 @@ class Session {
 
 	protected $finishTimer;
 	
-	protected $timer;
+	protected $pingTimer;
 
 	protected function toJson($m) {
 		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -60,6 +62,7 @@ class Session {
 		$this->id     = $id;
 		$this->appInstance = $appInstance;
 		$this->server = $server;
+		$this->addr = $server['REMOTE_ADDR'];
 		$this->finishTimer = setTimeout(function($timer) {
 			$this->finish();
 		}, $this->timeout * 1e6);
@@ -97,7 +100,7 @@ class Session {
 	public function onHandshake() {
 		$this->sendPacket('o');
 		$this->route->onHandshake();
-		$this->timer = setTimeout(function($timer) {
+		$this->pingTimer = setTimeout(function($timer) {
 			$this->sendPacket('h');
 			$timer->timeout();
 		}, 15e6);

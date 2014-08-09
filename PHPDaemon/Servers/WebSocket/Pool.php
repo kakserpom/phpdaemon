@@ -6,6 +6,9 @@ use PHPDaemon\Network\Server;
 use PHPDaemon\WebSocket\Route;
 
 class Pool extends Server {
+
+	use \PHPDaemon\Traits\EventHandlers;
+	
 	/** @var array */
 	public $routes = [];
 
@@ -43,43 +46,80 @@ class Pool extends Server {
 	 * @param mixed  Route's callback.
 	 * @return boolean Success.
 	 */
-	public function addRoute($route, $cb) {
-		if (isset($this->routes[$route])) {
-			Daemon::log(__METHOD__ . ' Route \'' . $route . '\' is already defined.');
+	public function addRoute($path, $cb) {
+		$routeName = ltrim($path, '/');
+		if (isset($this->routes[$routeName])) {
+			Daemon::log(__METHOD__ . ' Route \'' . $path . '\' is already defined.');
 			return false;
 		}
-		$this->routes[$route] = $cb;
+		$this->routes[$routeName] = $cb;
 		return true;
 	}
 
-	public function getRoute($route, $client) {
-		if (!isset($this->routes[$route])) {
+	public function getRoute($path, $client, $withoutCustomTransport = false) {
+		if (!$withoutCustomTransport) {
+			$this->trigger('customTransport', $path, $client, function($set) use (&$result) {$result = $set;});
+			if ($result !== null) {
+				return $result;
+			}
+		}
+		$routeName = ltrim($path, '/');
+		if (!isset($this->routes[$routeName])) {
+			if (Daemon::$config->logerrors->value) {
+				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : undefined path "' . $path . '" for client "' . $client->addr . '"');
+			}
 			return false;
 		}
-		return call_user_func($this->routes[$route], $client);
+		$route = $this->routes[$routeName];
+		if (is_string($route)) { // if we have a class name
+			if (class_exists($route)) {
+				$this->onWakeup();
+				$ret = new $route($client);
+				$this->onSleep();
+				return $ret;
+			}
+			else {
+				return false;
+			}
+		}
+		elseif (is_array($route) || is_object($route)) { // if we have a lambda object or callback reference
+			if (!is_callable($route)) {
+				return false;
+			}
+			$ret = call_user_func($route, $client); // calling the route callback
+			if (!$ret instanceof Route) {
+				return false;
+			}
+			return $ret;
+		}
+		else {
+			return false;
+		}
 	}
 
 	/**
 	 * Force add/replace a route.
-	 * @param string Route name.
-	 * @param mixed  Route's callback.
-	 * @return boolean Success.
+	 * @param string Path
+	 * @param mixed  callback
+	 * @return boolean Success
 	 */
-	public function setRoute($route, $cb) {
-		$this->routes[$route] = $cb;
+	public function setRoute($path, $cb) {
+		$routeName = ltrim($path, '/');
+		$this->routes[$routeName] = $cb;
 		return true;
 	}
 
 	/**
 	 * Removes a route.
-	 * @param string Route name.
-	 * @return boolean Success.
+	 * @param string Route name
+	 * @return boolean Success
 	 */
-	public function removeRoute($route) {
-		if (!isset($this->routes[$route])) {
+	public function removeRoute($path) {
+		$routeName = ltrim($path, '/');
+		if (!isset($this->routes[$routeName])) {
 			return false;
 		}
-		unset($this->routes[$route]);
+		unset($this->routes[$routeName]);
 		return true;
 	}
 }

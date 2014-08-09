@@ -2,7 +2,9 @@
 namespace PHPDaemon\SockJS;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
 /**
  * @package    Libraries
  * @subpackage SockJS
@@ -49,13 +51,69 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	 */
 	public function onReady() {
 		$this->redis = \PHPDaemon\Clients\Redis\Pool::getInstance($this->config->redisname->value);
-		$this->wss = \PHPDaemon\Servers\WebSocket\Pool::getInstance($this->config->wssname->value);
-		$this->sessions = new SessionsStorage;
+		$this->sessions = new ObjectStorage;
+		$this->wss = new ObjectStorage;
+		foreach (preg_split('~\s*;\s*~', $this->config->wssname->value) as $wssname) {
+			$this->attachWss(WebSocketPool::getInstance(trim($wssname)));
+		}
+	}
+
+	public function onFinish() {
+		foreach ($this->attachedTo as $wss) {
+			$this->detachWss($wss);
+		}
+		parent::onFinish();
+	}
+
+	public function attachWss($wss) {
+		if ($this->wss->contains($wss)) {
+			return false;
+		}
+		$this->wss->attach($wss);
+		$wss->bind('customTransport', [$this, 'wsHandler']);
+		return true;
+	}
+
+	public function wsHandler($ws, $path, $client, $state) {
+		$e = explode('/', $path);
+		$method = array_pop($e);
+		$serverId = null;
+		$sessId = null;
+		if ($method !== 'websocket') {
+			return false;
+		}
+		if (sizeof($e) < 3 || !isset($e[sizeof($e) - 2]) || !ctype_digit($e[sizeof($e) - 2])) {
+			return false;
+		}
+		$sessId = array_pop($e);
+		$serverId = array_pop($e);
+		$path = implode('/', $e);
+		$route = $ws->getRoute($path, new WebSocketConnectionProxy($this, $client), true);
+		if (!$route) {
+			$state($route);
+			return false;
+		}
+		$state(new WebSocketRouteProxy($this, $route));
+		return true;
+	}
+
+	public function detachWss($wss) {
+		if (!$this->wss->contains($wss)) {
+			return false;
+		}
+		$this->wss->detach($wss);
+		$wss->unbind('transport', [$this, 'wsHandler']);
+		return true;
 	}
 
 	public function beginSession($path, $sessId, $server) {
 		$session = new Session($this, $sessId, $server);
-		if (!$session->route = $this->wss->getRoute($path, $session)) {
+		foreach ($this->wss as $wss) {
+			if ($session->route = $wss->getRoute($path, $session)) {
+				break;
+			}
+		}
+		if (!$session->route) {
 			return false;
 		}
 		$this->sessions->attach($session);
@@ -95,7 +153,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 			$sessId = array_pop($e);
 			$serverId = array_pop($e);
 		}
-		$path = ltrim(implode('/', $e), '/');
+		$path = implode('/', $e);
 		$name = strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);
 		if (strtolower($name) === 'generic') {
 			return false;
