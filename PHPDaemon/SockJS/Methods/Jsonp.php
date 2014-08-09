@@ -18,7 +18,7 @@ class Jsonp extends Generic {
 	protected $callbackParamEnabled = true;
 	protected $poll = true;
 
-	protected function sendFrame() {
-		$this->out($_GET['c'] . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE). ");\r\n");
+	protected function sendFrame($frame) {
+		$this->out($this->attrs->get['c'] . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE). ");\r\n");
 	}
 }

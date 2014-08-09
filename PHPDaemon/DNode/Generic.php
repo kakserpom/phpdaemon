@@ -22,14 +22,6 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	protected $remoteMethods = [];
 	protected $localMethods = [];
 
-	/**
-	 * Called when the connection is handshaked.
-	 * @return void
-	 */
-	public function onHandshake() {
-		parent::onHandshake();
-	}
-
 	public function defineLocalMethods($arr) {
 		foreach ($arr as $k => $v) {
 			$this->localMethods[$k] = $v;

@@ -11,7 +11,7 @@ use PHPDaemon\Utils\Crypt;
  */
 
 class IFrame extends Generic {
-	protected $version = '0.3';
+	protected $version = '0.3.3';
 	protected $contentType = 'text/html';
 	protected $cacheable = true;
 

@@ -161,7 +161,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	}
 
 	protected function error($code) {
-		$this->sendFrame('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]) . "\n");
+		$this->sendFrame('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]));
 		$this->finish();
 	}
 
