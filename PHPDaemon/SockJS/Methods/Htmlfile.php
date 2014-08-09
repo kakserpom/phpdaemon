@@ -18,7 +18,7 @@ class Htmlfile extends Generic {
 	protected $callbackParamEnabled = true;
 	protected $poll = true;
 	public function sendFrame($frame) {
-		$this->out("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)). ");\n</script>\r\n");
+		$this->out("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_NOQUOTES | ENT_HTML401). ");\n</script>\r\n");
 	}
 	public function init() {
 		parent::init();
