@@ -72,6 +72,9 @@ class Session {
 	}
 
 	public function c2s($redis) {
+		if (!$redis) {
+			return;
+		}
 		list (, $chan, $msg) = $redis->result;
 		if ($msg === '') {
 			return;

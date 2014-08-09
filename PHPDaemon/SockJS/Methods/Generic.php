@@ -65,9 +65,12 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	}
 
 
-	public function w8in($redis) {}
+	public function w8in() {}
 	
 	public function s2c($redis) {
+		if (!$redis) {
+			return;
+		}
 		list (, $chan, $msg) = $redis->result;
 		$frames = json_decode($msg, true);
 		if (!is_array($frames) || !sizeof($frames)) {
