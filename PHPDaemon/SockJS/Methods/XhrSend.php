@@ -1,6 +1,5 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
-use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
@@ -13,19 +12,16 @@ use PHPDaemon\Utils\Crypt;
  */
 
 class XhrSend extends Generic {
-	use Traits\Request;
-	protected $stage = 0;
+	protected $contentType = 'text/plain';
 	/**
 	 * Called when request iterated.
 	 * @return integer Status.
 	 */
 	public function run() {
 		if ($this->stage++ > 0) {
+			$this->header('500 Too Busy');
 			return;
 		}
-		$this->CORS();
-		$this->contentType('text/plain');
-		$this->noncache();
 		$this->appInstance->publish('c2s:' . $this->sessId, $this->attrs->raw, function($redis) {
 			if ($redis->result === 0) {
 				$this->header('404 Not Found');
@@ -34,6 +30,6 @@ class XhrSend extends Generic {
 			}
 			$this->finish();
 		});
-		$this->sleep(30);
+		$this->sleep(10);
 	}
 }

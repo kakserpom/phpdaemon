@@ -127,6 +127,7 @@ class Session {
 		if ($this->finished) {
 			return;
 		}
+		$this->sendPacket('c["Go away!"]');
 		$this->finished = true;
 		$this->onFinish();
 	}
@@ -147,7 +148,7 @@ class Session {
 		$this->onWrite->reset();
 		$this->route = null;
 		Timer::remove($this->finishTimer);
-		Timer::remove($this->timer);
+		Timer::remove($this->pingTimer);
 		$this->appInstance->endSession($this);
 	}
 	
