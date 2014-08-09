@@ -169,6 +169,9 @@ class Session {
 			's2c:' . $this->id,
 			$this->toJson($this->buffer),
 			function($redis) use ($s) {
+				if (!$redis) {
+					return;
+				}
 				$this->flushing = false;
 				if ($redis->result === 0) {
 					return;

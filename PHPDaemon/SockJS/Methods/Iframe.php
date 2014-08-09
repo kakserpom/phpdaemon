@@ -1,6 +1,5 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
-use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Utils\Crypt;
@@ -12,8 +11,6 @@ use PHPDaemon\Utils\Crypt;
  */
 
 class IFrame extends Generic {
-	use Traits\Request;
-
 	protected $version = '0.3';
 	protected $contentType = 'text/html';
 	protected $cacheable = true;
