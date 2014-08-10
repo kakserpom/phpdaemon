@@ -160,7 +160,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	 * @return object Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		$e = explode('/', $req->attrs->server['DOCUMENT_URI']);
+		$e = array_map('rawurldecode', explode('/', $req->attrs->server['DOCUMENT_URI']));
 		
 		$serverId = null;
 		$sessId = null;
@@ -207,6 +207,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 			}
 			$sessId = array_pop($extra);
 			$serverId = array_pop($extra);
+			if ($sessId === '' || $serverId === '' || strpos($sessId, '.') !== false || strpos($serverId, '.') !== false) {
+				return $this->callMethod('NotFound', $req, $upstream);	
+			}
 		}
 
 		$req = $this->callMethod($method, $req, $upstream);
