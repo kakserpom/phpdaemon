@@ -122,4 +122,14 @@ class Pool extends Server {
 		unset($this->routes[$routeName]);
 		return true;
 	}
+
+	/**
+	 * Checks if route exists
+	 * @param string Route name
+	 * @return boolean Exists?
+	 */
+	public function routeExists($path) {
+		$routeName = ltrim($path, '/');
+		return isset($this->routes[$routeName]);
+	}
 }

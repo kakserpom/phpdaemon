@@ -151,42 +151,73 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	 */
 	public function beginRequest($req, $upstream) {
 		$e = explode('/', $req->attrs->server['DOCUMENT_URI']);
-		$method = array_pop($e);
+		
 		$serverId = null;
 		$sessId = null;
-		if ($method === 'websocket') {
-			if ((sizeof($e) > 3) && isset($e[sizeof($e) - 2]) && ctype_digit($e[sizeof($e) - 2])) {
-				$sessId = array_pop($e);
-				$serverId = array_pop($e);
-			}
-		} elseif ($method === 'info') {
 
-		} elseif (preg_match('~^iframe(?:-([^/]+))?\.html$~', $method, $m)) {
+		/* Route discovery */
+		$path = null;
+		$extra = [];
+		do {
+			foreach ($this->wss as $wss) {
+				$try = implode('/', $e);
+				if ($try === '') {
+					$try = '/';
+				}
+				if ($wss->routeExists($try)) {
+					$path = $try;
+					break 2;
+				}
+			}
+		 	array_unshift($extra, array_pop($e));
+		} while (sizeof($e) > 0);
+
+		if ($path === null) {
+			return $this->callMethod('NotFound', $req, $upstream);
+		}
+
+		if (sizeof($extra) > 0 && end($extra) === '') {
+			array_pop($extra);
+		}
+
+		$method = sizeof($extra) ? array_pop($extra) : null;
+		
+		if ($method === null) {
+			$method = 'Welcome';
+		}
+		elseif ($method === 'info') {
+
+		}
+		elseif (preg_match('~^iframe(?:-([^/]+))?\.html$~', $method, $m)) {
 			$method = 'Iframe';
 			$version = isset($m[1]) ? $m[1] : null;
 		} else {
-			if (sizeof($e) < 2) {
-				return false;
+			if (sizeof($extra) < 2) {
+				return $this->callMethod('NotFound', $req, $upstream);	
 			}
-			$sessId = array_pop($e);
-			$serverId = array_pop($e);
+			$sessId = array_pop($extra);
+			$serverId = array_pop($extra);
 		}
-		$path = implode('/', $e);
-		$name = strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);
-		if (strtolower($name) === 'generic') {
-			return false;
+
+		$req = $this->callMethod($method, $req, $upstream);
+		if ($req instanceof Methods\Iframe && $version !== null) {
+			$req->setVersion($version);
 		}
-		$class = __NAMESPACE__ . '\\Methods\\' . $name;
-		if (!class_exists($class)) {
-			return false;
-		}
-		$req = new $class($this, $upstream, $req);
 		$req->setSessId($sessId);
 		$req->setServerId($serverId);
 		$req->setPath($path);
-		if ($method === 'Iframe' && $version !== null) {
-			$req->setVersion($version);
-		}
 		return $req;
+	}
+
+	public function callMethod($method, $req, $upstream) {
+		$method = strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);
+		if (strtolower($method) === 'generic') {
+			$method = 'NotFound';
+		}
+		$class = __NAMESPACE__ . '\\Methods\\' . $method;
+		if (!class_exists($class)) {
+			$class = __NAMESPACE__ . '\\Methods\\NotFound'; 
+		}
+		return new $class($this, $upstream, $req);
 	}
 }
