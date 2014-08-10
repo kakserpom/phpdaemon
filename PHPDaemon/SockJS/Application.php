@@ -139,6 +139,16 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return $session;
 	}
 
+	public function getRouteOptions($path) {
+		foreach ($this->wss as $wss) {
+			if ($wss->routeExists($path)) {
+				return $wss->getRouteOptions($path);
+			}
+		}
+		return false;
+
+	}
+
 	public function endSession($session) {
 		$this->sessions->detach($session);
 	}
@@ -188,7 +198,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		elseif ($method === 'info') {
 
 		}
-		elseif (preg_match('~^iframe(?:-([^/]+))?\.html$~', $method, $m)) {
+		elseif (preg_match('~^iframe(?:-([^/]*))?\.html$~', $method, $m)) {
 			$method = 'Iframe';
 			$version = isset($m[1]) ? $m[1] : null;
 		} else {
@@ -200,7 +210,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		}
 
 		$req = $this->callMethod($method, $req, $upstream);
-		if ($req instanceof Methods\Iframe && $version !== null) {
+		if ($req instanceof Methods\Iframe && strlen($version)) {
 			$req->setVersion($version);
 		}
 		$req->setSessId($sessId);

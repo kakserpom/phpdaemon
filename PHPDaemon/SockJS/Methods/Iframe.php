@@ -50,15 +50,16 @@ class IFrame extends Generic {
 </body>
 </html>';
 		$etag = 'W/"'.sha1($html).'"';
-		$this->header('Content-Length: '.strlen($html));
 		$this->header('ETag: '.$etag);	
 		if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
 			if ($_SERVER['HTTP_IF_NONE_MATCH'] === $etag) {
 				$this->status(304);
+				$this->removeHeader('Content-Type');
 				$this->finish();
 				return;
 			}
 		}
+		$this->header('Content-Length: '.strlen($html));
 		echo $html;
 		$this->finish();
 	}

@@ -15,13 +15,23 @@ class Info extends Generic {
 	protected $contentType = 'application/json';
 
 	public function init() {
+		parent::init();
 		Crypt::randomInts32(1, function($ints) {
-			echo json_encode([
+			$opts = [
 				'websocket' => true,
 				'origins' => ['*:*'],
 				'cookie_needed' => false,
 				'entropy' => $ints[0],
-			]);
+			];
+			if ($o = $this->appInstance->getRouteOptions($this->path)) {
+				foreach ($o as $k => $v) {
+					if ($k === 'entropy') {
+						continue;
+					}
+					$opts[$k] = $v;
+				}
+			}
+			echo json_encode($opts);
 			$this->finish();
 		}, 9);
 		$this->sleep(5, true);

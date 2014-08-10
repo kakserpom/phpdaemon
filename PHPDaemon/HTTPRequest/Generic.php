@@ -713,6 +713,15 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
+	 * Removes a header
+	 * @param string $s  Header name. Example: 'Location'
+	 * @return void
+	 */
+	public function removeHeader($s) {
+		unset($this->headers[strtr(strtoupper($s), Generic::$htr)]);
+	}
+
+	/**
 	 * Converts human-readable representation of size to number of bytes
 	 * @param $value
 	 * @return integer

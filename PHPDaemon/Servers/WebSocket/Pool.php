@@ -41,6 +41,36 @@ class Pool extends Server {
 	}
 
 	/**
+	 * Sets an array of options associated to the route
+	 * @param string Route name.
+	 * @param array  Options
+	 * @return boolean Success.
+	 */
+	public function setRouteOptions($path, $opts) {
+		$routeName = ltrim($path, '/');
+		if (!isset($this->routes[$routeName])) {
+			Daemon::log(__METHOD__ . ': Route \'' . $path . '\' is not found.');
+			return false;
+		}
+		$this->routeOptions[$routeName] = $opts;
+		return true;
+	}
+
+
+	/**
+	 * Return options by route
+	 * @param string Route name
+	 * @return array Options
+	 */
+	public function getRouteOptions($path) {
+		$routeName = ltrim($path, '/');
+		if (!isset($this->routeOptions[$routeName])) {
+			return [];
+		}
+		return $this->routeOptions[$routeName];
+	}
+
+	/**
 	 * Adds a route if it doesn't exist already.
 	 * @param string Route name.
 	 * @param mixed  Route's callback.
@@ -49,7 +79,7 @@ class Pool extends Server {
 	public function addRoute($path, $cb) {
 		$routeName = ltrim($path, '/');
 		if (isset($this->routes[$routeName])) {
-			Daemon::log(__METHOD__ . ' Route \'' . $path . '\' is already defined.');
+			Daemon::log(__METHOD__ . ': Route \'' . $path . '\' is already defined.');
 			return false;
 		}
 		$this->routes[$routeName] = $cb;

@@ -31,6 +31,8 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$ws->addRoute('close', function ($client) {return new Close($client, $this);});
 		$ws->addRoute('echo', function ($client) {return new EchoFeed($client, $this);});
 		$ws->addRoute('disabled_websocket_echo', function ($client) {return new DisabledWebSocket($client, $this);});
+		$ws->setRouteOptions('disabled_websocket_echo', ['websocket' => false]);
 		$ws->addRoute('cookie_needed_echo', function ($client) {return new CookieNeededEcho($client, $this);});
+		$ws->setRouteOptions('cookie_needed_echo', ['cookie_needed' => true]);
 	}
 }
