@@ -170,7 +170,6 @@ class Connection extends ClientConnection {
 			foreach ($args as $arg) {
 				$b = !isset($this->subscribeCb[$arg]);
 				CallbackWrapper::addToArray($this->subscribeCb[$arg], $cb);
-				//D([$name, $arg, $b]);
 				if ($b) {
 					$this->sendCommand($name, $arg, $opcb);
 				} else {
@@ -196,16 +195,14 @@ class Connection extends ClientConnection {
 		}
 		elseif ($name === 'UNSUBSCRIBE') {
 			foreach ($args as $arg) {
-				//D([$name, $arg, 'pre']);
 				if (!isset($this->subscribeCb[$arg]) || !sizeof($this->subscribeCb[$arg])) {
 					if ($opcb !== null) {
 						call_user_func($opcb, $this);
 					}
-					continue;
+					return;
 				}
 				CallbackWrapper::removeFromArray($this->subscribeCb[$arg], $cb);
 				if (sizeof($this->subscribeCb[$arg]) === 0) {
-					//D([$name, $arg, 'send']);
 					$this->sendCommand($name, $arg, $opcb);
 					unset($this->subscribeCb[$arg]);
 				} else {
@@ -214,6 +211,29 @@ class Connection extends ClientConnection {
 					}
 				}
 			}
+		}
+		elseif ($name === 'UNSUBSCRIBEREAL') {
+			
+			/* Race-condition-free UNSUBSCRIBE */
+
+			$old = $this->subscribeCb;
+			$this->sendCommand('UNSUBSCRIBE', $args, function($redis) use ($cb, $args, $old) {
+				if (!$redis) {
+					call_user_func($cb, $redis);
+					return;
+				}
+				foreach ($args as $arg) {
+					if (!isset($this->subscribeCb[$arg])) {
+						continue;
+					}
+					foreach ($old[$arg] as $oldcb) {
+						CallbackWrapper::removeFromArray($this->subscribeCb[$arg], $oldcb);
+					}
+				}
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+			});
 		}
 		elseif ($name === 'PUNSUBSCRIBE') {
 			foreach ($args as $arg) {
@@ -285,9 +305,9 @@ class Connection extends ClientConnection {
 		if (($mtype = $this->isSubMessage()) !== false) { // sub callback
 			$chan = $this->result[1];
 			if ($mtype === 'pmessage') {
-				$t = $this->psubscribeCb;
+				$t =& $this->psubscribeCb;
 			} else {
-				$t = $this->subscribeCb;
+				$t =& $this->subscribeCb;
 			}
 			if (isset($t[$chan])) {
 				foreach ($t[$chan] as $cb) {
@@ -295,6 +315,8 @@ class Connection extends ClientConnection {
 						call_user_func($cb, $this);
 					}
 				}
+			} elseif ($this->pool->config->logpubsubracecondition->value) {
+				Daemon::log('[Redis client]'. ': PUB/SUB race condition at channel '. Debug::json($chan));
 			}
 		}
 		else { // request callback

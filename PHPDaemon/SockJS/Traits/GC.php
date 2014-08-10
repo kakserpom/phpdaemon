@@ -14,15 +14,15 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
  */
 
 trait GC {
-	protected $maxBytesSent = 131072;
 	protected $bytesSent = 0;
 	protected $gc = false;
 	public function gcCheck() {
-		if ($this->maxBytesSent > 0 && !$this->gc && $this->bytesSent > $this->maxBytesSent) {
+		if (!($this->appInstance->config->gcmaxresponsesize->value > 0)) {
+			return;
+		}
+		if (!$this->gc && $this->bytesSent > $this->appInstance->config->gcmaxresponsesize->value) {
 			$this->gc = true;
-			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-				$this->finish();
-			});
+			$this->stop();
 		}
 	}
 	/**

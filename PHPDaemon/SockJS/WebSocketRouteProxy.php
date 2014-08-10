@@ -16,7 +16,7 @@ use PHPDaemon\Utils\Crypt;
 class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	protected $pingTimer;
+	protected $heartbeatTimer;
 
 	protected $realRoute;
 
@@ -65,11 +65,13 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	 */
 	public function onHandshake() {
 		$this->realRoute->client->sendFrameReal('o');
-		$this->pingTimer = setTimeout(function($timer) {
-			$this->realRoute->client->sendFrameReal('h');
-			$timer->timeout();
-		}, 15e6);
-		$this->realRoute->onHandshake();
+		if (($f = $this->sockjs->config->heartbeatinterval->value) > 0) {
+			$this->heartbeatTimer = setTimeout(function($timer) {
+				$this->realRoute->client->sendFrameReal('h');
+				$timer->timeout();
+			}, $f * 1e6);
+			$this->realRoute->onHandshake();
+		}
 	}
 
 	/**
@@ -85,7 +87,7 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	 * @TODO DESCR
 	 */
 	public function onFinish() {
-		Timer::remove($this->pingTimer);
+		Timer::remove($this->heartbeatTimer);
 		if ($this->realRoute) {
 			$this->realRoute->onFinish();
 			$this->realRoute = null;

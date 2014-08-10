@@ -32,6 +32,8 @@ class Session {
 
 	/** @var array */
 	public $buffer = [];
+
+	public $framesBuffer = [];
 	
 	/** @var bool */
 	public $finished = false;
@@ -45,8 +47,6 @@ class Session {
 
 
 	protected $finishTimer;
-	
-	protected $pingTimer;
 
 	protected function toJson($m) {
 		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -103,10 +103,6 @@ class Session {
 	public function onHandshake() {
 		$this->sendPacket('o');
 		$this->route->onHandshake();
-		$this->pingTimer = setTimeout(function($timer) {
-			$this->sendPacket('h');
-			$timer->timeout();
-		}, 15e6);
 	}
 
 	/**
@@ -151,7 +147,6 @@ class Session {
 		$this->onWrite->reset();
 		$this->route = null;
 		Timer::remove($this->finishTimer);
-		Timer::remove($this->pingTimer);
 		$this->appInstance->endSession($this);
 	}
 	
@@ -163,27 +158,40 @@ class Session {
 		if ($this->flushing) {
 			return;
 		}
-		$s = sizeof($this->buffer);
-		if ($s === 0) {
+		$bsize = sizeof($this->buffer);
+		$fbsize = sizeof($this->framesBuffer);
+		if ($bsize === 0 && $fbsize === 0) {
 			return;
 		}
 		$this->flushing = true;
+		$b = $this->buffer;
+		if ($fbsize > 0) {
+			$b[] = 'a' . $this->toJson($this->framesBuffer);
+		}
 		$this->appInstance->publish(
 			's2c:' . $this->id,
-			$this->toJson($this->buffer),
-			function($redis) use ($s) {
+			$this->toJson($b),
+			function($redis) use ($bsize, $fbsize, $b) {
+				$this->flushing = false;
 				if (!$redis) {
 					return;
 				}
-				$this->flushing = false;
 				if ($redis->result === 0) {
+					//D(['b' => $b, $redis->result]);
 					return;
 				}
-				if (sizeof($this->buffer) > $s) {
-					$this->buffer = array_slice($this->buffer, $s);
+				if (sizeof($this->buffer) > $bsize) {
+					$this->buffer = array_slice($this->buffer, $bsize);
 					$this->flush();
 				} else {
 					$this->buffer = [];
+				}
+
+				if (sizeof($this->framesBuffer) > $fbsize) {
+					$this->framesBuffer = array_slice($this->framesBuffer, $fbsize);
+					$this->flush();
+				} else {
+					$this->framesBuffer = [];
 				}
 				$this->onWrite();
 			}
@@ -191,6 +199,10 @@ class Session {
 	}
 
 	public function sendPacket($pct, $cb = null) {
+		if (sizeof($this->framesBuffer)) {
+			$this->buffer[] = 'a' . $this->toJson($this->framesBuffer);
+			$this->framesBuffer = [];
+		}
 		$this->buffer[] = $pct;
 		if ($cb !== null) {
 			$this->onWrite->push($cb);
@@ -206,7 +218,11 @@ class Session {
 	 * @return boolean Success.
 	 */
 	public function sendFrame($data, $type = 0x00, $cb = null) {
-		$this->sendPacket('a' . $this->toJson([$data]), $cb);
+		$this->framesBuffer[] = $data;
+		if ($cb !== null) {
+			$this->onWrite->push($cb);
+		}
+		$this->flush();
 		return true;
 	}
 

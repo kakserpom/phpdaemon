@@ -57,6 +57,13 @@ class Pool extends \PHPDaemon\Network\Client {
 			 * @var integer
 			 */
 			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
+
+
+			/**
+			 * If true, race condition between UNSUBSCRIBE and PUBLISH will be journaled
+			 * @var boolean
+			 */
+			'log-pub-sub-race-condition' => true,
 		];
 	}
 
@@ -118,7 +125,7 @@ class Pool extends \PHPDaemon\Network\Client {
 		/**
 		 * @var $conn Connection
 		 */
-		if (in_array($cmd, ['SUBSCRIBE', 'PSUBSCRIBE', 'UNSUBSCRIBE', 'PUNSUBSCRIBE'])) {
+		if (in_array($cmd, ['SUBSCRIBE', 'PSUBSCRIBE', 'UNSUBSCRIBE', 'PUNSUBSCRIBE', 'UNSUBSCRIBEREAL'])) {
 			foreach ($this->servConnSub as $conn)  {
 				$conn->command($cmd, $args, $cb);
 				return true;

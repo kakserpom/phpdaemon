@@ -17,6 +17,7 @@ class Htmlfile extends Generic {
 	protected $contentType = 'text/html';
 	protected $callbackParamEnabled = true;
 	protected $poll = true;
+
 	public function sendFrame($frame) {
 		$this->out("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_NOQUOTES | ENT_HTML401). ");\n</script>\r\n");
 	}
@@ -25,18 +26,20 @@ class Htmlfile extends Generic {
 		if ($this->isFinished()) {
 			return;
 		}
+		echo str_repeat(' ', 1024);
+		echo "\n\n";
 		?><!doctype html>
 <html><head>
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head><body><h2>Don't panic!</h2>
-<script>
-document.domain = document.domain;
-var c = parent.<?php echo $_GET['c']; ?>;
-c.start();
-function p(d) {c.message(d);};
-window.onload = function() {c.stop();};
-</script>
+  <script>
+    document.domain = document.domain;
+    var c = parent.<?php echo $_GET['c']; ?>;
+    c.start();
+    function p(d) {c.message(d);};
+    window.onload = function() {c.stop();};
+  </script>
 <?php
 	}
 }

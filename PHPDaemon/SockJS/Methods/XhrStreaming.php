@@ -14,7 +14,7 @@ use PHPDaemon\Utils\Crypt;
 class XhrStreaming extends Generic {
 	use \PHPDaemon\SockJS\Traits\GC;
 
-	protected $contentType = 'application/json';
+	protected $contentType = 'application/javascript';
 	protected $fillerEnabled = true;
 	protected $poll = true;
 

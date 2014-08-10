@@ -25,6 +25,10 @@ class Application extends \PHPDaemon\Core\AppInstance {
 			'redis-name' => '',
 			'redis-prefix' => 'sockjs:',
 			'wss-name' => '',
+			'batch-delay' => new \PHPDaemon\Config\Entry\Double('0.05'),
+			'heartbeat-interval' => new \PHPDaemon\Config\Entry\Double('25'),
+			'dead-session-timeout' => new \PHPDaemon\Config\Entry\Time('1h'),
+			'gc-max-response-size' => new \PHPDaemon\Config\Entry\Size('128k'),
 		];
 	}
 
@@ -37,8 +41,20 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$this->redis->subscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
 
+	public function setnx($key, $value, $cb = null) {
+		$this->redis->setnx($this->config->redisprefix->value . $key, $value, $cb);
+	}
+
+	public function expire($key, $seconds, $cb = null) {
+		$this->redis->expire($this->config->redisprefix->value . $key, $seconds, $cb);
+	}
+
 	public function unsubscribe($chan, $cb, $opcb = null) {
 		$this->redis->unsubscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
+	}
+
+	public function unsubscribeReal($chan, $opcb = null) {
+		$this->redis->unsubscribeReal($this->config->redisprefix->value . $chan, $opcb);
 	}
 
 	public function publish($chan, $cb, $opcb = null) {

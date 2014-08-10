@@ -19,7 +19,10 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $sessId;
 	protected $serverId;
 	protected $path;
-	protected $timer;
+	protected $delayedStopTimer;
+	protected $heartbeatTimer;
+
+	protected $stopped = false;
 	
 	protected $delayedStopEnabled = false;
 	protected $callbackParamEnabled = false;
@@ -27,6 +30,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 	protected $errors = [
 		2010 => 'Another connection still open',
+		3000 => 'Go away!',
 	];
 
 	protected $fillerSent = false;
@@ -43,15 +47,39 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		}
 		if ($this->callbackParamEnabled) {
 			if (!isset($_GET['c']) || !is_string($_GET['c']) || preg_match('~[^_\.a-zA-Z0-9]~', $_GET['c'])) {
-				$this->header('400 Bad Request');
+				$this->header('500 Internal Server Error');
+				$this->out('"callback" parameter required');
 				$this->finish();
 				return;
 			}
+		}
+		if (($f = $this->appInstance->config->heartbeatinterval->value) > 0) {
+			$this->heartbeatTimer = setTimeout(function($timer) {
+				$this->sendFrame('h');
+				if ($this->delayedStopEnabled) {
+					$this->stop();
+				} else if (isset($this->gc)) {
+					$this->gcCheck();
+				}
+			}, $f * 1e6);
 		}
 		if ($this->poll) {
 			$this->acquire(function() {
 				$this->poll();
 			});
+		}
+	}
+
+	/**
+	 * Output some data
+	 * @param string $s String to out
+	 * @param bool $flush
+	 * @return boolean Success
+	 */
+	public function out($s, $flush = true) {
+		parent::out($s, $flush);
+		if ($this->heartbeatTimer !== null) {
+			Timer::setTimeout($this->heartbeatTimer);
 		}
 	}
 
@@ -97,23 +125,36 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	}
 
 	public function delayedStop() {
-		Timer::setTimeout($this->timer, 0.15e6) || $this->timer = setTimeout(function($timer) {
-			$this->timer = true;
+		if (!($this->appInstance->config->batchdelay->value > 0)) {
+			$this->stop();
+			return;
+		}
+		Timer::setTimeout($this->delayedStopTimer, $this->appInstance->config->batchdelay->value * 1e6) || $this->timer = setTimeout(function($timer) {
+			$this->delayedStopTimer = true;
 			$timer->free();
-			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-				foreach ($this->frames as $frame) {
-					$this->sendFrame($frame);
-				}
-				$this->finish();
-			});
+			$this->stop();
 		}, 0.15e6);
+	}
+
+	public function stop() {
+		if ($this->stopped) {
+			return;
+		}
+		$this->stopped = true;
+		$this->appInstance->unsubscribeReal('s2c:' . $this->sessId, function($redis) {
+			foreach ($this->frames as $frame) {
+				$this->sendFrame($frame);
+			}
+			$this->finish();
+		});
 	}
 
 
 	public function onFinish() {
 		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
 		$this->appInstance->unsubscribe('w8in:' . $this->sessId, [$this, 'w8in']);
-		$this->timer === null || Timer::remove($this->timer);
+		Timer::remove($this->delayedStopTimer);
+		Timer::remove($this->heartbeatTimer);
 		parent::onFinish();
 	}
 
@@ -121,11 +162,23 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) use ($cb) {
 			$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) use ($cb) {
 				if ($redis->result === 0) {
-					if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
-						$this->header('404 Not Found');
-						$this->finish();
-						return;
-					}
+					$this->appInstance->setnx('sess:' . $this->sessId, '', function($redis) {
+						if (!$redis || $redis->result === 0) {
+							$this->error(3000);
+							return;
+						}
+						$this->appInstance->expire('sess:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value, function($redis) {
+							if (!$redis || $redis->result === 0) {
+								$this->error(3000);
+								return;
+							}	
+							if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
+								$this->header('404 Not Found');
+								$this->finish();
+								return;
+							}
+						});
+					});
 				}
 				if ($cb !== null) {
 					call_user_func($cb);

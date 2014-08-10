@@ -13,7 +13,7 @@ use PHPDaemon\Utils\Crypt;
 
 class Xhr extends Generic {
 	protected $delayedStopEnabled = true;
-	protected $contentType = 'application/json';
+	protected $contentType = 'application/javascript';
 	protected $poll = true;
 	protected function sendFrame($frame) {
 		$this->out($frame . "\n");

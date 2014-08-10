@@ -15,6 +15,7 @@ class Eventsource extends Generic {
 	use \PHPDaemon\SockJS\Traits\GC;
 	protected $contentType = 'text/event-stream';
 	protected $poll = true;
+
 	public function sendFrame($frame) {
 		$this->out('data: '.$frame . "\r\n\r\n");
 	}
