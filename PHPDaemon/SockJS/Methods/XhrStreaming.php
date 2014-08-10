@@ -17,6 +17,7 @@ class XhrStreaming extends Generic {
 	protected $contentType = 'application/javascript';
 	protected $fillerEnabled = true;
 	protected $poll = true;
+	protected $pollMode = ['stream'];
 
 	protected function sendFrame($frame) {
 		$this->out($frame . "\n");

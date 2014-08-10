@@ -38,6 +38,8 @@ class Session {
 	/** @var bool */
 	public $finished = false;
 
+	protected $onFinishedCalled = false;
+
 	/** @var bool */
 	public $flushing = false;
 	
@@ -45,6 +47,7 @@ class Session {
 	public $timeout = 60;
 	public $server;
 
+	protected $pollMode;
 
 	protected $finishTimer;
 
@@ -68,11 +71,22 @@ class Session {
 		}, $this->timeout * 1e6);
 		
 		$this->appInstance->subscribe('c2s:' . $this->id, [$this, 'c2s']);
-		$this->appInstance->subscribe('poll:' . $this->id, [$this, 'poll']);
+		$this->appInstance->subscribe('poll:' . $this->id, [$this, 'poll'], function($redis) {
+			$this->appInstance->publish('state:' . $this->id, 'started', function ($redis) {
+				// @TODO: remove callback
+			});
+		});
+	}
+
+	public function onHandshake() {
+		$this->route->onHandshake();
 	}
 
 	public function c2s($redis) {
 		if (!$redis) {
+			return;
+		}
+		if ($this->finished) {
 			return;
 		}
 		list (, $chan, $msg) = $redis->result;
@@ -93,30 +107,30 @@ class Session {
 	}
 
 	public function poll($redis) {
+		if (!$redis) {
+			return;
+		}
+		list (, $chan, $msg) = $redis->result;
+		$this->pollMode = json_decode($msg, true);
+
 		Timer::setTimeout($this->finishTimer); 
 		$this->flush();
-	}
-	
-	/**
-	 * @TODO DESCR
-	 */
-	public function onHandshake() {
-		$this->sendPacket('o');
-		$this->route->onHandshake();
 	}
 
 	/**
 	 * @TODO DESCR
 	 */
 	public function onWrite() {
-		if ($this->finished) {
-			return;
-		}
-		Timer::setTimeout($this->finishTimer); 
 		$this->onWrite->executeAll($this->route);
 		if (method_exists($this->route, 'onWrite')) {
 			$this->route->onWrite();
 		}
+		if ($this->finished) {
+			if (!sizeof($this->buffer) && !sizeof($this->framesBuffer)) {
+				$this->onFinish();
+			}
+		}
+		Timer::setTimeout($this->finishTimer); 
 	}
 
 	/**
@@ -126,9 +140,8 @@ class Session {
 		if ($this->finished) {
 			return;
 		}
-		$this->sendPacket('c["Go away!"]');
 		$this->finished = true;
-		$this->onFinish();
+		$this->sendPacket('c'.json_encode([3000,'Go away!']));
 	}
 
 	/*public function __destruct() {
@@ -139,6 +152,10 @@ class Session {
 	 * @TODO DESCR
 	 */
 	public function onFinish() {
+		if ($this->onFinishedCalled) {
+			return;
+		}
+		$this->onFinishedCalled = true;
 		$this->appInstance->unsubscribe('c2s:' . $this->id, [$this, 'c2s']);
 		$this->appInstance->unsubscribe('poll:' . $this->id, [$this, 'poll']);
 		if (isset($this->route)) {
@@ -155,6 +172,9 @@ class Session {
 	 * @return void
 	 */
 	public function flush() {
+		if ($this->pollMode === null) { // first polling request is not there yet
+			return;
+		}
 		if ($this->flushing) {
 			return;
 		}
@@ -164,9 +184,18 @@ class Session {
 			return;
 		}
 		$this->flushing = true;
-		$b = $this->buffer;
+		if (in_array('one-by-one', $this->pollMode)) {
+			$b = array_slice($this->buffer, 0, 1);
+			$bsize = sizeof($b);
+		} else {
+			$b = $this->buffer;
+		}
 		if ($fbsize > 0) {
-			$b[] = 'a' . $this->toJson($this->framesBuffer);
+			if (!in_array('one-by-one', $this->pollMode) || !sizeof($b)) {
+				$b[] = 'a' . $this->toJson($this->framesBuffer);
+			} else {
+				$fbsize = 0;
+			}
 		}
 		$this->appInstance->publish(
 			's2c:' . $this->id,
@@ -195,7 +224,7 @@ class Session {
 					$this->framesBuffer = [];
 				}
 				$this->onWrite();
-				if ($reflush) {
+				if ($reflush && in_array('stream', $this->pollMode)) {
 					$this->flush();
 				}
 			}
@@ -222,6 +251,9 @@ class Session {
 	 * @return boolean Success.
 	 */
 	public function sendFrame($data, $type = 0x00, $cb = null) {
+		if ($this->finished) {
+			return false;
+		}
 		$this->framesBuffer[] = $data;
 		if ($cb !== null) {
 			$this->onWrite->push($cb);

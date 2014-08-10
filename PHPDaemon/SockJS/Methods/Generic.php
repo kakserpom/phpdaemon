@@ -19,12 +19,10 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $sessId;
 	protected $serverId;
 	protected $path;
-	protected $delayedStopTimer;
 	protected $heartbeatTimer;
 
 	protected $stopped = false;
 	
-	protected $delayedStopEnabled = false;
 	protected $callbackParamEnabled = false;
 	protected $frames = [];
 
@@ -34,6 +32,8 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		2010 => 'Another connection still open',
 		3000 => 'Go away!',
 	];
+
+	protected $pollMode = ['stream'];
 
 	protected $fillerSent = false;
 	protected $fillerEnabled = false;
@@ -67,9 +67,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		if (($f = $this->appInstance->config->heartbeatinterval->value) > 0) {
 			$this->heartbeatTimer = setTimeout(function($timer) {
 				$this->sendFrame('h');
-				if ($this->delayedStopEnabled) {
-					$this->stop();
-				} else if (isset($this->gc)) {
+				if (isset($this->gc)) {
 					$this->gcCheck();
 				}
 			}, $f * 1e6);
@@ -119,32 +117,15 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			$this->sendFrame(str_repeat('h', 2048) . "\n");
 			$this->fillerSent = true;
 		}
-		if ($this->delayedStopEnabled) {
-			foreach ($frames as $frame) {
-				$this->frames[] = $frame;
-			}
-			$this->delayedStop();
+		foreach ($frames as $frame) {
+			$this->sendFrame($frame);
 		}
- 		else {
- 			foreach ($frames as $frame) {
-				$this->sendFrame($frame);
-			}
-			if (isset($this->gc)) {
-				$this->gcCheck();
-			}
-		}
-	}
-
-	public function delayedStop() {
-		if (!($this->appInstance->config->batchdelay->value > 0)) {
+		if (!in_array('stream', $this->pollMode)) {
 			$this->stop();
-			return;
 		}
-		Timer::setTimeout($this->delayedStopTimer, $this->appInstance->config->batchdelay->value * 1e6) || $this->timer = setTimeout(function($timer) {
-			$this->delayedStopTimer = true;
-			$timer->free();
-			$this->stop();
-		}, 0.15e6);
+		if (isset($this->gc)) {
+			$this->gcCheck();
+		}
 	}
 
 	public function stop() {
@@ -152,6 +133,9 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			return;
 		}
 		$this->stopped = true;
+		if (in_array('one-by-one', $this->pollMode)) {
+			$this->stop();
+		}
 		$this->appInstance->unsubscribeReal('s2c:' . $this->sessId, function($redis) {
 			foreach ($this->frames as $frame) {
 				$this->sendFrame($frame);
@@ -164,36 +148,56 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	public function onFinish() {
 		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
 		$this->appInstance->unsubscribe('w8in:' . $this->sessId, [$this, 'w8in']);
-		Timer::remove($this->delayedStopTimer);
 		Timer::remove($this->heartbeatTimer);
 		parent::onFinish();
 	}
 
 	protected function poll($cb = null) {
 		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) use ($cb) {
-			$this->appInstance->publish('poll:' . $this->sessId, '', function($redis) use ($cb) {
-				if ($redis->result === 0) {
-					$this->appInstance->setnx('sess:' . $this->sessId, '', function($redis) {
+			$this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode), function($redis) use ($cb) {
+				if ($redis->result > 0) {
+					$cb === null || call_user_func($cb);
+					return;
+				}
+				$this->appInstance->setnx('sess:' . $this->sessId, '', function($redis) use ($cb) {
+					if (!$redis || $redis->result === 0) {
+						$this->error(3000);
+						$cb === null || call_user_func($cb);
+						return;
+					}
+					$this->appInstance->expire('sess:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value, function($redis) use ($cb) {
 						if (!$redis || $redis->result === 0) {
 							$this->error(3000);
+							$cb === null || call_user_func($cb);
 							return;
 						}
-						$this->appInstance->expire('sess:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value, function($redis) {
-							if (!$redis || $redis->result === 0) {
-								$this->error(3000);
-								return;
-							}	
+						$this->appInstance->subscribe('state:' . $this->sessId, function($redis) use ($cb) {
+							list (, $chan, $state) = $redis->result;
+							if ($state === 'started') {
+								$this->sendFrame('o');
+								if (!in_array('stream', $this->pollMode)) {
+									$this->finish();
+									return;
+								}
+							}
+							$this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode), function($redis) use ($cb) {
+								if (!$redis || $redis->result === 0) {
+									$this->error(3000);
+									$cb === null || call_user_func($cb);
+									return;
+								}
+								$cb === null || call_user_func($cb);
+							});
+						}, function ($redis) use ($cb) {
 							if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
 								$this->header('404 Not Found');
 								$this->finish();
-								return;
+								$this->unsubscribeReal('state:' . $this->sessId);
 							}
+							$cb === null || call_user_func($cb);
 						});
 					});
-				}
-				if ($cb !== null) {
-					call_user_func($cb);
-				}
+				});
 			});
 		});
 	}

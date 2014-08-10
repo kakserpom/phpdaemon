@@ -17,6 +17,7 @@ class Htmlfile extends Generic {
 	protected $contentType = 'text/html';
 	protected $callbackParamEnabled = true;
 	protected $poll = true;
+	protected $pollMode = ['stream'];
 
 	public function sendFrame($frame) {
 		$this->out("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_NOQUOTES | ENT_HTML401). ");\n</script>\r\n");

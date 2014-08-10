@@ -17,6 +17,7 @@ class Jsonp extends Generic {
 	protected $contentType = 'application/javascript';
 	protected $callbackParamEnabled = true;
 	protected $poll = true;
+	protected $pollMode = 'one,ondemand';
 
 	protected function sendFrame($frame) {
 		$this->out($this->attrs->get['c'] . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE). ");\r\n");
