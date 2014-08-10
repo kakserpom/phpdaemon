@@ -176,24 +176,28 @@ class Session {
 				if (!$redis) {
 					return;
 				}
+				//D(['b' => $b, $redis->result]);
 				if ($redis->result === 0) {
-					//D(['b' => $b, $redis->result]);
 					return;
 				}
+				$reflush = false;
 				if (sizeof($this->buffer) > $bsize) {
 					$this->buffer = array_slice($this->buffer, $bsize);
-					$this->flush();
+					$reflush = true;
 				} else {
 					$this->buffer = [];
 				}
 
 				if (sizeof($this->framesBuffer) > $fbsize) {
 					$this->framesBuffer = array_slice($this->framesBuffer, $fbsize);
-					$this->flush();
+					$reflush = true;
 				} else {
 					$this->framesBuffer = [];
 				}
 				$this->onWrite();
+				if ($reflush) {
+					$this->flush();
+				}
 			}
 		);
 	}

@@ -28,6 +28,8 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $callbackParamEnabled = false;
 	protected $frames = [];
 
+	protected $allowedMethods = 'GET';
+
 	protected $errors = [
 		2010 => 'Another connection still open',
 		3000 => 'Go away!',
@@ -41,6 +43,15 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 	public function init() {
 		$this->CORS();
+		if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+			$this->header('204 No Content');
+			$this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
+			$this->header('Access-Control-Max-Age: 31536000');
+			$this->header('Access-Control-Allow-Methods: OPTIONS, '.$this->allowedMethods);
+			$this->header('Expires: '.date('r', strtotime('+1 year')));
+			$this->finish();
+			return;
+		}
 		$this->contentType($this->contentType);
 		if (!$this->cacheable) {
 			$this->noncache();
@@ -230,6 +241,12 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
 			$this->header('Access-Control-Allow-Headers: '.$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
 		}
+		if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] !== 'null') {
+			$this->header('Access-Control-Allow-Origin:' . $_SERVER['HTTP_ORIGIN']);
+		} else {
+			$this->header('Access-Control-Allow-Origin: *');
+		}
+		$this->header('Access-Control-Allow-Credentials: true');
 		if (isset($_COOKIE['JSESSIONID']) && is_string($_COOKIE['JSESSIONID'])) {
 			$this->setcookie('JSESSIONID', $_COOKIE['JSESSIONID'], 0, '/');
 		}

@@ -15,6 +15,7 @@ class Xhr extends Generic {
 	protected $delayedStopEnabled = true;
 	protected $contentType = 'application/javascript';
 	protected $poll = true;
+	protected $allowedMethods = 'POST';
 	protected function sendFrame($frame) {
 		$this->out($frame . "\n");
 	}

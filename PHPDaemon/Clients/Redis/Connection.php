@@ -229,6 +229,9 @@ class Connection extends ClientConnection {
 					foreach ($old[$arg] as $oldcb) {
 						CallbackWrapper::removeFromArray($this->subscribeCb[$arg], $oldcb);
 					}
+					if (!sizeof($this->subscribeCb[$arg])) {
+						unset($this->subscribeCb[$arg]);
+					}
 				}
 				if ($cb !== null) {
 					call_user_func($cb, $this);
@@ -247,6 +250,32 @@ class Connection extends ClientConnection {
 					}
 				}				
 			}
+		}
+		elseif ($name === 'PUNSUBSCRIBEREAL') {
+			
+			/* Race-condition-free PUNSUBSCRIBE */
+
+			$old = $this->psubscribeCb;
+			$this->sendCommand('PUNSUBSCRIBE', $args, function($redis) use ($cb, $args, $old) {
+				if (!$redis) {
+					call_user_func($cb, $redis);
+					return;
+				}
+				foreach ($args as $arg) {
+					if (!isset($this->psubscribeCb[$arg])) {
+						continue;
+					}
+					foreach ($old[$arg] as $oldcb) {
+						CallbackWrapper::removeFromArray($this->psubscribeCb[$arg], $oldcb);
+					}
+					if (!sizeof($this->psubscribeCb[$arg])) {
+						unset($this->psubscribeCb[$arg]);
+					}
+				}
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+			});
 		} else {
 			$this->sendCommand($name, $args, $cb);
 		}

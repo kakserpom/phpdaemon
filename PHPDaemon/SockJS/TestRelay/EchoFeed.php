@@ -18,6 +18,6 @@ class EchoFeed extends \PHPDaemon\WebSocket\Route {
 	 * @return void
 	 */
 	public function onFrame($data, $type) {
-		$this->client->sendFrame($data, $type);
+		$this->client->sendFrame($data);
 	}
 }
