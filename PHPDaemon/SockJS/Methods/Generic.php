@@ -288,8 +288,10 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	}
 
 	protected function anotherConnectionStillOpen() {
-		$this->appInstance->setkey('error:' . $this->sessId, 1002, function($redis) {
-			$this->error(2010);
+		$this->appInstance->setkey('error:' . $this->sessId, 1002, function() {
+			$this->appInstance->expire('error:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value, function() {
+				$this->error(2010);
+			});
 		});
 	}
 
