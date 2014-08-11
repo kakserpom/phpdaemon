@@ -49,6 +49,8 @@ class Session {
 
 	protected $pollMode;
 
+	protected $running = false;
+
 	protected $finishTimer;
 
 	protected function toJson($m) {
@@ -121,11 +123,13 @@ class Session {
 		if (!isset($this->route)) {
 			return;
 		}
+		$this->onWakeup();
 		try {
 			$this->route->onHandshake();
 		} catch (\Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
+		$this->onSleep();
 	}
 
 	public function c2s($redis) {
@@ -147,6 +151,7 @@ class Session {
 		if (!is_array($frames)) {
 			return;
 		}
+		$this->onWakeup();
 		foreach ($frames as $frame) {
 			try {
 				$this->route->onFrame($frame, \PHPDaemon\Servers\WebSocket\Pool::STRING);
@@ -154,6 +159,7 @@ class Session {
 				Daemon::uncaughtExceptionHandler($e);
 			}
 		}
+		$this->onSleep();
 	}
 
 	public function poll($redis) {
