@@ -19,5 +19,6 @@ class Xhr extends Generic {
 	protected $allowedMethods = 'POST';
 	protected function sendFrame($frame) {
 		$this->outputFrame($frame . "\n");
+		parent::sendFrame($frame);
 	}
 }

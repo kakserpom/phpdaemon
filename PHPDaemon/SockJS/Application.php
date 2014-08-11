@@ -45,6 +45,14 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$this->redis->setnx($this->config->redisprefix->value . $key, $value, $cb);
 	}
 
+	public function setkey($key, $value, $cb = null) {
+		$this->redis->set($this->config->redisprefix->value . $key, $value, $cb);
+	}
+
+	public function getkey($key, $cb = null) {
+		$this->redis->get($this->config->redisprefix->value . $key, $cb);
+	}
+
 	public function expire($key, $seconds, $cb = null) {
 		$this->redis->expire($this->config->redisprefix->value . $key, $seconds, $cb);
 	}

@@ -15,16 +15,6 @@ class IFrame extends Generic {
 	protected $contentType = 'text/html';
 	protected $cacheable = true;
 
-
-	/**
-	 * Sets version
-	 * @param string $val
-	 * @return void
-	 */
-	public function setVersion($val) {
-		$this->version = $val;
-	}
-
 	/**
 	 * Constructor.
 	 * @return void

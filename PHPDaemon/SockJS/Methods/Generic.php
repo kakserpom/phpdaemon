@@ -31,6 +31,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $allowedMethods = 'GET';
 
 	protected $errors = [
+		1002 => 'Connection interrupted',
 		2010 => 'Another connection still open',
 		3000 => 'Go away!',
 	];
@@ -38,8 +39,6 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $pollMode = ['stream'];
 
 	protected $gcEnabled = true;
-
-	protected $preludeSent = false;
 
 	protected $cacheable = false;
 	protected $poll = false;
@@ -96,12 +95,15 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 				}
 			}, $f * 1e6);
 		}
-
+		$this->afterHeaders();
 		if ($this->poll) {
 			$this->acquire(function() {
 				$this->poll();
 			});
 		}
+	}
+
+	public function afterHeaders() {
 	}
 
 	/**
@@ -245,28 +247,43 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	}
 	
 	protected function acquire($cb) {
-		if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 0) {
-			$this->error(2010);
-			return;
-		}
-		$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
-			if ($redis->result > 0) {
-				$this->error(2010);
+		$this->appInstance->getkey('error:' . $this->sessId, function($redis) use ($cb) {
+			if (!$redis) {
 				return;
 			}
-			$this->appInstance->subscribe('w8in:' . $this->sessId, [$this, 'w8in'], function($redis) use ($cb) {
-				if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
-					$this->error(2010);
+			if ($redis->result !== null) {
+				$this->error((int) $redis->result);
+				return;
+			}
+			if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 0) {
+				$this->anotherConnectionStillOpen();
+				return;
+			}
+			$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
+				if ($redis->result > 0) {
+					$this->anotherConnectionStillOpen();
 					return;
 				}
-				$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
-					if ($redis->result > 1) {
-						$this->error(2010);
+				$this->appInstance->subscribe('w8in:' . $this->sessId, [$this, 'w8in'], function($redis) use ($cb) {
+					if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
+						$this->anotherConnectionStillOpen();
 						return;
 					}
-					call_user_func($cb);
+					$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
+						if ($redis->result > 1) {
+							$this->anotherConnectionStillOpen();
+							return;
+						}
+						call_user_func($cb);
+					});
 				});
 			});
+		});
+	}
+
+	protected function anotherConnectionStillOpen() {
+		$this->appInstance->setkey('error:' . $this->sessId, 1002, function($redis) {
+			$this->error(2010);
 		});
 	}
 
