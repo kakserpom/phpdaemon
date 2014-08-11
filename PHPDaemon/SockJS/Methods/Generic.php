@@ -35,6 +35,8 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 	protected $pollMode = ['stream'];
 
+	protected $gcEnabled = true;
+
 	protected $preludeSent = false;
 
 	protected $cacheable = false;
