@@ -273,7 +273,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 			$this->state = self::STATE_CONTENT;
 		}
 		if ($this->state === self::STATE_CONTENT) {
-			if (!isset($this->req->attrs->input) || $this->req->attrs->input) {
+			if (!isset($this->req->attrs->input) || !$this->req->attrs->input) {
 				$this->finish();
 				return;
 			}
