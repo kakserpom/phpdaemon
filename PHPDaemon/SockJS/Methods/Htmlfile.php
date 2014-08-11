@@ -19,7 +19,7 @@ class Htmlfile extends Generic {
 	protected $pollMode = ['stream'];
 
 	public function sendFrame($frame) {
-		$this->outputFrame("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_NOQUOTES | ENT_HTML401). ");\n</script>\r\n");
+		$this->outputFrame("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES), ENT_NOQUOTES | ENT_HTML401). ");\n</script>\r\n");
 		parent::sendFrame($frame);
 	}
 	public function init() {

@@ -20,7 +20,7 @@ class Jsonp extends Generic {
 	protected $pollMode = ['one-by-one'];
 
 	protected function sendFrame($frame) {
-		$this->outputFrame($this->attrs->get['c'] . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE). ");\r\n");
+		$this->outputFrame($this->attrs->get['c'] . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES). ");\r\n");
 		parent::sendFrame($frame);
 	}
 }
