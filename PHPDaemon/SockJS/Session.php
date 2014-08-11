@@ -52,7 +52,7 @@ class Session {
 	protected $finishTimer;
 
 	protected function toJson($m) {
-		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+		return json_encode($m, JSON_UNESCAPED_SLASHES);
 	}
 
 	/**
