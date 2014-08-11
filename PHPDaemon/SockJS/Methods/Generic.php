@@ -49,7 +49,6 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 	public function init() {
 		$this->sessId = $this->attrs->sessId;
-		D([$this->attrs->server['REQUEST_URI'], 'sessId' => $this->sessId]);
 		$this->serverId = $this->attrs->serverId;
 		$this->path = $this->attrs->path;
 
