@@ -49,6 +49,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 	public function init() {
 		$this->sessId = $this->attrs->sessId;
+		D([$this->attrs->server['REQUEST_URI'], 'sessId' => $this->sessId]);
 		$this->serverId = $this->attrs->serverId;
 		$this->path = $this->attrs->path;
 
@@ -202,6 +203,10 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected function poll($cb = null) {
 		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) use ($cb) {
 			$this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode), function($redis) use ($cb) {
+				if (!$redis) {
+					$cb === null || call_user_func($cb);
+					return;
+				}
 				if ($redis->result > 0) {
 					$cb === null || call_user_func($cb);
 					return;
@@ -255,6 +260,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected function acquire($cb) {
 		$this->appInstance->getkey('error:' . $this->sessId, function($redis) use ($cb) {
 			if (!$redis) {
+				$this->error(3000);
 				return;
 			}
 			if ($redis->result !== null) {

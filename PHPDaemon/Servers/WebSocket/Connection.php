@@ -263,7 +263,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 			return false;
 		}
 		$this->onWakeup();
-		$this->route->onFrame($data, $type);
+		try {
+			$this->route->onFrame($data, $type);
+		} catch (\Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+		}
 		$this->onSleep();
 		return true;
 	}

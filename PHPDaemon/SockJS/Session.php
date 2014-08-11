@@ -78,8 +78,54 @@ class Session {
 		});
 	}
 
+		/**
+	 * Uncaught exception handler
+	 * @param $e
+	 * @return boolean Handled?
+	 */
+	public function handleException($e) {
+		if (!isset($this->route)) {
+			return false;
+		}
+		return $this->route->handleException($e);
+	}
+
+
+	/**
+	 * Called when the request wakes up
+	 * @return void
+	 */
+	public function onWakeup() {
+		$this->running   = true;
+		Daemon::$context = $this;
+		$_SESSION = &$this->session;
+		$_GET = &$this->get;
+		$_POST = &$this->post; // supposed to be null
+		$_COOKIE = &$this->cookie;
+		Daemon::$process->setState(Daemon::WSTATE_BUSY);
+	}
+
+
+	/**
+	 * Called when the request starts sleep
+	 * @return void
+	 */
+	public function onSleep() {
+		Daemon::$context = null;
+		$this->running   = false;
+		unset($_SESSION, $_GET, $_POST, $_COOKIE);
+		Daemon::$process->setState(Daemon::WSTATE_IDLE);
+	}
+
 	public function onHandshake() {
-		$this->route->onHandshake();
+		if (!isset($this->route)) {
+			return;
+		}
+		try {
+			$this->route->onHandshake();
+		} catch (\Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+		}
 	}
 
 	public function c2s($redis) {
@@ -102,7 +148,11 @@ class Session {
 			return;
 		}
 		foreach ($frames as $frame) {
-			$this->route->onFrame($frame, \PHPDaemon\Servers\WebSocket\Pool::STRING);
+			try {
+				$this->route->onFrame($frame, \PHPDaemon\Servers\WebSocket\Pool::STRING);
+			} catch (\Exception $e) {
+				Daemon::uncaughtExceptionHandler($e);
+			}
 		}
 	}
 
