@@ -12,15 +12,15 @@ use PHPDaemon\Utils\Crypt;
  */
 
 class Htmlfile extends Generic {
-	use \PHPDaemon\SockJS\Traits\GC;
-
+	protected $gcEnabled = true;
 	protected $contentType = 'text/html';
 	protected $callbackParamEnabled = true;
 	protected $poll = true;
 	protected $pollMode = ['stream'];
 
 	public function sendFrame($frame) {
-		$this->out("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_NOQUOTES | ENT_HTML401). ");\n</script>\r\n");
+		$this->outputFrame("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_NOQUOTES | ENT_HTML401). ");\n</script>\r\n");
+		parent::sendFrame($frame);
 	}
 	public function init() {
 		parent::init();

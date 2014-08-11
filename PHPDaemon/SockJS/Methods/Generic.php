@@ -35,11 +35,14 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 	protected $pollMode = ['stream'];
 
-	protected $fillerSent = false;
-	protected $fillerEnabled = false;
+	protected $preludeSent = false;
 
 	protected $cacheable = false;
 	protected $poll = false;
+
+	protected $bytesSent = 0;
+	protected $gc = false;
+	
 
 	public function init() {
 		$this->CORS();
@@ -67,11 +70,12 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		if (($f = $this->appInstance->config->heartbeatinterval->value) > 0) {
 			$this->heartbeatTimer = setTimeout(function($timer) {
 				$this->sendFrame('h');
-				if (isset($this->gc)) {
+				if ($this->gcEnabled) {
 					$this->gcCheck();
 				}
 			}, $f * 1e6);
 		}
+
 		if ($this->poll) {
 			$this->acquire(function() {
 				$this->poll();
@@ -85,11 +89,32 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	 * @param bool $flush
 	 * @return boolean Success
 	 */
+	public function outputFrame($s, $flush = true) {
+		$this->bytesSent += strlen($s);
+		return parent::out($s, $flush);
+	}
+
+	public function gcCheck() {
+		$max = $this->appInstance->config->gcmaxresponsesize->value;
+		if ($max > 0 && !$this->gc && $this->bytesSent > $max) {
+			$this->gc = true;
+			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
+				$this->finish();
+			});
+		}
+	}
+
+	/**
+	 * Output some data
+	 * @param string $s String to out
+	 * @param bool $flush
+	 * @return boolean Success
+	 */
 	public function out($s, $flush = true) {
-		parent::out($s, $flush);
 		if ($this->heartbeatTimer !== null) {
 			Timer::setTimeout($this->heartbeatTimer);
 		}
+		return parent::out($s, $flush);;
 	}
 
 
@@ -113,17 +138,13 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		if (!is_array($frames) || !sizeof($frames)) {
 			return;
 		}
-		if ($this->fillerEnabled && !$this->fillerSent) {
-			$this->sendFrame(str_repeat('h', 2048) . "\n");
-			$this->fillerSent = true;
-		}
 		foreach ($frames as $frame) {
 			$this->sendFrame($frame);
 		}
 		if (!in_array('stream', $this->pollMode)) {
 			$this->stop();
 		}
-		if (isset($this->gc)) {
+		if ($this->gcEnabled) {
 			$this->gcCheck();
 		}
 	}
@@ -230,7 +251,12 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 	protected function error($code) {
 		$this->sendFrame('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]));
-		$this->finish();
+	}
+
+	protected function sendFrame($frame) {
+		if (substr($frame, 0, 1) === 'c') {
+			$this->finish();
+		}		
 	}
 
 	protected function contentType($type) {

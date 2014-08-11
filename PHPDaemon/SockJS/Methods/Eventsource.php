@@ -16,9 +16,11 @@ class Eventsource extends Generic {
 	protected $contentType = 'text/event-stream';
 	protected $poll = true;
 	protected $pollMode = ['stream'];
+	protected $gcEnabled = true;
 
 	public function sendFrame($frame) {
-		$this->out('data: '.$frame . "\r\n\r\n");
+		$this->outputFrame('data: '.$frame . "\r\n\r\n");
+		parent::sendFrame($frame);
 	}
 
 	public function init() {

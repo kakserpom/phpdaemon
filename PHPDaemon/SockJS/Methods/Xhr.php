@@ -18,6 +18,6 @@ class Xhr extends Generic {
 	protected $pollMode = ['one-by-one'];
 	protected $allowedMethods = 'POST';
 	protected function sendFrame($frame) {
-		$this->out($frame . "\n");
+		$this->outputFrame($frame . "\n");
 	}
 }

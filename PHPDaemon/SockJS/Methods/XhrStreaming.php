@@ -12,14 +12,20 @@ use PHPDaemon\Utils\Crypt;
  */
 
 class XhrStreaming extends Generic {
-	use \PHPDaemon\SockJS\Traits\GC;
-
+	protected $gcEnabled = true;
 	protected $contentType = 'application/javascript';
 	protected $fillerEnabled = true;
 	protected $poll = true;
 	protected $pollMode = ['stream'];
+	protected $allowedMethods = 'POST';
 
 	protected function sendFrame($frame) {
-		$this->out($frame . "\n");
+		if (!$this->preludeSent && substr($frame, 0, 1) !== 'c') {
+			$this->preludeSent = true;
+			$this->sendFrame(str_repeat('h', 2048));
+			$this->bytesSent = 0;
+		}
+		$this->outputFrame($frame . "\n");
+		parent::sendFrame($frame);
 	}
 }
