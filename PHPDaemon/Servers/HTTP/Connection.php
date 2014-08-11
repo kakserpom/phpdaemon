@@ -75,6 +75,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * @return void
 	 */
 	protected function httpReadFirstline() {
+		//D($this->look(2048));
 		if (($l = $this->readline()) === null) {
 			return null;
 		}
@@ -346,7 +347,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 			if ($req->keepalive) {
 				$this->keepaliveTimer = setTimeout(function($timer) {
 					$this->finish();
-				}, $this->pool->config->keepalive->value * 1e6);
+				}, 5 * 1e6);
 			}
 			else {
 				$this->finish();
@@ -380,6 +381,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 			if (!$this->req->isFinished()) {
 				$this->req->abort();
 			}
+			$this->req = null;
 		}
 	}
 

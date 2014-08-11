@@ -29,6 +29,8 @@ class Application extends \PHPDaemon\Core\AppInstance {
 			'heartbeat-interval' => new \PHPDaemon\Config\Entry\Double('25'),
 			'dead-session-timeout' => new \PHPDaemon\Config\Entry\Time('1h'),
 			'gc-max-response-size' => new \PHPDaemon\Config\Entry\Size('128k'),
+			'network-timeout-read' => new \PHPDaemon\Config\Entry\Time('2h'),
+			'network-timeout-write' => new \PHPDaemon\Config\Entry\Time('120s'),
 		];
 	}
 

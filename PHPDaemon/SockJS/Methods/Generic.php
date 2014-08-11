@@ -52,6 +52,9 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		$this->serverId = $this->attrs->serverId;
 		$this->path = $this->attrs->path;
 
+		// @TODO: revert timeout after request
+		$this->upstream->setTimeouts($this->appInstance->config->networktimeoutread->value, $this->appInstance->config->networktimeoutwrite->value);
+
 		$this->opts = $this->appInstance->getRouteOptions($this->attrs->path);
 		$this->CORS();
 		if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -216,6 +219,9 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 							return;
 						}
 						$this->appInstance->subscribe('state:' . $this->sessId, function($redis) use ($cb) {
+							if (!$redis) {
+								return;
+							}
 							list (, $chan, $state) = $redis->result;
 							if ($state === 'started') {
 								$this->sendFrame('o');

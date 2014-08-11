@@ -18,7 +18,7 @@ class NotFound extends Generic {
 	 */
 	public function init() {
 		$this->header('404 Not Found');
-		echo 'Method not found.';
+		echo 'Not found';
 		$this->finish();
 	}
 
