@@ -3,6 +3,7 @@ namespace PHPDaemon\Servers\HTTP;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\HTTPRequest\Input;
@@ -21,6 +22,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	protected $timeout = 45;
 
 	protected $req;
+
+	protected $keepaliveTimer;
+
+	protected $freedBeforeProcessing = false;
 
 	/**
 	 * @TODO DESCR
@@ -58,6 +63,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 */
 	public function checkChunkedEncCap() { // @DISCUSS
 		return true;
+	}
+
+	public function getKeepaliveTimeout() {
+		return $this->pool->config->keepalive->value;
 	}
 
 	/**
@@ -181,6 +190,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 					$req->header('X-Sendfile: ' . $fn);
 				});
 			}
+			$this->req->callInit();
 		}
 		return true;
 	}
@@ -224,7 +234,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 			return;
 		}
 		if ($this->state === self::STATE_ROOT) {
-			if ($this->req !== null) { // we have to wait the current request.
+			if ($this->req !== null) { // we have to wait the current request
 				return;
 			}
 			if (!$this->req = $this->newRequest()) {
@@ -247,6 +257,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 			if (!$this->httpReadFirstline()) {
 				return;
 			}
+			Timer::remove($this->keepaliveTimer);
 			$this->state = self::STATE_HEADERS;
 		}
 
@@ -262,13 +273,19 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		}
 		if ($this->state === self::STATE_CONTENT) {
 			if (!$this->req->attrs->input) {
+				$this->finish();
 				return;
 			}
 			$this->req->attrs->input->readFromBuffer($this->bev->input);
-			if (!$this->req || !$this->req->attrs->input->isEOF()) {
+			if (!$this->req->attrs->input->isEOF()) {
 				return;
 			}
 			$this->state = self::STATE_PROCESSING;
+			if ($this->freedBeforeProcessing) {
+				$this->freeRequest($this->req);
+				$this->freedBeforeProcessing = false;
+				goto start;
+			}
 			$this->freezeInput();
 			if ($this->req->attrs->inputDone && $this->req->attrs->paramsDone) {
 				if ($this->pool->variablesOrder === null) {
@@ -314,7 +331,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
-	 * Handles the output from downstream requests.
+	 * End request
 	 * @return boolean Succcess.
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
@@ -326,12 +343,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 				$this->write("0\r\n\r\n");
 			}
 
-			if (
-					(!$this->pool->config->keepalive->value)
-					|| (!isset($req->attrs->server['HTTP_CONNECTION']))
-					|| ($req->attrs->server['HTTP_CONNECTION'] !== 'keep-alive')
-			) {
-				$this->finish();
+			if ($req->keepalive) {
+				$this->keepaliveTimer = setTimeout(function($timer) {
+					$this->finish();
+				}, $this->pool->config->keepalive->value * 1e6);
 			}
 			else {
 				$this->finish();
@@ -345,9 +360,11 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * @return void
 	 */
 	public function freeRequest($req) {
-		if ($this->req === null || $this->req !== $req) {
+		if ($this->state !== self::STATE_PROCESSING) {
+			$this->freedBeforeProcessing = true;
 			return;
 		}
+		$req->attrs->input = null;
 		$this->req   = null;
 		$this->state = self::STATE_ROOT;
 		$this->unfreezeInput();
@@ -358,6 +375,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * @return void
 	 */
 	public function onFinish() {
+		Timer::remove($this->keepaliveTimer);
 		if ($this->req !== null && $this->req instanceof Generic) {
 			if (!$this->req->isFinished()) {
 				$this->req->abort();

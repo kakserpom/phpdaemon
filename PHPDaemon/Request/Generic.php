@@ -94,6 +94,8 @@ abstract class Generic {
 	 */
 	protected $codepoint;
 
+	protected $autoinit = false; // @TODO: remove this option in future version
+
 	/**
 	 * Log
 	 * @param string $msg Message
@@ -118,6 +120,12 @@ abstract class Generic {
 			$this->ev->priority = $this->priority;
 		}
 		$this->preinit($parent);
+		if ($this->autoinit) {
+			$this->callInit();
+		}
+	}
+
+	public function callInit() {
 		$this->onWakeup();
 		try {
 			$this->init();
@@ -242,6 +250,7 @@ abstract class Generic {
 		}
 		if (isset($this->upstream)) {
 			$this->upstream->freeRequest($this);
+			$this->upstream = null;
 		}
 	}
 
@@ -571,10 +580,9 @@ abstract class Generic {
 		if ($status !== -1) {
 			$appStatus = 0;
 			$this->postFinishHandler(function () use ($appStatus, $status) {
-				if (isset($this->upstream)) {
-					$this->upstream->endRequest($this, $appStatus, $status);
-					$this->free();
-				}
+				$this->upstream->endRequest($this, $appStatus, $status);
+				$this->upstream = null;
+				$this->free();
 			});
 		} else {
 			$this->free();

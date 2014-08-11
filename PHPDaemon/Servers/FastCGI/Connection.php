@@ -76,6 +76,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		return false;
 	}
 
+	public function getKeepaliveTimeout() {
+		return $this->pool->config->keepalive->value;
+	}
+
 	/**
 	 * Called when new data received.
 	 * @return void
@@ -202,6 +206,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 					}
 
 					$this->requests[$rid] = $req;
+
+					$req->callInit();
 				}
 			}
 			else {

@@ -24,11 +24,6 @@ class XhrStreaming extends Generic {
 		$this->bytesSent = 0;
 	}
 	protected function sendFrame($frame) {
-		/*if (!$this->preludeSent) { // && substr($frame, 0, 1) !== 'c'
-			$this->preludeSent = true;
-			$this->sendFrame(str_repeat('h', 2048));
-			$this->bytesSent = 0;
-		}*/
 		$this->outputFrame($frame . "\n");
 		parent::sendFrame($frame);
 	}

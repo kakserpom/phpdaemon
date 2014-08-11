@@ -73,6 +73,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		505 => 'HTTP Version Not Supported',
 	];
 
+	public $keepalive = false;
+
 	/**
 	 * Current response length
 	 * @var integer
@@ -431,13 +433,25 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		else {
 			$h = '';
 		}
-		if ($this->contentLength === null && $this->upstream->checkChunkedEncCap()) {
+		$http11 = $this->attrs->server['SERVER_PROTOCOL'] === 'HTTP/1.1';
+		if ($this->contentLength === null
+			&& $this->upstream->checkChunkedEncCap()
+			&& $http11) {
 			$this->attrs->chunked = true;
 		}
 		if ($this->attrs->chunked) {
 			$this->header('Transfer-Encoding: chunked');
 		}
-		if ($this->upstream instanceof \PHPDaemon\Servers\HTTP\Connection) {
+
+		if ($http11) {
+			$connection = isset($this->attrs->server['HTTP_CONNECTION']) ? strtolower($this->attrs->server['HTTP_CONNECTION']) : 'keep-alive';
+			if ($connection === 'keep-alive' && $this->upstream->getKeepaliveTimeout() > 0) {
+				$this->header('Connection: keep-alive');	
+				$this->keepalive = true;
+			} else {
+				$this->header('Connection: close');
+			}
+		} else {
 			$this->header('Connection: close');
 		}
 
@@ -930,7 +944,6 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if (!$this->headers_sent) {
 			$this->out('');
 		}
-		$this->attrs->input = null;
 		$this->sendfp       = null;
 		if (isset($this->attrs->files)) {
 			foreach ($this->attrs->files as $f) {
