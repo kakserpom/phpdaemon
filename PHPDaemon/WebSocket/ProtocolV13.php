@@ -164,7 +164,6 @@ class ProtocolV13 extends Protocol {
 			$firstBits = decbin($first);
 			$opcode    = (int)bindec(substr($firstBits, 4, 4));
 			if ($opcode === 0x8) { // CLOSE
-				D('GOT CLOSE FRAME');
 				$this->conn->finish();
 				return;
 			}
