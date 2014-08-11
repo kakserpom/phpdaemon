@@ -12,7 +12,6 @@ use PHPDaemon\Utils\Crypt;
  */
 
 class Eventsource extends Generic {
-	use \PHPDaemon\SockJS\Traits\GC;
 	protected $contentType = 'text/event-stream';
 	protected $poll = true;
 	protected $pollMode = ['stream'];
