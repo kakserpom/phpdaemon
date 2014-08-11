@@ -31,6 +31,9 @@ class IFrame extends Generic {
 	 */
 	public function init() {
 		parent::init();
+		if (isset($this->attrs->version)) {
+			$this->version = $this->attrs->version;
+		}
 		$this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
 		$this->header('Expires: '.date('r', strtotime('+1 year')));
 		$html = '<!DOCTYPE html>

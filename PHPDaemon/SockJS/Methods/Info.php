@@ -17,21 +17,8 @@ class Info extends Generic {
 	public function init() {
 		parent::init();
 		Crypt::randomInts32(1, function($ints) {
-			$opts = [
-				'websocket' => true,
-				'origins' => ['*:*'],
-				'cookie_needed' => false,
-				'entropy' => $ints[0],
-			];
-			if ($o = $this->appInstance->getRouteOptions($this->path)) {
-				foreach ($o as $k => $v) {
-					if ($k === 'entropy') {
-						continue;
-					}
-					$opts[$k] = $v;
-				}
-			}
-			echo json_encode($opts);
+			$this->opts['entropy'] = $ints[0];
+			echo json_encode($this->opts);
 			$this->finish();
 		}, 9);
 		$this->sleep(5, true);

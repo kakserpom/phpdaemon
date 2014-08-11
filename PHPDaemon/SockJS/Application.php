@@ -140,13 +140,20 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	}
 
 	public function getRouteOptions($path) {
+		$opts = [
+			'websocket' => true,
+			'origins' => ['*:*'],
+			'cookie_needed' => false,
+		];
 		foreach ($this->wss as $wss) {
 			if ($wss->routeExists($path)) {
-				return $wss->getRouteOptions($path);
+				foreach ($wss->getRouteOptions($path) as $k => $v) {
+					$opts[$k] = $v;
+				}
+				break;
 			}
 		}
-		return false;
-
+		return $opts;
 	}
 
 	public function endSession($session) {
@@ -211,14 +218,13 @@ class Application extends \PHPDaemon\Core\AppInstance {
 				return $this->callMethod('NotFound', $req, $upstream);	
 			}
 		}
-
+		$req->attrs->sessId = $sessId;
+		$req->attrs->serverId = $serverId;
+		$req->attrs->path = $path;
 		$req = $this->callMethod($method, $req, $upstream);
 		if ($req instanceof Methods\Iframe && strlen($version)) {
-			$req->setVersion($version);
+			$req->attrs->version = $version;
 		}
-		$req->setSessId($sessId);
-		$req->setServerId($serverId);
-		$req->setPath($path);
 		return $req;
 	}
 

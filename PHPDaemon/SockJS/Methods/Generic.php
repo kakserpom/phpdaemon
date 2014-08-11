@@ -21,6 +21,8 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $path;
 	protected $heartbeatTimer;
 
+	protected $opts;
+
 	protected $stopped = false;
 	
 	protected $callbackParamEnabled = false;
@@ -47,6 +49,11 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	
 
 	public function init() {
+		$this->sessId = $this->attrs->sessId;
+		$this->serverId = $this->attrs->serverId;
+		$this->path = $this->attrs->path;
+
+		$this->opts = $this->appInstance->getRouteOptions($this->attrs->path);
 		$this->CORS();
 		if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 			$this->header('204 No Content');
@@ -56,6 +63,18 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			$this->header('Expires: '.date('r', strtotime('+1 year')));
 			$this->finish();
 			return;
+		}
+		if ($this->opts['cookie_needed'] && !$this instanceof Info) {
+			if (isset($_COOKIE['JSESSIONID'])) {
+				$val = $_COOKIE['JSESSIONID'];
+				if (!is_string($val) || $val === '') {
+					$val = 'dummy';
+				}
+			} else {
+				$val = 'dummy';
+			}
+			$this->setcookie('JSESSIONID', $val, 0, '/');
+			//D(['uri' => $_SERVER['REQUEST_URI'], 'cookie' => &$_COOKIE['JSESSIONID'], 'headers' => &$this->headers['SET_COOKIE_1']]);
 		}
 		$this->contentType($this->contentType);
 		if (!$this->cacheable) {
@@ -279,36 +298,5 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			$this->header('Access-Control-Allow-Origin: *');
 		}
 		$this->header('Access-Control-Allow-Credentials: true');
-		if (isset($_COOKIE['JSESSIONID']) && is_string($_COOKIE['JSESSIONID'])) {
-			$this->setcookie('JSESSIONID', $_COOKIE['JSESSIONID'], 0, '/');
-		}
-	}
-
-	/**
-	 * Sets session ID
-	 * @param string $val
-	 * @return void
-	 */
-	public function setSessId($val) {
-		$this->sessId = $val;
-	}
-	
-
-	/**
-	 * Sets path
-	 * @param string $val
-	 * @return void
-	 */
-	public function setPath($val) {
-		$this->path = $val;
-	}
-	
-	/**
-	 * Sets server ID
-	 * @param string $val
-	 * @return void
-	 */
-	public function setServerId($val) {
-		$this->serverId = $val;
 	}
 }
