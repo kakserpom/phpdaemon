@@ -44,7 +44,6 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $poll = false;
 
 	protected $bytesSent = 0;
-	protected $gc = false;
 	
 
 	public function init() {
@@ -121,12 +120,12 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	}
 
 	public function gcCheck() {
+		if ($this->stopped) {
+			return;
+		}
 		$max = $this->appInstance->config->gcmaxresponsesize->value;
-		if ($max > 0 && !$this->gc && $this->bytesSent > $max) {
-			$this->gc = true;
-			$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) {
-				$this->finish();
-			});
+		if ($max > 0 && $this->bytesSent > $max) {
+			$this->stop();
 		}
 	}
 
@@ -181,12 +180,10 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		}
 		$this->stopped = true;
 		if (in_array('one-by-one', $this->pollMode)) {
-			$this->stop();
+			$this->finish();
+			return;
 		}
 		$this->appInstance->unsubscribeReal('s2c:' . $this->sessId, function($redis) {
-			foreach ($this->frames as $frame) {
-				$this->sendFrame($frame);
-			}
 			$this->finish();
 		});
 	}
