@@ -12,8 +12,6 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Generic extends \PHPDaemon\WebSocket\Route {
-	use \PHPDaemon\Traits\ClassWatchdog;
-	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	protected $callbacks = [];
 	protected $persistentCallbacks = [];
@@ -164,10 +162,11 @@ abstract class Generic extends \PHPDaemon\WebSocket\Route {
 	public function __call($m, $args) {
 		if (strncmp($m, 'remote_', 7) === 0) {
 			$this->callRemoteArray(substr($m, 7), $args);
-		} else {
-			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $m);
+			return;
 		}
+		return parent::__call($m, $args);
 	}
+
 	public function onPacket($pct) {
 		$m = isset($pct['method']) ? $pct['method'] : null;
 		$args = isset($pct['arguments']) ? $pct['arguments'] : [];
