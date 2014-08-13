@@ -75,11 +75,11 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 				$val = 'dummy';
 			}
 			$this->setcookie('JSESSIONID', $val, 0, '/');
-			//D(['uri' => $_SERVER['REQUEST_URI'], 'cookie' => &$_COOKIE['JSESSIONID'], 'headers' => &$this->headers['SET_COOKIE_1']]);
 		}
 		$this->contentType($this->contentType);
 		if (!$this->cacheable) {
 			$this->noncache();
+			$this->header('X-Accel-Buffering: no');
 		}
 		if ($this->callbackParamEnabled) {
 			if (!isset($_GET['c']) || !is_string($_GET['c']) || preg_match('~[^_\.a-zA-Z0-9]~', $_GET['c'])) {
