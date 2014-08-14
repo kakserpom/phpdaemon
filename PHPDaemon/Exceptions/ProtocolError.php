@@ -1,14 +1,14 @@
 <?php
-namespace PHPDaemon\DNode;
+namespace PHPDaemon\Exceptions;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
 /**
- * ProtoException
+ * ProtocolError
  *
  * @package DNode
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class ProtoException extends \Exception {
+class ProtocolError extends \Exception {
 }
