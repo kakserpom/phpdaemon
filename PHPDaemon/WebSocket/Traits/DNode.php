@@ -122,6 +122,9 @@ trait DNode {
 	}
 
 	public function sendPacket($p) {
+		if (!$this->client) {
+			return;
+		}
 		if (is_string($p['method']) && ctype_digit($p['method'])) {
 			$p['method'] = (int) $p['method'];
 		}
@@ -129,15 +132,23 @@ trait DNode {
 	}
 
 	/**
-	 * Called when session finished.
+	 * Called when session is finished
 	 * @return void
 	 */
 	public function onFinish() {
+		$this->cleanup();
+		parent::onFinish();
+	}
+
+	/**
+	 * Swipes internal structures
+	 * @return void
+	 */
+	public function cleanup() {
 		$this->remoteMethods = [];
 		$this->localMethods = [];
 		$this->persistentCallbacks = [];
 		$this->callbacks = [];
-		parent::onFinish();
 	}
 
 	protected static function setPath(&$m, $path, $val) {
