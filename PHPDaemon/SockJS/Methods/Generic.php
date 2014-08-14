@@ -196,6 +196,12 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		parent::onFinish();
 	}
 
+	public function internalServerError() {
+		$this->header('500 Internal Server Error');
+		$this->out('"callback" parameter required');
+		$this->finish();
+	}
+
 	protected function poll($cb = null) {
 		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) use ($cb) {
 			$this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode), function($redis) use ($cb) {
@@ -256,7 +262,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected function acquire($cb) {
 		$this->appInstance->getkey('error:' . $this->sessId, function($redis) use ($cb) {
 			if (!$redis) {
-				$this->error(3000);
+				$this->internalServerError();
 				return;
 			}
 			if ($redis->result !== null) {
@@ -268,16 +274,28 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 				return;
 			}
 			$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
+				if (!$redis) {
+					$this->internalServerError();
+					return;
+				}
 				if ($redis->result > 0) {
 					$this->anotherConnectionStillOpen();
 					return;
 				}
 				$this->appInstance->subscribe('w8in:' . $this->sessId, [$this, 'w8in'], function($redis) use ($cb) {
+					if (!$redis) {
+						$this->internalServerError();
+						return;
+					}
 					if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
 						$this->anotherConnectionStillOpen();
 						return;
 					}
 					$this->appInstance->publish('w8in:' . $this->sessId, '', function($redis) use ($cb) {
+						if (!$redis) {
+							$this->internalServerError();
+							return;
+						}
 						if ($redis->result > 1) {
 							$this->anotherConnectionStillOpen();
 							return;
