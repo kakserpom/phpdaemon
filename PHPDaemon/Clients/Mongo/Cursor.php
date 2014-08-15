@@ -69,6 +69,12 @@ class Cursor implements \Iterator {
 		$this->items = [];
 		return $items;
 	}
+
+	public function toArray() {
+		$items = $this->items;
+		$this->items = [];
+		return $items;
+	}
   
 	public function valid() {
 		$key = isset($this->items[$this->pos]) ? $this->items[$this->pos] :null;
@@ -139,7 +145,7 @@ class Cursor implements \Iterator {
 	 */
 	public function destroy($notify = false) {
 		if ($this->destroyed) {
-			return;
+			return false;
 		}
 		$this->destroyed = true;
 		if ($notify) {
@@ -149,6 +155,10 @@ class Cursor implements \Iterator {
 		}
 		unset($this->conn->cursors[$this->id]);
 		return true;
+	}
+
+	public function free($notify = false) {
+		return $this->destroy($notify);
 	}
 
 	/**

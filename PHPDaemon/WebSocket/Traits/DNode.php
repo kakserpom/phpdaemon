@@ -29,6 +29,40 @@ trait DNode {
 		$this->persistentMode = false;
 	}
 
+
+	public function callLocalExtractCallbacks($args, &$list, &$path) {
+		foreach ($args as $k => &$v) {
+			if (is_array($v)) {
+				$path[] = $k;
+				$this->callLocalExtractCallbacks($v, $list, $path);
+				array_pop($path);
+			} elseif ($v instanceof \Closure) {
+				$id = ++$this->counter;
+				$this->callbacks[$id] = $v;
+				$list[$id] = array_merge($path, [$k]);
+			}
+		}
+	}
+
+	public function callLocal() {
+		$args = func_get_args();
+		if (!sizeof($args)) {
+			return $this;
+		}
+		$method = array_shift($args);
+		$p = [
+			'method' => $method,
+		];
+		if (sizeof($args)) {
+			$path = [];
+			$this->callLocalExtractCallbacks($args, $callbacks, $path);
+			$p['arguments'] = $args;
+			$p['callbacks'] = $callbacks;
+		}
+		$this->onPacket($p);
+		return $this;
+	}
+
 	public static function ensureCallback(&$arg) {
 		if ($arg instanceof \Closure) {
 			return true;
@@ -69,13 +103,14 @@ trait DNode {
 		}
 		$method = array_shift($args);
 		$this->callRemoteArray($method, $args);
+		return $this;
 	}
 
 
 	public function callRemoteArray($method, $args) {
 		if (isset($this->remoteMethods[$method])) {
 			call_user_func_array($this->remoteMethods[$method], $args);
-			return;
+			return $this;
 		}
 		$pct = [
 			'method' => $method,
@@ -90,6 +125,7 @@ trait DNode {
 			}
 		}
 		$this->sendPacket($pct);
+		return $this;
 	}
 
 	public function methodsMethod($methods) {

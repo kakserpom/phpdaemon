@@ -213,7 +213,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 					$cb === null || call_user_func($cb);
 					return;
 				}
-				$this->appInstance->setnx('sess:' . $this->sessId, '', function($redis) use ($cb) {
+				$this->appInstance->setnx('sess:' . $this->sessId, $this->attrs->server['REQUEST_URI'], function($redis) use ($cb) {
 					if (!$redis || $redis->result === 0) {
 						$this->error(3000);
 						$cb === null || call_user_func($cb);
