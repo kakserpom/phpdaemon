@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Servers\DebugConsole;
+use PHPDaemon\Utils\Crypt;
 
 /**
  * @package    NetworkServers
@@ -10,7 +11,7 @@ namespace PHPDaemon\Servers\DebugConsole;
 class Connection extends \PHPDaemon\Network\Connection {
 
 	/** @var int */
-	public $timeout = 5;
+	public $timeout = 60;
 
 	/**
 	 * Are we authorized?
@@ -48,7 +49,7 @@ Please enter the password or type "exit": ');
 	 * @return boolean
 	 */
 	protected function checkPassword($pass = '') {
-		if ($pass != $this->pool->config->passphrase->value) {
+		if (!Crypt::compareStrings($this->pool->config->passphrase->value, $pass)) {
 			--$this->authTries;
 
 			if (0 === $this->authTries) {
@@ -102,17 +103,17 @@ Type "help" to get the list of allowed commands.');
 	 * @param string New data.
 	 * @return void
 	 */
-	public function stdin($buf) {
-		$this->buf .= $buf;
-
-		$finish =
-				(strpos($this->buf, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
-				|| (strpos($this->buf, $s = "\xff\xec") !== FALSE)
-				|| (strpos($this->buf, $s = "\x03") !== FALSE)
-				|| (strpos($this->buf, $s = "\x04") !== FALSE);
-
-		while (($line = $this->gets()) !== FALSE) {
-			$e   = explode(' ', rtrim($line, "\r\n"), 2);
+	public function onRead() {	
+		$seq = ["\xff\xf4\xff\xfd\x06", "\xff\xec", "\x03", "\x04"];
+		$finish = false;
+		foreach ($seq as $s) {
+			if ($this->search($s) !== false) {
+				$finish = true;
+			}
+		}
+		while (($line = $this->readline()) !== null) {
+			$line = rtrim($line, "\r\n");
+			$e   = explode(' ', $line, 2);
 			$cmd = trim(strtolower($e[0]));
 			$arg = isset($e[1]) ? $e[1] : '';
 
@@ -120,7 +121,7 @@ Type "help" to get the list of allowed commands.');
 				$this->disconnect();
 			}
 			elseif (!$this->auth) {
-				$this->checkPassword($e[0]);
+				$this->checkPassword($line);
 			}
 			else {
 				$this->processCommand($cmd, $arg);
