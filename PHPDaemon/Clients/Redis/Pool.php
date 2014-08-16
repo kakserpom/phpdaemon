@@ -64,6 +64,13 @@ class Pool extends \PHPDaemon\Network\Client {
 			 * @var boolean
 			 */
 			'log-pub-sub-race-condition' => true,
+
+			/**
+			 * Select storage number
+			 * @var integer
+			 */
+			'select' => null,
+
 		];
 	}
 

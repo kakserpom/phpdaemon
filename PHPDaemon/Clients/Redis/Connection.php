@@ -93,6 +93,9 @@ class Connection extends ClientConnection {
 	public function onReady() {
 		$this->ptr =& $this->result;
 		if (!isset($this->password)) {
+			if ($this->pool->config->select->value !== null) {
+				$this->select($this->pool->config->select->value);
+			}
 			parent::onReady();
 			$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
 			return;
@@ -101,6 +104,9 @@ class Connection extends ClientConnection {
 			if ($this->result !== 'OK') {
 				$this->log('Auth. error: ' . json_encode($this->result));
 				$this->finish();
+			}
+			if ($this->pool->config->select->value !== null) {
+				$this->select($this->pool->config->select->value);
 			}
 			parent::onReady();
 			$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
@@ -167,49 +173,76 @@ class Connection extends ClientConnection {
 		}
 		if ($name === 'SUBSCRIBE') {
 			$this->subscribed();
+			$channels = [];
 			foreach ($args as $arg) {
-				$b = !isset($this->subscribeCb[$arg]);
-				CallbackWrapper::addToArray($this->subscribeCb[$arg], $cb);
-				if ($b) {
-					$this->sendCommand($name, $arg, $opcb);
-				} else {
-					if ($opcb !== null) {
-						call_user_func($opcb, $this);
+				if (!is_array($arg)) {
+					$arg = [$arg];
+				}
+				foreach ($arg as $chan) {
+					$b = !isset($this->subscribeCb[$chan]);
+					CallbackWrapper::addToArray($this->subscribeCb[$chan], $cb);
+					if ($b) {
+						$channels = $chan;
+					} else {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
 					}
 				}
+			}
+			if (sizeof($channels)) {
+				$this->sendCommand($name, $channels, $opcb);
 			}
 		}
 		elseif ($name === 'PSUBSCRIBE') {
 			$this->subscribed();
+			$channels = [];
 			foreach ($args as $arg) {
-				$b = !isset($this->psubscribeCb[$arg]);
-				CallbackWrapper::addToArray($this->psubscribeCb[$arg], $cb);
-				if ($b) {
-					$this->sendCommand($name, $arg, $opcb);
-				} else {
-					if ($opcb !== null) {
-						call_user_func($opcb, $this);
+				if (!is_array($arg)) {
+					$arg = [$arg];
+				}
+				foreach ($arg as $chan) {
+					$b = !isset($this->psubscribeCb[$chan]);
+					CallbackWrapper::addToArray($this->psubscribeCb[$chan], $cb);
+					if ($b) {
+						$channels[] = $chan;
+					} else {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
 					}
 				}
 			}
+			if (sizeof($channels)) {
+				$this->sendCommand($name, $channels, $opcb);
+			}
 		}
 		elseif ($name === 'UNSUBSCRIBE') {
+			$channels = [];
 			foreach ($args as $arg) {
-				if (!isset($this->subscribeCb[$arg]) || !sizeof($this->subscribeCb[$arg])) {
-					if ($opcb !== null) {
-						call_user_func($opcb, $this);
-					}
-					return;
+				if (!is_array($arg)) {
+					$arg = [$arg];
 				}
-				CallbackWrapper::removeFromArray($this->subscribeCb[$arg], $cb);
-				if (sizeof($this->subscribeCb[$arg]) === 0) {
-					$this->sendCommand($name, $arg, $opcb);
-					unset($this->subscribeCb[$arg]);
-				} else {
-					if ($opcb !== null) {
-						call_user_func($opcb, $this);
+				foreach ($arg as $chan) {
+					if (!isset($this->subscribeCb[$chan])) {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
+						return;
+					}
+					CallbackWrapper::removeFromArray($this->subscribeCb[$chan], $cb);
+					if (sizeof($this->subscribeCb[$chan]) === 0) {
+						$channels[] = $chan;
+						unset($this->subscribeCb[$chan]);
+					} else {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
 					}
 				}
+			}
+			if (sizeof($channels)) {
+				$this->sendCommand($name, $channels, $opcb);
 			}
 		}
 		elseif ($name === 'UNSUBSCRIBEREAL') {
@@ -239,16 +272,25 @@ class Connection extends ClientConnection {
 			});
 		}
 		elseif ($name === 'PUNSUBSCRIBE') {
+			$channels = [];
 			foreach ($args as $arg) {
-				CallbackWrapper::removeFromArray($this->psubscribeCb[$arg], $cb);
-				if (sizeof($this->psubscribeCb[$arg]) === 0) {
-					$this->sendCommand($name, $arg, $opcb);
-					unset($this->psubscribeCb[$arg]);
-				} else {
-					if ($opcb !== null) {
-						call_user_func($opcb, $this);
+				if (!is_array($arg)) {
+					$arg = [$arg];
+				}
+				foreach ($arg as $chan) {
+					CallbackWrapper::removeFromArray($this->psubscribeCb[$chan], $cb);
+					if (sizeof($this->psubscribeCb[$chan]) === 0) {
+						$channels[] = $chan;
+						unset($this->psubscribeCb[$chan]);
+					} else {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
 					}
-				}				
+				}
+			}
+			if (sizeof($channels)) {
+				$this->sendCommand($name, $channels, $opcb);
 			}
 		}
 		elseif ($name === 'PUNSUBSCRIBEREAL') {
