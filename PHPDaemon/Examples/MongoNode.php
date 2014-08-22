@@ -139,10 +139,15 @@ class MongoNode extends \PHPDaemon\Core\AppInstance {
 	/**
 	 * Initializes slave session.
 	 * @param object Object.
+	 * @param \MongoTimestamp $point
 	 * @return void
 	 */
 	public function initSlave($point) {
 		$this->db->{'local.oplog.$main'}->find(
+
+			/**
+			 * @param \MongoTimestamp $cursor
+			 */
 			function ($cursor) {
 				$this->cursor     = $cursor;
 				$cursor->state    = 1;
@@ -171,6 +176,10 @@ class MongoNode extends \PHPDaemon\Core\AppInstance {
 						}
 						else {
 							$cursor->appInstance->{$item['ns']}->findOne(
+
+								/**
+								 * @param \MongoTimestamp $item
+								 */
 								function ($item) {
 									$this->cacheObject($item);
 								},

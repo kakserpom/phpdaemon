@@ -45,7 +45,7 @@ class FileReader extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return FileReaderRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new \PHPDaemon\Applications\FileReaderRequest($this, $upstream, $req);

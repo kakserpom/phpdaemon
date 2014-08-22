@@ -39,7 +39,7 @@ class App extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return Request Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new Request($this, $upstream, $req);

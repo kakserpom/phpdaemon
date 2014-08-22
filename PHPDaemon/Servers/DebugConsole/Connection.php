@@ -46,7 +46,7 @@ Please enter the password or type "exit": ');
 	/**
 	 * Let's check the password
 	 * @param string Password
-	 * @return boolean
+	 * @return boolean|null
 	 */
 	protected function checkPassword($pass = '') {
 		if (!Crypt::compareStrings($this->pool->config->passphrase->value, $pass)) {

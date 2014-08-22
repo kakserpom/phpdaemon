@@ -96,7 +96,7 @@ class ProtocolV13 extends Protocol {
 	/**
 	 * @TODO DESCR
 	 * @param $data
-	 * @param $type
+	 * @param string $type
 	 * @param int $fin
 	 * @param int $rsv1
 	 * @param int $rsv2
@@ -143,7 +143,7 @@ class ProtocolV13 extends Protocol {
 	/**
 	 * Apply mask
 	 * @param $data
-	 * @param $mask
+	 * @param string|false $mask
 	 * @return mixed
 	 */
 	public function mask($data, $mask) {

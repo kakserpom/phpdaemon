@@ -51,7 +51,6 @@ trait DeferredEventHandlers {
 	}
 
 	/**
-	 * @param string $event
 	 * @param $args
 	 * @return mixed
 	 */

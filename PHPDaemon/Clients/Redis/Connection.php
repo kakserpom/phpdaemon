@@ -154,6 +154,9 @@ class Connection extends ClientConnection {
 		$this->command($cmd, $args, $cb);
 	}
 
+	/**
+	 * @param string $name
+	 */
 	public function command($name, $args, $cb = null) {
 		// PUB/SUB handling
 		if (substr($name, -9) === 'SUBSCRIBE') {
@@ -424,6 +427,9 @@ class Connection extends ClientConnection {
 		goto start;
 	}
 
+	/**
+	 * @param integer $length
+	 */
 	public function pushLevel($length) {
 		if ($length <= 0) {
 			$this->pushValue([]);

@@ -111,6 +111,7 @@ class AppResolver {
 	 * Resolve full name of application by its class and name
 	 * @param string Application class.
 	 * @param string Application name.
+	 * @param string $appName
 	 * @return string
 	 */
 	public function getAppFullname($appName, $instance = '') {

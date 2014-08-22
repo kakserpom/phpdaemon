@@ -128,6 +128,9 @@ class Pool extends \PHPDaemon\Network\Client {
 		});
 	}
 
+	/**
+	 * @param string $cmd
+	 */
 	protected function sendSubCommand($cmd, $args, $cb) {
 		/**
 		 * @var $conn Connection

@@ -15,7 +15,7 @@ class TransportContext extends AppInstance {
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
 	 * Uncomment and return array with your default options
-	 * @return array|bool
+	 * @return boolean
 	 */
 	protected function getConfigDefaults() {
 		return false;

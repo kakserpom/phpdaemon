@@ -45,6 +45,7 @@ class Connection extends ClientConnection {
 	 * @param string   Type of request
 	 * @param string   Data
 	 * @param callable $cb Callback
+	 * @param string $type
 	 * @return void
 	 */
 	public function request($type, $data = null, $cb = null) {
@@ -148,6 +149,7 @@ class Connection extends ClientConnection {
 	/**
 	 * Parses response to 'info' command into structure
 	 * @param &string Data
+	 * @param string $type
 	 * @return array Structure
 	 */
 	public static function parseInfo(&$st, $type) {

@@ -91,6 +91,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		parent::onFinish();
 	}
 
+	/**
+	 * @param \PHPDaemon\Network\Pool $wss
+	 */
 	public function attachWss($wss) {
 		if ($this->wss->contains($wss)) {
 			return false;

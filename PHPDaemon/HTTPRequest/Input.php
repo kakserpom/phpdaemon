@@ -456,6 +456,7 @@ class Input extends \EventBuffer {
 	/**
 	 * Log
 	 * @param string Message
+	 * @param string $msg
 	 * @return void
 	 */
 	public function log($msg) {

@@ -127,8 +127,7 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Set group
-	 * @param string $group
-	 * @return object $this
+	 * @return ShellCommand $this
 	 */
 	public function setGroup($val) {
 		$this->setGroup = $val;
@@ -138,7 +137,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Set cwd
 	 * @param string $dir
-	 * @return object $this
+	 * @return ShellCommand $this
 	 */
 	public function setCwd($dir) {
 		$this->cwd = $dir;
@@ -147,8 +146,7 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Set group
-	 * @param string $user
-	 * @return object $this
+	 * @return ShellCommand $this
 	 */
 	public function setUser($val) {
 		$this->setUser = $val;
@@ -158,7 +156,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Set chroot
 	 * @param string $dir
-	 * @return object $this
+	 * @return ShellCommand $this
 	 */
 	public function setChroot($dir) {
 		$this->chroot = $dir;
@@ -235,7 +233,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Sets an array of arguments
 	 * @param array Arguments
-	 * @return object ShellCommand
+	 * @return ShellCommand ShellCommand
 	 */
 	public function setArgs($args = NULL) {
 		$this->args = $args;
@@ -246,7 +244,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Set a hash of environment's variables
 	 * @param array Hash of environment's variables
-	 * @return object ShellCommand
+	 * @return ShellCommand ShellCommand
 	 */
 	public function setEnv($env = NULL) {
 		$this->env = $env;
@@ -270,7 +268,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Set priority.
 	 * @param integer $nice Priority
-	 * @return object ShellCommand
+	 * @return ShellCommand ShellCommand
 	 */
 	public function nice($nice = NULL) {
 		$this->nice = $nice;
@@ -280,7 +278,7 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Called when new data received
-	 * @return boolean
+	 * @return ShellCommand|null
 	 */
 	protected function onRead() {
 		if (func_num_args() === 1) {
@@ -322,7 +320,7 @@ class ShellCommand extends IOStream {
 	 * @param string $binPath Optional. Binpath.
 	 * @param array $args     Optional. Arguments.
 	 * @param array $env      Optional. Hash of environment's variables.
-	 * @return object ShellCommand
+	 * @return ShellCommand ShellCommand
 	 */
 	public function execute($binPath = NULL, $args = NULL, $env = NULL) {
 		if ($binPath !== NULL) {
@@ -448,6 +446,7 @@ class ShellCommand extends IOStream {
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
 	 * @param string Data to send.
+	 * @param string $data
 	 * @return boolean Success.
 	 */
 	public function write($data) {

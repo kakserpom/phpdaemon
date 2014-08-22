@@ -125,6 +125,7 @@ class Master extends Generic {
 	/**
 	 * Log something
 	 * @param string - Message.
+	 * @param string $message
 	 * @return void
 	 */
 	public function log($message) {
@@ -211,6 +212,7 @@ class Master extends Generic {
 	/**
 	 * Reload worker by internal id
 	 * @param integer - Id of worker
+	 * @param integer $id
 	 * @return void
 	 */
 	public function reloadWorker($id) {

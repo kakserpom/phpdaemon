@@ -12,7 +12,7 @@ class ExampleDNSClient extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return ExampleDNSClientRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new \PHPDaemon\Examples\ExampleDNSClientRequest($this, $upstream, $req);

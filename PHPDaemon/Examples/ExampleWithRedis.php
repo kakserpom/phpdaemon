@@ -44,7 +44,7 @@ class ExampleWithRedis extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param $req object Request.
 	 * @param $upstream IRequestUpstream Upstream application instance.
-	 * @return object Request.
+	 * @return ExampleWithRedisRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new ExampleWithRedisRequest($this, $upstream, $req);

@@ -129,7 +129,7 @@ class AppInstance {
 	/**
 	 * Function to get default config options from application
 	 * Override to set your own
-	 * @return array|bool
+	 * @return boolean
 	 */
 	protected function getConfigDefaults() {
 		return false;
@@ -173,7 +173,7 @@ class AppInstance {
 	}
 
 	/**
-	 * @return Config\Object
+	 * @return Config\Section
 	 */
 	public function getConfig() {
 		return $this->config;
@@ -242,6 +242,7 @@ class AppInstance {
 	/**
 	 * Log something
 	 * @param string - Message.
+	 * @param string $message
 	 * @return void
 	 */
 	public function log($message) {

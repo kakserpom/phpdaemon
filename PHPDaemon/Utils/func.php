@@ -36,6 +36,9 @@ if (!function_exists('igbinary_serialize')) {
 	}
 }
 if (!function_exists('setTimeout')) {
+/**
+ * @param Closure $cb
+ */
 function setTimeout($cb, $timeout = null, $id = null, $priority = null) {
 	return \PHPDaemon\Core\Timer::add($cb, $timeout, $id, $priority);
 }

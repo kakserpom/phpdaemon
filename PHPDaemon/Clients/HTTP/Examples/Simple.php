@@ -45,7 +45,7 @@ class Simple extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return SimpleRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new SimpleRequest($this, $upstream, $req);

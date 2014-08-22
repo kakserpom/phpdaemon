@@ -7,7 +7,6 @@ class ObjectStorage extends \SplObjectStorage {
 
 	/**
 	 * Call given method of all objects in storage
-	 * @param string $Method
 	 * @param ... arguments ...
 	 * @return integer Number of called objects
 	 */

@@ -13,6 +13,9 @@ class ClearStack extends \Exception {
 	 * @param string  Message
 	 * @param integer Code
 	 * @param [object Thread]
+	 * @param string $msg
+	 * @param integer $code
+	 * @param \PHPDaemon\Thread\Generic $thread
 	 * @return mixed
 	 */
 	public function __construct($msg, $code, $thread = null) {

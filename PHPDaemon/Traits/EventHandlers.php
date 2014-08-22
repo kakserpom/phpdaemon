@@ -110,7 +110,7 @@ trait EventHandlers {
 	 * Bind event or events
 	 * @param string|array   Event name
 	 * @param callable $cb Callback
-	 * @return object $this
+	 * @return EventHandlers $this
 	 */
 	public function bind($event, $cb) {
 		if ($cb !== null) {
@@ -127,7 +127,7 @@ trait EventHandlers {
 	 * Bind event or events
 	 * @param string|array   Event name
 	 * @param callable $cb Callback
-	 * @return boolean Success
+	 * @return EventHandlers Success
 	 */
 	public function on($event, $cb) {
 		return $this->bind($event, $cb);
@@ -137,7 +137,7 @@ trait EventHandlers {
 	 * Unbind event(s) or callback from event(s)
 	 * @param string|array Event name
 	 * @param callable Callback, optional
-	 * @return object $this
+	 * @return EventHandlers $this
 	 */
 	public function unbind($event, $cb = null) {
 		if ($cb !== null) {
@@ -163,7 +163,7 @@ trait EventHandlers {
 	 * Unbind event(s) or callback from event(s)
 	 * @param string|array Event name
 	 * @param callable Callback, optional
-	 * @return object $this
+	 * @return EventHandlers $this
 	 */
 	public function off($event, $cb) {
 		return $this->unbind($event, $cb);

@@ -198,6 +198,7 @@ class Pool extends Client {
 	 * @param string   Hostname
 	 * @param callable $cb Callback
 	 * @param [boolean Noncache?]
+	 * @param string $hostname
 	 * @return void
 	 */
 	public function get($hostname, $cb, $noncache = false) {

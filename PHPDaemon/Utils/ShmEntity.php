@@ -40,7 +40,7 @@ class ShmEntity {
 	/**
 	 * @param $path
 	 * @param $segsize
-	 * @param $name
+	 * @param string $name
 	 * @param bool $create
 	 */
 	public function __construct($path, $segsize, $name, $create = false) {

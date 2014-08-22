@@ -220,6 +220,7 @@ class Connection extends ClientConnection {
 	/**
 	 * Sends a packet
 	 * @param string Data
+	 * @param string $packet
 	 * @return boolean Success
 	 */
 	public function sendPacket($packet) {
@@ -230,6 +231,7 @@ class Connection extends ClientConnection {
 	/**
 	 * Builds length-encoded binary string
 	 * @param string String
+	 * @param string $s
 	 * @return string Resulting binary string
 	 */
 	public function buildLenEncodedBinary($s) {
@@ -342,6 +344,7 @@ class Connection extends ClientConnection {
 	 * Sends SQL-query
 	 * @param string   Query
 	 * @param callback Optional. Callback called when response received.
+	 * @param string $q
 	 * @return boolean Success
 	 */
 	public function query($q, $callback = NULL) {

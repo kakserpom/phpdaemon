@@ -26,7 +26,7 @@ class ExampleWebSocket extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return ExampleWebSocketTestPageRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new ExampleWebSocketTestPageRequest($this, $upstream, $req);
@@ -77,7 +77,7 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 	/**
 	 * Uncaught exception handler
 	 * @param $e
-	 * @return boolean Handled?
+	 * @return boolean|null Handled?
 	 */
 	public function handleException($e) {
 		$this->client->sendFrame('exception ...');

@@ -110,7 +110,7 @@ class CGIRequest extends Generic {
 
 	/**
 	 * Called when the request aborted.
-	 * @param $process
+	 * @param \PHPDaemon\Core\ShellCommand $process
 	 * @return void
 	 */
 	public function onWrite($process) {

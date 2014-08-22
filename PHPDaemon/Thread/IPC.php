@@ -185,6 +185,7 @@ class IPC extends Generic {
 	/**
 	 * Log something
 	 * @param string - Message.
+	 * @param string $message
 	 * @return void
 	 */
 	public function log($message) {
@@ -207,7 +208,7 @@ class IPC extends Generic {
 	/**
 	 * Shutdown thread
 	 * @param boolean - Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
-	 * @return boolean - Ready?
+	 * @return boolean|null - Ready?
 	 */
 	public function shutdown($hard = false) {
 		$error = error_get_last();

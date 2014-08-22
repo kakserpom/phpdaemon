@@ -231,6 +231,9 @@ class Connection extends ClientConnection {
 		$this->trigger('disconnected');
 	}
 
+	/**
+	 * @param string $mask
+	 */
 	protected static function mask($mask, $str) {
 		$out = '';
 		$l = strlen($str);

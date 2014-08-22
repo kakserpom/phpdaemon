@@ -123,7 +123,7 @@ abstract class Client extends Pool {
 	 * @param string   Address
 	 * @param callback onConnected
 	 * @param integer  Optional. Priority.
-	 * @return mixed Success|Connection.
+	 * @return boolean Success|Connection.
 	 */
 	public function getConnection($url = null, $cb = null, $pri = 0) {
 		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
@@ -285,6 +285,7 @@ abstract class Client extends Pool {
 	 * @param string Server
 	 * @param string Request
 	 * @param mixed  Callback called when the request complete
+	 * @param string $data
 	 * @return boolean Success.
 	 */
 	public function requestByServer($server, $data, $onResponse = null) {
@@ -303,6 +304,7 @@ abstract class Client extends Pool {
 	 * @param string Key
 	 * @param string Request
 	 * @param mixed  Callback called when the request complete
+	 * @param string $data
 	 * @return boolean Success
 	 */
 	public function requestByKey($key, $data, $onResponse = null) {

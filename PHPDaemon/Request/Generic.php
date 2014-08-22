@@ -140,7 +140,7 @@ abstract class Generic {
 	/**
 	 * Uncaught exception handler
 	 * @param $e
-	 * @return boolean Handled?
+	 * @return boolean|null Handled?
 	 */
 	public function handleException($e) {
 	}
@@ -173,7 +173,7 @@ abstract class Generic {
 	 * Output some data
 	 * @param string $s String to out
 	 * @param bool $flush
-	 * @return boolean Success
+	 * @return boolean|null Success
 	 */
 	public function out($s, $flush = true) {
 	}
@@ -402,7 +402,7 @@ abstract class Generic {
 	/**
 	 * Delays the request execution for the given number of seconds
 	 *
-	 * @param float|int $time Time to sleep in seconds
+	 * @param integer $time Time to sleep in seconds
 	 * @param boolean $set    Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
 	 * @throws RequestSleep
 	 * @return void

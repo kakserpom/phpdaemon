@@ -256,6 +256,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * Called when new frame received.
 	 * @param string Frame's data.
 	 * @param string Frame's type ("STRING" OR "BINARY").
+	 * @param string $data
 	 * @return boolean Success.
 	 */
 	public function onFrame($data, $type) {
@@ -385,8 +386,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Read first line of HTTP request
-	 * @return boolean Success
-	 * @return void
+	 * @return null|boolean Success
+	 * @return null|boolean
 	 */
 	protected function httpReadFirstline() {
 		if (($l = $this->readline()) === null) {
@@ -421,8 +422,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Read headers line-by-line
-	 * @return boolean Success
-	 * @return void
+	 * @return boolean|null Success
+	 * @return boolean|null
 	 */
 	protected function httpReadHeaders() {
 		while (($l = $this->readLine()) !== null) {

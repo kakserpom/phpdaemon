@@ -350,6 +350,7 @@ class Connection extends ClientConnection {
 	 * Synopsis: Generate Challenge for MD5 Auth
 	 * Privilege: <none>
 	 *
+	 * @param \Closure $cb
 	 * @return void
 	 */
 	protected function challenge($cb) {

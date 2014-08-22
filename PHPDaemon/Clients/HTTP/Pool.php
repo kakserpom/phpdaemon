@@ -103,7 +103,7 @@ class Pool extends Client {
 	/**
 	 * Builds URL from array
 	 * @param $mixed
-	 * @return bool|string
+	 * @return string|false
 	 */
 	public static function buildUrl($mixed) {
 		if (is_string($mixed)) {
@@ -136,7 +136,7 @@ class Pool extends Client {
 
 	/**
 	 * Parse URL
-	 * @param $mixed Look Pool::buildUrl()
+	 * @param string $mixed Look Pool::buildUrl()
 	 * @return array|bool
 	 */
 	public static function parseUrl($mixed) {

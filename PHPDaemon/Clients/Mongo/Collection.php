@@ -19,6 +19,7 @@ class Collection {
 	 * Contructor of MongoClientAsyncCollection
 	 * @param string Name of collection
 	 * @param object Pool
+	 * @param Pool $pool
 	 * @return void
 	 */
 	public function __construct($name, $pool) {

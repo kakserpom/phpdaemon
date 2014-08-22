@@ -58,7 +58,7 @@ class CGI extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object $req      Request.
 	 * @param object $upstream Upstream application instance.
-	 * @return object Request.
+	 * @return CGIRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new CGIRequest($this, $upstream, $req);

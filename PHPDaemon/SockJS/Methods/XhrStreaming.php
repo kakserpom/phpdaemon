@@ -23,6 +23,10 @@ class XhrStreaming extends Generic {
 		$this->sendFrame(str_repeat('h', 2048));
 		$this->bytesSent = 0;
 	}
+
+	/**
+	 * @param string $frame
+	 */
 	protected function sendFrame($frame) {
 		$this->outputFrame($frame . "\n");
 		parent::sendFrame($frame);

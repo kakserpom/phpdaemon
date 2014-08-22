@@ -22,7 +22,7 @@ class ExampleWithMongo extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return ExampleWithMongoRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new ExampleWithMongoRequest($this, $upstream, $req);

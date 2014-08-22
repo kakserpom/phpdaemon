@@ -31,7 +31,7 @@ class ExampleGibson extends \PHPDaemon\Core\AppInstance{
      * Creates Request.
      * @param object Request.
      * @param object Upstream application instance.
-     * @return object Request.
+     * @return ExampleGibsonRequest Request.
      */
     public function beginRequest($req, $upstream){
         return new ExampleGibsonRequest($this, $upstream, $req);

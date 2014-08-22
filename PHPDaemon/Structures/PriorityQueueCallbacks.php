@@ -50,7 +50,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 
 	/**
 	 * Executes one callback from the top of queue with arbitrary arguments
-	 * @return integer
+	 * @return boolean
 	 */
 	public function executeOne() {
 		if ($this->isEmpty()) {

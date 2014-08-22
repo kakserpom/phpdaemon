@@ -34,7 +34,7 @@ class Connection extends ClientConnection {
 	/**
 	 * Get next ID
 	 *
-	 * @return integer
+	 * @return string
 	 */
 	public function getId() {
 		$id = ++$this->lastId;
@@ -71,7 +71,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $s
+	 * @param string $s
 	 */
 	public function sendXML($s) {
 		//Daemon::log(Debug::dump(['send', $s]));
@@ -89,7 +89,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $xml
+	 * @param string $xml
 	 * @param callable $cb
 	 * @return bool
 	 */
@@ -106,7 +106,7 @@ class Connection extends ClientConnection {
 	/**
 	 * @TODO DESCR
 	 * @param $to
-	 * @param $xml
+	 * @param string $xml
 	 * @param callable $cb
 	 * @return bool
 	 */
@@ -123,7 +123,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $xml
+	 * @param string $xml
 	 * @param callable $cb
 	 * @return bool
 	 */
@@ -140,7 +140,7 @@ class Connection extends ClientConnection {
 	/**
 	 * @TODO DESCR
 	 * @param $to
-	 * @param $xml
+	 * @param string $xml
 	 * @param callable $cb
 	 * @return bool
 	 */

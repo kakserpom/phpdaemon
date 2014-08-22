@@ -19,6 +19,9 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	protected $realConn;
 	protected $sockjs;
 
+	/**
+	 * @param Application $sockjs
+	 */
 	public function __construct($sockjs, $conn) {
 		$this->sockjs = $sockjs;
 		$this->realConn = $conn;

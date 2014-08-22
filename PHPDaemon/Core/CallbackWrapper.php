@@ -34,6 +34,7 @@ class CallbackWrapper {
 	 * Constructor
 	 * @param callable $cb
 	 * @param object $context
+	 * @param double $timeout
 	 * @return \PHPDaemon\Core\CallbackWrapper
 	 */
 	public function __construct($cb, $context = null, $timeout = null) {
@@ -134,7 +135,7 @@ class CallbackWrapper {
 	 * @static
 	 * @param callable $cb
 	 * @param double $timeout = null
-	 * @return object
+	 * @return CallbackWrapper|null
 	 */
 	public static function forceWrap($cb, $timeout = null) {
 		if ($cb instanceof CallbackWrapper) {

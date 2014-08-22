@@ -113,6 +113,8 @@ class Cursor implements \Iterator {
 	 * @param string Cursor's ID
 	 * @param string Collection's name
 	 * @param object Network connection (MongoClientConnection),
+	 * @param string $id
+	 * @param Connection $conn
 	 * @return void
 	 */
 	public function __construct($id, $col, $conn) {

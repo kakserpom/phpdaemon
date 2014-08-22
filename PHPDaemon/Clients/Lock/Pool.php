@@ -77,6 +77,7 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * Returns available connection from the pool by name
 	 * @param string   Key
 	 * @param callback Callback
+	 * @param \Closure $cb
 	 * @return boolean Success.
 	 */
 	public function getConnectionByName($name, $cb) {

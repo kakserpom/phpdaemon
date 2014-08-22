@@ -169,7 +169,7 @@ abstract class Generic {
 
 	/**
 	 * Get URI
-	 * @return array
+	 * @return string
 	 */
 	public function getUri() {
 		return $this->uri;
@@ -177,7 +177,7 @@ abstract class Generic {
 
 	/**
 	 * Get port
-	 * @return integer
+	 * @return string|null
 	 */
 	public function getPort() {
 		return isset($this->port) ? $this->port : null;
@@ -283,6 +283,7 @@ abstract class Generic {
 	/**
 	 * Route incoming request to related application
 	 * @param resource Socket
+	 * @param string $fd
 	 * @return void
 	 */
 	public function setFd($fd) {
@@ -292,7 +293,7 @@ abstract class Generic {
 
 	/**
 	 * Called when socket is bound
-	 * @return boolean Success
+	 * @return boolean|null Success
 	 */
 	protected function onBound() {
 	}

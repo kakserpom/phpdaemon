@@ -194,7 +194,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
-	 * @param $code
+	 * @param integer $code
 	 * @param $addr
 	 * @param $port
 	 */

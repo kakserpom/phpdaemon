@@ -47,7 +47,7 @@ class ExamplePubSub extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return ExamplePubSubTestPageRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new ExamplePubSubTestPageRequest($this, $upstream, $req);

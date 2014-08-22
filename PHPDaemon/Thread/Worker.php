@@ -258,6 +258,9 @@ class Worker extends Generic {
 		$this->shutdown();
 	}
 
+	/**
+	 * @param string $f
+	 */
 	protected function override($f) {
 		runkit_function_rename($f, $f.'_native');
 		runkit_function_rename('PHPDaemon\\Thread\\'.$f, $f);
@@ -328,6 +331,9 @@ class Worker extends Generic {
 			}
 			$this->override('setcookie');
 
+			/**
+			 * @param callable $cb
+			 */
 			function register_shutdown_function($cb) {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
@@ -439,6 +445,7 @@ class Worker extends Generic {
 	/**
 	 * Log something
 	 * @param string - Message.
+	 * @param string $message
 	 * @return void
 	 */
 	public function log($message) {
@@ -547,7 +554,7 @@ class Worker extends Generic {
 	/**
 	 * Shutdown this worker
 	 * @param boolean Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
-	 * @return boolean Ready?
+	 * @return boolean|null Ready?
 	 */
 	protected function shutdown($hard = false) {
 		$error = error_get_last();

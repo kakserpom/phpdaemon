@@ -30,7 +30,7 @@ class XMPPRoster {
 	public $ns = 'jabber:iq:roster';
 
 	/**
-	 * @param $xmpp
+	 * @param Connection $xmpp
 	 */
 	public function __construct($xmpp) {
 		$this->xmpp = $xmpp;
@@ -69,7 +69,7 @@ class XMPPRoster {
 	}
 
 	/**
-	 * @param $xml
+	 * @param string $xml
 	 * @param callable $cb
 	 */
 	public function rosterSet($xml, $cb = null) {

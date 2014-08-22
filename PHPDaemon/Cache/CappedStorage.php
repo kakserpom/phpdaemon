@@ -59,7 +59,7 @@ abstract class CappedStorage {
 	/**
 	 * Hash function
 	 * @param string Key
-	 * @return mixed
+	 * @return integer
 	 */
 	public function hash($key) {
 		return crc32($key);
@@ -70,6 +70,7 @@ abstract class CappedStorage {
 	 * @param string Key
 	 * @param mixed  Value
 	 * @param [integer Time-to-Life]
+	 * @param string $key
 	 * @return mixed
 	 */
 	public function put($key, $value, $ttl = null) {
@@ -100,6 +101,7 @@ abstract class CappedStorage {
 	/**
 	 * Invalidates cache element
 	 * @param string Key
+	 * @param string $key
 	 * @return void
 	 */
 	public function invalidate($key) {
@@ -110,6 +112,7 @@ abstract class CappedStorage {
 	/**
 	 * Gets element by key
 	 * @param string Key
+	 * @param string $key
 	 * @return object Item
 	 */
 	public function get($key) {
@@ -130,6 +133,7 @@ abstract class CappedStorage {
 	/**
 	 * Gets value of element by key
 	 * @param string Key
+	 * @param string $key
 	 * @return mixed
 	 */
 	public function getValue($key) {

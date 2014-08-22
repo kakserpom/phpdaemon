@@ -34,6 +34,10 @@ class MongoId extends \MongoId {
 		}
 		return new static($id);
 	}
+
+	/**
+	 * @param string $id
+	 */
 	public function __construct($id = null) {
 		if ($id !== null && strlen($id) < 20 && ctype_alnum($id)) {
 			$id = gmp_strval(gmp_init(strrev($id), 62), 16);
