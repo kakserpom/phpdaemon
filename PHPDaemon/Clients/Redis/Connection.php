@@ -105,7 +105,7 @@ class Connection extends ClientConnection {
 				$this->log('Auth. error: ' . json_encode($this->result));
 				$this->finish();
 			}
-			if ($this->pool->config->select->value !== null) {
+			if (isset($this->pool->config->select->value)) {
 				$this->select($this->pool->config->select->value);
 			}
 			parent::onReady();
