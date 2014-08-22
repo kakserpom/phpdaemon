@@ -71,8 +71,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Read first line of HTTP request
-	 * @return boolean Success
-	 * @return void
+	 * @return null|boolean Success
+	 * @return null|boolean
 	 */
 	protected function httpReadFirstline() {
 		//D($this->look(2048));
@@ -109,8 +109,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Read headers line-by-line
-	 * @return boolean Success
-	 * @return void
+	 * @return boolean|null Success
+	 * @return boolean|null
 	 */
 	protected function httpReadHeaders() {
 		while (($l = $this->readLine()) !== null) {
@@ -137,7 +137,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Creates new Request object
-	 * @return object
+	 * @return \stdClass
 	 */
 	protected function newRequest() {
 		$req                     = new \stdClass;
@@ -333,7 +333,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * End request
-	 * @return boolean Succcess.
+	 * @return boolean|null Succcess.
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
 		if ($protoStatus === -1) {

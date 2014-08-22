@@ -49,6 +49,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * Called when client sends done- or failed-event.
 	 * @param string Name of job.
 	 * @param string Result.
+	 * @param string $result
 	 * @return string Result.
 	 */
 	public function done($name, $result) {

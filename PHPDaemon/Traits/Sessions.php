@@ -41,7 +41,7 @@ trait Sessions {
 
 	/**
 	 * Deferred event 'onSessionStart'
-	 * @return callable
+	 * @return \Closure
 	 */
 	public function onSessionStartEvent() {
 		return function ($sessionStartEvent) {
@@ -68,7 +68,7 @@ trait Sessions {
 
 	/**
 	 * Deferred event 'onSessionRead'
-	 * @return callable
+	 * @return \Closure
 	 */
 	public function onSessionReadEvent() {
 
@@ -187,7 +187,7 @@ trait Sessions {
 
 	/**
 	 * Encodes session data
-	 * @return bool|string
+	 * @return string|false
 	 */
 	protected function sessionEncode() {
 		$type = ini_get('session.serialize_handler');
@@ -223,7 +223,6 @@ trait Sessions {
      *
      * @see http://www.php.net/manual/en/function.session-encode.php
      * @param $array
-     * @param bool $safe
      *
      * @return string
      */

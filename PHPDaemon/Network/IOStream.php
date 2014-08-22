@@ -285,6 +285,7 @@ abstract class IOStream {
 	 * Sets fd
 	 * @param mixed File descriptor
 	 * @param [object EventBufferEvent]
+	 * @param null|resource $fd
 	 * @return void
 	 */
 	public function setFd($fd, $bev = null) {
@@ -356,6 +357,7 @@ abstract class IOStream {
 	/**
 	 * Set timeout
 	 * @param integer Timeout
+	 * @param integer $rw
 	 * @return void
 	 */
 	public function setTimeout($rw) {
@@ -505,6 +507,7 @@ abstract class IOStream {
 	 * Read from buffer without draining
 	 * @param integer Number of bytes to read
 	 * @param integer [Offset
+	 * @param integer $n
 	 * @return string|false
 	 */
 	public function look($n, $o = 0) {
@@ -544,7 +547,7 @@ abstract class IOStream {
 	/**
 	 * Reads exact $n bytes from buffer
 	 * @param integer $n Number of bytes to read
-	 * @return string|bool
+	 * @return string|false
 	 */
 
 	public function readExact($n) {
@@ -728,7 +731,7 @@ abstract class IOStream {
 
 	/**
 	 * Send message to log
-	 * @param string $message
+	 * @param string $m
 	 * @return void
 	 */
 	protected function log($m) {

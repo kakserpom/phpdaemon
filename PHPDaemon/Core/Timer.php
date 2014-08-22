@@ -76,7 +76,6 @@ class Timer {
 
 	/**
 	 * Called when timer is triggered
-	 * @param mixed $arg
 	 * @return void
 	 */
 	public function eventCall() {
@@ -90,7 +89,7 @@ class Timer {
 
 	/**
 	 * Set prioriry
-	 * @param $priority
+	 * @param integer $priority
 	 * @return void
 	 */
 	public function setPriority($priority) {

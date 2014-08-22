@@ -500,6 +500,7 @@ class Parser {
 	 * Raises error message.
 	 * @param string Message.
 	 * @param string Level.
+	 * @param string $msg
 	 * @return void
 	 */
 	public function raiseError($msg, $level = 'emerg', $line = null, $col = null) {
@@ -518,6 +519,7 @@ class Parser {
 
 	/**
 	 * Executes token server.
+	 * @param string $c
 	 * @return mixed|void
 	 */
 	protected function token($token, $c) {

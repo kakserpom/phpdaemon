@@ -81,6 +81,9 @@ class IRC {
 	];
 	public static $codesFlip;
 
+	/**
+	 * @param integer $code
+	 */
 	public static function getCommandByCode($code) {
 		if (isset(self::$codes[$code])) {
 			return self::$codes[$code];
@@ -99,6 +102,9 @@ class IRC {
 
 	}
 
+	/**
+	 * @param string|null $mask
+	 */
 	public static function parseUsermask($mask) {
 		preg_match('~^(?:(.*?)!(\~?)(.*?)@)?(.*)$~D', $mask, $m);
 		return [

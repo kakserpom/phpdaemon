@@ -20,6 +20,7 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * @param string   Type of request
 	 * @param string   Data
 	 * @param callable $cb Callback
+	 * @param string $type
 	 * @return void
 	 */
 	public function request($addr, $type, $data, $cb) {

@@ -156,7 +156,6 @@ class DeferredEvent {
 
 	/**
 	 * Called when object is invoked as function.
-	 * @param callable $cb
 	 * @param .. params ..
 	 * @return void
 	 */

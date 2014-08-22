@@ -141,6 +141,7 @@ class ComplexJob implements \ArrayAccess {
 	/**
 	 * Get result
 	 * @param string Job name
+	 * @param string $jobname
 	 * @return mixed Result or null
 	 */
 	public function getResult($jobname) {

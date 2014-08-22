@@ -211,7 +211,7 @@ class XMLStream {
 	 * Add ID Handler
 	 *
 	 * @param integer $id
-	 * @param $cb
+	 * @param callable $cb
 	 */
 	public function addIdHandler($id, $cb) {
 		if ($cb === null) {
@@ -224,7 +224,7 @@ class XMLStream {
 	 * Add XPath Handler
 	 *
 	 * @param string $xpath
-	 * @param $cb
+	 * @param \Closure $cb
 	 * @param null $obj
 	 */
 	public function addXPathHandler($xpath, $cb, $obj = null) {

@@ -257,7 +257,7 @@ class Pool extends Client {
 
 	/**
 	 * Escapes the special symbols with trailing backslash
-	 * @param $string
+	 * @param string $string
 	 * @return string
 	 */
 	public static function escape($string) {

@@ -335,7 +335,6 @@ class Daemon {
 
 	/**
 	 * Output filter
-	 * @param string $str Input
 	 * @return string Output
 	 */
 	public static function outputFilter($s) {
@@ -496,7 +495,7 @@ class Daemon {
 
 	/**
 	 * It allows to run your simple web-apps in spawn-fcgi/php-fpm environment.
-	 * @return boolean - Success.
+	 * @return boolean|null - Success.
 	 */
 	public static function compatRunEmul() {
 		Daemon::$compatMode = TRUE;
@@ -702,7 +701,7 @@ class Daemon {
 
 	/**
 	 * spawn new master process.
-	 * @return boolean - success
+	 * @return null|integer - success
 	 */
 	public static function spawnMaster() {
 		Daemon::$masters->push($thread = new Thread\Master);

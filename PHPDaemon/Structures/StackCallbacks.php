@@ -44,7 +44,7 @@ class StackCallbacks extends \SplStack {
 
 	/**
 	 * Executes one callback from the top with given arguments without taking it out
-	 * @return void
+	 * @return boolean
 	 */
 	public function executeAndKeepOne() {
 		if ($this->isEmpty()) {
@@ -60,7 +60,7 @@ class StackCallbacks extends \SplStack {
 
 	/**
 	 * Executes all callbacks with given arguments.
-	 * @return void
+	 * @return integer
 	 */
 	public function executeAll() {
 		if ($this->isEmpty()) {

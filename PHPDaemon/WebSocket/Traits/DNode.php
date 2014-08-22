@@ -202,7 +202,6 @@ trait DNode {
 	}
 
 	/**
-	 * @param string $method
 	 * @param array $args
 	 * @return null|mixed
 	 */
@@ -258,6 +257,8 @@ trait DNode {
 	 * Called when new frame received.
 	 * @param string  Frame's contents.
 	 * @param integer Frame's type.
+	 * @param string $data
+	 * @param string $type
 	 * @return void
 	 */
 	public function onFrame($data, $type) {

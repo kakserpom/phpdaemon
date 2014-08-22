@@ -25,7 +25,7 @@ class ExampleWithPostgreSQL extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return ExampleWithPostgreSQLRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new ExampleWithPostgreSQLRequest($this, $upstream, $req);

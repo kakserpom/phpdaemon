@@ -59,7 +59,7 @@ class Session {
 
 	/**
 	 * @param $route
-	 * @param $appInstance
+	 * @param Application $appInstance
 	 * @param $authKey
 	 */
 	public function __construct($appInstance, $id, $server) {
@@ -83,7 +83,7 @@ class Session {
 		/**
 	 * Uncaught exception handler
 	 * @param $e
-	 * @return boolean Handled?
+	 * @return boolean|null Handled?
 	 */
 	public function handleException($e) {
 		if (!isset($this->route)) {
@@ -287,6 +287,9 @@ class Session {
 		);
 	}
 
+	/**
+	 * @param string $pct
+	 */
 	public function sendPacket($pct, $cb = null) {
 		if (sizeof($this->framesBuffer)) {
 			$this->buffer[] = 'a' . $this->toJson($this->framesBuffer);

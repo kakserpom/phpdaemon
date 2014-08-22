@@ -157,7 +157,7 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Setting default config options
-	 * @return array|bool
+	 * @return boolean
 	 */
 	protected function getConfigDefaults() {
 		return false;

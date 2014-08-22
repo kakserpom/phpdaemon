@@ -341,6 +341,7 @@ abstract class Connection extends IOStream {
 	/**
 	 * Executes the given callback when/if the connection is handshaked
 	 * Callback
+	 * @param callable $cb
 	 * @return void
 	 */
 	public function onConnected($cb) {
@@ -443,7 +444,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Get port
-	 * @return string
+	 * @return integer
 	 */
 	public function getPort() {
 		return $this->port;
@@ -453,6 +454,7 @@ abstract class Connection extends IOStream {
 	 * Connects to URL
 	 * @param string   URL
 	 * @param callable $cb Callback
+	 * @param string $url
 	 * @return boolean Success
 	 */
 	public function connect($url, $cb = null) {
@@ -590,7 +592,7 @@ abstract class Connection extends IOStream {
 	 * Establish UDP connection
 	 * @param string $host  Hostname
 	 * @param integer $port Port
-	 * @return string Success
+	 * @return boolean Success
 	 */
 	public function connectUdp($host, $port) {
 		$this->type = 'udp';

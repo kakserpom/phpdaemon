@@ -127,6 +127,9 @@ class Pool extends Client {
 	 * @param boolean Is an answer expected?
 	 * @param object  Connection. Optional.
 	 * @param callable Sent callback
+	 * @param integer $opcode
+	 * @param string $data
+	 * @param \Closure $sentcb
 	 * @return void
 	 * @throws ConnectionFinished
 	 */
@@ -152,7 +155,7 @@ class Pool extends Client {
 	 * @param $data
 	 * @param bool $reply
 	 * @param null $sentcb
-	 * @return callable
+	 * @return \Closure
 	 */
 	protected function requestCbProducer($opcode, $data, $reply = false, $sentcb = null) {
 		return function ($conn) use ($opcode, $data, $reply, $sentcb) {
@@ -555,6 +558,7 @@ class Pool extends Client {
 	 * @param array  Keys
 	 * @param array  Optional. Options
 	 * @param mixed  Optional. Callback called when response received
+	 * @param string $ns
 	 * @return void
 	 */
 	public function ensureIndex($ns, $keys, $options = [], $cb = null) {
@@ -1069,6 +1073,7 @@ class Pool extends Client {
 	 * @param array    Data
 	 * @param callback Callback (getLastError)
 	 * @param array    Parameters (getLastError).
+	 * @param string $col
 	 * @return void
 	 */
 	public function updateOne($col, $cond, $data, $cb = NULL, $params = []) {
@@ -1082,6 +1087,7 @@ class Pool extends Client {
 	 * @param array    Data
 	 * @param callback Callback
 	 * @param array    Parameters (getLastError).
+	 * @param string $col
 	 * @return void
 	 */
 	public function updateMulti($col, $cond, $data, $cb = NULL, $params = []) {
@@ -1094,6 +1100,7 @@ class Pool extends Client {
 	 * @param array   Conditions
 	 * @param array   Data
 	 * @param array	  Parameters.
+	 * @param string $col
 	 * @return void
 	 */
 	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $params = []) {
@@ -1106,6 +1113,7 @@ class Pool extends Client {
 	 * @param array   Conditions
 	 * @param array   Data
 	 * @param array	  Parameters.
+	 * @param string $col
 	 * @return void
 	 */
 	public function upsertOne($col, $cond, $data, $cb = NULL, $params = []) {
@@ -1118,6 +1126,7 @@ class Pool extends Client {
 	 * @param array   Conditions
 	 * @param array   Data
 	 * @param array	  Parameters.
+	 * @param string $col
 	 * @return void
 	 */
 	public function upsertMulti($col, $cond, $data, $cb = NULL, $params = []) {
@@ -1130,6 +1139,7 @@ class Pool extends Client {
 	 * @param array    Data
 	 * @param callback Callback (getLastError)
 	 * @param array    Parameters (getLastError).
+	 * @param string $col
 	 * @return MongoId
 	 */
 	public function insert($col, $doc = [], $cb = NULL, $params = []) {
@@ -1183,6 +1193,7 @@ class Pool extends Client {
 	 * Inserts several documents
 	 * @param string Collection's name
 	 * @param array  Array of docs
+	 * @param string $col
 	 * @return array IDs
 	 */
 	public function insertMulti($col, $docs = [], $cb = NULL, $params = []) {
@@ -1226,6 +1237,7 @@ class Pool extends Client {
 	 * @param string Collection's name
 	 * @param array  Conditions
 	 * @param mixed  Optional. Callback called when response received.
+	 * @param string $col
 	 * @return void
 	 */
 	public function remove($col, $cond = [], $cb = NULL, $params = []) {

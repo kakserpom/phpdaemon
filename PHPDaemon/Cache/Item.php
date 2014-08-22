@@ -35,7 +35,7 @@ class Item {
 	public $expire;
 
 	/** Establish TCP connection
-	 * @return boolean Success
+	 * @return boolean|null Success
 	 */
 	public function __construct($value) {
 		$this->listeners = new StackCallbacks;

@@ -58,6 +58,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Called when new UDP packet received.
+	 * @param string $pct
 	 * @return void
 	 */
 	public function onUdpPacket($pct) {

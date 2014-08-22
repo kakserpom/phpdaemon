@@ -383,6 +383,7 @@ abstract class Generic {
 	 * Checks if given process ID does exist
 	 * @static
 	 * @param integer PID
+	 * @param integer $pid
 	 * @return boolean Success
 	 */
 	public static function ifExistsByPid($pid) {
@@ -391,6 +392,7 @@ abstract class Generic {
 
 	/**
 	 * Waits until children is alive
+	 * @param boolean $check
 	 * @return void
 	 */
 	protected function waitAll($check) {
@@ -409,6 +411,7 @@ abstract class Generic {
 	/**
 	 * Sets a title of the current process
 	 * @param string Title
+	 * @param string $title
 	 * @return boolean Success
 	 */
 	protected function setTitle($title) {
@@ -467,6 +470,8 @@ abstract class Generic {
 	 * @param null|array SigInfo
 	 * @param int Seconds
 	 * @param int Nanoseconds
+	 * @param integer $sec
+	 * @param double $nano
 	 * @return boolean Success
 	 */
 	protected function sigtimedwait($signals, $siginfo, $sec, $nano) {

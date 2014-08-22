@@ -86,7 +86,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $cmd
+	 * @param string $cmd
 	 */
 	public function command($cmd) {
 		if (ctype_digit($cmd)) {
@@ -183,8 +183,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $to
-	 * @param $msg
+	 * @param string $to
+	 * @param string $msg
 	 */
 	public function message($to, $msg) {
 		$this->command('PRIVMSG', $to, $msg);
@@ -194,7 +194,7 @@ class Connection extends ClientConnection {
 	 * @TODO DESCR
 	 * @param $channel
 	 * @param $target
-	 * @param $mode
+	 * @param string $mode
 	 */
 	public function addMode($channel, $target, $mode) {
 		if ($channel) {
@@ -211,7 +211,7 @@ class Connection extends ClientConnection {
 	 * @TODO DESCR
 	 * @param $channel
 	 * @param $target
-	 * @param $mode
+	 * @param string $mode
 	 */
 	public function removeMode($channel, $target, $mode) {
 		if ($channel) {

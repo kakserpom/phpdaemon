@@ -22,6 +22,9 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 
 	protected $sockjs;
 
+	/**
+	 * @param Application $sockjs
+	 */
 	public function __construct($sockjs, $route) {
 		$this->sockjs = $sockjs;
 		$this->realRoute = $route;

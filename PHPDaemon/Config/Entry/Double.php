@@ -16,7 +16,7 @@ class Double extends Generic {
 	/**
 	 * Converts human-readable value to plain
 	 * @param $value
-	 * @return int|null
+	 * @return double
 	 */
 	public static function HumanToPlain($value) {
 		return (double) $value;

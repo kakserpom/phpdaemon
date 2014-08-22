@@ -63,8 +63,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $from
-	 * @param $cmd
+	 * @param null|string $from
+	 * @param string $cmd
 	 */
 	public function command($from, $cmd) {
 		if ($from === null) {
@@ -243,7 +243,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $msg
+	 * @param string $msg
 	 */
 	public function msgFromBNC($msg) {
 		if ($this->usermask === null) {

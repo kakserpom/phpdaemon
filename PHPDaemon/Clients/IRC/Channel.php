@@ -41,7 +41,7 @@ class Channel extends ObjectStorage {
 	public $topic;
 
 	/**
-	 * @param $irc
+	 * @param Connection $irc
 	 * @param $name
 	 */
 	public function __construct($irc, $name) {

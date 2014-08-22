@@ -537,6 +537,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	/**
 	 * Outputs data with headers (split by \r\n\r\n)
 	 * @param string
+	 * @param string $s
 	 * @return boolean Success.
 	 */
 	public function combinedOut($s) {
@@ -777,6 +778,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	/**
 	 * Called when file upload started.
 	 * @param HTTPRequestInput
+	 * @param Input $in
 	 * @return void
 	 */
 	public function onUploadFileStart($in) {
@@ -798,6 +800,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * Called when chunk of incoming file has arrived.
 	 * @param HTTPRequestInput
 	 * @param boolean Last?
+	 * @param Input $in
 	 * @return void
 	 */
 	public function onUploadFileChunk($in, $last = false) {

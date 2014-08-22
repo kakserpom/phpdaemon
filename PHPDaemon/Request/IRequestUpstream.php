@@ -3,6 +3,9 @@ namespace PHPDaemon\Request;
 
 interface IRequestUpstream {
 
+	/**
+	 * @return boolean
+	 */
 	public function requestOut($req, $s);
 
 	/**
