@@ -59,6 +59,7 @@ abstract class CappedStorage {
 	/**
 	 * Hash function
 	 * @param string Key
+	 * @param string $key
 	 * @return integer
 	 */
 	public function hash($key) {

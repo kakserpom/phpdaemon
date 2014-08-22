@@ -104,7 +104,7 @@ class Channel extends ObjectStorage {
 	/**
 	 * @TODO DESCR
 	 * @param $nick
-	 * @param $mode
+	 * @param string $mode
 	 */
 	public function addMode($nick, $mode) {
 		if (!isset($this->nicknames[$nick])) {
@@ -120,7 +120,7 @@ class Channel extends ObjectStorage {
 	/**
 	 * @TODO DESCR
 	 * @param $target
-	 * @param $mode
+	 * @param string $mode
 	 */
 	public function removeMode($target, $mode) {
 		if (!isset($this->nicknames[$target])) {

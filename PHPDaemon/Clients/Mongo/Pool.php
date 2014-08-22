@@ -151,10 +151,10 @@ class Pool extends Client {
 
 	/**
 	 * @TODO DESCR
-	 * @param $opcode
-	 * @param $data
+	 * @param integer $opcode
+	 * @param string $data
 	 * @param bool $reply
-	 * @param null $sentcb
+	 * @param \Closure|null $sentcb
 	 * @return \Closure
 	 */
 	protected function requestCbProducer($opcode, $data, $reply = false, $sentcb = null) {
@@ -1031,6 +1031,7 @@ class Pool extends Client {
 	 * @param integer  Optional. Flags.
 	 * @param callback Callback (getLastError)
 	 * @param array    Parameters (getLastError).
+	 * @param string $col
 	 * @return void
 	 */
 	public function update($col, $cond, $data, $flags = 0, $cb = NULL, $params = []) {

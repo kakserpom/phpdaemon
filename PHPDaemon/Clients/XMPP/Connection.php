@@ -174,7 +174,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $ns
+	 * @param string $ns
 	 * @param callable $cb
 	 * @return bool
 	 */
@@ -196,8 +196,8 @@ class Connection extends ClientConnection {
 	/**
 	 * @TODO DESCR
 	 * @param $to
-	 * @param $ns
-	 * @param $xml
+	 * @param string $ns
+	 * @param string $xml
 	 * @param callable $cb
 	 * @return bool
 	 */
