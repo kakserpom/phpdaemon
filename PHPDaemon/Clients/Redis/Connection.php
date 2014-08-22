@@ -326,6 +326,9 @@ class Connection extends ClientConnection {
 		}
  	}
 
+ 	/**
+ 	 * @param string $name
+ 	 */
  	public function sendCommand($name, $args, $cb = null) {
  		$this->onResponse($cb);
  		if (!is_array($args)) {

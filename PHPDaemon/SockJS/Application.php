@@ -39,6 +39,10 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return $this->redis->getLocalSubscribersCount($this->config->redisprefix->value . $chan);
 	}
 
+	/**
+	 * @param string $chan
+	 * @param \Closure $opcb
+	 */
 	public function subscribe($chan, $cb, $opcb = null) {
 		$this->redis->subscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
@@ -59,6 +63,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$this->redis->expire($this->config->redisprefix->value . $key, $seconds, $cb);
 	}
 
+	/**
+	 * @param string $chan
+	 */
 	public function unsubscribe($chan, $cb, $opcb = null) {
 		$this->redis->unsubscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
@@ -67,6 +74,11 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$this->redis->unsubscribeReal($this->config->redisprefix->value . $chan, $opcb);
 	}
 
+	/**
+	 * @param string $chan
+	 * @param string $cb
+	 * @param \Closure $opcb
+	 */
 	public function publish($chan, $cb, $opcb = null) {
 		$this->redis->publish($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
@@ -169,6 +181,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return $opts;
 	}
 
+	/**
+	 * @param Session $session
+	 */
 	public function endSession($session) {
 		$this->sessions->detach($session);
 	}

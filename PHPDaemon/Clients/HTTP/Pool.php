@@ -102,7 +102,7 @@ class Pool extends Client {
 
 	/**
 	 * Builds URL from array
-	 * @param $mixed
+	 * @param string $mixed
 	 * @return string|false
 	 */
 	public static function buildUrl($mixed) {

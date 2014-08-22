@@ -28,6 +28,7 @@ class Binary {
 	 * Parse structure of labels
 	 * @param string Binary data
 	 * @param string Original packet
+	 * @param string $orig
 	 * @return string Dot-separated labels list
 	 */
 	public static function parseLabels(&$data, $orig = null) {
@@ -286,6 +287,7 @@ class Binary {
 	 * @param integer Length
 	 * @param integer Integer
 	 * @param boolean Optional. Little endian. Default value - false.
+	 * @param integer $len
 	 * @return string Resulting binary string
 	 */
 	public static function int2bytes($len, $int = 0, $l = false) {
