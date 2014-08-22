@@ -259,9 +259,6 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		});
 	}
 	
-	/**
-	 * @param \Closure $cb
-	 */
 	protected function acquire($cb) {
 		$this->appInstance->getkey('error:' . $this->sessId, function($redis) use ($cb) {
 			if (!$redis) {
@@ -303,6 +300,10 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 							$this->anotherConnectionStillOpen();
 							return;
 						}
+						if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
+							$this->anotherConnectionStillOpen();
+							return;
+						}
 						call_user_func($cb);
 					});
 				});
@@ -318,9 +319,6 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		});
 	}
 
-	/**
-	 * @param integer $code
-	 */
 	protected function error($code) {
 		$this->sendFrame('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]));
 	}

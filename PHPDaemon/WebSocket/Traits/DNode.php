@@ -29,21 +29,6 @@ trait DNode {
 		$this->persistentMode = false;
 	}
 
-
-	public function callLocalExtractCallbacks($args, &$list, &$path) {
-		foreach ($args as $k => &$v) {
-			if (is_array($v)) {
-				$path[] = $k;
-				$this->callLocalExtractCallbacks($v, $list, $path);
-				array_pop($path);
-			} elseif ($v instanceof \Closure) {
-				$id = ++$this->counter;
-				$this->callbacks[$id] = $v;
-				$list[$id] = array_merge($path, [$k]);
-			}
-		}
-	}
-
 	public function callLocal() {
 		$args = func_get_args();
 		if (!sizeof($args)) {
@@ -52,13 +37,8 @@ trait DNode {
 		$method = array_shift($args);
 		$p = [
 			'method' => $method,
+			'arguments' => $args,
 		];
-		if (sizeof($args)) {
-			$path = [];
-			$this->callLocalExtractCallbacks($args, $callbacks, $path);
-			$p['arguments'] = $args;
-			$p['callbacks'] = $callbacks;
-		}
 		$this->onPacket($p);
 		return $this;
 	}

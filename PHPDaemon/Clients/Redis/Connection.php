@@ -93,7 +93,7 @@ class Connection extends ClientConnection {
 	public function onReady() {
 		$this->ptr =& $this->result;
 		if (!isset($this->password)) {
-			if ($this->pool->config->select->value !== null) {
+			if (isset($this->pool->config->select->value)) {
 				$this->select($this->pool->config->select->value);
 			}
 			parent::onReady();
@@ -185,7 +185,7 @@ class Connection extends ClientConnection {
 					$b = !isset($this->subscribeCb[$chan]);
 					CallbackWrapper::addToArray($this->subscribeCb[$chan], $cb);
 					if ($b) {
-						$channels = $chan;
+						$channels[] = $chan;
 					} else {
 						if ($opcb !== null) {
 							call_user_func($opcb, $this);
