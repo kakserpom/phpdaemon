@@ -91,3 +91,11 @@ checks:
         avoid_entity_manager_injection: true
         avoid_fixme_comments: true
         argument_type_checks: true
+        non_commented_empty_catch_block: true
+        no_debug_code: true
+        ensure_lower_case_builtin_functions: true
+        fix_doc_comments: true
+        missing_arguments: true
+        method_calls_on_non_object: true
+        foreach_traversable: true
+        no_duplicate_arguments: true
