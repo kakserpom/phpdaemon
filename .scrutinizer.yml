@@ -59,9 +59,6 @@ checks:
         require_scope_for_properties: true
         require_scope_for_methods: true
         require_braces_around_control_structures: true
-        psr2_switch_declaration: true
-        psr2_control_structure_declaration: true
-        psr2_class_declaration: true
         prefer_sapi_constant: true
         php5_style_constructor: true
         parameter_doc_comments: true
@@ -75,14 +72,12 @@ checks:
         no_space_before_semicolon: true
         no_space_around_object_operator: true
         no_space_after_cast: true
-        newline_at_end_of_file: true
         lowercase_php_keywords: true
         lowercase_basic_constants: true
         line_length:
             max_length: '120'
         instanceof_class_exists: true
         function_body_start_on_same_line: true
-        function_body_start_on_new_line: true
         foreach_usable_as_reference: true
         blank_line_after_namespace_declaration: true
         avoid_todo_comments: true
