@@ -50,7 +50,6 @@ checks:
         spacing_of_function_arguments: true
         spacing_around_non_conditional_operators: true
         spacing_around_conditional_operators: true
-        space_after_cast: true
         single_namespace_per_use: true
         simplify_boolean_return: true
         side_effects_or_types: true
