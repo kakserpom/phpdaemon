@@ -9,10 +9,15 @@ use PHPDaemon\Network\ClientConnection;
  * @package    NetworkClients
  * @subpackage RedisClient
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Client {
 	public $servConnSub = [];
+
+
+	public function lock($key, $timeout) {
+		return new Lock($key, $timeout, $this);
+	}
 
 	/**
 	 * Detaches connection from URL

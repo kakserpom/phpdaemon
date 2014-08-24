@@ -53,7 +53,13 @@ class Crypt {
 	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
 	 * @return string
 	 */
-	public static function randomString($len = 64, $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.', $cb = null, $pri = 0, $hang = false) {
+	public static function randomString($len = null, $chars = null, $cb = null, $pri = 0, $hang = false) {
+		if ($len === null) {
+			$len = 64;
+		}
+		if ($chars === null) {
+			$chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
+		}
 		if ($cb === null) {
 			Daemon::log('[CODE WARN] \\PHPDaemon\\Utils\\Crypt::randomString: non-callback way is not secure.'
 					.' Please rewrite your code with callback function in third argument' . PHP_EOL . Debug::backtrace());
