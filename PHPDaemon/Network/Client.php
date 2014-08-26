@@ -144,12 +144,17 @@ abstract class Client extends Pool {
 				return false;
 			}
 		}
+		start:
 		$conn = false;
 		if (isset($this->servConn[$url])) {
 			$storage = $this->servConn[$url];
 			$free    = $this->servConnFree[$url];
 			if ($free->count() > 0) {
 				$conn = $free->getFirst();
+				if (!$conn->isConnected() || $conn->isFinished()) {
+					$free->detach($conn);
+					goto start;
+				}
 				if ($this->acquireOnGet) {
 					$free->detach($conn);
 				}

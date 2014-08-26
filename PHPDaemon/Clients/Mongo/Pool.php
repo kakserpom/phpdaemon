@@ -164,9 +164,9 @@ class Pool extends Client {
 					if ($sentcb !== null) {
 						call_user_func($sentcb, false);
 					}
-					return;
+				} else {
+					$this->getConnectionRR($this->requestCbProducer($opcode, $data, $reply, $sentcb));
 				}
-				$this->getConnectionRR($this->requestCbProducer($opcode, $data, $reply, $sentcb));
 				return;
 			}
 			$reqId = ++$conn->lastReqId;

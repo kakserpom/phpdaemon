@@ -30,6 +30,9 @@ trait DNode {
 	}
 
 	public function callLocal() {
+		if ($this->finished) {
+			return;
+		}
 		$args = func_get_args();
 		if (!sizeof($args)) {
 			return $this;

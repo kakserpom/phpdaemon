@@ -92,11 +92,18 @@ class ClientConnection extends Connection {
 	 * @return void
 	 */
 	public function setFree($free = true) {
+		if ($this->busy === !$free) {
+			return;
+		}
 		$this->busy = !$free;
 		if ($this->url === null) {
 			return;
 		}
 		if ($this->pool === null) {
+			return;
+		}
+		if ($this->finished) {
+			D('setFree finished');
 			return;
 		}
 		if ($this->busy) {

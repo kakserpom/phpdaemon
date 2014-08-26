@@ -120,12 +120,13 @@ class Pool extends \PHPDaemon\Network\Client {
 			/**
 			 * @var $conn Connection
 			 */
-			if ($this->sendSubCommand($cmd, $args, $cb)) {
-				return;
-			}
 
 			if (!$conn->isConnected()) {
 				call_user_func($cb, false);
+				return;
+			}
+
+			if ($this->sendSubCommand($cmd, $args, $cb)) {
 				return;
 			}
 
