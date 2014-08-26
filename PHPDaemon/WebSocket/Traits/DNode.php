@@ -19,6 +19,7 @@ trait DNode {
 	protected $counter = 0;
 	protected $remoteMethods = [];
 	protected $localMethods = [];
+	protected $cleaned = false;
 
 	public function defineLocalMethods($arr) {
 		foreach ($arr as $k => $v) {
