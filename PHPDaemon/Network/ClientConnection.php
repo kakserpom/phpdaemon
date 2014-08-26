@@ -103,7 +103,6 @@ class ClientConnection extends Connection {
 			return;
 		}
 		if ($this->finished) {
-			D('setFree finished');
 			return;
 		}
 		if ($this->busy) {
