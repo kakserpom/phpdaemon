@@ -30,9 +30,6 @@ trait DNode {
 	}
 
 	public function callLocal() {
-		if ($this->finished) {
-			return;
-		}
 		$args = func_get_args();
 		if (!sizeof($args)) {
 			return $this;
@@ -164,6 +161,7 @@ trait DNode {
 	 * @return void
 	 */
 	public function cleanup() {
+		$this->cleaned = true;
 		$this->remoteMethods = [];
 		$this->localMethods = [];
 		$this->persistentCallbacks = [];
@@ -196,6 +194,9 @@ trait DNode {
 		}
 	}
 	public function onPacket($pct) {
+		if ($this->cleaned) {
+			return;
+		}
 		$m = isset($pct['method']) ? $pct['method'] : null;
 		$args = isset($pct['arguments']) ? $pct['arguments'] : [];
 		if (isset($pct['callbacks']) && is_array($pct['callbacks'])) {
