@@ -44,6 +44,8 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $poll = false;
 
 	protected $bytesSent = 0;
+
+	protected $heartbeatOnFinish = false;
 	
 
 	public function init() {
@@ -91,6 +93,12 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		}
 		if (($f = $this->appInstance->config->heartbeatinterval->value) > 0) {
 			$this->heartbeatTimer = setTimeout(function($timer) {
+				if (in_array('one-by-one', $this->pollMode)) {
+					$this->stop(function() {
+						$this->heartbeatOnFinish = true;
+					});
+					return;
+				}
 				$this->sendFrame('h');
 				if ($this->gcEnabled) {
 					$this->gcCheck();
@@ -167,6 +175,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			$this->sendFrame($frame);
 		}
 		if (!in_array('stream', $this->pollMode)) {
+			$this->heartbeatOnFinish = false;
 			$this->stop();
 		}
 		if ($this->gcEnabled) {
@@ -193,6 +202,9 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		$this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
 		$this->appInstance->unsubscribe('w8in:' . $this->sessId, [$this, 'w8in']);
 		Timer::remove($this->heartbeatTimer);
+		if ($this->heartbeatOnFinish) {
+			$this->sendFrame('h');
+		}
 		parent::onFinish();
 	}
 
