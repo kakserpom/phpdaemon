@@ -94,9 +94,8 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		if (($f = $this->appInstance->config->heartbeatinterval->value) > 0) {
 			$this->heartbeatTimer = setTimeout(function($timer) {
 				if (in_array('one-by-one', $this->pollMode)) {
-					$this->stop(function() {
-						$this->heartbeatOnFinish = true;
-					});
+					$this->heartbeatOnFinish = true;
+					$this->stop();
 					return;
 				}
 				$this->sendFrame('h');
