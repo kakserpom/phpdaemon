@@ -29,7 +29,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 
 	/**
 	 * Dequeue
-	 * @return callback
+	 * @return callable
 	 */
 	public function dequeue() {
 		return $this->extract();

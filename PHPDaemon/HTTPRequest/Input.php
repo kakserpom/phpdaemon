@@ -17,92 +17,78 @@ class Input extends \EventBuffer {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Boundary
-	 * @var string
+	 * @var string Boundary
 	 */
 	protected $boundary;
 
 	/**
-	 * Maximum file size from multi-part query
-	 * @var integer
+	 * @var integer Maximum file size from multi-part query
 	 */
 	protected $maxFileSize = 0;
 
 	/**
-	 * Readed
-	 * @var integer
+	 * @var integer Readed
 	 */
 	protected $readed = 0;
 
 	/**
-	 * Frozen
-	 * @var boolean
+	 * @var boolean Frozen
 	 */
 	protected $frozen = false;
 
 	/**
-	 * EOF
-	 * @var boolean
+	 * @var boolean EOF
 	 */
 	protected $EOF = false;
 
 	/**
-	 * Current Part
-	 * @var array
+	 * @var array Current Part
 	 */
 	public $curPart;
 
 	/**
-	 * Content dispostion of current Part
-	 * @var array
+	 * @var array Content dispostion of current Part
 	 */
 	protected $curPartDisp = false;
 
 	/**
-	 * Related Request
-	 * @var Generic
+	 * @var Generic Related Request
 	 */
 	protected $req;
 
 	/**
-	 * State of multi-part processor
-	 * @var integer (self::STATE_*)
+	 * @var integer (self::STATE_*) State of multi-part processor
 	 */
 	protected $state = self::STATE_SEEKBOUNDARY;
 
 	/**
-	 * Size of current upload chunk
-	 * @var integer
+	 * @var integer Size of current upload chunk
 	 */
 	protected $curChunkSize;
 
 	/**
-	 * State: seek nearest boundary
-	 * @var integer
+	 * @var integer State: seek nearest boundary
 	 */
 	const STATE_SEEKBOUNDARY = 0;
 	
 	/**
-	 * State: headers
-	 * @var integer
+	 * @var integer State: headers
 	 */
 	const STATE_HEADERS = 1;
 	
 	/**
-	 * State: body
-	 * @var integer
+	 * @var integer State: body
 	 */
 	const STATE_BODY = 2;
 	
 	/**
-	 * State: upload
-	 * @var integer
+	 * @var integer State: upload
 	 */
 	const STATE_UPLOAD = 3;
 
 	/**
 	 * Set boundary
-	 * @param string
+	 * @param string $boundary
 	 * @return void
 	 */
 	public function setBoundary($boundary) {
@@ -111,7 +97,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Freeze input
-	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
+	 * @param boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
 	 * @return void
 	 */
 	public function freeze($at_front = false) {
@@ -121,7 +107,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Unfreeze input
-	 * @param boolean At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
+	 * @param boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
 	 * @return void
 	 */
 	public function unfreeze($at_front = false) {
@@ -153,7 +139,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Set request
-	 * @param Request
+	 * @param Generic $req
 	 * @return void
 	 */
 	public function setRequest(Generic $req) {
@@ -216,7 +202,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Moves $n bytes from input buffer to arbitrary buffer
-	 * @param EventBuffer Source nuffer
+	 * @param \EventBuffer $buf Source nuffer
 	 * @return integer
 	 */
 	public function readFromBuffer(\EventBuffer $buf) {
@@ -240,8 +226,8 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Append string to input buffer
-	 * @param string Piece of request input
-	 * @param [boolean true Final call is THIS SEQUENCE of calls (not mandatory final in request)?
+	 * @param string $chunk Piece of request input
+	 * @param boolean $final Final call is THIS SEQUENCE of calls (not mandatory final in request)?
 	 * @return void
 	 */
 	public function readFromString($chunk, $final = true) {
@@ -255,9 +241,9 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Read from buffer without draining
-	 * @param integer Number of bytes to read
-	 * @param integer [Offset
-	 * @return string|false
+	 * @param integer $n Number of bytes to read
+	 * @param integer $o Offset
+	 * @return string
 	 */
 	public function look($n, $o = 0) {
 		if ($this->length <= $o) {
@@ -439,7 +425,8 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Write current upload chunk to file descriptor
-	 * @param mixed    File destriptor
+	 * @todo It is not supported yet (callback missing in EventBuffer->write())
+	 * @param mixed $fd File destriptor
 	 * @param callable $cb Callback
 	 * @return boolean Success
 	 */
@@ -455,8 +442,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Log
-	 * @param string Message
-	 * @param string $msg
+	 * @param string $msg Message
 	 * @return void
 	 */
 	public function log($msg) {

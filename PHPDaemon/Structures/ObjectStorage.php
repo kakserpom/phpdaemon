@@ -7,7 +7,7 @@ class ObjectStorage extends \SplObjectStorage {
 
 	/**
 	 * Call given method of all objects in storage
-	 * @param ... arguments ...
+	 * @param mixed ... arguments ...
 	 * @return integer Number of called objects
 	 */
 	public function each() {
@@ -26,7 +26,7 @@ class ObjectStorage extends \SplObjectStorage {
 
 	/**
 	 * Remove all objects from this storage, which contained in another storage
-	 * @param \SplObjectStorage
+	 * @param \SplObjectStorage $obj
 	 * @return void
 	 */
 	public function removeAll($obj = null) {

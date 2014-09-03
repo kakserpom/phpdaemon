@@ -24,8 +24,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	use \PHPDaemon\Traits\Sessions;
 
 	/**
-	 * Status codes
-	 * @var array
+	 * @var array Status codes
 	 */
 	protected static $codes = [
 		100 => 'Continue',
@@ -76,75 +75,62 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	public $keepalive = false;
 
 	/**
-	 * Current response length
-	 * @var integer
+	 * @var integer Current response length
 	 */
 	public $responseLength = 0;
 
 	/**
-	 * Content length from header() method
-	 * @var integer
+	 * @var integer Content length from header() method
 	 */
 	protected $contentLength;
 
 	/**
-	 * Number of outgoing cookie-headers
-	 * @var integer
+	 * @var integer Number of outgoing cookie-headers
 	 */
 	protected $cookieNum = 0;
 
 	/**
-	 * Replacement pairs for processing some header values in parse_str()
-	 * @var array hash
+	 * @var array hash Replacement pairs for processing some header values in parse_str()
 	 */
 	public static $hvaltr = ['; ' => '&', ';' => '&', ' ' => '%20'];
 
 	/**
-	 * State
-	 * @var array
+	 * @var array State
 	 */
 	public static $htr = ['-' => '_'];
 
 	/**
-	 * Outgoing headers
-	 * @var array
+	 * @var array Outgoing headers
 	 */
 	protected $headers = ['STATUS' => '200 OK'];
 
 	/**
-	 * Headers sent?
-	 * @var boolean
+	 * @var boolean Headers sent?
 	 */
 	protected $headers_sent = false;
 
 	/**
-	 * File name where output started in the file and line variables.
-	 * @var boolean
+	 * @var boolean File name where output started in the file and line variables
 	 */
 	protected $headers_sent_file;
 
 	/**
-	 * Line number where output started in the file and line variables.
-	 * @var boolean
+	 * @var boolean Line number where output started in the file and line variables
 	 */
 	protected $headers_sent_line;
 
-	
 	/**
-	 * File pointer to send output (X-Sendfile)
-	 * @var File
+	 * @var File File pointer to send output (X-Sendfile)
 	 */
 	protected $sendfp;
 
 	/**
-	 * Frozen input?
-	 * @var boolean
+	 * @var boolean Frozen input?
 	 */
 	protected $frozenInput = false;
 
 	/**
-	 * Content type parameters
-	 * @var array
+	 * @var array Content type parameters
 	 */
 	protected $contype;
 
@@ -180,7 +166,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * Output whole contents of file
 	 * @param string $path Path
 	 * @param callable $cb Callback
-	 * @param int $pri     priority
+	 * @param integer $pri priority
 	 * @return boolean Success
 	 */
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
@@ -234,7 +220,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Set session state
-	 * @param mixed
+	 * @param mixed $var
 	 * @return void
 	 */
 	protected function setSessionState($var) {
@@ -471,7 +457,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	/**
 	 * Output some data
 	 * @param string $s String to out
-	 * @param bool $flush
+	 * @param boolean $flush
 	 * @return boolean Success
 	 */
 	public function out($s, $flush = true) {
@@ -536,9 +522,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Outputs data with headers (split by \r\n\r\n)
-	 * @param string
 	 * @param string $s
-	 * @return boolean Success.
+	 * @return boolean Success
 	 */
 	public function combinedOut($s) {
 		if (!$this->headers_sent) {
@@ -607,8 +592,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Send HTTP-status
+	 * @param integer $code Code
 	 * @throws RequestHeadersAlreadySent
-	 * @param int $code Code
 	 * @return boolean Success
 	 */
 	public function status($code = 200) {
@@ -621,8 +606,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Checks if headers have been sent
-	 * @param $file
-	 * @param $line
+	 * @param string $file
+	 * @param integer $line
 	 * @return boolean Success
 	 */
 	public function headers_sent(&$file, &$line) {
@@ -633,7 +618,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Return current list of headers
-	 * @return array Headers.
+	 * @return array Headers
 	 */
 	public function headers_list() {
 		return array_values($this->headers);
@@ -643,11 +628,11 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	 * Set the cookie
 	 * @param string $name         Name of cookie
 	 * @param string $value        Value
-	 * @param integer $maxage      . Optional. Max-Age. Default is 0.
-	 * @param string $path         . Optional. Path. Default is empty string.
-	 * @param bool|string $domain  . Optional. Secure. Default is false.
-	 * @param boolean $secure      . Optional. HTTPOnly. Default is false.
-	 * @param bool $HTTPOnly
+	 * @param integer $maxage      Optional. Max-Age. Default is 0
+	 * @param string $path         Optional. Path. Default is empty string
+	 * @param string $domain       Optional. Domain. Default is empty string
+	 * @param boolean $secure      Optional. Secure. Default is false
+	 * @param boolean $HTTPOnly    Optional. HTTPOnly. Default is false
 	 * @return void
 	 */
 	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
@@ -662,9 +647,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Send the header
-	 * @param string $s        Header. Example: 'Location: http://php.net/'
-	 * @param boolean $replace Optional. Replace?
-	 * @param bool|int $code   Optional. HTTP response code.
+	 * @param string $s          Header. Example: 'Location: http://php.net/'
+	 * @param boolean $replace   Optional. Replace?
+	 * @param integer $code      Optional. HTTP response code
 	 * @throws \PHPDaemon\Request\RequestHeadersAlreadySent
 	 * @return boolean Success
 	 */
@@ -729,7 +714,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Removes a header
-	 * @param string $s  Header name. Example: 'Location'
+	 * @param string $s Header name. Example: 'Location'
 	 * @return void
 	 */
 	public function removeHeader($s) {
@@ -738,7 +723,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Converts human-readable representation of size to number of bytes
-	 * @param $value
+	 * @param string $value
 	 * @return integer
 	 */
 	public static function parseSize($value) {
@@ -776,8 +761,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * Called when file upload started.
-	 * @param HTTPRequestInput
+	 * Called when file upload started
 	 * @param Input $in
 	 * @return void
 	 */
@@ -797,10 +781,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * Called when chunk of incoming file has arrived.
-	 * @param HTTPRequestInput
-	 * @param boolean Last?
+	 * Called when chunk of incoming file has arrived
 	 * @param Input $in
+	 * @param boolean $last Last?
 	 * @return void
 	 */
 	public function onUploadFileChunk($in, $last = false) {
@@ -859,8 +842,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Tells whether the file was uploaded via HTTP POST
-	 * @param string The filename being checked.
-	 * @return boolean Whether if this is uploaded file.
+	 * @param string $path The filename being checked
+	 * @return boolean Whether if this is uploaded file
 	 */
 	public function isUploadedFile($path) {
 		if (!$path) {
@@ -878,9 +861,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 *  Moves an uploaded file to a new location
-	 * @param string The filename of the uploaded file.
-	 * @param string The destination of the moved file.
+	 * Moves an uploaded file to a new location
+	 * @param string $filename The filename of the uploaded file
+	 * @param string $dest The destination of the moved file
 	 * @return boolean Success
 	 */
 	public function moveUploadedFile($filename, $dest) {
@@ -891,7 +874,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * Read request body from the file given in REQUEST_BODY_FILE parameter.
+	 * Read request body from the file given in REQUEST_BODY_FILE parameter
 	 * @return boolean Success
 	 */
 	public function readBodyFile() {
@@ -914,9 +897,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Replacement for default parse_str(), it supoorts UCS-2 like this: %uXXXX
-	 * @param string  String to parse.
-	 * @param array   Reference to the resulting array.
-	 * @param boolean Header-style string.
+	 * @param string  String to parse
+	 * @param array   Reference to the resulting array
+	 * @param boolean Header-style string
 	 * @return void
 	 */
 	public static function parse_str($s, &$var, $header = false) {
@@ -964,6 +947,4 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			}
 		}
 	}
-
-	
 }

@@ -16,7 +16,8 @@ class StackCallbacks extends \SplStack {
 		parent::push(CallbackWrapper::wrap($cb));
 	}
 
-	/** Push callback to the top of stack
+	/**
+	 * Push callback to the top of stack
 	 * @param callable $cb Callback
 	 * @return void
 	 */
@@ -25,7 +26,7 @@ class StackCallbacks extends \SplStack {
 	}
 
 	/**
-	 * Executes one callback from the top with given arguments.
+	 * Executes one callback from the top with given arguments
 	 * @return boolean
 	 */
 	public function executeOne() {
@@ -59,7 +60,7 @@ class StackCallbacks extends \SplStack {
 	}
 
 	/**
-	 * Executes all callbacks with given arguments.
+	 * Executes all callbacks with given arguments
 	 * @return integer
 	 */
 	public function executeAll() {
@@ -81,6 +82,9 @@ class StackCallbacks extends \SplStack {
 		return $n;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function toArray() {
 		$arr = [];
 		while (!$this->isEmpty()) {
