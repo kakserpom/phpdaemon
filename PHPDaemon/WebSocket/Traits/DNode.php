@@ -13,15 +13,71 @@ use PHPDaemon\Exceptions\ProtocolError;
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 trait DNode {
+	/**
+	 * Associative array of callback functions registered by callRemote()
+	 * @var array
+	 */
 	protected $callbacks = [];
+
+	/**
+	 * Associative array of persistent callback functions registered by callRemote()
+	 * @var array
+	 */
 	protected $persistentCallbacks = [];
+
+	/**
+	 * If true, callRemote() will register callbacks as persistent ones
+	 * @var boolean
+	 */
 	protected $persistentMode = false;
+
+	/**
+	 * Incremental counter of callback functions registered by callRemote() 
+	 * @var integer
+	 */
 	protected $counter = 0;
+
+	/**
+	 * Associative array of registered remote methods (received in 'methods' call)
+	 * @var array
+	 */
 	protected $remoteMethods = [];
+
+	/**
+	 * Associative array of local methods, set by defineLocalMethods()
+	 * @var array
+	 */
 	protected $localMethods = [];
+
+	/**
+	 * Was this object cleaned up? 
+	 * @var boolean
+	 */
 	protected $cleaned = false;
 
-	public function defineLocalMethods($arr) {
+	/**
+	 * Default onHandshake() method
+	 * @return void
+	 */
+	public function onHandshake() {
+		$this->defineLocalMethods();
+	}
+
+	/**
+	 * Defines local methods
+	 * @param array $client=[] Associative array of callbacks (methodName => callback)
+	 * @return void
+	 */
+	protected function defineLocalMethods($arr = []) {
+		foreach (get_class_methods($this) as $m) {
+			if (substr($m, -6) === 'Method') {
+				$k = substr($m, 0, -6);
+				if ($k === 'methods') {
+					continue;
+				}
+				$arr[$k] = [$this, $m];
+			}
+		}
 		foreach ($arr as $k => $v) {
 			$this->localMethods[$k] = $v;
 		}
@@ -30,6 +86,12 @@ trait DNode {
 		$this->persistentMode = false;
 	}
 
+	/**
+	 * Calls a local method
+	 * @param string $method Method name
+	 * @param  mixed ...$arguments Arguments
+	 * @return $this
+	 */
 	public function callLocal() {
 		$args = func_get_args();
 		if (!sizeof($args)) {
@@ -44,7 +106,14 @@ trait DNode {
 		return $this;
 	}
 
-	public static function ensureCallback(&$arg) {
+
+	/**
+	 * Ensures that the variable passed by reference holds a valid callback-function.
+	 * If it doesn't, its value will be reset to null
+	 * @param mixed &$arg
+	 * @return void
+	 */
+	protected static function ensureCallback(&$arg) {
 		if ($arg instanceof \Closure) {
 			return true;
 		}
@@ -59,9 +128,32 @@ trait DNode {
 		return false;
 	}
 
-	public function extractCallbacks($args, &$list, &$path) {
+	/**
+	 * Extracts callback functions from array of arguments
+	 * @param &$args Arguments
+	 * @param &$list Output array for 'callbacks' property
+	 * @param &$path Recursion path holder
+	 * @return void
+	 */
+	public function extractCallbacks(&$args, &$list, &$path) {
 		foreach ($args as $k => &$v) {
 			if (is_array($v)) {
+				if (sizeof($v) === 2) {
+					if (isset($v[0]) && is_object($v[0])) {
+						if (isset($v[1]) && is_string($v[1])) {
+							$id = ++$this->counter;
+							if ($this->persistentMode) {
+								$this->persistentCallbacks[$id] = $v;
+							} else {
+								$this->callbacks[$id] = $v;
+							}
+							$v = '';
+							$list[$id] = $path;
+							array_push($list[$id], $k);
+							continue;
+						}
+					}
+				}
 				$path[] = $k;
 				$this->extractCallbacks($v, $list, $path);
 				array_pop($path);
@@ -72,11 +164,19 @@ trait DNode {
 				} else {
 					$this->callbacks[$id] = $v;
 				}
-				$list[$id] = array_merge($path, [$k]);
+				$v = '';
+				$list[$id] = $path;
+				array_push($list[$id], $k);
 			}
 		}
 	}
 
+	/**
+	 * Calls a remote method
+	 * @param string $method Method name
+	 * @param  mixed ...$arguments Arguments
+	 * @return $this
+	 */
 	public function callRemote() {
 		$args = func_get_args();
 		if (!sizeof($args)) {
@@ -87,7 +187,12 @@ trait DNode {
 		return $this;
 	}
 
-
+	/**
+	 * Calls a remote method with array of arguments
+	 * @param string $method Method name
+	 * @param array $arguments Arguments
+	 * @return $this
+	 */
 	public function callRemoteArray($method, $args) {
 		if (isset($this->remoteMethods[$method])) {
 			call_user_func_array($this->remoteMethods[$method], $args);
@@ -97,10 +202,10 @@ trait DNode {
 			'method' => $method,
 		];
 		if (sizeof($args)) {
-			$pct['arguments'] = $args;
 			$callbacks = [];
 			$path = [];
 			$this->extractCallbacks($args, $callbacks, $path);
+			$pct['arguments'] = $args;
 			if (sizeof($callbacks)) {
 				$pct['callbacks'] = $callbacks;
 			}
@@ -109,15 +214,30 @@ trait DNode {
 		return $this;
 	}
 
+	/**
+	 * Handler of the 'methods' method
+	 * @param array $methods Associative array of methods
+	 * @return void
+	 */
 	public function methodsMethod($methods) {
 		$this->remoteMethods = $methods;
 	}
 
-	public function toJson($p) {
-		return json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+	/**
+	 * Encodes value into JSON
+	 * @param string $method Method name
+	 * @return $this
+	 */
+	protected static function toJson($m) {
+		return json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 	}
 
-	public function toJsonDebugResursive(&$a) {
+	/**
+	 * Recursion handler for toJsonDebug()
+	 * @param array &$array
+	 * @return void
+	 */
+	public static function toJsonDebugResursive(&$a) {
 		foreach ($a as $k => &$v) {
 			if ($v instanceof \Closure) {
 				$v = '__CALLBACK__';
@@ -128,24 +248,35 @@ trait DNode {
 						$v = '__CALLBACK__';
 					}
 				} else {
-					$this->toJsonDebugResursive($v);
+					static::toJsonDebugResursive($v);
 				}
 			}
 		}
 	}
-	public function toJsonDebug($p) {
-		$this->toJsonDebugResursive($p);
-		return $this->toJson($p);
+
+	/**
+	 * Encodes object into JSON for debugging purposes
+	 * @param array &$array
+	 * @return void
+	 */
+	public static function toJsonDebug($p) {
+		static::toJsonDebugResursive($p);
+		return static::toJson($p);
 	}
 
-	public function sendPacket($p) {
+	/**
+	 * Sends a packet
+	 * @param array &$packet
+	 * @return void
+	 */
+	protected function sendPacket($p) {
 		if (!$this->client) {
 			return;
 		}
 		if (is_string($p['method']) && ctype_digit($p['method'])) {
 			$p['method'] = (int) $p['method'];
 		}
-		$this->client->sendFrame($this->toJson($p) . "\n");
+		$this->client->sendFrame(static::toJson($p) . "\n");
 	}
 
 	/**
@@ -169,6 +300,14 @@ trait DNode {
 		$this->callbacks = [];
 	}
 
+
+	/**
+	 * Sets value by materialized path
+	 * @param array &$m
+	 * @param array $path
+	 * @param mixed $val
+	 * @return void
+	 */
 	protected static function setPath(&$m, $path, $val) {
 		foreach ($path as $p) {
 			$m =& $m[$p];
@@ -176,6 +315,12 @@ trait DNode {
 		$m = $val;
 	}
 
+	/**
+	 * Finds value by materialized path
+	 * @param array &$m
+	 * @param array $path
+	 * @return mixed Value
+	 */
 	protected static function &getPath(&$m, $path) {
 		foreach ($path as $p) {
 			$m =& $m[$p];
@@ -184,6 +329,8 @@ trait DNode {
 	}
 
 	/**
+	 * Magic __call method
+	 * @param string $method
 	 * @param array $args
 	 * @return null|mixed
 	 */
@@ -194,6 +341,12 @@ trait DNode {
 			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $m);
 		}
 	}
+
+	/**
+	 * Called when new packet is received
+	 * @param array $pct
+	 * @return void
+	 */
 	public function onPacket($pct) {
 		if ($this->cleaned) {
 			return;
@@ -238,10 +391,11 @@ trait DNode {
 			$this->handleException(new ProtocolError);
 		}
 	}
+
 	/**
-	 * Called when new frame received.
-	 * @param string  Frame's contents.
-	 * @param integer Frame's type.
+	 * Called when new frame is received
+	 * @param string $data Frame's contents.
+	 * @param integer $type Frame's type.
 	 * @param string $data
 	 * @param string $type
 	 * @return void

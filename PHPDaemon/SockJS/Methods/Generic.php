@@ -176,6 +176,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		if (!in_array('stream', $this->pollMode)) {
 			$this->heartbeatOnFinish = false;
 			$this->stop();
+			return;
 		}
 		if ($this->gcEnabled) {
 			$this->gcCheck();
