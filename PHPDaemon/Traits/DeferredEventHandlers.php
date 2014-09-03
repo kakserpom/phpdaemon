@@ -52,6 +52,7 @@ trait DeferredEventHandlers {
 
 	/**
 	 * @param $args
+	 * @throws UndefinedMethodCalled
 	 * @return mixed
 	 */
 	public function __call($method, $args) {

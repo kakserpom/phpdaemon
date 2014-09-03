@@ -14,8 +14,8 @@ use PHPDaemon\Core\Debug;
 trait StaticObjectWatchdog {
 	/**
 	 * @param string $prop
-	 * @param string $value
-	 * @return null|mixed
+	 * @param mixed $value
+	 * @return void
 	 */
 	public function __set($prop, $value) {
 		Daemon::log('[CODE WARN] Setting undefined property ' . json_encode($prop) . ' in object of class ' . get_class($this) . PHP_EOL . Debug::backtrace());
@@ -23,7 +23,7 @@ trait StaticObjectWatchdog {
 	}
 	/**
 	 * @param string $prop
-	 * @return null|mixed
+	 * @return void
 	 */
 	public function __unset($prop) {
 		Daemon::log('[CODE WARN] Unsetting property ' . json_encode($prop) . ' in object of class ' . get_class($this) . PHP_EOL . Debug::backtrace());

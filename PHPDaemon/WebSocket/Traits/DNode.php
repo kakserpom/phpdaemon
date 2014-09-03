@@ -83,7 +83,7 @@ trait DNode {
 	 * Calls a local method
 	 * @param string $method Method name
 	 * @param  mixed ...$args Arguments
-	 * @return self
+	 * @return this
 	 */
 	public function callLocal() {
 		$args = func_get_args();
@@ -168,7 +168,7 @@ trait DNode {
 	 * Calls a remote method
 	 * @param string $method Method name
 	 * @param  mixed ...$args Arguments
-	 * @return self
+	 * @return this
 	 */
 	public function callRemote() {
 		$args = func_get_args();
@@ -184,7 +184,7 @@ trait DNode {
 	 * Calls a remote method with array of arguments
 	 * @param string $method Method name
 	 * @param array $args Arguments
-	 * @return self
+	 * @return this
 	 */
 	public function callRemoteArray($method, $args) {
 		if (isset($this->remoteMethods[$method])) {
@@ -219,7 +219,7 @@ trait DNode {
 	/**
 	 * Encodes value into JSON
 	 * @param mixed $m Value
-	 * @return self
+	 * @return this
 	 */
 	protected static function toJson($m) {
 		return json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

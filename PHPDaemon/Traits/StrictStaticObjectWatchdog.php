@@ -14,8 +14,9 @@ use PHPDaemon\Core\Debug;
 trait StrictStaticObjectWatchdog {
 	/**
 	 * @param string $prop
-	 * @param string $value
-	 * @return null|mixed
+	 * @param mixed $value
+	 * @throws UndefinedPropertySetting if trying to set undefined property
+	 * @return void
 	 */
 	public function __set($prop, $value) {
 		throw new UndefinedPropertySetting('Trying to set undefined property ' . json_encode($prop) . ' in object of class ' . get_class($this));
@@ -23,7 +24,8 @@ trait StrictStaticObjectWatchdog {
 
 	/**
 	 * @param string $prop
-	 * @return null|mixed
+	 * @throws UnsettingProperty if trying to unset property
+	 * @return void
 	 */
 	public function __unset($prop) {
 		throw new UnsettingProperty('Trying to unset property ' . json_encode($prop) . ' in object of class ' . get_class($this));

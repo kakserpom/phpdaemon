@@ -16,6 +16,7 @@ trait ClassWatchdog {
 	/**
 	 * @param string $method
 	 * @param array $args
+	 * @throws UndefinedMethodCalled if call to undefined method
 	 * @return null|mixed
 	 */
 	public function __call($method, $args) {
@@ -25,6 +26,7 @@ trait ClassWatchdog {
 	/**
 	 * @param string $method
 	 * @param array $args
+	 * @throws UndefinedMethodCalled if call to undefined static method
 	 * @return null|mixed
 	 */
 	public static function __callStatic($method, $args) {
