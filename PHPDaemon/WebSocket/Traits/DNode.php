@@ -65,7 +65,7 @@ trait DNode {
 
 	/**
 	 * Defines local methods
-	 * @param array $client=[] Associative array of callbacks (methodName => callback)
+	 * @param array $arr=[] Associative array of callbacks (methodName => callback)
 	 * @return void
 	 */
 	protected function defineLocalMethods($arr = []) {
@@ -89,8 +89,8 @@ trait DNode {
 	/**
 	 * Calls a local method
 	 * @param string $method Method name
-	 * @param  mixed ...$arguments Arguments
-	 * @return $this
+	 * @param  mixed ...$args Arguments
+	 * @return object $this
 	 */
 	public function callLocal() {
 		$args = func_get_args();
@@ -111,7 +111,7 @@ trait DNode {
 	 * Ensures that the variable passed by reference holds a valid callback-function.
 	 * If it doesn't, its value will be reset to null
 	 * @param mixed &$arg
-	 * @return void
+	 * @return boolean
 	 */
 	protected static function ensureCallback(&$arg) {
 		if ($arg instanceof \Closure) {
@@ -174,8 +174,8 @@ trait DNode {
 	/**
 	 * Calls a remote method
 	 * @param string $method Method name
-	 * @param  mixed ...$arguments Arguments
-	 * @return $this
+	 * @param  mixed ...$args Arguments
+	 * @return object $this
 	 */
 	public function callRemote() {
 		$args = func_get_args();
@@ -190,8 +190,8 @@ trait DNode {
 	/**
 	 * Calls a remote method with array of arguments
 	 * @param string $method Method name
-	 * @param array $arguments Arguments
-	 * @return $this
+	 * @param array $args Arguments
+	 * @return object $this
 	 */
 	public function callRemoteArray($method, $args) {
 		if (isset($this->remoteMethods[$method])) {
@@ -225,8 +225,8 @@ trait DNode {
 
 	/**
 	 * Encodes value into JSON
-	 * @param string $method Method name
-	 * @return $this
+	 * @param mixed $m Value
+	 * @return object $this
 	 */
 	protected static function toJson($m) {
 		return json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -234,7 +234,7 @@ trait DNode {
 
 	/**
 	 * Recursion handler for toJsonDebug()
-	 * @param array &$array
+	 * @param array &$a
 	 * @return void
 	 */
 	public static function toJsonDebugResursive(&$a) {
@@ -256,7 +256,7 @@ trait DNode {
 
 	/**
 	 * Encodes object into JSON for debugging purposes
-	 * @param array &$array
+	 * @param array &$p
 	 * @return void
 	 */
 	public static function toJsonDebug($p) {
@@ -266,17 +266,17 @@ trait DNode {
 
 	/**
 	 * Sends a packet
-	 * @param array &$packet
+	 * @param array &$pct
 	 * @return void
 	 */
-	protected function sendPacket($p) {
+	protected function sendPacket($pct) {
 		if (!$this->client) {
 			return;
 		}
-		if (is_string($p['method']) && ctype_digit($p['method'])) {
-			$p['method'] = (int) $p['method'];
+		if (is_string($pct['method']) && ctype_digit($pct['method'])) {
+			$pct['method'] = (int) $pct['method'];
 		}
-		$this->client->sendFrame(static::toJson($p) . "\n");
+		$this->client->sendFrame(static::toJson($pct) . "\n");
 	}
 
 	/**
@@ -334,11 +334,11 @@ trait DNode {
 	 * @param array $args
 	 * @return null|mixed
 	 */
-	public function __call($m, $args) {
-		if (strncmp($m, 'remote_', 7) === 0) {
-			$this->callRemoteArray(substr($m, 7), $args);
+	public function __call($method, $args) {
+		if (strncmp($method, 'remote_', 7) === 0) {
+			$this->callRemoteArray(substr($method, 7), $args);
 		} else {
-			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $m);
+			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
 		}
 	}
 
