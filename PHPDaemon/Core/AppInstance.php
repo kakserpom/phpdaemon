@@ -61,11 +61,6 @@ class AppInstance {
 	public $requestClass;
 	
 	/**
-	 * @var mixed @todo
-	 */
-	public $indexFiles;
-	
-	/**
 	 * @var string Instance name
 	 */
 	protected $name;
