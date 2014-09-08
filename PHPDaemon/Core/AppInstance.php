@@ -16,47 +16,47 @@ class AppInstance {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * optional passphrase
+	 * @const integer Event: config updated
 	 */
 	const EVENT_CONFIG_UPDATED = 1; 
 	
 	/**
-	 * ready to start?
+	 * @const integer Event: graceful shutdown
 	 */
 	const EVENT_GRACEFUL_SHUTDOWN = 2;
 	
 	/**
-	 * name of instance
+	 * @const integer Event: shutdown
 	 */
 	const EVENT_SHUTDOWN = 3;
 	
 	/**
-	 * @var boolean @todo
+	 * @var boolean If true, it's allowed to be run without defined config section'
 	 */
 	public static $runOnDemand = true;
 	
 	/**
-	 * @var string @todo
+	 * @var string Optional passphrase
 	 */
 	public $passphrase;
 	
 	/**
-	 * @var boolean @todo
+	 * @var boolean Ready to run?
 	 */
 	public $ready = false;
 	
 	/**
-	 * @var object @todo
+	 * @var object Related config section
 	 */
 	public $config;
 	
 	/**
-	 * @var boolean @todo
+	 * @var boolean Is RPC enabled?
 	 */
 	public $enableRPC = false;
 	
 	/**
-	 * @var null|string @todo
+	 * @var null|string Default class of incoming requests
 	 */
 	public $requestClass;
 	
@@ -66,13 +66,13 @@ class AppInstance {
 	public $indexFiles;
 	
 	/**
-	 * @var string @todo
+	 * @var string Instance name
 	 */
 	protected $name;
 
 	/**
 	 * Application constructor
-	 * @param  string $name Application name
+	 * @param  string $name Instance name
 	 * @return void
 	 */
 	public function __construct($name = '') {
@@ -129,7 +129,7 @@ class AppInstance {
 	}
 
 	/**
-	 * @todo
+	 * Returns whether if this application is enabled
 	 * @return boolean
 	 */
 	public function isEnabled() {
@@ -160,8 +160,8 @@ class AppInstance {
 	}
 
 	/**
-	 * @param  string  $name  @todo
-	 * @param  boolean $spawn @todo
+	 * @param  string  $name  Instance name
+	 * @param  boolean $spawn If true, we spawn an instance if absent
 	 * @return AppInstance
 	 */
 	public static function getInstance($name, $spawn = true) {
@@ -183,7 +183,7 @@ class AppInstance {
 	}
 
 	/**
-	 * @todo
+	 * Returns a config section
 	 * @return Config\Section
 	 */
 	public function getConfig() {
@@ -191,7 +191,7 @@ class AppInstance {
 	}
 
 	/**
-	 * @todo
+	 * Returns the instance name
 	 * @return string
 	 */
 	public function getName() {
