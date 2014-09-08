@@ -18,7 +18,7 @@ class AppResolver {
 
 	/**
 	 * Preloads applications
-	 * @param  boolean $privileged @todo
+	 * @param  boolean $privileged If true, we are in the pre-fork stage
 	 * @return void
 	 */
 	public function preload($privileged = false) {
@@ -55,9 +55,9 @@ class AppResolver {
 	 * Gets instance of application
 	 * @alias AppResolver::getInstance
 	 * @param  string  $appName  Application name
-	 * @param  string  $instance @todo
-	 * @param  boolean $spawn    @todo
-	 * @param  boolean $preload  @todo
+	 * @param  string  $instance Instance name
+	 * @param  boolean $spawn    If true, we spawn an instance if absent
+	 * @param  boolean $preload  If true, worker is at the preload stage
 	 * @return object AppInstance
 	 */
 	public function getInstanceByAppName($appName, $instance = '', $spawn = true, $preload = false) {
@@ -67,9 +67,9 @@ class AppResolver {
 	/**
 	 * Gets instance of application
 	 * @param  string  $appName  Application name
-	 * @param  string  $instance @todo
-	 * @param  boolean $spawn    @todo
-	 * @param  boolean $preload  @todo
+	 * @param  string  $instance Instance name
+	 * @param  boolean $spawn    If true, we spawn an instance if absent
+	 * @param  boolean $preload  If true, worker is at the preload stage
 	 * @return object $instance AppInstance
 	 */
 	public function getInstance($appName, $instance = '', $spawn = true, $preload = false) {
