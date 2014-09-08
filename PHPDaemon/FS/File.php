@@ -611,7 +611,7 @@ class File {
 	/**
 	 * Reads file chunk-by-chunk
 	 * @param  callable $cb      Callback
-	 * @param  callable $chunkcb
+	 * @param  callable $chunkcb Callback of chunk
 	 * @param  integer  $pri     Priority
 	 * @return resource|false
 	 */

@@ -101,7 +101,7 @@ class FileSystem {
 	/**
 	 * Checks if file exists and readable
 	 * @param  string $path Path
-	 * @return boolean Exists and readable?
+	 * @return boolean      Exists and readable?
 	 */
 	public static function checkFileReadable($path) {
 		return is_file($path) && is_readable($path);
@@ -146,7 +146,7 @@ class FileSystem {
 	/**
 	 * Sanitize path
 	 * @param  string $path Path
-	 * @return string Sanitized path
+	 * @return string       Sanitized path
 	 */
 	public static function sanitizePath($path) {
 		$path = str_replace("\x00", '', $path);
@@ -156,7 +156,7 @@ class FileSystem {
 
 	/**
 	 * Prepare value of stat()
-	 * @param  mixed $stat
+	 * @param  mixed $stat Data
 	 * @return array hash
 	 */
 	public static function statPrepare($stat) {
@@ -206,10 +206,10 @@ class FileSystem {
 
 	/**
 	 * Rename
-	 * @param  string $path  Path
-	 * @param  string $newpath  New path
-	 * @param  callable $cb Callback
-	 * @param  integer $pri Priority
+	 * @param  string   $path    Path
+	 * @param  string   $newpath New path
+	 * @param  callable $cb      Callback
+	 * @param  integer  $pri     Priority
 	 * @return resource|boolean
 	 */
 	public static function rename($path, $newpath, $cb = null, $pri = EIO_PRI_DEFAULT) {

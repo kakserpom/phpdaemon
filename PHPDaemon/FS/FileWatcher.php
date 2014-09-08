@@ -14,17 +14,17 @@ class FileWatcher {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @var array
+	 * @var array @todo
 	 */
 	public $files = [];
 
 	/**
-	 * @var resource
+	 * @var resource @todo
 	 */
 	public $inotify;
 
 	/**
-	 * @var array
+	 * @var array @todo
 	 */
 	public $descriptors = [];
 
@@ -50,9 +50,9 @@ class FileWatcher {
 
 	/**
 	 * Adds your subscription on object in FS
-	 * @param  string  $path
-	 * @param  mixed   $subscriber
-	 * @param  integer $flags
+	 * @param  string  $path       @todo
+	 * @param  mixed   $subscriber @todo
+	 * @param  integer $flags      @todo
 	 * @return true
 	 */
 	public function addWatch($path, $subscriber, $flags = NULL) {
@@ -70,8 +70,8 @@ class FileWatcher {
 
 	/**
 	 * Cancels your subscription on object in FS
-	 * @param  string  $path
-	 * @param  mixed   $subscriber
+	 * @param  string  $path       @todo
+	 * @param  mixed   $subscriber @todo
 	 * @return boolean
 	 */
 	public function rmWatch($path, $subscriber) {
@@ -97,7 +97,7 @@ class FileWatcher {
 
 	/**
 	 * Called when file $path is changed
-	 * @param  string $path
+	 * @param  string $path @todo
 	 * @return void
 	 */
 	public function onFileChanged($path) {

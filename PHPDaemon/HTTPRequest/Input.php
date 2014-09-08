@@ -86,7 +86,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Set boundary
-	 * @param  string $boundary
+	 * @param  string $boundary Boundary
 	 * @return void
 	 */
 	public function setBoundary($boundary) {
@@ -137,7 +137,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Set request
-	 * @param  Generic $req
+	 * @param  Generic $req Request
 	 * @return void
 	 */
 	public function setRequest(Generic $req) {
