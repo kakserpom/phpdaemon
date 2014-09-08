@@ -37,7 +37,7 @@ class Debug {
 	}
 
 	/**
-	 * Pretty json
+	 * @todo Pretty json
 	 * @param  mixed  $m Data
 	 * @return string
 	 */
@@ -46,7 +46,7 @@ class Debug {
 	}
 
 	/**
-	 * Json
+	 * @todo Json
 	 * @param  mixed  $m Data
 	 * @return string
 	 */
@@ -55,7 +55,7 @@ class Debug {
 	}
 
 	/**
-	 * Proxy
+	 * @todo Proxy
 	 * @param  callable $cb   Callback
 	 * @param  mixed    $name Data
 	 * @return callable

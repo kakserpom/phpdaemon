@@ -18,7 +18,7 @@ class AppResolver {
 
 	/**
 	 * Preloads applications
-	 * @param  boolean $privileged
+	 * @param  boolean $privileged @todo
 	 * @return void
 	 */
 	public function preload($privileged = false) {
@@ -53,10 +53,11 @@ class AppResolver {
 
 	/**
 	 * Gets instance of application
+	 * @alias AppResolver::getInstance
 	 * @param  string  $appName  Application name
-	 * @param  string  $instance
-	 * @param  boolean $spawn
-	 * @param  boolean $preload
+	 * @param  string  $instance @todo
+	 * @param  boolean $spawn    @todo
+	 * @param  boolean $preload  @todo
 	 * @return object AppInstance
 	 */
 	public function getInstanceByAppName($appName, $instance = '', $spawn = true, $preload = false) {
@@ -66,9 +67,9 @@ class AppResolver {
 	/**
 	 * Gets instance of application
 	 * @param  string  $appName  Application name
-	 * @param  string  $instance
-	 * @param  boolean $spawn
-	 * @param  boolean $preload
+	 * @param  string  $instance @todo
+	 * @param  boolean $spawn    @todo
+	 * @param  boolean $preload  @todo
 	 * @return object $instance AppInstance
 	 */
 	public function getInstance($appName, $instance = '', $spawn = true, $preload = false) {
