@@ -38,6 +38,10 @@ trait DeferredEventHandlers {
 		return $e;
 	}
 
+	/**
+	 * @todo
+	 * @return void
+	 */
 	protected function firstDeferredEventUsed() {}
 
 	/**
