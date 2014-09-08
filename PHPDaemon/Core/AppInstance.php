@@ -16,17 +16,17 @@ class AppInstance {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @const integer Event: config updated
+	 * Event: config updated
 	 */
 	const EVENT_CONFIG_UPDATED = 1; 
 	
 	/**
-	 * @const integer Event: graceful shutdown
+	 * Event: graceful shutdown
 	 */
 	const EVENT_GRACEFUL_SHUTDOWN = 2;
 	
 	/**
-	 * @const integer Event: shutdown
+	 * Event: shutdown
 	 */
 	const EVENT_SHUTDOWN = 3;
 	
