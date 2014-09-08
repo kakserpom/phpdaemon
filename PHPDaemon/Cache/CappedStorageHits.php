@@ -3,17 +3,14 @@ namespace PHPDaemon\Cache;
 
 /**
  * CappedStorageHits
- *
- * @package Core
- *
+ * @package PHPDaemon\Cache
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class CappedStorageHits extends CappedStorage {
 
 	/**
 	 * Constructor
-	 * @param [integer Maximum number of cached elements]
-	 * @return object
+	 * @param  integer $max Maximum number of cached elements
 	 */
 	public function __construct($max = null) {
 		if ($max !== null) {

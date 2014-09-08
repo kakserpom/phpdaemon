@@ -12,55 +12,56 @@ use PHPDaemon\Structures\PriorityQueueCallbacks;
 
 /**
  * Network client pattern
- * @extends ConnectionPool
- * @package Core
- *
+ * @package PHPDaemon\Network
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Client extends Pool {
 
 	/**
-	 * Array of servers
-	 * @var Server[]
+	 * @var array Array of servers
 	 */
 	protected $servers = [];
+
 	/**
-	 * Enables tags for distribution
-	 * @var bool
+	 * @var boolean Enables tags for distribution
 	 */
 	protected $dtags_enabled = false;
+
 	/**
-	 * Active connections
-	 * @var Connection[]
+	 * @var array Active connections
 	 */
 	protected $servConn = [];
+
 	/**
-	 * @var Connection[]
+	 * @var array
 	 */
 	protected $servConnFree = [];
+
 	/**
-	 * Prefix for all keys
-	 * @var string
+	 * @var string Prefix for all keys
 	 */
 	protected $prefix = '';
+
 	/**
-	 * @var int
+	 * @var integer
 	 */
 	protected $maxConnPerServ = 32;
+
 	/**
-	 * @var bool
+	 * @var boolean
 	 */
 	protected $acquireOnGet = false;
 
 	/**
-	 * @var Connection[]
+	 * @var array
 	 */
 	protected $pending = [];
+
 
 	/**
 	 * Setting default config options
 	 * Overriden from ConnectionPool::getConfigDefaults
-	 * @return array|bool
+	 * @return array
 	 */
 	protected function getConfigDefaults() {
 		return [
@@ -110,8 +111,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Adds server
-	 * @param string  Server URL
-	 * @param integer Weight
+	 * @param  string  $url    Server URL
+	 * @param  integer $weight Weight
 	 * @return void
 	 */
 	public function addServer($url, $weight = NULL) {
@@ -120,10 +121,10 @@ abstract class Client extends Pool {
 
 	/**
 	 * Returns available connection from the pool
-	 * @param string   Address
-	 * @param callback onConnected
-	 * @param integer  Optional. Priority.
-	 * @return boolean Success|Connection.
+	 * @param  string   $url Address
+	 * @param  callback $cb  onConnected
+	 * @param  integer  $pri Optional. Priority
+	 * @return boolean       Success|Connection
 	 */
 	public function getConnection($url = null, $cb = null, $pri = 0) {
 		if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
@@ -189,7 +190,7 @@ abstract class Client extends Pool {
 
 	/**
 	 * Detach Connection
-	 * @param $conn Connection
+	 * @param  $conn Connection
 	 * @return void
 	 */
 	public function detach($conn) {
@@ -199,8 +200,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Mark connection as free
-	 * @param ClientConnection $conn Connection
-	 * @param string $url            URL
+	 * @param  ClientConnection $conn Connection
+	 * @param  string           $url  URL
 	 * @return void
 	 */
 	public function markConnFree(ClientConnection $conn, $url) {
@@ -212,8 +213,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Mark connection as busy
-	 * @param ClientConnection $conn Connection
-	 * @param string $url            URL
+	 * @param  ClientConnection $conn Connection
+	 * @param  string           $url  URL
 	 * @return void
 	 */
 	public function markConnBusy(ClientConnection $conn, $url) {
@@ -225,8 +226,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Detaches connection from URL
-	 * @param ClientConnection $conn Connection
-	 * @param string $url URL
+	 * @param  ClientConnection $conn Connection
+	 * @param  string           $url  URL
 	 * @return void
 	 */
 	public function detachConnFromUrl(ClientConnection $conn, $url) {
@@ -240,7 +241,7 @@ abstract class Client extends Pool {
 
 	/**
 	 * Touch pending "requests for connection"
-	 * @param string $url URL
+	 * @param  string $url URL
 	 * @return void
 	 */
 	public function touchPending($url) {
@@ -253,9 +254,9 @@ abstract class Client extends Pool {
 
 	/**
 	 * Returns available connection from the pool by key
-	 * @param string $key Key
-	 * @param callable $cb
-	 * @return boolean Success.
+	 * @param  string   $key Key
+	 * @param  callable $cb
+	 * @return boolean       Success
 	 */
 	public function getConnectionByKey($key, $cb = null) {
 		if (is_object($key)) {
@@ -278,8 +279,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Returns available connection from the pool
-	 * @param callable $cb Callback
-	 * @return boolean Success
+	 * @param  callable $cb Callback
+	 * @return boolean      Success
 	 */
 	public function getConnectionRR($cb = null) {
 		return $this->getConnection(null, $cb);
@@ -287,11 +288,10 @@ abstract class Client extends Pool {
 
 	/**
 	 * Sends a request to arbitrary server
-	 * @param string Server
-	 * @param string Request
-	 * @param mixed  Callback called when the request complete
-	 * @param string $data
-	 * @return boolean Success.
+	 * @param  string   $server     Server
+	 * @param  string   $data       Data
+	 * @param  callable $onResponse Called when the request complete
+	 * @return boolean              Success
 	 */
 	public function requestByServer($server, $data, $onResponse = null) {
 		$this->getConnection($server, function ($conn) use ($data, $onResponse) {
@@ -306,11 +306,10 @@ abstract class Client extends Pool {
 
 	/**
 	 * Sends a request to server according to the key
-	 * @param string Key
-	 * @param string Request
-	 * @param mixed  Callback called when the request complete
-	 * @param string $data
-	 * @return boolean Success
+	 * @param  string   $key        Key
+	 * @param  string   $data       Data
+	 * @param  callable $onResponse Callback called when the request complete
+	 * @return boolean              Success
 	 */
 	public function requestByKey($key, $data, $onResponse = null) {
 		$this->getConnectionByKey($key, function ($conn) use ($data, $onResponse) {
@@ -325,8 +324,8 @@ abstract class Client extends Pool {
 
 	/**
 	 * Called when application instance is going to shutdown
-	 * @param bool $graceful
-	 * @return boolean Ready to shutdown?
+	 * @param  boolean $graceful
+	 * @return boolean           Ready to shutdown?
 	 */
 	public function onShutdown($graceful = false) {
 		return $graceful ? true : $this->finish();

@@ -3,9 +3,7 @@ namespace PHPDaemon\Cache;
 
 /**
  * CappedStorage
- *
- * @package Core
- *
+ * @package PHPDaemon\Cache
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class CappedStorage {
@@ -13,43 +11,37 @@ abstract class CappedStorage {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Sorter function
-	 * @var callable
+	 * @var callable Sorter function
 	 */
 	public $sorter;
 
 	/**
-	 * Maximum number of cached elements
-	 * @var integer
+	 * @var integer Maximum number of cached elements
 	 */
 	public $maxCacheSize = 64;
 
 	/**
-	 * Additional window to decrease number of sorter calls.
-	 * @var integer
+	 * @var integer Additional window to decrease number of sorter calls
 	 */
 	public $capWindow = 16;
 
 	/**
-	 * Storage of cached items
-	 * @var array
+	 * @var array Storage of cached items
 	 */
 	public $cache = [];
 
-
 	/**
 	 * Sets cache size
-	 * @param integer Maximum number of elements.
+	 * @param  integer $size Maximum number of elements
 	 * @return void
 	 */
 	public function setMaxCacheSize($size) {
 		$this->maxCacheSize = $size;
 	}
 
-
 	/**
 	 * Sets cap window
-	 * @param integer
+	 * @param  integer $w
 	 * @return void
 	 */
 	public function setCapWindow($w) {
@@ -58,8 +50,7 @@ abstract class CappedStorage {
 
 	/**
 	 * Hash function
-	 * @param string Key
-	 * @param string $key
+	 * @param  string $key Key
 	 * @return integer
 	 */
 	public function hash($key) {
@@ -68,10 +59,9 @@ abstract class CappedStorage {
 
 	/**
 	 * Puts element in cache
-	 * @param string Key
-	 * @param mixed  Value
-	 * @param [integer Time-to-Life]
-	 * @param string $key
+	 * @param  string  $key
+	 * @param  mixed   $value
+	 * @param  integer $ttl
 	 * @return mixed
 	 */
 	public function put($key, $value, $ttl = null) {
@@ -101,8 +91,7 @@ abstract class CappedStorage {
 
 	/**
 	 * Invalidates cache element
-	 * @param string Key
-	 * @param string $key
+	 * @param  string $key Key
 	 * @return void
 	 */
 	public function invalidate($key) {
@@ -112,8 +101,7 @@ abstract class CappedStorage {
 
 	/**
 	 * Gets element by key
-	 * @param string Key
-	 * @param string $key
+	 * @param  string $key Key
 	 * @return object Item
 	 */
 	public function get($key) {
@@ -133,8 +121,7 @@ abstract class CappedStorage {
 
 	/**
 	 * Gets value of element by key
-	 * @param string Key
-	 * @param string $key
+	 * @param  string $key Key
 	 * @return mixed
 	 */
 	public function getValue($key) {

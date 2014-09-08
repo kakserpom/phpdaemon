@@ -14,9 +14,7 @@ use PHPDaemon\Traits\ClassWatchdog;
 
 /**
  * HTTP request
- *
- * @package Core
- *
+ * @package PHPDaemon\HTTPRequest
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Generic extends \PHPDaemon\Request\Generic {
@@ -90,7 +88,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	protected $cookieNum = 0;
 
 	/**
-	 * @var array hash Replacement pairs for processing some header values in parse_str()
+	 * @var array Replacement pairs for processing some header values in parse_str()
 	 */
 	public static $hvaltr = ['; ' => '&', ';' => '&', ' ' => '%20'];
 
@@ -136,7 +134,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Preparing before init
-	 * @param object $req Source request
+	 * @param  object $req Source request
 	 * @return void
 	 */
 	protected function preinit($req) {
@@ -159,15 +157,20 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		$this->parseParams();
 	}
 
+	/**
+	 * [firstDeferredEventUsed description]
+	 * @return void
+	 */
 	public function firstDeferredEventUsed () {
 		$this->bind('finish', [$this, 'cleanupDeferredEventHandlers']);
 	}
+
 	/**
 	 * Output whole contents of file
-	 * @param string $path Path
-	 * @param callable $cb Callback
-	 * @param integer $pri priority
-	 * @return boolean Success
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return boolean        Success
 	 */
 	public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		if ($this->state === self::STATE_FINISHED) {
@@ -211,8 +214,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Get cookie by name
-	 * @param string $name Name of cookie
-	 * @return string Contents
+	 * @param  string $name Name of cookie
+	 * @return string       Contents
 	 */
 	protected function getCookieStr($name) {
 		return static::getString($this->attrs->cookie[$name]);
@@ -456,9 +459,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Output some data
-	 * @param string $s String to out
-	 * @param boolean $flush
-	 * @return boolean Success
+	 * @param  string  $s     String to out
+	 * @param  boolean $flush ob_flush?
+	 * @return boolean        Success
 	 */
 	public function out($s, $flush = true) {
 		if ($flush) {
@@ -522,8 +525,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Outputs data with headers (split by \r\n\r\n)
-	 * @param string $s
-	 * @return boolean Success
+	 * @param  string  $s
+	 * @return boolean    Success
 	 */
 	public function combinedOut($s) {
 		if (!$this->headers_sent) {
@@ -592,7 +595,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Send HTTP-status
-	 * @param integer $code Code
+	 * @param  integer $code Code
 	 * @throws RequestHeadersAlreadySent
 	 * @return boolean Success
 	 */
@@ -606,8 +609,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Checks if headers have been sent
-	 * @param string $file
-	 * @param integer $line
+	 * @param  string  &$file
+	 * @param  integer &$line
 	 * @return boolean Success
 	 */
 	public function headers_sent(&$file, &$line) {
@@ -626,13 +629,13 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Set the cookie
-	 * @param string $name         Name of cookie
-	 * @param string $value        Value
-	 * @param integer $maxage      Optional. Max-Age. Default is 0
-	 * @param string $path         Optional. Path. Default is empty string
-	 * @param string $domain       Optional. Domain. Default is empty string
-	 * @param boolean $secure      Optional. Secure. Default is false
-	 * @param boolean $HTTPOnly    Optional. HTTPOnly. Default is false
+	 * @param string  $name     Name of cookie
+	 * @param string  $value    Value
+	 * @param integer $maxage   Optional. Max-Age. Default is 0
+	 * @param string  $path     Optional. Path. Default is empty string
+	 * @param string  $domain   Optional. Domain. Default is empty string
+	 * @param boolean $secure   Optional. Secure. Default is false
+	 * @param boolean $HTTPOnly Optional. HTTPOnly. Default is false
 	 * @return void
 	 */
 	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
@@ -647,9 +650,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Send the header
-	 * @param string $s          Header. Example: 'Location: http://php.net/'
-	 * @param boolean $replace   Optional. Replace?
-	 * @param integer $code      Optional. HTTP response code
+	 * @param  string  $s       Header. Example: 'Location: http://php.net/'
+	 * @param  boolean $replace Optional. Replace?
+	 * @param  integer $code    Optional. HTTP response code
 	 * @throws \PHPDaemon\Request\RequestHeadersAlreadySent
 	 * @return boolean Success
 	 */
@@ -714,7 +717,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Removes a header
-	 * @param string $s Header name. Example: 'Location'
+	 * @param  string $s Header name. Example: 'Location'
 	 * @return void
 	 */
 	public function removeHeader($s) {
@@ -723,7 +726,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Converts human-readable representation of size to number of bytes
-	 * @param string $value
+	 * @param  string $value
 	 * @return integer
 	 */
 	public static function parseSize($value) {
@@ -762,7 +765,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called when file upload started
-	 * @param Input $in
+	 * @param  Input $in
 	 * @return void
 	 */
 	public function onUploadFileStart($in) {
@@ -782,8 +785,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called when chunk of incoming file has arrived
-	 * @param Input $in
-	 * @param boolean $last Last?
+	 * @param  Input $in
+	 * @param  boolean $last Last?
 	 * @return void
 	 */
 	public function onUploadFileChunk($in, $last = false) {
@@ -842,8 +845,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Tells whether the file was uploaded via HTTP POST
-	 * @param string $path The filename being checked
-	 * @return boolean Whether if this is uploaded file
+	 * @param  string  $path The filename being checked
+	 * @return boolean       Whether if this is uploaded file
 	 */
 	public function isUploadedFile($path) {
 		if (!$path) {
@@ -862,9 +865,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Moves an uploaded file to a new location
-	 * @param string $filename The filename of the uploaded file
-	 * @param string $dest The destination of the moved file
-	 * @return boolean Success
+	 * @param  string  $filename The filename of the uploaded file
+	 * @param  string  $dest     The destination of the moved file
+	 * @return boolean           Success
 	 */
 	public function moveUploadedFile($filename, $dest) {
 		if (!$this->isUploadedFile($filename)) {
@@ -897,9 +900,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Replacement for default parse_str(), it supoorts UCS-2 like this: %uXXXX
-	 * @param string  String to parse
-	 * @param array   Reference to the resulting array
-	 * @param boolean Header-style string
+	 * @param  string  $s      String to parse
+	 * @param  array   &$var   Reference to the resulting array
+	 * @param  boolean $header Header-style string
 	 * @return void
 	 */
 	public static function parse_str($s, &$var, $header = false) {
@@ -923,7 +926,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called after request finish
-	 * @param callable $cb
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	protected function postFinishHandler($cb = null) {

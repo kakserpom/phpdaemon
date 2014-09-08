@@ -3,14 +3,19 @@ namespace PHPDaemon\Structures;
 
 use PHPDaemon\Core\CallbackWrapper;
 
+/**
+ * PriorityQueueCallbacks
+ * @package PHPDaemon\Structures
+ * @author  Zorin Vasily <maintainer@daemon.io>
+ */
 class PriorityQueueCallbacks extends \SplPriorityQueue {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Insert callback
-	 * @param callable $cb Callback
-	 * @param integer $pri Priority
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
 	 * @return void
 	 */
 	public function insert($cb, $pri = 0) {
@@ -19,8 +24,8 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 
 	/**
 	 * Enqueue callback
-	 * @param callable $cb Callback
-	 * @param int $pri priority
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
 	 * @return void
 	 */
 	public function enqueue($cb, $pri = 0) {
@@ -37,8 +42,8 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 
 	/**
 	 * Compare two priorities
-	 * @param int $pri1
-	 * @param int $pri2
+	 * @param  integer $pri1
+	 * @param  integer $pri2
 	 * @return integer
 	 */
 	public function compare($pri1, $pri2) {

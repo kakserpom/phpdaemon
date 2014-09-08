@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Traits;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\FS\File;
@@ -7,12 +8,9 @@ use PHPDaemon\FS\FileSystem;
 
 /**
  * Sessions
- *
- * @package Core
- *
+ * @package PHPDaemon\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 trait Sessions {
 	/**
 	 * @var string Session ID
@@ -105,8 +103,8 @@ trait Sessions {
 
 	/**
 	 * Reads session data
-	 * @param string $sid
-	 * @param callable $cb
+	 * @param  string   $sid Session ID
+	 * @param  callable $cb  Callback
 	 * @return void
 	 */
 	public function sessionRead($sid, $cb = null) {
@@ -124,7 +122,7 @@ trait Sessions {
 
 	/**
 	 * Commmit session data
-	 * @param callable $cb
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function sessionCommit($cb = null) {
@@ -150,7 +148,7 @@ trait Sessions {
 
 	/**
 	 * Session start
-	 * @param bool $force_start
+	 * @param  boolean $force_start
 	 * @return void
 	 */
 	protected function sessionStart($force_start = true) {
@@ -174,7 +172,7 @@ trait Sessions {
 
 	/**
 	 * Start new session
-	 * @param callable $cb
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	protected function sessionStartNew($cb = null) {
@@ -215,7 +213,7 @@ trait Sessions {
 
 	/**
 	 * Decodes session data
-	 * @param string $str
+	 * @param  string  $str Data
 	 * @return boolean
 	 */
 	protected function sessionDecode($str) {
@@ -233,8 +231,8 @@ trait Sessions {
 
     /**
      * session_encode() - clone, which not require session_start()
-     * @see http://www.php.net/manual/en/function.session-encode.php
-     * @param array $array
+     * @see    http://www.php.net/manual/en/function.session-encode.php
+     * @param  array  $array
      * @return string
      */
     public function serialize_php($array) {
@@ -258,8 +256,8 @@ trait Sessions {
 
     /**
      * session_decode() - clone, which not require session_start()
-     * @see http://www.php.net/manual/en/function.session-decode.php#108037
-     * @param string $session_data
+     * @see    http://www.php.net/manual/en/function.session-decode.php#108037
+     * @param  string $session_data
      * @return array
      */
     protected function unserialize_php($session_data)

@@ -5,16 +5,13 @@ use PHPDaemon\Core\Debug;
 
 /**
  * Watchdog of __set in static objects
- *
- * @package Core
- *
+ * @package PHPDaemon\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 trait StrictStaticObjectWatchdog {
 	/**
-	 * @param string $prop
-	 * @param mixed $value
+	 * @param  string $prop
+	 * @param  mixed  $value
 	 * @throws UndefinedPropertySetting if trying to set undefined property
 	 * @return void
 	 */
@@ -23,7 +20,7 @@ trait StrictStaticObjectWatchdog {
 	}
 
 	/**
-	 * @param string $prop
+	 * @param  string $prop
 	 * @throws UnsettingProperty if trying to unset property
 	 * @return void
 	 */

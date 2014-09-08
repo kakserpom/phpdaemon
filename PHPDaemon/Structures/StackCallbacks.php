@@ -3,13 +3,18 @@ namespace PHPDaemon\Structures;
 
 use PHPDaemon\Core\CallbackWrapper;
 
+/**
+ * StackCallbacks
+ * @package PHPDaemon\Structures
+ * @author  Zorin Vasily <maintainer@daemon.io>
+ */
 class StackCallbacks extends \SplStack {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Push callback to the bottom of stack
-	 * @param callable $cb Callback
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function push($cb) {
@@ -18,7 +23,7 @@ class StackCallbacks extends \SplStack {
 
 	/**
 	 * Push callback to the top of stack
-	 * @param callable $cb Callback
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function unshift($cb) {
@@ -27,6 +32,7 @@ class StackCallbacks extends \SplStack {
 
 	/**
 	 * Executes one callback from the top with given arguments
+	 * @param  mixed   ...$args Arguments
 	 * @return boolean
 	 */
 	public function executeOne() {
@@ -45,6 +51,7 @@ class StackCallbacks extends \SplStack {
 
 	/**
 	 * Executes one callback from the top with given arguments without taking it out
+	 * @param  mixed   ...$args Arguments
 	 * @return boolean
 	 */
 	public function executeAndKeepOne() {
@@ -61,6 +68,7 @@ class StackCallbacks extends \SplStack {
 
 	/**
 	 * Executes all callbacks with given arguments
+	 * @param  mixed   ...$args Arguments
 	 * @return integer
 	 */
 	public function executeAll() {
@@ -83,6 +91,7 @@ class StackCallbacks extends \SplStack {
 	}
 
 	/**
+	 * Return array
 	 * @return array
 	 */
 	public function toArray() {

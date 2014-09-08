@@ -9,9 +9,7 @@ use PHPDaemon\Request\Generic;
 
 /**
  * Application resolver
- *
- * @package Core
- *
+ * @package PHPDaemon\Core
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class AppResolver {
@@ -19,8 +17,8 @@ class AppResolver {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Preloads applications.
-	 * @param boolean $privileged.
+	 * Preloads applications
+	 * @param  boolean $privileged
 	 * @return void
 	 */
 	public function preload($privileged = false) {
@@ -55,11 +53,11 @@ class AppResolver {
 
 	/**
 	 * Gets instance of application
-	 * @param string $appName Application name.
-	 * @param string $instance
-	 * @param bool $spawn
-	 * @param bool $preload
-	 * @return object $instance AppInstance.
+	 * @param  string  $appName  Application name
+	 * @param  string  $instance
+	 * @param  boolean $spawn
+	 * @param  boolean $preload
+	 * @return object AppInstance
 	 */
 	public function getInstanceByAppName($appName, $instance = '', $spawn = true, $preload = false) {
 		return $this->getInstance($appName, $instance, $spawn, $preload);
@@ -67,11 +65,11 @@ class AppResolver {
 
 	/**
 	 * Gets instance of application
-	 * @param string $appName Application name.
-	 * @param string $instance
-	 * @param bool $spawn
-	 * @param bool $preload
-	 * @return object $instance AppInstance.
+	 * @param  string  $appName  Application name
+	 * @param  string  $instance
+	 * @param  boolean $spawn
+	 * @param  boolean $preload
+	 * @return object $instance AppInstance
 	 */
 	public function getInstance($appName, $instance = '', $spawn = true, $preload = false) {
 		$class = ClassFinder::find($appName, 'Applications');
@@ -109,9 +107,8 @@ class AppResolver {
 
 	/**
 	 * Resolve full name of application by its class and name
-	 * @param string Application class.
-	 * @param string Application name.
-	 * @param string $appName
+	 * @param  string $appName  Application name
+	 * @param  string $instance Application class
 	 * @return string
 	 */
 	public function getAppFullname($appName, $instance = '') {
@@ -120,10 +117,10 @@ class AppResolver {
 
 	/**
 	 * Routes incoming request to related application
-	 * @param object Generic.
-	 * @param object AppInstance of Upstream.
-	 * @param string Default application name.
-	 * @return object Request.
+	 * @param  object $req      Generic
+	 * @param  object $upstream AppInstance of Upstream
+	 * @param  string $default  App Default application name
+	 * @return object Request
 	 */
 	public function getRequest($req, $upstream, $defaultApp = null) {
 		if (isset($req->attrs->server['APPNAME'])) {
@@ -152,12 +149,11 @@ class AppResolver {
 	}
 
 	/**
-	 * Routes incoming request to related application. Method is for overloading.
-	 * @param object Generic.
-	 * @param object AppInstance of Upstream.
-	 * @return string Application's name.
+	 * Routes incoming request to related application. Method is for overloading
+	 * @param  object $req      Generic
+	 * @param  object $upstream AppInstance of Upstream
+	 * @return string Application's name
 	 */
 	public function getRequestRoute($req, $upstream) {
 	}
-
 }

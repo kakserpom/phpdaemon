@@ -6,25 +6,30 @@ use PHPDaemon\Core\Timer;
 
 /**
  * Implementation of the file watcher
- *
- * @package Core
- *
+ * @package PHPDaemon\FS
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class FileWatcher {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/** @var array */
+	/**
+	 * @var array
+	 */
 	public $files = [];
-	/** @var */
+
+	/**
+	 * @var resource
+	 */
 	public $inotify;
-	/** @var array */
+
+	/**
+	 * @var array
+	 */
 	public $descriptors = [];
 
 	/**
 	 * Constructor
-	 * @return object
 	 */
 	public function __construct() {
 		if (Daemon::loadModuleIfAbsent('inotify')) {
@@ -45,10 +50,10 @@ class FileWatcher {
 
 	/**
 	 * Adds your subscription on object in FS
-	 * @param $path
-	 * @param $subscriber
-	 * @param int $flags
-	 * @return bool
+	 * @param  string  $path
+	 * @param  mixed   $subscriber
+	 * @param  integer $flags
+	 * @return true
 	 */
 	public function addWatch($path, $subscriber, $flags = NULL) {
 		$path = realpath($path);
@@ -65,9 +70,9 @@ class FileWatcher {
 
 	/**
 	 * Cancels your subscription on object in FS
-	 * @param $path
-	 * @param $subscriber
-	 * @return bool
+	 * @param  string  $path
+	 * @param  mixed   $subscriber
+	 * @return boolean
 	 */
 	public function rmWatch($path, $subscriber) {
 
@@ -92,7 +97,7 @@ class FileWatcher {
 
 	/**
 	 * Called when file $path is changed
-	 * @param $path
+	 * @param  string $path
 	 * @return void
 	 */
 	public function onFileChanged($path) {

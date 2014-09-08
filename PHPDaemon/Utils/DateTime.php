@@ -1,14 +1,17 @@
 <?php
 namespace PHPDaemon\Utils;
 
+/**
+ * DateTime
+ * @package PHPDaemon\Utils
+ * @author  Zorin Vasily <maintainer@daemon.io>
+ */
 class DateTime extends \DateTime
 {
     /**
      * Support timestamp and available date format
-     *
-     * @param string $time
+     * @param string       $time
      * @param DateTimeZone $timezone
-     * @return DateTime
      * @link http://php.net/manual/en/datetime.construct.php
      */
     public function __construct($time = 'now', DateTimeZone $timezone = null)
@@ -22,13 +25,11 @@ class DateTime extends \DateTime
     }
 
     /**
-     * Calculates a difference between two dates.
+     * Calculates a difference between two dates
      * @see http://www.php.net/manual/en/datetime.diff.php
-     *
-     * @param integer $datetime1
-     * @param integer $datetime2
-     * @param $absolute
-     *
+     * @param  integer $datetime1
+     * @param  integer $datetime2
+     * @param  boolean $absolute
      * @return string Something like this: 1 year. 2 mon. 6 day. 4 hours. 21 min. 10 sec.
      */
     public static function diffAsText($datetime1, $datetime2, $absolute = false)

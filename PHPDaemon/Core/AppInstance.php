@@ -8,13 +8,7 @@ use PHPDaemon\Thread;
 
 /**
  * Application instance
- *
- * @property mixed readPacketSize
- * @property mixed binPath
- * @property mixed chroot
- * @property mixed binAliases
- * @package Core
- *
+ * @package PHPDaemon\Core
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class AppInstance {
@@ -25,38 +19,52 @@ class AppInstance {
 	 * optional passphrase
 	 */
 	const EVENT_CONFIG_UPDATED = 1; 
+	
 	/**
 	 * ready to start?
 	 */
 	const EVENT_GRACEFUL_SHUTDOWN = 2;
+	
 	/**
 	 * name of instance
 	 */
 	const EVENT_SHUTDOWN = 3;
+	
 	/**
-	 * @var bool
+	 * @var boolean
 	 */
 	public static $runOnDemand = true;
+	
 	/**
 	 * @var string
 	 */
 	public $passphrase;
+	
 	/**
-	 * @var bool
+	 * @var boolean
 	 */
 	public $ready = false;
-	/** @var Config\Section */
-	public $config;
+	
 	/**
-	 * @var bool
+	 * @var object
+	 */
+	public $config;
+	
+	/**
+	 * @var boolean
 	 */
 	public $enableRPC = false;
+	
 	/**
 	 * @var null|string
 	 */
 	public $requestClass;
-	/** @var array */
+	
+	/**
+	 * @var mixed
+	 */
 	public $indexFiles;
+	
 	/**
 	 * @var string
 	 */
@@ -64,6 +72,7 @@ class AppInstance {
 
 	/**
 	 * Application constructor
+	 * @param  string $name Application name
 	 * @return void
 	 */
 	public function __construct($name = '') {
@@ -120,7 +129,7 @@ class AppInstance {
 	}
 
 	/**
-	 * @return bool
+	 * @return boolean
 	 */
 	public function isEnabled() {
 		return isset($this->config->enable->value) && $this->config->enable->value;
@@ -150,8 +159,8 @@ class AppInstance {
 	}
 
 	/**
-	 * @param string $name
-	 * @param bool $spawn
+	 * @param  string  $name
+	 * @param  boolean $spawn
 	 * @return AppInstance
 	 */
 	public static function getInstance($name, $spawn = true) {
@@ -161,9 +170,9 @@ class AppInstance {
 	/**
 	 * Function handles incoming Remote Procedure Calls
 	 * You can override it
-	 * @param string $method Method name.
-	 * @param array $args    Arguments.
-	 * @return mixed Result
+	 * @param  string $method Method name
+	 * @param  array  $args   Arguments
+	 * @return mixed          Result
 	 */
 	public function RPCall($method, $args) {
 		if (!$this->enableRPC || !is_callable([$this, $method])) {
@@ -187,12 +196,12 @@ class AppInstance {
 	}
 
 	/**
-	 * Send broadcast RPC.
+	 * Send broadcast RPC
 	 * You can override it
-	 * @param string $method Method name.
-	 * @param array $args    Arguments.
-	 * @param callable $cb   Callback.
-	 * @return boolean Success.
+	 * @param  string   $method Method name
+	 * @param  array    $args   Arguments
+	 * @param  callable $cb     Callback
+	 * @return boolean Success
 	 */
 	public function broadcastCall($method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendBroadcastCall(
@@ -204,12 +213,12 @@ class AppInstance {
 	}
 
 	/**
-	 * Send RPC, executed once in any worker.
+	 * Send RPC, executed once in any worker
 	 * You can override it
-	 * @param string Method name.
-	 * @param array  Arguments.
-	 * @param mixed  Callback.
-	 * @return boolean Success.
+	 * @param  string $method Method name
+	 * @param  array  $args   Arguments
+	 * @param  mixed  $cb     Callback
+	 * @return boolean Success
 	 */
 	public function singleCall($method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendSingleCall(
@@ -221,13 +230,13 @@ class AppInstance {
 	}
 
 	/**
-	 * Send RPC, executed once in certain worker.
+	 * Send RPC, executed once in certain worker
 	 * You can override it
-	 * @param integer Worker Id.
-	 * @param string  Method name.
-	 * @param array   Arguments.
-	 * @param mixed   Callback.
-	 * @return boolean Success.
+	 * @param  integer $workerId Worker Id
+	 * @param  string  $method   Method name
+	 * @param  array   $args     Arguments
+	 * @param  mixed   $cb       Callback
+	 * @return boolean Success
 	 */
 	public function directCall($workerId, $method, $args = [], $cb = NULL) {
 		return Daemon::$process->IPCManager->sendDirectCall(
@@ -241,8 +250,7 @@ class AppInstance {
 
 	/**
 	 * Log something
-	 * @param string - Message.
-	 * @param string $message
+	 * @param  string $message Message
 	 * @return void
 	 */
 	public function log($message) {
@@ -251,8 +259,8 @@ class AppInstance {
 
 	/**
 	 * Handle the request
-	 * @param object Parent request
-	 * @param object Upstream application
+	 * @param  object $parent   Parent request
+	 * @param  object $upstream Upstream application
 	 * @return object Request
 	 */
 	public function handleRequest($parent, $upstream) {
@@ -262,8 +270,8 @@ class AppInstance {
 
 	/**
 	 * Create Request instance
-	 * @param object Generic
-	 * @param object Upstream application instance
+	 * @param  object $req      Generic
+	 * @param  object $upstream Upstream application instance
 	 * @return object Request
 	 */
 	public function beginRequest($req, $upstream) {
@@ -276,7 +284,7 @@ class AppInstance {
 
 	/**
 	 * Handle the worker status
-	 * @param int Status code
+	 * @param  integer $ret Status code
 	 * @return boolean Result
 	 */
 	public function handleStatus($ret) {

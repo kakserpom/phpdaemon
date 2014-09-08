@@ -1,20 +1,18 @@
 <?php
 namespace PHPDaemon\Traits;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
 /**
  * Watchdog of __set in static objects
- *
- * @package Core
- *
+ * @package PHPDaemon\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 trait StaticObjectWatchdog {
 	/**
-	 * @param string $prop
-	 * @param mixed $value
+	 * @param  string $prop
+	 * @param  mixed  $value
 	 * @return void
 	 */
 	public function __set($prop, $value) {
@@ -22,7 +20,7 @@ trait StaticObjectWatchdog {
 		$this->{$prop} = $value;
 	}
 	/**
-	 * @param string $prop
+	 * @param  string $prop
 	 * @return void
 	 */
 	public function __unset($prop) {

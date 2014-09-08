@@ -8,9 +8,7 @@ use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * FileSystem
- *
- * @package Core
- *
+ * @package PHPDaemon\FS
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class FileSystem {
@@ -18,26 +16,22 @@ class FileSystem {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Is EIO supported?
-	 * @var boolean
+	 * @var boolean Is EIO supported?
 	 */
 	public static $supported;
 
 	/**
-	 * Main FS event
-	 * @var Event
+	 * @var Event Main FS event
 	 */
 	public static $ev;
 
 	/**
-	 * EIO file descriptor
-	 * @var resource
+	 * @var resource EIO file descriptor
 	 */
 	public static $fd;
 
 	/**
-	 * Mode types
-	 * @var array
+	 * @var array Mode types
 	 */
 	public static $modeTypes = [
 		0140000 => 's',
@@ -50,26 +44,22 @@ class FileSystem {
 	];
 
 	/**
-	 * TTL for bad descriptors in seconds
-	 * @var integer
+	 * @var integer TTL for bad descriptors in seconds
 	 */
 	public static $badFDttl = 5;
 
 	/**
-	 * File descriptor cache
-	 * @var CappedStorage
+	 * @var PHPDaemon\Cache\CappedStorage File descriptor cache
 	 */
 	public static $fdCache;
 
 	/**
-	 * Maximum number of open files in cache
-	 * @var number
+	 * @var integer Maximum number of open files in cache
 	 */
 	public static $fdCacheSize = 128;
 
 	/**
-	 * Required EIO version
-	 * @var string
+	 * @var string Required EIO version
 	 */
 	public static $eioVer = '1.2.1';
 
@@ -110,7 +100,7 @@ class FileSystem {
 
 	/**
 	 * Checks if file exists and readable
-	 * @param string Path
+	 * @param  string $path Path
 	 * @return boolean Exists and readable?
 	 */
 	public static function checkFileReadable($path) {
@@ -155,7 +145,7 @@ class FileSystem {
 
 	/**
 	 * Sanitize path
-	 * @param string Path
+	 * @param  string $path Path
 	 * @return string Sanitized path
 	 */
 	public static function sanitizePath($path) {
@@ -166,7 +156,7 @@ class FileSystem {
 
 	/**
 	 * Prepare value of stat()
-	 * @param $stat
+	 * @param  mixed $stat
 	 * @return array hash
 	 */
 	public static function statPrepare($stat) {
@@ -179,10 +169,10 @@ class FileSystem {
 
 	/**
 	 * Gets stat() information
-	 * @param string $path  Path
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return resource|true
 	 */
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -197,10 +187,10 @@ class FileSystem {
 
 	/**
 	 * Unlink file
-	 * @param string $path  Path
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return resource|boolean
 	 */
 	public static function unlink($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -216,11 +206,11 @@ class FileSystem {
 
 	/**
 	 * Rename
-	 * @param string $path  Path
-	 * @param string $newpath  New path
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string $path  Path
+	 * @param  string $newpath  New path
+	 * @param  callable $cb Callback
+	 * @param  integer $pri Priority
+	 * @return resource|boolean
 	 */
 	public static function rename($path, $newpath, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -236,10 +226,10 @@ class FileSystem {
 
 	/**
 	 * statvfs()
-	 * @param string $path  Path
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return resource|false
 	 */
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -252,10 +242,10 @@ class FileSystem {
 
 	/**
 	 * lstat()
-	 * @param string $path  Path
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return resource|true
 	 */
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -270,10 +260,10 @@ class FileSystem {
 
 	/**
 	 * realpath()
-	 * @param string $path  Path
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return resource|true
 	 */
 	public static function realpath($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -286,9 +276,9 @@ class FileSystem {
 
 	/**
 	 * sync()
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return resource|false
 	 */
 	public static function sync($cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -303,9 +293,9 @@ class FileSystem {
 
 	/**
 	 * statfs()
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return resource|false
 	 */
 	public static function syncfs($cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -320,12 +310,12 @@ class FileSystem {
 
 	/**
 	 * touch()
-	 * @param string $path  Path
-	 * @param integer $mtime Last modification time
-	 * @param integer $atime Last access time
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path  Path
+	 * @param  integer  $mtime Last modification time
+	 * @param  integer  $atime Last access time
+	 * @param  callable $cb    Callback
+	 * @param  integer  $pri   Priority
+	 * @return resource|boolean
 	 */
 	public static function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -341,10 +331,10 @@ class FileSystem {
 
 	/**
 	 * Removes empty directory
-	 * @param string $path  Path
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return resource|boolean
 	 */
 	public static function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -360,11 +350,11 @@ class FileSystem {
 
 	/**
 	 * Creates directory
-	 * @param string $path  Path
-	 * @param int $mode  Mode (octal)
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  integer  $mode Mode (octal)
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return resource|boolean
 	 */
 	public static function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -380,11 +370,11 @@ class FileSystem {
 
 	/**
 	 * Readdir()
-	 * @param string $path  Path
-	 * @param callable $cb Callback
-	 * @param integer $flags Flags
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path  Path
+	 * @param  callable $cb    Callback
+	 * @param  integer  $flags Flags
+	 * @param  integer  $pri   Priority
+	 * @return resource|true
 	 */
 	public static function readdir($path, $cb = null, $flags, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -400,11 +390,11 @@ class FileSystem {
 
 	/**
 	 * Truncate file
-	 * @param string $path  Path
-	 * @param int $offset
-	 * @param callable $cb  Callback
-	 * @param int $pri      priority
-	 * @return resource
+	 * @param  string   $path   Path
+	 * @param  integer  $offset Offset
+	 * @param  callable $cb     Callback
+	 * @param  integer  $pri    Priority
+	 * @return resource|boolean
 	 */
 	public static function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -421,14 +411,14 @@ class FileSystem {
 
 	/**
 	 * sendfile()
-	 * @param mixed $outfd      File descriptor
-	 * @param string $path      Path
-	 * @param $cb
-	 * @param callable $startCb Start callback
-	 * @param integer $offset   Offset
-	 * @param integer $length   Length
-	 * @param int $pri          priority
-	 * @return boolean Success
+	 * @param  mixed    $outfd   File descriptor
+	 * @param  string   $path    Path
+	 * @param  callable $cb      Callback
+	 * @param  callable $startCb Start callback
+	 * @param  integer  $offset  Offset
+	 * @param  integer  $length  Length
+	 * @param  integer  $pri     Priority
+	 * @return true              Success
 	 */
 	public static function sendfile($outfd, $path, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -455,12 +445,12 @@ class FileSystem {
 
 	/**
 	 * Changes ownership of file/directory
-	 * @param string $path  Path
-	 * @param integer $uid User ID
-	 * @param integer $gid Group ID
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  integer  $uid  User ID
+	 * @param  integer  $gid  Group ID
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority
+	 * @return resource|boolean
 	 */
 	public static function chown($path, $uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -477,10 +467,10 @@ class FileSystem {
 
 	/**
 	 * Reads whole file
-	 * @param string $path  Path
-	 * @param callable $cb Callback (Path, Contents)
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback (Path, Contents)
+	 * @param  integer  $pri  Priority
+	 * @return resource|true
 	 */
 	public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -499,10 +489,10 @@ class FileSystem {
 
 	/**
 	 * Reads file chunk-by-chunk
-	 * @param string $path  Path
-	 * @param callable $cb Callback (Path, Success)
-	 * @param callable $chunkcb Chunk callback (Path, Chunk)
-	 * @param int $pri priority
+	 * @param  string   $path    Path
+	 * @param  callable $cb      Callback (Path, Success)
+	 * @param  callable $chunkcb Chunk callback (Path, Chunk)
+	 * @param  integer  $pri     Priority
 	 * @return resource
 	 */
 	public static function readfileChunked($path, $cb, $chunkcb, $pri = EIO_PRI_DEFAULT) {
@@ -523,9 +513,9 @@ class FileSystem {
 
 	/**
 	 * Returns random temporary file name
-	 * @param string $dir Directory
-	 * @param string $prefix Prefix
-	 * @return string Path
+	 * @param  string $dir    Directory
+	 * @param  string $prefix Prefix
+	 * @return string         Path
 	 */
 	public static function genRndTempnam($dir = null, $prefix = 'php') {
 		if (!$dir) {
@@ -541,9 +531,9 @@ class FileSystem {
 
 	/**
 	 * Returns random temporary file name
-	 * @param string $dir Directory
-	 * @param string $prefix Prefix
-	 * @return string Path
+	 * @param  string $dir    Directory
+	 * @param  string $prefix Prefix
+	 * @return string         Path
 	 */
 	public static function genRndTempnamPrefix($dir, $prefix) {
 		if (!$dir) {
@@ -554,10 +544,10 @@ class FileSystem {
 
 	/**
 	 * Generates closure tempnam handler
-	 * @param $dir
-	 * @param $prefix
-	 * @param $cb
-	 * @param $tries
+	 * @param  $dir
+	 * @param  $prefix
+	 * @param  $cb
+	 * @param  $tries
 	 */
 	protected static function tempnamHandler($dir, $prefix, $cb, &$tries) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -577,9 +567,9 @@ class FileSystem {
 
 	/**
 	 * Obtain exclusive temporary file
-	 * @param string $dir  Directory
-	 * @param string $prefix  Prefix
-	 * @param callable $cb Callback (File)
+	 * @param  string   $dir    Directory
+	 * @param  string   $prefix Prefix
+	 * @param  callable $cb     Callback (File)
 	 * @return resource
 	 */
 	public static function tempnam($dir, $prefix, $cb) {
@@ -593,11 +583,11 @@ class FileSystem {
 
 	/**
 	 * Open file
-	 * @param string $path  Path
-	 * @param string $flags Flags
-	 * @param callable $cb Callback (File)
-	 * @param integer $mode Mode (see EIO_S_I* constants)
-	 * @param int $pri priority
+	 * @param  string   $path  Path
+	 * @param  string   $flags Flags
+	 * @param  callable $cb    Callback (File)
+	 * @param  integer  $mode  Mode (see EIO_S_I* constants)
+	 * @param  integer  $pri   Priority
 	 * @return resource
 	 */
 	public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT) {

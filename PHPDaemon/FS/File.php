@@ -7,9 +7,7 @@ use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * File
- *
- * @package Core
- *
+ * @package PHPDaemon\FS
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class File {
@@ -17,82 +15,69 @@ class File {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Priority
-	 * @var integer
+	 * @var integer Priority
 	 */
 	public $priority = 10;
 
 	/**
-	 * Chunk size
-	 * @var integer
+	 * @var integer Chunk size
 	 */
 	public $chunkSize = 4096;
 
 	/**
-	 * Stat
-	 * @var string $stat hash
+	 * @var string $stat hash Stat
 	 */
 	protected $stat;
 
 	/**
-	 * Cache of statvfs()
-	 * @var array
+	 * @var array Cache of statvfs()
 	 */
 	protected $statvfs;
 
 	/**
-	 * Current offset
-	 * @var integer
+	 * @var integer Current offset
 	 */
 	public $offset = 0;
 
 	/**
-	 * Cache key
-	 * @var string
+	 * @var string Cache key
 	 */
 	public $fdCacheKey;
 
 	/**
-	 * Append?
-	 * @var boolean
+	 * @var boolean Append?
 	 */
 	public $append;
 
 	/**
-	 * Path
-	 * @var string
+	 * @var string Path
 	 */
 	public $path;
 
 	/**
-	 * Writing?
-	 * @var boolean
+	 * @var boolean Writing?
 	 */
 	public $writing = false;
 
 	/**
-	 * Closed?
-	 * @var boolean
+	 * @var boolean Closed?
 	 */
 	public $closed = false;
 
 	/**
-	 * File descriptor
-	 * @var mixed
+	 * @var object File descriptor
 	 */
 	protected $fd;
 
 	/**
-	 * Stack of callbacks called when writing is done
-	 * @var object StackCallbacks
+	 * @var PHPDaemon\Structures\StackCallbacks Stack of callbacks called when writing is done
 	 */
 	protected $onWriteOnce;
 
 	/**
 	 * File constructor
-	 * @param \PHPDaemon\FS\File $fd resource descriptor
-	 * @param $path
-	 * @return \PHPDaemon\FS\File
+	 * @param resource $fd   Descriptor
+	 * @param string   $path Path
 	 */
 	public function __construct($fd, $path) {
 		$this->fd          = $fd;
@@ -102,7 +87,7 @@ class File {
 
 	/**
 	 * Get file descriptor
-	 * @return mixed File descriptor
+	 * @return resource File descriptor
 	 */
 	public function getFd() {
 		return $this->fd;
@@ -110,9 +95,8 @@ class File {
 
 	/**
 	 * Converts string of flags to integer or standard text representation
-	 * @param string $mode  Mode
-	 * @param boolean $text Text?
-	 * @param int $pri priority
+	 * @param  string  $mode Mode
+	 * @param  boolean $text Text?
 	 * @return mixed
 	 */
 	public static function convertFlags($mode, $text = false) {
@@ -138,10 +122,10 @@ class File {
 
 	/**
 	 * Truncates this file
-	 * @param integer $offset Offset, default is 0
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  integer  $offset Offset. Default is 0
+	 * @param  callable $cb     Callback
+	 * @param  integer  $pri    Priority
+	 * @return resource|boolean
 	 */
 	public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -164,9 +148,9 @@ class File {
 
 	/**
 	 * Stat()
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return resource|boolean
 	 */
 	public function stat($cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -193,9 +177,9 @@ class File {
 
 	/**
 	 * Stat() non-cached
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return resource|boolean
 	 */
 	public function statRefresh($cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -218,9 +202,9 @@ class File {
 
 	/**
 	 * Statvfs()
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return resource|boolean
 	 */
 	public function statvfs($cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -248,9 +232,9 @@ class File {
 
 	/**
 	 * Sync()
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return resource|false
 	 */
 	public function sync($cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -269,9 +253,9 @@ class File {
 
 	/**
 	 * Datasync()
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return resource|false
 	 */
 	public function datasync($cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -290,11 +274,11 @@ class File {
 
 	/**
 	 * Writes data to file
-	 * @param string $data  Data
-	 * @param callable $cb Callback
-	 * @param integer $offset Offset
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  string   $data   Data
+	 * @param  callable $cb     Callback
+	 * @param  integer  $offset Offset
+	 * @param  integer  $pri    Priority
+	 * @return resource|false
 	 */
 	public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -338,11 +322,11 @@ class File {
 
 	/**
 	 * Changes ownership of this file
-	 * @param integer $uid User ID
-	 * @param integer $gid Group ID
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  integer  $uid User ID
+	 * @param  integer  $gid Group ID
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return resource|false
 	 */
 	public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -367,11 +351,11 @@ class File {
 
 	/**
 	 * touch()
-	 * @param integer $mtime Last modification time
-	 * @param integer $atime Last access time
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  integer  $mtime Last modification time
+	 * @param  integer  $atime Last access time
+	 * @param  callable $cb    Callback
+	 * @param  integer  $pri   Priority
+	 * @return resource|false
 	 */
 	public function touch($mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -402,11 +386,11 @@ class File {
 
 	/**
 	 * Reads data from file
-	 * @param integer $length Length
-	 * @param integer $offset Offset
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  integer  $length Length
+	 * @param  integer  $offset Offset
+	 * @param  callable $cb     Callback
+	 * @param  integer  $pri    Priority
+	 * @return boolean
 	 */
 	public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -436,13 +420,13 @@ class File {
 
 	/**
 	 * sendfile()
-	 * @param mixed $outfd      File descriptor
-	 * @param callable $cb
-	 * @param callable $startCb Start callback
-	 * @param integer $offset   Offset
-	 * @param integer $length   Length
-	 * @param int $pri          priority
-	 * @return boolean Success
+	 * @param  mixed    $outfd   File descriptor
+	 * @param  callable $cb      Callback
+	 * @param  callable $startCb Start callback
+	 * @param  integer  $offset  Offset
+	 * @param  integer  $length  Length
+	 * @param  integer  $pri     Priority
+	 * @return boolean           Success
 	 */
 	public function sendfile($outfd, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -518,11 +502,11 @@ class File {
 
 	/**
 	 * readahead()
-	 * @param integer $length Length
-	 * @param integer $offset Offset
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  integer  $length Length
+	 * @param  integer  $offset Offset
+	 * @param  callable $cb     Callback
+	 * @param  integer  $pri    Priority
+	 * @return resource|false
 	 */
 	public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -550,12 +534,12 @@ class File {
 	}
 
 	/**
-	 * Generates closure-callback for readAl
-	 * @param $cb
-	 * @param $size
-	 * @param $offset
-	 * @param $pri
-	 * @param $buf
+	 * Generates closure-callback for readAll
+	 * @param  callable $cb
+	 * @param  integer  $size
+	 * @param  integer  &$offset
+	 * @param  integer  &$pri
+	 * @param  string   &$buf
 	 * @return callable
 	 */
 	protected function readAllGenHandler($cb, $size, &$offset, &$pri, &$buf) {
@@ -575,9 +559,9 @@ class File {
 
 	/**
 	 * Reads whole file
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return boolean Success
+	 * @param  callable $cb  Callback
+	 * @param  integer  $pri Priority
+	 * @return boolean       Success
 	 */
 	public function readAll($cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -604,11 +588,11 @@ class File {
 
 	/**
 	 * Generates closure-callback for readAllChunked
-	 * @param $cb
-	 * @param $chunkcb
-	 * @param $size
-	 * @param $offset
-	 * @param $pri
+	 * @param  callable $cb
+	 * @param  callable $chunkcb
+	 * @param  integer  $size
+	 * @param  integer  $offset
+	 * @param  integer  $pri
 	 * @return callable
 	 */
 	protected function readAllChunkedGenHandler($cb, $chunkcb, $size, &$offset, $pri) {
@@ -626,10 +610,10 @@ class File {
 
 	/**
 	 * Reads file chunk-by-chunk
-	 * @param callable $cb Callback
-	 * @param mixed $chunkcb
-	 * @param int $pri     priority
-	 * @return resource
+	 * @param  callable $cb      Callback
+	 * @param  callable $chunkcb
+	 * @param  integer  $pri     Priority
+	 * @return resource|false
 	 */
 	public function readAllChunked($cb = null, $chunkcb = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -660,7 +644,7 @@ class File {
 
 	/**
 	 * Set chunk size
-	 * @param integer $n Chunk size
+	 * @param  integer $n Chunk size
 	 * @return void
 	 */
 	public function setChunkSize($n) {
@@ -669,10 +653,10 @@ class File {
 
 	/**
 	 * Move pointer to arbitrary position
-	 * @param integer $offset offset
-	 * @param callable $cb Callback
-	 * @param int $pri priority
-	 * @return resource
+	 * @param  integer  $offset Offset
+	 * @param  callable $cb     Callback
+	 * @param  integer  $pri    Priority
+	 * @return resource|false
 	 */
 	public function seek($offset, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
@@ -696,7 +680,7 @@ class File {
 
 	/**
 	 * Close the file
-	 * @return resource
+	 * @return resource|false
 	 */
 	public function close() {
 		if ($this->closed) {
@@ -721,7 +705,6 @@ class File {
 
 	/**
 	 * Destructor
-	 * @return void
 	 */
 	public function __destruct() {
 		$this->close();

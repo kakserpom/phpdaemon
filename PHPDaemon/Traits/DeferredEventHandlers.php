@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Traits;
+
 use PHPDaemon\Core\DeferredEvent;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
@@ -8,18 +9,16 @@ use PHPDaemon\Exceptions\UndefinedEventCalledException;
 
 /**
  * Deferred event handlers trait
- *
- * @package Core
- *
+ * @package PHPDaemon\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 trait DeferredEventHandlers {
 	protected $DefEvHandlersUsed = false;
+
 	/**
-	 * @param string $event
+	 * @param  string $event
 	 * @throws UndefinedEventCalledException
-	 * @return null|mixed
+	 * @return mixed
 	 */
 	public function __get($event) {
 		if (!$this->DefEvHandlersUsed) {
@@ -51,7 +50,8 @@ trait DeferredEventHandlers {
 	}
 
 	/**
-	 * @param $args
+	 * @param  string $method Method name
+	 * @param  array  $args   Arguments
 	 * @throws UndefinedMethodCalled
 	 * @return mixed
 	 */

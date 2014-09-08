@@ -42,7 +42,7 @@ class Pool extends \PHPDaemon\Network\Server {
 	}
 
 	/**
-	 * Called when worker is going to update configuration.
+	 * Called when worker is going to update configuration
 	 * @return void
 	 */
 	public function onConfigUpdated() {

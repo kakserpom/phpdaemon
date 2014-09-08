@@ -1,18 +1,21 @@
 <?php
 namespace PHPDaemon\Utils;
+
 use PHPDaemon\FS\FileSystem;
 
 /**
- * Class Crypt
+ * Crypt
  * @package PHPDaemon\Utils
+ * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Crypt {
 	use \PHPDaemon\Traits\ClassWatchdog;
+	
 	/**
 	 * Generate keccak hash for string with salt
-	 * @param string $str
-	 * @param string $salt
-	 * @param boolean $plain = false
+	 * @param  string  $str   Data
+	 * @param  string  $salt  Salt
+	 * @param  boolean $plain Is plain text?
 	 * @return string
 	 */
 	public static function hash($str, $salt = '', $plain = false) {
@@ -46,11 +49,11 @@ class Crypt {
 
 	/**
 	 * Returns string of pseudo random characters
-	 * @param int $len Length of desired string
-	 * @param string $chars String of allowed characters
-	 * @param callable $cb Callback (string)
-	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
-	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @param  integer  $len   Length of desired string
+	 * @param  string   $chars String of allowed characters
+	 * @param  callable $cb    Callback
+	 * @param  integer  $pri   Priority of EIO operation
+	 * @param  boolean  $hang  If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
 	 * @return string
 	 */
 	public static function randomString($len = null, $chars = null, $cb = null, $pri = 0, $hang = false) {
@@ -81,9 +84,9 @@ class Crypt {
 			}
 			$r = '';
 			for ($i = 0, $s = sizeof($ints); $i < $s; ++$i) {
-				// This is wasteful, but RNGs are fast and doing otherwise adds complexity and bias.
+				// This is wasteful, but RNGs are fast and doing otherwise adds complexity and bias
 				$c = $ints[$i] & $mask;
-				// Only use the random number if it is in range, otherwise try another (next iteration).
+				// Only use the random number if it is in range, otherwise try another (next iteration)
 				if ($c < $charsLen) {
 					$r .= static::stringIdx($chars, $c);
 				}
@@ -104,14 +107,14 @@ class Crypt {
 	}
 
 	/**
-	 * Returns the character at index $idx in $str in constant time.
-	 * @param string $str
-	 * @param int $idx
+	 * Returns the character at index $idx in $str in constant time
+	 * @param  string  $str
+	 * @param  integer $idx
 	 * @return string
 	 */
     public static function stringIdx($str, $idx) {
         // FIXME: Make the const-time hack below work for all integer sizes, or
-        // check it properly.
+        // check it properly
         $l = strlen($str);
         if ($l > 65535 || $idx > $l) {
             return false;
@@ -127,11 +130,11 @@ class Crypt {
 
 	/**
 	 * Returns string of pseudo random bytes
-	 * @param int $len Length of desired string
-	 * @param callable $cb Callback (string)
-	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
-	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
-	 * @return int
+	 * @param  integer  $len  Length of desired string
+	 * @param  callable $cb   Callback
+	 * @param  integer  $pri  Priority of EIO operation
+	 * @param  boolean  $hang If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @return integer
 	 */
 	public static function randomBytes($len, $cb, $pri = 0, $hang = false) {
 		FileSystem::open('/dev/' . ($hang ? '' : 'u') . 'random', 'r', function ($file) use ($len, $cb, $pri) {
@@ -146,11 +149,11 @@ class Crypt {
 
 	/**
 	 * Returns array of pseudo random integers of machine-dependent size
-	 * @param int $numInts Number of integers
-	 * @param callable $cb Callback (array)
-	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
-	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
-	 * @return int
+	 * @param  integer  $numInts Number of integers
+	 * @param  callable $cb      Callback
+	 * @param  integer  $pri     Priority of EIO operation
+	 * @param  boolean  $hang    If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @return integer
 	 */
 	public static function randomInts($numInts, $cb, $pri = 0, $hang = false) {
 		static::randomBytes(PHP_INT_SIZE * $numInts, function($bytes) use ($cb, $numInts) {
@@ -174,11 +177,11 @@ class Crypt {
 
 	/**
 	 * Returns array of pseudo random 32-bit integers
-	 * @param int $numInts Number of integers
-	 * @param callable $cb Callback (array)
-	 * @param int $pri = EIO_PRI_DEFAULT  Priority of EIO operation
-	 * @param boolean $hang = false   If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
-	 * @return int
+	 * @param  integer  $numInts Number of integers
+	 * @param  callable $cb      Callback
+	 * @param  integer  $pri     Priority of EIO operation
+	 * @param  boolean  $hang    If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @return integer
 	 */
 	public static function randomInts32($numInts, $cb, $pri = 0, $hang = false) {
 		static::randomBytes(4 * $numInts, function($bytes) use ($cb, $numInts) {
@@ -200,11 +203,10 @@ class Crypt {
 		}, $pri, $hang);
 	}
 
-	
 	/**
-	 * Returns the smallest bit mask of all 1s such that ($toRepresent & mask) = $toRepresent.
-	 * @param string $toRepresent must be an integer greater than or equal to 1.
-	 * @return int
+	 * Returns the smallest bit mask of all 1s such that ($toRepresent & mask) = $toRepresent
+	 * @param  integer $toRepresent must be an integer greater than or equal to 1
+	 * @return integer
 	 */
 	protected static function getMinimalBitMask($toRepresent)
 	{
@@ -216,12 +218,11 @@ class Crypt {
 		return $mask;
 	}
 
-
 	/**
 	 * Compare strings
-	 * @param string $a
-	 * @param string $b
-	 * @return boolean Equal?
+	 * @param  string  $a String 1
+	 * @param  string  $b String 1
+	 * @return boolean    Equal?
 	 */
 	public static function compareStrings($a, $b) {
 		$al = strlen($a);

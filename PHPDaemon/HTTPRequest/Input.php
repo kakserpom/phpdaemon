@@ -7,9 +7,7 @@ use PHPDaemon\FS\File;
 
 /**
  * HTTP request input buffer
- *
- * @package Core
- *
+ * @package PHPDaemon\HTTPRequest
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Input extends \EventBuffer {
@@ -67,28 +65,28 @@ class Input extends \EventBuffer {
 	protected $curChunkSize;
 
 	/**
-	 * @var integer State: seek nearest boundary
+	 * State: seek nearest boundary
 	 */
 	const STATE_SEEKBOUNDARY = 0;
 	
 	/**
-	 * @var integer State: headers
+	 * State: headers
 	 */
 	const STATE_HEADERS = 1;
 	
 	/**
-	 * @var integer State: body
+	 * State: body
 	 */
 	const STATE_BODY = 2;
 	
 	/**
-	 * @var integer State: upload
+	 * State: upload
 	 */
 	const STATE_UPLOAD = 3;
 
 	/**
 	 * Set boundary
-	 * @param string $boundary
+	 * @param  string $boundary
 	 * @return void
 	 */
 	public function setBoundary($boundary) {
@@ -97,7 +95,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Freeze input
-	 * @param boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
+	 * @param  boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
 	 * @return void
 	 */
 	public function freeze($at_front = false) {
@@ -107,7 +105,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Unfreeze input
-	 * @param boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
+	 * @param  boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
 	 * @return void
 	 */
 	public function unfreeze($at_front = false) {
@@ -139,7 +137,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Set request
-	 * @param Generic $req
+	 * @param  Generic $req
 	 * @return void
 	 */
 	public function setRequest(Generic $req) {
@@ -202,7 +200,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Moves $n bytes from input buffer to arbitrary buffer
-	 * @param \EventBuffer $buf Source nuffer
+	 * @param  \EventBuffer $buf Source nuffer
 	 * @return integer
 	 */
 	public function readFromBuffer(\EventBuffer $buf) {
@@ -226,8 +224,8 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Append string to input buffer
-	 * @param string $chunk Piece of request input
-	 * @param boolean $final Final call is THIS SEQUENCE of calls (not mandatory final in request)?
+	 * @param  string  $chunk Piece of request input
+	 * @param  boolean $final Final call is THIS SEQUENCE of calls (not mandatory final in request)?
 	 * @return void
 	 */
 	public function readFromString($chunk, $final = true) {
@@ -241,8 +239,8 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Read from buffer without draining
-	 * @param integer $n Number of bytes to read
-	 * @param integer $o Offset
+	 * @param  integer $n Number of bytes to read
+	 * @param  integer $o Offset
 	 * @return string
 	 */
 	public function look($n, $o = 0) {
@@ -425,10 +423,10 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Write current upload chunk to file descriptor
-	 * @todo It is not supported yet (callback missing in EventBuffer->write())
-	 * @param mixed $fd File destriptor
-	 * @param callable $cb Callback
-	 * @return boolean Success
+	 * @todo   It is not supported yet (callback missing in EventBuffer->write())
+	 * @param  mixed    $fd File destriptor
+	 * @param  callable $cb Callback
+	 * @return boolean      Success
 	 */
 	public function writeChunkToFd($fd, $cb = null) {
 		return false; // It is not supported yet (callback missing in EventBuffer->write())
@@ -442,7 +440,7 @@ class Input extends \EventBuffer {
 
 	/**
 	 * Log
-	 * @param string $msg Message
+	 * @param  string $msg Message
 	 * @return void
 	 */
 	public function log($msg) {

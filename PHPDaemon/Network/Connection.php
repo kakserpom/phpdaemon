@@ -13,175 +13,143 @@ use PHPDaemon\Structures\StackCallbacks;
 
 /**
  * Connection
- *
- * @package Core
- *
+ * @package PHPDaemon\Network
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Connection extends IOStream {
 
 	/**
-	 * Path
-	 * @var string
+	 * @var string Path
 	 */
 	protected $path;
 
 	/**
-	 * Hostname
-	 * @var string
+	 * @var string Hostname
 	 */
 	protected $host;
 
 	/**
-	 * Real host
-	 * @var string
+	 * @var string Real host
 	 */
 	protected $hostReal;
 
 	/**
-	 * Port number
-	 * @var integer
+	 * @var integer Port number
 	 */
 	protected $port;
 
-
 	/**
-	 * User name
-	 * @var string
+	 * @var string User name
 	 */
 	protected $user;
 
-
 	/**
-	 * Password
-	 * @var string
+	 * @var string Password
 	 */
 	protected $password;
 
-
 	/**
-	 * Address
-	 * @var string
+	 * @var string Address
 	 */
 	protected $addr;
 
 	/**
-	 * Stack of callbacks called when connection is established
-	 * @var object StackCallbacks
+	 * @var object Stack of callbacks called when connection is established
 	 */
 	protected $onConnected = null;
 
 	/**
-	 * Connected?
-	 * @var boolean
+	 * @var boolean Connected?
 	 */
 	protected $connected = false;
 
 	/**
-	 * Failed?
-	 * @var boolean
+	 * @var boolean Failed?
 	 */
 	protected $failed = false;
 
 	/**
-	 * Timeout
-	 * @var integer
+	 * @var integer Timeout
 	 */
 	protected $timeout = 120;
 
 	/**
-	 * Local address
-	 * @var string
+	 * @var string Local address
 	 */
 	protected $locAddr;
 
 	/**
-	 * Local port
-	 * @var integer
+	 * @var integer Local port
 	 */
 	protected $locPort;
 
 	/**
-	 * Keepalive?
-	 * @var boolean
+	 * @var boolean Keepalive?
 	 */
 	protected $keepalive = false;
 
 	/**
-	 * Type
-	 * @var string
+	 * @var string Type
 	 */
 	protected $type;
 
 	/**
-	 * Parent socket
-	 * @var Generic
+	 * @var Generic Parent socket
 	 */
 	protected $parentSocket;
 
 	/**
-	 * Dgram connection?
-	 * @var boolean
+	 * @var boolean Dgram connection?
 	 */
 	protected $dgram = false;
 
 	/**
-	 * Enable bevConnect?
-	 * @var boolean
+	 * @var boolean Enable bevConnect?
 	 */
 	protected $bevConnectEnabled = true;
 
 	/**
-	 * URI information
-	 * @var array
+	 * @var array URI information
 	 */
 	protected $uri;
 
 	/**
-	 * Scheme
-	 * @var string
+	 * @var string Scheme
 	 */
 	protected $scheme;
 
 	/**
-	 * Private key file
-	 * @var string
+	 * @var string Private key file
 	 */
 	protected $pkfile;
 
 	/**
-	 * Certificate file
-	 * @var string
+	 * @var string Certificate file
 	 */
 	protected $certfile;
 
 	/**
-	 * Passphrase
-	 * @var string
+	 * @var string Passphrase
 	 */
 	protected $passphrase;
 
 	/**
-	 * Verify peer?
-	 * @var boolean
+	 * @var boolean Verify peer?
 	 */
 	protected $verifypeer = false;
 
 	/**
-	 * Allow self-signed?
-	 * @var boolean
+	 * @var boolean Allow self-signed?
 	 */
 	protected $allowselfsigned = true;
 
 	/**
-	 * Context cache
-	 * @var CappedStorage
+	 * @var CappedStorage Context cache
 	 */
 	protected static $contextCache;
 
 	/**
-	 * Context cache size
-	 * @var number
+	 * @var number Context cache size
 	 */
 	protected static $contextCacheSize = 64;
 
@@ -195,7 +163,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Sets DGRAM mode
-	 * @param boolean
+	 * @param  boolean $bool
 	 * @return void
 	 */
 	public function setDgram($bool) {
@@ -203,9 +171,9 @@ abstract class Connection extends IOStream {
 	}
 
 	/**
-	 * Sets peer name.
-	 * @param string  Hostname
-	 * @param integer Port
+	 * Sets peer name
+	 * @param  string  $host Hostname
+	 * @param  integer $port Port
 	 * @return void
 	 */
 	public function setPeername($host, $port) {
@@ -223,7 +191,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Getter
-	 * @param string $name Name
+	 * @param  string $name Name
 	 * @return mixed
 	 */
 	public function __get($name) {
@@ -238,8 +206,8 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Get socket name
-	 * @param &string Addr
-	 * @param &srting Port
+	 * @param  string &$addr Addr
+	 * @param  srting &$port Port
 	 * @return void
 	 */
 	public function getSocketName(&$addr, &$port) {
@@ -253,6 +221,7 @@ abstract class Connection extends IOStream {
 	/**
 	 * Sets parent socket
 	 * @param \PHPDaemon\BoundSocket\Generic $sock
+	 * @return void
 	 */
 	public function setParentSocket(Generic $sock) {
 		$this->parentSocket = $sock;
@@ -260,7 +229,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Called when new UDP packet received
-	 * @param $pct
+	 * @param  object $pct
 	 * @return void
 	 */
 	public function onUdpPacket($pct) {
@@ -280,14 +249,14 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Called if we inherit connection from request
-	 * @param Request Parent Request.
+	 * @param  Request $req Parent Request
 	 * @return void
 	 */
 	public function onInheritanceFromRequest($req) {
 	}
 
 	/**
-	 * Called when the connection failed to be established.
+	 * Called when the connection failed to be established
 	 * @return void
 	 */
 	public function onFailure() {
@@ -299,8 +268,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Called when the connection failed
-	 * @param resource Descriptor
-	 * @param mixed    Attached variable
+	 * @param  EventBufferEvent $bev
 	 * @return void
 	 */
 	public function onFailureEv($bev = null) {
@@ -319,7 +287,6 @@ abstract class Connection extends IOStream {
 	 * Destructor
 	 * @return void
 	 */
-
 	public function __destruct() {
 		if ($this->dgram && $this->parentSocket) {
 			$this->parentSocket->unassignAddr($this->addr);
@@ -328,8 +295,8 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
-	 * @param string Data to send.
-	 * @return boolean Success.
+	 * @param  string  $data Data to send
+	 * @return boolean       Success
 	 */
 	public function write($data) {
 		if ($this->dgram) {
@@ -340,8 +307,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Executes the given callback when/if the connection is handshaked
-	 * Callback
-	 * @param callable $cb
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function onConnected($cb) {
@@ -357,7 +323,6 @@ abstract class Connection extends IOStream {
 	}
 
 	protected function importParams() {
-
 		foreach ($this->uri['params'] as $key => $val) {
 			if (isset($this->{$key}) && is_bool($this->{$key})) {
 				$this->{$key} = (bool)$val;
@@ -452,10 +417,9 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Connects to URL
-	 * @param string   URL
-	 * @param callable $cb Callback
-	 * @param string $url
-	 * @return boolean Success
+	 * @param  string   $url URL
+	 * @param  callable $cb  Callback
+	 * @return boolean       Success
 	 */
 	public function connect($url, $cb = null) {
 		$this->uri = Config\Object::parseCfgUri($url);
@@ -517,9 +481,10 @@ abstract class Connection extends IOStream {
 		return false;
 	}
 
-	/** Establish UNIX socket connection
-	 * @param string Path
-	 * @return boolean Success
+	/**
+	 * Establish UNIX socket connection
+	 * @param  string  $path Path
+	 * @return boolean       Success
 	 */
 	public function connectUnix($path) {
 		$this->type = 'unix';
@@ -540,13 +505,10 @@ abstract class Connection extends IOStream {
 		return true;
 	}
 
-	/** Establish raw socket connection
-	 * @param string Path
-	 * @return boolean Success
-	 */
 	/**
-	 * @param $host
-	 * @return bool
+	 * Establish raw socket connection
+	 * @param  string  $host Hostname
+	 * @return boolean       Success
 	 */
 	public function connectRaw($host) {
 		$this->type = 'raw';
@@ -590,9 +552,9 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Establish UDP connection
-	 * @param string $host  Hostname
-	 * @param integer $port Port
-	 * @return boolean Success
+	 * @param  string  $host Hostname
+	 * @param  integer $port Port
+	 * @return boolean       Success
 	 */
 	public function connectUdp($host, $port) {
 		$this->type = 'udp';
@@ -647,10 +609,11 @@ abstract class Connection extends IOStream {
 		return true;
 	}
 
-	/** Establish TCP connection
-	 * @param string $host  Hostname
-	 * @param integer $port Port
-	 * @return boolean Success
+	/**
+	 * Establish TCP connection
+	 * @param  string  $host Hostname
+	 * @param  integer $port Port
+	 * @return boolean       Success
 	 */
 	public function connectTcp($host, $port) {
 		$this->type = 'tcp';
@@ -725,7 +688,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Set keepalive
-	 * @param $bool
+	 * @param  boolean $bool
 	 * @return void
 	 */
 	public function setKeepalive($bool) {
@@ -746,8 +709,8 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Set timeouts
-	 * @param integer Read timeout in seconds
-	 * @param integer Write timeout in seconds
+	 * @param  integer $read  Read timeout in seconds
+	 * @param  integer $write Write timeout in seconds
 	 * @return void
 	 */
 	public function setTimeouts($read, $write) {
@@ -760,9 +723,9 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Set socket option
-	 * @param integer Level
-	 * @param integer Option
-	 * @param mixed   Value
+	 * @param  integer $level   Level
+	 * @param  integer $optname Option
+	 * @param  mixed   $val     Value
 	 * @return void
 	 */
 	public function setOption($level, $optname, $val) {

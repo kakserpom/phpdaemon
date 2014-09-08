@@ -7,44 +7,42 @@ use PHPDaemon\Exceptions\ProtocolError;
 
 /**
  * DNode
- * 
- * @package WebSocket
- * 
+ * @package PHPDaemon\WebSocket\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 trait DNode {
 	/**
-	 * @var array		Associative array of callback functions registered by callRemote()
+	 * @var array Associative array of callback functions registered by callRemote()
 	 */
 	protected $callbacks = [];
 
 	/**
-	 * @var array		Associative array of persistent callback functions registered by callRemote()
+	 * @var array Associative array of persistent callback functions registered by callRemote()
 	 */
 	protected $persistentCallbacks = [];
 
 	/**
-	 * @var boolean		If true, callRemote() will register callbacks as persistent ones
+	 * @var boolean If true, callRemote() will register callbacks as persistent ones
 	 */
 	protected $persistentMode = false;
 
 	/**
-	 * @var integer		Incremental counter of callback functions registered by callRemote() 
+	 * @var integer Incremental counter of callback functions registered by callRemote() 
 	 */
 	protected $counter = 0;
 
 	/**
-	 * @var array		Associative array of registered remote methods (received in 'methods' call)
+	 * @var array Associative array of registered remote methods (received in 'methods' call)
 	 */
 	protected $remoteMethods = [];
 
 	/**
-	 * @var array		Associative array of local methods, set by defineLocalMethods()
+	 * @var array Associative array of local methods, set by defineLocalMethods()
 	 */
 	protected $localMethods = [];
 
 	/**
-	 * @var boolean		Was this object cleaned up?
+	 * @var boolean Was this object cleaned up?
 	 */
 	protected $cleaned = false;
 
@@ -58,7 +56,7 @@ trait DNode {
 
 	/**
 	 * Defines local methods
-	 * @param array $arr Associative array of callbacks (methodName => callback)
+	 * @param  array $arr Associative array of callbacks (methodName => callback)
 	 * @return void
 	 */
 	protected function defineLocalMethods($arr = []) {
@@ -81,8 +79,8 @@ trait DNode {
 
 	/**
 	 * Calls a local method
-	 * @param string $method Method name
-	 * @param  mixed ...$args Arguments
+	 * @param  string $method  Method name
+	 * @param  mixed  ...$args Arguments
 	 * @return this
 	 */
 	public function callLocal() {
@@ -103,7 +101,7 @@ trait DNode {
 	/**
 	 * Ensures that the variable passed by reference holds a valid callback-function
 	 * If it doesn't, its value will be reset to null
-	 * @param mixed &$arg Argument
+	 * @param  mixed   &$arg Argument
 	 * @return boolean
 	 */
 	protected static function ensureCallback(&$arg) {
@@ -123,9 +121,9 @@ trait DNode {
 
 	/**
 	 * Extracts callback functions from array of arguments
-	 * @param &$args Arguments
-	 * @param &$list Output array for 'callbacks' property
-	 * @param &$path Recursion path holder
+	 * @param  array &$args Arguments
+	 * @param  array &$list Output array for 'callbacks' property
+	 * @param  array &$path Recursion path holder
 	 * @return void
 	 */
 	public function extractCallbacks(&$args, &$list, &$path) {
@@ -166,8 +164,8 @@ trait DNode {
 
 	/**
 	 * Calls a remote method
-	 * @param string $method Method name
-	 * @param  mixed ...$args Arguments
+	 * @param  string $method  Method name
+	 * @param  mixed  ...$args Arguments
 	 * @return this
 	 */
 	public function callRemote() {
@@ -182,8 +180,8 @@ trait DNode {
 
 	/**
 	 * Calls a remote method with array of arguments
-	 * @param string $method Method name
-	 * @param array $args Arguments
+	 * @param  string $method Method name
+	 * @param  array  $args   Arguments
 	 * @return this
 	 */
 	public function callRemoteArray($method, $args) {
@@ -209,7 +207,7 @@ trait DNode {
 
 	/**
 	 * Handler of the 'methods' method
-	 * @param array $methods Associative array of methods
+	 * @param  array $methods Associative array of methods
 	 * @return void
 	 */
 	public function methodsMethod($methods) {
@@ -218,7 +216,7 @@ trait DNode {
 
 	/**
 	 * Encodes value into JSON
-	 * @param mixed $m Value
+	 * @param  mixed $m Value
 	 * @return this
 	 */
 	protected static function toJson($m) {
@@ -227,7 +225,7 @@ trait DNode {
 
 	/**
 	 * Recursion handler for toJsonDebug()
-	 * @param array &$a Data
+	 * @param  array &$a Data
 	 * @return void
 	 */
 	public static function toJsonDebugResursive(&$a) {
@@ -249,7 +247,7 @@ trait DNode {
 
 	/**
 	 * Encodes object into JSON for debugging purposes
-	 * @param array &$p Data
+	 * @param  array &$p Data
 	 * @return void
 	 */
 	public static function toJsonDebug($p) {
@@ -259,7 +257,7 @@ trait DNode {
 
 	/**
 	 * Sends a packet
-	 * @param array &$pct Data
+	 * @param  array &$pct Data
 	 * @return void
 	 */
 	protected function sendPacket($pct) {
@@ -296,9 +294,9 @@ trait DNode {
 
 	/**
 	 * Sets value by materialized path
-	 * @param array &$m
-	 * @param array $path
-	 * @param mixed $val
+	 * @param  array &$m
+	 * @param  array $path
+	 * @param  mixed $val
 	 * @return void
 	 */
 	protected static function setPath(&$m, $path, $val) {
@@ -310,8 +308,8 @@ trait DNode {
 
 	/**
 	 * Finds value by materialized path
-	 * @param array &$m
-	 * @param array $path
+	 * @param  array &$m
+	 * @param  array $path
 	 * @return mixed Value
 	 */
 	protected static function &getPath(&$m, $path) {
@@ -323,8 +321,8 @@ trait DNode {
 
 	/**
 	 * Magic __call method
-	 * @param string $method
-	 * @param array $args
+	 * @param  string $method
+	 * @param  array  $args
 	 * @throws UndefinedMethodCalled if method name not start from 'remote_'
 	 * @return mixed
 	 */
@@ -338,7 +336,7 @@ trait DNode {
 
 	/**
 	 * Called when new packet is received
-	 * @param array $pct
+	 * @param  array $pct
 	 * @return void
 	 */
 	public function onPacket($pct) {
@@ -388,8 +386,8 @@ trait DNode {
 
 	/**
 	 * Called when new frame is received
-	 * @param string $data Frame's contents
-	 * @param string $type Frame's type
+	 * @param  string $data Frame's contents
+	 * @param  string $type Frame's type
 	 * @return void
 	 */
 	public function onFrame($data, $type) {

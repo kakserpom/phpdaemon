@@ -5,9 +5,7 @@ use PHPDaemon\Core\Daemon;
 
 /**
  * Debug static functions
- *
- * @package Core
- *
+ * @package PHPDaemon\Core
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Debug {
@@ -16,9 +14,9 @@ class Debug {
 
 	/**
 	 * Export binary data
-	 * @param string $str  String
-	 * @param boolean $all Whether to replace all of chars with escaped sequences
-	 * @return string - Escaped string
+	 * @param  string  $str String
+	 * @param  boolean $all Whether to replace all of chars with escaped sequences
+	 * @return string Escaped string
 	 */
 	public static function exportBytes($str, $all = FALSE) {
 		return preg_replace_callback(
@@ -38,14 +36,30 @@ class Debug {
 			}, $str);
 	}
 
+	/**
+	 * Pretty json
+	 * @param  mixed  $m Data
+	 * @return string
+	 */
 	public static function prettyJson($m) {
 		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 	}
 
+	/**
+	 * Json
+	 * @param  mixed  $m Data
+	 * @return string
+	 */
 	public static function json($m) {
 		return json_encode($m, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 	}
 
+	/**
+	 * Proxy
+	 * @param  callable $cb   Callback
+	 * @param  mixed    $name Data
+	 * @return callable
+	 */
 	public static function proxy($cb, $name = null) {
 		static $i = 0;
 		$n = ++$i;
@@ -76,7 +90,7 @@ class Debug {
 
 	/**
 	 * Get refcount of the given variable
-	 * @param &$var
+	 * @param  mixed &$var Value
 	 * @return integer
 	 */
 	public static function refcount(&$var) {
@@ -105,7 +119,7 @@ class Debug {
 	}
 
 	/**
-	 * Returns textual backtrace.
+	 * Returns textual backtrace
 	 * @return string
 	 */
 	public static function backtrace($bool = false) {
