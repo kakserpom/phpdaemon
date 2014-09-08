@@ -61,9 +61,9 @@ class PubSub {
 
 	/**
 	 * Unsubscribe object from event
-	 * @param  string  $id Event ID
-	 * @param  object
-	 * @return boolean     Success
+	 * @param  string  $id  Event ID
+	 * @param  object  $obj Subscriber
+	 * @return boolean      Success
 	 */
 	public function unsub($id, $obj) {
 		if (!isset($this->events[$id])) {
@@ -87,8 +87,8 @@ class PubSub {
 
 	/**
 	 * Unsubscribe object from all events
-	 * @param  object
-	 * @return boolean Success
+	 * @param  object  $obj Subscriber
+	 * @return boolean      Success
 	 */
 	public function unsubFromAll($obj) {
 		foreach ($this->events as $event) {

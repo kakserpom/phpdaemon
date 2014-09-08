@@ -190,7 +190,7 @@ abstract class Client extends Pool {
 
 	/**
 	 * Detach Connection
-	 * @param  $conn Connection
+	 * @param  object $conn Connection
 	 * @return void
 	 */
 	public function detach($conn) {
@@ -255,7 +255,7 @@ abstract class Client extends Pool {
 	/**
 	 * Returns available connection from the pool by key
 	 * @param  string   $key Key
-	 * @param  callable $cb
+	 * @param  callable $cb  Callback
 	 * @return boolean       Success
 	 */
 	public function getConnectionByKey($key, $cb = null) {
@@ -324,7 +324,7 @@ abstract class Client extends Pool {
 
 	/**
 	 * Called when application instance is going to shutdown
-	 * @param  boolean $graceful
+	 * @param  boolean $graceful Graceful?
 	 * @return boolean           Ready to shutdown?
 	 */
 	public function onShutdown($graceful = false) {

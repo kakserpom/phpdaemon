@@ -20,8 +20,6 @@ abstract class Server extends Pool {
 	 * @var array|null Allowed clients
 	 */
 	public $allowedClients = null;
-
-	public $maxAllowedPacket;
 	
 	/**
 	 * Constructor
@@ -174,8 +172,8 @@ abstract class Server extends Pool {
 
 	/**
 	 * Called when a request to HTTP-server looks like another connection
-	 * @param  object  $req
-	 * @param  object  $oldConn
+	 * @param  object  $req     Request
+	 * @param  object  $oldConn Connection
 	 * @return boolean Success
 	 */
 	public function inheritFromRequest($req, $oldConn) {

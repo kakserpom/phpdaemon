@@ -163,7 +163,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Sets DGRAM mode
-	 * @param  boolean $bool
+	 * @param  boolean $bool DGRAM Mode
 	 * @return void
 	 */
 	public function setDgram($bool) {
@@ -229,7 +229,7 @@ abstract class Connection extends IOStream {
 
 	/**
 	 * Called when new UDP packet received
-	 * @param  object $pct
+	 * @param  object $pct Packet
 	 * @return void
 	 */
 	public function onUdpPacket($pct) {

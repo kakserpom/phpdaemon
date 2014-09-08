@@ -70,6 +70,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		505 => 'HTTP Version Not Supported',
 	];
 
+	/**
+	 * @var boolean Keepalive?
+	 */
 	public $keepalive = false;
 
 	/**
@@ -158,7 +161,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * [firstDeferredEventUsed description]
+	 * @todo
 	 * @return void
 	 */
 	public function firstDeferredEventUsed () {
@@ -525,7 +528,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Outputs data with headers (split by \r\n\r\n)
-	 * @param  string  $s
+	 * @param  string  $s Data
 	 * @return boolean    Success
 	 */
 	public function combinedOut($s) {
@@ -609,9 +612,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Checks if headers have been sent
-	 * @param  string  &$file
-	 * @param  integer &$line
-	 * @return boolean Success
+	 * @param  string  &$file File name
+	 * @param  integer &$line Line in file
+	 * @return boolean        Success
 	 */
 	public function headers_sent(&$file, &$line) {
 		$file = $this->headers_sent_file;
@@ -726,7 +729,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Converts human-readable representation of size to number of bytes
-	 * @param  string $value
+	 * @param  string $value String of size
 	 * @return integer
 	 */
 	public static function parseSize($value) {
@@ -765,7 +768,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called when file upload started
-	 * @param  Input $in
+	 * @param  Input $in @todo
 	 * @return void
 	 */
 	public function onUploadFileStart($in) {
@@ -785,7 +788,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called when chunk of incoming file has arrived
-	 * @param  Input $in
+	 * @param  Input   $in   @todo
 	 * @param  boolean $last Last?
 	 * @return void
 	 */
@@ -834,6 +837,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
+	 * @todo
 	 * @return string
 	 */
 	public function getUploadTempDir() {

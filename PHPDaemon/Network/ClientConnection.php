@@ -37,8 +37,8 @@ class ClientConnection extends Connection {
 
 	/**
 	 * Constructor
-	 * @param mixed $fd   File descriptor
-	 * @param mixed $pool ConnectionPool
+	 * @param resource $fd   File descriptor
+	 * @param mixed    $pool ConnectionPool
 	 */
 	public function __construct($fd, $pool = null) {
 		parent::__construct($fd, $pool);
