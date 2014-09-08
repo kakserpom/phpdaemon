@@ -39,13 +39,13 @@ trait DeferredEventHandlers {
 	}
 
 	/**
-	 * @todo
+	 * Called when first deferred event is used
 	 * @return void
 	 */
 	protected function firstDeferredEventUsed() {}
 
 	/**
-	 * @todo
+	 * Cleans up events
 	 * @return void
 	 */
 	public function cleanupDeferredEventHandlers() {
