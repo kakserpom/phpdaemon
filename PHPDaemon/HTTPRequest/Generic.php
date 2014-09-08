@@ -161,7 +161,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @todo
+	 * Called when first deferred event used
 	 * @return void
 	 */
 	public function firstDeferredEventUsed () {
@@ -768,7 +768,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called when file upload started
-	 * @param  Input $in @todo
+	 * @param  Input $in Input buffer
 	 * @return void
 	 */
 	public function onUploadFileStart($in) {
@@ -788,7 +788,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 
 	/**
 	 * Called when chunk of incoming file has arrived
-	 * @param  Input   $in   @todo
+	 * @param  Input   $in   Input buffer
 	 * @param  boolean $last Last?
 	 * @return void
 	 */
@@ -837,7 +837,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * @todo
+	 * Returns path to directory of temporary upload files
 	 * @return string
 	 */
 	public function getUploadTempDir() {
