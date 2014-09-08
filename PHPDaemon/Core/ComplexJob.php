@@ -77,8 +77,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Позволяет сделать isset($job[$name])
+	 * Handler of isset($job[$name])
 	 * @param  string $j Job name
 	 * @return boolean
 	 */
@@ -87,8 +86,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Позволяет сделать isset($job[$name])
+	 * Handler of isset($job[$name])
 	 * @param  string $j Job name
 	 * @return mixed
 	 */
@@ -97,8 +95,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Позволяет сделать $job[$name] = $value
+	 * Handler of $job[$name] = $value
 	 * @param  string $j Job name
 	 * @param  mixed  $v Job result
 	 * @return void
@@ -108,8 +105,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Позволяет сделать unset($job[$name])
+	 * Handler of unset($job[$name])
 	 * @param  string $j Job name
 	 * @return void
 	 */
@@ -118,8 +114,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Возвращает ассоциативный массив результатов
+	 * Returns associative array of results
 	 * @return array
 	 */
 	public function getResults() {
@@ -143,9 +138,8 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Устанавливает максимальное количество одновременно выполняемых задач
-	 * @param  integer $n Натуральное число. При -1 ограничение не действует
+	 * Sets a limit of simultaneously executing tasks
+	 * @param  integer $n Natural number or -1 (no limit)
 	 * @return this
 	 */
 	public function maxConcurrency($n = -1) {
@@ -197,8 +191,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Вызывается автоматически. Проверяет полна ли очередь и если нет, то пробует запустить еще подзадач из backlog и more
+	 * Called automatically. Checks whether if the queue is full. If not, tries to pull more jobs from backlog and 'more'
 	 * @return void
 	 */
 	public function checkQueue() {
@@ -217,8 +210,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Задает функцию обратного вызова, которая автоматически вызывается каждый раз, когда можно добавить еще подзадач
+	 * Sets a callback which is going to be fired always when we have a room for more jobs
 	 * @param  callable $cb Callback
 	 * @return this
 	 */
@@ -246,8 +238,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * @todo
-	 * Проверяет полна ли на данный момент очередь задач (превышен ли параметр maxConcurrency)
+	 * Returns whether or not the queue is full (maxConcurrency option exceed)
 	 * @return boolean
 	 */
 	public function isQueueFull() {
