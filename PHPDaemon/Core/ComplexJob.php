@@ -86,7 +86,7 @@ class ComplexJob implements \ArrayAccess {
 	}
 
 	/**
-	 * Handler of isset($job[$name])
+	 * Handler of $job[$name]
 	 * @param  string $j Job name
 	 * @return mixed
 	 */
