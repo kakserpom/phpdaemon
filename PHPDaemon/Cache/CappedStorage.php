@@ -41,7 +41,7 @@ abstract class CappedStorage {
 
 	/**
 	 * Sets cap window
-	 * @param  integer $w
+	 * @param  integer $w Additional window to decrease number of sorter calls
 	 * @return void
 	 */
 	public function setCapWindow($w) {
@@ -59,9 +59,9 @@ abstract class CappedStorage {
 
 	/**
 	 * Puts element in cache
-	 * @param  string  $key
-	 * @param  mixed   $value
-	 * @param  integer $ttl
+	 * @param  string  $key   Key
+	 * @param  mixed   $value Value
+	 * @param  integer $ttl   Time to live
 	 * @return mixed
 	 */
 	public function put($key, $value, $ttl = null) {

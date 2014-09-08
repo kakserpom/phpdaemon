@@ -31,42 +31,42 @@ class AppInstance {
 	const EVENT_SHUTDOWN = 3;
 	
 	/**
-	 * @var boolean
+	 * @var boolean @todo
 	 */
 	public static $runOnDemand = true;
 	
 	/**
-	 * @var string
+	 * @var string @todo
 	 */
 	public $passphrase;
 	
 	/**
-	 * @var boolean
+	 * @var boolean @todo
 	 */
 	public $ready = false;
 	
 	/**
-	 * @var object
+	 * @var object @todo
 	 */
 	public $config;
 	
 	/**
-	 * @var boolean
+	 * @var boolean @todo
 	 */
 	public $enableRPC = false;
 	
 	/**
-	 * @var null|string
+	 * @var null|string @todo
 	 */
 	public $requestClass;
 	
 	/**
-	 * @var mixed
+	 * @var mixed @todo
 	 */
 	public $indexFiles;
 	
 	/**
-	 * @var string
+	 * @var string @todo
 	 */
 	protected $name;
 
@@ -129,6 +129,7 @@ class AppInstance {
 	}
 
 	/**
+	 * @todo
 	 * @return boolean
 	 */
 	public function isEnabled() {
@@ -159,8 +160,8 @@ class AppInstance {
 	}
 
 	/**
-	 * @param  string  $name
-	 * @param  boolean $spawn
+	 * @param  string  $name  @todo
+	 * @param  boolean $spawn @todo
 	 * @return AppInstance
 	 */
 	public static function getInstance($name, $spawn = true) {
@@ -182,6 +183,7 @@ class AppInstance {
 	}
 
 	/**
+	 * @todo
 	 * @return Config\Section
 	 */
 	public function getConfig() {
@@ -189,6 +191,7 @@ class AppInstance {
 	}
 
 	/**
+	 * @todo
 	 * @return string
 	 */
 	public function getName() {
