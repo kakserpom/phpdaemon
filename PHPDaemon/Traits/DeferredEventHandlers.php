@@ -40,6 +40,10 @@ trait DeferredEventHandlers {
 
 	protected function firstDeferredEventUsed() {}
 
+	/**
+	 * @todo
+	 * @return void
+	 */
 	public function cleanupDeferredEventHandlers() {
 		foreach ($this as $key => $property) {
 			if ($property instanceof DeferredEvent) {

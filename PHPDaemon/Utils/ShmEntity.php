@@ -39,10 +39,10 @@ class ShmEntity {
 
 	/**
 	 * Constructor
-	 * @param string  $path
-	 * @param integer $segsize
-	 * @param string  $name
-	 * @param boolean $create
+	 * @param string  $path    Path
+	 * @param integer $segsize Segment size
+	 * @param string  $name    Name
+	 * @param boolean $create  Create
 	 */
 	public function __construct($path, $segsize, $name, $create = false) {
 		$this->path    = $path;
@@ -65,8 +65,8 @@ class ShmEntity {
 
 	/**
 	 * Opens segment of shared memory
-	 * @param  integer $segno
-	 * @param  boolean $create
+	 * @param  integer $segno  Segment number
+	 * @param  boolean $create Create
 	 * @return integer         Segment number
 	 */
 	public function open($segno = 0, $create = false) {

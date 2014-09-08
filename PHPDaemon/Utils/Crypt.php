@@ -108,8 +108,8 @@ class Crypt {
 
 	/**
 	 * Returns the character at index $idx in $str in constant time
-	 * @param  string  $str
-	 * @param  integer $idx
+	 * @param  string  $str String
+	 * @param  integer $idx Index
 	 * @return string
 	 */
     public static function stringIdx($str, $idx) {
@@ -221,7 +221,7 @@ class Crypt {
 	/**
 	 * Compare strings
 	 * @param  string  $a String 1
-	 * @param  string  $b String 1
+	 * @param  string  $b String 2
 	 * @return boolean    Equal?
 	 */
 	public static function compareStrings($a, $b) {

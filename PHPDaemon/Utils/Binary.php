@@ -157,7 +157,7 @@ class Binary {
 
 	/**
 	 * Get single-byte character
-	 * @param &string Data
+	 * @param  string &$p Data
 	 * @return string
 	 */
 	public static function getChar(&$p) {
@@ -389,7 +389,7 @@ class Binary {
 
 	/**
 	 * Get bitmap
-	 * @param  integer $byte byte
+	 * @param  integer $byte Byte
 	 * @return string
 	 */
 	public static function getbitmap($byte) {

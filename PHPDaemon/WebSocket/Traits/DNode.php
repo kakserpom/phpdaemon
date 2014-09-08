@@ -321,8 +321,8 @@ trait DNode {
 
 	/**
 	 * Magic __call method
-	 * @param  string $method
-	 * @param  array  $args
+	 * @param  string $method Method name
+	 * @param  array  $args   Arguments
 	 * @throws UndefinedMethodCalled if method name not start from 'remote_'
 	 * @return mixed
 	 */
@@ -336,7 +336,7 @@ trait DNode {
 
 	/**
 	 * Called when new packet is received
-	 * @param  array $pct
+	 * @param  array $pct Packet
 	 * @return void
 	 */
 	public function onPacket($pct) {

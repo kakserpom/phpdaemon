@@ -11,7 +11,7 @@ class IRC {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @var array
+	 * @var array IRC codes
 	 */
 	public static $codes = [
 		'1' => 'RPL_WELCOME', 2 => 'RPL_YOURHOST',
@@ -89,12 +89,12 @@ class IRC {
 	];
 
 	/**
-	 * @var array
+	 * @var array Flipped IRC codes
 	 */
 	public static $codesFlip;
 
 	/**
-	 * @param  integer $code
+	 * @param  integer $code Code
 	 * @return string
 	 */
 	public static function getCommandByCode($code) {
@@ -105,7 +105,7 @@ class IRC {
 	}
 
 	/**
-	 * @param  string  $cmd
+	 * @param  string  $cmd Command
 	 * @return integer
 	 */
 	public static function getCodeByCommand($cmd) {
