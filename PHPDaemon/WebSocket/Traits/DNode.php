@@ -135,7 +135,7 @@ trait DNode {
 	 * @param &$path Recursion path holder
 	 * @return void
 	 */
-	public function extractCallbacks(&$args, &$list, &$path) {
+	protected function extractCallbacks(&$args, &$list, &$path) {
 		foreach ($args as $k => &$v) {
 			if (is_array($v)) {
 				if (sizeof($v) === 2) {
@@ -219,7 +219,7 @@ trait DNode {
 	 * @param array $methods Associative array of methods
 	 * @return void
 	 */
-	public function methodsMethod($methods) {
+	protected function methodsMethod($methods) {
 		$this->remoteMethods = $methods;
 	}
 
@@ -228,7 +228,7 @@ trait DNode {
 	 * @param mixed $m Value
 	 * @return object $this
 	 */
-	protected static function toJson($m) {
+	public static function toJson($m) {
 		return json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 	}
 
@@ -237,31 +237,35 @@ trait DNode {
 	 * @param array &$a
 	 * @return void
 	 */
-	public static function toJsonDebugResursive(&$a) {
-		foreach ($a as $k => &$v) {
-			if ($v instanceof \Closure) {
-				$v = '__CALLBACK__';
-			}
-			elseif (is_array($v)) {
-				if (sizeof($v) === 2 && isset($v[0]) && $v[0] instanceof \PHPDaemon\WebSocket\Route) {
-					if (isset($v[1]) && is_string($v[1]) && strncmp($v[1], 'remote_', 7) === 0) {
-						$v = '__CALLBACK__';
-					}
-				} else {
+	public static function toJsonDebugResursive(&$m) {
+		if ($m instanceof \Closure) {
+			$m = '__CALLBACK__';
+		}
+		elseif (is_array($m)) {
+			if (sizeof($m) === 2 && isset($m[0]) && $m[0] instanceof \PHPDaemon\WebSocket\Route) {
+				if (isset($m[1]) && is_string($m[1]) && strncmp($m[1], 'remote_', 7) === 0) {
+					$m = '__CALLBACK__';
+				}
+			} else {
+				foreach ($m as &$v) {
 					static::toJsonDebugResursive($v);
 				}
+			}
+		} elseif (is_object($m)) {
+			foreach ($m as &$v) {
+				static::toJsonDebugResursive($v);
 			}
 		}
 	}
 
 	/**
-	 * Encodes object into JSON for debugging purposes
-	 * @param array &$p
+	 * Encodes value into JSON for debugging purposes
+	 * @param mixed $m
 	 * @return void
 	 */
-	public static function toJsonDebug($p) {
-		static::toJsonDebugResursive($p);
-		return static::toJson($p);
+	public static function toJsonDebug($m) {
+		static::toJsonDebugResursive($m);
+		return static::toJson($m);
 	}
 
 	/**
@@ -394,8 +398,8 @@ trait DNode {
 
 	/**
 	 * Called when new frame is received
-	 * @param string $data Frame's contents.
-	 * @param integer $type Frame's type.
+	 * @param string $data Frame's contents
+	 * @param integer $type Frame's type
 	 * @param string $data
 	 * @param string $type
 	 * @return void

@@ -14,6 +14,8 @@ use PHPDaemon\Network\ClientConnection;
 class Pool extends \PHPDaemon\Network\Client {
 	public $servConnSub = [];
 
+	protected $currentMasterAddr;
+
 
 	public function lock($key, $timeout) {
 		return new Lock($key, $timeout, $this);
@@ -76,6 +78,11 @@ class Pool extends \PHPDaemon\Network\Client {
 			 */
 			'select' => null,
 
+			/**
+			 * <master name> for Sentinel
+			 * @var integer
+			 */
+			'sentinel-master' => null,
 		];
 	}
 
@@ -116,6 +123,36 @@ class Pool extends \PHPDaemon\Network\Client {
 			return;
 		}
 
+		if ($cmd === 'SENTINEL' || $this->config->sentinelmaster->value === null) {
+			$this->sendCommand(null, $cmd, $args, $cb);
+			return;
+		}
+		if ($this->currentMasterAddr !== null) {
+			$this->sendCommand($this->currentMasterAddr, $cmd, $args, $cb);
+			return;
+		}
+		$this->sentinel('get-master-addr-by-name', $this->config->sentinelmaster->value, function($redis) use ($cmd, $args, $cb) {
+			$this->getConnection($this->currentMasterAddr = 'tcp://' . $redis->result[0] .':' . $redis->result[1], function ($conn) use ($cmd, $args, $cb) {
+				/**
+				 * @var $conn Connection
+				 */
+
+				if (!$conn->isConnected()) {
+					call_user_func($cb, false);
+					$this->currentMasterAddr = null;
+					return;
+				}
+
+				if ($this->sendSubCommand($cmd, $args, $cb)) {
+					return;
+				}
+
+				$conn->command($cmd, $args, $cb);
+			});
+		});
+	}
+
+	protected function sendCommand($addr, $cmd, $args, $cb) {
 		$this->getConnection(null, function ($conn) use ($cmd, $args, $cb) {
 			/**
 			 * @var $conn Connection

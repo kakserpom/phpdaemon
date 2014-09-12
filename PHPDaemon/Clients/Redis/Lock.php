@@ -45,7 +45,6 @@ class Lock {
 	public function release($cb = null) {		
 		$this->pool->eval('if redis.call("get",KEYS[1]) == ARGV[1] then return redis.call("del",KEYS[1]) else return 0 end',
 		 1, $this->key, $this->token, function($redis) use ($cb) {
-		 	D($redis->result);
 		 	if ($cb !== null) {
 		 		call_user_func($cb, $this, $redis->result);
 		 	}

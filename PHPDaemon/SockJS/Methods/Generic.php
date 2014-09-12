@@ -58,15 +58,6 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 		$this->opts = $this->appInstance->getRouteOptions($this->attrs->path);
 		$this->CORS();
-		if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-			$this->header('204 No Content');
-			$this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
-			$this->header('Access-Control-Max-Age: 31536000');
-			$this->header('Access-Control-Allow-Methods: OPTIONS, '.$this->allowedMethods);
-			$this->header('Expires: '.date('r', strtotime('+1 year')));
-			$this->finish();
-			return;
-		}
 		if ($this->opts['cookie_needed'] && !$this instanceof Info) {
 			if (isset($_COOKIE['JSESSIONID'])) {
 				$val = $_COOKIE['JSESSIONID'];
@@ -365,5 +356,14 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			$this->header('Access-Control-Allow-Origin: *');
 		}
 		$this->header('Access-Control-Allow-Credentials: true');
+		if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+			$this->header('204 No Content');
+			$this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
+			$this->header('Access-Control-Max-Age: 31536000');
+			$this->header('Access-Control-Allow-Methods: OPTIONS, '.$this->allowedMethods);
+			$this->header('Expires: '.date('r', strtotime('+1 year')));
+			$this->finish();
+			return;
+		}
 	}
 }
