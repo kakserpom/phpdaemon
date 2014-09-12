@@ -4,33 +4,34 @@ namespace PHPDaemon\PubSub;
 use PHPDaemon\PubSub\PubSubEvent;
 
 /**
- * Thread
- *
- * @package Core
- *
+ * PubSub
+ * @package PHPDaemon\PubSub
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 class PubSub {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Storage of events
-	 * @var array [id => PubSubEvent, ...]
+	 * @var PubSubEvent[] Storage of events
 	 */
 	protected $events = [];
 
+	/**
+	 * Is event exists?
+	 * @param  string  $id Event ID
+	 * @return boolean
+	 */
 	public function eventExists($id) {
 		return isset($this->events[$id]);
 	}
 
 	/**
 	 * Subcribe to event
-	 * @param string $id   Event ID
-	 * @param object $obj  Subscriber
-	 * @param callable $cb Callback
-	 * @return boolean Success
+	 * @param  string   $id  Event ID
+	 * @param  object   $obj Subscriber
+	 * @param  callable $cb  Callback
+	 * @return boolean       Success
 	 */
 	public function sub($id, $obj, $cb) {
 		if (!isset($this->events[$id])) {
@@ -41,8 +42,8 @@ class PubSub {
 
 	/**
 	 * Adds event
-	 * @param string $id Event ID
-	 * @param PubSubEvent
+	 * @param  string      $id  Event ID
+	 * @param  PubSubEvent $obj
 	 * @return void
 	 */
 	public function addEvent($id, PubSubEvent $obj) {
@@ -51,7 +52,7 @@ class PubSub {
 
 	/**
 	 * Removes event
-	 * @param string $id Event ID
+	 * @param  string $id Event ID
 	 * @return void
 	 */
 	public function removeEvent($id) {
@@ -60,9 +61,9 @@ class PubSub {
 
 	/**
 	 * Unsubscribe object from event
-	 * @param string $id Event ID
-	 * @param object
-	 * @return boolean Success
+	 * @param  string  $id  Event ID
+	 * @param  object  $obj Subscriber
+	 * @return boolean      Success
 	 */
 	public function unsub($id, $obj) {
 		if (!isset($this->events[$id])) {
@@ -73,9 +74,9 @@ class PubSub {
 
 	/**
 	 * Publish
-	 * @param string $id  Event ID
-	 * @param mixed $data Data
-	 * @return boolean Success
+	 * @param  string  $id   Event ID
+	 * @param  mixed   $data Data
+	 * @return boolean       Success
 	 */
 	public function pub($id, $data) {
 		if (!isset($this->events[$id])) {
@@ -86,8 +87,8 @@ class PubSub {
 
 	/**
 	 * Unsubscribe object from all events
-	 * @param object
-	 * @return boolean Success
+	 * @param  object  $obj Subscriber
+	 * @return boolean      Success
 	 */
 	public function unsubFromAll($obj) {
 		foreach ($this->events as $event) {

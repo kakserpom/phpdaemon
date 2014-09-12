@@ -5,9 +5,7 @@ use PHPDaemon\Core\AppInstance;
 
 /**
  * TransportContext
- *
- * @package Core
- *
+ * @package PHPDaemon\Core
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class TransportContext extends AppInstance {
@@ -22,7 +20,7 @@ class TransportContext extends AppInstance {
 	}
 
 	/**
-	 * Constructor.
+	 * Init
 	 * @return void
 	 */
 	public function init() {

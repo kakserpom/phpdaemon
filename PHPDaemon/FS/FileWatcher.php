@@ -6,25 +6,30 @@ use PHPDaemon\Core\Timer;
 
 /**
  * Implementation of the file watcher
- *
- * @package Core
- *
+ * @package PHPDaemon\FS
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class FileWatcher {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/** @var array */
+	/**
+	 * @var array Associative array of the files being observed
+	 */
 	public $files = [];
-	/** @var */
+
+	/**
+	 * @var resource Resource returned by inotify_init()
+	 */
 	public $inotify;
-	/** @var array */
+
+	/**
+	 * @var Array of inotify descriptors
+	 */
 	public $descriptors = [];
 
 	/**
 	 * Constructor
-	 * @return object
 	 */
 	public function __construct() {
 		if (Daemon::loadModuleIfAbsent('inotify')) {
@@ -45,12 +50,12 @@ class FileWatcher {
 
 	/**
 	 * Adds your subscription on object in FS
-	 * @param $path
-	 * @param $subscriber
-	 * @param int $flags
-	 * @return bool
+	 * @param  string  $path	Path
+	 * @param  mixed   $cb		Callback
+	 * @param  integer $flags	Look inotify_add_watch()
+	 * @return true
 	 */
-	public function addWatch($path, $subscriber, $flags = NULL) {
+	public function addWatch($path, $cb, $flags = null) {
 		$path = realpath($path);
 		if (!isset($this->files[$path])) {
 			$this->files[$path] = [];
@@ -58,31 +63,31 @@ class FileWatcher {
 				$this->descriptors[inotify_add_watch($this->inotify, $path, $flags ? : IN_MODIFY)] = $path;
 			}
 		}
-		$this->files[$path][] = $subscriber;
+		$this->files[$path][] = $cb;
 		Timer::setTimeout('fileWatcher');
 		return true;
 	}
 
 	/**
 	 * Cancels your subscription on object in FS
-	 * @param $path
-	 * @param $subscriber
-	 * @return bool
+	 * @param  string  $path	Path
+	 * @param  mixed   $cb		Callback
+	 * @return boolean
 	 */
-	public function rmWatch($path, $subscriber) {
+	public function rmWatch($path, $cb) {
 
 		$path = realpath($path);
 
 		if (!isset($this->files[$path])) {
 			return false;
 		}
-		if (($k = array_search($subscriber, $this->files[$path], true)) !== false) {
+		if (($k = array_search($cb, $this->files[$path], true)) !== false) {
 			unset($this->files[$path][$k]);
 		}
 		if (sizeof($this->files[$path]) === 0) {
 			if ($this->inotify) {
 				if (($descriptor = array_search($path, $this->descriptors)) !== false) {
-					inotify_rm_watch($this->inotify, $descriptor);
+					inotify_rm_watch($this->inotify, $cb);
 				}
 			}
 			unset($this->files[$path]);
@@ -92,7 +97,7 @@ class FileWatcher {
 
 	/**
 	 * Called when file $path is changed
-	 * @param $path
+	 * @param  string $path Path
 	 * @return void
 	 */
 	public function onFileChanged($path) {
@@ -100,12 +105,12 @@ class FileWatcher {
 			Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);
 			return;
 		}
-		foreach ($this->files[$path] as $subscriber) {
-			if (is_callable($subscriber) || is_array($subscriber)) {
-				call_user_func($subscriber, $path);
+		foreach ($this->files[$path] as $cb) {
+			if (is_callable($cb) || is_array($cb)) {
+				call_user_func($cb, $path);
 			}
-			elseif (!Daemon::$process->IPCManager->importFile($subscriber, $path)) {
-				$this->rmWatch($path, $subscriber);
+			elseif (!Daemon::$process->IPCManager->importFile($cb, $path)) {
+				$this->rmWatch($path, $cb);
 			}
 		}
 	}

@@ -14,67 +14,57 @@ class DeferredEvent {
 
 	/**
 	 * State: waiting. It means there are no listeners yet.
-	 * @var integer
 	 */
 	const STATE_WAITING = 1;
 	
 	/**
 	 * State: running. Event handler in progress.
-	 * @var integer
 	 */
 	const STATE_RUNNING = 2;
 	
 	/**
 	 * State: done. Event handler is finished, result is saved.
-	 * @var integer
 	 */
 	const STATE_DONE = 3;
 
 	/**
-	 * Stack of listeners
-	 * @var \PHPDaemon\Structures\StackCallbacks
+	 * @var \PHPDaemon\Structures\StackCallbacks Stack of listeners
 	 */
 	protected $listeners;
 
 	/**
-	 * Result of deferred event
-	 * @var mixed
+	 * @var mixed Result of deferred event
 	 */
 	protected $result;
 	
 	/**
-	 * State of event. One of STATE_*
-	 * @var int
+	 * @var int State of event. One of STATE_*
 	 */
 	protected $state;
 
 	/**
-	 * Arguments which passed to __invoke
-	 * @var array
+	 * @var array Arguments which passed to __invoke
 	 */
 	protected $args;
 
 	/**
-	 * Event handler (producer)
-	 * @var callable
+	 * @var callable Event handler (producer)
 	 */
 	protected $producer;
 
 	/**
-	 * Parent object
-	 * @var object
+	 * @var object Parent object
 	 */
 	public $parent;
 
 	/**
-	 * Name of event
-	 * @var string
+	 * @var string Name of event
 	 */
 	public $name;
 
 	/**
 	 * Constructor
-	 * @param $cb
+	 * @param callable $cb Callback
 	 * @return DeferredEvent
 	 */
 	public function __construct($cb) {
@@ -85,7 +75,7 @@ class DeferredEvent {
 
 	/**
 	 * Set producer callback
-	 * @param callable $cb
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function setProducer($cb) {
@@ -94,7 +84,7 @@ class DeferredEvent {
 
 	/**
 	 * Set result
-	 * @param mixed $result
+	 * @param mixed $result Result
 	 * @return void
 	 */
 	public function setResult($result = null) {
@@ -118,7 +108,7 @@ class DeferredEvent {
 
 	/**
 	 * Reset
-	 * @return $this
+	 * @return this
 	 */
 	public function reset() {
 		$this->state = self::STATE_WAITING;
@@ -129,7 +119,8 @@ class DeferredEvent {
 
 	/**
 	 * Add listener
-	 * @param callable $cb
+	 * @param callable $cb      Callback
+	 * @param mixed    ...$args Arguments
 	 * @return void
 	 */
 	public function addListener($cb) {
@@ -156,7 +147,7 @@ class DeferredEvent {
 
 	/**
 	 * Called when object is invoked as function.
-	 * @param .. params ..
+	 * @param mixed ...$args Arguments
 	 * @return void
 	 */
 	public function __invoke() {

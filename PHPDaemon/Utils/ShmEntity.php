@@ -3,45 +3,46 @@ namespace PHPDaemon\Utils;
 
 use PHPDaemon\Core\Daemon;
 
+/**
+ * ShmEntity
+ * @package PHPDaemon\Utils
+ * @author  Zorin Vasily <maintainer@daemon.io>
+ */
 class ShmEntity {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Path
-	 * @var string
+	 * @var string Path
 	 */
 	protected $path;
 
 	/**
-	 * Segments
-	 * @var array
+	 * @var array Segments
 	 */
 	protected $segments = [];
 
 	/**
-	 * Segment size
-	 * @var integer
+	 * @var integer Segment size
 	 */
 	protected $segsize = 1024;
 
 	/**
-	 * Name
-	 * @var string
+	 * @var string Name
 	 */
 	protected $name;
 
 	/**
-	 * Key
-	 * @var integer
+	 * @var integer Key
 	 */
 	protected $key;
 
 	/**
-	 * @param $path
-	 * @param $segsize
-	 * @param string $name
-	 * @param bool $create
+	 * Constructor
+	 * @param string  $path    Path
+	 * @param integer $segsize Segment size
+	 * @param string  $name    Name
+	 * @param boolean $create  Create
 	 */
 	public function __construct($path, $segsize, $name, $create = false) {
 		$this->path    = $path;
@@ -63,8 +64,10 @@ class ShmEntity {
 	}
 
 	/**
-	 * Opens segment of shared memory.
-	 * @return int Segment number.
+	 * Opens segment of shared memory
+	 * @param  integer $segno  Segment number
+	 * @param  boolean $create Create
+	 * @return integer         Segment number
 	 */
 	public function open($segno = 0, $create = false) {
 		if (isset($this->segments[$segno])) {
@@ -111,9 +114,9 @@ class ShmEntity {
 
 	/**
 	 * Write to shared memory
-	 * @param string  Data
-	 * @param integer Offset
-	 * @return boolean Success
+	 * @param  string  $data   Data
+	 * @param  integer $offset Offset
+	 * @return boolean         Success
 	 */
 	public function write($data, $offset) {
 		$segno = floor($offset / $this->segsize);
@@ -133,6 +136,12 @@ class ShmEntity {
 		return true;
 	}
 
+	/**
+	 * Read from shared memory
+	 * @param  integer $offset Offset
+	 * @param  integer $length Length
+	 * @return string          Data
+	 */
 	public function read($offset, $length = 1) {
 		$ret = '';
 		$segno = floor($offset / $this->segsize);

@@ -2,16 +2,16 @@
 namespace PHPDaemon\Utils;
 
 /**
- * MIME class.
+ * MIME class
+ * @package PHPDaemon\Utils
+ * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class MIME {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * MIME types
-	 * @static
-	 * @var array
+	 * @var array MIME types
 	 */
 	protected static $fileTypes = [
 		'txt'  => 'text/plain',
@@ -69,10 +69,9 @@ class MIME {
 	];
 
 	/**
-	 * Returns MIME type of the given file.
-	 * @static
-	 * @param string $path Path
-	 * @return string MIME type.
+	 * Returns MIME type of the given file
+	 * @param  string $path Path
+	 * @return string       MIME type
 	 */
 	public static function get($path) {
 		$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));

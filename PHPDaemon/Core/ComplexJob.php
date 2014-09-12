@@ -4,7 +4,9 @@ namespace PHPDaemon\Core;
 use PHPDaemon\Core\CallbackWrapper;
 
 /**
- * ComplexJob class.
+ * ComplexJob class
+ * @package PHPDaemon\Core
+ * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class ComplexJob implements \ArrayAccess {
 	use \PHPDaemon\Traits\ClassWatchdog;
@@ -12,63 +14,52 @@ class ComplexJob implements \ArrayAccess {
 
 	/**
 	 * State: waiting
-	 * @var integer
 	 */
 	const STATE_WAITING = 1;
 	
 	/**
 	 * State: running
-	 * @var integer
 	 */
 	const STATE_RUNNING = 2;
 	
 	/**
 	 * State: done
-	 * @var integer
 	 */
 	const STATE_DONE = 3;
 
 	/**
-	 * Listeners
-	 * @var array [callable, ...]
+	 * @var array Listeners [callable, ...]
 	 */
 	public $listeners = [];
 
 	/**
-	 * Hash of results
-	 * @var array [jobname -> result, ...]
+	 * @var array Hash of results [jobname -> result, ...]
 	 */
 	public $results = [];
 
 	/**
-	 * Current state
-	 * @var enum
+	 * @var integer Current state
 	 */
 	public $state;
 
 	/**
-	 * Hash of jobs
-	 * @var array [jobname -> callback, ...]
+	 * @var array Hash of jobs [jobname -> callback, ...]
 	 */
 	public $jobs = [];
 
 	/**
-	 * Number of results
-	 * @var integer
+	 * @var integer Number of results
 	 */
 	public $resultsNum = 0;
 
 	/**
-	 * Number of jobs
-	 * @var integer
+	 * @var integer Number of jobs
 	 */
 	public $jobsNum = 0;
 
 	protected $keep = false;
-	
 
 	protected $more = null;
-
 
 	protected $maxConcurrency = -1;
 
@@ -77,7 +68,6 @@ class ComplexJob implements \ArrayAccess {
 	/**
 	 * Constructor
 	 * @param callable $cb Listener
-	 * @return \PHPDaemon\Core\ComplexJob
 	 */
 	public function __construct($cb = null) {
 		$this->state = self::STATE_WAITING;
@@ -85,24 +75,54 @@ class ComplexJob implements \ArrayAccess {
 			$this->addListener($cb);
 		}
 	}
+
+	/**
+	 * Handler of isset($job[$name])
+	 * @param  string $j Job name
+	 * @return boolean
+	 */
 	public function offsetExists($j) {
 		return isset($this->results[$j]);
 	}
+
+	/**
+	 * Handler of $job[$name]
+	 * @param  string $j Job name
+	 * @return mixed
+	 */
 	public function offsetGet($j) {
 		return isset($this->results[$j]) ? $this->results[$j] : null;
 	}
+
+	/**
+	 * Handler of $job[$name] = $value
+	 * @param  string $j Job name
+	 * @param  mixed  $v Job result
+	 * @return void
+	 */
 	public function offsetSet($j, $v) {
 		$this->setResult($j, $v);
 	}
+
+	/**
+	 * Handler of unset($job[$name])
+	 * @param  string $j Job name
+	 * @return void
+	 */
 	public function offsetUnset($j) {
 		unset($this->results[$j]);
 	}
+
+	/**
+	 * Returns associative array of results
+	 * @return array
+	 */
 	public function getResults() {
 		return $this->results;
 	}
 	/**
 	 * Keep
-	 * @param boolean Keep?
+	 * @param  boolean $keep Keep?
 	 * @return void
 	 */
 	public function keep($keep = true) {
@@ -117,6 +137,11 @@ class ComplexJob implements \ArrayAccess {
 		return $this->state === self::STATE_DONE;
 	}
 
+	/**
+	 * Sets a limit of simultaneously executing tasks
+	 * @param  integer $n Natural number or -1 (no limit)
+	 * @return this
+	 */
 	public function maxConcurrency($n = -1) {
 		$this->maxConcurrency = $n;
 		return $this;
@@ -124,8 +149,8 @@ class ComplexJob implements \ArrayAccess {
 
 	/**
 	 * Set result
-	 * @param string Job name
-	 * @param mixed  Result
+	 * @param  string $jobname Job name
+	 * @param  mixed  $result  Result
 	 * @return boolean
 	 */
 	public function setResult($jobname, $result = null) {
@@ -140,8 +165,7 @@ class ComplexJob implements \ArrayAccess {
 
 	/**
 	 * Get result
-	 * @param string Job name
-	 * @param string $jobname
+	 * @param  string $jobname Job name
 	 * @return mixed Result or null
 	 */
 	public function getResult($jobname) {
@@ -166,6 +190,10 @@ class ComplexJob implements \ArrayAccess {
 		}
 	}
 
+	/**
+	 * Called automatically. Checks whether if the queue is full. If not, tries to pull more jobs from backlog and 'more'
+	 * @return void
+	 */
 	public function checkQueue() {
 		if ($this->backlog !== null) {
 			while (!$this->backlog->isEmpty()) {
@@ -181,6 +209,11 @@ class ComplexJob implements \ArrayAccess {
 		}
 	}
 
+	/**
+	 * Sets a callback which is going to be fired always when we have a room for more jobs
+	 * @param  callable $cb Callback
+	 * @return this
+	 */
 	public function more($cb = null) {
 		if ($cb !== null) {
 			$this->more = $cb;
@@ -204,14 +237,18 @@ class ComplexJob implements \ArrayAccess {
 		}
 	}
 
+	/**
+	 * Returns whether or not the queue is full (maxConcurrency option exceed)
+	 * @return boolean
+	 */
 	public function isQueueFull() {
 		return $this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum >= $this->maxConcurrency);
 	}
 
 	/**
 	 * Adds job
-	 * @param string   Job name
-	 * @param callable $cb Callback
+	 * @param  string   $name Job name
+	 * @param  callable $cb   Callback
 	 * @return boolean Success
 	 */
 	public function addJob($name, $cb) {
@@ -248,7 +285,7 @@ class ComplexJob implements \ArrayAccess {
 
 	/**
 	 * Adds listener
-	 * @param callable $cb Callback
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function addListener($cb) {
@@ -276,8 +313,8 @@ class ComplexJob implements \ArrayAccess {
 
 	/**
 	 * Adds new job or calls execute() method
-	 * @param mixed $name
-	 * @param callable $cb
+	 * @param  mixed    $name
+	 * @param  callable $cb
 	 * @return void
 	 */
 	public function __invoke($name = null, $cb = null) {

@@ -5,37 +5,35 @@ use PHPDaemon\Structures\StackCallbacks;
 
 /**
  * Item
- *
- * @package Core
- *
+ * @package PHPDaemon\Cache
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Item {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/** Value
-	 * @var mixed
+	/**
+	 * @var mixed Value
 	 */
 	protected $value;
 
-	/** Listeners
-	 * @var StackCallbacks
+	/**
+	 * @var StackCallbacks Listeners
 	 */
 	protected $listeners;
 
-	/** Hits counter
-	 * @var integer
+	/**
+	 * @var integer Hits counter
 	 */
 	public $hits = 1;
 
-	/** Expire time
-	 * @var integer
+	/**
+	 * @var integer Expire time
 	 */
 	public $expire;
 
-	/** Establish TCP connection
-	 * @return boolean|null Success
+	/**
+	 * Constructor
 	 */
 	public function __construct($value) {
 		$this->listeners = new StackCallbacks;
@@ -44,7 +42,7 @@ class Item {
 
 	/**
 	 * Get hits number
-	 * @return int
+	 * @return integer
 	 */
 	public function getHits() {
 		return $this->hits;
@@ -69,7 +67,7 @@ class Item {
 
 	/**
 	 * Sets the value
-	 * @param $value
+	 * @param mixed $value
 	 */
 	public function setValue($value) {
 		$this->value = $value;

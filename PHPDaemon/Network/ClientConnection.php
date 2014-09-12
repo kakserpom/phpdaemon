@@ -8,34 +8,28 @@ use PHPDaemon\Structures\StackCallbacks;
 
 /**
  * Network client connection pattern
- * @extends Connection
- * @package Core
- *
+ * @package PHPDaemon\Network
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class ClientConnection extends Connection {
 
 	/**
-	 * Busy?
-	 * @var boolean
+	 * @var boolean Busy?
 	 */
 	protected $busy = false;
 
 	/**
-	 * Timeout
-	 * @var integer
+	 * @var integer Timeout
 	 */
 	protected $timeout = 60;
 
 	/**
-	 * No Send-and-Forget?
-	 * @var boolean
+	 * @var boolean No Send-and-Forget?
 	 */
 	protected $noSAF = true;
 
 	/**
-	 * Stack of onResponse callbacks
-	 * @var \PHPDaemon\Structures\StackCallbacks
+	 * @var \PHPDaemon\Structures\StackCallbacks Stack of onResponse callbacks
 	 */
 	protected $onResponse;
 
@@ -43,8 +37,8 @@ class ClientConnection extends Connection {
 
 	/**
 	 * Constructor
-	 * @param mixed $fd   File descriptor
-	 * @param mixed $pool ConnectionPool
+	 * @param resource $fd   File descriptor
+	 * @param mixed    $pool ConnectionPool
 	 */
 	public function __construct($fd, $pool = null) {
 		parent::__construct($fd, $pool);
@@ -61,6 +55,7 @@ class ClientConnection extends Connection {
 
 	/**
 	 * Push callback to onReponse stack
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function onResponse($cb) {
@@ -88,7 +83,7 @@ class ClientConnection extends Connection {
 
 	/**
 	 * Set connection free/busy
-	 * @param boolean Free?
+	 * @param  boolean $free Free?
 	 * @return void
 	 */
 	public function setFree($free = true) {
@@ -130,10 +125,18 @@ class ClientConnection extends Connection {
 		$this->setFree(!$this->finished && $this->onResponse && $this->onResponse->count() < $this->maxQueue);
 	}
 
+	/**
+	 * getQueueLength
+	 * @return integer
+	 */
 	public function getQueueLength() {
 		return $this->onResponse->count();
 	}
 
+	/**
+	 * isQueueEmpty
+	 * @return boolean
+	 */
 	public function isQueueEmpty() {
 		return $this->onResponse->count() === 0;
 	}

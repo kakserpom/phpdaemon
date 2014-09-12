@@ -10,78 +10,65 @@ use PHPDaemon\Thread;
 
 /**
  * Pool of connections
- *
- * @package Core
- * @method detachBound()
- * @method attachBound()
+ * @package PHPDaemon\Network
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Pool extends ObjectStorage {
 
 	/**
-	 * Default connection class
-	 * @var string
+	 * @var string Default connection class
 	 */
 	public $connectionClass;
 
 	/**
-	 * Name
-	 * @var string
+	 * @var string Name
 	 */
 	public $name;
 
 	/**
-	 * Configuration
-	 * @var \PHPDaemon\Config\Section
+	 * @var \PHPDaemon\Config\Section Configuration
 	 */
 	public $config;
 
 	/**
-	 * Instances storage
-	 * @var array ['name' => ConnectionPool, ...]
+	 * @var ConnectionPool[] Instances storage
 	 */
 	protected static $instances = [];
 
 	/**
-	 * Max concurrency
-	 * @var integer
+	 * @var integer Max concurrency
 	 */
 	public $maxConcurrency = 0;
 
 	/**
-	 * Max allowed packet
-	 * @var integer
+	 * @var integer Max allowed packet
 	 */
 	public $maxAllowedPacket = 0;
 
 	/**
-	 * Is finished?
-	 * @var boolean
+	 * @var boolean Is finished?
 	 */
 	protected $finished = false;
 
 	/**
-	 * Is enabled?
-	 * @var boolean
+	 * @var boolean Is enabled?
 	 */
 	protected $enabled = false;
 
 	/**
-	 * Is overloaded?
-	 * @var boolean
+	 * @var boolean Is overloaded?
 	 */
 	protected $overload = false;
 
 	/**
-	 * Application instance object
-	 * @var object|null
+	 * @var object|null Application instance object
 	 */
 	public $appInstance;
 
 	/**
 	 * Constructor
-	 * @param array $config Config variables
-	 * @param bool $init
+	 * @param array   $config Config variables
+	 * @param boolean $init
 	 */
 	public function __construct($config = [], $init = true) {
 		$this->config = $config;
@@ -97,14 +84,14 @@ abstract class Pool extends ObjectStorage {
 	}
 
 	/**
-	 * Constructor
+	 * Init
 	 * @return void
 	 */
 	protected function init() {
 	}
 
 	/**
-	 * Called when the worker is ready to go.
+	 * Called when the worker is ready to go
 	 * @return void
 	 */
 	public function onReady() {
@@ -112,7 +99,7 @@ abstract class Pool extends ObjectStorage {
 	}
 
 	/**
-	 * Called when worker is going to update configuration.
+	 * Called when worker is going to update configuration
 	 * @return void
 	 */
 	public function onConfigUpdated() {
@@ -165,9 +152,9 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Returns instance object
-	 * @param string $arg name / array config / ConfigSection
-	 * @param boolean $spawn Spawn? Default is true
-	 * @return Pool
+	 * @param  string  $arg   name / array config / ConfigSection
+	 * @param  boolean $spawn Spawn? Default is true
+	 * @return this
 	 */
 	public static function getInstance($arg = '', $spawn = true) {
 		if ($arg === 'default') {
@@ -199,7 +186,7 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Sets default connection class
-	 * @param string String name
+	 * @param  string $class Connection class name
 	 * @return void
 	 */
 	public function setConnectionClass($class) {
@@ -246,7 +233,7 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Called when application instance is going to shutdown
-	 * @param bool $graceful
+	 * @param  boolean $graceful
 	 * @return boolean Ready to shutdown?
 	 */
 	public function onShutdown($graceful = false) {
@@ -254,7 +241,7 @@ abstract class Pool extends ObjectStorage {
 	}
 
 	/**
-	 * Called when ConnectionPool is finished]
+	 * Called when ConnectionPool is finished
 	 * @return void
 	 */
 	protected function onFinish() {
@@ -264,7 +251,6 @@ abstract class Pool extends ObjectStorage {
 	 * Finishes ConnectionPool
 	 * @return boolean Success
 	 */
-
 	public function finish($graceful = false) {
 		if (!$this->finished) {
 			$this->finished = true;
@@ -290,8 +276,8 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Attach Connection
-	 * @param $conn Connection
-	 * @param mixed $inf Info
+	 * @param  object $conn Connection
+	 * @param  mixed  $inf  Info
 	 * @return void
 	 */
 	public function attach($conn, $inf = null) {
@@ -307,7 +293,7 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Detach Connection
-	 * @param $conn Connection
+	 * @param  object $conn Connection
 	 * @return void
 	 */
 	public function detach($conn) {
@@ -322,10 +308,10 @@ abstract class Pool extends ObjectStorage {
 
 	/**
 	 * Establish a connection with remote peer
-	 * @param string   URL
-	 * @param callback Optional. Callback.
-	 * @param string   Optional. Connection class name.
-	 * @return integer Connection's ID. Boolean false when failed.
+	 * @param  string   $url   URL
+	 * @param  callback $cb    Callback
+	 * @param  string   $class Optional. Connection class name
+	 * @return integer         Connection's ID. Boolean false when failed
 	 */
 	public function connect($url, $cb, $class = null) {
 		if ($class === null) {

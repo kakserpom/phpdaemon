@@ -9,10 +9,11 @@ namespace PHPDaemon\Applications;
 	 */
 /**
  * Class FileReader
- * @property array indexFiles
  * @package PHPDaemon\Applications
  */
 class FileReader extends \PHPDaemon\Core\AppInstance {
+
+	public $indexFiles;
 
 	/**
 	 * Setting default config options

@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Traits;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\FS\File;
@@ -7,33 +8,43 @@ use PHPDaemon\FS\FileSystem;
 
 /**
  * Sessions
- *
- * @package Core
- *
+ * @package PHPDaemon\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 trait Sessions {
 	/**
-	 * Session ID
-	 * @var boolean
+	 * @var string Session ID
 	 */
 	protected $sessionId;
 
-	/** @var int */
+	/**
+	 * @var integer
+	 */
 	protected $sessionStartTimeout = 10;
 
-	/** @var bool */
+	/**
+	 * @var boolean
+	 */
 	protected $sessionStarted = false;
-	/** @var bool */
+	
+	/**
+	 * @var boolean
+	 */
 	protected $sessionFlushing = false;
-	/** @var */
+	
+	/**
+	 * @var resource
+	 */
 	protected $sessionFp;
+
+	/**
+	 * @var string
+	 */
 	protected $sessionPrefix = 'sess_';
 
 	/**
 	 * Is session started?
-	 * @return bool
+	 * @return boolean
 	 */
 	public function sessionStarted() {
 		return $this->sessionStarted;
@@ -41,7 +52,7 @@ trait Sessions {
 
 	/**
 	 * Deferred event 'onSessionStart'
-	 * @return \Closure
+	 * @return callable
 	 */
 	public function onSessionStartEvent() {
 		return function ($sessionStartEvent) {
@@ -68,10 +79,9 @@ trait Sessions {
 
 	/**
 	 * Deferred event 'onSessionRead'
-	 * @return \Closure
+	 * @return callable
 	 */
 	public function onSessionReadEvent() {
-
 		return function ($sessionEvent) {
 			/** @var \PHPDaemon\Core\DeferredEvent $sessionEvent */
 			$name = ini_get('session.name');
@@ -93,8 +103,8 @@ trait Sessions {
 
 	/**
 	 * Reads session data
-	 * @param $sid
-	 * @param callable $cb
+	 * @param  string   $sid Session ID
+	 * @param  callable $cb  Callback
 	 * @return void
 	 */
 	public function sessionRead($sid, $cb = null) {
@@ -112,7 +122,7 @@ trait Sessions {
 
 	/**
 	 * Commmit session data
-	 * @param callable $cb
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function sessionCommit($cb = null) {
@@ -138,7 +148,7 @@ trait Sessions {
 
 	/**
 	 * Session start
-	 * @param bool $force_start = true
+	 * @param  boolean $force_start
 	 * @return void
 	 */
 	protected function sessionStart($force_start = true) {
@@ -162,7 +172,8 @@ trait Sessions {
 
 	/**
 	 * Start new session
-	 * @param callable $cb
+	 * @param  callable $cb Callback
+	 * @return void
 	 */
 	protected function sessionStartNew($cb = null) {
 		FileSystem::tempnam(session_save_path(), $this->sessionPrefix, function ($fp) use ($cb) {
@@ -202,8 +213,8 @@ trait Sessions {
 
 	/**
 	 * Decodes session data
-	 * @param $str
-	 * @return bool
+	 * @param  string  $str Data
+	 * @return boolean
 	 */
 	protected function sessionDecode($str) {
 		$type = ini_get('session.serialize_handler');
@@ -220,10 +231,8 @@ trait Sessions {
 
     /**
      * session_encode() - clone, which not require session_start()
-     *
-     * @see http://www.php.net/manual/en/function.session-encode.php
-     * @param $array
-     *
+     * @see    http://www.php.net/manual/en/function.session-encode.php
+     * @param  array  $array
      * @return string
      */
     public function serialize_php($array) {
@@ -247,12 +256,9 @@ trait Sessions {
 
     /**
      * session_decode() - clone, which not require session_start()
-     *
-     * @see http://www.php.net/manual/en/function.session-decode.php#108037
-     * @param $session_data
-     *
+     * @see    http://www.php.net/manual/en/function.session-decode.php#108037
+     * @param  string $session_data
      * @return array
-     * @throws \Exception
      */
     protected function unserialize_php($session_data)
     {

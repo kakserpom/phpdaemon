@@ -1,38 +1,35 @@
 <?php
 namespace PHPDaemon\Traits;
+
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 
 /**
  * Event handlers trait
- *
- * @package Core
- *
+ * @package PHPDaemon\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 trait EventHandlers {
-	/** Event handlers
-	 * @var array
+	/**
+	 * @var array Event handlers
 	 */
 	protected $eventHandlers = [];
 
 	/**
-	 * Unshift $this to arguments of callback?
-	 * @var boolean
+	 * @var boolean Unshift $this to arguments of callback?
 	 */
 	protected $addThisToEvents = true;
 
-	/** Last called event name
-	 * @var string
+	/**
+	 * @var string Last called event name
 	 */
 	protected $lastEventName;
 
 	/**
 	 * Propagate event
-	 * @param string Event name
-	 * @param mixed  ... variable set of arguments ...
-	 * @return object $this
+	 * @param  string $name    Event name
+	 * @param  mixed  ...$args Arguments
+	 * @return this
 	 */
 	public function event() {
 		$args = func_get_args();
@@ -53,9 +50,9 @@ trait EventHandlers {
 
 	/**
 	 * Propagate event
-	 * @param string Event name
-	 * @param mixed  ... variable set of arguments ...
-	 * @return void
+	 * @param  string $name    Event name
+	 * @param  mixed  ...$args Arguments
+	 * @return this
 	 */
 	public function trigger() {
 		$args = func_get_args();
@@ -76,8 +73,8 @@ trait EventHandlers {
 
 	/**
 	 * Propagate event
-	 * @param string Event name
-	 * @param mixed  ... variable set of arguments ...
+	 * @param  string $name    Event name
+	 * @param  mixed  ...$args Arguments
 	 * @return integer
 	 */
 	public function triggerAndCount() {
@@ -108,9 +105,9 @@ trait EventHandlers {
 
 	/**
 	 * Bind event or events
-	 * @param string|array   Event name
-	 * @param callable $cb Callback
-	 * @return EventHandlers $this
+	 * @param string|array $event Event name
+	 * @param callable     $cb    Callback
+	 * @return this
 	 */
 	public function bind($event, $cb) {
 		if ($cb !== null) {
@@ -125,9 +122,10 @@ trait EventHandlers {
 
 	/**
 	 * Bind event or events
-	 * @param string|array   Event name
-	 * @param callable $cb Callback
-	 * @return EventHandlers Success
+	 * @alias EventHandlers::bind
+	 * @param string|array $event Event name
+	 * @param callable     $cb    Callback
+	 * @return this
 	 */
 	public function on($event, $cb) {
 		return $this->bind($event, $cb);
@@ -135,9 +133,9 @@ trait EventHandlers {
 
 	/**
 	 * Unbind event(s) or callback from event(s)
-	 * @param string|array Event name
-	 * @param callable Callback, optional
-	 * @return EventHandlers $this
+	 * @param string|array $event Event name
+	 * @param callable     $cb    Callback, optional
+	 * @return this
 	 */
 	public function unbind($event, $cb = null) {
 		if ($cb !== null) {
@@ -161,9 +159,10 @@ trait EventHandlers {
 
 	/**
 	 * Unbind event(s) or callback from event(s)
-	 * @param string|array Event name
-	 * @param callable Callback, optional
-	 * @return EventHandlers $this
+	 * @alias EventHandlers::unbind
+	 * @param string|array $event Event name
+	 * @param callable     $cb    Callback, optional
+	 * @return this
 	 */
 	public function off($event, $cb) {
 		return $this->unbind($event, $cb);
