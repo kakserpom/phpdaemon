@@ -58,6 +58,9 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 
 		$this->opts = $this->appInstance->getRouteOptions($this->attrs->path);
 		$this->CORS();
+		if ($this->isFinished()) {
+			return;
+		}
 		if ($this->opts['cookie_needed'] && !$this instanceof Info) {
 			if (isset($_COOKIE['JSESSIONID'])) {
 				$val = $_COOKIE['JSESSIONID'];
@@ -363,7 +366,6 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			$this->header('Access-Control-Allow-Methods: OPTIONS, '.$this->allowedMethods);
 			$this->header('Expires: '.date('r', strtotime('+1 year')));
 			$this->finish();
-			return;
 		}
 	}
 }
