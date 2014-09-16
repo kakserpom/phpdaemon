@@ -123,7 +123,7 @@ class Pool extends \PHPDaemon\Network\Client {
 			return;
 		}
 
-		if ($cmd === 'SENTINEL' || $this->config->sentinelmaster->value === null) {
+		if ($cmd === 'SENTINEL' || !isset($this->config->sentinelmaster->value)) {
 			$this->sendCommand(null, $cmd, $args, $cb);
 			return;
 		}
@@ -132,28 +132,13 @@ class Pool extends \PHPDaemon\Network\Client {
 			return;
 		}
 		$this->sentinel('get-master-addr-by-name', $this->config->sentinelmaster->value, function($redis) use ($cmd, $args, $cb) {
-			$this->getConnection($this->currentMasterAddr = 'tcp://' . $redis->result[0] .':' . $redis->result[1], function ($conn) use ($cmd, $args, $cb) {
-				/**
-				 * @var $conn Connection
-				 */
-
-				if (!$conn->isConnected()) {
-					call_user_func($cb, false);
-					$this->currentMasterAddr = null;
-					return;
-				}
-
-				if ($this->sendSubCommand($cmd, $args, $cb)) {
-					return;
-				}
-
-				$conn->command($cmd, $args, $cb);
-			});
+			$this->currentMasterAddr = 'tcp://' . $redis->result[0] .':' . $redis->result[1];
+			$this->sendCommand($this->currentMasterAddr, $cmd, $args, $cb);
 		});
 	}
 
 	protected function sendCommand($addr, $cmd, $args, $cb) {
-		$this->getConnection(null, function ($conn) use ($cmd, $args, $cb) {
+		$this->getConnection($addr, function ($conn) use ($cmd, $args, $cb) {
 			/**
 			 * @var $conn Connection
 			 */
