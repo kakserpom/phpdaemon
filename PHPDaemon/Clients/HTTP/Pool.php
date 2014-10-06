@@ -39,6 +39,8 @@ class Pool extends Client {
 	 * Performs GET-request
 	 * @param string $url
 	 * @param array $params
+	 * @call  void public get ( url $url, array $params )
+	 * @call  void public get ( url $url, callable $resultcb )
 	 */
 	public function get($url, $params) {
 		if (is_callable($params)) {
@@ -72,6 +74,8 @@ class Pool extends Client {
 	 * @param string $url
 	 * @param array $data
 	 * @param array $params
+	 * @call  void public post ( url $url, array $data, array $params )
+	 * @call  void public post ( url $url, array $data, callable $resultcb )
 	 */
 	public function post($url, $data = [], $params) {
 		if (is_callable($params)) {
@@ -103,6 +107,8 @@ class Pool extends Client {
 	/**
 	 * Builds URL from array
 	 * @param string $mixed
+	 * @call  string public static buildUrl ( string $str )
+	 * @call  string public static buildUrl ( array $mixed )
 	 * @return string|false
 	 */
 	public static function buildUrl($mixed) {
@@ -137,6 +143,8 @@ class Pool extends Client {
 	/**
 	 * Parse URL
 	 * @param string $mixed Look Pool::buildUrl()
+	 * @call  string public static parseUrl ( string $str )
+	 * @call  string public static parseUrl ( array $mixed )
 	 * @return array|bool
 	 */
 	public static function parseUrl($mixed) {
