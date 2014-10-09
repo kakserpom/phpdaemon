@@ -188,7 +188,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Executes the given callback when/if the connection is handshaked
-	 * Callback
+	 * @callback ( Connection $conn, boolean $success )
 	 * @return void
 	 */
 	public function onConnected($cb) {
@@ -343,8 +343,9 @@ class Connection extends ClientConnection {
 	/**
 	 * Sends SQL-query
 	 * @param string   Query
-	 * @param callback Optional. Callback called when response received.
+	 * @param callback Optional. Callback called when response received
 	 * @param string $q
+	 * @callback ( Connection $conn, boolean $success )
 	 * @return boolean Success
 	 */
 	public function query($q, $callback = NULL) {
@@ -353,7 +354,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends echo-request
-	 * @param callback Optional. Callback called when response received.
+	 * @param callback Optional. Callback called when response received
+	 * @callback ( Connection $conn, boolean $success )
 	 * @return boolean Success
 	 */
 	public function ping($callback = NULL) {
@@ -366,6 +368,7 @@ class Connection extends ClientConnection {
 	 * @param string $q Data
 	 * @param null|Optional $callback
 	 * @throws ConnectionFinished
+	 * @callback ( Connection $conn, boolean $success )
 	 * @return boolean Success
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {

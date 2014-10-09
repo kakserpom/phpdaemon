@@ -373,6 +373,7 @@ class Connection extends ClientConnection {
 	 * ActionID: <id>    Action ID for this transaction. Will be returned.
 	 *
 	 * @param callable $cb Callback called when response received.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function getSipPeers($cb) {
@@ -385,6 +386,7 @@ class Connection extends ClientConnection {
 	 * Privilege: system,reporting,all
 	 *
 	 * @param callable $cb Callback called when response received.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function getIaxPeers($cb) {
@@ -401,7 +403,9 @@ class Connection extends ClientConnection {
 	 *   *Filename: Configuration filename (e.g. foo.conf)
 	 *   Category: Category in configuration file
 	 *
-	 * @param callable $cb Callback called when response received.
+	 * @param  string   $filename Filename
+	 * @param  callable $cb       Callback called when response received.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function getConfig($filename, $cb) {
@@ -418,7 +422,9 @@ class Connection extends ClientConnection {
 	 * Variables:
 	 *    Filename: Configuration filename (e.g. foo.conf)
 	 *
+	 * @param  string   $filename Filename
 	 * @param callable $cb Callback called when response received.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function getConfigJSON($filename, $cb) {
@@ -502,6 +508,7 @@ class Connection extends ClientConnection {
 	 *
 	 * @param array $params
 	 * @param callable $cb Callback called when response received.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function redirect(array $params, $cb) {
@@ -529,6 +536,7 @@ class Connection extends ClientConnection {
 	 *
 	 * @param array $params
 	 * @param callable $cb Callback called when response received.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function originate(array $params, $cb) {
@@ -548,6 +556,7 @@ class Connection extends ClientConnection {
 	 *
 	 * @param array $params
 	 * @param callable $cb Callback called when response received.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function extensionState(array $params, $cb) {
@@ -561,6 +570,7 @@ class Connection extends ClientConnection {
 	 * Variables: NONE
 	 *
 	 * @param calalble Callback called when response received.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function ping($cb) {
@@ -575,6 +585,7 @@ class Connection extends ClientConnection {
 	 * @param callable              Callback called when response received.
 	 * @param array|null $params
 	 * @param array|null $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent.
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function action($action, $cb, array $params = null, array $assertion = null) {
@@ -591,6 +602,7 @@ class Connection extends ClientConnection {
 	 * Variables: NONE
 	 *
 	 * @param callable $cb Optional callback called when response received
+	 * @callback ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function logoff($cb = null) {
