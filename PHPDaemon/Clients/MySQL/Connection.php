@@ -188,7 +188,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Executes the given callback when/if the connection is handshaked
-	 * Callback
+	 * @param  callable $cb Callback
+	 * @callback ( Connection $conn, boolean $success )
 	 * @return void
 	 */
 	public function onConnected($cb) {
@@ -219,8 +220,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends a packet
-	 * @param string Data
-	 * @param string $packet
+	 * @param  string $packet Data
 	 * @return boolean Success
 	 */
 	public function sendPacket($packet) {
@@ -230,8 +230,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Builds length-encoded binary string
-	 * @param string String
-	 * @param string $s
+	 * @param  string $s String
 	 * @return string Resulting binary string
 	 */
 	public function buildLenEncodedBinary($s) {
@@ -294,8 +293,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Generates auth. token
-	 * @param string $scramble Scramble string
-	 * @param string $password Password
+	 * @param  string $scramble Scramble string
+	 * @param  string $password Password
 	 * @return string Result
 	 */
 	public function getAuthToken($scramble, $password) {
@@ -342,9 +341,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends SQL-query
-	 * @param string   Query
-	 * @param callback Optional. Callback called when response received.
-	 * @param string $q
+	 * @param  string   $q        Query
+	 * @param  callable $callback Optional. Callback called when response received
+	 * @callback ( Connection $conn, boolean $success )
 	 * @return boolean Success
 	 */
 	public function query($q, $callback = NULL) {
@@ -353,7 +352,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends echo-request
-	 * @param callback Optional. Callback called when response received.
+	 * @param  callable $callback Optional. Callback called when response received
+	 * @callback ( Connection $conn, boolean $success )
 	 * @return boolean Success
 	 */
 	public function ping($callback = NULL) {
@@ -362,10 +362,11 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends arbitrary command
-	 * @param $cmd
-	 * @param string $q Data
-	 * @param null|Optional $callback
+	 * @param  string   $cmd      Command
+	 * @param  string   $q        Data
+	 * @param  callable $callback Optional
 	 * @throws ConnectionFinished
+	 * @callback ( Connection $conn, boolean $success )
 	 * @return boolean Success
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {
@@ -386,7 +387,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sets default database name
-	 * @param string Database name
+	 * @param  string  $name   Database name
 	 * @return boolean Success
 	 */
 	public function selectDB($name) {
