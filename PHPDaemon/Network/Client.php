@@ -124,8 +124,8 @@ abstract class Client extends Pool {
 	 * @param  string   $url Address
 	 * @param  callback $cb  onConnected
 	 * @param  integer  $pri Optional. Priority
-	 * @call   boolean public getConnection ( callable $cb )
-	 * @call   boolean public getConnection ( string $url = null, callable $cb = null, integer $pri = 0 )
+	 * @call   boolean public function getConnection ( callable $cb )
+	 * @call   boolean public function getConnection ( string $url = null, callable $cb = null, integer $pri = 0 )
 	 * @return boolean       Success|Connection
 	 */
 	public function getConnection($url = null, $cb = null, $pri = 0) {
