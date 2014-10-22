@@ -42,6 +42,14 @@ class Generic {
 	}
 
 	/**
+	 * Get human value
+	 * @return mixed
+	 */
+	public function getHumanValue() {
+		return $this->humanValue;
+	}
+
+	/**
 	 * Get value
 	 * @return mixed
 	 */

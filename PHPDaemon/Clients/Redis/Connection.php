@@ -494,11 +494,6 @@ class Connection extends ClientConnection {
 					break; // stop reading line-by-line
 				}
 			}
-			if ($this->state === self::STATE_STANDBY && $this->getInputLength() > $this->pool->maxAllowedPacket) {
-				$this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
-				$this->finish();
-				return;
-			}
 		}
 
 		if ($this->state === self::STATE_BINARY) { // inside of binary data block
