@@ -41,7 +41,7 @@ class Pool extends Client {
 	 * @param array $params
 	 * @call  void public function get ( url $url, array $params )
 	 * @call  void public function get ( url $url, callable $resultcb )
-	 * @callback ( Connection $conn, boolean $success )
+	 * @callback $resultcb ( Connection $conn, boolean $success )
 	 */
 	public function get($url, $params) {
 		if (is_callable($params)) {
@@ -77,7 +77,7 @@ class Pool extends Client {
 	 * @param array $params
 	 * @call  void public function post ( url $url, array $data, array $params )
 	 * @call  void public function post ( url $url, array $data, callable $resultcb )
-	 * @callback ( Connection $conn, boolean $success )
+	 * @callback $resultcb ( Connection $conn, boolean $success )
 	 */
 	public function post($url, $data = [], $params) {
 		if (is_callable($params)) {

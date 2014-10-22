@@ -10,15 +10,14 @@ use PHPDaemon\Network\Client;
 class Pool extends Client {
 
 	/**
-	 * Asterisk Call Manager Interface versions for each session.
-	 * @var array
+	 * @var array Asterisk Call Manager Interface versions for each session
 	 */
 	protected $amiVersions = [];
 
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
-	 * @return array|bool
+	 * @return array
 	 */
 	protected function getConfigDefaults() {
 		return [
@@ -28,22 +27,23 @@ class Pool extends Client {
 	}
 
 	/**
-	 * Beginning of the string in the header or value that indicates whether the save value case.
-	 * @var array
+	 * @var array Beginning of the string in the header or value that indicates whether the save value case
 	 */
 	public static $safeCaseValues = ['dialstring', 'callerid', 'connectedline'];
 
-	/** Sets AMI version
-	 * @param string $addr Address
-	 * @param string $ver  Version
+	/**
+	 * Sets AMI version
+	 * @param  string $addr Address
+	 * @param  string $ver  Version
 	 * @return void
 	 */
 	public function setAmiVersion($addr, $ver) {
 		$this->amiVersions[$addr] = $ver;
 	}
 
-	/** Prepares environment scope
-	 * @param string $data Address
+	/**
+	 * Prepares environment scope
+	 * @param  string $data Address
 	 * @return array
 	 */
 	public static function prepareEnv($data) {
@@ -58,7 +58,7 @@ class Pool extends Client {
 
 	/**
 	 * Extract key and value pair from line.
-	 * @param string $line
+	 * @param  string $line
 	 * @return array
 	 */
 	public static function extract($line) {

@@ -10,8 +10,7 @@ use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Traits\EventHandlers;
 
 /**
- * Asterisk Call Manager Connection.
- *
+ * Asterisk Call Manager Connection
  */
 class Connection extends ClientConnection {
 
@@ -19,30 +18,37 @@ class Connection extends ClientConnection {
 	 * @TODO DESCR
 	 */
 	const CONN_STATE_START                             = 0;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const CONN_STATE_GOT_INITIAL_PACKET                = 0.1;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const CONN_STATE_AUTH                              = 1;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const CONN_STATE_LOGIN_PACKET_SENT                 = 1.1;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const CONN_STATE_CHALLENGE_PACKET_SENT             = 1.2;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE = 1.3;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const CONN_STATE_HANDSHAKED_OK                     = 2.1;
+
 	/**
 	 * @TODO DESCR
 	 */
@@ -51,82 +57,74 @@ class Connection extends ClientConnection {
 	/**
 	 * @TODO DESCR
 	 */
-	const INPUT_STATE_START         = 0;
-	/**
-	 * @TODO DESCR
-	 */
-	const INPUT_STATE_END_OF_PACKET = 1;
-	/**
-	 * @TODO DESCR
-	 */
-	const INPUT_STATE_PROCESSING    = 2;
+	const INPUT_STATE_START                            = 0;
 
 	/**
 	 * @TODO DESCR
-	 * @var string
+	 */
+	const INPUT_STATE_END_OF_PACKET                    = 1;
+
+	/**
+	 * @TODO DESCR
+	 */
+	const INPUT_STATE_PROCESSING                       = 2;
+
+	/**
+	 * @var string EOL
 	 */
 	public $EOL = "\r\n";
 
 	/**
-	 * The username to access the interface.
-	 * @var string
+	 * @var string The username to access the interface
 	 */
 	public $username;
 
 	/**
-	 * The password defined in manager interface of server.
-	 * @var string
+	 * @var string The password defined in manager interface of server
 	 */
 	public $secret;
 
 	/**
-	 * Connection's state.
-	 * @var float
+	 * @var float Connection's state
 	 */
 	public $state = self::CONN_STATE_START;
 
 	/**
-	 * Input state.
-	 * @var integer
+	 * @var integer Input state
 	 */
 	public $instate = self::INPUT_STATE_START;
 
 	/**
-	 * Received packets.
-	 * @var array
+	 * @var array Received packets
 	 */
 	public $packets = [];
 
 	/**
-	 * For composite response on action.
-	 * @var integer
+	 * @var integer For composite response on action
 	 */
 	public $cnt = 0;
 
 	/**
-	 * Stack of callbacks called when response received.
-	 * @var array
+	 * @var array Stack of callbacks called when response received
 	 */
 	public $callbacks = [];
 
 	/**
 	 * Assertions for callbacks.
 	 * Assertion: if more events may follow as response this is a main part or full
-	 * an action complete event indicating that all data has been sent.
-	 *
+	 * an action complete event indicating that all data has been sent
 	 * @var array
 	 */
 	public $assertions = [];
 
 	/**
-	 * Callback. Called when received response on challenge action.
-	 * @var callback
+	 * @var callable Callback. Called when received response on challenge action
 	 */
 	public $onChallenge;
 
 	/**
-	 * Execute the given callback when/if the connection is handshaked.
-	 * @param Callback
+	 * Execute the given callback when/if the connection is handshaked
+	 * @param  callable Callback
 	 * @return void
 	 */
 	public function onConnected($cb) {
@@ -193,7 +191,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * Called when new data received.
+	 * Called when new data received
 	 * @return void
 	 */
 	public function onRead() {
@@ -350,7 +348,7 @@ class Connection extends ClientConnection {
 	 * Synopsis: Generate Challenge for MD5 Auth
 	 * Privilege: <none>
 	 *
-	 * @param \Closure $cb
+	 * @param  callable $cb
 	 * @return void
 	 */
 	protected function challenge($cb) {
@@ -372,8 +370,8 @@ class Connection extends ClientConnection {
 	 * Variables:
 	 * ActionID: <id>    Action ID for this transaction. Will be returned.
 	 *
-	 * @param callable $cb Callback called when response received.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param callable $cb Callback called when response received
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function getSipPeers($cb) {
@@ -385,8 +383,8 @@ class Connection extends ClientConnection {
 	 * Synopsis: List IAX Peers
 	 * Privilege: system,reporting,all
 	 *
-	 * @param callable $cb Callback called when response received.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param callable $cb Callback called when response received
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function getIaxPeers($cb) {
@@ -404,8 +402,8 @@ class Connection extends ClientConnection {
 	 *   Category: Category in configuration file
 	 *
 	 * @param  string   $filename Filename
-	 * @param  callable $cb       Callback called when response received.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param  callable $cb       Callback called when response received
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function getConfig($filename, $cb) {
@@ -423,8 +421,8 @@ class Connection extends ClientConnection {
 	 *    Filename: Configuration filename (e.g. foo.conf)
 	 *
 	 * @param  string   $filename Filename
-	 * @param callable $cb Callback called when response received.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param callable $cb Callback called when response received
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function getConfigJSON($filename, $cb) {
@@ -440,6 +438,13 @@ class Connection extends ClientConnection {
 	 * Channel: Channel to set variable for
 	 *  *Variable: Variable name
 	 *  *Value: Value
+	 * 
+	 * @param string   $channel
+	 * @param string   $variable
+	 * @param string   $value
+	 * @param callable $cb
+	 * @callback $cb ( Connection $conn, array $packet )
+	 * @return void
 	 */
 	public function setVar($channel, $variable, $value, $cb) {
 		$cmd = "Action: SetVar\r\n";
@@ -464,6 +469,10 @@ class Connection extends ClientConnection {
 	 *        about them.
 	 * Variables:
 	 *        ActionID: Optional Action id for message matching.
+	 *
+	 * @param callable $cb
+	 * @callback $cb ( Connection $conn, array $packet )
+	 * @return void
 	 */
 	public function coreShowChannels($cb) {
 		$this->command("Action: CoreShowChannels\r\n", $cb,
@@ -482,6 +491,11 @@ class Connection extends ClientConnection {
 	 * ActionID: Optional ID for this transaction
 	 * Will return the status information of each channel along with the
 	 * value for the specified channel variables.
+	 *
+	 * @param  callable $cb
+	 * @param  string   $channel
+	 * @callback $cb ( Connection $conn, array $packet )
+	 * @return void
 	 */
 	public function status($cb, $channel = null) {
 		$cmd = "Action: Status\r\n";
@@ -506,9 +520,9 @@ class Connection extends ClientConnection {
 	 * *Priority: Priority to transfer to
 	 * ActionID: Optional Action id for message matching.
 	 *
-	 * @param array $params
-	 * @param callable $cb Callback called when response received.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param array    $params
+	 * @param callable $cb     Callback called when response received
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function redirect(array $params, $cb) {
@@ -534,9 +548,9 @@ class Connection extends ClientConnection {
 	 * Data : Data if Application parameter is used
 	 * ActionID: Optional Action id for message matching.
 	 *
-	 * @param array $params
-	 * @param callable $cb Callback called when response received.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param array    $params
+	 * @param callable $cb     Callback called when response received
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function originate(array $params, $cb) {
@@ -554,9 +568,9 @@ class Connection extends ClientConnection {
 	 * Context: Context for exten
 	 * ActionID: Optional Action id for message matching.
 	 *
-	 * @param array $params
-	 * @param callable $cb Callback called when response received.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param array    $params
+	 * @param callable $cb     Callback called when response received
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function extensionState(array $params, $cb) {
@@ -569,8 +583,8 @@ class Connection extends ClientConnection {
 	 *   manager connection open.
 	 * Variables: NONE
 	 *
-	 * @param calalble Callback called when response received.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param callable $cb Callback called when response received
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function ping($cb) {
@@ -581,11 +595,11 @@ class Connection extends ClientConnection {
 	 * For almost any actions in Action: ListCommands
 	 * Privilege: depends on $action
 	 *
-	 * @param string $action
-	 * @param callable              Callback called when response received.
-	 * @param array|null $params
-	 * @param array|null $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent.
-	 * @callback ( Connection $conn, array $packet )
+	 * @param string   $action    Action
+	 * @param callable $cb        Callback called when response received
+	 * @param array    $params    Parameters
+	 * @param array    $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function action($action, $cb, array $params = null, array $assertion = null) {
@@ -602,7 +616,7 @@ class Connection extends ClientConnection {
 	 * Variables: NONE
 	 *
 	 * @param callable $cb Optional callback called when response received
-	 * @callback ( Connection $conn, array $packet )
+	 * @callback $cb ( Connection $conn, array $packet )
 	 * @return void
 	 */
 	public function logoff($cb = null) {
@@ -610,9 +624,9 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * Called when event occured.
-	 * @param callable $cb Callback
+	 * Called when event occured
 	 * @deprecated Replaced with ->bind('event', ...)
+	 * @param callable $cb Callback
 	 * @return void
 	 */
 	public function onEvent($cb) {
@@ -620,10 +634,10 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * Sends arbitrary command.
-	 * @param string $packet   A packet for sending by the connected client to Asterisk
-	 * @param callable         Callback called when response received.
-	 * @param array $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent.
+	 * Sends arbitrary command
+	 * @param string   $packet    A packet for sending by the connected client to Asterisk
+	 * @param callable $cb        Callback called when response received
+	 * @param array    $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent
 	 */
 	protected function command($packet, $cb, $assertion = null) {
 		if ($this->finished) {
@@ -651,8 +665,8 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * Generate AMI packet string from associative array provided.
-	 * @param array $params
+	 * Generate AMI packet string from associative array provided
+	 * @param  array  $params
 	 * @return string
 	 */
 	protected function implodeParams(array $params) {
