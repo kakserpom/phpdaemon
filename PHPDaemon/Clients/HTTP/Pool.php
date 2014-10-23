@@ -37,9 +37,9 @@ class Pool extends Client {
 
 	/**
 	 * Performs GET-request
-	 * @param string $url
-	 * @param array  $params
-	 * @param array  $resultcb
+	 * @param string   $url
+	 * @param array    $params
+	 * @param callable $resultcb
 	 * @call  void public function get ( url $url, array $params )
 	 * @call  void public function get ( url $url, callable $resultcb )
 	 * @callback $resultcb ( Connection $conn, boolean $success )
@@ -73,10 +73,10 @@ class Pool extends Client {
 
 	/**
 	 * Performs HTTP request
-	 * @param string $url
-	 * @param array  $data
-	 * @param array  $params
-	 * @param array  $resultcb
+	 * @param string   $url
+	 * @param array    $data
+	 * @param array    $params
+	 * @param callable $resultcb
 	 * @call  void public function post ( url $url, array $data, array $params )
 	 * @call  void public function post ( url $url, array $data, callable $resultcb )
 	 * @callback $resultcb ( Connection $conn, boolean $success )
