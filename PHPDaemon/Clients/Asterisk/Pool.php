@@ -21,7 +21,9 @@ class Pool extends Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
+			// [string] Auth hash type
 			'authtype' => 'md5',
+			// [integer] Port
 			'port'     => 5280,
 		];
 	}
