@@ -69,9 +69,9 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	
 	/**
 	 * Sends a frame.
-	 * @param string   Frame's data.
-	 * @param integer  Frame's type. See the constants.
-	 * @param callback Optional. Callback called when the frame is received by client.
+	 * @param string   $data Frame's data.
+	 * @param integer  $type Frame's type. See the constants.
+	 * @param callback $cb   Optional. Callback called when the frame is received by client.
 	 * @callback $cb ( )
 	 * @return boolean Success.
 	 */
