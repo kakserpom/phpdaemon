@@ -1,14 +1,15 @@
 <?php
 namespace PHPDaemon\SockJS;
+
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
+
 /**
  * @package    Libraries
  * @subpackage SockJS
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Application extends \PHPDaemon\Core\AppInstance {
@@ -23,23 +24,23 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// [string] @todo redis-name
+			/* [string] @todo redis-name */
 			'redis-name' => '',
-			// [string] @todo redis-prefix
+			/* [string] @todo redis-prefix */
 			'redis-prefix' => 'sockjs:',
-			// [string] @todo wss-name
+			/* [string] @todo wss-name */
 			'wss-name' => '',
-			// [Config\Double] @todo batch-delay
+			/* [Config\Double] @todo batch-delay */
 			'batch-delay' => new \PHPDaemon\Config\Entry\Double('0.05'),
-			// [Config\Double] @todo heartbeat-interval
+			/* [Config\Double] @todo heartbeat-interval */
 			'heartbeat-interval' => new \PHPDaemon\Config\Entry\Double('25'),
-			// [Config\Time] @todo dead-session-timeout
+			/* [Config\Time] @todo dead-session-timeout */
 			'dead-session-timeout' => new \PHPDaemon\Config\Entry\Time('1h'),
-			// [Config\Size] @todo gc-max-response-size
+			/* [Config\Size] @todo gc-max-response-size */
 			'gc-max-response-size' => new \PHPDaemon\Config\Entry\Size('128k'),
-			// [Config\Time] @todo network-timeout-read
+			/* [Config\Time] @todo network-timeout-read */
 			'network-timeout-read' => new \PHPDaemon\Config\Entry\Time('2h'),
-			// [Config\Time] @todo network-timeout-write
+			/* [Config\Time] @todo network-timeout-write */
 			'network-timeout-write' => new \PHPDaemon\Config\Entry\Time('120s'),
 		];
 	}
