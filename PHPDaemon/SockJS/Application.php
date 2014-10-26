@@ -13,78 +13,145 @@ use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
  */
 class Application extends \PHPDaemon\Core\AppInstance {
 	protected $redis;
+	protected $sessions;
+
 	public $wss;
 
-	protected $sessions;
 	/**
 	 * Setting default config options
 	 * @return array|bool
 	 */
 	protected function getConfigDefaults() {
 		return [
+			// [string] @todo redis-name
 			'redis-name' => '',
+			// [string] @todo redis-prefix
 			'redis-prefix' => 'sockjs:',
+			// [string] @todo wss-name
 			'wss-name' => '',
+			// [Config\Double] @todo batch-delay
 			'batch-delay' => new \PHPDaemon\Config\Entry\Double('0.05'),
+			// [Config\Double] @todo heartbeat-interval
 			'heartbeat-interval' => new \PHPDaemon\Config\Entry\Double('25'),
+			// [Config\Time] @todo dead-session-timeout
 			'dead-session-timeout' => new \PHPDaemon\Config\Entry\Time('1h'),
+			// [Config\Size] @todo gc-max-response-size
 			'gc-max-response-size' => new \PHPDaemon\Config\Entry\Size('128k'),
+			// [Config\Time] @todo network-timeout-read
 			'network-timeout-read' => new \PHPDaemon\Config\Entry\Time('2h'),
+			// [Config\Time] @todo network-timeout-write
 			'network-timeout-write' => new \PHPDaemon\Config\Entry\Time('120s'),
 		];
 	}
 
-
+	/**
+	 * getLocalSubscribersCount
+	 * @param  string $chan
+	 * @return integer
+	 */
 	public function getLocalSubscribersCount($chan) {
 		return $this->redis->getLocalSubscribersCount($this->config->redisprefix->value . $chan);
 	}
 
 	/**
-	 * @param string $chan
-	 * @param \Closure $opcb
+	 * subscribe
+	 * @param  string   $chan [@todo description]
+	 * @param  callable $cb   [@todo description]
+	 * @param  callable $opcb [@todo description]
+	 * @callback $cb ( )
+	 * @callback $opcb ( )
+	 * @return void
 	 */
 	public function subscribe($chan, $cb, $opcb = null) {
 		$this->redis->subscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
 
+	/**
+	 * setnx
+	 * @param  string   $key   [@todo description]
+	 * @param  mixed    $value [@todo description]
+	 * @param  callable $cb    [@todo description]
+	 * @callback $cb ( )
+	 * @return void
+	 */
 	public function setnx($key, $value, $cb = null) {
 		$this->redis->setnx($this->config->redisprefix->value . $key, $value, $cb);
 	}
 
+	/**
+	 * setkey
+	 * @param  string   $key   [@todo description]
+	 * @param  mixed    $value [@todo description]
+	 * @param  callable $cb    [@todo description]
+	 * @callback $cb ( )
+	 * @return void
+	 */
 	public function setkey($key, $value, $cb = null) {
 		$this->redis->set($this->config->redisprefix->value . $key, $value, $cb);
 	}
 
+	/**
+	 * getkey
+	 * @param  string   $key   [@todo description]
+	 * @param  callable $cb    [@todo description]
+	 * @callback $cb ( )
+	 * @return void
+	 */
 	public function getkey($key, $cb = null) {
 		$this->redis->get($this->config->redisprefix->value . $key, $cb);
 	}
 
+	/**
+	 * expire
+	 * @param  string   $key     [@todo description]
+	 * @param  integer  $seconds [@todo description]
+	 * @param  callable $cb      [@todo description]
+	 * @callback $cb ( )
+	 * @return void
+	 */
 	public function expire($key, $seconds, $cb = null) {
 		$this->redis->expire($this->config->redisprefix->value . $key, $seconds, $cb);
 	}
 
 	/**
-	 * @param string $chan
+	 * unsubscribe
+	 * @param  string   $chan [@todo description]
+	 * @param  callable $cb   [@todo description]
+	 * @param  callable $opcb [@todo description]
+	 * @callback $cb ( )
+	 * @callback $opcb ( )
+	 * @return void
 	 */
 	public function unsubscribe($chan, $cb, $opcb = null) {
 		$this->redis->unsubscribe($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
 
+	/**
+	 * unsubscribeReal
+	 * @param  string   $chan [@todo description]
+	 * @param  callable $opcb [@todo description]
+	 * @callback $opcb ( )
+	 * @return void
+	 */
 	public function unsubscribeReal($chan, $opcb = null) {
 		$this->redis->unsubscribeReal($this->config->redisprefix->value . $chan, $opcb);
 	}
 
 	/**
-	 * @param string $chan
-	 * @param string $cb
-	 * @param \Closure $opcb
+	 * publish
+	 * @param  string   $chan [@todo description]
+	 * @param  callable $cb   [@todo description]
+	 * @param  callable $opcb [@todo description]
+	 * @callback $cb ( )
+	 * @callback $opcb ( )
+	 * @return void
 	 */
 	public function publish($chan, $cb, $opcb = null) {
 		$this->redis->publish($this->config->redisprefix->value . $chan, $cb, $opcb);
 	}
 
 	/**
-	 * Called when the worker is ready to go.
+	 * Called when the worker is ready to go
 	 * @return void
 	 */
 	public function onReady() {
@@ -96,6 +163,10 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		}
 	}
 
+	/**
+	 * onFinish
+	 * @return void
+	 */
 	public function onFinish() {
 		foreach ($this->attachedTo as $wss) {
 			$this->detachWss($wss);
@@ -104,7 +175,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	}
 
 	/**
+	 * attachWss
 	 * @param \PHPDaemon\Network\Pool $wss
+	 * @return boolean
 	 */
 	public function attachWss($wss) {
 		if ($this->wss->contains($wss)) {
@@ -115,6 +188,15 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return true;
 	}
 
+	/**
+	 * wsHandler
+	 * @param  object   $ws     [@todo description]
+	 * @param  string   $path   [@todo description]
+	 * @param  object   $client [@todo description]
+	 * @param  callable $state  [@todo description]
+	 * @callback $state ( object $route )
+	 * @return boolean
+	 */
 	public function wsHandler($ws, $path, $client, $state) {
 		$e = explode('/', $path);
 		$method = array_pop($e);
@@ -140,6 +222,11 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return true;
 	}
 
+	/**
+	 * detachWss
+	 * @param  object $wss [@todo description]
+	 * @return boolean
+	 */
 	public function detachWss($wss) {
 		if (!$this->wss->contains($wss)) {
 			return false;
@@ -149,6 +236,13 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return true;
 	}
 
+	/**
+	 * beginSession
+	 * @param  string $path   [@todo description]
+	 * @param  string $sessId [@todo description]
+	 * @param  string $server [@todo description]
+	 * @return object
+	 */
 	public function beginSession($path, $sessId, $server) {
 		$session = new Session($this, $sessId, $server);
 		foreach ($this->wss as $wss) {
@@ -164,6 +258,11 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return $session;
 	}
 
+	/**
+	 * getRouteOptions
+	 * @param  string $path [@todo description]
+	 * @return array
+	 */
 	public function getRouteOptions($path) {
 		$opts = [
 			'websocket' => true,
@@ -182,7 +281,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	}
 
 	/**
+	 * endSession
 	 * @param Session $session
+	 * @return void
 	 */
 	public function endSession($session) {
 		$this->sessions->detach($session);
@@ -190,9 +291,9 @@ class Application extends \PHPDaemon\Core\AppInstance {
 
 	/**
 	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @param  object $req      Request.
+	 * @param  object $upstream Upstream application instance.
+	 * @return object           Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		$e = array_map('rawurldecode', explode('/', $req->attrs->server['DOCUMENT_URI']));
@@ -256,6 +357,13 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return $req;
 	}
 
+	/**
+	 * callMethod
+	 * @param  string $method   [@todo description]
+	 * @param  object $req      [@todo description]
+	 * @param  object $upstream [@todo description]
+	 * @return object
+	 */
 	public function callMethod($method, $req, $upstream) {
 		$method = strtr(ucwords(strtr($method, ['_' => ' '])), [' ' => '']);
 		if (strtolower($method) === 'generic') {

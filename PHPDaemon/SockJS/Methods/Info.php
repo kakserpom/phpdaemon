@@ -1,19 +1,22 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Utils\Crypt;
+
 /**
  * @package    Libraries
  * @subpackage SockJS
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class Info extends Generic {
-
 	protected $contentType = 'application/json';
 
+	/**
+	 * Constructor
+	 * @return void
+	 */
 	public function init() {
 		parent::init();
 		Crypt::randomInts32(1, function($ints) {
@@ -25,11 +28,10 @@ class Info extends Generic {
 	}
 
 	/**
-	 * Called when request iterated.
-	 * @return integer Status.
+	 * Called when request iterated
+	 * @return void
 	 */
 	public function run() {
 		$this->header('500 Server Too Busy');
 	}
-
 }

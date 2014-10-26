@@ -1,18 +1,18 @@
 <?php
 namespace PHPDaemon\SockJS;
+
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Utils\Crypt;
+
 /**
  * @package    Libraries
  * @subpackage SockJS
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
@@ -23,24 +23,38 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	protected $sockjs;
 
 	/**
+	 * __construct
 	 * @param Application $sockjs
+	 * @param object      $conn
 	 */
 	public function __construct($sockjs, $route) {
 		$this->sockjs = $sockjs;
 		$this->realRoute = $route;
 	}
+
+	/**
+	 * __get
+	 * @param  string $k
+	 * @return mixed
+	 */
 	public function __get($k) {
 		return $this->realRoute->{$k};
 	}
 
+	/**
+	 * __call
+	 * @param  string $method
+	 * @param  array  $args
+	 * @return mixed
+	 */
 	public function __call($method, $args) {
 		return call_user_func_array([$this->realRoute, $method], $args);
 	}
 
 	/**
 	 * Called when new frame received.
-	 * @param string  Frame's contents.
-	 * @param integer Frame's type.
+	 * @param string  $data Frame's contents.
+	 * @param integer $type Frame's type.
 	 * @return void
 	 */
 	public function onFrame($data, $type) {
@@ -59,12 +73,19 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 		}
 	}
 
+	/**
+	 * onPacket
+	 * @param string  $data Frame's contents.
+	 * @param integer $type Frame's type.
+	 * @return void
+	 */
 	public function onPacket($frame, $type) {
 		$this->realRoute->onFrame($frame, $type);
 	}
 
 	/**
 	 * @TODO DESCR
+	 * @return void
 	 */
 	public function onHandshake() {
 		$this->realRoute->client->sendFrameReal('o');
@@ -79,6 +100,7 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 
 	/**
 	 * @TODO DESCR
+	 * @return void
 	 */
 	public function onWrite() {
 		if (method_exists($this->realRoute, 'onWrite')) {
@@ -88,6 +110,7 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	
 	/**
 	 * @TODO DESCR
+	 * @return void
 	 */
 	public function onFinish() {
 		Timer::remove($this->heartbeatTimer);
@@ -96,5 +119,4 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 			$this->realRoute = null;
 		}
 	}
-
 }
