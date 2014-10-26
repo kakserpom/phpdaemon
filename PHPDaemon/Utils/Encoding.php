@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
  * @link     https://github.com/neitanod/forceutf8
  * @example  https://github.com/neitanod/forceutf8
  * @license  Revised BSD
-	*/
+ */
 
 namespace PHPDaemon\Utils;
 
@@ -168,11 +168,11 @@ class Encoding {
 	 * 3) when any of these: ðñòó  are followed by THREE chars from group B.
 	 *
 	 * @name toUTF8
-	 * @param string $text  Any string.
-	 * @return string  The same string, UTF8 encoded
+	 * @param  string $text Any string
+	 * @return string       The same string, UTF8 encoded
 	 *
 	 */
-	static function toUTF8($text) {
+	public static function toUTF8($text) {
 		if(is_array($text))
 		{
 			foreach($text as $k => $v)
@@ -245,7 +245,12 @@ class Encoding {
 		}
 	}
 
-	static function toWin1252($text) {
+	/**
+	 * toWin1252
+	 * @param  string $text Any string
+	 * @return string       The same string, Win1252 encoded
+	 */
+	public static function toWin1252($text) {
 		if(is_array($text)) {
 			foreach($text as $k => $v) {
 				$text[$k] = self::toWin1252($v);
@@ -258,15 +263,30 @@ class Encoding {
 		}
 	}
 
-	static function toISO8859($text) {
+	/**
+	 * toISO8859
+	 * @param  string $text Any string
+	 * @return string       The same string, Win1252 encoded
+	 */
+	public static function toISO8859($text) {
 		return self::toWin1252($text);
 	}
 
-	static function toLatin1($text) {
+	/**
+	 * toLatin1
+	 * @param  string $text Any string
+	 * @return string       The same string, Win1252 encoded
+	 */
+	public static function toLatin1($text) {
 		return self::toWin1252($text);
 	}
 
-	static function fixUTF8($text){
+	/**
+	 * fixUTF8
+	 * @param  string $text Any string
+	 * @return string
+	 */
+	public static function fixUTF8($text){
 		if(is_array($text)) {
 			foreach($text as $k => $v) {
 				$text[$k] = self::fixUTF8($v);
@@ -283,21 +303,34 @@ class Encoding {
 		return $text;
 	}
 	
-	static function UTF8FixWin1252Chars($text){
-		// If you received an UTF-8 string that was converted from Windows-1252 as it was ISO8859-1 
-		// (ignoring Windows-1252 chars from 80 to 9F) use this function to fix it.
-		// See: http://en.wikipedia.org/wiki/Windows-1252
-		
+	/**
+	 * If you received an UTF-8 string that was converted from Windows-1252 as it was ISO8859-1 
+	 * (ignoring Windows-1252 chars from 80 to 9F) use this function to fix it.
+	 * See: http://en.wikipedia.org/wiki/Windows-1252
+	 * @param  string $text Any string
+	 * @return string
+	 */
+	public static function UTF8FixWin1252Chars($text){
 		return str_replace(array_keys(self::$brokenUtf8ToUtf8), array_values(self::$brokenUtf8ToUtf8), $text);
 	}
 	
-	static function removeBOM($str=""){
+	/**
+	 * Remove BOM
+	 * @param  string $str Any string
+	 * @return string
+	 */
+	public static function removeBOM($str=""){
 		if(substr($str, 0,3) == pack("CCC",0xef,0xbb,0xbf)) {
 			$str=substr($str, 3);
 		}
 		return $str;
 	}
 	
+	/**
+	 * Normalize encoding name
+	 * @param  string $str Encoding name
+	 * @return string
+	 */
 	public static function normalizeEncoding($encodingLabel) {
 		$encoding = strtoupper($encodingLabel);
 		$enc = preg_replace('/[^a-zA-Z0-9\s]/', '', $encoding);
@@ -320,10 +353,14 @@ class Encoding {
 		return $equivalences[$encoding];
 	}
 
+	/**
+	 * Encode
+	 * @param  string $str Any string
+	 * @return string
+	 */
 	public static function encode($encodingLabel, $text) {
 		$encodingLabel = self::normalizeEncoding($encodingLabel);
 		if($encodingLabel == 'UTF-8') return Encoding::toUTF8($text);
 		if($encodingLabel == 'ISO-8859-1') return Encoding::toLatin1($text);
 	}
-
 }
