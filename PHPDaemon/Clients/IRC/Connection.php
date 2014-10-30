@@ -8,63 +8,74 @@ use PHPDaemon\Utils\IRC;
 /**
  * @package    NetworkClients
  * @subpackage IRCClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 
 	/**
-	 * @var string
+	 * @var string Username
 	 */
-	protected $user = 'Guest'; // Username
+	protected $user = 'Guest';
+	
 	/**
-	 * @var string
+	 * @var string Password
 	 */
-	protected $password = ''; // Password
+	protected $password = '';
+	
 	/**
 	 * @var string
 	 */
 	public $EOL = "\r\n";
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $nick;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $realname;
+	
 	/**
 	 * @var string
 	 */
 	public $mode = '';
+	
 	/**
 	 * @var array
 	 */
 	public $buffers = [];
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $servername;
+	
 	/**
 	 * @var array
 	 */
 	public $channels = [];
+	
 	/**
-	 * @var
+	 * @var integer
 	 */
 	public $latency;
+	
 	/**
-	 * @var
+	 * @var integer
 	 */
 	public $lastPingTS;
+	
 	/**
 	 * @var int
 	 */
 	public $timeout = 300;
+	
 	/**
-	 * @var bool
+	 * @var bool To get local port number
 	 */
-	protected $bevConnectEnabled = false; // to get local port number
+	protected $bevConnectEnabled = false;
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
@@ -111,8 +122,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $cmd
-	 * @param array $args
+	 * @param  integer|string $cmd
+	 * @param  array $args
 	 * @return bool
 	 */
 	public function commandArr($cmd, $args = []) {
@@ -141,7 +152,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $channels
+	 * @param array $channels
 	 */
 	public function join($channels) {
 		if (!is_array($channels)) {
@@ -154,7 +165,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $channels
+	 * @param array $channels
 	 * @param mixed $msg
 	 */
 	public function part($channels, $msg = null) {
@@ -192,8 +203,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $channel
-	 * @param $target
+	 * @param string $channel
+	 * @param string $target
 	 * @param string $mode
 	 */
 	public function addMode($channel, $target, $mode) {
@@ -209,8 +220,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $channel
-	 * @param $target
+	 * @param string $channel
+	 * @param string $target
 	 * @param string $mode
 	 */
 	public function removeMode($channel, $target, $mode) {
@@ -222,9 +233,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $from
-	 * @param $cmd
-	 * @param $args
+	 * @param string $from
+	 * @param string $cmd
+	 * @param array $args
 	 */
 	public function onCommand($from, $cmd, $args) {
 		$this->event('command', $from, $cmd, $args);
@@ -439,7 +450,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $chan
+	 * @param  string $chan
 	 * @return Channel
 	 */
 	public function channel($chan) {
@@ -451,7 +462,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $chan
+	 * @param  string $chan
 	 * @return bool
 	 */
 	public function channelIfExists($chan) {

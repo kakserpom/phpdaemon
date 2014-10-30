@@ -8,36 +8,42 @@ class ChannelParticipant {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $channel;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $nick;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $user;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $flag;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $mode;
+	
 	/**
-	 * @var
+	 * @var boolean
 	 */
 	public $unverified;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $host;
 
 	/**
-	 * @param $flag
+	 * @param  string $flag
 	 * @return $this
 	 */
 	public function setFlag($flag) {
@@ -56,8 +62,8 @@ class ChannelParticipant {
 	}
 
 	/**
-	 * @param $channel
-	 * @param $nick
+	 * @param string $channel
+	 * @param string $nick
 	 */
 	public function __construct($channel, $nick) {
 		$this->channel = $channel;
@@ -85,7 +91,7 @@ class ChannelParticipant {
 
 	/**
 	 * @TODO DESCR
-	 * @param $user
+	 * @param  string $user
 	 * @return $this
 	 */
 	public function setUser($user) {
@@ -103,7 +109,7 @@ class ChannelParticipant {
 
 	/**
 	 * @TODO DESCR
-	 * @param $bool
+	 * @param  boolean $bool
 	 * @return $this
 	 */
 	public function setUnverified($bool) {
@@ -113,7 +119,7 @@ class ChannelParticipant {
 
 	/**
 	 * @TODO DESCR
-	 * @param $host
+	 * @param  string $host
 	 * @return $this
 	 */
 	public function setHost($host) {
@@ -123,7 +129,7 @@ class ChannelParticipant {
 
 	/**
 	 * @TODO DESCR
-	 * @param $mask
+	 * @param  array|string $mask
 	 * @return $this
 	 */
 	public function setUsermask($mask) {
@@ -140,8 +146,8 @@ class ChannelParticipant {
 
 	/**
 	 * @TODO DESCR
-	 * @param $channel
-	 * @param $nick
+	 * @param  string $channel
+	 * @param  string $nick
 	 * @return static
 	 */
 	public static function instance($channel, $nick) {
@@ -153,7 +159,7 @@ class ChannelParticipant {
 
 	/**
 	 * @TODO DESCR
-	 * @param $nick
+	 * @param  string $nick
 	 * @return $this
 	 */
 	public function setNick($nick) {
@@ -176,7 +182,7 @@ class ChannelParticipant {
 
 	/**
 	 * @TODO DESCR
-	 * @param $msg
+	 * @param string $msg
 	 */
 	public function chanMessage($msg) {
 		$this->channel->message($this->nick . ': ' . $msg);

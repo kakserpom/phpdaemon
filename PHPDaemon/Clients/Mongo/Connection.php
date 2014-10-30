@@ -7,30 +7,58 @@ use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\ClientConnection;
 
-class Connection extends ClientConnection
-{
-	/** @var */
-	public $dbname; // Database name
-	/** @var int */
-	protected $lowMark = 16; // initial value of the minimal amout of bytes in buffer
-	/** @var int */
-	protected $highMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
-	/** @var */
-	protected $hdr;
+/**
+ * @package    Applications
+ * @subpackage MongoClientAsync
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ */
+class Connection extends ClientConnection {
+
 	/**
 	 * @TODO DESCR
 	 */
 	const STATE_PACKET = 1;
-	/** @var array */
-	public $cursors = []; // Active cursors
-	/** @var array */
-	public $requests = []; // Pending requests
-	/** @var int */
-	public $lastReqId = 0; // ID of the last request
+
+	/**
+	 * @var string Database name
+	 */
+	public $dbname;
+
+	/**
+	 * @var integer Initial value of the minimal amout of bytes in buffer
+	 */
+	protected $lowMark = 16;
+
+	/**
+	 * @var integer Initial value of the maximum amout of bytes in buffer
+	 */
+	protected $highMark = 0xFFFFFF;
+
+	/**
+	 * @var array
+	 */
+	protected $hdr;
+
+	/**
+	 * @var array Active cursors
+	 */
+	public $cursors = [];
+
+	/**
+	 * @var array Pending requests
+	 */
+	public $requests = [];
+
+	/**
+	 * @var integer ID of the last request
+	 */
+	public $lastReqId = 0;
 
 	protected $maxQueue = 10;
+
 	/**
 	 * @TODO DESCR
+	 * @return void
 	 */
 	public function onReady() {
 		if ($this->user === null) {
@@ -176,6 +204,10 @@ class Connection extends ClientConnection
 		goto start;
 	}
 
+	/**
+	 * onFinish
+	 * @return void
+	 */
 	public function onFinish() {
 		foreach ($this->cursors as $curId => $cur) {
 			if ($cur instanceof Cursor) {

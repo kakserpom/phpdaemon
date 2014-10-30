@@ -181,7 +181,7 @@ class Connection extends ClientConnection {
 	public $errno = 0;
 
 	/**
-	 * @var integer Error message
+	 * @var string Error message
 	 */
 	public $errmsg = '';
 
@@ -307,7 +307,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends auth. packet
-	 * @return string Result
+	 * @return void
 	 */
 	public function auth() {
 		if ($this->phase !== self::PHASE_GOT_INIT) {
@@ -392,7 +392,7 @@ class Connection extends ClientConnection {
 	/**
 	 * Sets default database name
 	 * @param  string  $name   Database name
-	 * @return boolean Success
+	 * @return boolean         Success
 	 */
 	public function selectDB($name) {
 		$this->dbname = $name;

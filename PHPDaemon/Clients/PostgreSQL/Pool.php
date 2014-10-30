@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Clients\PostgreSQL;
+
 class Pool extends \PHPDaemon\Network\Client {
+	
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -8,13 +10,16 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// default server
+			/* [array|string] default server */
 			'server'       => 'tcp://root@127.0.0.1',
-			// default port
+			
+			/* [integer] default port */
 			'port'         => 5432,
-			// @todo add description
+			
+			/* [integer] @todo */
 			'protologging' => 0,
-			// disabled by default
+			
+			/* [integer] disabled by default */
 			'enable'       => 0
 		];
 	}

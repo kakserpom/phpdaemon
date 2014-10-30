@@ -1,16 +1,18 @@
 <?php
+namespace PHPDaemon\Clients\Gibson;
+
+use PHPDaemon\Exceptions\UndefinedMethodCalled;
+
 /**
  * @package    Clients
  * @subpackage Gibson
- *
  * @protocol http://gibson-db.in/protocol.php
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-namespace PHPDaemon\Clients\Gibson;
-use PHPDaemon\Exceptions\UndefinedMethodCalled;
-
 class Pool extends \PHPDaemon\Network\Client {
-
+	/**
+	 * @var array Commands
+	 */
 	protected  $opCodes = [
 		'set' => 1,	'ttl' => 2,
 		'get' => 3,	'del' => 4,
@@ -32,41 +34,29 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/**
-			 * Default servers
-			 * @var string|array
-			 */
+			/* [string|array] Default servers */
 			'servers'        => 'unix:///var/run/gibson.sock',
 
-			/**
-			 * Default port
-			 * @var integer
-			 */
+			/* [integer] Default port */
 			'port'           => 10128,
 
-			/**
-			 * Maximum connections per server
-			 * @var integer
-			 */
+			/* [integer] Maximum connections per server */
 			'maxconnperserv' => 32,
 
-			/**
-			 * Maximum allowed size of packet
-			 * @var integer
-			 */
+			/* [integer] Maximum allowed size of packet */
 			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
 		];
 	}
 
 	/**
-	 * Magic __call.
-	 * @method $name 
-	 * @param string $name Command name
-	 * @param array $args
+	 * Magic __call
+	 * Example:
+	 * $gibson->set(3600, 'key', 'value');
+	 * $gibson->get('key', function ($conn) {...});
+	 * @param  string $name    Command name
+	 * @param  array  ...$args Arguments
 	 * @usage $ .. Command-dependent set of arguments ..
 	 * @usage $ [callback Callback. Optional.
-	 * @example  $gibson->set(3600, 'key', 'value');
-	 * @example  $gibson->get('key', function ($conn) {...});
 	 * @return void
 	 */
 	public function __call($name, $args) {
@@ -84,7 +74,7 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Is command?
- 	 * @param string $name
+ 	 * @param  string $name Command
 	 * @return boolean
 	 */
 	public function isCommand($name) {

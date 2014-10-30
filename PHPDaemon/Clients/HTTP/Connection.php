@@ -11,7 +11,6 @@ use PHPDaemon\Network\ClientConnection;
 /**
  * @package    NetworkClients
  * @subpackage HTTPClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
@@ -140,7 +139,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * @param $headers
+	 * @param array $headers
 	 */
 	protected function customRequestHeaders($headers) {
 		foreach ($headers as $key => $item) {

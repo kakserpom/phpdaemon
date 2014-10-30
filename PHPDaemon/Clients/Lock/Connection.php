@@ -8,7 +8,7 @@ class Connection extends \PHPDaemon\Network\ClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
+	 * @param  string $buf New data
 	 * @return void
 	 */
 	public function stdin($buf) {

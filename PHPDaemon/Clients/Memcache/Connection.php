@@ -6,28 +6,50 @@ use PHPDaemon\Network\ClientConnection;
 /**
  * @package    Network clients
  * @subpackage MemcacheClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class Connection extends ClientConnection {
 
-	/** @var */
-	public $result; // current result
-	/** @var */
-	public $valueFlags; // flags of incoming value
-	/** @var */
-	public $valueLength; // length of incoming value
-	/** @var */
-	public $error; // error message
-	/** @var */
-	public $key; // current incoming key
-	/** @TODO DESCR	 */
+	/**
+	 * DESCR
+	 */
 	const STATE_DATA = 1;
-	/** @var string */
+	
+	/**
+	 * @var mixed current result
+	 */
+	public $result;
+	
+	/**
+	 * @var string flags of incoming value
+	 */
+	public $valueFlags;
+	
+	/**
+	 * @var integer length of incoming value
+	 */
+	public $valueLength;
+	
+	/**
+	 * @var string error message
+	 */
+	public $error;
+	
+	/**
+	 * @var string current incoming key
+	 */
+	public $key;
+	
+	/**
+	 * @var string
+	 */
 	protected $EOL = "\r\n";
 
+	/**
+	 * @var integer
+	 */
 	protected $maxQueue = 10;
+	
 	/**
 	 * Called when new data received
 	 * @return void
