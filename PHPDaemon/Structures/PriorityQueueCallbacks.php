@@ -55,6 +55,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 
 	/**
 	 * Executes one callback from the top of queue with arbitrary arguments
+	 * @param  mixed   ...$args Arguments
 	 * @return boolean
 	 */
 	public function executeOne() {
@@ -70,6 +71,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 
 	/**
 	 * Executes all callbacks from the top of queue to bottom with arbitrary arguments
+	 * @param  mixed   ...$args Arguments
 	 * @return integer
 	 */
 	public function executeAll() {

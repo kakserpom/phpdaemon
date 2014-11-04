@@ -97,7 +97,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param string $cmd
+	 * @param  string $cmd
+	 * @param  mixed  ...$args Arguments
 	 */
 	public function command($cmd) {
 		if (ctype_digit($cmd)) {

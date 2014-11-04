@@ -119,8 +119,8 @@ class DeferredEvent {
 
 	/**
 	 * Add listener
-	 * @param callable $cb      Callback
-	 * @param mixed    ...$args Arguments
+	 * @param  callable $cb      Callback
+	 * @param  mixed    ...$args Arguments
 	 * @return void
 	 */
 	public function addListener($cb) {
@@ -147,7 +147,7 @@ class DeferredEvent {
 
 	/**
 	 * Called when object is invoked as function.
-	 * @param mixed ...$args Arguments
+	 * @param  mixed ...$args Arguments
 	 * @return void
 	 */
 	public function __invoke() {
