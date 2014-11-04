@@ -1,32 +1,32 @@
 <?php
 namespace PHPDaemon\Servers\DebugConsole;
+
 use PHPDaemon\Utils\Crypt;
 
 /**
  * @package    NetworkServers
  * @subpackage DebungConsole
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
 
-	/** @var int */
+	/**
+	 * @var integer Timeout
+	 */
 	public $timeout = 60;
 
 	/**
-	 * Are we authorized?
-	 * @var boolean
+	 * @var boolean Are we authorized?
 	 */
 	protected $auth = false;
 
 	/**
-	 * How much time to try before disconnect
-	 * @var integer
+	 * @var integer How much time to try before disconnect
 	 */
 	protected $authTries = 3;
 
 	/**
-	 * Constructor.
+	 * onReady
 	 * @return void
 	 */
 	public function onReady() {
@@ -45,8 +45,8 @@ Please enter the password or type "exit": ');
 
 	/**
 	 * Let's check the password
-	 * @param string Password
-	 * @return boolean|null
+	 * @param  string $pass Password
+	 * @return void
 	 */
 	protected function checkPassword($pass = '') {
 		if (!Crypt::compareStrings($this->pool->config->passphrase->value, $pass)) {
@@ -67,8 +67,8 @@ Please enter the password or type "exit": ');
 
 	/**
 	 * Run the command
-	 * @param string Command to execute
-	 * @param string Argument
+	 * @param  string $command  Command to execute
+	 * @param  string $argument Argument
 	 * @return void
 	 */
 	protected function processCommand($command = '', $argument = '') {
@@ -100,7 +100,6 @@ Type "help" to get the list of allowed commands.');
 
 	/**
 	 * Called when new data received.
-	 * @param string New data.
 	 * @return void
 	 */
 	public function onRead() {	

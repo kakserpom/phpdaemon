@@ -30,17 +30,17 @@ class Application extends \PHPDaemon\Core\AppInstance {
 			'redis-prefix' => 'sockjs:',
 			/* [string] @todo wss-name */
 			'wss-name' => '',
-			/* [Config\Double] @todo batch-delay */
+			/* [Double] @todo batch-delay */
 			'batch-delay' => new \PHPDaemon\Config\Entry\Double('0.05'),
-			/* [Config\Double] @todo heartbeat-interval */
+			/* [Double] @todo heartbeat-interval */
 			'heartbeat-interval' => new \PHPDaemon\Config\Entry\Double('25'),
-			/* [Config\Time] @todo dead-session-timeout */
+			/* [Time] @todo dead-session-timeout */
 			'dead-session-timeout' => new \PHPDaemon\Config\Entry\Time('1h'),
-			/* [Config\Size] @todo gc-max-response-size */
+			/* [Size] @todo gc-max-response-size */
 			'gc-max-response-size' => new \PHPDaemon\Config\Entry\Size('128k'),
-			/* [Config\Time] @todo network-timeout-read */
+			/* [Time] @todo network-timeout-read */
 			'network-timeout-read' => new \PHPDaemon\Config\Entry\Time('2h'),
-			/* [Config\Time] @todo network-timeout-write */
+			/* [Time] @todo network-timeout-write */
 			'network-timeout-write' => new \PHPDaemon\Config\Entry\Time('120s'),
 		];
 	}

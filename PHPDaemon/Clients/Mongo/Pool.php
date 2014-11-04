@@ -90,8 +90,10 @@ class Pool extends Client {
 		return [
 			/* [string|array] default server list */
 			'servers'        => 'tcp://127.0.0.1',
+
 			/* [integer] default port */
 			'port'           => 27017,
+			
 			/* [integer] maxconnperserv */
 			'maxconnperserv' => 32,
 		];

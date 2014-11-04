@@ -8,8 +8,7 @@ use PHPDaemon\Network\Server;
 class Pool extends Server {
 
 	/**
-	 * Cached policy file contents
-	 * @var string
+	 * @var string Cached policy file contents
 	 */
 	public $policyData;
 
@@ -20,33 +19,27 @@ class Pool extends Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/**
-			 * Path to crossdomain.xml file
-			 * @var string
-			 */ 
+			/* [string] Path to crossdomain.xml file */
 			'file'   => getcwd() . '/conf/crossdomain.xml',
 
-			/* Listen addresses
-			 * @var string
-			 */ 
+			/* [string|array] Listen addresses */
 			'listen' => '0.0.0.0',
 
-			/* Default port
-			 * @var string
-			 */ 
+			/* [integer] Listen port */
 			'port'   => 843,
 		];
 	}
 
 	/**
 	 * Called when worker is ready
+	 * @return void
 	 */
 	public function onReady() {
 		$this->onConfigUpdated();
 	}
 
 	/**
-	 * Called when worker is going to update configuration.
+	 * Called when worker is going to update configuration
 	 * @return void
 	 */
 	public function onConfigUpdated() {
@@ -59,5 +52,4 @@ class Pool extends Server {
 			});
 		}
 	}
-
 }
