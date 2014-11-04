@@ -8,7 +8,6 @@ use PHPDaemon\Network\ClientConnection;
 /**
  * @package    NetworkClients
  * @subpackage RedisClient
- *
  * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Client {
@@ -16,15 +15,20 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	protected $currentMasterAddr;
 
-
+	/**
+	 * @TODO
+	 * @param  string  $key
+	 * @param  integer $timeout
+	 * @return Lock
+	 */
 	public function lock($key, $timeout) {
 		return new Lock($key, $timeout, $this);
 	}
 
 	/**
 	 * Detaches connection from URL
-	 * @param ClientConnection $conn Connection
-	 * @param string $url URL
+	 * @param  ClientConnection $conn Connection
+	 * @param  string           $url  URL
 	 * @return void
 	 */
 	public function detachConnFromUrl(ClientConnection $conn, $url) {
@@ -41,51 +45,34 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/**
-			 * Default servers
-			 * @var string|array
-			 */
+			/* [string|array] Default servers */
 			'servers'        => 'tcp://127.0.0.1',
 
-			/**
-			 * Default port
-			 * @var integer
-			 */
+			/* [integer] Default port */
 			'port'           => 6379,
 
-			/**
-			 * Maximum connections per server
-			 * @var integer
-			 */
+			/* [integer] Maximum connections per server */
 			'maxconnperserv' => 32,
 
-			/**
-			 * Maximum allowed size of packet
-			 * @var integer
-			 */
+			/* [integer] Maximum allowed size of packet */
 			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
 
-
-			/**
-			 * If true, race condition between UNSUBSCRIBE and PUBLISH will be journaled
-			 * @var boolean
-			 */
+			/* [boolean] If true, race condition between UNSUBSCRIBE and PUBLISH will be journaled */
 			'log-pub-sub-race-condition' => true,
 
-			/**
-			 * Select storage number
-			 * @var integer
-			 */
+			/* [integer] Select storage number */
 			'select' => null,
 
-			/**
-			 * <master name> for Sentinel
-			 * @var integer
-			 */
+			/* [integer] <master name> for Sentinel */
 			'sentinel-master' => null,
 		];
 	}
 
+	/**
+	 * @TODO
+	 * @param  string $chan
+	 * @return integer
+	 */
 	public function getLocalSubscribersCount($chan) {
 		foreach ($this->servConnSub as $conn)  {
 			return $conn->getLocalSubscribersCount($chan);
@@ -94,13 +81,11 @@ class Pool extends \PHPDaemon\Network\Client {
 	}
 
 	/**
-	 * Magic __call.
-	 * @method $cmd
-	 * @param string $cmd
-	 * @param array $args
-	 * @usage $ .. Command-dependent set of arguments ..
-	 * @usage $ [callback Callback. Optional.
-	 * @example  $redis->lpush('mylist', microtime(true));
+	 * Magic __call
+	 * Example:
+	 * $redis->lpush('mylist', microtime(true));
+	 * @param  string $name Command name
+	 * @param  array  $args Arguments
 	 * @return void
 	 */
 	public function __call($cmd, $args) {
@@ -137,12 +122,17 @@ class Pool extends \PHPDaemon\Network\Client {
 		});
 	}
 
+	/**
+	 * @TODO
+	 * @param  string   $addr
+	 * @param  string   $cmd
+	 * @param  array    $args
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return void
+	 */
 	protected function sendCommand($addr, $cmd, $args, $cb) {
 		$this->getConnection($addr, function ($conn) use ($cmd, $args, $cb) {
-			/**
-			 * @var $conn Connection
-			 */
-
 			if (!$conn->isConnected()) {
 				call_user_func($cb, false);
 				return;
@@ -157,12 +147,14 @@ class Pool extends \PHPDaemon\Network\Client {
 	}
 
 	/**
-	 * @param string $cmd
+	 * @TODO
+	 * @param  string   $cmd
+	 * @param  array    $args
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	protected function sendSubCommand($cmd, $args, $cb) {
-		/**
-		 * @var $conn Connection
-		 */
 		if (in_array($cmd, ['SUBSCRIBE', 'PSUBSCRIBE', 'UNSUBSCRIBE', 'PUNSUBSCRIBE', 'UNSUBSCRIBEREAL'])) {
 			foreach ($this->servConnSub as $conn)  {
 				$conn->command($cmd, $args, $cb);

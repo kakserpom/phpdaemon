@@ -9,26 +9,22 @@ use PHPDaemon\Core\CallbackWrapper;
 /**
  * @package    NetworkClients
  * @subpackage RedisClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 
 	/**
-	 * Current result
-	 * @var array|null
+	 * @var array|null Current result
 	 */
 	public $result = null;
 
 	/**
-	 * Current error message
-	 * @var string
+	 * @var string Current error message
 	 */
 	public $error;
 
 	/**
-	 * Current incoming key
-	 * @var string
+	 * @var string Current incoming key
 	 */
 	protected $key;
 
@@ -38,47 +34,47 @@ class Connection extends ClientConnection {
 	protected $ptr;
 
 	/**
-	 * Current value length
-	 * @var integer
+	 * @var integer Current value length
 	 */
 	protected $valueLength = 0;
 
 
 	/**
-	 * Current level length
-	 * @var integer
+	 * @var integer Current level length
 	 */
 	protected $levelLength = null;
 
 	/**
-	 * EOL
-	 * @var string "\r\n"
+	 * @var string
 	 */
 	protected $EOL = "\r\n";
 
 	protected $subscribed = false;
 
 	/**
-	 * Timeout
-	 * @var float
+	 * @var float Timeout
 	 */
 	protected $timeoutRead = 5;
 
 	/**
-	 * Subcriptions
-	 * @var array
+	 * @var array Subcriptions
 	 */
 	public $subscribeCb = [];
+
 	public $psubscribeCb = [];
 
 	protected $maxQueue = 10;
 
 	/**
 	 * In the middle of binary response part
-	 * @const integer
 	 */
 	const STATE_BINARY = 1;
 
+	/**
+	 * @TODO
+	 * @param  string $chan
+	 * @return integer
+	 */
 	public function getLocalSubscribersCount($chan) {
 		if (!isset($this->subscribeCb[$chan])) {
 			return 0;
@@ -113,6 +109,10 @@ class Connection extends ClientConnection {
 		});
 	}
 
+	/**
+	 * @TODO
+	 * @return void
+	 */
 	public function subscribed() {
 		if ($this->subscribed) {
 			return;
@@ -123,18 +123,20 @@ class Connection extends ClientConnection {
 		$this->setTimeouts(86400, 86400); // @TODO: remove timeout
 	}
 
+	/**
+	 * @TODO
+	 * @return boolean
+	 */
 	public function isSubscribed() {
 		return $this->subscribed;
 	}
 
 	/**
-	 * Magic __call.
-	 * @method $cmd
-	 * @param string $cmd
-	 * @param array $args
-	 * @usage $ .. Command-dependent set of arguments ..
-	 * @usage $ [callback Callback. Optional.
-	 * @example  $redis->lpush('mylist', microtime(true));
+	 * Magic __call
+	 * Example:
+	 * $redis->lpush('mylist', microtime(true));
+	 * @param  sting $cmd
+	 * @param  array $args
 	 * @return void
 	 */
 	public function __call($cmd, $args) {
@@ -155,7 +157,12 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * @param string $name
+	 * @TODO
+	 * @param  string   $name
+	 * @param  array    $args
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return void
 	 */
 	public function command($name, $args, $cb = null) {
 		// PUB/SUB handling
@@ -327,8 +334,13 @@ class Connection extends ClientConnection {
  	}
 
  	/**
- 	 * @param string $name
- 	 */
+	 * @TODO
+	 * @param  string   $name
+	 * @param  array    $args
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return void
+	 */
  	public function sendCommand($name, $args, $cb = null) {
  		$this->onResponse($cb);
  		if (!is_array($args)) {
@@ -404,6 +416,11 @@ class Connection extends ClientConnection {
 		$this->error        = false;
 	}
 
+	/**
+	 * @TODO
+	 * @param  mixed $val
+	 * @return void
+	 */
 	public function pushValue($val) {
 		if (is_array($this->ptr)) {
 			$this->ptr[] = $val;
@@ -431,6 +448,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
+	 * @TODO
 	 * @param integer $length
 	 */
 	public function pushLevel($length) {

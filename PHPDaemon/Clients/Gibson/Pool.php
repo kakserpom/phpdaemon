@@ -55,8 +55,6 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * $gibson->get('key', function ($conn) {...});
 	 * @param  string $name    Command name
 	 * @param  array  ...$args Arguments
-	 * @usage $ .. Command-dependent set of arguments ..
-	 * @usage $ [callback Callback. Optional.
 	 * @return void
 	 */
 	public function __call($name, $args) {
