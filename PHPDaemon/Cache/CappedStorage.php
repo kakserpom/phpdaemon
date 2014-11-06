@@ -54,7 +54,7 @@ abstract class CappedStorage {
 	 * @return integer
 	 */
 	public function hash($key) {
-		return crc32($key);
+		return $key;
 	}
 
 	/**

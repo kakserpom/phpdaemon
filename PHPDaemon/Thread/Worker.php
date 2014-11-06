@@ -343,7 +343,7 @@ class Worker extends Generic {
 			$this->override('register_shutdown_function');
 
 			runkit_function_copy('create_function', 'create_function_native');
-			runkit_function_redefine('create_function', '$arg,$body', 'return \PHPDaemon\Thread\Worker::createFunction($arg,$body);');
+			runkit_function_redefine('create_function', '$arg,$body', 'return \PHPDaemon\Core\Daemon::$process->createFunction($arg,$body);');
 		}
 	}
 
