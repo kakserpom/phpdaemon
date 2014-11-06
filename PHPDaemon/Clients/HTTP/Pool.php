@@ -4,10 +4,12 @@ namespace PHPDaemon\Clients\HTTP;
 use PHPDaemon\Network\Client;
 
 /**
- * Class Pool
- * @package PHPDaemon\Clients\HTTP
+ * @package    NetworkClients
+ * @subpackage HTTPClient
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends Client {
+
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -15,33 +17,25 @@ class Pool extends Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/**
-			 * Default port
-			 * @var integer
-			 */
+			/* [integer] Default port */
 			'port'    => 80,
 
-			/**
-			 * Default SSL port
-			 * @var integer
-			 */
+			/* [integer] Default SSL port */
 			'sslport' => 443,
 
-			/**
-			 * Send User-Agent header?
-			 * @var boolean
-			 */
+			/* [boolean] Send User-Agent header? */
 			'expose'  => 1,
 		];
 	}
 
 	/**
 	 * Performs GET-request
-	 * @param string $url
-	 * @param array $params
-	 * @call  void public function get ( url $url, array $params )
-	 * @call  void public function get ( url $url, callable $resultcb )
-	 * @callback ( Connection $conn, boolean $success )
+	 * @param string   $url
+	 * @param array    $params
+	 * @param callable $resultcb
+	 * @call  ( url $url, array $params )
+	 * @call  ( url $url, callable $resultcb )
+	 * @callback $resultcb ( Connection $conn, boolean $success )
 	 */
 	public function get($url, $params) {
 		if (is_callable($params)) {
@@ -72,12 +66,13 @@ class Pool extends Client {
 
 	/**
 	 * Performs HTTP request
-	 * @param string $url
-	 * @param array $data
-	 * @param array $params
-	 * @call  void public function post ( url $url, array $data, array $params )
-	 * @call  void public function post ( url $url, array $data, callable $resultcb )
-	 * @callback ( Connection $conn, boolean $success )
+	 * @param string   $url
+	 * @param array    $data
+	 * @param array    $params
+	 * @param callable $resultcb
+	 * @call  ( url $url, array $data, array $params )
+	 * @call  ( url $url, array $data, callable $resultcb )
+	 * @callback $resultcb ( Connection $conn, boolean $success )
 	 */
 	public function post($url, $data = [], $params) {
 		if (is_callable($params)) {
@@ -109,8 +104,8 @@ class Pool extends Client {
 	/**
 	 * Builds URL from array
 	 * @param string $mixed
-	 * @call  string public static function buildUrl ( string $str )
-	 * @call  string public static function buildUrl ( array $mixed )
+	 * @call  ( string $str )
+	 * @call  ( array $mixed )
 	 * @return string|false
 	 */
 	public static function buildUrl($mixed) {
@@ -145,8 +140,8 @@ class Pool extends Client {
 	/**
 	 * Parse URL
 	 * @param string $mixed Look Pool::buildUrl()
-	 * @call  string public static function parseUrl ( string $str )
-	 * @call  string public static function parseUrl ( array $mixed )
+	 * @call  ( string $str )
+	 * @call  ( array $mixed )
 	 * @return array|bool
 	 */
 	public static function parseUrl($mixed) {

@@ -5,15 +5,15 @@ use PHPDaemon\Network;
 use PHPDaemon\Config\Entry;
 
 /**
- * Class Connection
  * @package Clients
  * @subpackage WebSocket
- *
  * @author Kozin Denis <kozin.alizarin.denis@gmail.com>
  */
 class Pool extends Network\Client {
 
-	/** Types of WebSocket frame */
+	/**
+	 * Types of WebSocket frame
+	 */
 	const TYPE_TEXT = 'text';
 	const TYPE_BINARY = 'binary';
 	const TYPE_CLOSE = 'close';
@@ -22,10 +22,7 @@ class Pool extends Network\Client {
 
 	public function getConfigDefaults() {
 		return [
-			/**
-			 * Maximum allowed size of packet
-			 * @var integer
-			 */
+			/* [integer] Maximum allowed size of packet */
 			'max-allowed-packet' => new Entry\Size('1M'),
 		];
 	}

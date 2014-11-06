@@ -8,12 +8,20 @@ use PHPDaemon\Request\IRequestUpstream;
 /**
  * @package    NetworkServers
  * @subpackage Base
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstream {
-	protected $lowMark = 8; // initial value of the minimal amout of bytes in buffer
-	protected $highMark = 0xFFFFFF; // initial value of the maximum amout of bytes in buffer
+
+	/**
+	 * @var integer initial value of the minimal amout of bytes in buffer
+	 */
+	protected $lowMark = 8;
+
+	/**
+	 * @var integer initial value of the maximum amout of bytes in buffer
+	 */
+	protected $highMark = 0xFFFFFF;
+
 	public $timeout = 180;
 
 	protected $requests = [];
@@ -76,12 +84,16 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		return false;
 	}
 
+	/**
+	 * @TODO
+	 * @return integer
+	 */
 	public function getKeepaliveTimeout() {
 		return $this->pool->config->keepalive->value;
 	}
 
 	/**
-	 * Called when new data received.
+	 * Called when new data received
 	 * @return void
 	 */
 	public function onRead() {
@@ -274,10 +286,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	}
 
 	/**
-	 * Handles the output from downstream requests.
-	 * @param object Request.
-	 * @param string The output.
-	 * @return boolean Success
+	 * Handles the output from downstream requests
+	 * @param  object  $req Request
+	 * @param  string  $out The output
+	 * @return boolean      Success
 	 */
 	public function requestOut($req, $out) {
 		$cs = $this->pool->config->chunksize->value;
@@ -300,8 +312,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Sends a chunk
-	 * @param $req
-	 * @param $chunk
+	 * @param  object  $req   Request
+	 * @param  string  $chunk Data
 	 * @return bool
 	 */
 	public function sendChunk($req, $chunk) {
@@ -316,17 +328,17 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Frees request
-	 * @param $req
+	 * @param  object $req
 	 */
 	public function freeRequest($req) {
 		unset($this->requests[$req->attrs->id]);
 	}
 
 	/**
-	 * Handles the output from downstream requests.
-	 * @param $req
-	 * @param $appStatus
-	 * @param $protoStatus
+	 * Handles the output from downstream requests
+	 * @param  object $req
+	 * @param  string $appStatus
+	 * @param  string $protoStatus
 	 * @return void
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
@@ -352,11 +364,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Send Bad request
-	 * @param $req
+	 * @param  object $req
 	 * @return void
 	 */
 	public function badRequest($req) {
 		// @TODO: Implement badRequest() method.
 	}
 }
-

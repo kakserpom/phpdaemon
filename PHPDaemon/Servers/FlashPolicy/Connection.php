@@ -4,24 +4,21 @@ namespace PHPDaemon\Servers\FlashPolicy;
 /**
  * @package    NetworkServers
  * @subpackage FlashPolicyServer
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
 	/**
-	 * Length of "<policy-file-request/>\x00"
-	 * @var int
+	 * @var integer Length of "<policy-file-request/>\x00"
 	 */
 	protected $lowMark = 23;
 
 	/**
-	 * Length of "<policy-file-request/>\x00"
-	 * @var int
+	 * @var integer Length of "<policy-file-request/>\x00"
 	 */
 	protected $highMark = 23;
 
 	/**
-	 * Called when new data received.
+	 * Called when new data received
 	 * @return void
 	 */
 	public function onRead() {
@@ -38,5 +35,4 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 		$this->finish();
 	}
-
 }

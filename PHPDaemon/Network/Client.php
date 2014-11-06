@@ -65,28 +65,16 @@ abstract class Client extends Pool {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/**
-			 * Expose?
-			 * @var boolean
-			 */
+			/* [boolean] Expose? */
 			'expose'         => 1,
 
-			/**
-			 * Default servers
-			 * @var string|array
-			 */
+			/* [string|array] Default servers */
 			'servers'        => '127.0.0.1',
 
-			/**
-			 * Default server
-			 * @var string
-			 */
+			/* [string] Default server */
 			'server'         => '127.0.0.1',
 
-			/**
-			 * Maximum connections per server
-			 * @var integer
-			 */
+			/* [integer] Maximum connections per server */
 			'maxconnperserv' => 32
 		];
 	}
@@ -124,8 +112,8 @@ abstract class Client extends Pool {
 	 * @param  string   $url Address
 	 * @param  callback $cb  onConnected
 	 * @param  integer  $pri Optional. Priority
-	 * @call   boolean public function getConnection ( callable $cb )
-	 * @call   boolean public function getConnection ( string $url = null, callable $cb = null, integer $pri = 0 )
+	 * @call   ( callable $cb )
+	 * @call   ( string $url = null, callable $cb = null, integer $pri = 0 )
 	 * @return boolean       Success|Connection
 	 */
 	public function getConnection($url = null, $cb = null, $pri = 0) {
@@ -258,6 +246,7 @@ abstract class Client extends Pool {
 	 * Returns available connection from the pool by key
 	 * @param  string   $key Key
 	 * @param  callable $cb  Callback
+	 * @callback $cb ( )
 	 * @return boolean       Success
 	 */
 	public function getConnectionByKey($key, $cb = null) {
@@ -282,6 +271,7 @@ abstract class Client extends Pool {
 	/**
 	 * Returns available connection from the pool
 	 * @param  callable $cb Callback
+	 * @callback $cb ( )
 	 * @return boolean      Success
 	 */
 	public function getConnectionRR($cb = null) {
@@ -293,6 +283,7 @@ abstract class Client extends Pool {
 	 * @param  string   $server     Server
 	 * @param  string   $data       Data
 	 * @param  callable $onResponse Called when the request complete
+	 * @callback $onResponse ( )
 	 * @return boolean              Success
 	 */
 	public function requestByServer($server, $data, $onResponse = null) {
@@ -311,6 +302,7 @@ abstract class Client extends Pool {
 	 * @param  string   $key        Key
 	 * @param  string   $data       Data
 	 * @param  callable $onResponse Callback called when the request complete
+	 * @callback $onResponse ( )
 	 * @return boolean              Success
 	 */
 	public function requestByKey($key, $data, $onResponse = null) {
@@ -332,5 +324,4 @@ abstract class Client extends Pool {
 	public function onShutdown($graceful = false) {
 		return $graceful ? true : $this->finish();
 	}
-
 }

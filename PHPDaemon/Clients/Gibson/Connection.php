@@ -1,11 +1,4 @@
 <?php
-/**
- * @package    Examples
- * @subpackage ExampleGibson
- *
- * @protocol http://gibson-db.in/protocol.php
- * @author     Zorin Vasily <maintainer@daemon.io>
- */
 namespace PHPDaemon\Clients\Gibson;
 
 use PHPDaemon\Core\Daemon;
@@ -13,28 +6,78 @@ use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
 
+/**
+ * @package    Examples
+ * @subpackage ExampleGibson
+ * @protocol http://gibson-db.in/protocol.php
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ */
 class Connection extends ClientConnection {
-	public $error; // error message
-
-	const REPL_ERR = 0x00;              // Generic error while executing the query.
-	const REPL_ERR_NOT_FOUND = 0x01;    // Specified key was not found.
-	const REPL_ERR_NAN = 0x02;          // Expected a number ( TTL or TIME ) but the specified value was invalid.
-	const REPL_ERR_MEM = 0x03;          // The server reached configuration memory limit and will not accept any new value until its freeing routine will be executed.
-	const REPL_ERR_LOCKED = 0x04;       // The specificed key was locked by a OP_LOCK or a OP_MLOCK query.
-	const REPL_OK = 0x05;               // Query succesfully executed, no data follows.
-	const REPL_VAL = 0x06;              // Query succesfully executed, value data follows.
-	const REPL_KVAL = 0x07;             // Query succesfully executed, multiple key => value data follows.
-
-	const STATE_PACKET_HDR = 0x01;
-	const STATE_PACKET_DATA = 0x02;
-
-	const GB_ENC_PLAIN = 0x00;			//	Raw string data follows.
-	const GB_ENC_LZF	= 0x01;			//	Compressed data, this is a reserved value not used for replies.
-	const GB_ENC_NUMBER = 0x02;			// Packed long number follows, four bytes for 32bit architectures, eight bytes for 64bit.
+	/**
+	 * @var string error message
+	 */
+	public $error;
 
 	/**
-	 * Default low mark. Minimum number of bytes in buffer.
-	 * @var integer
+	 * Generic error while executing the query.
+	 */
+	const REPL_ERR = 0x00;
+	
+	/**
+	 * Specified key was not found.
+	 */
+	const REPL_ERR_NOT_FOUND = 0x01;
+	
+	/**
+	 * Expected a number ( TTL or TIME ) but the specified value was invalid.
+	 */
+	const REPL_ERR_NAN = 0x02;
+	
+	/**
+	 * The server reached configuration memory limit and will not accept any new value until its freeing routine will be executed.
+	 */
+	const REPL_ERR_MEM = 0x03;
+	
+	/**
+	 * The specificed key was locked by a OP_LOCK or a OP_MLOCK query.
+	 */
+	const REPL_ERR_LOCKED = 0x04;
+	
+	/**
+	 * Query succesfully executed, no data follows.
+	 */
+	const REPL_OK = 0x05;
+	
+	/**
+	 * Query succesfully executed, value data follows.
+	 */
+	const REPL_VAL = 0x06;
+	
+	/**
+	 * Query succesfully executed, multiple key => value data follows.
+	 */
+	const REPL_KVAL = 0x07;
+
+	const STATE_PACKET_HDR  = 0x01;
+	const STATE_PACKET_DATA = 0x02;
+	
+	/**
+	 * Raw string data follows.
+	 */
+	const GB_ENC_PLAIN = 0x00;
+	
+	/**
+	 * Compressed data, this is a reserved value not used for replies.
+	 */
+	const GB_ENC_LZF	= 0x01;
+	
+	/**
+	 * Packed long number follows, four bytes for 32bit architectures, eight bytes for 64bit.
+	 */
+	const GB_ENC_NUMBER = 0x02;
+
+	/**
+	 * @var integer Default low mark. Minimum number of bytes in buffer
 	 */
     protected $lowMark = 2;
 
@@ -57,18 +100,42 @@ class Connection extends ClientConnection {
 		$this->setWatermark(null, $this->pool->maxAllowedPacket);
 	}
 
+	/**
+	 * @TODO isFinal
+	 * @return boolean
+	 */
 	public function isFinal() {
 		return $this->isFinal;
 	}
+	
+	/**
+	 * @TODO getTotalNum
+	 * @return integer
+	 */
 	public function getTotalNum() {
 		return $this->totalNum;
 	}
+	
+	/**
+	 * @TODO getReadedNum
+	 * @return integer
+	 */
 	public function getReadedNum() {
 		return $this->readedNum;
 	}
+	
+	/**
+	 * @TODO getResponseCode
+	 * @return integer
+	 */
 	public function getResponseCode() {
 		return $this->responseCode;
 	}
+
+	/**
+	 * onRead
+	 * @return void
+	 */
 	protected function onRead() {
 		start:
 		if ($this->state === static::STATE_STANDBY) {
@@ -219,6 +286,10 @@ class Connection extends ClientConnection {
 		goto start;
 	}
 
+	/**
+	 * @TODO executeCb
+	 * @return void
+	 */
 	protected function executeCb() {
 		$this->state = static::STATE_STANDBY;
 		$this->onResponse->executeOne($this);

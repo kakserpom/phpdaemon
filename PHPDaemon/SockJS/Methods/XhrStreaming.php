@@ -1,16 +1,16 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\Utils\Crypt;
+
 /**
  * @package    Libraries
  * @subpackage SockJS
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class XhrStreaming extends Generic {
 	protected $gcEnabled = true;
 	protected $contentType = 'application/javascript';
@@ -19,13 +19,19 @@ class XhrStreaming extends Generic {
 	protected $pollMode = ['stream'];
 	protected $allowedMethods = 'POST';
 
+	/**
+	 * afterHeaders
+	 * @return void
+	 */
 	public function afterHeaders() {
 		$this->sendFrame(str_repeat('h', 2048));
 		$this->bytesSent = 0;
 	}
 
 	/**
-	 * @param string $frame
+	 * Send frame
+	 * @param  string $frame
+	 * @return void
 	 */
 	protected function sendFrame($frame) {
 		$this->outputFrame($frame . "\n");

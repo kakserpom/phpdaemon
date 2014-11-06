@@ -3,9 +3,7 @@ namespace PHPDaemon\Core;
 
 /**
  * CallbackWrapper
- *
  * @package Core
- *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class CallbackWrapper {
@@ -13,28 +11,25 @@ class CallbackWrapper {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Context
-	 * @var object
+	 * @var object Context
 	 */
 	protected $context;
 
 	/**
-	 * Callback
-	 * @var callable
+	 * @var callable Callback
 	 */
 	protected $cb;
 
 	/**
-	 * Timer
-	 * @var callable
+	 * @var callable Timer
 	 */
 	protected $timer;
 
 	/**
 	 * Constructor
-	 * @param callable $cb
-	 * @param object $context
-	 * @param double $timeout
+	 * @param  callable $cb
+	 * @param  object   $context
+	 * @param  double   $timeout
 	 * @return \PHPDaemon\Core\CallbackWrapper
 	 */
 	public function __construct($cb, $context = null, $timeout = null) {
@@ -160,8 +155,8 @@ class CallbackWrapper {
 
 	/**
 	 * Invokes the callback
+	 * @param  mixed ...$args Arguments
 	 * @return mixed
-	 * @return void
 	 */
 	public function __invoke() {
 		if ($this->timer !== null) {

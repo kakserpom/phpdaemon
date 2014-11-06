@@ -11,7 +11,6 @@ use PHPDaemon\Utils\Crypt;
  * Class Connection
  * @package Clients
  * @subpackage WebSocket
- *
  * @author Kozin Denis <kozin.alizarin.denis@gmail.com>
  * @author Vasily Zorin <maintainer@daemon.io>
  */
@@ -26,13 +25,24 @@ class Connection extends ClientConnection {
 	const STATE_HEADER                = 1;
 	const STATE_DATA                  = 2;
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	protected $key;
-	/** @var array */
+
+	/**
+	 * @var array
+	 */
 	public $headers = [];
-	/** @var int */
+
+	/**
+	 * @var int
+	 */
 	protected $state = self::STATE_STANDBY;
-	/** @var array */
+
+	/**
+	 * @var array
+	 */
 	protected $opCodes = [
 		1   => Pool::TYPE_TEXT,
 		2   => Pool::TYPE_BINARY,
@@ -41,13 +51,19 @@ class Connection extends ClientConnection {
 		10  => Pool::TYPE_PONG
 	];
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	public $type;
 
-	/** @var int */
+	/**
+	 * @var int
+	 */
 	protected $pctLength = 0;
 
-	/** @var string */
+	/**
+	 * @var string
+	 */
 	protected $isMasked = false;
 
 	/**
@@ -164,10 +180,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Send frame to WebSocket server
-	 *
-	 * @param $payload
-	 * @param string $type
-	 * @param bool $isMasked
+	 * @param string  $payload
+	 * @param string  $type
+	 * @param boolean $isMasked
 	 */
 	public function sendFrame($payload, $type = Pool::TYPE_TEXT, $isMasked = true) {
 		$payloadLength = strlen($payload);
@@ -226,13 +241,20 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	/**
+	 * @TODO
+	 * @return void
+	 */
 	public function onFinish() {
 		parent::onFinish();
 		$this->trigger('disconnected');
 	}
 
 	/**
-	 * @param string $mask
+	 * @TODO
+	 * @param  string $mask
+	 * @param  string $str
+	 * @return string
 	 */
 	protected static function mask($mask, $str) {
 		$out = '';

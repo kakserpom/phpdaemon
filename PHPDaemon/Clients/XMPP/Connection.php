@@ -11,29 +11,47 @@ use PHPDaemon\XMLStream\XMLStream;
 /**
  * @package    NetworkClients
  * @subpackage XMPPClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 
-	/** @var bool */
+	/**
+	 * @var boolean
+	 */
 	public $use_encryption = false;
-	/** @var */
+	
+	/**
+	 * @var boolean
+	 */
 	public $authorized;
-	/** @var int */
+	
+	/**
+	 * @var integer
+	 */
 	public $lastId = 0;
-	/** @var */
+	
+	/**
+	 * @var XMPPRoster
+	 */
 	public $roster;
-	/** @var XMLStream */
+	
+	/**
+	 * @var XMLStream
+	 */
 	public $xml;
-	/** @var */
+	
+	/**
+	 * @var string
+	 */
 	public $fulljid;
-	/** @var */
+	
+	/**
+	 * @var integer|string Timer ID
+	 */
 	public $keepaliveTimer;
 
 	/**
 	 * Get next ID
-	 *
 	 * @return string
 	 */
 	public function getId() {
@@ -89,9 +107,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param string $xml
-	 * @param callable $cb
-	 * @return bool
+	 * @param  string   $xml
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function iqSet($xml, $cb) {
 		if (!isset($this->xml)) {
@@ -105,10 +124,11 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $to
-	 * @param string $xml
-	 * @param callable $cb
-	 * @return bool
+	 * @param  string   $to
+	 * @param  string   $xml
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function iqSetTo($to, $xml, $cb) {
 		if (!isset($this->xml)) {
@@ -123,9 +143,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param string $xml
-	 * @param callable $cb
-	 * @return bool
+	 * @param  string   $xml
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function iqGet($xml, $cb) {
 		if (!isset($this->xml)) {
@@ -139,10 +160,11 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $to
-	 * @param string $xml
-	 * @param callable $cb
-	 * @return bool
+	 * @param  string   $to
+	 * @param  string   $xml
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function iqGetTo($to, $xml, $cb) {
 		if (!isset($this->xml)) {
@@ -157,9 +179,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param mixed $to
-	 * @param mixed $cb
-	 * @return bool
+	 * @param  string   $to
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function ping($to = null, $cb = null) {
 		if (!isset($this->xml)) {
@@ -174,9 +197,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param string $ns
-	 * @param callable $cb
-	 * @return bool
+	 * @param  string   $ns
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function queryGet($ns, $cb) {
 		return $this->iqGet('<query xmlns="' . $ns . '" />', $cb);
@@ -184,10 +208,11 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $ns
-	 * @param $xml
-	 * @param callable $cb
-	 * @return bool
+	 * @param  string   $ns
+	 * @param  string   $xml
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function querySet($ns, $xml, $cb) {
 		return $this->iqSet('<query xmlns="' . $ns . '">' . $xml . '</query>', $cb);
@@ -195,11 +220,12 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $to
-	 * @param string $ns
-	 * @param string $xml
-	 * @param callable $cb
-	 * @return bool
+	 * @param  string   $to
+	 * @param  string   $ns
+	 * @param  string   $xml
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function querySetTo($to, $ns, $xml, $cb) {
 		return $this->iqSetTo($to, '<query xmlns="' . $ns . '">' . $xml . '</query>', $cb);
@@ -279,7 +305,6 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Send XMPP Message
-	 *
 	 * @param string $to
 	 * @param string $body
 	 * @param string $type
@@ -309,10 +334,11 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Set Presence
-	 *
-	 * @param string $status
-	 * @param string $show
-	 * @param string $to
+	 * @param string  $status
+	 * @param string  $show
+	 * @param string  $to
+	 * @param string  $type
+	 * @param integer $priority
 	 */
 	public function presence($status = null, $show = 'available', $to = null, $type = 'available', $priority = 0) {
 		if ($type == 'available') {
@@ -357,8 +383,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO DESCR
-	 * @param mixed $jid
+	 * @param string   $jid
 	 * @param callable $cb
+	 * @callback $cb ( )
 	 */
 	public function getVCard($jid = null, $cb) {
 		$id = $this->getId();
@@ -391,7 +418,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
+	 * @param  string $buf New data
 	 * @return void
 	 */
 	public function stdin($buf) {

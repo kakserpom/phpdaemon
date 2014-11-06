@@ -10,55 +10,48 @@ use PHPDaemon\Core\Debug;
 /**
  * @package    NetworkClients
  * @subpackage DNSClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
-
-	/**
-	 * Sequence
-	 * @var integer
-	 */
-	protected $seq = 0;
-
-	/**
-	 * Keepalive?
-	 * @var boolean
-	 */
-	protected $keepalive = true;
-
-	/**
-	 * Response
-	 * @var array
-	 */
-	public $response = [];
-
+	
 	/**
 	 * @TODO DESCR
 	 */
 	const STATE_PACKET = 1;
 
 	/**
-	 * Current packet size
-	 * @var boolean
+	 * @var integer Sequence
+	 */
+	protected $seq = 0;
+
+	/**
+	 * @var boolean Keepalive?
+	 */
+	protected $keepalive = true;
+
+	/**
+	 * @var array Response
+	 */
+	public $response = [];
+
+	/**
+	 * @var boolean Current packet size
 	 */
 	protected $pctSize = 0;
 
 	/**
-	 * Default low mark. Minimum number of bytes in buffer.
-	 * @var integer
+	 * @var integer Default low mark. Minimum number of bytes in buffer.
 	 */
 	protected $lowMark = 2;
 
 	/**
-	 * Default high mark. Maximum number of bytes in buffer.
-	 * @var integer
+	 * @var integer Default high mark. Maximum number of bytes in buffer.
 	 */
 	protected $highMark = 512;
 
 	/**
 	 * Called when new UDP packet received.
-	 * @param string $pct
+	 * @param  string $pct
 	 * @return void
 	 */
 	public function onUdpPacket($pct) {
@@ -192,8 +185,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Gets the host information
-	 * @param string   Hostname
-	 * @param callable $cb Callback
+	 * @param  string   $hostname Hostname
+	 * @param  callable $cb       Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function get($hostname, $cb) {

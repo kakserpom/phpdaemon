@@ -4,7 +4,6 @@ namespace PHPDaemon\Clients\Lock;
 /**
  * @package    Applications
  * @subpackage LockClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Client {
@@ -15,23 +14,27 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// default server
+			/* [string] default server */
 			'servers'      => '127.0.0.1',
-			// default port
+			/* [string] default port */
 			'port'         => 833,
-			// @todo add description
+			/* [string] prefix */
 			'prefix'       => '',
+			/* [integer] protologging */
 			'protologging' => 0
 		];
 	}
 
 	/**
 	 * Runs a job
-	 * @param string   Name of job
-	 * @param bool     wait. If true - will wait in queue for lock.
-	 * @param callback onRun. Job's runtime.
-	 * @param callback onSuccess. Called when job successfully done.
-	 * @param callback onFailure. Called when job failed.
+	 * @param  string   $name      Name of job
+	 * @param  boolean  $wait      Wait. If true - will wait in queue for lock.
+	 * @param  callable $onRun     Job's runtime
+	 * @param  callable $onSuccess Called when job successfully done
+	 * @param  callable $onFailure Called when job failed
+	 * @callback $onRun ( )
+	 * @callback $onSuccess ( )
+	 * @callback $onFailure ( )
 	 * @return void
 	 */
 	public function job($name, $wait, $onRun, $onSuccess = NULL, $onFailure = NULL) {
@@ -47,7 +50,7 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Sends done-event
-	 * @param string Name of job
+	 * @param string $name Name of job
 	 * @return void
 	 */
 	public function done($name) {
@@ -61,7 +64,7 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Sends failed-event
-	 * @param string Name of job
+	 * @param string $name Name of job
 	 * @return void
 	 */
 	public function failed($name) {
@@ -75,10 +78,10 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Returns available connection from the pool by name
-	 * @param string   Key
-	 * @param callback Callback
-	 * @param \Closure $cb
-	 * @return boolean Success.
+	 * @param  string   $name Key
+	 * @param  callable $cb   Callback
+	 * @callback $cb ( )
+	 * @return boolean
 	 */
 	public function getConnectionByName($name, $cb) {
 		if (

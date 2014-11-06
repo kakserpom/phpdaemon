@@ -11,81 +11,82 @@ use PHPDaemon\Network\ClientConnection;
 /**
  * @package    NetworkClients
  * @subpackage HTTPClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 
 	/**
 	 * State: headers
-	 * @var integer
 	 */
 	const STATE_HEADERS = 1;
+
 	/**
 	 * State: body
-	 * @var integer
 	 */
 	const STATE_BODY    = 2;
+
 	/**
-	 * Associative array of headers
-	 * @var array
+	 * @var array Associative array of headers
 	 */
 	public $headers = [];
+
 	/**
-	 * Content length
-	 * @var int
+	 * @var integer Content length
 	 */
 	public $contentLength = -1;
+
 	/**
-	 * Contains response body
-	 * @var string
+	 * @var string Contains response body
 	 */
 	public $body = '';
+
+	/**
+	 * @var string End of line
+	 */
+	protected $EOL = "\r\n";
+
+	/**
+	 * @var array Associative array of Cookies
+	 */
+	public $cookie = [];
+
+	/**
+	 * @var integer Size of current chunk
+	 */
+	protected $curChunkSize;
+
 	/**
 	 * @var string
 	 */
-	protected $EOL = "\r\n";
-	/**
-	 * Associative array of Cookies
-	 * @var array
-	 */
-	public $cookie = [];
-	/**
-	 * Size of current chunk
-	 * @var integer
-	 */
-	protected $curChunkSize;
-	/**
-	 * @var
-	 */
 	protected $curChunk;
+
 	/**
-	 * @var bool
+	 * @var boolean
 	 */
 	public $chunked = false;
+
 	/**
-	 * @var
+	 * @var integer
 	 */
 	public $protocolError;
+
 	/**
-	 * @var int
+	 * @var integer
 	 */
 	public $responseCode = 0;
 
 	/**
-	 * Last requested URL
-	 * @var string
+	 * @var string Last requested URL
 	 */
 	public $lastURL;
 
 	/**
-	 * Raw headers array
-	 * @var array
+	 * @var array Raw headers array
 	 */
 	public $rawHeaders = null;
 
-
 	public $contentType;
+
 	public $charset;
 
 	public $eofTerminated = false;
@@ -93,7 +94,7 @@ class Connection extends ClientConnection {
 	/**
 	 * Performs GET-request
 	 * @param string $url
-	 * @param array $params
+	 * @param array  $params
 	 */
 	public function get($url, $params = null) {
 		if (!is_array($params)) {
@@ -138,7 +139,7 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * @param $headers
+	 * @param array $headers
 	 */
 	protected function customRequestHeaders($headers) {
 		foreach ($headers as $key => $item) {
@@ -159,8 +160,8 @@ class Connection extends ClientConnection {
 	/** 
 	 * Performs POST-request
 	 * @param string $url
-	 * @param array $data
-	 * @param array $params
+	 * @param array  $data
+	 * @param array  $params
 	 */
 	public function post($url, $data = [], $params = null) {
 		if (!is_array($params)) {
@@ -225,14 +226,27 @@ class Connection extends ClientConnection {
 		$this->onResponse($params['resultcb']);
 	}
 
+	/**
+	 * Get body
+	 * @return string
+	 */
 	public function getBody() {
 		return $this->body;
 	}
 
+	/**
+	 * Get headers
+	 * @return array
+	 */
 	public function getHeaders() {
 		return $this->headers;
 	}
 
+	/**
+	 * Get header
+	 * @param  string $name Header name
+	 * @return string
+	 */
 	public function getHeader($name) {
 		$k = 'HTTP_' . strtoupper(strtr($name, Generic::$htr));
 		return isset($this->headers[$k]) ? $this->headers[$k] : null;
@@ -240,8 +254,6 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
-	 * @return void
 	 */
 	public function onRead() {
 		if ($this->state === self::STATE_BODY) {
@@ -373,7 +385,6 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Called when connection finishes
-	 * @return void
 	 */
 	public function onFinish() {
 		if ($this->eofTerminated) {

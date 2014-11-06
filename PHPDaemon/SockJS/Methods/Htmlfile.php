@@ -1,16 +1,16 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\Utils\Crypt;
+
 /**
  * @package    Libraries
  * @subpackage SockJS
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class Htmlfile extends Generic {
 	protected $gcEnabled = true;
 	protected $contentType = 'text/html';
@@ -18,10 +18,20 @@ class Htmlfile extends Generic {
 	protected $poll = true;
 	protected $pollMode = ['stream'];
 
+	/**
+	 * Send frame
+	 * @param  string $frame
+	 * @return void
+	 */
 	public function sendFrame($frame) {
 		$this->outputFrame("<script>\np(" . htmlspecialchars(json_encode($frame, JSON_UNESCAPED_SLASHES), ENT_NOQUOTES | ENT_HTML401). ");\n</script>\r\n");
 		parent::sendFrame($frame);
 	}
+
+	/**
+	 * Constructor
+	 * @return void
+	 */
 	public function init() {
 		parent::init();
 		if ($this->isFinished()) {

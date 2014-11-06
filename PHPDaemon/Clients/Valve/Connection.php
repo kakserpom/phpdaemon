@@ -9,16 +9,18 @@ use PHPDaemon\Utils\Encoding;
 /**
  * @package    NetworkClients
  * @subpackage HLClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
-	/** @var int */
+	/**
+	 * @var integer Timeout
+	 */
 	public $timeout = 1;
 
 	/**
 	 * Sends a request of type 'players'
-	 * @param callable $cb Callback
+	 * @param  callable $cb Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function requestPlayers($cb) {
@@ -33,7 +35,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends a request of type 'info'
-	 * @param callable $cb Callback
+	 * @param  callable $cb Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function requestInfo($cb) {
@@ -42,10 +45,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends a request
-	 * @param string   Type of request
-	 * @param string   Data
-	 * @param callable $cb Callback
-	 * @param string $type
+	 * @param  string   $type Type of request
+	 * @param  string   $data Data
+	 * @param  callable $cb   Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function request($type, $data = null, $cb = null) {
@@ -116,8 +119,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Parses response to 'players' command into structure
-	 * @param &string Data
-	 * @return array Structure
+	 * @param  string &$st Data
+	 * @return array       Structure
 	 */
 	public static function parsePlayers(&$st) {
 		$playersn = Binary::getByte($st);
@@ -148,9 +151,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Parses response to 'info' command into structure
-	 * @param &string Data
-	 * @param string $type
-	 * @return array Structure
+	 * @param  string &$st  Data
+	 * @param  string $type Type of request
+	 * @return array        Structure
 	 */
 	public static function parseInfo(&$st, $type) {
 		$info = [];

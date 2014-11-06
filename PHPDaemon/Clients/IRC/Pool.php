@@ -4,14 +4,15 @@ namespace PHPDaemon\Clients\IRC;
 /**
  * @package    NetworkClients
  * @subpackage IRCClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Client {
+
 	/**
-	 * @var
+	 * @var Pool
 	 */
 	public $identd;
+
 	/**
 	 * @var bool
 	 */
@@ -24,6 +25,7 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
+			/* [integer] Port */
 			'port' => 6667,
 		];
 	}

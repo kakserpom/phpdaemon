@@ -1,22 +1,22 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Utils\Crypt;
+
 /**
  * @package    Libraries
  * @subpackage SockJS
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class IFrame extends Generic {
 	protected $version = '0.3';
 	protected $contentType = 'text/html';
 	protected $cacheable = true;
 
 	/**
-	 * Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {
@@ -58,9 +58,8 @@ class IFrame extends Generic {
 	}
 
 	/**
-	 * Called when request iterated.
-	 * @return integer Status.
+	 * Called when request iterated
+	 * @return void
 	 */
 	public function run() {}
-
 }

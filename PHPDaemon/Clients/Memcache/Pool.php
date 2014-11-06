@@ -4,10 +4,10 @@ namespace PHPDaemon\Clients\Memcache;
 /**
  * @package    Network clients
  * @subpackage MemcacheClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Client {
+
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -15,30 +15,22 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/**
-			 * Default servers
-			 * @var string|array
-			 */
+			/* [string|array] Default servers */
 			'servers'        => 'tcp://127.0.0.1',
 
-			/**
-			 * Default port
-			 * @var integer
-			 */
+			/* [integer] Default port */
 			'port'           => 11211,
 
-			/**
-			 * Maximum connections per server
-			 * @var integer
-			 */
+			/* [integer] Maximum connections per server */
 			'maxconnperserv' => 32
 		];
 	}
 
 	/**
 	 * Gets the key
-	 * @param string Key
-	 * @param mixed  Callback called when response received
+	 * @param  string   $key        Key
+	 * @param  callable $onResponse Callback called when response received
+	 * @callback $onResponse ( )
 	 * @return void
 	 */
 	public function get($key, $onResponse) {
@@ -47,10 +39,11 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Sets the key
-	 * @param string  Key
-	 * @param string  Value
-	 * @param integer Lifetime in seconds (0 - immortal)
-	 * @param mixed   Callback called when the request complete
+	 * @param  string   $key        Key
+	 * @param  string   $value      Value
+	 * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+	 * @param  callable $onResponse Callback called when the request complete
+	 * @callback $onResponse ( )
 	 * @return void
 	 */
 	public function set($key, $value, $exp = 0, $onResponse = null) {
@@ -70,10 +63,11 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Adds the key
-	 * @param string  Key
-	 * @param string  Value
-	 * @param integer Lifetime in seconds (0 - immortal)
-	 * @param mixed   Callback called when the request complete
+	 * @param  string   $key        Key
+	 * @param  string   $value      Value
+	 * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+	 * @param  callable $onResponse Callback called when the request complete
+	 * @callback $onResponse ( )
 	 * @return void
 	 */
 	public function add($key, $value, $exp = 0, $onResponse = null) {
@@ -92,9 +86,10 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Deletes the key
-	 * @param string  Key
-	 * @param mixed   Callback called when the request complete
-	 * @param integer Time to block this key
+	 * @param  string   $key        Key
+	 * @param  callable $onResponse Callback called when the request complete
+	 * @param  integer  $time       Time to block this key
+	 * @callback $onResponse ( )
 	 * @return void
 	 */
 	public function delete($key, $onResponse = null, $time = 0) {
@@ -112,10 +107,11 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Replaces the key
-	 * @param string  Key
-	 * @param string  Value
-	 * @param integer Lifetime in seconds (0 - immortal)
-	 * @param mixed   Callback called when the request complete
+	 * @param  string   $key        Key
+	 * @param  string   $value      Value
+	 * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+	 * @param  callable $onResponse Callback called when the request complete
+	 * @callback $onResponse ( )
 	 * @return void
 	 */
 	public function replace($key, $value, $exp = 0, $onResponse = null) {
@@ -134,10 +130,11 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Appends a string to the key's value
-	 * @param string  Key
-	 * @param string  Value to append
-	 * @param integer Lifetime in seconds (0 - immortal)
-	 * @param mixed   Callback called when the request complete
+	 * @param  string   $key        Key
+	 * @param  string   $value      Value
+	 * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+	 * @param  callable $onResponse Callback called when the request complete
+	 * @callback $onResponse ( )
 	 * @return void
 	 */
 	public function append($key, $value, $exp = 0, $onResponse = null) {
@@ -156,10 +153,11 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Prepends a string to the key's value
-	 * @param string  Key
-	 * @param string  Value to prepend
-	 * @param integer Lifetime in seconds (0 - immortal)
-	 * @param mixed   Callback called when the request complete
+	 * @param  string   $key        Key
+	 * @param  string   $value      Value
+	 * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+	 * @param  callable $onResponse Callback called when the request complete
+	 * @callback $onResponse ( )
 	 * @return void
 	 */
 	public function prepend($key, $value, $exp = 0, $onResponse = null) {
@@ -178,8 +176,8 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Gets a statistics
-	 * @param mixed  Callback called when the request complete
-	 * @param string Server
+	 * @param  callable $onResponse Callback called when the request complete
+	 * @param  string   $server     Server
 	 * @return void
 	 */
 	public function stats($onResponse, $server = NULL) {

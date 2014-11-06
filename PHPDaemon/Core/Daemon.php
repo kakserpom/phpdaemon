@@ -673,7 +673,7 @@ class Daemon {
 
 	/**
 	 * Send message to log.
-	 * @param string message.
+	 * @param  mixed  ...$args Arguments
 	 * @return string message
 	 */
 	public static function log() {

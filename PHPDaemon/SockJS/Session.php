@@ -1,26 +1,30 @@
 <?php
 namespace PHPDaemon\SockJS;
+
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Utils\Crypt;
+
 /**
  * @package    Libraries
  * @subpackage SockJS
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class Session {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/** @var \PHPDaemon\Request\Generic */
+	/**
+	 * @var \PHPDaemon\Request\Generic
+	 */
 	public $route;
 
-	/** @var \PHPDaemon\Structures\StackCallbacks */
+	/**
+	 * @var \PHPDaemon\Structures\StackCallbacks
+	 */
 	public $onWrite;
 
 	public $id;
@@ -30,20 +34,28 @@ class Session {
 	public $addr;
 
 
-	/** @var array */
+	/**
+	 * @var array
+	 */
 	public $buffer = [];
 
 	public $framesBuffer = [];
 	
-	/** @var bool */
+	/**
+	 * @var boolean
+	 */
 	public $finished = false;
 
 	protected $onFinishedCalled = false;
 
-	/** @var bool */
+	/**
+	 * @var boolean
+	 */
 	public $flushing = false;
 	
-	/** @var int */
+	/**
+	 * @var integer
+	 */
 	public $timeout = 60;
 	public $server;
 
@@ -53,14 +65,21 @@ class Session {
 
 	protected $finishTimer;
 
+	/**
+	 * toJson
+	 * @param  string $m
+	 * @return string
+	 */
 	protected function toJson($m) {
 		return json_encode($m, JSON_UNESCAPED_SLASHES);
 	}
 
 	/**
-	 * @param $route
-	 * @param Application $appInstance
-	 * @param $authKey
+	 * __construct
+	 * @param Application $appInstance [@todo description]
+	 * @param string      $id          [@todo description]
+	 * @param array       $server      [@todo description]
+	 * @return void
 	 */
 	public function __construct($appInstance, $id, $server) {
 		$this->onWrite   = new StackCallbacks;
@@ -80,9 +99,9 @@ class Session {
 		});
 	}
 
-		/**
+	/**
 	 * Uncaught exception handler
-	 * @param $e
+	 * @param  object $e
 	 * @return boolean|null Handled?
 	 */
 	public function handleException($e) {
@@ -91,7 +110,6 @@ class Session {
 		}
 		return $this->route->handleException($e);
 	}
-
 
 	/**
 	 * Called when the request wakes up
@@ -107,7 +125,6 @@ class Session {
 		Daemon::$process->setState(Daemon::WSTATE_BUSY);
 	}
 
-
 	/**
 	 * Called when the request starts sleep
 	 * @return void
@@ -119,6 +136,10 @@ class Session {
 		Daemon::$process->setState(Daemon::WSTATE_IDLE);
 	}
 
+	/**
+	 * onHandshake
+	 * @return void
+	 */
 	public function onHandshake() {
 		if (!isset($this->route)) {
 			return;
@@ -132,6 +153,11 @@ class Session {
 		$this->onSleep();
 	}
 
+	/**
+	 * c2s
+	 * @param  object $redis
+	 * @return void
+	 */
 	public function c2s($redis) {
 		if (!$redis) {
 			return;
@@ -146,6 +172,12 @@ class Session {
 		$this->onFrame($msg, \PHPDaemon\Servers\WebSocket\Pool::STRING);
 	}
 
+	/**
+	 * onFrame
+	 * @param  string  $msg  [@todo description]
+	 * @param  integer $type [@todo description]
+	 * @return void
+	 */
 	public function onFrame($msg, $type) {
 		$frames = json_decode($msg, true);
 		if (!is_array($frames)) {
@@ -162,6 +194,11 @@ class Session {
 		$this->onSleep();
 	}
 
+	/**
+	 * poll
+	 * @param  object $redis
+	 * @return void
+	 */
 	public function poll($redis) {
 		if (!$redis) {
 			return;
@@ -175,6 +212,7 @@ class Session {
 
 	/**
 	 * @TODO DESCR
+	 * @return void
 	 */
 	public function onWrite() {
 		$this->onWrite->executeAll($this->route);
@@ -191,6 +229,7 @@ class Session {
 
 	/**
 	 * @TODO DESCR
+	 * @return void
 	 */
 	public function finish() {
 		if ($this->finished) {
@@ -206,6 +245,7 @@ class Session {
 
 	/**
 	 * @TODO DESCR
+	 * @return void
 	 */
 	public function onFinish() {
 		if ($this->onFinishedCalled) {
@@ -288,7 +328,11 @@ class Session {
 	}
 
 	/**
-	 * @param string $pct
+	 * sendPacket
+	 * @param  object   $pct [@todo description]
+	 * @param  callable $cb  [@todo description]
+	 * @callback $cb ( )
+	 * @return void
 	 */
 	public function sendPacket($pct, $cb = null) {
 		if (sizeof($this->framesBuffer)) {
@@ -304,9 +348,10 @@ class Session {
 
 	/**
 	 * Sends a frame.
-	 * @param string   Frame's data.
-	 * @param integer  Frame's type. See the constants.
-	 * @param callback Optional. Callback called when the frame is received by client.
+	 * @param  string   $data Frame's data.
+	 * @param  integer  $type Frame's type. See the constants.
+	 * @param  callback $cb   Optional. Callback called when the frame is received by client.
+	 * @callback $cb ( )
 	 * @return boolean Success.
 	 */
 	public function sendFrame($data, $type = 0x00, $cb = null) {
@@ -320,5 +365,4 @@ class Session {
 		$this->flush();
 		return true;
 	}
-
 }

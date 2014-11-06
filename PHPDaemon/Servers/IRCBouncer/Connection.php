@@ -63,8 +63,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * @TODO DESCR
-	 * @param null|string $from
-	 * @param string $cmd
+	 * @param  string|null $from
+	 * @param  string      $cmd
+	 * @param  mixed       ...$args Arguments
 	 */
 	public function command($from, $cmd) {
 		if ($from === null) {

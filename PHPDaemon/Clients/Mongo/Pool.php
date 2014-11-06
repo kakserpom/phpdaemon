@@ -10,55 +10,74 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
 /**
- * Class Pool
- * @package PHPDaemon\Clients\Mongo
+ * @package    Applications
+ * @subpackage MongoClientAsync
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends Client {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/** @var array */
-	public $collections = []; // Objects of MongoClientAsyncCollection
-	/** @var string */
-	public $dbname = ''; // Current database
-	/** @var */
-	public $lastRequestConnection; // Holds last used MongoClientAsyncConnection object.
-
 	/* Codes of operations */
+
 	/**
 	 * @TODO DESCR
 	 */
 	const OP_REPLY        = 1;
+	
 	/**
 	 * @TODO DESCR
 	 */
 	const OP_MSG          = 1000;
+	
 	/**
 	 * @TODO DESCR
 	 */
 	const OP_UPDATE       = 2001;
+	
 	/**
 	 * @TODO DESCR
 	 */
 	const OP_INSERT       = 2002;
+	
 	/**
 	 * @TODO DESCR
 	 */
 	const OP_QUERY        = 2004;
+	
 	/**
 	 * @TODO DESCR
 	 */
 	const OP_GETMORE      = 2005;
+	
 	/**
 	 * @TODO DESCR
 	 */
 	const OP_DELETE       = 2006;
+	
 	/**
 	 * @TODO DESCR
 	 */
 	const OP_KILL_CURSORS = 2007;
 
-	/** @var */
-	public $cache; // object of MemcacheClient
+	/**
+	 * @var array Objects of MongoClientAsyncCollection
+	 */
+	public $collections = [];
+
+	/**
+	 * @var string Current database
+	 */
+	public $dbname = '';
+
+	/**
+	 * @var Connection Holds last used MongoClientAsyncConnection object
+	 */
+	public $lastRequestConnection;
+
+	/**
+	 * @var object Object of MemcacheClient
+	 */
+	public $cache;
 
 	protected $safeMode = true;
 
@@ -69,14 +88,22 @@ class Pool extends Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// default server list
+			/* [string|array] default server list */
 			'servers'        => 'tcp://127.0.0.1',
-			// default port
+
+			/* [integer] default port */
 			'port'           => 27017,
+			
+			/* [integer] maxconnperserv */
 			'maxconnperserv' => 32,
 		];
 	}
 
+	/**
+	 * @TODO
+	 * @param  array $o
+	 * @return void
+	 */
 	public static function safeModeEnc(&$o) {
 		foreach ($o as &$v) {
 			if (is_array($v)) {
@@ -90,8 +117,8 @@ class Pool extends Client {
 
 	/**
 	 * Sets default database name
-	 * @param string Database name
-	 * @return boolean Success
+	 * @param  string  $name Database name
+	 * @return boolean       Success
 	 */
 	public function selectDB($name) {
 		$this->dbname = $name;
@@ -101,10 +128,10 @@ class Pool extends Client {
 
 	/**
 	 * Generates auth. key
-	 * @param string Username
-	 * @param string Password
-	 * @param string nonce
-	 * @return string MD5 hash
+	 * @param  string $username Username
+	 * @param  string $password Password
+	 * @param  string $nonce    Nonce
+	 * @return string           MD5 hash
 	 */
 	public static function getAuthKey($username, $password, $nonce) {
 		return md5($nonce . $username . md5($username . ':mongo:' . $password));
@@ -112,8 +139,9 @@ class Pool extends Client {
 
 	/**
 	 * Adds mongo server
-	 * @param string  URL
-	 * @param integer Weight
+	 * @param string  $url    URL
+	 * @param integer $weight Weight
+	 * @param mixed   $mock   @deprecated
 	 * @return void
 	 */
 	public function addServer($url, $weight = NULL, $mock = null) {
@@ -122,16 +150,14 @@ class Pool extends Client {
 
 	/**
 	 * Gets the key
-	 * @param integer Opcode (see constants above)
-	 * @param string  Data
-	 * @param boolean Is an answer expected?
-	 * @param object  Connection. Optional.
-	 * @param callable Sent callback
-	 * @param integer $opcode
-	 * @param string $data
-	 * @param \Closure $sentcb
-	 * @return void
+	 * @param  integer    $opcode Opcode (see constants above)
+	 * @param  string     $data   Data
+	 * @param  boolean    $reply  Is an answer expected?
+	 * @param  Connection $conn   Connection. Optional
+	 * @param  callable   $sentcb Sent callback
+	 * @callback $sentcb ( )
 	 * @throws ConnectionFinished
+	 * @return void
 	 */
 	public function request($opcode, $data, $reply = false, $conn = null, $sentcb = null) {
 		$cb = $this->requestCbProducer($opcode, $data, $reply, $sentcb);
@@ -151,11 +177,12 @@ class Pool extends Client {
 
 	/**
 	 * @TODO DESCR
-	 * @param integer $opcode
-	 * @param string $data
-	 * @param bool $reply
-	 * @param \Closure|null $sentcb
-	 * @return \Closure
+	 * @param  integer  $opcode Opcode (see constants above)
+	 * @param  string   $data   Data
+	 * @param  boolean  $reply  Is an answer expected?
+	 * @param  callable $sentcb Sent callback
+	 * @callback $sentcb ( )
+	 * @return callable
 	 */
 	protected function requestCbProducer($opcode, $data, $reply = false, $sentcb = null) {
 		return function ($conn) use ($opcode, $data, $reply, $sentcb) {
@@ -184,8 +211,9 @@ class Pool extends Client {
 
 	/**
 	 * Finds objects in collection and fires callback when got all objects
-	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  await, where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, tailable, await, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function findAll($p, $cb) {
@@ -200,8 +228,9 @@ class Pool extends Client {
 
 	/**
 	 * Finds objects in collection
-	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  await, where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, tailable, await, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function find($p, $cb) {
@@ -299,8 +328,9 @@ class Pool extends Client {
 
 	/**
 	 * Finds one object in collection
-	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties (offset,  opts, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function findOne($p, $cb) {
@@ -389,8 +419,9 @@ class Pool extends Client {
 
 	/**
 	 * Counts objects in collection
-	 * @param array Hash of properties (offset,  limit,  opts,  where,  col)
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, where, col)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function findCount($p, $cb) {
@@ -465,9 +496,9 @@ class Pool extends Client {
 
 	/**
 	 * Sends authenciation packet
-	 * @param array  Hash of properties (dbname,  user,  password,  nonce)
-	 * @param mixed  Callback called when response received
-	 * @param string Optional. Distribution key
+	 * @param  array    $p  Hash of properties (dbname, user, password, nonce)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function auth($p, $cb) {
@@ -506,6 +537,9 @@ class Pool extends Client {
 
 	/**
 	 * Sends request of nonce
+	 * @param  array    $p  Hash of properties
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function getNonce($p, $cb) {
@@ -539,7 +573,7 @@ class Pool extends Client {
 
 	/**
 	 * @TODO DESCR
-	 * @param array $keys
+	 * @param  array  $keys
 	 * @return string
 	 */
 	public function getIndexName($keys) {
@@ -554,11 +588,11 @@ class Pool extends Client {
 
 	/**
 	 * Ensure index
-	 * @param string Collection
-	 * @param array  Keys
-	 * @param array  Optional. Options
-	 * @param mixed  Optional. Callback called when response received
-	 * @param string $ns
+	 * @param  string   $ns      Collection
+	 * @param  array    $keys    Keys
+	 * @param  array    $options Optional. Options
+	 * @param  callable $cb      Optional. Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function ensureIndex($ns, $keys, $options = [], $cb = null) {
@@ -588,10 +622,11 @@ class Pool extends Client {
 
 	/**
 	 * Gets last error
-	 * @param string Dbname
-	 * @param mixed  Callback called when response received
-	 * @param array  Parameters.
-	 * @param object Connection. Optional.
+	 * @param  string     $db     Dbname
+	 * @param  callable   $cb     Callback called when response received
+	 * @param  array      $params Parameters.
+	 * @param  Connection $conn   Connection. Optional
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function lastError($db, $cb, $params = [], $conn = null) {
@@ -621,8 +656,9 @@ class Pool extends Client {
 
 	/**
 	 * Find objects in collection using min/max specifiers
-	 * @param array Hash of properties (offset,  limit,  opts,  where,  col,  min,  max)
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, where, col, min, max)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function range($p, $cb) {
@@ -704,8 +740,9 @@ class Pool extends Client {
 
 	/**
 	 * Evaluates a code on the server side
-	 * @param string Code
-	 * @param mixed  Callback called when response received
+	 * @param  string   $code Code
+	 * @param  callable $cb   Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function evaluate($code, $cb) {
@@ -750,8 +787,9 @@ class Pool extends Client {
 
 	/**
 	 * Returns distinct values of the property
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col, where)
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, key, col, where)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function distinct($p, $cb) {
@@ -788,6 +826,11 @@ class Pool extends Client {
 		});
 	}
 
+	/**
+	 * [_paramFields description]
+	 * @param  mixed $f
+	 * @return array
+	 */
 	protected function _paramFields($f) {
 		if (is_string($f)) {
 			$f = array_map('trim', explode(',', $f));
@@ -805,6 +848,11 @@ class Pool extends Client {
 		return $p;
 	}
 
+	/**
+	 * [_params description]
+	 * @param  array &$p
+	 * @return void
+	 */
 	protected function _params(&$p) {
 		foreach ($p as $k => &$v) {
 			if ($k === 'fields' || $k === 'sort') {
@@ -849,8 +897,9 @@ class Pool extends Client {
 
 	/**
 	 * Find and modify
-	 * @param array Hash of properties
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function findAndModify($p, $cb) {
@@ -915,8 +964,9 @@ class Pool extends Client {
 
 	/**
 	 * Groupping function
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, key, col, reduce, initial)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function group($p, $cb) {
@@ -981,8 +1031,9 @@ class Pool extends Client {
 
 	/**
 	 * Aggregate function
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col)
-	 * @param mixed Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, key, col)
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function aggregate($p, $cb) {
@@ -1025,13 +1076,13 @@ class Pool extends Client {
 
 	/**
 	 * Updates one object in collection
-	 * @param string   Collection's name
-	 * @param array    Conditions
-	 * @param array    Data
-	 * @param integer  Optional. Flags.
-	 * @param callback Callback (getLastError)
-	 * @param array    Parameters (getLastError).
-	 * @param string $col
+	 * @param  string   $col    Collection's name
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  integer  $flags  Optional. Flags
+	 * @param  callable $cb     Optional. Callback
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function update($col, $cond, $data, $flags = 0, $cb = NULL, $params = []) {
@@ -1069,12 +1120,12 @@ class Pool extends Client {
 
 	/**
 	 * Updates one object in collection
-	 * @param string   Collection's name
-	 * @param array    Conditions
-	 * @param array    Data
-	 * @param callback Callback (getLastError)
-	 * @param array    Parameters (getLastError).
-	 * @param string $col
+	 * @param  string   $col    Collection's name
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  callable $cb     Optional. Callback
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function updateOne($col, $cond, $data, $cb = NULL, $params = []) {
@@ -1083,12 +1134,12 @@ class Pool extends Client {
 
 	/**
 	 * Updates several objects in collection
-	 * @param string   Collection's name
-	 * @param array    Conditions
-	 * @param array    Data
-	 * @param callback Callback
-	 * @param array    Parameters (getLastError).
-	 * @param string $col
+	 * @param  string   $col    Collection's name
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  callable $cb     Optional. Callback
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function updateMulti($col, $cond, $data, $cb = NULL, $params = []) {
@@ -1096,12 +1147,14 @@ class Pool extends Client {
 	}
 
 	/**
-	 * Upserts an object (updates if exists,  insert if not exists)
-	 * @param string  Collection's name
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param array	  Parameters.
-	 * @param string $col
+	 * Upserts an object (updates if exists, insert if not exists)
+	 * @param  string   $col    Collection's name
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  boolean  $multi  Optional. Multi
+	 * @param  callable $cb     Optional. Callback
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function upsert($col, $cond, $data, $multi = false, $cb = NULL, $params = []) {
@@ -1109,12 +1162,13 @@ class Pool extends Client {
 	}
 
 	/**
-	 * Upserts an object (updates if exists,  insert if not exists)
-	 * @param string  Collection's name
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param array	  Parameters.
-	 * @param string $col
+	 * Upserts an object (updates if exists, insert if not exists)
+	 * @param  string   $col    Collection's name
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  callable $cb     Optional. Callback
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function upsertOne($col, $cond, $data, $cb = NULL, $params = []) {
@@ -1122,12 +1176,13 @@ class Pool extends Client {
 	}
 
 	/**
-	 * Upserts an object (updates if exists,  insert if not exists)
-	 * @param string  Collection's name
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param array	  Parameters.
-	 * @param string $col
+	 * Upserts an object (updates if exists, insert if not exists)
+	 * @param  string   $col    Collection's name
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  callable $cb     Optional. Callback
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function upsertMulti($col, $cond, $data, $cb = NULL, $params = []) {
@@ -1136,11 +1191,11 @@ class Pool extends Client {
 
 	/**
 	 * Inserts an object
-	 * @param string   Collection's name
-	 * @param array    Data
-	 * @param callback Callback (getLastError)
-	 * @param array    Parameters (getLastError).
-	 * @param string $col
+	 * @param  string   $col    Collection's name
+	 * @param  array    $doc    Document
+	 * @param  callable $cb     Optional. Callback
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return MongoId
 	 */
 	public function insert($col, $doc = [], $cb = NULL, $params = []) {
@@ -1178,8 +1233,8 @@ class Pool extends Client {
 
 	/**
 	 * Sends a request to kill certain cursors on the server side
-	 * @param array Array of cursors
-	 * @param object Connection
+	 * @param  array      $cursors Array of cursors
+	 * @param  Connection $conn    Connection
 	 * @return void
 	 */
 	public function killCursors($cursors = [], $conn) {
@@ -1192,9 +1247,11 @@ class Pool extends Client {
 
 	/**
 	 * Inserts several documents
-	 * @param string Collection's name
-	 * @param array  Array of docs
-	 * @param string $col
+	 * @param  string   $col    Collection's name
+	 * @param  array    $docs   Array of docs
+	 * @param  callable $cb     Optional. Callback
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return array IDs
 	 */
 	public function insertMulti($col, $docs = [], $cb = NULL, $params = []) {
@@ -1235,10 +1292,11 @@ class Pool extends Client {
 
 	/**
 	 * Remove objects from collection
-	 * @param string Collection's name
-	 * @param array  Conditions
-	 * @param mixed  Optional. Callback called when response received.
-	 * @param string $col
+	 * @param  string   $col    Collection's name
+	 * @param  array    $cond   Conditions
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Parameters
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function remove($col, $cond = [], $cb = NULL, $params = []) {
@@ -1278,10 +1336,10 @@ class Pool extends Client {
 
 	/**
 	 * Asks for more objects
-	 * @param string  Collection's name
-	 * @param string  Cursor's ID
-	 * @param integer Number of objects
-	 * @param object Connection
+	 * @param  string     $col    Collection's name
+	 * @param  string     $id     Cursor's ID
+	 * @param  integer    $number Number of objects
+	 * @param  Connection $conn   Connection
 	 * @return void
 	 */
 	public function getMore($col, $id, $number, $conn) {
@@ -1305,7 +1363,7 @@ class Pool extends Client {
 
 	/**
 	 * Returns an object of collection
-	 * @param string Collection's name
+	 * @param  string $col Collection's name
 	 * @return Collection
 	 */
 	public function getCollection($col) {
@@ -1324,8 +1382,8 @@ class Pool extends Client {
 	}
 
 	/**
-	 * Magic getter-method. Proxy for getCollection.
-	 * @param string Collection's name
+	 * Magic getter-method. Proxy for getCollection
+	 * @param  string $name Collection's name
 	 * @return Collection
 	 */
 	public function __get($name) {

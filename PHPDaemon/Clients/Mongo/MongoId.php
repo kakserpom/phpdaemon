@@ -1,9 +1,21 @@
 <?php
 namespace PHPDaemon\Clients\Mongo;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
+/**
+ * @package    Applications
+ * @subpackage MongoClientAsync
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ */
 class MongoId extends \MongoId {
+
+	/**
+	 * Import
+	 * @param  mixed $id ID
+	 * @return mixed
+	 */
 	public static function import($id) {
 		if ($id instanceof static) {
 			return $id;
@@ -49,13 +61,27 @@ class MongoId extends \MongoId {
 		}
 		@parent::__construct($id);
 	}
+
+	/**
+	 * __toString
+	 * @return string
+	 */
 	public function __toString() {
 		return strrev(gmp_strval(gmp_init(parent::__toString(), 16), 62));
 	}
+
+	/**
+	 * toHex
+	 * @return string
+	 */
 	public function toHex() {
 		return parent::__toString();
 	}
 
+	/**
+	 * getPlainObject
+	 * @return \MongoId
+	 */
 	public function getPlainObject() {
 		return new \MongoId(parent::__toString());
 	}

@@ -1,14 +1,15 @@
 <?php
 namespace PHPDaemon\SockJS\TestRelay;
+
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
+
 /**
  * @package    SockJS
  * @subpackage TestRelay
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Application extends \PHPDaemon\Core\AppInstance {
@@ -18,6 +19,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	 */
 	protected function getConfigDefaults() {
 		return [
+			// [string] WSS name
 			'wss-name' => '',
 		];
 	}

@@ -6,10 +6,15 @@ use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Network\Client;
 
+/**
+ * @package    NetworkClients
+ * @subpackage DNSClient
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ */
 class Pool extends Client {
+
 	/**
-	 * Record Types
-	 * @var array hash [code => "name", ...]
+	 * @var array Record Types [code => "name", ...]
 	 */
 	public static $type = [
 		1     => 'A', 2 => 'NS', 3 => 'MD', 4 => 'MF', 5 => 'CNAME',
@@ -31,26 +36,22 @@ class Pool extends Client {
 	];
 
 	/**
-	 * Hosts file parsed
-	 * @var array hash [hostname => [addr, ...], ...]
+	 * @var array Hosts file parsed [hostname => [addr, ...], ...]
 	 */
 	public $hosts = [];
 
 	/**
-	 * Preloading ComplexJob
-	 * @var \PHPDaemon\Core\ComplexJob
+	 * @var \PHPDaemon\Core\ComplexJob Preloading ComplexJob
 	 */
 	public $preloading;
 
 	/**
-	 * Resolve cache
-	 * @var CappedStorageHits
+	 * @var CappedStorageHits Resolve cache
 	 */
 	public $resolveCache;
 
 	/**
-	 * Classes
-	 * @var array [code => "class"]
+	 * @var array Classes [code => "class"]
 	 */
 	public static $class = [
 		1   => 'IN',
@@ -60,7 +61,6 @@ class Pool extends Client {
 
 	/**
 	 * Constructor
-	 * @return object
 	 */
 	protected function init() {
 		$this->resolveCache = new CappedStorageHits($this->config->resolvecachesize->value);
@@ -69,16 +69,26 @@ class Pool extends Client {
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
-	 * @return array|bool
+	 * @return array
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// @todo add description strings
+			/* [integer] port */
 			'port'             => 53,
+			
+			/* [integer] resolvecachesize */
 			'resolvecachesize' => 128,
+			
+			/* [string] Servers */
 			'servers'          => '',
+			
+			/* [string] hostsfile */
 			'hostsfile'        => '/etc/hosts',
+			
+			/* [string] resolvfile */
 			'resolvfile'       => '/etc/resolv.conf',
+			
+			/* [boolean] Expose? */
 			'expose'           => 1,
 		];
 	}
@@ -128,9 +138,10 @@ class Pool extends Client {
 
 	/**
 	 * Resolves the host
-	 * @param string   Hostname
-	 * @param callable $cb Callback
-	 * @param [boolean Noncache?]
+	 * @param  string   $hostname Hostname
+	 * @param  callable $cb       Callback
+	 * @param  boolean  $noncache Noncache?
+	 * @callback $cb ( array|string $addrs )
 	 * @return void
 	 */
 	public function resolve($hostname, $cb, $noncache = false) {
@@ -195,10 +206,10 @@ class Pool extends Client {
 
 	/**
 	 * Gets the host information
-	 * @param string   Hostname
-	 * @param callable $cb Callback
-	 * @param [boolean Noncache?]
-	 * @param string $hostname
+	 * @param  string   $hostname Hostname
+	 * @param  callable $cb       Callback
+	 * @param  boolean  $noncache Noncache?
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function get($hostname, $cb, $noncache = false) {

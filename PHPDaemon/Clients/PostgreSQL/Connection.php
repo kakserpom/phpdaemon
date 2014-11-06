@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\PostgreSQL;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\ClientConnection;
@@ -8,98 +9,82 @@ use PHPDaemon\Structures\StackCallbacks;
 class Connection extends ClientConnection {
 
 	/**
-	 * Protocol version
-	 * @var string
+	 * @var string Protocol version
 	 */
 	public $protover = '3.0';
 
 	/**
-	 * Maximum packet size
-	 * @var integer
+	 * @var integer Maximum packet size
 	 */
 	public $maxPacketSize = 0x1000000;
 
 	/**
-	 * Charset number
-	 * @var integer
+	 * @var integer Charset number
 	 */
 	public $charsetNumber = 0x08;
 
 	/**
-	 * Database name
-	 * @var string
+	 * @var string Database name
 	 */
 	public $dbname = '';
 
 	/**
-	 * Username
-	 * @var string
+	 * @var string Username
 	 */
 	protected $user = 'root';
 
 	/**
-	 * Password
-	 * @var string
+	 * @var string Password
 	 */
 	protected $password = '';
 
 	/**
-	 * Default options
-	 * @var string
+	 * @var string Default options
 	 */
 	public $options = '';
 
 	/**
-	 * Connection's state. 0 - start,  1 - got initial packet,  2 - auth. packet sent,  3 - auth. error,  4 - handshaked OK
-	 * @var integer
+	 * @var integer Connection's state. 0 - start,  1 - got initial packet,  2 - auth. packet sent,  3 - auth. error,  4 - handshaked OK
 	 */
 	public $state = 0;
 
 	/**
-	 * State of pointer of incoming data. 0 - Result Set Header Packet,  1 - Field Packet,  2 - Row Packet
-	 * @var string
+	 * @var string State of pointer of incoming data. 0 - Result Set Header Packet,  1 - Field Packet,  2 - Row Packet
 	 */
 	public $instate = 0;
 
 	/**
-	 * Resulting rows
-	 * @var array
+	 * @var array Resulting rows
 	 */
 	public $resultRows = [];
 
 	/**
-	 * Resulting fields
-	 * @var array
+	 * @var array Resulting fields
 	 */
 	public $resultFields = [];
 
 	/**
-	 * Equals to INSERT_ID().
-	 * @var string
+	 * @var string Equals to INSERT_ID().
 	 */
 	public $insertId;
 
 	/**
-	 * Inserted rows number
-	 * @var integer
+	 * @var integer Inserted rows number
 	 */
 	public $insertNum;
 
 	/**
-	 * Number of affected rows
-	 * @var integer
+	 * @var integer Number of affected rows
 	 */
 	public $affectedRows;
 
 	/**
-	 * Runtime parameters from server
-	 * @var array
+	 * @var array Runtime parameters from server
 	 */
 	public $parameters = [];
 
 	/**
-	 * Backend key
-	 * @var string
+	 * @var string Backend key
 	 */
 	public $backendKey;
 
@@ -107,10 +92,12 @@ class Connection extends ClientConnection {
 	 * State: authentication packet sent
 	 */
 	const STATE_AUTH_PACKET_SENT = 2;
+
 	/**
 	 * State: authencation error
 	 */
 	const STATE_AUTH_ERROR       = 3;
+
 	/**
 	 * State: authentication passed
 	 */
@@ -142,7 +129,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Executes the given callback when/if the connection is handshaked.
-	 * Callback.
+	 * @param  callable $cb Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function onConnected($cb) {
@@ -162,9 +150,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Converts binary string to integer
-	 * @param string  Binary string
-	 * @param boolean Optional. Little endian. Default value - true.
-	 * @return integer Resulting integer
+	 * @param  string  $str Binary string
+	 * @param  boolean $l   Optional. Little endian. Default value - true.
+	 * @return integer      Resulting integer
 	 */
 	public function bytes2int($str, $l = TRUE) {
 		if ($l) {
@@ -183,10 +171,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Converts integer to binary string
-	 * @param integer Length
-	 * @param integer Integer
-	 * @param boolean Optional. Little endian. Default value - true.
-	 * @return string Resulting binary string
+	 * @param  integer $len Length
+	 * @param  integer $int Integer
+	 * @param  boolean $l   Optional. Little endian. Default value - true.
+	 * @return string       Resulting binary string
 	 */
 	function int2bytes($len, $int = 0, $l = TRUE) {
 		$hexstr = dechex($int);
@@ -212,8 +200,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Send a packet
-	 * @param string Data
-	 * @return boolean Success
+	 * @param  string  $type   Data
+	 * @param  string  $packet Packet
+	 * @return boolean         Success
 	 */
 	public function sendPacket($type = '', $packet) {
 		$header = $type . pack('N', strlen($packet) + 4);
@@ -230,8 +219,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Builds length-encoded binary string
-	 * @param string String
-	 * @return string Resulting binary string
+	 * @param  string $s String
+	 * @return string    Resulting binary string
 	 */
 	public function buildLenEncodedBinary($s) {
 		if ($s === NULL) {
@@ -257,8 +246,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Parses length-encoded binary
-	 * @param string Reference to source string
-	 * @return integer Result
+	 * @param  string  &$s Reference to source string
+	 * @param  integer &$p
+	 * @return integer     Result
 	 */
 	public function parseEncodedBinary(&$s, &$p) {
 		$f = ord(binarySubstr($s, $p, 1));
@@ -298,9 +288,9 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Parse length-encoded string
-	 * @param string  Reference to source string
-	 * @param integer Reference to pointer
-	 * @return integer Result
+	 * @param  string  &$s Reference to source string
+	 * @param  integer &$p Reference to pointer
+	 * @return integer     Result
 	 */
 	public function parseEncodedString(&$s, &$p) {
 		$l = $this->parseEncodedBinary($s, $p);
@@ -320,9 +310,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Send SQL-query
-	 * @param string $q  Query
-	 * @param callable $callback Optional. Callback called when response received.
-	 * @return boolean Success
+	 * @param  string   $q        Query
+	 * @param  callable $callback Optional. Callback called when response received.
+	 * @callback $callback ( )
+	 * @return boolean            Success
 	 */
 	public function query($q, $callback = NULL) {
 		return $this->command('Q', $q . "\x00", $callback);
@@ -330,7 +321,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Send echo-request
-	 * @param callback Optional. Callback called when response received
+	 * @param  callable $callback Optional. Callback called when response received
+	 * @callback $callback ( )
 	 * @return boolean Success
 	 */
 	public function ping($callback = NULL) {
@@ -340,7 +332,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends sync-request
-	 * @param callback Optional. Callback called when response received.
+	 * @param  callable $cb Optional. Callback called when response received.
+	 * @callback $cb ( )
 	 * @return boolean Success
 	 */
 	public function sync($cb = NULL) {
@@ -349,6 +342,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Send terminate-request to shutdown the connection
+	 * @param  callable $cb Optional. Callback called when response received.
+	 * @callback $cb ( )
 	 * @return boolean Success
 	 */
 	public function terminate($cb = NULL) {
@@ -357,9 +352,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Sends arbitrary command
-	 * @param integer  Command's code. See constants above.
-	 * @param string   Data
-	 * @param callback Optional. Callback called when response received.
+	 * @param  integer  $cmd Command's code. See constants above.
+	 * @param  string   $q   Data
+	 * @param  callable $cb  Optional. Callback called when response received.
+	 * @callback $cb ( )
 	 * @return boolean Success
 	 */
 	public function command($cmd, $q = '', $cb = NULL) {
@@ -375,8 +371,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Set default database name
-	 * @param string Database name
-	 * @return boolean Success
+	 * @param  string  $name Database name
+	 * @return boolean       Success
 	 */
 	public function selectDB($name) {
 		$this->dbname = $name;
@@ -390,7 +386,7 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param string New data
+	 * @param  string $buf New data
 	 * @return void
 	 */
 	public function stdin($buf) {
@@ -642,10 +638,10 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Decode strings from the NUL-terminated representation
-	 * @param string    Binary data
-	 * @param integer   Optional. Limit of count. Default is 1.
-	 * @param reference Optional. Pointer.
-	 * @return array Decoded strings
+	 * @param  string    $data  Binary data
+	 * @param  integer   $limit Optional. Limit of count. Default is 1.
+	 * @param  reference &$p    Optional. Pointer.
+	 * @return array            Decoded strings
 	 */
 	public function decodeNULstrings($data, $limit = 1, &$p = 0) {
 		$r = [];

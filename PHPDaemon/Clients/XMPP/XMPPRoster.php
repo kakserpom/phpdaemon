@@ -9,27 +9,32 @@ class XMPPRoster {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @var
+	 * @var Connection
 	 */
 	public $xmpp;
+
 	/**
 	 * @var array
 	 */
 	public $roster_array = [];
+
 	/**
-	 * @var bool
+	 * @var boolean
 	 */
 	public $track_presence = true;
+
 	/**
-	 * @var bool
+	 * @var boolean
 	 */
 	public $auto_subscribe = true;
+
 	/**
 	 * @var string
 	 */
 	public $ns = 'jabber:iq:roster';
 
 	/**
+	 * Constructor
 	 * @param Connection $xmpp
 	 */
 	public function __construct($xmpp) {
@@ -69,24 +74,30 @@ class XMPPRoster {
 	}
 
 	/**
-	 * @param string $xml
-	 * @param callable $cb
+	 * @TODO
+	 * @param  string   $xml
+	 * @param  callable $cb
+	 * @callback $cb ( )
 	 */
 	public function rosterSet($xml, $cb = null) {
 		$this->xmpp->querySetTo($this->xmpp->fulljid, $this->ns, $xml, $cb);
 	}
 
 	/**
-	 * @param $jid
-	 * @param $type
-	 * @param callable $cb
+	 * @TODO
+	 * @param  string   $jid
+	 * @param  string   $type
+	 * @param  callable $cb
+	 * @callback $cb ( )
 	 */
 	public function setSubscription($jid, $type, $cb = null) {
 		$this->rosterSet('<item jid="' . htmlspecialchars($jid) . '" subscription="' . htmlspecialchars($type) . '" />', $cb);
 	}
 
 	/**
-	 * @param callable $cb
+	 * @TODO
+	 * @param  callable $cb
+	 * @callback $cb ( )
 	 */
 	public function fetch($cb = null) {
 		$this->xmpp->queryGet($this->ns, function ($xml) use ($cb) {
@@ -125,13 +136,11 @@ class XMPPRoster {
 	}
 
 	/**
-	 *
 	 * Add given contact to roster
-	 *
 	 * @param string $jid
 	 * @param string $subscription
 	 * @param string $name
-	 * @param array $groups
+	 * @param array  $groups
 	 */
 	public function _addContact($jid, $subscription, $name = '', $groups = []) {
 		$contact = ['jid' => $jid, 'subscription' => $subscription, 'name' => $name, 'groups' => $groups];
@@ -144,10 +153,9 @@ class XMPPRoster {
 	}
 
 	/**
-	 *
 	 * Retrieve contact via jid
-	 *
-	 * @param string $jid
+	 * @param  string  $jid
+	 * @return array|null
 	 */
 	public function getContact($jid) {
 		if ($this->isContact($jid)) {
@@ -157,23 +165,20 @@ class XMPPRoster {
 	}
 
 	/**
-	 *
 	 * Discover if a contact exists in the roster via jid
-	 *
-	 * @param string $jid
+	 * @param  string  $jid
+	 * @return boolean
 	 */
 	public function isContact($jid) {
 		return array_key_exists($jid, $this->roster_array);
 	}
 
 	/**
-	 *
 	 * Set presence
-	 *
-	 * @param string $presence
+	 * @param string  $presence
 	 * @param integer $priority
-	 * @param string $show
-	 * @param string $status
+	 * @param string  $show
+	 * @param string  $status
 	 */
 	public function setPresence($presence, $priority, $show, $status) {
 		list($jid, $resource) = explode('/', $presence . '/');
@@ -190,9 +195,8 @@ class XMPPRoster {
 
 	/**
 	 * Return best presence for jid
-	 *
-	 * @param string $jid
-	 * @param array|bool
+	 * @param  string $jid
+	 * @return array|false
 	 */
 	public function getPresence($jid) {
 		$split = split("/", $jid);
