@@ -6,13 +6,12 @@ use PHPDaemon\Network\Server;
 class Pool extends Server {
 
 	/**
-	 * Jobs
-	 * @var array
+	 * @var array Jobs
 	 */
 	public $lockState = [];
+
 	/**
-	 * Array of connection's state
-	 * @var array
+	 * @var array Array of connection's state
 	 */
 	public $lockConnState = [];
 
@@ -23,16 +22,20 @@ class Pool extends Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// listen to
+			/* [string|array] Listen addresses */
 			'listen'         => 'tcp://0.0.0.0',
-			// listen port
+			
+			/* [integer] Listen port */
 			'listenport'     => 833,
-			// allowed clients ip list
+			
+			/* [string] Allowed clients ip list */
 			'allowedclients' => '127.0.0.1',
-			// disabled by default
+			
+			/* [boolean] Disabled by default */
 			'enable'         => 0,
+
+			/* [boolean] Logging? */
 			'protologging'   => false,
 		];
 	}
-
 }

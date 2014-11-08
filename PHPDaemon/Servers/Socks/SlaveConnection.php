@@ -11,7 +11,7 @@ class SlaveConnection extends Connection {
 
 	/**
 	 * Set client
-	 * @param SocksServerConnection
+	 * @param  SocksServerConnection $client
 	 * @return void
 	 */
 	public function setClient($client) {
