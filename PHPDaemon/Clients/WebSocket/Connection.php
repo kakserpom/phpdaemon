@@ -72,8 +72,10 @@ class Connection extends ClientConnection {
 	 */
 	public function onReady() {
 		$this->setWatermark(2, $this->pool->maxAllowedPacket);
-		$this->key = base64_encode(Crypt::randomString(16));
-		$this->write('GET /'.$this->path." HTTP/1.1\r\nHost: ".$this->host.($this->port != 80 ? ':' . $this->port : '')."\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ".$this->key."\r\nSec-WebSocket-Version: 13\r\n\r\n");
+        Crypt::randomString(16, null, function($string) {
+            $this->key = base64_encode($string);
+            $this->write('GET /'.$this->path." HTTP/1.1\r\nHost: ".$this->host.($this->port != 80 ? ':' . $this->port : '')."\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ".$this->key."\r\nSec-WebSocket-Version: 13\r\n\r\n");
+        });
 	}
 
 	/**
