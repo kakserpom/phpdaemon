@@ -23,17 +23,14 @@ class Pool extends \PHPDaemon\Network\Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/* [boolean] Expose PHPDaemon version by X-Powered-By Header */
-			'expose'                  => 1,
-
-			/* [boolean] Read request body from the file given in REQUEST_BODY_FILE parameter */
-			'auto-read-body-file'     => 1,
-
 			/* [string|array] Listen addresses */
 			'listen'                  => 'tcp://127.0.0.1,unix:///tmp/phpdaemon.fcgi.sock',
 
 			/* [integer] Listen port */
 			'port'                    => 9000,
+
+			/* [boolean] Read request body from the file given in REQUEST_BODY_FILE parameter */
+			'auto-read-body-file'     => 1,
 
 			/* [string] Allowed clients ip list */
 			'allowed-clients'         => '127.0.0.1',
@@ -49,6 +46,9 @@ class Pool extends \PHPDaemon\Network\Server {
 
 			/* [boolean] Use X-Sendfile only if server['USE_SENDFILE'] provided. */
 			'send-file-onlybycommand' => 0,
+
+			/* [boolean] Expose PHPDaemon version by X-Powered-By Header */
+			'expose'                  => 1,
 
 			/* [Time] Keepalive time */
 			'keepalive'               => new Time('0s'),

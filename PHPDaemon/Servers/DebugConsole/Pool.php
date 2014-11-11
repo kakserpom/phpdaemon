@@ -19,7 +19,7 @@ class Pool extends Server {
 			/* [integer] Listen port */
 			'port'       => 8818,
 
-			/* [string] @todo */
+			/* [string] Password for auth */
 			'passphrase' => 'secret',
 		];
 	}

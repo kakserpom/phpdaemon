@@ -19,14 +19,14 @@ class Pool extends Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/* [string] Path to crossdomain.xml file */
-			'file'   => getcwd() . '/conf/crossdomain.xml',
-
 			/* [string|array] Listen addresses */
 			'listen' => '0.0.0.0',
 
 			/* [integer] Listen port */
 			'port'   => 843,
+
+			/* [string] Path to crossdomain.xml file */
+			'file'   => getcwd() . '/conf/crossdomain.xml',
 		];
 	}
 
