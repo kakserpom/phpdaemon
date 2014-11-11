@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Servers\Socks;
 
-use PHPDaemon\Network\Connection;
-
 class SlaveConnection extends Connection {
 
 	protected $client;
