@@ -13,8 +13,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	use \PHPDaemon\Traits\Sessions;
 
 	/**
-	 * Timeout
-	 * @var integer
+	 * @var integer Timeout
 	 */
 	protected $timeout = 120;
 
@@ -24,6 +23,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $extensions = [];
 	protected $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
 	protected $buf = '';
+
 	/**
 	 * @var \PHPDaemon\WebSocket\Protocol
 	 */
@@ -36,56 +36,47 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $headers = [];
 
 	/**
-	 * Is this connection running right now?
-	 * @var boolean
+	 * @var boolean Is this connection running right now?
 	 */
 	protected $running = false;
 
 	/**
 	 * State: first line
-	 * @var integer
 	 */
 	const STATE_FIRSTLINE  = 1;
 
 	/**
 	 * State: headers
-	 * @var integer
 	 */
 	const STATE_HEADERS    = 2;
 
 	/**
 	 * State: content
-	 * @var integer
 	 */
 	const STATE_CONTENT    = 3;
 
 	/**
 	 * State: prehandshake
-	 * @var integer
 	 */
 	const STATE_PREHANDSHAKE = 5;
 
 	/**
 	 * State: handshaked
-	 * @var integer
 	 */
 	const STATE_HANDSHAKED = 6;
 
 	/**
-	 * Frame buffer
-	 * @var string
+	 * @var string Frame buffer
 	 */
 	public $framebuf = '';
 
 	/**
-	 * _SERVER
-	 * @var array
+	 * @var array _SERVER
 	 */
 	public $server = [];
 
 	/**
-	 * _COOKIE
-	 * @var array
+	 * @var array _COOKIE
 	 */
 	public $cookie = [];
 
@@ -93,32 +84,27 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 
 	/**
-	 * _GET
-	 * @var array
+	 * @var array _GET
 	 */
 	public $get = [];
 
 	/**
-	 * _POST
-	 * @var null
+	 * @var null _POST
 	 */
 	public $post = null;
 
 	/**
-	 * Content length from header() method
-	 * @var integer
+	 * @var integer Content length from header() method
 	 */
 	protected $contentLength;
 
 	/**
-	 * Number of outgoing cookie-headers
-	 * @var integer
+	 * @var integer Number of outgoing cookie-headers
 	 */
 	protected $cookieNum = 0;
 
 	/**
-	 * Replacement pairs for processing some header values in parse_str()
-	 * @var array hash
+	 * @var array Replacement pairs for processing some header values in parse_str()
 	 */
 	public static $hvaltr = ['; ' => '&', ';' => '&', ' ' => '%20'];
 
@@ -133,8 +119,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Get cookie by name
-	 * @param string $name Name of cookie
-	 * @return string Contents
+	 * @param  string $name Name of cookie
+	 * @return string       Contents
 	 */
 	protected function getCookieStr($name) {
 		return \PHPDaemon\HTTPRequest\Generic::getString($this->cookie[$name]);
@@ -143,7 +129,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Set session state
-	 * @param mixed
+	 * @param  mixed $var
 	 * @return void
 	 */
 	protected function setSessionState($var) {
@@ -185,7 +171,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when connection is inherited from HTTP request
-	 * @param $req
+	 * @param  object $req
 	 * @return void
 	 */
 	public function onInheritanceFromRequest($req) {
@@ -199,10 +185,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Sends a frame.
-	 * @param string $data  Frame's data.
-	 * @param string $type  Frame's type. ("STRING" OR "BINARY")
-	 * @param callback $cb Optional. Callback called when the frame is received by client.
-	 * @return boolean Success.
+	 * @param  string   $data  Frame's data.
+	 * @param  string   $type  Frame's type. ("STRING" OR "BINARY")
+	 * @param  callable $cb    Optional. Callback called when the frame is received by client.
+	 * @callback $cb ( )
+	 * @return boolean         Success.
 	 */
 	public function sendFrame($data, $type = null, $cb = null) {
 		if (!$this->handshaked) {
@@ -242,8 +229,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Uncaught exception handler
-	 * @param $e
-	 * @return boolean Handled?
+	 * @param  Exception $e
+	 * @return boolean      Handled?
 	 */
 	public function handleException($e) {
 		if (!isset($this->route)) {
@@ -254,10 +241,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when new frame received.
-	 * @param string Frame's data.
-	 * @param string Frame's type ("STRING" OR "BINARY").
-	 * @param string $data
-	 * @return boolean Success.
+	 * @param  string $data Frame's data.
+	 * @param  string $type Frame's type ("STRING" OR "BINARY").
+	 * @return boolean      Success.
 	 */
 	public function onFrame($data, $type) {
 		if (!isset($this->route)) {
@@ -313,7 +299,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when we're going to handshake.
-	 * @return boolean Handshake status
+	 * @param  array   $extraHeaders
+	 * @return boolean               Handshake status
 	 */
 	public function handshake($extraHeaders = null) {
 
@@ -370,6 +357,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 		return true;
 	}
 
+	/**
+	 * @TODO
+	 * @param  string $s Data
+	 */
 	public function write($s) {
 		parent::write($s);
 	}
@@ -386,8 +377,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Read first line of HTTP request
-	 * @return null|boolean Success
-	 * @return null|boolean
+	 * @return boolean|null Success
 	 */
 	protected function httpReadFirstline() {
 		if (($l = $this->readline()) === null) {
@@ -423,7 +413,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	/**
 	 * Read headers line-by-line
 	 * @return boolean|null Success
-	 * @return boolean|null
 	 */
 	protected function httpReadHeaders() {
 		while (($l = $this->readLine()) !== null) {
@@ -569,13 +558,13 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Set the cookie
-	 * @param string $name         Name of cookie
-	 * @param string $value        Value
-	 * @param integer $maxage      . Optional. Max-Age. Default is 0.
-	 * @param string $path         . Optional. Path. Default is empty string.
-	 * @param bool|string $domain  . Optional. Secure. Default is false.
-	 * @param boolean $secure      . Optional. HTTPOnly. Default is false.
-	 * @param bool $HTTPOnly
+	 * @param  string  $name     Name of cookie
+	 * @param  string  $value    Value
+	 * @param  integer $maxage   Optional. Max-Age. Default is 0.
+	 * @param  string  $path     Optional. Path. Default is empty string.
+	 * @param  string  $domain   Optional. Domain. Default is empty string.
+	 * @param  boolean $secure   Optional. Secure. Default is false.
+	 * @param  boolean $HTTPOnly Optional. HTTPOnly. Default is false.
 	 * @return void
 	 */
 	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
@@ -592,8 +581,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 	/**
 	 * Send HTTP-status
 	 * @throws RequestHeadersAlreadySent
-	 * @param int $code Code
-	 * @return boolean Success
+	 * @param  integer $code Code
+	 * @return boolean       Success
 	 */
 	public function status($code = 200) {
 		return false;
@@ -601,11 +590,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Send the header
-	 * @param string $s        Header. Example: 'Location: http://php.net/'
-	 * @param boolean $replace Optional. Replace?
-	 * @param bool|int $code   Optional. HTTP response code.
+	 * @param  string  $s       Header. Example: 'Location: http://php.net/'
+	 * @param  boolean $replace Optional. Replace?
+	 * @param  boolean $code    Optional. HTTP response code
 	 * @throws \PHPDaemon\Request\RequestHeadersAlreadySent
-	 * @return boolean Success
+	 * @return boolean          Success
 	 */
 	public function header($s, $replace = true, $code = false) {
 		if ($code) {
@@ -664,5 +653,4 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 		return true;
 	}
-
 }

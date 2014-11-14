@@ -4,20 +4,17 @@ namespace PHPDaemon\Servers\Ident;
 /**
  * @package    NetworkServers
  * @subpackage IdentServer
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
-	 * EOL
-	 * @var string "\n"
+	 * @var string EOL
 	 */
 	protected $EOL = "\r\n";
 
 	/**
-	 * Default high mark. Maximum number of bytes in buffer.
-	 * @var integer
+	 * @var integer Default high mark. Maximum number of bytes in buffer.
 	 */
 	protected $highMark = 32;
 

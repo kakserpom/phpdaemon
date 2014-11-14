@@ -22,7 +22,7 @@ class Pool extends Network\Client {
 
 	public function getConfigDefaults() {
 		return [
-			/* [integer] Maximum allowed size of packet */
+			/* [Size] Maximum allowed size of packet */
 			'max-allowed-packet' => new Entry\Size('1M'),
 		];
 	}

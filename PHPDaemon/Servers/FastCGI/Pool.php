@@ -23,43 +23,43 @@ class Pool extends \PHPDaemon\Network\Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/* [boolean] @todo */
-			'expose'                  => 1,
-
-			/* [boolean] @todo */
-			'auto-read-body-file'     => 1,
-
 			/* [string|array] Listen addresses */
 			'listen'                  => 'tcp://127.0.0.1,unix:///tmp/phpdaemon.fcgi.sock',
 
 			/* [integer] Listen port */
 			'port'                    => 9000,
 
-			/* [string] @todo */
+			/* [boolean] Read request body from the file given in REQUEST_BODY_FILE parameter */
+			'auto-read-body-file'     => 1,
+
+			/* [string] Allowed clients ip list */
 			'allowed-clients'         => '127.0.0.1',
 
-			/* [boolean] @todo */
+			/* [boolean] Enable X-Sendfile? */
 			'send-file'               => 0,
 
-			/* [string] @todo */
+			/* [string] Directory for X-Sendfile */
 			'send-file-dir'           => '/dev/shm',
 
-			/* [string] @todo */
+			/* [string] Prefix for files used for X-Sendfile */
 			'send-file-prefix'        => 'fcgi-',
 
-			/* [boolean] @todo */
+			/* [boolean] Use X-Sendfile only if server['USE_SENDFILE'] provided. */
 			'send-file-onlybycommand' => 0,
 
-			/* [Time] @todo */
+			/* [boolean] Expose PHPDaemon version by X-Powered-By Header */
+			'expose'                  => 1,
+
+			/* [Time] Keepalive time */
 			'keepalive'               => new Time('0s'),
 
-			/* [Size] @todo */
+			/* [Size] Chunk size */
 			'chunksize'               => new Size('8k'),
 
-			/* [string] @todo */
+			/* [string] Default charset */
 			'defaultcharset'          => 'utf-8',
 
-			/* [Size] @todo */
+			/* [Size] Maximum uploading file size. */
 			'upload-max-size'         => new Size(ini_get('upload_max_filesize')),
 		];
 	}

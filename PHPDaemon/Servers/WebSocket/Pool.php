@@ -6,21 +6,20 @@ use PHPDaemon\Network\Server;
 use PHPDaemon\WebSocket\Route;
 
 class Pool extends Server {
-
 	use \PHPDaemon\Traits\EventHandlers;
 	
-	/** @var array */
+	/**
+	 * @var array
+	 */
 	public $routes = [];
 
 	/**
 	 * Binary packet type
-	 * @var string
 	 */
 	const BINARY = 'BINARY';
 	
 	/**
 	 * String packet type
-	 * @var string
 	 */
 	const STRING = 'STRING';
 
@@ -31,20 +30,28 @@ class Pool extends Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// @todo add description strings
+			/* [boolean] Expose PHPDaemon version by X-Powered-By Header */
 			'expose'             => 1,
+
+			/* [string|array] Listen addresses */
 			'listen'             => '0.0.0.0',
+
+			/* [integer] Listen port */
 			'port'               => 8047,
+
+			/* [Size] Maximum allowed size of packet */
 			'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
+
+			/* [string] Related FlashPolicyServer instance name */
 			'fps-name'           => '',
 		];
 	}
 
 	/**
 	 * Sets an array of options associated to the route
-	 * @param string Route name.
-	 * @param array  Options
-	 * @return boolean Success.
+	 * @param  string  $path Route name.
+	 * @param  array   $opts Options
+	 * @return boolean       Success.
 	 */
 	public function setRouteOptions($path, $opts) {
 		$routeName = ltrim($path, '/');
@@ -59,8 +66,8 @@ class Pool extends Server {
 
 	/**
 	 * Return options by route
-	 * @param string Route name
-	 * @return array Options
+	 * @param  string $path Route name
+	 * @return array        Options
 	 */
 	public function getRouteOptions($path) {
 		$routeName = ltrim($path, '/');
@@ -72,9 +79,10 @@ class Pool extends Server {
 
 	/**
 	 * Adds a route if it doesn't exist already.
-	 * @param string Route name.
-	 * @param mixed  Route's callback.
-	 * @return boolean Success.
+	 * @param  string   $path Route name.
+	 * @param  callable $cb   Route's callback.
+	 * @callback $cb ( )
+	 * @return boolean        Success.
 	 */
 	public function addRoute($path, $cb) {
 		$routeName = ltrim($path, '/');
@@ -86,6 +94,13 @@ class Pool extends Server {
 		return true;
 	}
 
+	/**
+	 * @TODO
+	 * @param  string  $path
+	 * @param  object  $client
+	 * @param  boolean $withoutCustomTransport
+	 * @return mixed
+	 */
 	public function getRoute($path, $client, $withoutCustomTransport = false) {
 		if (!$withoutCustomTransport) {
 			$this->trigger('customTransport', $path, $client, function($set) use (&$result) {$result = $set;});
@@ -129,9 +144,10 @@ class Pool extends Server {
 
 	/**
 	 * Force add/replace a route.
-	 * @param string Path
-	 * @param mixed  callback
-	 * @return boolean Success
+	 * @param  string   $path Path
+	 * @param  callable $cb   Callback
+	 * @callback $cb ( )
+	 * @return boolean        Success
 	 */
 	public function setRoute($path, $cb) {
 		$routeName = ltrim($path, '/');
@@ -141,8 +157,8 @@ class Pool extends Server {
 
 	/**
 	 * Removes a route.
-	 * @param string Route name
-	 * @return boolean Success
+	 * @param  string  $path Route name
+	 * @return boolean       Success
 	 */
 	public function removeRoute($path) {
 		$routeName = ltrim($path, '/');
@@ -155,8 +171,8 @@ class Pool extends Server {
 
 	/**
 	 * Checks if route exists
-	 * @param string Route name
-	 * @return boolean Exists?
+	 * @param  string  $path Route name
+	 * @return boolean       Exists?
 	 */
 	public function routeExists($path) {
 		$routeName = ltrim($path, '/');

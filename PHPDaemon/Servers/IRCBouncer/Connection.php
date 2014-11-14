@@ -9,25 +9,43 @@ use PHPDaemon\Utils\IRC;
 /**
  * @package    NetworkServers
  * @subpackage IRCBouncer
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
-	use EventHandlers;
-
-	/** @var string */
+	
+	/**
+	 * @var string
+	 */
 	public $EOL = "\r\n";
-	/** @var */
+
+	/**
+	 * @var object
+	 */
 	public $attachedServer;
-	/** @var */
+
+	/**
+	 * @var string
+	 */
 	public $usermask;
-	/** @var */
+
+	/**
+	 * @var integer
+	 */
 	public $latency;
-	/** @var */
+
+	/**
+	 * @var integer
+	 */
 	public $lastPingTS;
-	/** @var int */
+
+	/**
+	 * @var integer
+	 */
 	public $timeout = 180;
-	/** @var bool */
+
+	/**
+	 * @var boolean
+	 */
 	public $protologging = false;
 
 	/**
@@ -63,9 +81,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * @TODO DESCR
-	 * @param  string|null $from
-	 * @param  string      $cmd
-	 * @param  mixed       ...$args Arguments
+	 * @param  string $from    From
+	 * @param  string $cmd     Command
+	 * @param  mixed  ...$args Arguments
 	 */
 	public function command($from, $cmd) {
 		if ($from === null) {
@@ -90,10 +108,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $from
-	 * @param $cmd
-	 * @param $args
+	 * @TODO
+	 * @param  string $from From
+	 * @param  string $cmd  Command
+	 * @param  array  $args Arguments
 	 */
 	public function commandArr($from, $cmd, $args) {
 		if ($from === null) {
@@ -151,7 +169,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $chan
+	 * @param object $chan
 	 */
 	public function exportChannel($chan) {
 		$this->command($this->usermask, 'JOIN', $chan->name);
@@ -171,8 +189,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * @TODO DESCR
-	 * @param $cmd
-	 * @param $args
+	 * @param string $cmd  Command
+	 * @param array  $args Arguments
 	 */
 	public function onCommand($cmd, $args) {
 		if ($cmd === 'USER') {
@@ -295,5 +313,4 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$this->finish();
 		}
 	}
-
 }

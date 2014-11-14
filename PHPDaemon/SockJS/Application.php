@@ -26,20 +26,28 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		return [
 			/* [string] @todo redis-name */
 			'redis-name' => '',
+
 			/* [string] @todo redis-prefix */
 			'redis-prefix' => 'sockjs:',
+
 			/* [string] @todo wss-name */
 			'wss-name' => '',
+			
 			/* [Double] @todo batch-delay */
 			'batch-delay' => new \PHPDaemon\Config\Entry\Double('0.05'),
+			
 			/* [Double] @todo heartbeat-interval */
 			'heartbeat-interval' => new \PHPDaemon\Config\Entry\Double('25'),
+			
 			/* [Time] @todo dead-session-timeout */
 			'dead-session-timeout' => new \PHPDaemon\Config\Entry\Time('1h'),
+			
 			/* [Size] @todo gc-max-response-size */
 			'gc-max-response-size' => new \PHPDaemon\Config\Entry\Size('128k'),
+			
 			/* [Time] @todo network-timeout-read */
 			'network-timeout-read' => new \PHPDaemon\Config\Entry\Time('2h'),
+			
 			/* [Time] @todo network-timeout-write */
 			'network-timeout-write' => new \PHPDaemon\Config\Entry\Time('120s'),
 		];

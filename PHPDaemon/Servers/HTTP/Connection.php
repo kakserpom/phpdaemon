@@ -12,13 +12,17 @@ use PHPDaemon\Request\IRequestUpstream;
 /**
  * @package    NetworkServers
  * @subpackage Base
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstream {
+
 	protected $initialLowMark = 1;
-	protected $initialHighMark = 8192; // initial value of the maximum amout of bytes in buffer
+
+	/**
+	 * @var integer initial value of the maximum amout of bytes in buffer
+	 */
+	protected $initialHighMark = 8192;
+
 	protected $timeout = 45;
 
 	protected $req;
@@ -65,14 +69,17 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		return true;
 	}
 
+	/**
+	 * @TODO
+	 * @return integer
+	 */
 	public function getKeepaliveTimeout() {
 		return $this->pool->config->keepalive->value;
 	}
 
 	/**
 	 * Read first line of HTTP request
-	 * @return null|boolean Success
-	 * @return null|boolean
+	 * @return boolean|null Success
 	 */
 	protected function httpReadFirstline() {
 		//D($this->look(2048));
@@ -110,7 +117,6 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	/**
 	 * Read headers line-by-line
 	 * @return boolean|null Success
-	 * @return boolean|null
 	 */
 	protected function httpReadHeaders() {
 		while (($l = $this->readLine()) !== null) {
@@ -213,6 +219,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * @return void
 	 */
 
+	/**
+	 * onRead
+	 * @return void
+	 */
 	protected function onRead() {
 		if (!$this->policyReqNotFound) {
 			$d = $this->drainIfMatch("<policy-file-request/>\x00");
@@ -319,9 +329,9 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * Handles the output from downstream requests.
-	 * @param object \PHPDaemon\Request\Generic.
-	 * @param string The output.
-	 * @return boolean Success
+	 * @param  object  $req \PHPDaemon\Request\Generic.
+	 * @param  string  $s   The output.
+	 * @return boolean      Success
 	 */
 	public function requestOut($req, $s) {
 		if ($this->write($s) === false) {
@@ -333,7 +343,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
 	/**
 	 * End request
-	 * @return boolean|null Succcess.
+	 * @return void
 	 */
 	public function endRequest($req, $appStatus, $protoStatus) {
 		if ($protoStatus === -1) {

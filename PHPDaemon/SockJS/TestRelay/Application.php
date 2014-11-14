@@ -19,7 +19,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// [string] WSS name
+			/* [string] WSS name */
 			'wss-name' => '',
 		];
 	}

@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Servers\Socks;
 
-use PHPDaemon\Network\Connection;
-
 class SlaveConnection extends Connection {
 
 	protected $client;
@@ -11,7 +9,7 @@ class SlaveConnection extends Connection {
 
 	/**
 	 * Set client
-	 * @param SocksServerConnection
+	 * @param  SocksServerConnection $client
 	 * @return void
 	 */
 	public function setClient($client) {
