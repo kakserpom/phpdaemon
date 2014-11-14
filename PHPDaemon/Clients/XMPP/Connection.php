@@ -418,13 +418,12 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Called when new data received
-	 * @param  string $buf New data
 	 * @return void
 	 */
-	public function stdin($buf) {
+	public function onRead() {
 		Timer::setTimeout($this->keepaliveTimer);
 		if (isset($this->xml)) {
-			$this->xml->feed($buf);
+			$this->xml->feed($this->readUnlimited());
 		}
 	}
 }
