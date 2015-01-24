@@ -47,7 +47,7 @@ class TCP extends Generic {
 
 	/**
 	 * Called when socket is bound
-	 * @return boolean Success
+	 * @return boolean|null Success
 	 */
 	protected function onBound() {
 		if ($this->ev) {
@@ -60,7 +60,7 @@ class TCP extends Generic {
 
 	/**
 	 * Bind the socket
-	 * @return boolean Success.
+	 * @return null|boolean Success.
 	 */
 	public function bindSocket() {
 		if ($this->erroneous) {

@@ -9,19 +9,16 @@ use PHPDaemon\Utils\Binary;
 /**
  * @package    Applications
  * @subpackage ICMPClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 	/**
-	 * Packet sequence
-	 * @var integer
+	 * @var integer Packet sequence
 	 */
 	protected $seq = 0;
 
 	/**
-	 * @TODO DESCR
-	 * @var array
+	 * @var array @TODO DESCR
 	 */
 	protected static $unreachableCodes = [
 		0x0 => 'netUnreachable',
@@ -33,15 +30,15 @@ class Connection extends ClientConnection {
 	];
 
 	/**
-	 * Enable bevConnect?
-	 * @var boolean
+	 * @var boolean Enable bevConnect?
 	 */
 	protected $bevConnectEnabled = false;
 
 	/**
 	 * Send echo-request
-	 * @param callable     Callback
-	 * @param string $data Data
+	 * @param callable $cb   Callback
+	 * @param string   $data Data
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function sendEcho($cb, $data = 'phpdaemon') {
@@ -63,9 +60,8 @@ class Connection extends ClientConnection {
 
 	/**
 	 * Build checksum
-	 * @static
-	 * @param string Source
-	 * @return string Checksum
+	 * @param  string $data Source
+	 * @return string       Checksum
 	 */
 	protected static function checksum($data) {
 		$bit = unpack('n*', $data);

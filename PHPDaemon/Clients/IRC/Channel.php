@@ -8,41 +8,44 @@ use PHPDaemon\Utils\IRC;
 /**
  * @package    NetworkClients
  * @subpackage IRCClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-
 class Channel extends ObjectStorage {
 	use \PHPDaemon\Traits\EventHandlers;
 
 	/**
-	 * @var
+	 * @var Connection
 	 */
 	public $irc;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $name;
+	
 	/**
 	 * @var array
 	 */
 	public $nicknames = [];
+	
 	/**
 	 * @var
 	 */
 	public $self;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $type;
+	
 	/**
-	 * @var
+	 * @var string
 	 */
 	public $topic;
 
 	/**
-	 * @param $irc
-	 * @param $name
+	 * @param Connection $irc
+	 * @param string     $name
 	 */
 	public function __construct($irc, $name) {
 		$this->irc  = $irc;
@@ -59,7 +62,7 @@ class Channel extends ObjectStorage {
 	/**
 	 * @TODO DESCR
 	 * @param array|string $mask
-	 * @param mixed $msg
+	 * @param mixed        $msg
 	 */
 	public function onPart($mask, $msg = null) {
 		if (is_string($mask)) {
@@ -95,7 +98,7 @@ class Channel extends ObjectStorage {
 
 	/**
 	 * @TODO DESCR
-	 * @param $msg
+	 * @param string $msg
 	 */
 	public function setTopic($msg) {
 		$this->topic = $msg;
@@ -103,8 +106,8 @@ class Channel extends ObjectStorage {
 
 	/**
 	 * @TODO DESCR
-	 * @param $nick
-	 * @param $mode
+	 * @param string $nick
+	 * @param string $mode
 	 */
 	public function addMode($nick, $mode) {
 		if (!isset($this->nicknames[$nick])) {
@@ -119,8 +122,8 @@ class Channel extends ObjectStorage {
 
 	/**
 	 * @TODO DESCR
-	 * @param $target
-	 * @param $mode
+	 * @param string $target
+	 * @param string $mode
 	 */
 	public function removeMode($target, $mode) {
 		if (!isset($this->nicknames[$target])) {
@@ -155,7 +158,7 @@ class Channel extends ObjectStorage {
 
 	/**
 	 * @TODO DESCR
-	 * @param $type
+	 * @param  string $type
 	 * @return $this
 	 */
 	public function setType($type) {

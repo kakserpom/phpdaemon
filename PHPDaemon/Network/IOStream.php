@@ -2,15 +2,13 @@
 namespace PHPDaemon\Network;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\Structures\StackCallbacks;
 
-
 /**
  * IOStream
- *
- * @package Core
- *
+ * @package PHPDaemon\Network
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class IOStream {
@@ -19,173 +17,149 @@ abstract class IOStream {
 	use \PHPDaemon\Traits\EventHandlers;
 
 	/**
-	 * Associated pool
-	 * @var object ConnectionPool
+	 * @var object Associated pool
 	 */
 	public $pool;
 
 	/**
-	 * EOL
-	 * @var string "\n"
+	 * @var string EOL
 	 */
 	protected $EOL = "\n";
 
 	/**
-	 * EOLS_* switch
-	 * @var integer
+	 * @var integer EOLS_* switch
 	 */
 	protected $EOLS;
 
 	/**
-	 * EventBufferEvent
 	 * @var object EventBufferEvent
 	 */
 	protected $bev;
 
 	/**
-	 * File descriptor
-	 * @var resource|integer
+	 * @var resource File descriptor
 	 */
 	protected $fd;
 
 	/**
-	 * Finished?
-	 * @var boolean
+	 * @var boolean Finished?
 	 */
 	protected $finished = false;
 
 	/**
-	 * Ready?
-	 * @var boolean
+	 * @var boolean Ready?
 	 */
 	protected $ready = false;
 
 	/**
-	 * Writing?
-	 * @var boolean
+	 * @var boolean Writing?
 	 */
 	protected $writing = true;
 
 	/**
-	 * Default low mark. Minimum number of bytes in buffer.
-	 * @var integer
+	 * @var integer Default low mark. Minimum number of bytes in buffer
 	 */
 	protected $lowMark = 1;
 
 	/**
-	 * Default high mark. Maximum number of bytes in buffer.
-	 * @var integer
+	 * @var integer Default high mark. Maximum number of bytes in buffer
 	 */
 	protected $highMark = 0xFFFF; // initial value of the maximum amout of bytes in buffer
 
 	/**
-	 * Priority
-	 * @var integer
+	 * @var integer Priority
 	 */
 	protected $priority;
 
 	/**
-	 * Initialized?
-	 * @var boolean
+	 * @var boolean Initialized?
 	 */
 	protected $inited = false;
 
 	/**
-	 * Current state
-	 * @var integer
+	 * @var integer Current state
 	 */
 	protected $state = 0; // stream state of the connection (application protocol level)
+
 	/**
 	 * Alias of STATE_STANDBY
 	 */
 	const STATE_ROOT = 0;
+
 	/**
 	 * Standby state (default state)
 	 */
 	const STATE_STANDBY = 0;
 
 	/**
-	 * Stack of callbacks called when writing is done
-	 * @var object StackCallbacks
+	 * @var object Stack of callbacks called when writing is done
 	 */
 	protected $onWriteOnce;
 
 	/**
-	 * Timeout
-	 * @var integer
+	 * @var integer Timeout
 	 */
 	protected $timeout = null;
 
 	/**
-	 * URL
-	 * @var string
+	 * @var string URL
 	 */
 	protected $url;
 
 	/**
-	 * Alive?
-	 * @var boolean
+	 * @var boolean Alive?
 	 */
 	protected $alive = false;
 
 	/**
-	 * Is bevConnect used?
-	 * @var boolean
+	 * @var boolean Is bevConnect used?
 	 */
 	protected $bevConnect = false;
 
 	/**
-	 * Should we can onReadEv() in next onWriteEv()?
-	 * @var boolean
+	 * @var boolean Should we can onReadEv() in next onWriteEv()?
 	 */
 	protected $wRead = false;
 
 	/**
-	 * Freed?
-	 * @var boolean
+	 * @var boolean Freed?
 	 */
 	protected $freed = false;
 
 	/**
-	 * Context
-	 * @var object
+	 * @var object Context
 	 */
 	protected $ctx;
 
 	/**
-	 * Context name
-	 * @var object
+	 * @var object Context name
 	 */
 	protected $ctxname;
 
 	/**
-	 * Defines context-related flag
-	 * @var integer
+	 * @var integer Defines context-related flag
 	 */
 	protected $ctxMode;
 
 	/**
-	 * SSL?
-	 * @var boolean
+	 * @var boolean SSL?
 	 */
 	protected $ssl = false;
 
 	/**
-	 * Read timeout
-	 * @var float
+	 * @var float Read timeout
 	 */
 	protected $timeoutRead;
 
 	/**
-	 * Write timeout
-	 * @var float
+	 * @var float Write timeout
 	 */
 	protected $timeoutWrite;
 
 	/**
 	 * IOStream constructor
-	 * @param resource $fd  File descriptor. Optional.
-	 * @param object $pool  Pool. Optional.
+	 * @param resource $fd   File descriptor. Optional
+	 * @param object   $pool Pool. Optional
 	 */
 	public function __construct($fd = null, $pool = null) {
 		if ($pool) {
@@ -221,7 +195,7 @@ abstract class IOStream {
 
 	/**
 	 * Getter
-	 * @param string $name Name
+	 * @param  string $name Name
 	 * @return mixed
 	 */
 	public function __get($name)
@@ -254,7 +228,7 @@ abstract class IOStream {
 
 	/**
 	 * Get EventBufferEvent
-	 * @return  EventBufferEvent
+	 * @return EventBufferEvent
 	 */
 	public function getBev() {
 		return $this->bev;
@@ -262,7 +236,7 @@ abstract class IOStream {
 
 	/**
 	 * Get file descriptor
-	 * @return mixed File descriptor
+	 * @return resource File descriptor
 	 */
 	public function getFd() {
 		return $this->fd;
@@ -270,8 +244,8 @@ abstract class IOStream {
 
 	/**
 	 * Sets context mode
-	 * @param object  Context
-	 * @param integer Mode
+	 * @param  object  $ctx  Context
+	 * @param  integer $mode Mode
 	 * @return void
 	 */
 
@@ -282,8 +256,8 @@ abstract class IOStream {
 
 	/**
 	 * Sets fd
-	 * @param mixed File descriptor
-	 * @param [object EventBufferEvent]
+	 * @param  resource $fd  File descriptor
+	 * @param  object   $bev EventBufferEvent
 	 * @return void
 	 */
 	public function setFd($fd, $bev = null) {
@@ -327,10 +301,8 @@ abstract class IOStream {
 		if ($this->priority !== null) {
 			$this->bev->priority = $this->priority;
 		}
-		if ($this->timeout !== null) {
-			$this->setTimeouts($this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
-								$this->timeoutWrite!== null ? $this->timeoutWrite : $this->timeout);
-		}
+		$this->setTimeouts($this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
+							$this->timeoutWrite!== null ? $this->timeoutWrite : $this->timeout);
 		if ($this->bevConnect && ($this->fd === null)) {
 			//$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port);
 			$this->bev->connect($this->addr);
@@ -356,7 +328,7 @@ abstract class IOStream {
 
 	/**
 	 * Set timeout
-	 * @param integer Timeout
+	 * @param  integer $rw Timeout
 	 * @return void
 	 */
 	public function setTimeout($rw) {
@@ -365,8 +337,8 @@ abstract class IOStream {
 
 	/**
 	 * Set timeouts
-	 * @param integer Read timeout in seconds
-	 * @param integer Write timeout in seconds
+	 * @param  integer $read  Read timeout in seconds
+	 * @param  integer $write Write timeout in seconds
 	 * @return void
 	 */
 	public function setTimeouts($read, $write) {
@@ -379,7 +351,7 @@ abstract class IOStream {
 
 	/**
 	 * Sets priority
-	 * @param integer Priority
+	 * @param  integer $p Priority
 	 * @return void
 	 */
 	public function setPriority($p) {
@@ -389,8 +361,8 @@ abstract class IOStream {
 
 	/**
 	 * Sets watermark
-	 * @param integer|null Low
-	 * @param integer|null High
+	 * @param  integer|null $low  Low
+	 * @param  integer|null $high High
 	 * @return void
 	 */
 	public function setWatermark($low = null, $high = null) {
@@ -412,7 +384,7 @@ abstract class IOStream {
 
 	/**
 	 * Reads line from buffer
-	 * @param [integer EOLS_*]
+	 * @param  integer     $eol EOLS_*
 	 * @return string|null
 	 */
 	public function readLine($eol = null) {
@@ -424,8 +396,8 @@ abstract class IOStream {
 
 	/**
 	 * Drains buffer
-	 * @param integer Numbers of bytes to drain
-	 * @return boolean Success
+	 * @param  integer $n Numbers of bytes to drain
+	 * @return boolean    Success
 	 */
 	public function drain($n) {
 		return $this->bev->input->drain($n);
@@ -433,8 +405,8 @@ abstract class IOStream {
 
 	/**
 	 * Drains buffer it matches the string
-	 * @param string $str Data
-	 * @return boolean|null Success
+	 * @param  string       $str Data
+	 * @return boolean|null      Success
 	 */
 	public function drainIfMatch($str) {
 		if (!isset($this->bev)) {
@@ -464,8 +436,8 @@ abstract class IOStream {
 
 	/**
 	 * Reads exact $n bytes of buffer without draining
-	 * @param integer $n Number of bytes to read
-	 * @param integer [$offset Offset
+	 * @param  integer $n Number of bytes to read
+	 * @param  integer $o Offset
 	 * @return string|false
 	 */
 	public function lookExact($n, $o = 0) {
@@ -480,8 +452,8 @@ abstract class IOStream {
 
 	/**
 	 * Prepends data to input buffer
-	 * @param string $str Data
-	 * @return boolean Success
+	 * @param  string  $str Data
+	 * @return boolean      Success
 	 */
 	public function prependInput($str) {
 		if (!isset($this->bev)) {
@@ -492,8 +464,8 @@ abstract class IOStream {
 
 	/**
 	 * Prepends data to output buffer
-	 * @param string $str Data
-	 * @return boolean Success
+	 * @param  string  $str Data
+	 * @return boolean      Success
 	 */
 	public function prependOutput($str) {
 		if (!isset($this->bev)) {
@@ -504,8 +476,8 @@ abstract class IOStream {
 
 	/**
 	 * Read from buffer without draining
-	 * @param integer Number of bytes to read
-	 * @param integer [Offset
+	 * @param integer $n Number of bytes to read
+	 * @param integer $o Offset
 	 * @return string|false
 	 */
 	public function look($n, $o = 0) {
@@ -520,8 +492,8 @@ abstract class IOStream {
 
 	/**
 	 * Read from buffer without draining
-	 * @param Offset
-	 * @param [integer Number of bytes to read
+	 * @param  integer $o Offset
+	 * @param  integer $n Number of bytes to read
 	 * @return string|false
 	 */
 	public function substr($o, $n = -1) {
@@ -533,10 +505,10 @@ abstract class IOStream {
 
 	/**
 	 * Searches first occurence of the string in input buffer
-	 * @param string $what   Needle
-	 * @param integer $start Offset start
-	 * @param integer $end   Offset end
-	 * @return integer Position
+	 * @param  string  $what  Needle
+	 * @param  integer $start Offset start
+	 * @param  integer $end   Offset end
+	 * @return integer        Position
 	 */
 	public function search($what, $start = 0, $end = -1) {
 		return $this->bev->input->search($what, $start, $end);
@@ -544,10 +516,9 @@ abstract class IOStream {
 
 	/**
 	 * Reads exact $n bytes from buffer
-	 * @param integer $n Number of bytes to read
-	 * @return string|bool
+	 * @param  integer      $n Number of bytes to read
+	 * @return string|false
 	 */
-
 	public function readExact($n) {
 		if ($n === 0) {
 			return '';
@@ -577,8 +548,8 @@ abstract class IOStream {
 
 	/**
 	 * Freeze input
-	 * @param boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
-	 * @return boolean Success
+	 * @param  boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
+	 * @return boolean           Success
 	 */
 	public function freezeInput($at_front = false) {
 		if (isset($this->bev)) {
@@ -589,8 +560,8 @@ abstract class IOStream {
 
 	/**
 	 * Unfreeze input
-	 * @param boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
-	 * @return boolean Success
+	 * @param  boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
+	 * @return boolean           Success
 	 */
 	public function unfreezeInput($at_front = false) {
 		if (isset($this->bev)) {
@@ -601,8 +572,8 @@ abstract class IOStream {
 
 	/**
 	 * Freeze output
-	 * @param boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
-	 * @return boolean Success
+	 * @param  boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
+	 * @return boolean           Success
 	 */
 	public function freezeOutput($at_front = true) {
 		if (isset($this->bev)) {
@@ -613,8 +584,8 @@ abstract class IOStream {
 
 	/**
 	 * Unfreeze output
-	 * @param boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen.
-	 * @return boolean Success
+	 * @param  boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
+	 * @return boolean           Success
 	 */
 	public function unfreezeOutput($at_front = true) {
 		if (isset($this->bev)) {
@@ -632,8 +603,8 @@ abstract class IOStream {
 
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
-	 * @param string $data Data to send.
-	 * @return boolean Success.
+	 * @param  string  $data Data to send
+	 * @return boolean       Success
 	 */
 	public function write($data) {
 		if (!$this->alive) {
@@ -657,8 +628,8 @@ abstract class IOStream {
 
 	/**
 	 * Send data and appending \n to connection. Note that it just writes to buffer flushed at every baseloop
-	 * @param string $data Data to send.
-	 * @return boolean Success.
+	 * @param  string  $data Data to send
+	 * @return boolean       Success
 	 */
 	public function writeln($data) {
 		if (!$this->alive) {
@@ -678,7 +649,7 @@ abstract class IOStream {
 	}
 
 	/**
-	 * Finish the session. You shouldn't care about pending buffers, it will be flushed properly.
+	 * Finish the session. You should not worry about buffers, they are going to be flushed properly
 	 * @return void
 	 */
 	public function finish() {
@@ -729,7 +700,7 @@ abstract class IOStream {
 
 	/**
 	 * Send message to log
-	 * @param string $message
+	 * @param  string $m Message
 	 * @return void
 	 */
 	protected function log($m) {
@@ -738,7 +709,7 @@ abstract class IOStream {
 
 	/**
 	 * Called when the connection has got new data
-	 * @param resource Bufferevent
+	 * @param  object $bev EventBufferEvent
 	 * @return void
 	 */
 	public function onReadEv($bev) {
@@ -775,7 +746,7 @@ abstract class IOStream {
 
 	/**
 	 * Push callback which will be called only once, when writing is available next time
-	 * @param callable $cb
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function onWriteOnce($cb) {
@@ -788,8 +759,7 @@ abstract class IOStream {
 
 	/**
 	 * Called when the connection is ready to accept new data
-	 * @param resource Bufferedevent
-	 * @param mixed    Attached variable
+	 * @param  object $bev EventBufferEvent
 	 * @return void
 	 */
 	public function onWriteEv($bev) {
@@ -836,9 +806,8 @@ abstract class IOStream {
 
 	/**
 	 * Called when the connection state changed
-	 * @param resource Bufferevent
-	 * @param int      Events
-	 * @param mixed    Attached variable
+	 * @param  object  $bev    EventBufferEvent
+	 * @param  integer $events Events
 	 * @return void
 	 */
 	public function onStateEv($bev, $events) {
@@ -872,9 +841,9 @@ abstract class IOStream {
 
 	/**
 	 * Moves arbitrary number of bytes from input buffer to given buffer
-	 * @param \EventBuffer $dest Destination nuffer
-	 * @param integer  $n   Max. number of bytes to move
-	 * @return integer
+	 * @param  \EventBuffer $dest Destination nuffer
+	 * @param  integer      $n    Max. number of bytes to move
+	 * @return integer|false
 	 */
 	public function moveToBuffer(\EventBuffer $dest, $n) {
 		if (!isset($this->bev)) {
@@ -885,9 +854,9 @@ abstract class IOStream {
 
 	/**
 	 * Moves arbitrary number of bytes from given buffer to output buffer
-	 * @param \EventBuffer Source buffer
-	 * @param integer  $n   Max. number of bytes to move
-	 * @return integer
+	 * @param  \EventBuffer $src Source buffer
+	 * @param  integer      $n   Max. number of bytes to move
+	 * @return integer|false
 	 */
 	public function writeFromBuffer(\EventBuffer $src, $n) {
 		if (!isset($this->bev)) {
@@ -898,10 +867,13 @@ abstract class IOStream {
 
 	/**
 	 * Read data from the connection's buffer
-	 * @param integer Max. number of bytes to read
-	 * @return string Readed data
+	 * @param  integer      $n Max. number of bytes to read
+	 * @return string|false    Readed data
 	 */
 	public function read($n) {
+		if ($n <= 0) {
+			return '';
+		}
 		if (!isset($this->bev)) {
 			return false;
 		}

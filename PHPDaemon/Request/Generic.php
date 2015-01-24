@@ -3,6 +3,7 @@ namespace PHPDaemon\Request;
 
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;
@@ -93,6 +94,8 @@ abstract class Generic {
 	 */
 	protected $codepoint;
 
+	protected $autoinit = false; // @TODO: remove this option in future version
+
 	/**
 	 * Log
 	 * @param string $msg Message
@@ -109,6 +112,7 @@ abstract class Generic {
 	 * @param object $parent                                  Source request.
 	 */
 	public function __construct($appInstance, IRequestUpstream $upstream, $parent = null) {
+		++Daemon::$process->reqCounter;
 		$this->appInstance = $appInstance;
 		$this->upstream    = $upstream;
 		$this->ev          = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
@@ -116,15 +120,27 @@ abstract class Generic {
 			$this->ev->priority = $this->priority;
 		}
 		$this->preinit($parent);
+		if ($this->autoinit) {
+			$this->callInit();
+		}
+	}
+
+	public function callInit() {
 		$this->onWakeup();
-		$this->init();
+		try {
+			$this->init();
+		} catch (\Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+			$this->finish();
+			return;
+		}
 		$this->onSleep();
 	}
 
 	/**
 	 * Uncaught exception handler
 	 * @param $e
-	 * @return boolean Handled?
+	 * @return boolean|null Handled?
 	 */
 	public function handleException($e) {
 	}
@@ -157,7 +173,7 @@ abstract class Generic {
 	 * Output some data
 	 * @param string $s String to out
 	 * @param bool $flush
-	 * @return boolean Success
+	 * @return boolean|null Success
 	 */
 	public function out($s, $flush = true) {
 	}
@@ -197,7 +213,9 @@ abstract class Generic {
 			} catch (RequestTerminated $e) {
 				$this->state = Generic::STATE_FINISHED;
 			} catch (\Exception $e) {
-				$throw = true;
+				if (!$this->handleException($e)) {
+					$throw = true;
+				}
 			}
 			if ($this->state === Generic::STATE_FINISHED) {
 				$this->finish();
@@ -232,6 +250,7 @@ abstract class Generic {
 		}
 		if (isset($this->upstream)) {
 			$this->upstream->freeRequest($this);
+			$this->upstream = null;
 		}
 	}
 
@@ -290,6 +309,15 @@ abstract class Generic {
 			return in_array($var, $values, true) ? $var : $values[0];
 		}
 
+		return $var;
+	}
+
+	/**
+	 * Get string value from the given variable
+	 * @param Reference of variable.
+	 * @return string Value.
+	 */
+	public static function getMixed(&$var) {
 		return $var;
 	}
 
@@ -374,7 +402,7 @@ abstract class Generic {
 	/**
 	 * Delays the request execution for the given number of seconds
 	 *
-	 * @param float|int $time Time to sleep in seconds
+	 * @param integer $time Time to sleep in seconds
 	 * @param boolean $set    Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
 	 * @throws RequestSleep
 	 * @return void
@@ -519,7 +547,12 @@ abstract class Generic {
 		}
 
 		while (($c = array_shift($this->shutdownFuncs)) !== NULL) {
-			call_user_func($c, $this);
+			try {
+				call_user_func($c, $this);
+			} catch (\Exception $e) {
+				Daemon::uncaughtExceptionHandler($e);
+				// @TODO: break?
+			}
 		}
 
 		if (!$r) {
@@ -547,11 +580,12 @@ abstract class Generic {
 		if ($status !== -1) {
 			$appStatus = 0;
 			$this->postFinishHandler(function () use ($appStatus, $status) {
-				if (isset($this->upstream)) {
-					$this->upstream->endRequest($this, $appStatus, $status);
-				}
+				$this->upstream->endRequest($this, $appStatus, $status);
+				$this->upstream = null;
+				$this->free();
 			});
-
+		} else {
+			$this->free();
 		}
 	}
 

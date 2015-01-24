@@ -7,19 +7,17 @@ use PHPDaemon\Config\Entry\Time;
 /**
  * @package    NetworkServer
  * @subpackage HTTPServer
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Server {
 
 	/**
-	 * Variables order
-	 * @var string "GPC"
+	 * @var string Variables order "GPC"
 	 */
 	public $variablesOrder;
 
-	/** WebSocketServer instance
-	 * @var WebSocketServer
+	/**
+	 * @var WebSocketServer WebSocketServer instance
 	 */
 	public $WS;
 
@@ -30,88 +28,46 @@ class Pool extends \PHPDaemon\Network\Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/**
-			 * Default servers
-			 * @var string|array
-			 */
+			/* [string|array] Listen addresses */
 			'listen'                  => 'tcp://0.0.0.0',
 
-			/**
-			 * Default port
-			 * @var integer
-			 */
+			/* [integer] Listen port */
 			'port'                    => 80,
 
-			/**
-			 * Enable X-Sendfile?
-			 * @var boolean
-			 */
+			/* [boolean] Enable X-Sendfile? */
 			'send-file'               => 0,
 
-			/**
-			 * Directory for X-Sendfile
-			 * @var string
-			 */
+			/* [string] Directory for X-Sendfile */
 			'send-file-dir'           => '/dev/shm',
 
-			/**
-			 * Prefix for files used for X-Sendfile
-			 * @var string|array
-			 */
+			/* [string] Prefix for files used for X-Sendfile */
 			'send-file-prefix'        => 'http-',
 
-			/**
-			 * Use X-Sendfile only if server['USE_SENDFILE'] provided.
-			 * @var boolean
-			 */
+			/* [boolean] Use X-Sendfile only if server['USE_SENDFILE'] provided. */
 			'send-file-onlybycommand' => 0,
 
-			/**
-			 * Expose PHPDaemon version by X-Powered-By Header
-			 * @var boolean
-			 */
+			/* [boolean] Expose PHPDaemon version by X-Powered-By Header */
 			'expose'                  => 1,
 
-			/**
-			 * Keepalive time
-			 * @var time
-			 */
+			/* [Time] Keepalive time */
 			'keepalive'               => new Time('0s'),
 
-			/**
-			 * Chunk size
-			 * @var size
-			 */
+			/* [Size] Chunk size */
 			'chunksize'               => new Size('8k'),
 
-			/**
-			 * Use X-Sendfile only if server['USE_SENDFILE'] provided.
-			 * @var string|array
-			 */
+			/* [string] Default charset */
 			'defaultcharset'          => 'utf-8',
 
-			/**
-			 * Related WebSocketServer instance name
-			 * @var string
-			 */
+			/* [string] Related WebSocketServer instance name */
 			'wss-name'                => '',
 
-			/**
-			 * Related FlashPolicyServer instance name
-			 * @var string
-			 */
+			/* [string] Related FlashPolicyServer instance name */
 			'fps-name'                => '',
 
-			/**
-			 * Maximum uploading file size.
-			 * @var size
-			 */
+			/* [Size] Maximum uploading file size. */
 			'upload-max-size'         => new Size(ini_get('upload_max_filesize')),
 
-			/**
-			 * Reponder application (if you do not want to use AppResolver)
-			 * @var string
-			 */
+			/* [string] Reponder application (if you do not want to use AppResolver) */
 			'responder'               => null,
 		];
 	}
@@ -139,6 +95,6 @@ class Pool extends \PHPDaemon\Network\Server {
 	 */
 	public function onReady() {
 		parent::onReady();
-		$this->WS = Pool::getInstance($this->config->wssname->value, false);
+		$this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance($this->config->wssname->value, false);
 	}
 }

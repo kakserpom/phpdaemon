@@ -5,9 +5,7 @@ use PHPDaemon\Core\Daemon;
 
 /**
  * Timed event
- *
- * @package Core
- *
+ * @package PHPDaemon\Core
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Timer {
@@ -15,49 +13,51 @@ class Timer {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * @var int|null
+	 * @var integer|null Timer id
 	 */
-	public $id; // timer id
+	public $id;
 	/**
-	 * @var \EventBufferEvent
+	 * @var \EventBufferEvent Event resource
 	 */
-	public $ev; // event resource
+	protected $ev;
 	/**
-	 * @var
+	 * @var integer Current timeout holder
 	 */
-	public $lastTimeout; // Current timeout holder
+	public $lastTimeout;
 	/**
-	 * @var bool
+	 * @var boolean Is the timer finished?
 	 */
-	public $finished = false; // Is the timer finished?
+	public $finished = false;
 	/**
-	 * @var callable
+	 * @var callable Callback
 	 */
-	public $cb; // callback
+	public $cb;
 	/**
-	 * @var Timer[]
+	 * @var Timer[] List of timers
 	 */
-	public static $list = []; // list of timers
+	protected static $list = [];
 	/**
-	 * @var int
+	 * @var integer Priority
 	 */
 	public $priority;
 	/**
-	 * @var int
+	 * @var integer Counter
 	 */
-	static $counter = 0;
+	protected static $counter = 1;
 
 	/**
 	 * Constructor
-	 * @param callable $cb
-	 * @param int $timeout
-	 * @param int|string $id
-	 * @param int $priority
-	 * @return \PHPDaemon\Core\Timer
+	 * @param  callable       $cb       Callback
+	 * @param  integer        $timeout  Timeout
+	 * @param  integer|string $id       Timer ID
+	 * @param  integer        $priority Priority
 	 */
 	public function __construct($cb, $timeout = null, $id = null, $priority = null) {
 		if ($id === null) {
 			$id = ++self::$counter;
+		}
+		else {
+			$id = (string) $id;
 		}
 		$this->id = $id;
 		$this->cb = $cb;
@@ -73,7 +73,6 @@ class Timer {
 
 	/**
 	 * Called when timer is triggered
-	 * @param mixed $arg
 	 * @return void
 	 */
 	public function eventCall() {
@@ -87,7 +86,7 @@ class Timer {
 
 	/**
 	 * Set prioriry
-	 * @param $priority
+	 * @param  integer $priority Priority
 	 * @return void
 	 */
 	public function setPriority($priority) {
@@ -97,11 +96,11 @@ class Timer {
 
 	/**
 	 * Adds timer
-	 * @param callable $cb
-	 * @param int $timeout
-	 * @param int|string $id
-	 * @param int $priority
-	 * @return int|null
+	 * @param  callable       $cb       Callback
+	 * @param  integer        $timeout  Timeout
+	 * @param  integer|string $id       Timer ID
+	 * @param  integer        $priority Priority
+	 * @return integer|string           Timer ID
 	 */
 	public static function add($cb, $timeout = null, $id = null, $priority = null) {
 		$obj = new self($cb, $timeout, $id, $priority);
@@ -110,9 +109,9 @@ class Timer {
 
 	/**
 	 * Sets timeout
-	 * @param int|string $id
-	 * @param int $timeout
-	 * @return bool
+	 * @param  integer|string $id       Timer ID
+	 * @param  integer        $timeout  Timeout
+	 * @return boolean
 	 */
 	public static function setTimeout($id, $timeout = NULL) {
 		if (isset(self::$list[$id])) {
@@ -124,7 +123,7 @@ class Timer {
 
 	/**
 	 * Removes timer by ID
-	 * @param $id
+	 * @param  integer|string $id Timer ID
 	 * @return void
 	 */
 	public static function remove($id) {
@@ -135,7 +134,7 @@ class Timer {
 
 	/**
 	 * Cancels timer by ID
-	 * @param $id
+	 * @param  integer|string $id Timer ID
 	 * @return void
 	 */
 	public static function cancelTimeout($id) {
@@ -146,7 +145,7 @@ class Timer {
 
 	/**
 	 * Sets timeout
-	 * @param int $timeout
+	 * @param  integer $timeout Timeout
 	 * @return void
 	 */
 	public function timeout($timeout = null) {
@@ -182,6 +181,7 @@ class Timer {
 
 	/**
 	 * Frees the timer
+	 * @return void
 	 */
 	public function free() {
 		unset(self::$list[$this->id]);

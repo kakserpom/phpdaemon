@@ -5,8 +5,8 @@ use PHPDaemon\Network\Server;
 
 class Pool extends Server {
 
-	/** Pairs
-	 * @var array ["$local:$foreign" => "$user", ...]
+	/**
+	 * @var array Pairs ["$local:$foreign" => "$user", ...]
 	 */
 	protected $pairs = [];
 
@@ -17,8 +17,10 @@ class Pool extends Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// @todo add description strings
+			/* [string|array] Listen addresses */
 			'listen' => '0.0.0.0',
+
+			/* [integer] Listen port */
 			'port'   => 113,
 		];
 	}
@@ -26,9 +28,9 @@ class Pool extends Server {
 	/**
 	 * Function handles incoming Remote Procedure Calls
 	 * You can override it
-	 * @param string Method name.
-	 * @param array  Arguments.
-	 * @return mixed Result
+	 * @param  string $method Method name.
+	 * @param  array  $args   Arguments.
+	 * @return void
 	 */
 	public function RPCall($method, $args) {
 		if ($method === 'registerPair') {
@@ -41,10 +43,11 @@ class Pool extends Server {
 		}
 	}
 
-	/** Register pair
-	 * @param integer Local
-	 * @param integer Foreign
-	 * @param string  User
+	/**
+	 * Register pair
+	 * @param  integer $local   Local
+	 * @param  integer $foreign Foreign
+	 * @param  string  $user    User
 	 * @return void
 	 */
 
@@ -56,19 +59,21 @@ class Pool extends Server {
 		]);
 	}
 
-	/** Unregister pair
-	 * @param integer Local
-	 * @param integer Foreign
+	/**
+	 * Unregister pair
+	 * @param  integer $local   Local
+	 * @param  integer $foreign Foreign
 	 * @return void
 	 */
 	public function unregisterPair($local, $foreign) {
 		$this->appInstance->broadcastCall('unregisterPair', [$local, $foreign]);
 	}
 
-	/** Find pair
-	 * @param integer Local
-	 * @param integer Foreign
-	 * @return string User
+	/**
+	 * Find pair
+	 * @param  integer $local   Local
+	 * @param  integer $foreign Foreign
+	 * @return string           User
 	 */
 	public function findPair($local, $foreign) {
 		$k = $local . ':' . $foreign;

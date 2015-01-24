@@ -4,10 +4,12 @@ namespace PHPDaemon\Clients\HTTP;
 use PHPDaemon\Network\Client;
 
 /**
- * Class Pool
- * @package PHPDaemon\Clients\HTTP
+ * @package    NetworkClients
+ * @subpackage HTTPClient
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Pool extends Client {
+
 	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
@@ -15,73 +17,96 @@ class Pool extends Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			/**
-			 * Default port
-			 * @var integer
-			 */
+			/* [integer] Default port */
 			'port'    => 80,
 
-			/**
-			 * Default SSL port
-			 * @var integer
-			 */
+			/* [integer] Default SSL port */
 			'sslport' => 443,
 
-			/**
-			 * Send User-Agent header?
-			 * @var boolean
-			 */
+			/* [boolean] Send User-Agent header? */
 			'expose'  => 1,
 		];
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param string $url
-	 * @param array $params
+	 * Performs GET-request
+	 * @param string   $url
+	 * @param array    $params
+	 * @param callable $resultcb
+	 * @call  ( url $url, array $params )
+	 * @call  ( url $url, callable $resultcb )
+	 * @callback $resultcb ( Connection $conn, boolean $success )
 	 */
 	public function get($url, $params) {
 		if (is_callable($params)) {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = self::prepareUrl($url);
+			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = static::parseUrl($url);
 		}
-		$ssl = $params['scheme'] === 'https';
-		$this->getConnection(
-			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($ssl ? '#ssl' : ''),
-			function ($conn) use ($url, $params) {
-				$conn->get($url, $params);
+		if (isset($params['connect'])) {
+			$dest = $params['connect'];
+		}
+		elseif (isset($params['proxy']) && $params['proxy']) {
+			if ($params['proxy']['type'] === 'http') {
+				$dest = 'tcp://' . $params['proxy']['addr'];
 			}
-		);
+		}
+		else {
+			$dest = 'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($params['scheme'] === 'https' ? '#ssl' : '');
+		}
+		$this->getConnection($dest,	function ($conn) use ($url, $params) {
+			if (!$conn->isConnected()) {
+				call_user_func($params['resultcb'], false);
+				return;
+			}
+			$conn->get($url, $params);
+		});
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param string $url
-	 * @param array $data
-	 * @param array $params
+	 * Performs HTTP request
+	 * @param string   $url
+	 * @param array    $data
+	 * @param array    $params
+	 * @param callable $resultcb
+	 * @call  ( url $url, array $data, array $params )
+	 * @call  ( url $url, array $data, callable $resultcb )
+	 * @callback $resultcb ( Connection $conn, boolean $success )
 	 */
 	public function post($url, $data = [], $params) {
 		if (is_callable($params)) {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = self::prepareUrl($url);
+			list ($params['scheme'], $params['host'], $params['uri'], $params['port']) = static::parseUrl($url);
 		}
-		$ssl = $params['scheme'] === 'https';
-		$this->getConnection(
-			'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($ssl ? '#ssl' : ''),
-			function ($conn) use ($url, $data, $params) {
-				$conn->post($url, $data, $params);
+		if (isset($params['connect'])) {
+			$dest = $params['connect'];
+		}
+		elseif (isset($params['proxy']) && $params['proxy']) {
+			if ($params['proxy']['type'] === 'http') {
+				$dest = 'tcp://' . $params['proxy']['addr'];
 			}
-		);
+		}
+		else {
+			$dest = 'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($params['scheme'] === 'https' ? '#ssl' : '');
+		}
+		$this->getConnection($dest, function ($conn) use ($url, $data, $params) {
+			if (!$conn->isConnected()) {
+				call_user_func($params['resultcb'], false);
+				return;
+			}
+			$conn->post($url, $data, $params);
+		});
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $mixed
-	 * @return bool|string
+	 * Builds URL from array
+	 * @param string $mixed
+	 * @call  ( string $str )
+	 * @call  ( array $mixed )
+	 * @return string|false
 	 */
 	public static function buildUrl($mixed) {
 		if (is_string($mixed)) {
@@ -97,9 +122,11 @@ class Pool extends Client {
 		foreach ($mixed as $k => $v) {
 			if (is_int($k) || ctype_digit($k)) {
 				if (sizeof($buf) > 0) {
-					$url .= $queryDelimiter;
+					if (strpos($url, '?') !== false) {
+						$queryDelimiter = '&';
+					}
+					$url .= $queryDelimiter . http_build_query($buf);
 					$queryDelimiter = '';
-					$url .= http_build_query($buf);
 				}
 				$url .= $v;
 			}
@@ -111,11 +138,13 @@ class Pool extends Client {
 	}
 
 	/**
-	 * @TODO DESCR
-	 * @param $mixed
+	 * Parse URL
+	 * @param string $mixed Look Pool::buildUrl()
+	 * @call  ( string $str )
+	 * @call  ( array $mixed )
 	 * @return array|bool
 	 */
-	public static function prepareUrl($mixed) {
+	public static function parseUrl($mixed) {
 		$url = static::buildUrl($mixed);
 		if (false === $url) {
 			return false;

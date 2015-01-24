@@ -2,6 +2,7 @@
 namespace PHPDaemon\BoundSocket;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\FileSystem;
 
 /**
@@ -163,7 +164,23 @@ abstract class Generic {
 	 * @return string
 	 */
 	public function __toString() {
-		return $this->addr;
+		return $this->uri['uri'];
+	}
+
+	/**
+	 * Get URI
+	 * @return string
+	 */
+	public function getUri() {
+		return $this->uri;
+	}
+
+	/**
+	 * Get port
+	 * @return string|null
+	 */
+	public function getPort() {
+		return isset($this->port) ? $this->port : null;
 	}
 
 	/**
@@ -171,7 +188,6 @@ abstract class Generic {
 	 * @return void
 	 */
 	protected function importParams() {
-
 		foreach ($this->uri['params'] as $key => $val) {
 			if (isset($this->{$key}) && is_bool($this->{$key})) {
 				$this->{$key} = (bool)$val;
@@ -267,6 +283,7 @@ abstract class Generic {
 	/**
 	 * Route incoming request to related application
 	 * @param resource Socket
+	 * @param string $fd
 	 * @return void
 	 */
 	public function setFd($fd) {
@@ -276,7 +293,7 @@ abstract class Generic {
 
 	/**
 	 * Called when socket is bound
-	 * @return boolean Success
+	 * @return boolean|null Success
 	 */
 	protected function onBound() {
 	}

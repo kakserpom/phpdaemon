@@ -1,5 +1,10 @@
 <?php
-namespace PHPDaemon\Examples;
+
+/**
+ * `phpd.conf`
+ * Clients\HTTP\Examples\Simple {}
+ */
+namespace PHPDaemon\Clients\HTTP\Examples;
 
 /**
  * @package    Examples
@@ -7,7 +12,7 @@ namespace PHPDaemon\Examples;
  *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class ExampleHTTPClient extends \PHPDaemon\Core\AppInstance {
+class Simple extends \PHPDaemon\Core\AppInstance {
 	public $httpclient;
 
 	/**
@@ -40,10 +45,10 @@ class ExampleHTTPClient extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return SimpleRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
-		return new \PHPDaemon\Examples\ExampleHTTPClientRequest($this, $upstream, $req);
+		return new SimpleRequest($this, $upstream, $req);
 	}
 
 }

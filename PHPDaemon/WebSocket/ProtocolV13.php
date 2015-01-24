@@ -46,7 +46,7 @@ class ProtocolV13 extends Protocol {
 	 * @param string Received data (no use in this class)
 	 * @return string Handshaked data
 	 */
-	public function getHandshakeReply($data) {
+	public function getHandshakeReply($data, $extraHeaders = '') {
 		if ($this->onHandshake()) {
 			if (isset($this->conn->server['HTTP_ORIGIN'])) {
 				$this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = $this->conn->server['HTTP_ORIGIN'];
@@ -56,7 +56,7 @@ class ProtocolV13 extends Protocol {
 			}
 			$reply = "HTTP/1.1 101 Switching Protocols\r\n"
 					. "Upgrade: WebSocket\r\n"
-					. "connection: Upgrade\r\n"
+					. "Connection: Upgrade\r\n"
 					. "Date: " . date('r') . "\r\n"
 					. "Sec-WebSocket-Origin: " . $this->conn->server['HTTP_SEC_WEBSOCKET_ORIGIN'] . "\r\n"
 					. "Sec-WebSocket-Location: ws://" . $this->conn->server['HTTP_HOST'] . $this->conn->server['REQUEST_URI'] . "\r\n"
@@ -69,7 +69,7 @@ class ProtocolV13 extends Protocol {
 				$reply .= 'X-Powered-By: phpDaemon/' . Daemon::$version . "\r\n";
 			}
 
-			$reply .= "\r\n";
+			$reply .= $extraHeaders . "\r\n";
 			return $reply;
 		}
 
@@ -96,7 +96,7 @@ class ProtocolV13 extends Protocol {
 	/**
 	 * @TODO DESCR
 	 * @param $data
-	 * @param $type
+	 * @param string $type
 	 * @param int $fin
 	 * @param int $rsv1
 	 * @param int $rsv2
@@ -143,7 +143,7 @@ class ProtocolV13 extends Protocol {
 	/**
 	 * Apply mask
 	 * @param $data
-	 * @param $mask
+	 * @param string|false $mask
 	 * @return mixed
 	 */
 	public function mask($data, $mask) {

@@ -7,20 +7,25 @@ use PHPDaemon\Core\Debug;
 /**
  * @package    NetworkServers
  * @subpackage LockServer
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
-	/** @var bool */
-	public $server = FALSE; // Is this S2S-session?
-	/** @var array */
-	public $locks = []; // State of locks.
+	
+	/**
+	 * @var bool Is this S2S-session?
+	 */
+	public $server = FALSE;
+	
+	/**
+	 * @var array State of locks
+	 */
+	public $locks = [];
 
 	/**
 	 * Called when client is trying to acquire lock.
-	 * @param string  Name of job.
-	 * @param boolean Wait if already acquired?
-	 * @return string Result
+	 * @param  string  $name Name of job.
+	 * @param  boolean $wait Wait if already acquired?
+	 * @return string        Result
 	 */
 	public function acquireLock($name, $wait = FALSE) {
 		if (!isset($this->pool->lockState[$name])) {
@@ -47,9 +52,8 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when client sends done- or failed-event.
-	 * @param string Name of job.
-	 * @param string Result.
-	 * @return string Result.
+	 * @param  string $name   Name of job.
+	 * @param  string $result Result
 	 */
 	public function done($name, $result) {
 		if (
@@ -92,7 +96,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when new data received.
-	 * @param string New data.
+	 * @param  string $buf New data.
 	 * @return void
 	 */
 	public function stdin($buf) {

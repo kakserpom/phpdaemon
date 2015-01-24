@@ -3,45 +3,46 @@ namespace PHPDaemon\Utils;
 
 use PHPDaemon\Core\Daemon;
 
+/**
+ * ShmEntity
+ * @package PHPDaemon\Utils
+ * @author  Zorin Vasily <maintainer@daemon.io>
+ */
 class ShmEntity {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Path
-	 * @var string
+	 * @var string Path
 	 */
 	protected $path;
 
 	/**
-	 * Segments
-	 * @var array
+	 * @var array Segments
 	 */
 	protected $segments = [];
 
 	/**
-	 * Segment size
-	 * @var integer
+	 * @var integer Segment size
 	 */
 	protected $segsize = 1024;
 
 	/**
-	 * Name
-	 * @var string
+	 * @var string Name
 	 */
 	protected $name;
 
 	/**
-	 * Key
-	 * @var integer
+	 * @var integer Key
 	 */
 	protected $key;
 
 	/**
-	 * @param $path
-	 * @param $segsize
-	 * @param $name
-	 * @param bool $create
+	 * Constructor
+	 * @param string  $path    Path
+	 * @param integer $segsize Segment size
+	 * @param string  $name    Name
+	 * @param boolean $create  Create
 	 */
 	public function __construct($path, $segsize, $name, $create = false) {
 		$this->path    = $path;
@@ -63,10 +64,15 @@ class ShmEntity {
 	}
 
 	/**
-	 * Opens segment of shared memory.
-	 * @return int Segment number.
+	 * Opens segment of shared memory
+	 * @param  integer $segno  Segment number
+	 * @param  boolean $create Create
+	 * @return integer         Segment number
 	 */
 	public function open($segno = 0, $create = false) {
+		if (isset($this->segments[$segno])) {
+			return $this->segments[$segno];
+		}
 		$key = $this->key + $segno;
 		if (!$create) {
 			$shm = @shmop_open($key, 'w', 0, 0);
@@ -108,16 +114,57 @@ class ShmEntity {
 
 	/**
 	 * Write to shared memory
-	 * @param string  Data
-	 * @param integer Offset
-	 * @return void
+	 * @param  string  $data   Data
+	 * @param  integer $offset Offset
+	 * @return boolean         Success
 	 */
-	public function write($data, $offset) { // @TODO: prevent overflow
+	public function write($data, $offset) {
 		$segno = floor($offset / $this->segsize);
 		if (!isset($this->segments[$segno])) {
-			$this->open($segno, true);
+			if (!$this->open($segno, true)) {
+				return false;
+			}
 		}
-		shmop_write($this->segments[$segno], $data, $offset % $this->segsize);
+		$sOffset = $offset % $this->segsize;
+		$d = $this->segsize - ($sOffset + strlen($data));
+		if ($d < 0) {
+			$this->write(binarySubstr($data, $d), ($segno+1) * $this->segsize);
+			$data = binarySubstr($data, 0, $d);
+		}
+		//Daemon::log('writing to #'.$offset.' (segno '.$segno.')');
+		shmop_write($this->segments[$segno], $data, $sOffset);
+		return true;
+	}
+
+	/**
+	 * Read from shared memory
+	 * @param  integer $offset Offset
+	 * @param  integer $length Length
+	 * @return string          Data
+	 */
+	public function read($offset, $length = 1) {
+		$ret = '';
+		$segno = floor($offset / $this->segsize);
+		$sOffset = $offset % $this->segsize;
+		for (;;++$segno) {
+			if (!isset($this->segments[$segno])) {
+				if (!$this->open($segno)) {
+					goto ret;
+				}
+			}
+			$read = shmop_read($this->segments[$segno], $sOffset, min($length - strlen($ret), $this->segsize));
+			//Daemon::log('read '.strlen($read).' from segno #'.$segno);
+			$ret .= $read;
+			if (strlen($ret) >= $length) {
+				goto ret;
+			}
+			$sOffset = 0;
+		}
+		ret: 
+		if ($ret === '') {
+			return false;
+		}
+		return $ret;
 	}
 
 	/**

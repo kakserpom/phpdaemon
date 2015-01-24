@@ -1,6 +1,5 @@
-#!/usr/bin/env /opt/bin/php
+#!/usr/bin/env php
 <?php
-$filename = 'phpd-sampleapp.conf';
-$configFile = '/home/web/phpdaemon/conf/' .$filename;//. ';/etc/phpdaemon/' .$filename . '.conf;/etc/phpd/' .$filename . ';./conf/' .$filename;
+$configFile = 'conf/phpd-sampleapp.conf';
 ob_start();
 include 'phpd';

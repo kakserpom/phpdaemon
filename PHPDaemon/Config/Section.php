@@ -49,7 +49,7 @@ class Section implements \ArrayAccess {
 
 	/**
 	 * Count elements
-	 * @return number
+	 * @return integer
 	 */
 	public function count() {
 		return count($this) - 2;

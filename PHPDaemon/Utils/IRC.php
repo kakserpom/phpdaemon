@@ -1,10 +1,18 @@
 <?php
 namespace PHPDaemon\Utils;
 
+/**
+ * IRC
+ * @package PHPDaemon\Utils
+ * @author  Zorin Vasily <maintainer@daemon.io>
+ */
 class IRC {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
+	/**
+	 * @var array IRC codes
+	 */
 	public static $codes = [
 		'1' => 'RPL_WELCOME', 2 => 'RPL_YOURHOST',
 		3   => 'RPL_CREATED', 4 => 'RPL_MYINFO',
@@ -79,8 +87,16 @@ class IRC {
 		491 => 'ERR_NOOPERHOST', 501 => 'ERR_UMODEUNKNOWNFLAG',
 		502 => 'ERR_USERSDONTMATCH',
 	];
+
+	/**
+	 * @var array Flipped IRC codes
+	 */
 	public static $codesFlip;
 
+	/**
+	 * @param  integer $code Code
+	 * @return string
+	 */
 	public static function getCommandByCode($code) {
 		if (isset(self::$codes[$code])) {
 			return self::$codes[$code];
@@ -88,6 +104,10 @@ class IRC {
 		return false;
 	}
 
+	/**
+	 * @param  string  $cmd Command
+	 * @return integer
+	 */
 	public static function getCodeByCommand($cmd) {
 		if (self::$codesFlip === null) {
 			self::$codesFlip = array_flip(self::$codes);
@@ -96,9 +116,12 @@ class IRC {
 			return sprintf('%03u', self::$codesFlip[$cmd]);
 		}
 		return $cmd;
-
 	}
 
+	/**
+	 * @param  string $mask
+	 * @return array
+	 */
 	public static function parseUsermask($mask) {
 		preg_match('~^(?:(.*?)!(\~?)(.*?)@)?(.*)$~D', $mask, $m);
 		return [

@@ -4,29 +4,42 @@ namespace PHPDaemon\Servers\Socks;
 /**
  * @package    NetworkServers
  * @subpackage SocksServer
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
-	protected $ver; // protocol version (X'04' / X'05')
-	protected $state = 0; // (0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange)
+
+	/**
+	 * @var string protocol version (X'04' / X'05')
+	 */
+	protected $ver;
+
+	/**
+	 * @var integer State: 0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange
+	 */
+	protected $state = 0;
+
 	protected $slave;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const STATE_ABORTED    = 1;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const STATE_HANDSHAKED = 2;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const STATE_AUTHORIZED = 3;
+
 	/**
 	 * @TODO DESCR
 	 */
 	const STATE_DATAFLOW   = 4;
+
 	protected $lowMark = 2;
 	protected $highMark = 32768;
 
@@ -194,9 +207,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
-	 * @param $code
-	 * @param $addr
-	 * @param $port
+	 * @TODO
+	 * @param integer $code
+	 * @param string  $addr
+	 * @param integer $port
 	 */
 	public function onSlaveReady($code, $addr, $port) {
 		$reply =

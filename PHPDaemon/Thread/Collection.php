@@ -14,7 +14,7 @@ class Collection {
 
 	/**
 	 * Array of threads
-	 * @var array
+	 * @var array|Generic[]
 	 */
 	public $threads = [];
 

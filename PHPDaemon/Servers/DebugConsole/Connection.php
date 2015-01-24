@@ -1,31 +1,32 @@
 <?php
 namespace PHPDaemon\Servers\DebugConsole;
 
+use PHPDaemon\Utils\Crypt;
+
 /**
  * @package    NetworkServers
  * @subpackage DebungConsole
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
 
-	/** @var int */
-	public $timeout = 5;
+	/**
+	 * @var integer Timeout
+	 */
+	public $timeout = 60;
 
 	/**
-	 * Are we authorized?
-	 * @var boolean
+	 * @var boolean Are we authorized?
 	 */
 	protected $auth = false;
 
 	/**
-	 * How much time to try before disconnect
-	 * @var integer
+	 * @var integer How much time to try before disconnect
 	 */
 	protected $authTries = 3;
 
 	/**
-	 * Constructor.
+	 * onReady
 	 * @return void
 	 */
 	public function onReady() {
@@ -44,11 +45,11 @@ Please enter the password or type "exit": ');
 
 	/**
 	 * Let's check the password
-	 * @param string Password
-	 * @return boolean
+	 * @param  string $pass Password
+	 * @return void
 	 */
 	protected function checkPassword($pass = '') {
-		if ($pass != $this->pool->config->passphrase->value) {
+		if (!Crypt::compareStrings($this->pool->config->passphrase->value, $pass)) {
 			--$this->authTries;
 
 			if (0 === $this->authTries) {
@@ -66,8 +67,8 @@ Please enter the password or type "exit": ');
 
 	/**
 	 * Run the command
-	 * @param string Command to execute
-	 * @param string Argument
+	 * @param  string $command  Command to execute
+	 * @param  string $argument Argument
 	 * @return void
 	 */
 	protected function processCommand($command = '', $argument = '') {
@@ -99,20 +100,19 @@ Type "help" to get the list of allowed commands.');
 
 	/**
 	 * Called when new data received.
-	 * @param string New data.
 	 * @return void
 	 */
-	public function stdin($buf) {
-		$this->buf .= $buf;
-
-		$finish =
-				(strpos($this->buf, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
-				|| (strpos($this->buf, $s = "\xff\xec") !== FALSE)
-				|| (strpos($this->buf, $s = "\x03") !== FALSE)
-				|| (strpos($this->buf, $s = "\x04") !== FALSE);
-
-		while (($line = $this->gets()) !== FALSE) {
-			$e   = explode(' ', rtrim($line, "\r\n"), 2);
+	public function onRead() {	
+		$seq = ["\xff\xf4\xff\xfd\x06", "\xff\xec", "\x03", "\x04"];
+		$finish = false;
+		foreach ($seq as $s) {
+			if ($this->search($s) !== false) {
+				$finish = true;
+			}
+		}
+		while (($line = $this->readline()) !== null) {
+			$line = rtrim($line, "\r\n");
+			$e   = explode(' ', $line, 2);
 			$cmd = trim(strtolower($e[0]));
 			$arg = isset($e[1]) ? $e[1] : '';
 
@@ -120,7 +120,7 @@ Type "help" to get the list of allowed commands.');
 				$this->disconnect();
 			}
 			elseif (!$this->auth) {
-				$this->checkPassword($e[0]);
+				$this->checkPassword($line);
 			}
 			else {
 				$this->processCommand($cmd, $arg);

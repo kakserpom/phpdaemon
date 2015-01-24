@@ -3,9 +3,7 @@ namespace PHPDaemon\Utils;
 
 /**
  * Terminal
- *
- * @package Core
- *
+ * @package PHPDaemon\Utils
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class Terminal {
@@ -13,20 +11,17 @@ class Terminal {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Is color allowed in terminal?
-	 * @var boolean
+	 * @var boolean Is color allowed in terminal?
 	 */
 	protected $enableColor = false;
 
 	/**
-	 * Maximum terminal width
-	 * @var int
+	 * @var integer Maximum terminal width
 	 */
 	protected $columns = 80;
 
 	/**
 	 * Constructor
-	 * @return void
 	 */
 	public function __construct() {
 		$this->columns = $this->getMaxColumns();
@@ -42,7 +37,7 @@ class Terminal {
 
 	/**
 	 * Enables/disable color
-	 * @param [boolean $bool Enable?
+	 * @param  boolean $bool Enable?
 	 * @return void
 	 */
 	public function enableColor($bool = true) {
@@ -59,7 +54,7 @@ class Terminal {
 
 	/**
 	 * Set text style
-	 * @param string Style
+	 * @param  string $c Style
 	 * @return void
 	 */
 	public function setStyle($c) {
@@ -80,7 +75,7 @@ class Terminal {
 
 	/**
 	 * Counting terminal char width
-	 * @return int
+	 * @return integer
 	 */
 	protected function getMaxColumns() {
 		if (
@@ -95,9 +90,9 @@ class Terminal {
 
 	/**
 	 * Draw param (like in man)
-	 * @param string Param name
-	 * @param string Param description
-	 * @param array  Param allowed values
+	 * @param string $name        Param name
+	 * @param string $description Param description
+	 * @param array  $values      Param allowed values
 	 * @return void
 	 */
 	public function drawParam($name, $description, $values = '') {
@@ -178,7 +173,7 @@ class Terminal {
 
 	/**
 	 * Draw a table
-	 * @param array Array of table's rows.
+	 * @param  array Array of table's rows
 	 * @return void
 	 */
 	public function drawTable($rows) {

@@ -3,9 +3,7 @@ namespace PHPDaemon\Core;
 
 /**
  * CallbackWrapper
- *
  * @package Core
- *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class CallbackWrapper {
@@ -13,27 +11,25 @@ class CallbackWrapper {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Context
-	 * @var object
+	 * @var object Context
 	 */
 	protected $context;
 
 	/**
-	 * Callback
-	 * @var callable
+	 * @var callable Callback
 	 */
 	protected $cb;
 
 	/**
-	 * Timer
-	 * @var callable
+	 * @var callable Timer
 	 */
 	protected $timer;
 
 	/**
 	 * Constructor
-	 * @param callable $cb
-	 * @param object $context
+	 * @param  callable $cb
+	 * @param  object   $context
+	 * @param  double   $timeout
 	 * @return \PHPDaemon\Core\CallbackWrapper
 	 */
 	public function __construct($cb, $context = null, $timeout = null) {
@@ -44,9 +40,12 @@ class CallbackWrapper {
 		}
 	}
 
+	/**
+	 * @param double $timeout
+	 */
 	public function setTimeout($timeout) {
 		if ($timeout !== null) {
-			$this->timer = Timer::add(function ($timer) {
+			$this->timer = Timer::add(function() {
 				$this();
 			}, $timeout);
 		}
@@ -54,7 +53,7 @@ class CallbackWrapper {
 
 	public function cancelTimeout() {
 		if ($this->timer !== null) {
-			$this->timer->free();
+			Timer::remove($this->timer);
 			$this->timer = null;
 		}
 	}
@@ -71,7 +70,7 @@ class CallbackWrapper {
 		$this->cb      = null;
 		$this->context = null;
 		if ($this->timer !== null) {
-			$this->timer->free();
+			Timer::remove($this->timer);
 			$this->timer = null;
 		}
 	}
@@ -119,16 +118,29 @@ class CallbackWrapper {
 	 * @param double $timeout = null
 	 * @return object
 	 */
-	public static function wrap($cb, $timeout = null) {
+	public static function wrap($cb, $timeout = null, $ctx = false) {
 		if ($cb instanceof CallbackWrapper || ((Daemon::$context === null) && ($timeout === null))) {
 			return $cb;
 		}
 		if ($cb === null) {
 			return null;
 		}
-		if (!is_callable($cb)) {
-			\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump($cb));
+		return new static($cb, $ctx !== false ? $ctx : Daemon::$context, $timeout);
+	}
 
+	/**
+	 * Wraps callback even without context
+	 * @static
+	 * @param callable $cb
+	 * @param double $timeout = null
+	 * @return CallbackWrapper|null
+	 */
+	public static function forceWrap($cb, $timeout = null) {
+		if ($cb instanceof CallbackWrapper) {
+			return $cb;
+		}
+		if ($cb === null) {
+			return null;
 		}
 		return new static($cb, Daemon::$context, $timeout);
 	}
@@ -143,23 +155,33 @@ class CallbackWrapper {
 
 	/**
 	 * Invokes the callback
+	 * @param  mixed ...$args Arguments
 	 * @return mixed
-	 * @return void
 	 */
 	public function __invoke() {
+		if ($this->timer !== null) {
+			Timer::remove($this->timer);
+			$this->timer = null;
+		}
 		if ($this->cb === null) {
 			return null;
 		}
-		if ($this->timer !== null) {
-			$this->timer->free();
-			$this->timer = null;
-		}
 		if ($this->context === null || Daemon::$context !== null) {
-			return call_user_func_array($this->cb, func_get_args());
+			try {
+				return call_user_func_array($this->cb, func_get_args());
+			} catch (\Exception $e) {
+				Daemon::uncaughtExceptionHandler($e);
+			}
+			return;
 		}
 		$this->context->onWakeup();
-		$result = call_user_func_array($this->cb, func_get_args());
-		$this->context->onSleep();
-		return $result;
+		try {
+			$result = call_user_func_array($this->cb, func_get_args());
+			$this->context->onSleep();
+			return $result;
+		} catch (\Exception $e) {
+			Daemon::uncaughtExceptionHandler($e);
+			$this->context->onSleep();
+		} 
 	}
 }

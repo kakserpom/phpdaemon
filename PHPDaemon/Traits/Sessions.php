@@ -1,38 +1,50 @@
 <?php
 namespace PHPDaemon\Traits;
+
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 
 /**
  * Sessions
- *
- * @package Core
- *
+ * @package PHPDaemon\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 trait Sessions {
 	/**
-	 * Session ID
-	 * @var boolean
+	 * @var string Session ID
 	 */
 	protected $sessionId;
 
-	/** @var int */
+	/**
+	 * @var integer
+	 */
 	protected $sessionStartTimeout = 10;
 
-	/** @var bool */
+	/**
+	 * @var boolean
+	 */
 	protected $sessionStarted = false;
-	/** @var bool */
+	
+	/**
+	 * @var boolean
+	 */
 	protected $sessionFlushing = false;
-	/** @var */
+	
+	/**
+	 * @var resource
+	 */
 	protected $sessionFp;
 
 	/**
+	 * @var string
+	 */
+	protected $sessionPrefix = 'sess_';
+
+	/**
 	 * Is session started?
-	 * @return bool
+	 * @return boolean
 	 */
 	public function sessionStarted() {
 		return $this->sessionStarted;
@@ -44,19 +56,19 @@ trait Sessions {
 	 */
 	public function onSessionStartEvent() {
 		return function ($sessionStartEvent) {
-			/** @var DeferredEventCmp $sessionStartEvent */
+			/** @var \PHPDaemon\Core\DeferredEvent $sessionStartEvent */
 			$name = ini_get('session.name');
 			$sid = $this->getCookieStr($name);
 			if ($sid === '') {
-				$this->sessionStartNew(function () use ($sessionStartEvent) {
-					$sessionStartEvent->setResult(true);
+				$this->sessionStartNew(function ($success) use ($sessionStartEvent) {
+					$sessionStartEvent->setResult($success);
 				});
 				return;
 			}
 			$this->onSessionRead(function ($session) use ($sessionStartEvent) {
-				if (!$this->getSessionState()) {
-					$this->sessionStartNew(function () use ($sessionStartEvent) {
-						$sessionStartEvent->setResult(true);
+				if ($this->getSessionState() === null) {
+					$this->sessionStartNew(function ($success) use ($sessionStartEvent) {
+						$sessionStartEvent->setResult($success);
 					});
 					return;
 				}
@@ -70,37 +82,33 @@ trait Sessions {
 	 * @return callable
 	 */
 	public function onSessionReadEvent() {
-
 		return function ($sessionEvent) {
-			/** @var DeferredEventCmp $sessionEvent */
+			/** @var \PHPDaemon\Core\DeferredEvent $sessionEvent */
 			$name = ini_get('session.name');
 			$sid  = $this->getCookieStr($name);
 			if ($sid === '') {
-				$sessionEvent->setResult();
+				$sessionEvent->setResult(false);
 				return;
 			}
-			if ($this->getSessionState()) {
-				$sessionEvent->setResult();
+			if ($this->getSessionState() !== null) {
+				$sessionEvent->setResult(true);
 				return;
 			}
-
 			$this->sessionRead($sid, function ($data) use ($sessionEvent) {
-				if ($data !== false) {
-					$this->sessionDecode($data);
-				}
-				$sessionEvent->setResult();
+				$canDecode = $data !== false && $this->sessionDecode($data);
+				$sessionEvent->setResult($canDecode);
 			});
 		};
 	}
 
 	/**
 	 * Reads session data
-	 * @param $sid
-	 * @param callable $cb
+	 * @param  string   $sid Session ID
+	 * @param  callable $cb  Callback
 	 * @return void
 	 */
 	public function sessionRead($sid, $cb = null) {
-		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), 'php') . basename($sid), 'r+!', function ($fp) use ($cb) {
+		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), $this->sessionPrefix) . basename($sid), 'r+!', function ($fp) use ($cb) {
 			if (!$fp) {
 				call_user_func($cb, false);
 				return;
@@ -114,7 +122,7 @@ trait Sessions {
 
 	/**
 	 * Commmit session data
-	 * @param callable $cb
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function sessionCommit($cb = null) {
@@ -127,6 +135,7 @@ trait Sessions {
 		$this->sessionFlushing = true;
 		$data                  = $this->sessionEncode();
 		$l                     = strlen($data);
+		$cb = CallbackWrapper::wrap($cb);
 		$this->sessionFp->write($data, function ($file, $result) use ($l, $cb) {
 			$file->truncate($l, function ($file, $result) use ($cb) {
 				$this->sessionFlushing = false;
@@ -139,7 +148,7 @@ trait Sessions {
 
 	/**
 	 * Session start
-	 * @param bool $force_start = true
+	 * @param  boolean $force_start
 	 * @return void
 	 */
 	protected function sessionStart($force_start = true) {
@@ -163,16 +172,17 @@ trait Sessions {
 
 	/**
 	 * Start new session
-	 * @param callable $cb
+	 * @param  callable $cb Callback
+	 * @return void
 	 */
 	protected function sessionStartNew($cb = null) {
-		FileSystem::tempnam(session_save_path(), 'php', function ($fp) use ($cb) {
+		FileSystem::tempnam(session_save_path(), $this->sessionPrefix, function ($fp) use ($cb) {
 			if (!$fp) {
 				call_user_func($cb, false);
 				return;
 			}
 			$this->sessionFp = $fp;
-			$this->sessionId = substr(basename($fp->path), 3);
+			$this->sessionId = substr(basename($fp->path), strlen($this->sessionPrefix));
 			$this->setcookie(
 				ini_get('session.name')
 				, $this->sessionId
@@ -188,12 +198,12 @@ trait Sessions {
 
 	/**
 	 * Encodes session data
-	 * @return bool|string
+	 * @return string|false
 	 */
 	protected function sessionEncode() {
 		$type = ini_get('session.serialize_handler');
 		if ($type === 'php') {
-			return serialize($this->getSessionState());
+			return $this->serialize_php($this->getSessionState());
 		}
 		if ($type === 'php_binary') {
 			return igbinary_serialize($this->getSessionState());
@@ -203,13 +213,13 @@ trait Sessions {
 
 	/**
 	 * Decodes session data
-	 * @param $str
-	 * @return bool
+	 * @param  string  $str Data
+	 * @return boolean
 	 */
 	protected function sessionDecode($str) {
 		$type = ini_get('session.serialize_handler');
 		if ($type === 'php') {
-			$this->setSessionState(unserialize($str));
+			$this->setSessionState($this->unserialize_php($str));
 			return true;
 		}
 		if ($type === 'php_binary') {
@@ -218,4 +228,55 @@ trait Sessions {
 		}
 		return false;
 	}
+
+    /**
+     * session_encode() - clone, which not require session_start()
+     * @see    http://www.php.net/manual/en/function.session-encode.php
+     * @param  array  $array
+     * @return string
+     */
+    public function serialize_php($array) {
+        $raw = '';
+        $line = 0;
+        $keys = array_keys($array);
+        foreach ($keys as $key) {
+            $value = $array[$key];
+            $line++;
+            $raw .= $key . '|';
+            if (is_array($value) && isset($value['huge_recursion_blocker_we_hope'])) {
+                $raw .= 'R:' . $value['huge_recursion_blocker_we_hope'] . ';';
+            } else {
+                $raw .= serialize($value);
+            }
+            $array[$key] = array('huge_recursion_blocker_we_hope' => $line);
+        }
+
+        return $raw;
+    }
+
+    /**
+     * session_decode() - clone, which not require session_start()
+     * @see    http://www.php.net/manual/en/function.session-decode.php#108037
+     * @param  string $session_data
+     * @return array
+     */
+    protected function unserialize_php($session_data)
+    {
+        $return_data = array();
+        $offset = 0;
+        while ($offset < strlen($session_data)) {
+            if (!strstr(substr($session_data, $offset), "|")) {
+            	return $return_data;
+                //throw new \Exception("invalid session data, remaining: " . substr($session_data, $offset));
+            }
+            $pos = strpos($session_data, "|", $offset);
+            $num = $pos - $offset;
+            $varname = substr($session_data, $offset, $num);
+            $offset += $num + 1;
+            $data = unserialize(substr($session_data, $offset));
+            $return_data[$varname] = $data;
+            $offset += strlen(serialize($data));
+        }
+        return $return_data;
+    }
 }

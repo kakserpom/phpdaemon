@@ -17,7 +17,7 @@ class Example extends \PHPDaemon\Core\AppInstance {
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
 	 * Uncomment and return array with your default options
-	 * @return array|false
+	 * @return boolean
 	 */
 	protected function getConfigDefaults() {
 		return false;
@@ -51,7 +51,7 @@ class Example extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return ExampleRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new ExampleRequest($this, $upstream, $req);

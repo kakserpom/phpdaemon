@@ -26,7 +26,7 @@ class ExampleWithMySQL extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return ExampleWithMySQLRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new ExampleWithMySQLRequest($this, $upstream, $req);

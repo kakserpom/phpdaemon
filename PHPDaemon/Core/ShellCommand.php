@@ -8,99 +8,80 @@ use PHPDaemon\Network\IOStream;
 
 /**
  * Process
- *
- * @property null onReadData
- * @property callable onEOF
- * @property callable onRead
- * @package Core
- *
+ * @package PHPDaemon\Core
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 class ShellCommand extends IOStream {
 
-	/** @var */
-	public $writeState;
-	/** @var */
-	public $finishWrite;
+	protected $finishWrite;
 
 	/**
-	 * Command string
-	 * @var string
+	 * @var string Command string
 	 */
 	protected $cmd;
 
 	/**
-	 * Executable path
-	 * @var string
+	 * @var string Executable path
 	 */
 	public $binPath;
 
 	/**
-	 * Opened pipes
-	 * @var array
+	 * @var array Opened pipes
 	 */
 	protected $pipes;
 
 	/**
-	 * Process descriptor
-	 * @var resource
+	 * @var resource Process descriptor
 	 */
 	protected $pd;
 
 	/**
-	 * FD write
-	 * @var resource
+	 * @var resource FD write
 	 */
 	protected $fdWrite;
 
 	/**
-	 * Output errors?
-	 * @var boolean
+	 * @var boolean Output errors?
 	 */
 	protected $outputErrors = true;
 
 	/**
-	 * SUID
-	 * @var string
+	 * @var string SUID
 	 */
 	public $setUser;
+
 	/**
-	 * SGID
-	 * @var string
+	 * @var string SGID
 	 */
 	public $setGroup;
 
 	/**
-	 * Chroot
-	 * @var string
+	 * @var string Chroot
 	 */
 	public $chroot = '/';
 
 	/**
-	 * Hash of environment's variables
-	 * @var array
+	 * @var array Hash of environment's variables
 	 */
 	protected $env = []; // 
 
 	/**
-	 * Chdir
-	 * @var string
+	 * @var string Chdir
 	 */
 	public $cwd;
+
 	/**
-	 * Path to error logfile
-	 * @var string
+	 * @var string Path to error logfile
 	 */
 	protected $errlogfile = null;
+
 	/**
-	 * Array of arguments
-	 * @var array
+	 * @var array Array of arguments
 	 */
 	protected $args;
 
 	/**
-	 * Process priority
-	 * @var int
+	 * @var integer Process priority
 	 */
 	protected $nice;
 
@@ -108,14 +89,14 @@ class ShellCommand extends IOStream {
 	 * @var \EventBufferEvent
 	 */
 	protected $bevWrite;
+
 	/**
 	 * @var \EventBufferEvent
 	 */
 	protected $bevErr;
 
 	/**
-	* Got EOF?
-	 * @var bool
+	 * @var boolean Got EOF?
 	 */
 	protected $EOF = false;
 
@@ -129,8 +110,7 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Set group
-	 * @param string $group
-	 * @return object $this
+	 * @return this
 	 */
 	public function setGroup($val) {
 		$this->setGroup = $val;
@@ -139,8 +119,8 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Set cwd
-	 * @param string $dir
-	 * @return object $this
+	 * @param  string $dir
+	 * @return this
 	 */
 	public function setCwd($dir) {
 		$this->cwd = $dir;
@@ -149,8 +129,8 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Set group
-	 * @param string $user
-	 * @return object $this
+	 * @param  string $val
+	 * @return this
 	 */
 	public function setUser($val) {
 		$this->setUser = $val;
@@ -159,8 +139,8 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Set chroot
-	 * @param string $dir
-	 * @return object $this
+	 * @param  string $dir
+	 * @return this
 	 */
 	public function setChroot($dir) {
 		$this->chroot = $dir;
@@ -169,11 +149,10 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Execute
-	 * @param string $binPath Optional. Binpath.
-	 * @param callable $cb 	  Callback
-	 * @param array $args     Optional. Arguments.
-	 * @param array $env      Optional. Hash of environment's variables.
-	 * @return object ShellCommand
+	 * @param  string   $binPath Binpath
+	 * @param  callable $cb 	 Callback
+	 * @param  array    $args    Optional. Arguments
+	 * @param  array    $env     Optional. Hash of environment's variables
 	 */
 	public static function exec($binPath = null, $cb = null, $args = null, $env = null) {
 		$o = new static;
@@ -191,11 +170,10 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Sets fd
-	 * @param mixed File descriptor
-	 * @param [object EventBufferEvent]
+	 * @param  resource          $fd File descriptor
+	 * @param  \EventBufferEvent $bev
 	 * @return void
 	 */
-
 	public function setFd($fd, $bev = null) {
 		$this->fd = $fd;
 		if ($fd === false) {
@@ -236,8 +214,8 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Sets an array of arguments
-	 * @param array Arguments
-	 * @return object ShellCommand
+	 * @param  array Arguments
+	 * @return this
 	 */
 	public function setArgs($args = NULL) {
 		$this->args = $args;
@@ -247,8 +225,8 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Set a hash of environment's variables
-	 * @param array Hash of environment's variables
-	 * @return object ShellCommand
+	 * @param  array Hash of environment's variables
+	 * @return this
 	 */
 	public function setEnv($env = NULL) {
 		$this->env = $env;
@@ -270,9 +248,9 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * Set priority.
-	 * @param integer $nice Priority
-	 * @return object ShellCommand
+	 * Set priority
+	 * @param  integer $nice Priority
+	 * @return this
 	 */
 	public function nice($nice = NULL) {
 		$this->nice = $nice;
@@ -282,7 +260,7 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Called when new data received
-	 * @return boolean
+	 * @return this|null
 	 */
 	protected function onRead() {
 		if (func_num_args() === 1) {
@@ -294,7 +272,7 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Build arguments string from associative/enumerated array (may be mixed)
-	 * @param array $args
+	 * @param  array $args
 	 * @return string
 	 */
 	public static function buildArgs($args) {
@@ -321,10 +299,10 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Execute
-	 * @param string $binPath Optional. Binpath.
-	 * @param array $args     Optional. Arguments.
-	 * @param array $env      Optional. Hash of environment's variables.
-	 * @return object ShellCommand
+	 * @param  string $binPath Optional. Binpath
+	 * @param  array  $args    Optional. Arguments
+	 * @param  array  $env     Optional. Hash of environment's variables
+	 * @return this
 	 */
 	public function execute($binPath = NULL, $args = NULL, $env = NULL) {
 		if ($binPath !== NULL) {
@@ -386,10 +364,10 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Finish write stream
-	 * @return bool
+	 * @return boolean
 	 */
 	public function finishWrite() {
-		if (!$this->writeState) {
+		if (!$this->writing) {
 			$this->closeWrite();
 		}
 
@@ -419,7 +397,7 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Close write stream
-	 * @return $this
+	 * @return this
 	 */
 	public function closeWrite() {
 		if ($this->bevWrite) {
@@ -435,12 +413,11 @@ class ShellCommand extends IOStream {
 		}
 
 		return $this;
-
 	}
 
 	/**
 	 * Got EOF?
-	 * @return bool
+	 * @return boolean
 	 */
 	public function eof() {
 		return $this->EOF;
@@ -449,8 +426,8 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
-	 * @param string Data to send.
-	 * @return boolean Success.
+	 * @param  string $data Data to send
+	 * @return boolean Success
 	 */
 	public function write($data) {
 		if (!$this->alive) {
@@ -474,8 +451,8 @@ class ShellCommand extends IOStream {
 
 	/**
 	 * Send data and appending \n to connection. Note that it just writes to buffer flushed at every baseloop
-	 * @param string Data to send.
-	 * @return boolean Success.
+	 * @param  string Data to send
+	 * @return boolean Success
 	 */
 	public function writeln($data) {
 		if (!$this->alive) {
@@ -495,9 +472,9 @@ class ShellCommand extends IOStream {
 	}
 
 	/**
-	 * Sets callback which will be called once when got EOF 
-	 * @param callable $cb
-	 * @return $this
+	 * Sets callback which will be called once when got EOF
+	 * @param  callable $cb
+	 * @return this
 	 */
 	public function onEOF($cb = NULL) {
 		$this->onEOF = CallbackWrapper::wrap($cb);

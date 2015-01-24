@@ -5,6 +5,7 @@ if (ini_get('mbstring.func_overload') & 2) {
 	}
 }
 else {
+  if (!function_exists('binarySubstr')) {
 	function binarySubstr($s, $p, $l = NULL) {
 		if ($l === NULL) {
 			$ret = substr($s, $p);
@@ -19,6 +20,12 @@ else {
 		return $ret;
 	}
 }
+}
+if (!function_exists('D')) {
+	function D() {
+		\PHPDaemon\Core\Daemon::log(call_user_func_array('\PHPDaemon\Core\Debug::dump', func_get_args()));
+	}
+}
 if (!function_exists('igbinary_serialize')) {
 	function igbinary_serialize($m) {
 		return serialize($m);
@@ -28,10 +35,16 @@ if (!function_exists('igbinary_serialize')) {
 		return unserialize($m);
 	}
 }
+if (!function_exists('setTimeout')) {
+/**
+ * @param Closure $cb
+ */
 function setTimeout($cb, $timeout = null, $id = null, $priority = null) {
 	return \PHPDaemon\Core\Timer::add($cb, $timeout, $id, $priority);
 }
-
+}
+if (!function_exists('clearTimeout')) {
 function clearTimeout($id) {
 	\PHPDaemon\Core\Timer::remove($id);
+}
 }

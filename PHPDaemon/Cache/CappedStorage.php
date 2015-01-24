@@ -3,9 +3,7 @@ namespace PHPDaemon\Cache;
 
 /**
  * CappedStorage
- *
- * @package Core
- *
+ * @package PHPDaemon\Cache
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class CappedStorage {
@@ -13,43 +11,57 @@ abstract class CappedStorage {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Sorter function
-	 * @var callable
+	 * @var callable Sorter function
 	 */
 	public $sorter;
 
 	/**
-	 * Maximum number of cached elements
-	 * @var integer
+	 * @var integer Maximum number of cached elements
 	 */
 	public $maxCacheSize = 64;
 
 	/**
-	 * Additional window to decrease number of sorter calls.
-	 * @var integer
+	 * @var integer Additional window to decrease number of sorter calls
 	 */
 	public $capWindow = 16;
 
 	/**
-	 * Storage of cached items
-	 * @var array
+	 * @var array Storage of cached items
 	 */
 	public $cache = [];
 
 	/**
+	 * Sets cache size
+	 * @param  integer $size Maximum number of elements
+	 * @return void
+	 */
+	public function setMaxCacheSize($size) {
+		$this->maxCacheSize = $size;
+	}
+
+	/**
+	 * Sets cap window
+	 * @param  integer $w Additional window to decrease number of sorter calls
+	 * @return void
+	 */
+	public function setCapWindow($w) {
+		$this->capWindow = $w;
+	}
+
+	/**
 	 * Hash function
-	 * @param string Key
-	 * @return mixed
+	 * @param  string $key Key
+	 * @return integer
 	 */
 	public function hash($key) {
-		return crc32($key);
+		return $key;
 	}
 
 	/**
 	 * Puts element in cache
-	 * @param string Key
-	 * @param mixed  Value
-	 * @param [integer Time-to-Life]
+	 * @param  string  $key   Key
+	 * @param  mixed   $value Value
+	 * @param  integer $ttl   Time to live
 	 * @return mixed
 	 */
 	public function put($key, $value, $ttl = null) {
@@ -57,6 +69,9 @@ abstract class CappedStorage {
 		if (isset($this->cache[$k])) {
 			$item = $this->cache[$k];
 			$item->setValue($value);
+			if ($ttl !== null) {
+				$item->expire = microtime(true) + $ttl;
+			}
 			return $item;
 		}
 		$item = new Item($value);
@@ -76,7 +91,7 @@ abstract class CappedStorage {
 
 	/**
 	 * Invalidates cache element
-	 * @param string Key
+	 * @param  string $key Key
 	 * @return void
 	 */
 	public function invalidate($key) {
@@ -86,7 +101,7 @@ abstract class CappedStorage {
 
 	/**
 	 * Gets element by key
-	 * @param string Key
+	 * @param  string $key Key
 	 * @return object Item
 	 */
 	public function get($key) {
@@ -106,7 +121,7 @@ abstract class CappedStorage {
 
 	/**
 	 * Gets value of element by key
-	 * @param string Key
+	 * @param  string $key Key
 	 * @return mixed
 	 */
 	public function getValue($key) {
@@ -115,6 +130,12 @@ abstract class CappedStorage {
 			return null;
 		}
 		$item = $this->cache[$k];
+		if (isset($item->expire)) {
+			if (microtime(true) >= $item->expire) {
+				unset($this->cache[$k]);
+				return null;
+			}
+		}
 		return $item->getValue();
 	}
 }

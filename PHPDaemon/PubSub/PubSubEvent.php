@@ -3,31 +3,25 @@ namespace PHPDaemon\PubSub;
 
 /**
  * PubSubEvent
- *
- * @package Core
- *
+ * @package PHPDaemon\PubSub
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 class PubSubEvent extends \SplObjectStorage {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * Subscriptions
-	 * @var array
+	 * @var array Subscriptions
 	 */
 	public $sub = [];
 
 	/**
-	 * Activation callback
-	 * @var callable
+	 * @var callable Activation callback
 	 */
 	public $actCb;
 
 	/**
-	 * Deactivation callback
-	 * @var callable
+	 * @var callable Deactivation callback
 	 */
 	public $deactCb;
 
@@ -36,14 +30,20 @@ class PubSubEvent extends \SplObjectStorage {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	public function __construct($act = null, $deact = null) {
+		if ($act !== null) {
+			$this->actCb = $act;
+		}
+		if ($deact !== null) {
+			$this->deactCb = $deact;
+		}
 		$this->storage = new \SplObjectStorage;
 	}
 
 	/**
-	 * Sets onActivation callback.
-	 * @param callable $cb Callback
-	 * @return \PHPDaemon\PubSub\PubSubEvent
+	 * Sets onActivation callback
+	 * @param  callable $cb Callback
+	 * @return this
 	 */
 	public function onActivation($cb) {
 		$this->actCb = $cb;
@@ -51,9 +51,9 @@ class PubSubEvent extends \SplObjectStorage {
 	}
 
 	/**
-	 * Sets onDeactivation callback.
+	 * Sets onDeactivation callback
 	 * @param callable $cb Callback
-	 * @return \PHPDaemon\PubSub\PubSubEvent
+	 * @return this
 	 */
 	public function onDeactivation($cb) {
 		$this->deactCb = $cb;
@@ -61,8 +61,8 @@ class PubSubEvent extends \SplObjectStorage {
 	}
 
 	/**
-	 * Constructor
-	 * @return \PHPDaemon\PubSub\PubSubEvent
+	 * Init
+	 * @return object
 	 */
 	public static function init() {
 		return new static;
@@ -70,9 +70,9 @@ class PubSubEvent extends \SplObjectStorage {
 
 	/**
 	 * Subscribe
-	 * @param object $obj  Subcriber object
-	 * @param callable $cb Callback
-	 * @return \PHPDaemon\PubSub\PubSubEvent
+	 * @param  object   $obj Subcriber object
+	 * @param  callable $cb  Callback
+	 * @return this
 	 */
 	public function sub($obj, $cb) {
 		$act = $this->count() === 0;
@@ -87,8 +87,8 @@ class PubSubEvent extends \SplObjectStorage {
 
 	/**
 	 * Unsubscripe
-	 * @param object $obj Subscriber object
-	 * @return \PHPDaemon\PubSub\PubSubEvent
+	 * @param  object $obj Subscriber object
+	 * @return this
 	 */
 	public function unsub($obj) {
 		$this->detach($obj);
@@ -102,8 +102,8 @@ class PubSubEvent extends \SplObjectStorage {
 
 	/**
 	 * Publish
-	 * @param mixed $data Data
-	 * @return \PHPDaemon\PubSub\PubSubEvent
+	 * @param  mixed $data Data
+	 * @return this
 	 */
 	public function pub($data) {
 		foreach ($this as $obj) {

@@ -9,10 +9,11 @@ namespace PHPDaemon\Applications;
 	 */
 /**
  * Class FileReader
- * @property array indexFiles
  * @package PHPDaemon\Applications
  */
 class FileReader extends \PHPDaemon\Core\AppInstance {
+
+	public $indexFiles;
 
 	/**
 	 * Setting default config options
@@ -45,7 +46,7 @@ class FileReader extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return FileReaderRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new \PHPDaemon\Applications\FileReaderRequest($this, $upstream, $req);

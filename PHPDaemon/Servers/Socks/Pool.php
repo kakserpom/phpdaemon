@@ -11,17 +11,22 @@ class Pool extends Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// listen to
+			/* [string|array] Listen addresses */
 			'listen'         => 'tcp://0.0.0.0',
-			// default port
+
+			/* [integer] Listen port */
 			'port'           => 1080,
-			// authentication required
+
+			/* [boolean] Authentication required */
 			'auth'           => 0,
-			// user name
+
+			/* [string] User name */
 			'username'       => 'User',
-			// password
+
+			/* [string] Password */
 			'password'       => 'Password',
-			// allowed clients ip list
+
+			/* [string] Allowed clients ip list */
 			'allowedclients' => null,
 		];
 	}

@@ -1,24 +1,29 @@
 <?php
 namespace PHPDaemon\Clients\Mongo;
 
+/**
+ * @package    Applications
+ * @subpackage MongoClientAsync
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ */
 class Collection {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/** Related Pool object
-	 * @var Pool
+	/**
+	 * @var Pool Related Pool object
 	 */
 	public $pool;
 
-	/** Name of collection.
-	 * @var string
+	/**
+	 * @var string Name of collection
 	 */
 	public $name;
 
 	/**
 	 * Contructor of MongoClientAsyncCollection
-	 * @param string Name of collection
-	 * @param object Pool
+	 * @param  string $name Name of collection
+	 * @param  Pool   $pool Pool
 	 * @return void
 	 */
 	public function __construct($name, $pool) {
@@ -28,8 +33,9 @@ class Collection {
 
 	/**
 	 * Finds objects in collection
-	 * @param mixed Callback called when response received
-	 * @param array Hash of properties (offset,  limit,  opts,  tailable,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
+	 * @param  callable $cb Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, tailable, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function find($cb, $p = []) {
@@ -38,9 +44,22 @@ class Collection {
 	}
 
 	/**
+	 * Finds objects in collection and fires callback when got all objects
+	 * @param  callable $cb Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, tailable, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+	 * @callback $cb ( )
+	 * @return void
+	 */
+	public function findAll($cb, $p = []) {
+		$p['col'] = $this->name;
+		$this->pool->findAll($p, $cb);
+	}
+
+	/**
 	 * Finds one object in collection
-	 * @param mixed Callback called when response received
-	 * @param array Hash of properties (offset,   opts,  where,  col,  fields,  sort,  hint,  explain,  snapshot,  orderby,  parse_oplog)
+	 * @param  callable $cb Callback called when response received
+	 * @param  array    $p  Hash of properties (offset,  opts, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function findOne($cb, $p = []) {
@@ -50,9 +69,9 @@ class Collection {
 
 	/**
 	 * Counts objects in collection
-	 * @param mixed  Callback called when response received
-	 * @param array  Hash of properties (offset,  limit,  opts,  where,  col)
-	 * @param string Optional. Distribution key.
+	 * @param  callable $cb Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, where, col)
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function count($cb, $p = []) {
@@ -62,9 +81,10 @@ class Collection {
 
 	/**
 	 * Ensure index
-	 * @param array  Keys
-	 * @param array  Optional. Options
-	 * @param mixed  Optional. Callback called when response received
+	 * @param  array    $keys    Keys
+	 * @param  array    $options Optional. Options
+	 * @param  callable $cb      Optional. Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function ensureIndex($keys, $options = [], $cb = null) {
@@ -73,8 +93,9 @@ class Collection {
 
 	/**
 	 * Groupping function
-	 * @param mixed Callback called when response received
-	 * @param array Hash of properties (offset,  limit,  opts,  key,  col,  reduce,  initial)
+	 * @param  callable $cb Callback called when response received
+	 * @param  array    $p  Hash of properties (offset, limit, opts, key, col, reduce, initial)
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function group($cb, $p = []) {
@@ -84,9 +105,10 @@ class Collection {
 
 	/**
 	 * Inserts an object
-	 * @param array Data
-	 * @param mixed Optional. Callback called when response received.
-	 * @param array Optional. Params.
+	 * @param  array    $doc    Data
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return MongoId
 	 */
 	public function insert($doc, $cb = null, $params = null) {
@@ -95,9 +117,10 @@ class Collection {
 
 	/**
 	 * Inserts an object
-	 * @param array Data
-	 * @param mixed Optional. Callback called when response received.
-	 * @param array Optional. Params.
+	 * @param  array    $doc    Data
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return MongoId
 	 */
 	public function insertOne($doc, $cb = null, $params = null) {
@@ -106,10 +129,11 @@ class Collection {
 
 	/**
 	 * Inserts several documents
-	 * @param array Array of docs
-	 * @param mixed Optional. Callback called when response received.
-	 * @param array Optional. Params.
-	 * @return array IDs
+	 * @param  array    $docs   Array of docs
+	 * @param  callable $cb     Optional. Callback called when response received.
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
+	 * @return array    IDs
 	 */
 	public function insertMulti($docs, $cb = null, $params = null) {
 		return $this->pool->insertMulti($this->name, $docs, $cb, $params);
@@ -117,11 +141,12 @@ class Collection {
 
 	/**
 	 * Updates one object in collection
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param integer Optional. Flags.
-	 * @param mixed   Optional. Callback called when response received.
-	 * @param array   Optional. Params.
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  integer  $flags  Optional. Flags
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function update($cond, $data, $flags = 0, $cb = null, $params = null) {
@@ -131,10 +156,11 @@ class Collection {
 
 	/**
 	 * Updates one object in collection
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param mixed   Optional. Callback called when response received.
-	 * @param array   Optional. Params.
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function updateOne($cond, $data, $cb = null, $params = null) {
@@ -143,10 +169,11 @@ class Collection {
 
 	/**
 	 * Updates one object in collection
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param mixed   Optional. Callback called when response received.
-	 * @param array   Optional. Params.
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function updateMulti($cond, $data, $cb = null, $params = null) {
@@ -154,12 +181,13 @@ class Collection {
 	}
 
 	/**
-	 * Upserts an object (updates if exists,  insert if not exists)
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param boolean Optional. Multi-flag.
-	 * @param mixed   Optional. Callback called when response received.
-	 * @param array   Optional. Params.
+	 * Upserts an object (updates if exists, insert if not exists)
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  boolean  $multi  Optional. Multi-flag
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function upsert($cond, $data, $multi = false, $cb = NULL, $params = null) {
@@ -167,11 +195,12 @@ class Collection {
 	}
 
 	/**
-	 * Upserts an object (updates if exists,  insert if not exists)
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param mixed   Optional. Callback called when response received.
-	 * @param array   Optional. Params.
+	 * Upserts an object (updates if exists, insert if not exists)
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function upsertOne($cond, $data, $cb = NULL, $params = null) {
@@ -179,11 +208,12 @@ class Collection {
 	}
 
 	/**
-	 * Upserts an object (updates if exists,  insert if not exists)
-	 * @param array   Conditions
-	 * @param array   Data
-	 * @param mixed   Optional. Callback called when response received.
-	 * @param array   Optional. Params.
+	 * Upserts an object (updates if exists, insert if not exists)
+	 * @param  array    $cond   Conditions
+	 * @param  array    $data   Data
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function upsertMulti($cond, $data, $cb = NULL, $params = null) {
@@ -192,9 +222,10 @@ class Collection {
 
 	/**
 	 * Removes objects from collection
-	 * @param array Conditions
-	 * @param mixed Optional. Callback called when response received.
-	 * @param array Optional. Params.
+	 * @param  array    $cond   Conditions
+	 * @param  callable $cb     Optional. Callback called when response received
+	 * @param  array    $params Optional. Params
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function remove($cond = [], $cb = NULL, $params = null) {
@@ -203,17 +234,33 @@ class Collection {
 
 	/**
 	 * Evaluates a code on the server side
-	 * @param string Code
-	 * @param mixed  Callback called when response received
+	 * @param  string   $code Code
+	 * @param  callable $cb   Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function evaluate($code, $cb) {
 		$this->pool->evaluate($code, $cb);
 	}
 
+
+	/**
+	 * Aggregate
+	 * @param  array    $p  Params
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
+	 * @return void
+	 */
+	public function aggregate($p, $cb) {
+		$p['col'] = $this->name;
+		$this->pool->aggregate($p, $cb);
+	}
+
 	/**
 	 * Generation autoincrement
-	 * @param Closure $cb called when response received
+	 * @param  callable $cb    Called when response received
+	 * @param  boolean  $plain Plain?
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function autoincrement($cb, $plain = false) {
@@ -231,7 +278,9 @@ class Collection {
 
 	/**
 	 * Generation autoincrement
-	 * @param Closure $cb called when response received
+	 * @param  array    $p  Params
+	 * @param  callable $cb Callback called when response received
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function findAndModify($p, $cb) {

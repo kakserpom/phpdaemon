@@ -1,14 +1,19 @@
 <?php
 namespace PHPDaemon\Structures;
 
+/**
+ * ObjectStorage
+ * @package PHPDaemon\Structures
+ * @author  Zorin Vasily <maintainer@daemon.io>
+ */
 class ObjectStorage extends \SplObjectStorage {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
 	 * Call given method of all objects in storage
-	 * @param string $Method
-	 * @param ... arguments ...
+	 * @param  string $method  Method name
+	 * @param  mixed  ...$args Arguments
 	 * @return integer Number of called objects
 	 */
 	public function each() {
@@ -27,7 +32,7 @@ class ObjectStorage extends \SplObjectStorage {
 
 	/**
 	 * Remove all objects from this storage, which contained in another storage
-	 * @param \SplObjectStorage
+	 * @param  \SplObjectStorage $obj
 	 * @return void
 	 */
 	public function removeAll($obj = null) {

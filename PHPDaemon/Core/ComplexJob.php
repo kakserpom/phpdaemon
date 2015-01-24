@@ -4,75 +4,70 @@ namespace PHPDaemon\Core;
 use PHPDaemon\Core\CallbackWrapper;
 
 /**
- * ComplexJob class.
+ * ComplexJob class
+ * @package PHPDaemon\Core
+ * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class ComplexJob {
+class ComplexJob implements \ArrayAccess {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
 	/**
-	 * State: waiting. It means there are no listeners yet.
-	 * @var integer
+	 * State: waiting
 	 */
 	const STATE_WAITING = 1;
 	
 	/**
-	 * State: running. Event handler in progress.
-	 * @var integer
+	 * State: running
 	 */
 	const STATE_RUNNING = 2;
 	
 	/**
-	 * State: done. Event handler is finished, result is saved.
-	 * @var integer
+	 * State: done
 	 */
 	const STATE_DONE = 3;
 
 	/**
-	 * Listeners
-	 * @var array [callable, ...]
+	 * @var array Listeners [callable, ...]
 	 */
 	public $listeners = [];
 
 	/**
-	 * Hash of results
-	 * @var array [jobname -> result, ...]
+	 * @var array Hash of results [jobname -> result, ...]
 	 */
 	public $results = [];
 
 	/**
-	 * Current state
-	 * @var enum
+	 * @var integer Current state
 	 */
 	public $state;
 
 	/**
-	 * Hash of results
-	 * @var array [jobname -> result, ...]
+	 * @var array Hash of jobs [jobname -> callback, ...]
 	 */
 	public $jobs = [];
 
 	/**
-	 * Number of results
-	 * @var integer
+	 * @var integer Number of results
 	 */
 	public $resultsNum = 0;
 
 	/**
-	 * Number of jobs
-	 * @var integer
+	 * @var integer Number of jobs
 	 */
 	public $jobsNum = 0;
 
-	/** @var \PHPDaemon\HTTPRequest\Generic */
-	public $req;
-
 	protected $keep = false;
+
+	protected $more = null;
+
+	protected $maxConcurrency = -1;
+
+	protected $backlog;
 
 	/**
 	 * Constructor
 	 * @param callable $cb Listener
-	 * @return \PHPDaemon\Core\ComplexJob
 	 */
 	public function __construct($cb = null) {
 		$this->state = self::STATE_WAITING;
@@ -82,8 +77,52 @@ class ComplexJob {
 	}
 
 	/**
+	 * Handler of isset($job[$name])
+	 * @param  string $j Job name
+	 * @return boolean
+	 */
+	public function offsetExists($j) {
+		return isset($this->results[$j]);
+	}
+
+	/**
+	 * Handler of $job[$name]
+	 * @param  string $j Job name
+	 * @return mixed
+	 */
+	public function offsetGet($j) {
+		return isset($this->results[$j]) ? $this->results[$j] : null;
+	}
+
+	/**
+	 * Handler of $job[$name] = $value
+	 * @param  string $j Job name
+	 * @param  mixed  $v Job result
+	 * @return void
+	 */
+	public function offsetSet($j, $v) {
+		$this->setResult($j, $v);
+	}
+
+	/**
+	 * Handler of unset($job[$name])
+	 * @param  string $j Job name
+	 * @return void
+	 */
+	public function offsetUnset($j) {
+		unset($this->results[$j]);
+	}
+
+	/**
+	 * Returns associative array of results
+	 * @return array
+	 */
+	public function getResults() {
+		return $this->results;
+	}
+	/**
 	 * Keep
-	 * @param boolean Keep?
+	 * @param  boolean $keep Keep?
 	 * @return void
 	 */
 	public function keep($keep = true) {
@@ -99,33 +138,34 @@ class ComplexJob {
 	}
 
 	/**
-	 * Proxy call
-	 * @param string Name
-	 * @param array  Arguments
-	 * @return boolean
+	 * Sets a limit of simultaneously executing tasks
+	 * @param  integer $n Natural number or -1 (no limit)
+	 * @return this
 	 */
-	public function __call($name, $args) {
-		if (!isset($this->{$name})) {
-			return false;
-		}
-		return call_user_func_array($this->{$name}, $args);
+	public function maxConcurrency($n = -1) {
+		$this->maxConcurrency = $n;
+		return $this;
 	}
 
 	/**
 	 * Set result
-	 * @param string Job name
-	 * @param mixed  Result
-	 * @return void
+	 * @param  string $jobname Job name
+	 * @param  mixed  $result  Result
+	 * @return boolean
 	 */
 	public function setResult($jobname, $result = null) {
+		if (isset($this->results[$jobname])) {
+			return false;
+		}
 		$this->results[$jobname] = $result;
 		++$this->resultsNum;
 		$this->checkIfAllReady();
+		return true;
 	}
 
 	/**
 	 * Get result
-	 * @param string Job name
+	 * @param  string $jobname Job name
 	 * @return mixed Result or null
 	 */
 	public function getResult($jobname) {
@@ -137,6 +177,7 @@ class ComplexJob {
 	 * @return void
 	 */
 	protected function checkIfAllReady() {
+		$this->checkQueue();
 		if ($this->resultsNum >= $this->jobsNum) {
 			$this->jobs  = [];
 			$this->state = self::STATE_DONE;
@@ -150,16 +191,79 @@ class ComplexJob {
 	}
 
 	/**
+	 * Called automatically. Checks whether if the queue is full. If not, tries to pull more jobs from backlog and 'more'
+	 * @return void
+	 */
+	public function checkQueue() {
+		if ($this->backlog !== null) {
+			while (!$this->backlog->isEmpty()) {
+				if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
+					return;
+				}
+				list ($name, $cb) = $this->backlog->shift();
+				$this->addJob($name, $cb);
+			}
+		}
+		if ($this->more !== null) {
+			$this->more();
+		}
+	}
+
+	/**
+	 * Sets a callback which is going to be fired always when we have a room for more jobs
+	 * @param  callable $cb Callback
+	 * @return this
+	 */
+	public function more($cb = null) {
+		if ($cb !== null) {
+			$this->more = $cb;
+			return $this;
+		}
+		if ($this->more !== null) {
+			if ($this->more instanceof \Iterator) {
+				iterator:
+				$it = $this->more;
+				while (!$this->isQueueFull() && $it->valid()) {
+					$this->addJob($it->key(), $it->current());
+					$it->next();
+				}
+			} else {
+				if (($r = call_user_func($this->more, $this)) instanceof \Iterator) {
+					$this->more = $r;
+					goto iterator;
+				}
+			}
+			return $this;
+		}
+	}
+
+	/**
+	 * Returns whether or not the queue is full (maxConcurrency option exceed)
+	 * @return boolean
+	 */
+	public function isQueueFull() {
+		return $this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum >= $this->maxConcurrency);
+	}
+
+	/**
 	 * Adds job
-	 * @param string   Job name
-	 * @param callable $cb Callback
+	 * @param  string   $name Job name
+	 * @param  callable $cb   Callback
 	 * @return boolean Success
 	 */
 	public function addJob($name, $cb) {
 		if (isset($this->jobs[$name])) {
 			return false;
 		}
-		$this->jobs[$name] = CallbackWrapper::wrap($cb);
+		$cb = CallbackWrapper::wrap($cb);
+		if ($this->maxConcurrency !== -1 && ($this->jobsNum - $this->resultsNum > $this->maxConcurrency)) {
+			if ($this->backlog === null) {
+				$this->backlog = new \SplStack;
+			}
+			$this->backlog->push([$name, $cb]);
+			return true;
+		}
+		$this->jobs[$name] = $cb;
 		++$this->jobsNum;
 		if (($this->state === self::STATE_RUNNING) || ($this->state === self::STATE_DONE)) {
 			$this->state = self::STATE_RUNNING;
@@ -176,11 +280,12 @@ class ComplexJob {
 		$this->listeners = [];
 		$this->results   = [];
 		$this->jobs      = [];
+		$this->more      = null;
 	}
 
 	/**
 	 * Adds listener
-	 * @param callable $cb Callback
+	 * @param  callable $cb Callback
 	 * @return void
 	 */
 	public function addListener($cb) {
@@ -208,8 +313,8 @@ class ComplexJob {
 
 	/**
 	 * Adds new job or calls execute() method
-	 * @param mixed $name
-	 * @param callable $cb
+	 * @param  mixed    $name
+	 * @param  callable $cb
 	 * @return void
 	 */
 	public function __invoke($name = null, $cb = null) {

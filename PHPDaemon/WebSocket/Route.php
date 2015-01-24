@@ -8,7 +8,7 @@ namespace PHPDaemon\WebSocket;
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-class Route {
+class Route implements RouteInterface {
 	use \PHPDaemon\Traits\ClassWatchdog;
 	use \PHPDaemon\Traits\StaticObjectWatchdog;
 
@@ -20,6 +20,8 @@ class Route {
 	 * @var \PHPDaemon\Core\AppInstance
 	 */
 	public $appInstance;
+
+	protected $running = false;
 
 	/**
 	 * Called when client connected.
@@ -50,12 +52,12 @@ class Route {
 		return false;
 	}
 
-
 	/**
 	 * Called when session finished.
 	 * @return void
 	 */
 	public function onFinish() {
+		$this->client = null;
 	}
 
 	/**

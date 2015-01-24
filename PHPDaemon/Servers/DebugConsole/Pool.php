@@ -5,6 +5,7 @@ use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\Server;
 
 class Pool extends Server {
+
 	/**
 	 * Setting default config options
 	 * Overriden from AppInstance::getConfigDefaults
@@ -12,16 +13,19 @@ class Pool extends Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// listen to
+			/* [string|array] Listen addresses */
 			'listen'     => 'tcp://127.0.0.1',
-			// port
+
+			/* [integer] Listen port */
 			'port'       => 8818,
+
+			/* [string] Password for auth */
 			'passphrase' => 'secret',
 		];
 	}
 
 	/**
-	 * Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	protected function init() {

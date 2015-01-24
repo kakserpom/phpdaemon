@@ -2,7 +2,6 @@
 namespace PHPDaemon\Core;
 
 use PHPDaemon\Config;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Thread;
@@ -123,7 +122,7 @@ class Daemon {
 
 	/**
 	 * Current thread object
-	 * @var \PHPDaemon\Thread\*
+	 * @var \PHPDaemon\Thread\Master|\PHPDaemon\Thread\IPC|\PHPDaemon\Thread\Worker
 	 */
 	public static $process;
 
@@ -336,7 +335,6 @@ class Daemon {
 
 	/**
 	 * Output filter
-	 * @param string $str Input
 	 * @return string Output
 	 */
 	public static function outputFilter($s) {
@@ -347,12 +345,8 @@ class Daemon {
 		}
 		++$n;
 		Daemon::$obInStack = true;
-		if (
-				Daemon::$config->obfilterauto->value
-				&& (Daemon::$req !== NULL)
-		) {
-			Daemon::$req->out($s, false);
-
+		if (Daemon::$config->obfilterauto->value && Daemon::$context instanceof \PHPDaemon\Request\Generic) {
+			Daemon::$context->out($s, false);
 		}
 		else {
 			Daemon::log('Unexcepted output (len. ' . strlen($s) . '): \'' . $s . '\'');
@@ -375,8 +369,8 @@ class Daemon {
 		}
 		$msg = $e->getMessage();
 		Daemon::log('Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')' . (strlen($msg) ? ': ' . $msg : '') . ".\n" . $e->getTraceAsString());
-		if (Daemon::$req) {
-			Daemon::$req->out('<b>Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')</b>' . (strlen($msg) ? ': ' . $msg : '') . '.<br />');
+		if (Daemon::$context instanceof \PHPDaemon\Request\Generic) {
+			Daemon::$context->out('<b>Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')</b>' . (strlen($msg) ? ': ' . $msg : '') . '.<br />');
 		}
 	}
 
@@ -416,8 +410,8 @@ class Daemon {
 		];
 		$errtype = $errtypes[$errno];
 		Daemon::log($errtype . ': ' . $errstr . ' in ' . $errfile . ':' . $errline . "\n" . Debug::backtrace());
-		if (Daemon::$req) {
-			Daemon::$req->out('<strong>' . $errtype . '</strong>: ' . $errstr . ' in ' . basename($errfile) . ':' . $errline . '<br />');
+		if (Daemon::$context instanceof \PHPDaemon\Request\Generic) {
+			Daemon::$context->out('<strong>' . $errtype . '</strong>: ' . $errstr . ' in ' . basename($errfile) . ':' . $errline . '<br />');
 		}
 	}
 
@@ -441,7 +435,6 @@ class Daemon {
 		Daemon::$shm_wstate    = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate', true);
 		Daemon::openLogs();
 
-		require 'PHPDaemon/Utils/func.php';
 	}
 
 	/**
@@ -502,7 +495,7 @@ class Daemon {
 
 	/**
 	 * It allows to run your simple web-apps in spawn-fcgi/php-fpm environment.
-	 * @return boolean - Success.
+	 * @return boolean|null - Success.
 	 */
 	public static function compatRunEmul() {
 		Daemon::$compatMode = TRUE;
@@ -617,7 +610,6 @@ class Daemon {
 	 * @return array - information.
 	 */
 	public static function getStateOfWorkers() {
-		$bufsize = min(1024, Daemon::SHM_WSTATE_SIZE);
 		$offset  = 0;
 
 		$stat = [
@@ -629,65 +621,59 @@ class Daemon {
 			'init'      => 0,
 			'reloading' => 0,
 		];
-
-		Daemon::$shm_wstate->openAll();
-		$c = 0;
-		foreach (Daemon::$shm_wstate->getSegments() as $shm) {
-			while ($offset < Daemon::SHM_WSTATE_SIZE) {
-				$buf = shmop_read($shm, $offset, $bufsize);
-				for ($i = 0, $buflen = strlen($buf); $i < $buflen; ++$i) {
-					$code = ord($buf[$i]);
-					if ($code >= 100) {
-						// reloaded (shutdown)
-						$code -= 100;
-						if ($code !== Daemon::WSTATE_SHUTDOWN) {
-							++$stat['alive'];
-							if (Daemon::$process instanceof Thread\Master) {
-								Daemon::$process->reloadWorker($offset + $i + 1);
-								++$stat['reloading'];
-								continue;
-							}
+		$readed = 0;
+		$readedStr = '';
+		while (($buf = Daemon::$shm_wstate->read($readed, 1024)) !== false) {
+			$readed += strlen($buf);
+			$readedStr .= $buf;
+			for ($i = 0, $buflen = strlen($buf); $i < $buflen; ++$i) {
+				$code = ord($buf[$i]);
+				if ($code >= 100) {
+					// reloaded (shutdown)
+					$code -= 100;
+					if ($code !== Daemon::WSTATE_SHUTDOWN) {
+						++$stat['alive'];
+						if (Daemon::$process instanceof Thread\Master) {
+							Daemon::$process->reloadWorker($offset + $i + 1);
+							++$stat['reloading'];
+							continue;
 						}
 					}
-					if ($code === 0) {
-						break 2;
-					}
-					elseif ($code === Daemon::WSTATE_IDLE) {
-						// idle
-						++$stat['alive'];
-						++$stat['idle'];
-					}
-					elseif ($code === Daemon::WSTATE_BUSY) {
-						// busy
-						++$stat['alive'];
-						++$stat['busy'];
-					}
-					elseif ($code === Daemon::WSTATE_SHUTDOWN) {
-						// shutdown
-						++$stat['shutdown'];
-					}
-					elseif ($code === Daemon::WSTATE_PREINIT) {
-						// pre-init
-						++$stat['alive'];
-						++$stat['preinit'];
-						++$stat['idle'];
-					}
-					elseif ($code === Daemon::WSTATE_INIT) { // init
-						++$stat['alive'];
-						++$stat['init'];
-						++$stat['idle'];
-					}
-					++$c;
 				}
-				$offset += $bufsize;
+				if ($code === Daemon::WSTATE_IDLE) {
+					// idle
+					++$stat['alive'];
+					++$stat['idle'];
+				}
+				elseif ($code === Daemon::WSTATE_BUSY) {
+					// busy
+					++$stat['alive'];
+					++$stat['busy'];
+				}
+				elseif ($code === Daemon::WSTATE_SHUTDOWN) {
+					// shutdown
+					++$stat['shutdown'];
+				}
+				elseif ($code === Daemon::WSTATE_PREINIT) {
+					// pre-init
+					++$stat['alive'];
+					++$stat['preinit'];
+					++$stat['idle'];
+				}
+				elseif ($code === Daemon::WSTATE_INIT) { // init
+					++$stat['alive'];
+					++$stat['init'];
+					++$stat['idle'];
+				}
 			}
 		}
+		//Daemon::log('readedStr: '.Debug::exportBytes($readedStr, true));
 		return $stat;
 	}
 
 	/**
 	 * Send message to log.
-	 * @param string message.
+	 * @param  mixed  ...$args Arguments
 	 * @return string message
 	 */
 	public static function log() {
@@ -698,7 +684,6 @@ class Daemon {
 		else {
 			$msg = Debug::dump($args);
 		}
-
 		$mt = explode(' ', microtime());
 
 		//$msg = substr($msg, 0, 1024) . Debug::backtrace();
@@ -716,7 +701,7 @@ class Daemon {
 
 	/**
 	 * spawn new master process.
-	 * @return boolean - success
+	 * @return null|integer - success
 	 */
 	public static function spawnMaster() {
 		Daemon::$masters->push($thread = new Thread\Master);
@@ -738,102 +723,6 @@ class Daemon {
 		Daemon::$runworkerMode = true;
 		$thread = new Thread\Worker;
 		$thread();
-	}
-
-	/**
-	 * Calculates a difference between two dates.
-	 * @param $st
-	 * @param $fin
-	 * @return array [seconds, minutes, hours, days, months, years]
-	 */
-	public static function date_period($st, $fin) {
-		if (
-				(is_int($st))
-				|| (ctype_digit($st))
-		) {
-			$st = date('d-m-Y-H-i-s', $st);
-		}
-
-		$st = explode('-', $st);
-
-		if (
-				(is_int($fin))
-				|| (ctype_digit($fin))
-		) {
-			$fin = date('d-m-Y-H-i-s', $fin);
-		}
-
-		$fin = array_map('intval', explode('-', $fin));
-
-		if (($seconds = $fin[5] - $st[5]) < 0) {
-			$fin[4]--;
-			$seconds += 60;
-		}
-
-		if (($minutes = $fin[4] - $st[4]) < 0) {
-			$fin[3]--;
-			$minutes += 60;
-		}
-
-		if (($hours = $fin[3] - $st[3]) < 0) {
-			$fin[0]--;
-			$hours += 24;
-		}
-
-		if (($days = $fin[0] - $st[0]) < 0) {
-			$fin[1]--;
-			$days += (int)date('t', mktime(1, 0, 0, $fin[1], $fin[0], $fin[2]));
-		}
-
-		if (($months = $fin[1] - $st[1]) < 0) {
-			$fin[2]--;
-			$months += 12;
-		}
-
-		$years = $fin[2] - $st[2];
-
-		return [$seconds, $minutes, $hours, $days, $months, $years];
-	}
-
-	/**
-	 * Calculates a difference between two dates.
-	 * @param $date_start
-	 * @param $date_finish
-	 * @return string Something like this: 1 year. 2 mon. 6 day. 4 hours. 21 min. 10 sec.
-	 */
-	public static function date_period_text($date_start, $date_finish) {
-		$result = Daemon::date_period($date_start, $date_finish);
-
-		$str = '';
-
-		if ($result[5] > 0) {
-			$str .= $result[5] . ' year. ';
-		}
-
-		if ($result[4] > 0) {
-			$str .= $result[4] . ' mon. ';
-		}
-
-		if ($result[3] > 0) {
-			$str .= $result[3] . ' day. ';
-		}
-
-		if ($result[2] > 0) {
-			$str .= $result[2] . ' hour. ';
-		}
-
-		if ($result[1] > 0) {
-			$str .= $result[1] . ' min. ';
-		}
-
-		if (
-				$result[0] > 0
-				|| $str == ''
-		) {
-			$str .= $result[0] . ' sec. ';
-		}
-
-		return rtrim($str);
 	}
 
 }

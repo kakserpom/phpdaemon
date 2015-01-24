@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Traits;
+
 use PHPDaemon\Core\DeferredEvent;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
@@ -8,18 +9,16 @@ use PHPDaemon\Exceptions\UndefinedEventCalledException;
 
 /**
  * Deferred event handlers trait
- *
- * @package Core
- *
+ * @package PHPDaemon\Traits
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
-
 trait DeferredEventHandlers {
 	protected $DefEvHandlersUsed = false;
+
 	/**
-	 * @param string $event
+	 * @param  string $event
 	 * @throws UndefinedEventCalledException
-	 * @return null|mixed
+	 * @return mixed
 	 */
 	public function __get($event) {
 		if (!$this->DefEvHandlersUsed) {
@@ -30,7 +29,7 @@ trait DeferredEventHandlers {
 			return $this->{$event};
 		}
 		if (!method_exists($this, $event . 'Event')) {
-			throw new UndefinedEventCalledException('Undefined event called: ' . get_class($this). '->' . $event);
+			throw new \PHPDaemon\Exceptions\UndefinedEventCalled('Undefined event called: ' . get_class($this). '->' . $event);
 		}
 		$e = new DeferredEvent($this->{$event . 'Event'}());
 		$e->name = $event;
@@ -39,8 +38,16 @@ trait DeferredEventHandlers {
 		return $e;
 	}
 
+	/**
+	 * Called when first deferred event is used
+	 * @return void
+	 */
 	protected function firstDeferredEventUsed() {}
 
+	/**
+	 * Cleans up events
+	 * @return void
+	 */
 	public function cleanupDeferredEventHandlers() {
 		foreach ($this as $key => $property) {
 			if ($property instanceof DeferredEvent) {
@@ -51,8 +58,9 @@ trait DeferredEventHandlers {
 	}
 
 	/**
-	 * @param string $event
-	 * @param $args
+	 * @param  string $method Method name
+	 * @param  array  $args   Arguments
+	 * @throws UndefinedMethodCalled
 	 * @return mixed
 	 */
 	public function __call($method, $args) {

@@ -393,11 +393,17 @@ class Parser {
 							}
 						}
 						else {
-							if ($value === null) {
+							if (sizeof($elements) === 1) {
 								$value       = true;
 								$elements[1] = true;
 								$elTypes[1]  = Parser::T_CVALUE;
 							}
+							elseif ($value === null) {
+								$value       = null;
+								$elements[1] = null;
+								$elTypes[1]  = Parser::T_CVALUE;
+							}
+
 							if (isset($scope->{$name})) {
 								if ($scope->{$name}->source !== 'cmdline') {
 									if (($elTypes[1] === Parser::T_CVALUE) && is_string($value)) {
@@ -494,6 +500,7 @@ class Parser {
 	 * Raises error message.
 	 * @param string Message.
 	 * @param string Level.
+	 * @param string $msg
 	 * @return void
 	 */
 	public function raiseError($msg, $level = 'emerg', $line = null, $col = null) {
@@ -512,6 +519,7 @@ class Parser {
 
 	/**
 	 * Executes token server.
+	 * @param string $c
 	 * @return mixed|void
 	 */
 	protected function token($token, $c) {

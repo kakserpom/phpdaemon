@@ -1,8 +1,12 @@
 <?php
 namespace PHPDaemon\Clients\Valve;
 
-// https://developer.valvesoftware.com/wiki/Server_queries
-
+/**
+ * @package    NetworkClients
+ * @subpackage HLClient
+ * @author     Zorin Vasily <maintainer@daemon.io>
+ * @link       https://developer.valvesoftware.com/wiki/Server_queries
+ */
 class Pool extends \PHPDaemon\Network\Client {
 	const A2S_INFO                     = "\x54";
 	const S2A_INFO                     = "\x49";
@@ -16,10 +20,11 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Sends a request
-	 * @param string   Address
-	 * @param string   Type of request
-	 * @param string   Data
-	 * @param callable $cb Callback
+	 * @param  string   $addr Address
+	 * @param  string   $type Type of request
+	 * @param  string   $data Data
+	 * @param  callable $cb Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function request($addr, $type, $data, $cb) {
@@ -35,8 +40,9 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Sends echo-request
-	 * @param string   Address
-	 * @param callable $cb Callback
+	 * @param  string   $addr Address
+	 * @param  callable $cb   Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function ping($addr, $cb) {
@@ -55,8 +61,9 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Sends a request of type 'info'
-	 * @param string   Address
-	 * @param callable $cb Callback
+	 * @param  string   $addr Address
+	 * @param  callable $cb   Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function requestInfo($addr, $cb) {
@@ -65,8 +72,9 @@ class Pool extends \PHPDaemon\Network\Client {
 
 	/**
 	 * Sends a request of type 'players'
-	 * @param string   Address
-	 * @param callable $cb Callback
+	 * @param  string   $addr Address
+	 * @param  callable $cb   Callback
+	 * @callback $cb ( )
 	 * @return void
 	 */
 	public function requestPlayers($addr, $cb) {
@@ -86,9 +94,13 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// @todo add description strings
+			/* [string|array] Default servers */
 			'servers'        => '127.0.0.1',
+
+			/* [integer] Default port */
 			'port'           => 27015,
+
+			/* [integer] Maximum connections per server */
 			'maxconnperserv' => 32,
 		];
 	}

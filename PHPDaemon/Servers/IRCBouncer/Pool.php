@@ -6,17 +6,35 @@ use PHPDaemon\Network\Server;
 use PHPDaemon\Structures\ObjectStorage;
 
 class Pool extends Server {
-	/** @var */
+	
+	/**
+	 * @var Pool
+	 */
 	public $client;
-	/** @var */
+	
+	/**
+	 * @var Connection
+	 */
 	public $conn;
-	/** @var bool */
+	
+	/**
+	 * @var boolean
+	 */
 	public $protologging = false;
-	/** @var */
+	
+	/**
+	 * @var Pool
+	 */
 	public $db;
-	/** @var */
+	
+	/**
+	 * @var object
+	 */
 	public $messages;
-	/** @var */
+	
+	/**
+	 * @var object
+	 */
 	public $channels;
 
 	/**
@@ -37,14 +55,28 @@ class Pool extends Server {
 	 */
 	protected function getConfigDefaults() {
 		return [
-			// @todo add description strings
+			/* [string|array] Listen addresses */
 			'listen'          => '0.0.0.0',
+
+			/* [integer] Listen port */
 			'port'            => 6667,
+
+			/* [string] URL */
 			'url'             => 'irc://user@host/nickname/realname',
+
+			/* [string] Server name */
 			'servername'      => 'bnchost.tld',
+
+			/* [string] Default channels */
 			'defaultchannels' => '',
+
+			/* [boolean] Logging? */
 			'protologging'    => 0,
+
+			/* [string] Database name */
 			'dbname'          => 'bnc',
+
+			/* [string] Password */
 			'password'        => 'SecretPwd',
 		];
 	}

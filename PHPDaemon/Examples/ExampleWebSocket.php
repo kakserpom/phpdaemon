@@ -26,7 +26,7 @@ class ExampleWebSocket extends \PHPDaemon\Core\AppInstance {
 	 * Creates Request.
 	 * @param object Request.
 	 * @param object Upstream application instance.
-	 * @return object Request.
+	 * @return ExampleWebSocketTestPageRequest Request.
 	 */
 	public function beginRequest($req, $upstream) {
 		return new ExampleWebSocketTestPageRequest($this, $upstream, $req);
@@ -39,14 +39,22 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 	 * Called when the connection is handshaked.
 	 * @return void
 	 */
-	public function onHandshake() {
-		$this->client->onSessionStart(function ($event) {
+	public function onBeforeHandshake($cb) {
+		$this->client->onSessionStart(function ($success) use ($cb) {
+			if (!$success) {
+				//session didn't start
+				return false;
+			}
+			//you can use $session or $this->client->session
 			if (!isset($this->client->session['counter'])) {
 				$this->client->session['counter'] = 0;
 			}
 			++$this->client->session['counter'];
-			$this->client->sendFrame('counter in session = ' . $this->client->session['counter']);
-			$this->client->sessionCommit();
+			$this->client->sessionCommit(function() use ($cb) {
+				$cb(function() {
+					$this->client->sendFrame('counter in session = ' . $this->client->session['counter']);
+				});
+			});
 		});
 	}
 
@@ -63,18 +71,16 @@ class ExampleWebSocketRoute extends \PHPDaemon\WebSocket\Route {
 					\PHPDaemon\Core\Daemon::log('ExampleWebSocket: \'pong\' received by client.');
 				}
 			);
-			throw new \Exception;
 		}
 	}
 
 	/**
 	 * Uncaught exception handler
 	 * @param $e
-	 * @return boolean Handled?
+	 * @return boolean|null Handled?
 	 */
 	public function handleException($e) {
-		$this->client->sendFrame('pong from exception');
-		return true;
+		$this->client->sendFrame('exception ...');
 	}
 }
 

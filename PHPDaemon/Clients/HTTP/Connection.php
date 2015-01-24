@@ -11,108 +11,135 @@ use PHPDaemon\Network\ClientConnection;
 /**
  * @package    NetworkClients
  * @subpackage HTTPClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 
 	/**
 	 * State: headers
-	 * @var integer
 	 */
 	const STATE_HEADERS = 1;
+
 	/**
 	 * State: body
-	 * @var integer
 	 */
 	const STATE_BODY    = 2;
+
 	/**
-	 * @var array
+	 * @var array Associative array of headers
 	 */
 	public $headers = [];
+
 	/**
-	 * @var int
+	 * @var integer Content length
 	 */
 	public $contentLength = -1;
+
 	/**
-	 * @var string
+	 * @var string Contains response body
 	 */
 	public $body = '';
+
+	/**
+	 * @var string End of line
+	 */
+	protected $EOL = "\r\n";
+
+	/**
+	 * @var array Associative array of Cookies
+	 */
+	public $cookie = [];
+
+	/**
+	 * @var integer Size of current chunk
+	 */
+	protected $curChunkSize;
+
 	/**
 	 * @var string
 	 */
-	protected $EOL = "\r\n";
+	protected $curChunk;
+
 	/**
-	 * @var array
-	 */
-	public $cookie = [];
-	/**
-	 * @var
-	 */
-	public $curChunkSize;
-	/**
-	 * @var
-	 */
-	public $curChunk;
-	/**
-	 * @var bool
+	 * @var boolean
 	 */
 	public $chunked = false;
+
 	/**
-	 * @var
+	 * @var integer
 	 */
 	public $protocolError;
+
 	/**
-	 * @var int
+	 * @var integer
 	 */
 	public $responseCode = 0;
 
 	/**
-	 * Last requested URL
-	 * @var string
+	 * @var string Last requested URL
 	 */
 	public $lastURL;
 
 	/**
+	 * @var array Raw headers array
+	 */
+	public $rawHeaders = null;
+
+	public $contentType;
+
+	public $charset;
+
+	public $eofTerminated = false;
+
+	/**
+	 * Performs GET-request
 	 * @param string $url
-	 * @param array $params
+	 * @param array  $params
 	 */
 	public function get($url, $params = null) {
 		if (!is_array($params)) {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			$prepared = Pool::prepareUrl($url);
+			$prepared = Pool::parseUrl($url);
 			if (!$prepared) {
 				if (isset($params['resultcb'])) {
 					call_user_func($params['resultcb'], false);
 				}
 				return;
 			}
-			$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 			list ($params['host'], $params['uri']) = $prepared;
 		}
+		$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 		if (!isset($params['version'])) {
 			$params['version'] = '1.1';
 		}
 		$this->writeln('GET ' . $params['uri'] . ' HTTP/' . $params['version']);
+		if (isset($params['proxy'])) {
+			if (isset($params['proxy']['auth'])) {
+				$this->writeln('Proxy-Authorization: basic ' . base64_encode($params['proxy']['auth']['username'] . ':' . $params['proxy']['auth']['password']));
+			}
+		}
 		$this->writeln('Host: ' . $params['host']);
-		if ($this->pool->config->expose->value) {
+		if ($this->pool->config->expose->value && !isset($params['headers']['User-Agent'])) {
 			$this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
 		}
 		if (isset($params['cookie']) && sizeof($params['cookie'])) {
-			$this->writeln('Cookie: ' . http_build_query($this->cookie, '', '; '));
+			$this->writeln('Cookie: ' . http_build_query($params['cookie'], '', '; '));
 		}
 		if (isset($params['headers'])) {
 			$this->customRequestHeaders($params['headers']);
 		}
+		if (isset($params['rawHeaders']) && $params['rawHeaders']) {
+			$this->rawHeaders = [];
+		}
 		$this->writeln('');
-		$this->onResponse->push($params['resultcb']);
+		$this->onResponse($params['resultcb']);
 		$this->checkFree();
 	}
 
 	/**
-	 * @param $headers
+	 * @param array $headers
 	 */
 	protected function customRequestHeaders($headers) {
 		foreach ($headers as $key => $item) {
@@ -130,10 +157,11 @@ class Connection extends ClientConnection {
 		}
 	}
 
-	/**
+	/** 
+	 * Performs POST-request
 	 * @param string $url
-	 * @param array $data
-	 * @param array $params
+	 * @param array  $data
+	 * @param array  $params
 	 */
 	public function post($url, $data = [], $params = null) {
 		if (!is_array($params)) {
@@ -147,9 +175,9 @@ class Connection extends ClientConnection {
 				}
 				return;
 			}
-			$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 			list ($params['host'], $params['uri']) = $prepared;
 		}
+		$this->lastURL = 'http://' . $params['host'] . $params['uri'];		
 		if (!isset($params['version'])) {
 			$params['version'] = '1.1';
 		}
@@ -157,12 +185,20 @@ class Connection extends ClientConnection {
 			$params['contentType'] = 'application/x-www-form-urlencoded';
 		}
 		$this->writeln('POST ' . $params['uri'] . ' HTTP/' . $params['version']);
+		if (isset($params['proxy'])) {
+			if (isset($params['proxy']['auth'])) {
+				$this->writeln('Proxy-Authorization: basic ' . base64_encode($params['proxy']['auth']['username'] . ':' . $params['proxy']['auth']['password']));
+			}
+		}
+		if (!isset($params['keepalive']) || !$params['keepalive']) {
+			$this->writeln('Connection: close');
+		}
 		$this->writeln('Host: ' . $params['host']);
-		if ($this->pool->config->expose->value) {
+		if ($this->pool->config->expose->value && !isset($params['headers']['User-Agent'])) {
 			$this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
 		}
 		if (isset($params['cookie']) && sizeof($params['cookie'])) {
-			$this->writeln('Cookie: ' . http_build_query($this->cookie, '', '; '));
+			$this->writeln('Cookie: ' . http_build_query($params['cookie'], '', '; '));
 		}
 		foreach ($data as $val) {
 			if (is_object($val) && $val instanceof UploadFile) {
@@ -181,24 +217,55 @@ class Connection extends ClientConnection {
 		if (isset($params['headers'])) {
 			$this->customRequestHeaders($params['headers']);
 		}
+		if (isset($params['rawHeaders']) && $params['rawHeaders']) {
+			$this->rawHeaders = [];
+		}
 		$this->writeln('');
 		$this->write($body);
 		$this->writeln('');
-		$this->onResponse->push($params['resultcb']);
-		$this->checkFree();
+		$this->onResponse($params['resultcb']);
+	}
+
+	/**
+	 * Get body
+	 * @return string
+	 */
+	public function getBody() {
+		return $this->body;
+	}
+
+	/**
+	 * Get headers
+	 * @return array
+	 */
+	public function getHeaders() {
+		return $this->headers;
+	}
+
+	/**
+	 * Get header
+	 * @param  string $name Header name
+	 * @return string
+	 */
+	public function getHeader($name) {
+		$k = 'HTTP_' . strtoupper(strtr($name, Generic::$htr));
+		return isset($this->headers[$k]) ? $this->headers[$k] : null;
 	}
 
 	/**
 	 * Called when new data received
-	 * @param string New data
-	 * @return void
 	 */
 	public function onRead() {
 		if ($this->state === self::STATE_BODY) {
 			goto body;
 		}
 		while (($line = $this->readLine()) !== null) {
-			if ($line === '') {
+			if ($line !== '') {
+				if ($this->rawHeaders !== null) {
+					$this->rawHeaders[] = $line;
+				}
+			}
+			else {
 				if (isset($this->headers['HTTP_CONTENT_LENGTH'])) {
 					$this->contentLength = (int)$this->headers['HTTP_CONTENT_LENGTH'];
 				}
@@ -216,6 +283,16 @@ class Connection extends ClientConnection {
 					$e               = explode(', ', strtolower($this->headers['HTTP_CONNECTION']));
 					$this->keepalive = in_array('keep-alive', $e, true);
 				}
+				if (isset($this->headers['HTTP_CONTENT_TYPE'])) {
+					parse_str('type='.strtr($this->headers['HTTP_CONTENT_TYPE'], [';' => '&', ' ' => '']), $p);
+					$this->contentType = $p['type'];
+					if (isset($p['charset'])) {
+						$this->charset = strtolower($p['charset']);
+					}
+				}
+				if ($this->contentLength === -1 && !$this->keepalive) {
+					$this->eofTerminated = true;
+				}
 				$this->state = self::STATE_BODY;
 				break;
 			}
@@ -229,7 +306,24 @@ class Connection extends ClientConnection {
 				$e = explode(': ', $line);
 
 				if (isset($e[1])) {
-					$this->headers['HTTP_' . strtoupper(strtr($e[0], Generic::$htr))] = $e[1];
+					$k = 'HTTP_' . strtoupper(strtr($e[0], Generic::$htr));
+					if ($k === 'HTTP_SET_COOKIE') {
+						parse_str(strtr($e[1], [';' => '&', ' ' => '']), $p);
+						if (sizeof($p)) {
+							$this->cookie[$k = key($p)] =& $p;
+							$p['value'] = $p[$k];
+							unset($p[$k], $p);
+						}
+					}
+					if (isset($this->headers[$k])) {
+						if (is_array($this->headers[$k])) {
+							$this->headers[$k][] = $e[1];
+						} else {
+							$this->headers[$k] = [$this->headers[$k], $e[1]];
+						}
+					} else {
+						$this->headers[$k] = $e[1];
+					}
 				}
 			}
 		}
@@ -237,7 +331,10 @@ class Connection extends ClientConnection {
 			return; // not enough data yet
 		}
 		body:
-
+		if ($this->eofTerminated) {
+			$this->body .= $this->readUnlimited();
+			return;
+		}
 		if ($this->chunked) {
 			chunk:
 			if ($this->curChunkSize === null) { // outside of chunk
@@ -287,11 +384,17 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when connection finishes
 	 */
 	public function onFinish() {
+		if ($this->eofTerminated) {
+			$this->requestFinished();
+			$this->onResponse->executeAll($this, false);
+			parent::onFinish();
+			return;
+		}
 		if ($this->protocolError) {
-			$this->executeAll($this, false);
+			$this->onResponse->executeAll($this, false);
 		}
 		else {
 			if (($this->state !== self::STATE_ROOT) && !$this->onResponse->isEmpty()) {
@@ -302,15 +405,19 @@ class Connection extends ClientConnection {
 	}
 
 	/**
-	 * @TODO DESCR
+	 * Called when request is finished
 	 */
-	public function requestFinished() {
+	protected function requestFinished() {
 		$this->onResponse->executeOne($this, true);
 		$this->state         = self::STATE_ROOT;
 		$this->contentLength = -1;
 		$this->curChunkSize  = null;
 		$this->chunked       = false;
+		$this->eofTerminated = false;
 		$this->headers       = [];
+		$this->rawHeaders    = null;
+		$this->contentType    = null;
+		$this->charset    = null;
 		$this->body          = '';
 		$this->responseCode  = 0;
 		if (!$this->keepalive) {

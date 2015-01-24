@@ -7,6 +7,7 @@ use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
+use PHPDaemon\Cache\CappedStorageHits;
 
 /**
  * Implementation of the worker thread
@@ -130,11 +131,17 @@ class Worker extends Generic {
 	/** @var \PHPDaemon\IPCManager\IPCManager */
 	public $IPCManager;
 
+	public $lambdaCache;
+
 	/**
 	 * Runtime of Worker process.
 	 * @return void
 	 */
 	protected function run() {
+		$this->lambdaCache = new CappedStorageHits;
+		$this->lambdaCache->setMaxCacheSize(Daemon::$config->lambdacachemaxsize->value);
+		$this->lambdaCache->setCapWindow(Daemon::$config->lambdacachecapwindow->value);
+
 		$this->callbacks = new StackCallbacks();
 		if (Daemon::$process instanceof Master) {
 			Daemon::$process->unregisterSignals();
@@ -252,112 +259,109 @@ class Worker extends Generic {
 	}
 
 	/**
+	 * @param string $f
+	 */
+	protected function override($f) {
+		runkit_function_rename($f, $f.'_native');
+		runkit_function_rename('PHPDaemon\\Thread\\'.$f, $f);
+	}
+
+	/**
 	 * Overrides native PHP functions.
 	 * @return void
 	 */
 	protected function overrideNativeFuncs() {
 		if (Daemon::supported(Daemon::SUPPORT_RUNKIT_INTERNAL_MODIFY)) {
 
-			runkit_function_rename('header', 'header_native');
+			function define($k, $v) {
+				if (defined($k)) {
+					runkit_constant_redefine($k, $v);
+				} else {
+					runkit_constant_add($k, $v);
+				}
+			}
+			$this->override('define');
 
 			function header() {
-				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$req, 'header'], func_get_args());
+				return call_user_func_array([Daemon::$context, 'header'], func_get_args());
 			}
-
-			runkit_function_rename('is_uploaded_file', 'is_uploaded_file_native');
+			$this->override('header');
 
 			function is_uploaded_file() {
-				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$req, 'isUploadedFile'], func_get_args());
+				return call_user_func_array([Daemon::$context, 'isUploadedFile'], func_get_args());
 			}
-
-			runkit_function_rename('move_uploaded_file', 'move_uploaded_file_native');
+			$this->override('is_uploaded_file');
 
 			function move_uploaded_file() {
-				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$req, 'moveUploadedFile'], func_get_args());
+				return call_user_func_array([Daemon::$context, 'moveUploadedFile'], func_get_args());
 			}
+			$this->override('move_uploaded_file');
 
-			runkit_function_rename('headers_sent', 'headers_sent_native');
-
-			function headers_sent(&$file, &$line) {
-				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
+			function headers_sent(&$file = null, &$line = null) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return Daemon::$req->headers_sent($file, $line);
+				return Daemon::$context->headers_sent($file, $line);
 			}
 
-			runkit_function_rename('headers_list', 'headers_list_native');
+			//$this->override('headers_sent');
 
 			function headers_list() {
-				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return Daemon::$req->headers_list();
+				return Daemon::$context->headers_list();
 			}
-
-			runkit_function_rename('setcookie', 'setcookie_native');
+			$this->override('headers_list');
 
 			function setcookie() {
-				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$req, 'setcookie'], func_get_args());
+				return call_user_func_array([Daemon::$context, 'setcookie'], func_get_args());
 			}
+			$this->override('setcookie');
 
-			runkit_function_rename('register_shutdown_function', 'register_shutdown_function_native');
-
+			/**
+			 * @param callable $cb
+			 */
 			function register_shutdown_function($cb) {
-				if (!Daemon::$req || !Daemon::$req instanceof Generic) {
+				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return Daemon::$req->registerShutdownFunction($cb);
+				return Daemon::$context->registerShutdownFunction($cb);
 			}
+			$this->override('register_shutdown_function');
 
 			runkit_function_copy('create_function', 'create_function_native');
-			runkit_function_redefine('create_function', '$arg,$body', 'return __create_function($arg,$body);');
-
-			function __create_function($arg, $body) {
-				static $cache = [];
-				static $maxCacheSize = 128;
-				static $sorter;
-				static $window = 32;
-
-				if ($sorter === NULL) {
-					$sorter = function ($a, $b) {
-						if ($a->hits == $b->hits) {
-							return 0;
-						}
-
-						return ($a->hits < $b->hits) ? 1 : -1;
-					};
-				}
-
-				$source = $arg . "\x00" . $body;
-				$key    = md5($source, true) . pack('l', crc32($source));
-
-				if (isset($cache[$key])) {
-					++$cache[$key][1];
-
-					return $cache[$key][0];
-				}
-
-				if (sizeof($cache) >= $maxCacheSize + $window) {
-					uasort($cache, $sorter);
-					$cache = array_slice($cache, $maxCacheSize);
-				}
-
-				$cache[$key] = [$cb = eval('return function(' . $arg . '){' . $body . '};'), 0];
-				return $cb;
-			}
+			runkit_function_redefine('create_function', '$arg,$body', 'return \PHPDaemon\Core\Daemon::$process->createFunction($arg,$body);');
 		}
+	}
+
+	/**
+	 * Creates anonymous function (old-fashioned) like create_function()
+	 * @return void
+	 */
+	public function createFunction($args, $body, $ttl = null) {
+		$key = $args . "\x00" . $body;
+		if (($f = $this->lambdaCache->getValue($key)) !== null) {
+			return $f;
+		}
+		$f = eval('return function(' . $args . '){' . $body . '};');
+		if ($ttl === null && Daemon::$config->lambdacachettl->value) {
+			$ttl = Daemon::$config->lambdacachettl->value;
+		}
+		$this->lambdaCache->put($key, $f, $ttl);
+		return $f;
 	}
 
 	/**
@@ -441,6 +445,7 @@ class Worker extends Generic {
 	/**
 	 * Log something
 	 * @param string - Message.
+	 * @param string $message
 	 * @return void
 	 */
 	public function log($message) {
@@ -549,7 +554,7 @@ class Worker extends Generic {
 	/**
 	 * Shutdown this worker
 	 * @param boolean Hard? If hard, we shouldn't wait for graceful shutdown of the running applications.
-	 * @return boolean Ready?
+	 * @return boolean|null Ready?
 	 */
 	protected function shutdown($hard = false) {
 		$error = error_get_last();
@@ -594,7 +599,7 @@ class Worker extends Generic {
 			$this->log('reloadReady = ' . Debug::dump($this->reloadReady));
 		}
 
-		unset(Timer::$list['breakMainLoopCheck']);
+		Timer::remove('breakMainLoopCheck');
 
 		Timer::add(function ($event) {
 			$self = Daemon::$process;

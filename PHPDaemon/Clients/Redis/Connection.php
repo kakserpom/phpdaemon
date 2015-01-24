@@ -3,96 +3,116 @@ namespace PHPDaemon\Clients\Redis;
 
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * @package    NetworkClients
  * @subpackage RedisClient
- *
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 
 	/**
-	 * Current result
-	 * @var array|null
+	 * @var array|null Current result
 	 */
 	public $result = null;
 
 	/**
-	 * Current error message
-	 * @var string
+	 * @var string Current error message
 	 */
 	public $error;
 
 	/**
-	 * Current incoming key
-	 * @var string
+	 * @var string Current incoming key
 	 */
 	protected $key;
 
-	/**
-	 * Current result length
-	 * @var integer
-	 */
-	protected $resultLength = 0;
+
+	protected $stack = [];
+	
+	protected $ptr;
 
 	/**
-	 * Current value length
-	 * @var integer
+	 * @var integer Current value length
 	 */
 	protected $valueLength = 0;
 
+
 	/**
-	 * EOL
-	 * @var string "\r\n"
+	 * @var integer Current level length
+	 */
+	protected $levelLength = null;
+
+	/**
+	 * @var string
 	 */
 	protected $EOL = "\r\n";
 
 	protected $subscribed = false;
 
 	/**
-	 * Timeout
-	 * @var float
+	 * @var float Timeout
 	 */
 	protected $timeoutRead = 5;
 
 	/**
-	 * Subcriptions
-	 * @var array
+	 * @var array Subcriptions
 	 */
 	public $subscribeCb = [];
+
 	public $psubscribeCb = [];
 
 	protected $maxQueue = 10;
 
 	/**
 	 * In the middle of binary response part
-	 * @const integer
 	 */
 	const STATE_BINARY = 1;
+
+	/**
+	 * @TODO
+	 * @param  string $chan
+	 * @return integer
+	 */
+	public function getLocalSubscribersCount($chan) {
+		if (!isset($this->subscribeCb[$chan])) {
+			return 0;
+		}
+		return sizeof($this->subscribeCb[$chan]);
+	}
 
 	/**
 	 * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
 	 * @return void
 	 */
 	public function onReady() {
+		$this->ptr =& $this->result;
 		if (!isset($this->password)) {
+			if (isset($this->pool->config->select->value)) {
+				$this->select($this->pool->config->select->value);
+			}
 			parent::onReady();
 			$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
 			return;
 		}
 		$this->sendCommand('AUTH', [$this->password], function () {
-			$ret = &$this->result[0];
-			if ($ret !== 'OK') {
-				$this->log('Auth. error: ' . json_encode($ret));
+			if ($this->result !== 'OK') {
+				$this->log('Auth. error: ' . json_encode($this->result));
 				$this->finish();
+			}
+			if (isset($this->pool->config->select->value)) {
+				$this->select($this->pool->config->select->value);
 			}
 			parent::onReady();
 			$this->setWatermark(null, $this->pool->maxAllowedPacket + 2);
 		});
 	}
 
+	/**
+	 * @TODO
+	 * @return void
+	 */
 	public function subscribed() {
 		if ($this->subscribed) {
 			return;
@@ -103,62 +123,224 @@ class Connection extends ClientConnection {
 		$this->setTimeouts(86400, 86400); // @TODO: remove timeout
 	}
 
+	/**
+	 * @TODO
+	 * @return boolean
+	 */
 	public function isSubscribed() {
 		return $this->subscribed;
 	}
 
+	/**
+	 * Magic __call
+	 * Example:
+	 * $redis->lpush('mylist', microtime(true));
+	 * @param  sting $cmd
+	 * @param  array $args
+	 * @return void
+	 */
+	public function __call($cmd, $args) {
+		$cb = null;
+		for ($i = sizeof($args) - 1; $i >= 0; --$i) {
+			$a = $args[$i];
+			if ((is_array($a) || is_object($a)) && is_callable($a)) {
+				$cb = CallbackWrapper::wrap($a);
+				$args = array_slice($args, 0, $i);
+				break;
+			}
+			elseif ($a !== null) {
+				break;
+			}
+		}
+		$cmd = strtoupper($cmd);
+		$this->command($cmd, $args, $cb);
+	}
+
+	/**
+	 * @TODO
+	 * @param  string   $name
+	 * @param  array    $args
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return void
+	 */
 	public function command($name, $args, $cb = null) {
 		// PUB/SUB handling
 		if (substr($name, -9) === 'SUBSCRIBE') {
-			if (($e = end($args)) && (is_array($e) || is_object($e)) && is_callable($e)) {
-				$opcb = $cb;
-				$cb = array_pop($args);
-			} else {
-				$opcb = null;
-			}
-			reset($args);
-		}
-		$cb = CallbackWrapper::wrap($cb);
-		if ($name === 'SUBSCRIBE') {
-			foreach ($args as $arg) {
-				if (!isset($this->subscribeCb[$arg])) {
-					$this->sendCommand($name, $arg, $opcb);
+			$opcb = null;
+			for ($i = sizeof($args) - 1; $i >= 0; --$i) {
+				$a = $args[$i];
+				if ((is_array($a) || is_object($a)) && is_callable($a)) {
+					$opcb = $cb;
+					$cb = CallbackWrapper::wrap($a);
+					$args = array_slice($args, 0, $i);
+					break;
 				}
-				CallbackWrapper::addToArray($this->subscribeCb[$arg], $cb);
+				elseif ($a !== null) {
+					break;
+				}
 			}
+		}
+		if ($name === 'SUBSCRIBE') {
 			$this->subscribed();
+			$channels = [];
+			foreach ($args as $arg) {
+				if (!is_array($arg)) {
+					$arg = [$arg];
+				}
+				foreach ($arg as $chan) {
+					$b = !isset($this->subscribeCb[$chan]);
+					CallbackWrapper::addToArray($this->subscribeCb[$chan], $cb);
+					if ($b) {
+						$channels[] = $chan;
+					} else {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
+					}
+				}
+			}
+			if (sizeof($channels)) {
+				$this->sendCommand($name, $channels, $opcb);
+			}
 		}
 		elseif ($name === 'PSUBSCRIBE') {
-			foreach ($args as $arg) {
-				if (!isset($this->psubscribeCb[$arg])) {
-					$this->sendCommand($name, $arg, $opcb);
-				}
-				CallbackWrapper::addToArray($this->psubscribeCb[$arg], $cb);
-			}
 			$this->subscribed();
+			$channels = [];
+			foreach ($args as $arg) {
+				if (!is_array($arg)) {
+					$arg = [$arg];
+				}
+				foreach ($arg as $chan) {
+					$b = !isset($this->psubscribeCb[$chan]);
+					CallbackWrapper::addToArray($this->psubscribeCb[$chan], $cb);
+					if ($b) {
+						$channels[] = $chan;
+					} else {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
+					}
+				}
+			}
+			if (sizeof($channels)) {
+				$this->sendCommand($name, $channels, $opcb);
+			}
 		}
 		elseif ($name === 'UNSUBSCRIBE') {
+			$channels = [];
 			foreach ($args as $arg) {
-				CallbackWrapper::removeFromArray($this->subscribeCb[$arg], $cb);
-				if (sizeof($this->subscribeCb[$arg]) === 0) {
-					$this->sendCommand($name, $arg, $opcb);
-					unset($this->subscribeCb[$arg]);
+				if (!is_array($arg)) {
+					$arg = [$arg];
 				}
+				foreach ($arg as $chan) {
+					if (!isset($this->subscribeCb[$chan])) {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
+						return;
+					}
+					CallbackWrapper::removeFromArray($this->subscribeCb[$chan], $cb);
+					if (sizeof($this->subscribeCb[$chan]) === 0) {
+						$channels[] = $chan;
+						unset($this->subscribeCb[$chan]);
+					} else {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
+					}
+				}
+			}
+			if (sizeof($channels)) {
+				$this->sendCommand($name, $channels, $opcb);
 			}
 		}
+		elseif ($name === 'UNSUBSCRIBEREAL') {
+			
+			/* Race-condition-free UNSUBSCRIBE */
+
+			$old = $this->subscribeCb;
+			$this->sendCommand('UNSUBSCRIBE', $args, function($redis) use ($cb, $args, $old) {
+				if (!$redis) {
+					call_user_func($cb, $redis);
+					return;
+				}
+				foreach ($args as $arg) {
+					if (!isset($this->subscribeCb[$arg])) {
+						continue;
+					}
+					foreach ($old[$arg] as $oldcb) {
+						CallbackWrapper::removeFromArray($this->subscribeCb[$arg], $oldcb);
+					}
+					if (!sizeof($this->subscribeCb[$arg])) {
+						unset($this->subscribeCb[$arg]);
+					}
+				}
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+			});
+		}
 		elseif ($name === 'PUNSUBSCRIBE') {
+			$channels = [];
 			foreach ($args as $arg) {
-				CallbackWrapper::removeFromArray($this->psubscribeCb[$arg], $cb);
-				if (sizeof($this->psubscribeCb[$arg]) === 0) {
-					$this->sendCommand($name, $arg, $opcb);
-					unset($this->psubscribeCb[$arg]);
+				if (!is_array($arg)) {
+					$arg = [$arg];
+				}
+				foreach ($arg as $chan) {
+					CallbackWrapper::removeFromArray($this->psubscribeCb[$chan], $cb);
+					if (sizeof($this->psubscribeCb[$chan]) === 0) {
+						$channels[] = $chan;
+						unset($this->psubscribeCb[$chan]);
+					} else {
+						if ($opcb !== null) {
+							call_user_func($opcb, $this);
+						}
+					}
 				}
 			}
+			if (sizeof($channels)) {
+				$this->sendCommand($name, $channels, $opcb);
+			}
+		}
+		elseif ($name === 'PUNSUBSCRIBEREAL') {
+			
+			/* Race-condition-free PUNSUBSCRIBE */
+
+			$old = $this->psubscribeCb;
+			$this->sendCommand('PUNSUBSCRIBE', $args, function($redis) use ($cb, $args, $old) {
+				if (!$redis) {
+					call_user_func($cb, $redis);
+					return;
+				}
+				foreach ($args as $arg) {
+					if (!isset($this->psubscribeCb[$arg])) {
+						continue;
+					}
+					foreach ($old[$arg] as $oldcb) {
+						CallbackWrapper::removeFromArray($this->psubscribeCb[$arg], $oldcb);
+					}
+					if (!sizeof($this->psubscribeCb[$arg])) {
+						unset($this->psubscribeCb[$arg]);
+					}
+				}
+				if ($cb !== null) {
+					call_user_func($cb, $this);
+				}
+			});
 		} else {
 			$this->sendCommand($name, $args, $cb);
 		}
  	}
 
+ 	/**
+	 * @TODO
+	 * @param  string   $name
+	 * @param  array    $args
+	 * @param  callable $cb
+	 * @callback $cb ( )
+	 * @return void
+	 */
  	public function sendCommand($name, $args, $cb = null) {
  		$this->onResponse($cb);
  		if (!is_array($args)) {
@@ -170,7 +352,7 @@ class Connection extends ClientConnection {
 			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
 		}
  	}
-
+ 	
 	/**
 	 * Check if arrived data is message from subscription
 	 */
@@ -207,37 +389,94 @@ class Connection extends ClientConnection {
 		}
 	}
 
+	protected function onPacket() {
+		$this->result = $this->ptr;
+		if (($mtype = $this->isSubMessage()) !== false) { // sub callback
+			$chan = $this->result[1];
+			if ($mtype === 'pmessage') {
+				$t =& $this->psubscribeCb;
+			} else {
+				$t =& $this->subscribeCb;
+			}
+			if (isset($t[$chan])) {
+				foreach ($t[$chan] as $cb) {
+					if (is_callable($cb)) {
+						call_user_func($cb, $this);
+					}
+				}
+			} elseif ($this->pool->config->logpubsubracecondition->value) {
+				Daemon::log('[Redis client]'. ': PUB/SUB race condition at channel '. Debug::json($chan));
+			}
+		}
+		else { // request callback
+			$this->onResponse->executeOne($this);
+		}
+		$this->checkFree();
+		$this->result       = null;
+		$this->error        = false;
+	}
+
+	/**
+	 * @TODO
+	 * @param  mixed $val
+	 * @return void
+	 */
+	public function pushValue($val) {
+		if (is_array($this->ptr)) {
+			$this->ptr[] = $val;
+		} else {
+			$this->ptr = $val;
+		}
+		start:
+		if (sizeof($this->ptr) < $this->levelLength) {
+			return;
+		}
+		array_pop($this->stack);
+		if (!sizeof($this->stack)) {
+			$this->levelLength = null;
+			$this->onPacket();
+			$this->ptr =& $dummy;
+			$this->ptr = null;
+			return;
+		}
+
+		$this->ptr =& $dummy;
+
+		list ($this->ptr, $this->levelLength) = end($this->stack);
+
+		goto start;
+	}
+
+	/**
+	 * @TODO
+	 * @param integer $length
+	 */
+	public function pushLevel($length) {
+		if ($length <= 0) {
+			$this->pushValue([]);
+			return;
+		}
+
+		$ptr = [];
+		
+		if (is_array($this->ptr)) {
+			$this->ptr[] =& $ptr;
+		} else {
+			$this->ptr =& $ptr;
+		}
+
+		$this->ptr =& $ptr;
+		$this->stack[] = [&$ptr, $length];
+		$this->levelLength = $length;
+		$this->ptr =& $ptr;
+	}
+
 	/**
 	 * Called when new data received
 	 * @return void
 	 */
 	protected function onRead() {
 		start:
-		if (($this->result !== null) && (sizeof($this->result) >= $this->resultLength)) {
-			if (($mtype = $this->isSubMessage()) !== false) { // sub callback
-				$chan = $this->result[1];
-				if ($mtype === 'pmessage') {
-					$t = $this->psubscribeCb;
-				} else {
-					$t = $this->subscribeCb;
-				}
-				if (isset($t[$chan])) {
-					foreach ($t[$chan] as $cb) {
-						if (is_callable($cb)) {
-							call_user_func($cb, $this);
-						}
-					}
-				}
-			}
-			else { // request callback
-				$this->onResponse->executeOne($this);
-			}
-			$this->checkFree();
-			$this->resultLength = 0;
-			$this->result       = null;
-			$this->error        = false;
-		}
-
 		if ($this->state === self::STATE_STANDBY) { // outside of packet
 			while (($l = $this->readline()) !== null) {
 				if ($l === '') {
@@ -245,27 +484,23 @@ class Connection extends ClientConnection {
 				}
 				$char = $l{0};
 				if ($char === ':') { // inline integer
-					if ($this->result !== null) {
-						$this->result[] = (int)binarySubstr($l, 1);
-					}
-					else {
-						$this->resultLength = 1;
-						$this->result       = [(int)binarySubstr($l, 1)];
-					}
+					$this->pushValue((int) substr($l, 1));
 					goto start;
 				}
 				elseif (($char === '+') || ($char === '-')) { // inline string
-					$this->resultLength = 1;
 					$this->error        = ($char === '-');
-					$this->result       = [binarySubstr($l, 1)];
+					$this->pushValue(substr($l, 1));
 					goto start;
 				}
 				elseif ($char === '*') { // defines number of elements of incoming array
-					$this->resultLength = (int)substr($l, 1);
-					$this->result       = [];
+					$this->pushLevel((int) substr($l, 1));
 					goto start;
 				}
 				elseif ($char === '$') { // defines size of the data block
+					if ($l{1} === '-') {
+						$this->pushValue(null);
+						goto start;
+					}
 					$this->valueLength = (int)substr($l, 1);
 					if ($this->valueLength + 2 > $this->pool->maxAllowedPacket) {
 						$this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
@@ -276,11 +511,6 @@ class Connection extends ClientConnection {
 					$this->state = self::STATE_BINARY; // binary data block
 					break; // stop reading line-by-line
 				}
-			}
-			if ($this->state === self::STATE_STANDBY && $this->getInputLength() > $this->pool->maxAllowedPacket) {
-				$this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
-				$this->finish();
-				return;
 			}
 		}
 
@@ -295,7 +525,7 @@ class Connection extends ClientConnection {
 			}
 			$this->state = self::STATE_STANDBY;
 			$this->setWatermark(3);
-			$this->result[] = $value;
+			$this->pushValue($value);
 			goto start;
 		}
 	}

@@ -27,13 +27,13 @@ class Master extends Generic {
 	public $reload = false;
 	/** @var int */
 	public $connCounter = 0;
-	/** @var */
+	/** @var StackCallbacks */
 	public $callbacks;
-	/** @var */
+	/** @var Collection */
 	public $workers;
-	/** @var */
+	/** @var Collection */
 	public $ipcthreads;
-	/** @var */
+	/** @var EventBase */
 	public $eventBase;
 	/** @var */
 	public $eventBaseConfig;
@@ -55,7 +55,8 @@ class Master extends Generic {
 		class_exists('Timer'); // ensure loading this class
 		gc_enable();
 
-		//$this->eventBase = new EventBase;
+		/* This line must be commented according to current libevent binding implementation. May be uncommented in future. */
+		//$this->eventBase = new \EventBase; 
 
 		if ($this->eventBase) {
 			$this->registerEventSignals();
@@ -124,6 +125,7 @@ class Master extends Generic {
 	/**
 	 * Log something
 	 * @param string - Message.
+	 * @param string $message
 	 * @return void
 	 */
 	public function log($message) {
@@ -210,6 +212,7 @@ class Master extends Generic {
 	/**
 	 * Reload worker by internal id
 	 * @param integer - Id of worker
+	 * @param integer $id
 	 * @return void
 	 */
 	public function reloadWorker($id) {
@@ -237,6 +240,7 @@ class Master extends Generic {
 			$thread = new Worker;
 			$this->workers->push($thread);
 			$this->callbacks->push(function ($self) use ($thread) {
+                //@check - is it possible to run iterate of main event loop without child termination?
 				$thread->start();
 				$pid = $thread->getPid();
 				if ($pid < 0) {

@@ -29,7 +29,7 @@ class Protocol {
 	/**
 	 * Get real frame type identificator
 	 * @param $type
-	 * @return int|mixed|null
+	 * @return integer
 	 */
 	public function getFrameType($type) {
 		if (is_int($type)) {
@@ -55,8 +55,8 @@ class Protocol {
 
 	/**
 	 * Send frame
-	 * @param $data
-	 * @param $type
+	 * @param string $data
+	 * @param string|null $type
 	 */
 	public function sendFrame($data, $type) {
 		$this->conn->write($this->encodeFrame($data, $type));
@@ -72,7 +72,8 @@ class Protocol {
 	/**
 	 * Returns handshaked data for reply
 	 * @param string Received data (no use in this class)
-	 * @return string Handshaked data
+	 * @param string $data
+	 * @return boolean Handshaked data
 	 */
 	public function getHandshakeReply($data) {
 		return false;

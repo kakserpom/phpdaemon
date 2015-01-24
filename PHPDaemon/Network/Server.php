@@ -6,31 +6,25 @@ use PHPDaemon\Network\Pool;
 
 /**
  * Network server pattern
- * @extends ConnectionPool
- * @package Core
- *
+ * @package PHPDaemon\Network
  * @author  Zorin Vasily <maintainer@daemon.io>
  */
 abstract class Server extends Pool {
 
 	/**
-	 * Bound sockets
-	 * @var ObjectStorage
+	 * @var \PHPDaemon\Structures\ObjectStorage Bound sockets
 	 */
 	protected $bound;
 
 	/**
-	 * Allowed clients
-	 * @var array|null
+	 * @var array|null Allowed clients
 	 */
 	public $allowedClients = null;
-
-	public $maxAllowedPacket;
 	
 	/**
 	 * Constructor
-	 * @param array Config variables
-	 * @return object
+	 * @param array   $config Config variables
+	 * @param boolean $init
 	 */
 	public function __construct($config = [], $init = true) {
 		parent::__construct($config, false);
@@ -47,16 +41,16 @@ abstract class Server extends Pool {
 	 * Finishes ConnectionPool
 	 * @return boolean Success
 	 */
-
-	public function finish() {
+	public function finish($graceful = false) {
 		$this->closeBound();
-		return parent::finish();
+		return parent::finish($graceful);
 	}
 
 	/**
 	 * Bind given sockets
-	 * @param mixed Addresses to bind
-	 * @return integer Number of bound.
+	 * @param  mixed   $addrs Addresses to bind
+	 * @param  integer $max   Maximum
+	 * @return integer        Number of bound
 	 */
 	public function bindSockets($addrs = [], $max = 0) {
 		if (is_string($addrs)) {
@@ -76,8 +70,8 @@ abstract class Server extends Pool {
 
 	/**
 	 * Bind given socket
-	 * @param string Address to bind
-	 * @return boolean Success
+	 * @param  string  $uri Address to bind
+	 * @return boolean      Success
 	 */
 	public function bindSocket($uri) {
 		$u      = \PHPDaemon\Config\Object::parseCfgUri($uri);
@@ -151,8 +145,8 @@ abstract class Server extends Pool {
 
 	/**
 	 * Attach Generic
-	 * @param \PHPDaemon\BoundSocket\Generic $bound Generic
-	 * @param mixed $inf Info
+	 * @param  \PHPDaemon\BoundSocket\Generic $bound Generic
+	 * @param  mixed $inf Info
 	 * @return void
 	 */
 	public function attachBound(\PHPDaemon\BoundSocket\Generic $bound, $inf = null) {
@@ -161,7 +155,7 @@ abstract class Server extends Pool {
 
 	/**
 	 * Detach Generic
-	 * @param \PHPDaemon\BoundSocket\Generic $bound Generic
+	 * @param  \PHPDaemon\BoundSocket\Generic $bound Generic
 	 * @return void
 	 */
 	public function detachBound(\PHPDaemon\BoundSocket\Generic $bound) {
@@ -169,7 +163,7 @@ abstract class Server extends Pool {
 	}
 
 	/**
-	 * Close each of binded sockets.
+	 * Close each of binded sockets
 	 * @return void
 	 */
 	public function closeBound() {
@@ -177,9 +171,9 @@ abstract class Server extends Pool {
 	}
 
 	/**
-	 * Called when a request to HTTP-server looks like another connection.
-	 * @param $req
-	 * @param $oldConn
+	 * Called when a request to HTTP-server looks like another connection
+	 * @param  object  $req     Request
+	 * @param  object  $oldConn Connection
 	 * @return boolean Success
 	 */
 	public function inheritFromRequest($req, $oldConn) {

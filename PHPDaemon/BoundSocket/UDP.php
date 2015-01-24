@@ -64,7 +64,7 @@ class UDP extends Generic {
 	 * @param integer $flags Flags
 	 * @param string $host   Host
 	 * @param integer $port  Port
-	 * @return mixed
+	 * @return integer
 	 */
 	public function sendTo($data, $flags, $host, $port) {
 		return socket_sendto($this->fd, $data, strlen($data), $flags, $host, $port);
@@ -169,7 +169,7 @@ class UDP extends Generic {
 
 	/**
 	 * Called when we got UDP packet
-	 * @param resource $dtream Descriptor
+	 * @param resource $stream Descriptor
 	 * @param integer $events  Events
 	 * @param mixed $arg       Attached variable
 	 * @return boolean Success.
