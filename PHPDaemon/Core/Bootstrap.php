@@ -30,7 +30,7 @@ class Bootstrap {
 	 * @var array
 	 */
 	protected static $commands = [
-		'start', 'stop', 'hardstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker'
+		'start', 'stop', 'hardstop', 'gracefulstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker'
 	];
 
 	/**
@@ -427,6 +427,9 @@ class Bootstrap {
 		elseif ($runmode == 'stop') {
 			Bootstrap::stop();
 		}
+		elseif ($runmode == 'gracefulstop') {
+			Bootstrap::stop(4);
+		}
 		elseif ($runmode == 'hardstop') {
 			echo '[HARDSTOP] Sending SIGINT to ' . Bootstrap::$pid . '... ';
 
@@ -468,7 +471,7 @@ class Bootstrap {
 	 * @return void
 	 */
 	protected static function printUsage() {
-		echo 'usage: ' . Daemon::$runName . " (start|(hard)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
+		echo 'usage: ' . Daemon::$runName . " (start|(hard|graceful)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
 	}
 
 	/**
@@ -537,7 +540,7 @@ class Bootstrap {
 	 * @return void
 	 */
 	public static function stop($mode = 1) {
-		$ok = Bootstrap::$pid && posix_kill(Bootstrap::$pid, $mode === 3 ? SIGINT : SIGTERM);
+		$ok = Bootstrap::$pid && posix_kill(Bootstrap::$pid, $mode === 3 ? SIGINT : (($mode === 4) ? SIGTSTP : SIGTERM));
 
 		if (!$ok) {
 			echo '[WARN]. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";

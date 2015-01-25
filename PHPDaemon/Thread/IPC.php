@@ -282,6 +282,18 @@ class IPC extends Generic {
 	}
 
 	/**
+	 * Handler of the SIGTSTP (graceful stop) signal in worker process.
+	 * @return void
+	 */
+	protected function sigtstp() {
+		if (Daemon::$config->logsignals->value) {
+			$this->log('Caught SIGTSTP (graceful stop all workers).');
+		}
+
+		$this->shutdown();
+	}
+
+	/**
 	 * Handler of the SIGHUP (reload config) signal in worker process.
 	 * @return void
 	 */

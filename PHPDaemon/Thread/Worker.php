@@ -534,6 +534,17 @@ class Worker extends Generic {
 	}
 
 	/**
+	 * Graceful stop
+	 * @return void
+	 */
+	public function gracefulStop() {
+		$this->breakMainLoop = true;
+		$this->graceful = true;
+		$this->reloadTime = microtime(true) + $this->reloadDelay;
+		$this->setState($this->state);
+	}
+
+	/**
 	 * Asks the running applications the whether we can go to shutdown current (old) worker.
 	 * @return boolean - Ready?
 	 */
@@ -725,6 +736,18 @@ class Worker extends Generic {
 		}
 
 		$this->gracefulRestart();
+	}
+
+	/**
+	 * Handler of the SIGTSTP (graceful stop) signal in worker process.
+	 * @return void
+	 */
+	protected function sigtstp() {
+		if (Daemon::$config->logsignals->value) {
+			$this->log('caught SIGTSTP (graceful stop).');
+		}
+
+		$this->gracefulStop();
 	}
 
 	/**
