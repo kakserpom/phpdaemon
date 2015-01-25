@@ -690,7 +690,10 @@ class Daemon {
 		if (is_resource(STDERR)) {
 			fwrite(STDERR, '[PHPD] ' . $msg . "\n");
 		}
-		$msg = '[' . date('D, j M Y H:i:s', $mt[1]) . '.' . sprintf('%06d', $mt[0] * 1000000) . ' ' . date('O') . '] ' . $msg . "\n";
+
+		$format = strtr(Daemon::$config->logformat->value, ['%msg%' => "\x01", '\\u' => '\u', 'u' => sprintf('%06d', $mt[0] * 1000000)]);
+		$msg = str_replace("\x01", $msg, date($format)) . "\n";
+
 		if (Daemon::$logpointerAsync) {
 			Daemon::$logpointerAsync->write($msg);
 		}
