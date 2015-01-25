@@ -227,6 +227,12 @@ class Object implements \ArrayAccess {
 	public $logstorage = '/var/log/phpdaemon.log';
 
 	/**
+	 * Log format
+	 * @var string
+	 */
+	public $logformat = '[D, j M Y H:i:s.u O] %msg%';
+
+	/**
 	 * Log errors?
 	 * @var boolean
 	 */
