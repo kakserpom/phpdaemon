@@ -84,6 +84,18 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	}
 
 	/**
+	 * realRoute onBeforeHandshake
+	 * @param  callable   $cb
+	 * @return void|false
+	 */
+	public function onBeforeHandshake($cb) {
+		if (!method_exists($this->realRoute, 'onBeforeHandshake')) {
+			return false;
+		}
+		$this->realRoute->onBeforeHandshake($cb);
+	}
+
+	/**
 	 * @TODO DESCR
 	 * @return void
 	 */

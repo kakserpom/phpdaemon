@@ -323,7 +323,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 		}
 		if ($extraHeaders === null && method_exists($this->route, 'onBeforeHandshake')) {
 			$this->onWakeup();
-			$this->route->onBeforeHandshake(function($cb) {
+			$ret = $this->route->onBeforeHandshake(function($cb) {
 				$h = '';
 				foreach ($this->headers as $k => $line) {
 					if ($k !== 'STATUS') {
@@ -337,7 +337,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 				}
 			});
 			$this->onSleep();
-			return;
+			if ($ret !== false) {
+				return;
+			}
 		}
 
 		if (!isset($this->protocol)) {
