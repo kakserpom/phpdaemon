@@ -7,6 +7,7 @@ use PHPDaemon\WebSocket\ProtocolV0;
 use PHPDaemon\WebSocket\ProtocolV13;
 use PHPDaemon\WebSocket\ProtocolVE;
 use PHPDaemon\WebSocket\Route;
+use PHPDaemon\Request\RequestHeadersAlreadySent;
 
 class Connection extends \PHPDaemon\Network\Connection {
 	use \PHPDaemon\Traits\DeferredEventHandlers;
