@@ -43,7 +43,7 @@ class WorkerConnection extends Connection {
 				$fullname .= ':';
 			}
 			list($app, $name) = explode(':', $fullname, 2);
-			Daemon::$appResolver->appInstantiate($app, $name, true);
+			Daemon::$appResolver->getInstance($app, $name, true, true);
 		}
 		elseif ($p['op'] === 'importFile') {
 			if (!Daemon::$config->autoreimport->value) {
