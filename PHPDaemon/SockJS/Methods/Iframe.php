@@ -29,17 +29,17 @@ class IFrame extends Generic {
 		$html = '<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <script>
-    document.domain = document.domain;
-    _sockjs_onload = function(){SockJS.bootstrap_iframe();};
-  </script>
-  <script src="http://cdn.sockjs.org/sockjs-' . htmlentities($this->version, ENT_QUOTES, 'UTF-8').'.min.js"></script>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<script>
+		document.domain = document.domain;
+		_sockjs_onload = function(){SockJS.bootstrap_iframe();};
+	</script>
+	<script src="http://cdn.sockjs.org/sockjs-' . htmlentities($this->version, ENT_QUOTES, 'UTF-8').'.min.js"></script>
 </head>
 <body>
-  <h2>Don\'t panic!</h2>
-  <p>This is a SockJS hidden iframe. It\'s used for cross domain magic.</p>
+	<h2>Don\'t panic!</h2>
+	<p>This is a SockJS hidden iframe. It\'s used for cross domain magic.</p>
 </body>
 </html>';
 		$etag = 'W/"'.sha1($html).'"';

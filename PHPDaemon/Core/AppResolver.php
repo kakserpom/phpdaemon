@@ -103,7 +103,7 @@ class AppResolver {
 			}
 		}
 
-            return new $class($instance);
+		return new $class($instance);
 	}
 
 	/**

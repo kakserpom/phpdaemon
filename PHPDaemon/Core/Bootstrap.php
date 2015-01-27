@@ -89,10 +89,10 @@ class Bootstrap {
 			return;
 		}
 
-        //run without composer
-        if (!function_exists('setTimeout')) {
-            require 'PHPDaemon/Utils/func.php';
-        }
+		//run without composer
+		if (!function_exists('setTimeout')) {
+			require 'PHPDaemon/Utils/func.php';
+		}
 
 		Daemon::initSettings();
 		FileSystem::init();

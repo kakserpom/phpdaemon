@@ -198,8 +198,7 @@ abstract class IOStream {
 	 * @param  string $name Name
 	 * @return mixed
 	 */
-	public function __get($name)
-	{
+	public function __get($name) {
 		if (in_array($name, [
 			'finished', 'alive', 'freed', 'url'
 		])

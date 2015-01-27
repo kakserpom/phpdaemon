@@ -9,6 +9,7 @@ namespace PHPDaemon\Examples;
  */
 class TelnetHoneypot extends \PHPDaemon\Network\Server {
 	public $connectionClass = '\PHPDaemon\Examples\TelnetHoneypotConnection';
+	
 	/**
 	 * Setting default config options
 	 * Overriden from ConnectionPool::getConfigDefaults
@@ -29,13 +30,12 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 	 * @return void
 	 */
 	public function onRead() {
-
 		while (!is_null($line = $this->readline())) {
-            $finish =
-                (strpos($line, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
-                    || (strpos($line, $s = "\xff\xec") !== FALSE)
-                    || (strpos($line, $s = "\x03") !== FALSE)
-                    || (strpos($line, $s = "\x04") !== FALSE);
+			$finish =
+				(strpos($line, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
+					|| (strpos($line, $s = "\xff\xec") !== FALSE)
+					|| (strpos($line, $s = "\x03") !== FALSE)
+					|| (strpos($line, $s = "\x04") !== FALSE);
 
 			$e   = explode(' ', rtrim($line, "\r\n"), 2);
 
@@ -55,15 +55,12 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 				$this->writeln('Unknown command "' . $cmd . '"');
 			}
 
-            if (
-                (strlen($line) > 1024)
-                || $finish
-            ) {
-                $this->finish();
-            }
-
+			if (
+				(strlen($line) > 1024)
+				|| $finish
+			) {
+				$this->finish();
+			}
 		}
-
-
 	}
 }

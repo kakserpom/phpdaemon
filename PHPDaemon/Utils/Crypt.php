@@ -112,21 +112,21 @@ class Crypt {
 	 * @param  integer $idx Index
 	 * @return string
 	 */
-    public static function stringIdx($str, $idx) {
-        // FIXME: Make the const-time hack below work for all integer sizes, or
-        // check it properly
-        $l = strlen($str);
-        if ($l > 65535 || $idx > $l) {
-            return false;
-        }
-        $r = 0;
-        for ($i = 0; $i < $l; ++$i) {
-            $x = $i ^ $idx;
-            $mask = (((($x | ($x >> 16)) & 0xFFFF) + 0xFFFF) >> 16) - 1;
-            $r |= ord($str[$i]) & $mask;
-        }
-        return chr($r);
-    }
+	public static function stringIdx($str, $idx) {
+		// FIXME: Make the const-time hack below work for all integer sizes, or
+		// check it properly
+		$l = strlen($str);
+		if ($l > 65535 || $idx > $l) {
+			return false;
+		}
+		$r = 0;
+		for ($i = 0; $i < $l; ++$i) {
+			$x = $i ^ $idx;
+			$mask = (((($x | ($x >> 16)) & 0xFFFF) + 0xFFFF) >> 16) - 1;
+			$r |= ord($str[$i]) & $mask;
+		}
+		return chr($r);
+	}
 
 	/**
 	 * Returns string of pseudo random bytes
@@ -208,13 +208,14 @@ class Crypt {
 	 * @param  integer $toRepresent must be an integer greater than or equal to 1
 	 * @return integer
 	 */
-	protected static function getMinimalBitMask($toRepresent)
-	{
-		if($toRepresent < 1)
+	protected static function getMinimalBitMask($toRepresent) {
+		if ($toRepresent < 1) {
 			return false;
+		}
 		$mask = 0x1;
-		while($mask < $toRepresent)
+		while ($mask < $toRepresent) {
 			$mask = ($mask << 1) | 1;
+		}
 		return $mask;
 	}
 
@@ -237,4 +238,3 @@ class Crypt {
 		return $d === 0;
 	}
 }
-

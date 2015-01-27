@@ -229,54 +229,53 @@ trait Sessions {
 		return false;
 	}
 
-    /**
-     * session_encode() - clone, which not require session_start()
-     * @see    http://www.php.net/manual/en/function.session-encode.php
-     * @param  array  $array
-     * @return string
-     */
-    public function serialize_php($array) {
-        $raw = '';
-        $line = 0;
-        $keys = array_keys($array);
-        foreach ($keys as $key) {
-            $value = $array[$key];
-            $line++;
-            $raw .= $key . '|';
-            if (is_array($value) && isset($value['huge_recursion_blocker_we_hope'])) {
-                $raw .= 'R:' . $value['huge_recursion_blocker_we_hope'] . ';';
-            } else {
-                $raw .= serialize($value);
-            }
-            $array[$key] = array('huge_recursion_blocker_we_hope' => $line);
-        }
+	/**
+	 * session_encode() - clone, which not require session_start()
+	 * @see    http://www.php.net/manual/en/function.session-encode.php
+	 * @param  array  $array
+	 * @return string
+	 */
+	public function serialize_php($array) {
+		$raw = '';
+		$line = 0;
+		$keys = array_keys($array);
+		foreach ($keys as $key) {
+			$value = $array[$key];
+			$line++;
+			$raw .= $key . '|';
+			if (is_array($value) && isset($value['huge_recursion_blocker_we_hope'])) {
+				$raw .= 'R:' . $value['huge_recursion_blocker_we_hope'] . ';';
+			} else {
+				$raw .= serialize($value);
+			}
+			$array[$key] = array('huge_recursion_blocker_we_hope' => $line);
+		}
 
-        return $raw;
-    }
+		return $raw;
+	}
 
-    /**
-     * session_decode() - clone, which not require session_start()
-     * @see    http://www.php.net/manual/en/function.session-decode.php#108037
-     * @param  string $session_data
-     * @return array
-     */
-    protected function unserialize_php($session_data)
-    {
-        $return_data = array();
-        $offset = 0;
-        while ($offset < strlen($session_data)) {
-            if (!strstr(substr($session_data, $offset), "|")) {
-            	return $return_data;
-                //throw new \Exception("invalid session data, remaining: " . substr($session_data, $offset));
-            }
-            $pos = strpos($session_data, "|", $offset);
-            $num = $pos - $offset;
-            $varname = substr($session_data, $offset, $num);
-            $offset += $num + 1;
-            $data = unserialize(substr($session_data, $offset));
-            $return_data[$varname] = $data;
-            $offset += strlen(serialize($data));
-        }
-        return $return_data;
-    }
+	/**
+	 * session_decode() - clone, which not require session_start()
+	 * @see    http://www.php.net/manual/en/function.session-decode.php#108037
+	 * @param  string $session_data
+	 * @return array
+	 */
+	protected function unserialize_php($session_data) {
+		$return_data = array();
+		$offset = 0;
+		while ($offset < strlen($session_data)) {
+			if (!strstr(substr($session_data, $offset), "|")) {
+				return $return_data;
+				//throw new \Exception("invalid session data, remaining: " . substr($session_data, $offset));
+			}
+			$pos = strpos($session_data, "|", $offset);
+			$num = $pos - $offset;
+			$varname = substr($session_data, $offset, $num);
+			$offset += $num + 1;
+			$data = unserialize(substr($session_data, $offset));
+			$return_data[$varname] = $data;
+			$offset += strlen(serialize($data));
+		}
+		return $return_data;
+	}
 }

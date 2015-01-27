@@ -240,7 +240,7 @@ class Master extends Generic {
 			$thread = new Worker;
 			$this->workers->push($thread);
 			$this->callbacks->push(function ($self) use ($thread) {
-                //@check - is it possible to run iterate of main event loop without child termination?
+				// @check - is it possible to run iterate of main event loop without child termination?
 				$thread->start();
 				$pid = $thread->getPid();
 				if ($pid < 0) {

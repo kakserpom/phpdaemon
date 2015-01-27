@@ -39,18 +39,23 @@ class Htmlfile extends Generic {
 		}
 		echo str_repeat(' ', 1024);
 		echo "\n\n";
-		?><!doctype html>
-<html><head>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-</head><body><h2>Don't panic!</h2>
-  <script>
-    document.domain = document.domain;
-    var c = parent.<?php echo $_GET['c']; ?>;
-    c.start();
-    function p(d) {c.message(d);};
-    window.onload = function() {c.stop();};
-  </script>
+		?><!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<h2>Don't panic!</h2>
+<script>
+	document.domain = document.domain;
+	var c = parent.<?php echo $_GET['c']; ?>;
+	c.start();
+	function p(d) {c.message(d);};
+	window.onload = function() {c.stop();};
+</script>
+</body>
+</html>
 <?php
 	}
 }

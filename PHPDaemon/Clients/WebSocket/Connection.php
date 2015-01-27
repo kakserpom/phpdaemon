@@ -72,10 +72,10 @@ class Connection extends ClientConnection {
 	 */
 	public function onReady() {
 		$this->setWatermark(2, $this->pool->maxAllowedPacket);
-        Crypt::randomString(16, null, function($string) {
-            $this->key = base64_encode($string);
-            $this->write('GET /'.$this->path." HTTP/1.1\r\nHost: ".$this->host.($this->port != 80 ? ':' . $this->port : '')."\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ".$this->key."\r\nSec-WebSocket-Version: 13\r\n\r\n");
-        });
+		Crypt::randomString(16, null, function($string) {
+			$this->key = base64_encode($string);
+			$this->write('GET /'.$this->path." HTTP/1.1\r\nHost: ".$this->host.($this->port != 80 ? ':' . $this->port : '')."\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ".$this->key."\r\nSec-WebSocket-Version: 13\r\n\r\n");
+		});
 	}
 
 	/**
@@ -94,7 +94,7 @@ class Connection extends ClientConnection {
 			$fin = (bool) $fb{0};
 			$opCode = bindec(substr($fb, 4, 4));
 
-			if(isset($this->opCodes[$opCode])) {
+			if (isset($this->opCodes[$opCode])) {
 				$this->type = $this->opCodes[$opCode];
 			}
 			else {
@@ -119,7 +119,7 @@ class Connection extends ClientConnection {
 				$this->pctLength = Binary::b2i($this->read(2));
 
 			}
-			elseif($payloadLength === 127) {
+			elseif ($payloadLength === 127) {
 				if ($l < 10) {
 					return;
 				}
@@ -127,7 +127,7 @@ class Connection extends ClientConnection {
 				$this->pctLength = Binary::b2i($this->read(8));
 			}
 
-			if($this->pool->maxAllowedPacket < $this->pctLength) {
+			if ($this->pool->maxAllowedPacket < $this->pctLength) {
 				Daemon::$process->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
 				$this->finish();
 				return;
@@ -151,9 +151,9 @@ class Connection extends ClientConnection {
 		if ($this->state == static::STATE_STANDBY) {
 			while (($line = $this->readLine()) !== null) {
 				$line = trim($line);
-				if($line == '') {
+				if ($line == '') {
 					$expectedKey = base64_encode(pack('H*', sha1($this->key . static::GUID)));
-					if(isset($this->headers['HTTP_SEC_WEBSOCKET_ACCEPT']) && $expectedKey == $this->headers['HTTP_SEC_WEBSOCKET_ACCEPT']) {
+					if (isset($this->headers['HTTP_SEC_WEBSOCKET_ACCEPT']) && $expectedKey == $this->headers['HTTP_SEC_WEBSOCKET_ACCEPT']) {
 						$this->state = static::STATE_HEADER;
 						if ($this->onConnected) {
 							$this->connected = true;
@@ -188,7 +188,7 @@ class Connection extends ClientConnection {
 	 */
 	public function sendFrame($payload, $type = Pool::TYPE_TEXT, $isMasked = true) {
 		$payloadLength = strlen($payload);
-		if($payloadLength > $this->pool->maxAllowedPacket) {
+		if ($payloadLength > $this->pool->maxAllowedPacket) {
 			Daemon::$process->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
 			return;
 		}

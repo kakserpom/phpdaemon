@@ -112,10 +112,8 @@ class Connection extends ClientConnection {
 			$this->setWatermark($this->hdr['plen'], $this->hdr['plen']);
 			$this->state = self::STATE_PACKET;
 		}
-		if ($this->state === self::STATE_PACKET)
-		{
-			if (false === ($pct = $this->readExact($this->hdr['plen'])))
-			{
+		if ($this->state === self::STATE_PACKET) {
+			if (false === ($pct = $this->readExact($this->hdr['plen']))) {
 				return; //we do not have a whole packet
 			}
 			$this->state = self::STATE_ROOT;
@@ -148,7 +146,7 @@ class Connection extends ClientConnection {
 				else {
 					$cur = isset($this->cursors[$curId]) ? $this->cursors[$curId] : false;
 				}
-				if ($cur && (($r['length']===0) || (binarySubstr($curId, 0, 1) === 'r'))) {
+				if ($cur && (($r['length'] === 0) || (binarySubstr($curId, 0, 1) === 'r'))) {
 					if ($cur->tailable) {
 						if ($cur->finished = ($flagBits[0] == '1')) {
 							$cur->destroy();

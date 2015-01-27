@@ -79,7 +79,7 @@ class Connection extends ClientConnection {
 	/**
 	 * @var integer Default low mark. Minimum number of bytes in buffer
 	 */
-    protected $lowMark = 2;
+	protected $lowMark = 2;
 
 	public $responseCode;
 	public $encoding;
