@@ -28,11 +28,11 @@ class CallbackWrapper {
 	/**
 	 * Constructor
 	 * @param  callable $cb
-	 * @param  object   $context
 	 * @param  double   $timeout
+	 * @param  object   $context
 	 * @return \PHPDaemon\Core\CallbackWrapper
 	 */
-	public function __construct($cb, $context = null, $timeout = null) {
+	protected function __construct($cb, $timeout = null, $context = null) {
 		$this->cb      = $cb;
 		$this->context = $context;
 		if ($timeout !== null) {
@@ -125,7 +125,7 @@ class CallbackWrapper {
 		if ($cb === null) {
 			return null;
 		}
-		return new static($cb, $ctx !== false ? $ctx : Daemon::$context, $timeout);
+		return new static($cb, $timeout, $ctx !== false ? $ctx : Daemon::$context);
 	}
 
 	/**
@@ -142,7 +142,7 @@ class CallbackWrapper {
 		if ($cb === null) {
 			return null;
 		}
-		return new static($cb, Daemon::$context, $timeout);
+		return new static($cb, $timeout, Daemon::$context);
 	}
 
 	/**
