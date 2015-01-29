@@ -290,7 +290,7 @@ class Connection extends ClientConnection {
 						$this->charset = strtolower($p['charset']);
 					}
 				}
-				if ($this->contentLength === -1 && !$this->keepalive) {
+				if ($this->contentLength === -1 && !$this->chunked && !$this->keepalive) {
 					$this->eofTerminated = true;
 				}
 				$this->state = self::STATE_BODY;
