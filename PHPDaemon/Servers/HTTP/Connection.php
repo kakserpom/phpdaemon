@@ -160,7 +160,6 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		$req->attrs->input       = new Input();
 		$req->attrs->inputReaded = 0;
 		$req->attrs->chunked     = false;
-		$req->attrs->keepalive   = false;
 		$req->upstream           = $this;
 		return $req;
 	}
@@ -355,10 +354,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 				$this->write("0\r\n\r\n");
 			}
 
-			if ($req->attrs->keepalive) {
+			if (isset($req->keepalive) && $req->keepalive && $this->pool->config->keepalive->value) {
 				$this->keepaliveTimer = setTimeout(function($timer) {
 					$this->finish();
-				}, 5 * 1e6);
+				}, $this->pool->config->keepalive->value);
 			}
 			else {
 				$this->finish();
