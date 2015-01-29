@@ -55,9 +55,6 @@ class ExampleComplexJob extends \PHPDaemon\Core\AppInstance {
 			// ComplexJob - STATE_DONE
 		});
 
-		// Incapsulate some property in job
-		$job->appInstance = $this;
-
 		// Adding async job foo
 		$job('foo', $this->foo(['param' => 'value']));
 
@@ -73,8 +70,8 @@ class ExampleComplexJob extends \PHPDaemon\Core\AppInstance {
 				}, 1e3 * 50);
 			});
 
-			// Adding async job baz. Equal $job('baz', $job->appInstance->baz());
-			$job->addJob('baz', $job->appInstance->baz());
+			// Adding async job baz. Equal $job('baz', $this->baz());
+			$job->addJob('baz', $this->baz());
 
 			// Run jobs. All listeners will be called when the jobs done
 			// ComplexJob - STATE_RUNNING
