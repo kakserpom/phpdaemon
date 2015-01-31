@@ -416,7 +416,7 @@ class Parser {
 									$scope->{$name}->revision = $this->revision;
 								}
 							}
-							elseif (sizeof($this->state) > 1) {
+							elseif ($scope instanceof Section) {
 								$scope->{$name}           = new Generic();
 								$scope->{$name}->source   = 'config';
 								$scope->{$name}->revision = $this->revision;
