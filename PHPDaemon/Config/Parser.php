@@ -6,6 +6,7 @@ use PHPDaemon\Config\Object;
 use PHPDaemon\Config\Section;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Exceptions\InfiniteRecursion;
 
 /**
  * Config parser
@@ -118,6 +119,12 @@ class Parser {
 	protected $data;
 
 	/**
+	 * Parse stack
+	 * @var array
+	 */
+	protected static $stack = [];
+
+	/**
 	 * Erroneous?
 	 * @return boolean
 	 */
@@ -133,14 +140,22 @@ class Parser {
 	 * @return \PHPDaemon\Config\Parser
 	 */
 	public static function parse($file, $target, $included = false) {
-		return new self($file, $target, $included);
+		if (in_array($file, static::$stack)) {
+			throw new InfiniteRecursion;
+			
+		}
+
+		static::$stack[] = $file;
+		$parser = new static($file, $target, $included);
+		array_pop(static::$stack);
+		return $parser;
 	}
 
 	/**
 	 * Constructor
 	 * @return void
 	 */
-	public function __construct($file, $target, $included = false) {
+	protected function __construct($file, $target, $included = false) {
 		$this->file     = $file;
 		$this->target   = $target;
 		$this->revision = ++Object::$lastRevision;
@@ -158,14 +173,14 @@ class Parser {
 
 		$this->data    = str_replace("\r", '', $this->data);
 		$this->length     = strlen($this->data);
-		$this->state[] = [self::T_ALL, $this->target];
+		$this->state[] = [static::T_ALL, $this->target];
 		$this->tokens  = [
-			self::T_COMMENT => function ($c) {
+			static::T_COMMENT => function ($c) {
 				if ($c === "\n") {
 					array_pop($this->state);
 				}
 			},
-			self::T_STRING_DOUBLE  => function ($q) {
+			static::T_STRING_DOUBLE  => function ($q) {
 				$str = '';
 				++$this->p;
 
@@ -221,7 +236,7 @@ class Parser {
 				}
 				return $str;
 			},
-			self::T_STRING => function ($q) {
+			static::T_STRING => function ($q) {
 				$str = '';
 				++$this->p;
 
@@ -251,11 +266,11 @@ class Parser {
 				}
 				return $str;
 			},
-			self::T_ALL     => function ($c) {
+			static::T_ALL     => function ($c) {
 				if (ctype_space($c)) {
 				}
 				elseif ($c === '#') {
-					$this->state[] = [Parser::T_COMMENT];
+					$this->state[] = [static::T_COMMENT];
 				}
 				elseif ($c === '}') {
 					if (sizeof($this->state) > 1) {
@@ -291,12 +306,12 @@ class Parser {
 								$this->raiseError('Unexpected T_STRING.');
 							}
 
-							$string = $this->token(Parser::T_STRING, $c);
+							$string = $this->token(static::T_STRING, $c);
 							--$this->p;
 
 							if ($elTypes[$i] === null) {
 								$elements[$i] = $string;
-								$elTypes[$i]  = Parser::T_STRING;
+								$elTypes[$i]  = static::T_STRING;
 							}
 						}
 						elseif ($c === '"') {
@@ -304,12 +319,12 @@ class Parser {
 								$this->raiseError('Unexpected T_STRING_DOUBLE.');
 							}
 
-							$string = $this->token(Parser::T_STRING_DOUBLE, $c);
+							$string = $this->token(static::T_STRING_DOUBLE, $c);
 							--$this->p;
 
 							if ($elTypes[$i] === null) {
 								$elements[$i] = $string;
-								$elTypes[$i]  = Parser::T_STRING_DOUBLE;
+								$elTypes[$i]  = static::T_STRING_DOUBLE;
 							}
 						}
 						elseif ($c === '}') {
@@ -319,15 +334,15 @@ class Parser {
 							if ($newLineDetected) {
 								$this->raiseError('Unexpected new-line instead of \';\'', 'notice', $newLineDetected[0], $newLineDetected[1]);
 							}
-							$tokenType = Parser::T_VAR;
+							$tokenType = static::T_VAR;
 							break;
 						}
 						elseif ($c === '{') {
-							$tokenType = Parser::T_BLOCK;
+							$tokenType = static::T_BLOCK;
 							break;
 						}
 						else {
-							if ($elTypes[$i] === Parser::T_STRING) {
+							if ($elTypes[$i] === static::T_STRING) {
 								$this->raiseError('Unexpected T_CVALUE.');
 							}
 							else {
@@ -336,12 +351,12 @@ class Parser {
 								}
 
 								$elements[$i] .= $c;
-								$elTypes[$i] = Parser::T_CVALUE;
+								$elTypes[$i] = static::T_CVALUE;
 							}
 						}
 					}
 					foreach ($elTypes as $k => $v) {
-						if (Parser::T_CVALUE === $v) {
+						if (static::T_CVALUE === $v) {
 							if (ctype_digit($elements[$k])) {
 								$elements[$k] = (int)$elements[$k];
 							}
@@ -366,7 +381,7 @@ class Parser {
 					if ($tokenType === 0) {
 						$this->raiseError('Expected \';\' or \'{\'');
 					}
-					elseif ($tokenType === Parser::T_VAR) {
+					elseif ($tokenType === static::T_VAR) {
 						$name = str_replace('-', '', strtolower($elements[0]));
 						if (sizeof($elements) > 2) {
 							$value = array_slice($elements, 1);
@@ -387,7 +402,11 @@ class Parser {
 								$files = glob($path);
 								if ($files) {
 									foreach ($files as $fn) {
-										Parser::parse($fn, $scope, true);
+										try {
+											static::parse($fn, $scope, true);
+										} catch (InfiniteRecursion $e) {
+											$this->raiseError('Cannot include \'' . $fn . '\' as a part of itself, it may cause an infinite recursion.');
+										}
 									}
 								}
 							}
@@ -396,17 +415,17 @@ class Parser {
 							if (sizeof($elements) === 1) {
 								$value       = true;
 								$elements[1] = true;
-								$elTypes[1]  = Parser::T_CVALUE;
+								$elTypes[1]  = static::T_CVALUE;
 							}
 							elseif ($value === null) {
 								$value       = null;
 								$elements[1] = null;
-								$elTypes[1]  = Parser::T_CVALUE;
+								$elTypes[1]  = static::T_CVALUE;
 							}
 
 							if (isset($scope->{$name})) {
 								if ($scope->{$name}->source !== 'cmdline') {
-									if (($elTypes[1] === Parser::T_CVALUE) && is_string($value)) {
+									if (($elTypes[1] === static::T_CVALUE) && is_string($value)) {
 										$scope->{$name}->pushHumanValue($value);
 									}
 									else {
@@ -428,7 +447,7 @@ class Parser {
 							}
 						}
 					}
-					elseif ($tokenType === Parser::T_BLOCK) {
+					elseif ($tokenType === static::T_BLOCK) {
 						$scope       = $this->getCurrentScope();
 						$sectionName = implode('-', $elements);
 						$sectionName = strtr($sectionName, '-. ', ':::');
@@ -438,7 +457,7 @@ class Parser {
 						$scope->{$sectionName}->source   = 'config';
 						$scope->{$sectionName}->revision = $this->revision;
 						$this->state[]                   = [
-							Parser::T_ALL,
+							static::T_ALL,
 							$scope->{$sectionName},
 						];
 					}
