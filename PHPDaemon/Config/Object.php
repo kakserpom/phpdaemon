@@ -363,7 +363,7 @@ class Object implements \ArrayAccess {
 	 * @return boolean Success
 	 */
 	public function loadFile($path) {
-		$parser = new Parser($path, $this);
+		$parser = Parser::parse($path, $this);
 		$this->onLoad();
 		return !$parser->isErroneous();
 	}
