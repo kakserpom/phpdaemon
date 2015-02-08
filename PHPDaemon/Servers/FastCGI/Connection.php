@@ -331,6 +331,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 * @param  object $req
 	 */
 	public function freeRequest($req) {
+		$req->attrs->input = null;
 		unset($this->requests[$req->attrs->id]);
 	}
 
