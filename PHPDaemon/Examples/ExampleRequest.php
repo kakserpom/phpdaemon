@@ -6,24 +6,32 @@ use PHPDaemon\Core\Daemon;
 
 class ExampleRequest extends Generic
 {
-/**
- * Called when request iterated.
- * @return integer Status.
- */
-public function run()
-{
-	$this->sessionStart();
-try {
-	$this->header('Content-Type: text/html');
-	$this->setcookie('testcookie', '1');
-} catch (\PHPDaemon\Request\RequestHeadersAlreadySent $e) {
-}
-$this->registerShutdownFunction(function() {?></html><?php });
-if (!isset($_SESSION['counter'])) {
-	$_SESSION['counter'] = 0;
-}
+	/**
+	 * Called when request iterated.
+	 * @return integer Status.
+	 */
+	public function run()
+	{
+		$this->sessionStart();
+		try {
+			$this->header('Content-Type: text/html');
+			$this->setcookie('testcookie', '1');
+		} catch (\PHPDaemon\Request\RequestHeadersAlreadySent $e) {}
 
-?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+		$this->registerShutdownFunction(function() {
+
+?>
+</html>
+<?php
+
+		});
+
+		if (!isset($_SESSION['counter'])) {
+			$_SESSION['counter'] = 0;
+		}
+
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -41,15 +49,18 @@ echo($mem / 1024 / 1024); ?> MB. (<?php echo $mem; ?>)
 echo($mem / 1024 / 1024); ?> MB. (<?php echo $mem; ?>)
 <br/>My PID: <?php echo getmypid(); ?>.
 <?php
-$user = posix_getpwuid(posix_getuid());
-$group = posix_getgrgid(posix_getgid());
+
+		$user = posix_getpwuid(posix_getuid());
+		$group = posix_getgrgid(posix_getgid());
+
 ?>
 <br/>My user/group: <?php echo $user['name'] . '/' . $group['name']; ?>
 <?php
-$displaystate = TRUE;
 
-if ($displaystate)
-{
+		$displaystate = TRUE;
+
+		if ($displaystate)
+		{
 
 ?><br/><br/><b>State of workers:</b><?php $stat = \PHPDaemon\Core\Daemon::getStateOfWorkers(); ?>
 <br/>Idle: <?php echo $stat['idle']; ?>
@@ -60,7 +71,8 @@ if ($displaystate)
 <br/>Init: <?php echo $stat['init']; ?>
 <br/>
 <?php
-}
+
+		}
 
 ?>
 <br/><br/>
@@ -78,22 +90,28 @@ if ($displaystate)
 </form>
 <pre>
 <?php
-var_dump([
-			 '_GET'     => $_GET,
-			 '_POST'    => $_POST,
-			 '_COOKIE'  => $_COOKIE,
-			 '_REQUEST' => $_REQUEST,
-			 '_FILES'   => $_FILES,
-			 '_SERVER'  => $_SERVER,
+
+		var_dump([
+			'_GET'     => $_GET,
+			'_POST'    => $_POST,
+			'_COOKIE'  => $_COOKIE,
+			'_REQUEST' => $_REQUEST,
+			'_FILES'   => $_FILES,
+			'_SERVER'  => $_SERVER
 		 ]);
+
 ?></pre>
 <br/>Request took: <?php printf('%f', round(microtime(TRUE) - $_SERVER['REQUEST_TIME_FLOAT'], 6));
 //echo '<!-- '. str_repeat('x',1024*1024).' --->';
 //echo '<!-- '. str_repeat('x',1024*1024).' --->';
 //echo '<!-- '. str_repeat('x',1024*1024).' --->';
-?></body><?php
-}
-public function __destruct() {
-	Daemon::log('destructed example request');
-}
+?>
+</body>
+<?php
+
+	}
+
+	public function __destruct() {
+		Daemon::log('destructed example request');
+	}
 }
