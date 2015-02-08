@@ -230,11 +230,7 @@ abstract class Generic {
 			$this->finish();
 			return;
 		}
-		handleStatus:
-		if ($this->state === Generic::STATE_FINISHED) {
-			$this->free();
-		}
-		elseif ($this->state === Generic::STATE_WAITING) {
+		if ($this->state === Generic::STATE_WAITING) {
 			$this->ev->add($this->sleepTime);
 		}
 	}
