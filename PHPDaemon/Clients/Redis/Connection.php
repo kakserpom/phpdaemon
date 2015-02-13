@@ -72,6 +72,25 @@ class Connection extends ClientConnection {
 
 	/**
 	 * @TODO
+	 * @param  string  $key
+	 * @param  integer $timeout
+	 * @return Lock
+	 */
+	public function lock($key, $timeout) {
+		return new Lock($key, $timeout, $this);
+	}
+
+	/**
+	 * Easy wrapper for queue of eval's
+	 * @param  callable  $cb
+	 * @return MultiEval
+	 */
+	public function meval($cb = null) {
+		return new MultiEval($cb, $this);
+	}
+
+	/**
+	 * @TODO
 	 * @param  string $chan
 	 * @return integer
 	 */

@@ -26,6 +26,15 @@ class Pool extends \PHPDaemon\Network\Client {
 	}
 
 	/**
+	 * Easy wrapper for queue of eval's
+	 * @param  callable  $cb
+	 * @return MultiEval
+	 */
+	public function meval($cb = null) {
+		return new MultiEval($cb, $this);
+	}
+
+	/**
 	 * Detaches connection from URL
 	 * @param  ClientConnection $conn Connection
 	 * @param  string           $url  URL
