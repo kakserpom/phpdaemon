@@ -6,34 +6,31 @@ use PHPDaemon\Core\Debug;
 use PHPDaemon\HTTPRequest\Generic;
 
 class SimpleRequest extends Generic {
-
 	/**
-	 * Constructor.
+	 * Constructor
 	 * @return void
 	 */
 	public function init() {
-
 		try {
 			$this->header('Content-Type: text/html');
-		} catch (\Exception $e) {
-		}
+		} catch (\Exception $e) {}
 
-		$this->appInstance->httpclient->get(['http://www.google.com/robots.txt'],
+		$this->appInstance->httpclient->get('http://www.google.com/robots.txt',
 			function ($conn, $success) {
 				echo $conn->body;
 				$this->finish();
 			}
 		);
 
-		$this->sleep(5, true); // setting timeout
+		// setting timeout
+		$this->sleep(5, true);
 	}
 
 	/**
-	 * Called when request iterated.
-	 * @return integer Status.
+	 * Called when request iterated
+	 * @return integer Status
 	 */
 	public function run() {
 		echo 'Something went wrong.';
 	}
-
 }
