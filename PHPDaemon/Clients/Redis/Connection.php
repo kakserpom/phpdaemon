@@ -350,9 +350,9 @@ class Connection extends ClientConnection {
 		} else {
 			$this->sendCommand($name, $args, $cb);
 		}
- 	}
+	}
 
- 	/**
+	/**
 	 * @TODO
 	 * @param  string   $name
 	 * @param  array    $args
@@ -360,18 +360,18 @@ class Connection extends ClientConnection {
 	 * @callback $cb ( )
 	 * @return void
 	 */
- 	public function sendCommand($name, $args, $cb = null) {
- 		$this->onResponse($cb);
- 		if (!is_array($args)) {
+	public function sendCommand($name, $args, $cb = null) {
+		$this->onResponse($cb);
+		if (!is_array($args)) {
 			$args = [$args];
 		}
- 		array_unshift($args, $name);
+		array_unshift($args, $name);
 		$this->writeln('*' . sizeof($args));
 		foreach ($args as $arg) {
 			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
 		}
- 	}
- 	
+	}
+	
 	/**
 	 * Check if arrived data is message from subscription
 	 */
