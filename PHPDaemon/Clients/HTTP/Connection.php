@@ -35,6 +35,11 @@ class Connection extends ClientConnection {
 	 */
 	public $contentLength = -1;
 
+    /**
+     * @var int Current length body
+     */
+    public $curLength = 0;
+
 	/**
 	 * @var string Contains response body
 	 */
@@ -64,6 +69,11 @@ class Connection extends ClientConnection {
 	 * @var boolean
 	 */
 	public $chunked = false;
+
+    /**
+     * @var callback
+     */
+    public $chunkcb;
 
 	/**
 	 * @var integer
@@ -133,6 +143,9 @@ class Connection extends ClientConnection {
 		if (isset($params['rawHeaders']) && $params['rawHeaders']) {
 			$this->rawHeaders = [];
 		}
+        if(isset($params['chunkcb']) && is_callable($params['chunkcb'])) {
+            $this->chunkcb = $params['chunkcb'];
+        }
 		$this->writeln('');
 		$this->onResponse($params['resultcb']);
 		$this->checkFree();
@@ -332,7 +345,12 @@ class Connection extends ClientConnection {
 		}
 		body:
 		if ($this->eofTerminated) {
-			$this->body .= $this->readUnlimited();
+            if($this->chunkcb) {
+                call_user_func($this->chunkcb, $this->readUnlimited());
+            }
+            else {
+                $this->body .= $this->readUnlimited();
+            }
 			return;
 		}
 		if ($this->chunked) {
@@ -367,7 +385,12 @@ class Connection extends ClientConnection {
 				$n   = $this->curChunkSize - strlen($this->curChunk);
 				$this->curChunk .= $this->read($n);
 				if ($this->curChunkSize <= strlen($this->curChunk)) {
-					$this->body .= $this->curChunk;
+                    if($this->chunkcb) {
+                        call_user_func($this->chunkcb, $this->curChunk);
+                    }
+                    else {
+                        $this->body .= $this->curChunk;
+                    }
 					$this->curChunkSize = null;
 					$this->curChunk     = '';
 					goto chunk;
@@ -376,8 +399,15 @@ class Connection extends ClientConnection {
 
 		}
 		else {
-			$this->body .= $this->read($this->contentLength - strlen($this->body));
-			if (($this->contentLength !== -1) && (strlen($this->body) >= $this->contentLength)) {
+            $body = $this->read($this->contentLength - $this->curLength);
+            $this->curLength += strlen($body);
+            if($this->chunkcb) {
+                call_user_func($this->chunkcb, $body);
+            }
+            else {
+                $this->body .= $body;
+            }
+			if (($this->contentLength !== -1) && ($this->curLength >= $this->contentLength)) {
 				$this->requestFinished();
 			}
 		}
@@ -411,13 +441,14 @@ class Connection extends ClientConnection {
 		$this->onResponse->executeOne($this, true);
 		$this->state         = self::STATE_ROOT;
 		$this->contentLength = -1;
+        $this->curLength     = 0;
 		$this->curChunkSize  = null;
 		$this->chunked       = false;
 		$this->eofTerminated = false;
 		$this->headers       = [];
 		$this->rawHeaders    = null;
-		$this->contentType    = null;
-		$this->charset    = null;
+		$this->contentType   = null;
+		$this->charset       = null;
 		$this->body          = '';
 		$this->responseCode  = 0;
 		if (!$this->keepalive) {
