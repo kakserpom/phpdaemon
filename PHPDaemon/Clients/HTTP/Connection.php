@@ -66,6 +66,11 @@ class Connection extends ClientConnection {
 	public $chunked = false;
 
 	/**
+	 * @var callback
+	 */
+	public $chunkcb;
+
+	/**
 	 * @var integer
 	 */
 	public $protocolError;
@@ -133,6 +138,9 @@ class Connection extends ClientConnection {
 		if (isset($params['rawHeaders']) && $params['rawHeaders']) {
 			$this->rawHeaders = [];
 		}
+		if(isset($params['chunkcb']) && is_callable($params['chunkcb'])) {
+			$this->chunkcb = $params['chunkcb'];
+		}
 		$this->writeln('');
 		$this->onResponse($params['resultcb']);
 		$this->checkFree();
@@ -168,7 +176,7 @@ class Connection extends ClientConnection {
 			$params = ['resultcb' => $params];
 		}
 		if (!isset($params['uri']) || !isset($params['host'])) {
-			$prepared = Pool::prepareUrl($url);
+			$prepared = Pool::parseUrl($url);
 			if (!$prepared) {
 				if (isset($params['resultcb'])) {
 					call_user_func($params['resultcb'], false);
@@ -332,7 +340,11 @@ class Connection extends ClientConnection {
 		}
 		body:
 		if ($this->eofTerminated) {
-			$this->body .= $this->readUnlimited();
+			$body = $this->readUnlimited();
+			if($this->chunkcb) {
+				call_user_func($this->chunkcb, $body);
+			}
+			$this->body .= $body;
 			return;
 		}
 		if ($this->chunked) {
@@ -367,6 +379,9 @@ class Connection extends ClientConnection {
 				$n   = $this->curChunkSize - strlen($this->curChunk);
 				$this->curChunk .= $this->read($n);
 				if ($this->curChunkSize <= strlen($this->curChunk)) {
+					if($this->chunkcb) {
+						call_user_func($this->chunkcb, $this->curChunk);
+					}
 					$this->body .= $this->curChunk;
 					$this->curChunkSize = null;
 					$this->curChunk     = '';
@@ -376,7 +391,11 @@ class Connection extends ClientConnection {
 
 		}
 		else {
-			$this->body .= $this->read($this->contentLength - strlen($this->body));
+			$body = $this->read($this->contentLength - strlen($this->body));
+			if($this->chunkcb) {
+				call_user_func($this->chunkcb, $body);
+			}
+			$this->body .= $body;
 			if (($this->contentLength !== -1) && (strlen($this->body) >= $this->contentLength)) {
 				$this->requestFinished();
 			}
@@ -416,8 +435,8 @@ class Connection extends ClientConnection {
 		$this->eofTerminated = false;
 		$this->headers       = [];
 		$this->rawHeaders    = null;
-		$this->contentType    = null;
-		$this->charset    = null;
+		$this->contentType   = null;
+		$this->charset       = null;
 		$this->body          = '';
 		$this->responseCode  = 0;
 		if (!$this->keepalive) {
