@@ -36,11 +36,6 @@ class Connection extends ClientConnection {
 	public $contentLength = -1;
 
 	/**
-	 * @var int Current length body
-	 */
-	public $curLength = 0;
-
-	/**
 	 * @var string Contains response body
 	 */
 	public $body = '';
@@ -396,13 +391,12 @@ class Connection extends ClientConnection {
 
 		}
 		else {
-			$body = $this->read($this->contentLength - $this->curLength);
-			$this->curLength += strlen($body);
+			$body = $this->read($this->contentLength - strlen($this->body));
 			if($this->chunkcb) {
 				call_user_func($this->chunkcb, $body);
 			}
 			$this->body .= $body;
-			if (($this->contentLength !== -1) && ($this->curLength >= $this->contentLength)) {
+			if (($this->contentLength !== -1) && (strlen($this->body) >= $this->contentLength)) {
 				$this->requestFinished();
 			}
 		}
@@ -436,7 +430,6 @@ class Connection extends ClientConnection {
 		$this->onResponse->executeOne($this, true);
 		$this->state         = self::STATE_ROOT;
 		$this->contentLength = -1;
-		$this->curLength     = 0;
 		$this->curChunkSize  = null;
 		$this->chunked       = false;
 		$this->eofTerminated = false;
