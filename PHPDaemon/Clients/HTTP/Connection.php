@@ -436,7 +436,7 @@ class Connection extends ClientConnection {
 		$this->onResponse->executeOne($this, true);
 		$this->state         = self::STATE_ROOT;
 		$this->contentLength = -1;
-        $this->curLength     = 0;
+		$this->curLength     = 0;
 		$this->curChunkSize  = null;
 		$this->chunked       = false;
 		$this->eofTerminated = false;
