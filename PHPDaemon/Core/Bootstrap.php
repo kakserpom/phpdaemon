@@ -30,7 +30,7 @@ class Bootstrap {
 	 * @var array
 	 */
 	protected static $commands = [
-		'start', 'stop', 'hardstop', 'gracefulstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker'
+		'start', 'stop', 'hardstop', 'gracefulstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker', 'ipcpath'
 	];
 
 	/**
@@ -253,6 +253,8 @@ class Bootstrap {
 			Daemon::log('Your application resolver \'' . Daemon::$config->path->value . '\' is not available (config directive \'path\').');
 			$error = true;
 		}
+		
+		Daemon::$appResolver = require Daemon::$appResolverPath;
 
 		if (
 				isset(Daemon::$config->group->value)
@@ -387,6 +389,10 @@ class Bootstrap {
 		elseif ($runmode == 'hardrestart') {
 			Bootstrap::stop(3);
 			Bootstrap::start();
+		}
+		elseif ($runmode == 'ipcpath') {
+			$i = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
+			echo $i->getSocketUrl() . PHP_EOL;
 		}
 		elseif ($runmode == 'configtest') {
 			$term = new Terminal;

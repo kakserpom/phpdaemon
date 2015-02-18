@@ -41,6 +41,10 @@ class IPCManager extends AppInstance {
 		}
 	}
 
+	public function getSocketUrl() {
+		return $this->socketurl;
+	}
+
 	/**
 	 * @TODO DESCR
 	 */

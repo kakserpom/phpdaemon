@@ -70,7 +70,6 @@ class Master extends Generic {
 		$this->ipcthreads                = new Collection;
 		$this->collections['ipcthreads'] = $this->ipcthreads;
 
-		Daemon::$appResolver = require Daemon::$appResolverPath;
 		Daemon::$appResolver->preload(true);
 
 		$this->callbacks = new StackCallbacks();
