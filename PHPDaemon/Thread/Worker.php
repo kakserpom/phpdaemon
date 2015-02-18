@@ -179,7 +179,6 @@ class Worker extends Generic {
 				fclose(STDERR);
 			}
 
-			Daemon::$appResolver = require Daemon::$appResolverPath;
 			Daemon::$appResolver->preload(true);
 		}
 
