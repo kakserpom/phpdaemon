@@ -25,7 +25,14 @@ class Jsonp extends Generic {
 	 * @return void
 	 */
 	protected function sendFrame($frame) {
-		$this->outputFrame($this->attrs->get['c'] . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES). ");\r\n");
+		$c = &$this->attrs->get['c'];
+		if (!is_string($c)) {
+			$this->header('400 Bad Request');
+			$this->finish();
+			return;
+		}
+		$this->outputFrame($c . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES). ");\r\n");
 		parent::sendFrame($frame);
 	}
 }
+

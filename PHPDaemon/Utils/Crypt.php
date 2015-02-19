@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Utils;
 
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\FileSystem;
 
 /**

@@ -25,7 +25,7 @@ class JsonpSend extends Generic {
 			return;
 		}
 		$this->noncache();
-		if ($_SERVER['HTTP_CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
+		if (isset($_SERVER['HTTP_CONTENT_TYPE']) && $_SERVER['HTTP_CONTENT_TYPE'] === 'application/x-www-form-urlencoded') {
 			if (!isset($_POST['d']) || !is_string($_POST['d']) || !strlen($_POST['d'])) {
 				$this->header('500 Internal Server Error');
 				echo 'Payload expected.';

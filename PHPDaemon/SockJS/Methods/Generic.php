@@ -426,8 +426,12 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			$this->header('204 No Content');
 			$this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
 			$this->header('Access-Control-Max-Age: 31536000');
-			$this->header('Access-Control-Allow-Methods: OPTIONS, '.$this->allowedMethods);
+			$this->header('Access-Control-Allow-Methods: OPTIONS, ' . $this->allowedMethods);
 			$this->header('Expires: '.date('r', strtotime('+1 year')));
+			$this->finish();
+		}
+		if (!in_array($_SERVER['REQUEST_METHOD'], explode(', ', $this->allowedMethods), true)) {
+			$this->header('405 Method Not Allowed');
 			$this->finish();
 		}
 	}
