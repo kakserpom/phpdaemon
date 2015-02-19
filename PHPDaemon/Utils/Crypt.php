@@ -1,6 +1,6 @@
 <?php
 namespace PHPDaemon\Utils;
-
+c
 use PHPDaemon\FS\FileSystem;
 
 /**
@@ -53,7 +53,7 @@ class Crypt {
 	 * @param  string   $chars String of allowed characters
 	 * @param  callable $cb    Callback
 	 * @param  integer  $pri   Priority of EIO operation
-	 * @param  boolean  $hang  If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @param  boolean  $hang  If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
 	 * @return string
 	 */
 	public static function randomString($len = null, $chars = null, $cb = null, $pri = 0, $hang = false) {
@@ -133,13 +133,14 @@ class Crypt {
 	 * @param  integer  $len  Length of desired string
 	 * @param  callable $cb   Callback
 	 * @param  integer  $pri  Priority of EIO operation
-	 * @param  boolean  $hang If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @param  boolean  $hang If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
 	 * @return integer
 	 */
 	public static function randomBytes($len, $cb, $pri = 0, $hang = false) {
 		FileSystem::open('/dev/' . ($hang ? '' : 'u') . 'random', 'r', function ($file) use ($len, $cb, $pri) {
 			if (!$file) {
 				call_user_func($cb, false);
+				return;
 			}
 			$file->read($len, 0, function($file, $data) use ($cb) {
 				call_user_func($cb, $data);
@@ -152,7 +153,7 @@ class Crypt {
 	 * @param  integer  $numInts Number of integers
 	 * @param  callable $cb      Callback
 	 * @param  integer  $pri     Priority of EIO operation
-	 * @param  boolean  $hang    If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @param  boolean  $hang    If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
 	 * @return integer
 	 */
 	public static function randomInts($numInts, $cb, $pri = 0, $hang = false) {
@@ -180,7 +181,7 @@ class Crypt {
 	 * @param  integer  $numInts Number of integers
 	 * @param  callable $cb      Callback
 	 * @param  integer  $pri     Priority of EIO operation
-	 * @param  boolean  $hang    If true, we shall use /dev/random instead of /dev/urandom and it may cause delay
+	 * @param  boolean  $hang    If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
 	 * @return integer
 	 */
 	public static function randomInts32($numInts, $cb, $pri = 0, $hang = false) {
