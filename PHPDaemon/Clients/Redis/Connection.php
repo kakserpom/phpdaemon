@@ -480,12 +480,10 @@ class Connection extends ClientConnection implements \Iterator {
 			$this->onResponse->executeOne($this);
 		}
 		$this->checkFree();
-		$this->result = null;
-		$this->error  = false;
-		$this->pos    = 0;
-		if (isset($this->assocData)) {
-			$this->assocData = null;
-		}
+		$this->result    = null;
+		$this->error     = false;
+		$this->pos       = 0;
+		$this->assocData = null;
 	}
 
 	/**
