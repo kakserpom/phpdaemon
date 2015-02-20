@@ -452,9 +452,9 @@ class Connection extends ClientConnection implements \Iterator {
 			$this->onResponse->executeOne($this);
 			goto clean;
 		} elseif ($this->result[0] === 'message') {
-			$t = &$this->subscribeCbs;
+			$t = &$this->subscribeCb;
 		} elseif ($this->result[0] === 'pmessage') {
-			$t = &$this->psubscribeCbs;
+			$t = &$this->psubscribeCb;
 		} else {
 			$this->onResponse->executeOne($this);
 			goto clean;
@@ -466,7 +466,7 @@ class Connection extends ClientConnection implements \Iterator {
 				}
 			}
 		} elseif ($this->pool->config->logpubsubracecondition->value) {
-			Daemon::log('[Redis client]'. ': PUB/SUB race condition at channel '. Debug::json($chan));
+			Daemon::log('[Redis client]'. ': PUB/SUB race condition at channel '. Debug::json($this->result[1]));
 		}
 		clean:
 		$this->result    = null;
