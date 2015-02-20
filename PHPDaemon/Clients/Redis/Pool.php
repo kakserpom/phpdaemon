@@ -35,19 +35,6 @@ class Pool extends \PHPDaemon\Network\Client {
 	}
 
 	/**
-	 * Detaches connection from URL
-	 * @param  ClientConnection $conn Connection
-	 * @param  string           $url  URL
-	 * @return void
-	 */
-	public function detachConnFromUrl(ClientConnection $conn, $url) {
-		 parent::detachConnFromUrl($conn, $url);
-		 if ($conn->isSubscribed()) {
-			unset($this->servConnSub[$url]);
-		}
-	}
-
-	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
 	 * @return array|bool

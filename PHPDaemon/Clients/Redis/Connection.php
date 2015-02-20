@@ -49,7 +49,7 @@ class Connection extends ClientConnection implements \Iterator {
 	protected $EOL = "\r\n";
 
 	/**
-	 * @var boolean Is have subscribe?
+	 * @var boolean Is it a subscription connection?
 	 */
 	protected $subscribed = false;
 
@@ -172,28 +172,6 @@ class Connection extends ClientConnection implements \Iterator {
 	}
 
 	/**
-	 * @TODO
-	 * @return void
-	 */
-	public function subscribed() {
-		if ($this->subscribed) {
-			return;
-		}
-		$this->subscribed = true;
-		$this->pool->servConnSub[$this->url] = $this;
-		$this->checkFree();
-		$this->setTimeouts(86400, 86400); // @TODO: remove timeout
-	}
-
-	/**
-	 * @TODO
-	 * @return boolean
-	 */
-	public function isSubscribed() {
-		return $this->subscribed;
-	}
-
-	/**
 	 * Magic __call
 	 * Example:
 	 * $redis->lpush('mylist', microtime(true));
@@ -227,8 +205,18 @@ class Connection extends ClientConnection implements \Iterator {
 	 * @return void
 	 */
 	public function command($name, $args, $cb = null) {
+		if ($name === 'MULTI') {
+			$this->acquire();
+		}
 		// PUB/SUB handling
-		if (substr($name, -9) === 'SUBSCRIBE') {
+		elseif (substr($name, -9) === 'SUBSCRIBE') {
+			if (!$this->subscribed) {
+				$this->subscribed = true;
+				$this->pool->servConnSub[$this->url] = $this;
+				$this->acquire();
+				$this->setTimeouts(86400, 86400); // @TODO: remove timeout
+			}
+
 			$opcb = null;
 			for ($i = sizeof($args) - 1; $i >= 0; --$i) {
 				$a = $args[$i];
@@ -392,6 +380,10 @@ class Connection extends ClientConnection implements \Iterator {
 			});
 		} else {
 			$this->sendCommand($name, $args, $cb);
+
+			if ($name === 'EXEC' || $name === 'DISCARD') {
+				$this->release();
+			}
 		}
 	}
 
@@ -404,12 +396,6 @@ class Connection extends ClientConnection implements \Iterator {
 	 * @return void
 	 */
 	public function sendCommand($name, $args, $cb = null) {
-		if ($name === 'MULTI') {
-			$this->acquire();
-		} else
-		if ($name === 'EXEC' || $name === 'DISCARD') {
-			$this->release();
-		}
 		$this->onResponse($cb);
 		if (!is_array($args)) {
 			$args = [$args];
@@ -444,6 +430,9 @@ class Connection extends ClientConnection implements \Iterator {
 	 */
 	public function onFinish() {
 		parent::onFinish();
+		if ($this->subscribed) {
+			unset($this->pool->servConnSub[$this->url]);
+		}
 		/* we should reassign subscriptions */
 		foreach ($this->subscribeCb as $sub => $cbs) {
 			foreach ($cbs as $cb) {
@@ -459,31 +448,34 @@ class Connection extends ClientConnection implements \Iterator {
 
 	protected function onPacket() {
 		$this->result = $this->ptr;
-		if (($mtype = $this->isSubMessage()) !== false) { // sub callback
-			$chan = $this->result[1];
-			if ($mtype === 'pmessage') {
-				$t =& $this->psubscribeCb;
-			} else {
-				$t =& $this->subscribeCb;
-			}
-			if (isset($t[$chan])) {
-				foreach ($t[$chan] as $cb) {
-					if (is_callable($cb)) {
-						call_user_func($cb, $this);
-					}
-				}
-			} elseif ($this->pool->config->logpubsubracecondition->value) {
-				Daemon::log('[Redis client]'. ': PUB/SUB race condition at channel '. Debug::json($chan));
-			}
-		}
-		else { // request callback
+		if (!$this->subscribed) {
 			$this->onResponse->executeOne($this);
+			goto clean;
+		} elseif ($this->result[0] === 'message') {
+			$t = &$this->subscribeCbs;
+		} elseif ($this->result[0] === 'pmessage') {
+			$t = &$this->psubscribeCbs;
+		} else {
+			$this->onResponse->executeOne($this);
+			goto clean;
 		}
-		$this->checkFree();
+		if (isset($t[$this->result[1]])) {
+			foreach ($t[$this->result[1]] as $cb) {
+				if (is_callable($cb)) {
+					call_user_func($cb, $this);
+				}
+			}
+		} elseif ($this->pool->config->logpubsubracecondition->value) {
+			Daemon::log('[Redis client]'. ': PUB/SUB race condition at channel '. Debug::json($chan));
+		}
+		clean:
 		$this->result    = null;
 		$this->error     = false;
 		$this->pos       = 0;
 		$this->assocData = null;
+		if (!isset($t)) {
+			$this->checkFree();
+		}
 	}
 
 	/**
@@ -518,30 +510,6 @@ class Connection extends ClientConnection implements \Iterator {
 	}
 
 	/**
-	 * @TODO
-	 * @param integer $length
-	 */
-	public function pushLevel($length) {
-		if ($length <= 0) {
-			$this->pushValue([]);
-			return;
-		}
-
-		$ptr = [];
-		
-		if (is_array($this->ptr)) {
-			$this->ptr[] =& $ptr;
-		} else {
-			$this->ptr =& $ptr;
-		}
-
-		$this->ptr =& $ptr;
-		$this->stack[] = [&$ptr, $length];
-		$this->levelLength = $length;
-		$this->ptr =& $ptr;
-	}
-
-	/**
 	 * Called when new data received
 	 * @return void
 	 */
@@ -563,7 +531,25 @@ class Connection extends ClientConnection implements \Iterator {
 					goto start;
 				}
 				elseif ($char === '*') { // defines number of elements of incoming array
-					$this->pushLevel((int) substr($l, 1));
+					$length = (int) substr($l, 1);
+					if ($length <= 0) {
+						$this->pushValue([]);
+						goto start;
+					}
+
+					$ptr = [];
+					
+					if (is_array($this->ptr)) {
+						$this->ptr[] =& $ptr;
+					} else {
+						$this->ptr =& $ptr;
+					}
+
+					$this->ptr =& $ptr;
+					$this->stack[] = [&$ptr, $length];
+					$this->levelLength = $length;
+					$this->ptr =& $ptr;
+
 					goto start;
 				}
 				elseif ($char === '$') { // defines size of the data block
@@ -598,13 +584,5 @@ class Connection extends ClientConnection implements \Iterator {
 			$this->pushValue($value);
 			goto start;
 		}
-	}
-
-	/**
-	 * Set connection free/busy according to onResponse emptiness and ->finished
-	 * @return void
-	 */
-	public function checkFree() {
-		$this->setFree(!$this->finished && !$this->acquired && !$this->subscribed && (!$this->onResponse || $this->onResponse->count() < $this->maxQueue));
 	}
 }
