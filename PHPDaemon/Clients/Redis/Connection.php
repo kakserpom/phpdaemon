@@ -167,6 +167,9 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function __call($cmd, $args) {
+		if (in_array($cmd, ['hashToArray'])) {
+			return call_user_func_array([$this->pool, $cmd], $args);
+		}
 		$cb = null;
 		for ($i = sizeof($args) - 1; $i >= 0; --$i) {
 			$a = $args[$i];
