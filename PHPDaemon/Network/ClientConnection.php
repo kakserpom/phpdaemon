@@ -17,6 +17,11 @@ class ClientConnection extends Connection {
 	 * @var boolean Busy?
 	 */
 	protected $busy = false;
+	
+	/**
+	 * @var boolean Acquired?
+	 */
+	protected $acquired = false;
 
 	/**
 	 * @var integer Timeout
@@ -110,11 +115,21 @@ class ClientConnection extends Connection {
 	}
 
 	/**
-	 * Set connection free
+	 * Release the connection
 	 * @return void
 	 */
 	public function release() {
-		$this->setFree(true);
+		$this->acquired = false;
+		$this->checkFree();
+	}
+	
+	/**
+	 * Acquire the connection
+	 * @return void
+	 */
+	public function acquire() {
+		$this->acquired = true;
+		$this->checkFree();
 	}
 
 	/**
@@ -122,7 +137,7 @@ class ClientConnection extends Connection {
 	 * @return void
 	 */
 	public function checkFree() {
-		$this->setFree(!$this->finished && $this->onResponse && $this->onResponse->count() < $this->maxQueue);
+		$this->setFree(!$this->finished && !$this->acquired && (!$this->onResponse || $this->onResponse->count() < $this->maxQueue));
 	}
 
 	/**
