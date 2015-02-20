@@ -55,11 +55,6 @@ class Connection extends ClientConnection {
 	protected $subscribed = false;
 
 	/**
-	 * @var boolean Is a transaction started?
-	 */
-	protected $transaction = false;
-
-	/**
 	 * @var float Timeout
 	 */
 	protected $timeoutRead = 5;
@@ -373,11 +368,10 @@ class Connection extends ClientConnection {
 	 */
 	public function sendCommand($name, $args, $cb = null) {
 		if ($name === 'MULTI') {
-			$this->transaction = true;
-			$this->checkFree();
-		} elseif ($name === 'EXEC' || $name === 'DISCARD') {
-			$this->transaction = false;
-			$this->checkFree();
+			$this->acquire();
+		} else
+		if ($name === 'EXEC' || $name === 'DISCARD') {
+			$this->release();
 		}
 		$this->onResponse($cb);
 		if (!is_array($args)) {
@@ -572,12 +566,6 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function checkFree() {
-		$this->setFree(
-			   !$this->finished
-			&& !$this->subscribed
-			&& !$this->transaction
-			&& $this->onResponse
-			&& $this->onResponse->count() < $this->maxQueue
-		);
+		$this->setFree(!$this->finished && !$this->acquired && !$this->subscribed && (!$this->onResponse || $this->onResponse->count() < $this->maxQueue));
 	}
 }
