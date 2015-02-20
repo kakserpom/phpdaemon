@@ -173,17 +173,4 @@ class Pool extends \PHPDaemon\Network\Client {
 		}
 		return false;
 	}
-
-	public static function hashToArray($hash) {
-		if(!is_array($hash) || empty($hash)) {
-			return [];
-		}
-		$res = [];
-		reset($hash);
-		while ($key = current($hash)) {
-			$res[$key] = next($hash);
-			next($hash);
-		}
-		return $res;
-	}
 }

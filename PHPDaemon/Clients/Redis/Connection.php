@@ -11,8 +11,7 @@ use PHPDaemon\Core\CallbackWrapper;
  * @subpackage RedisClient
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class Connection extends ClientConnection {
-
+class Connection extends ClientConnection implements \Iterator {
 	/**
 	 * @var array|null Current result
 	 */
@@ -68,10 +67,51 @@ class Connection extends ClientConnection {
 
 	protected $maxQueue = 10;
 
+	protected $pos = 0;
+
+	protected $assocData = null;
+
 	/**
 	 * In the middle of binary response part
 	 */
 	const STATE_BINARY = 1;
+
+	public function rewind() {
+		$this->pos = 0;
+	}
+
+	public function current() {
+		return is_array($this->result) ? $this->result[$this->pos * 2 + 1] : $this->result;
+	}
+
+	public function key() {
+		return is_array($this->result) ? $this->result[$this->pos * 2] : false;
+	}
+
+	public function next() {
+		++$this->pos;
+	}
+
+	public function valid() {
+		return is_array($this->result) ? isset($this->result[$this->pos * 2 + 1]) : false;
+	}
+
+	public function __get($name) {
+		if ($name === 'assoc') {
+			if ($this->assocData === null) {
+				if(!is_array($this->result) || empty($this->result)) {
+					$this->assocData = [];
+				} else {
+					$hash = [];
+					for ($i = 0, $s = sizeof($this->result) - 1; $i < $s; ++$i) {
+						$hash[$this->result[$i]] = $this->result[++$i];
+					}
+					$this->assocData = $hash;
+				}
+			}
+			return $this->assocData;
+		}
+	}
 
 	/**
 	 * @TODO
@@ -162,9 +202,6 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function __call($cmd, $args) {
-		if (in_array($cmd, ['hashToArray'])) {
-			return call_user_func_array([$this->pool, $cmd], $args);
-		}
 		$cb = null;
 		for ($i = sizeof($args) - 1; $i >= 0; --$i) {
 			$a = $args[$i];
@@ -443,8 +480,12 @@ class Connection extends ClientConnection {
 			$this->onResponse->executeOne($this);
 		}
 		$this->checkFree();
-		$this->result       = null;
-		$this->error        = false;
+		$this->result = null;
+		$this->error  = false;
+		$this->pos    = 0;
+		if (isset($this->assocData)) {
+			$this->assocData = null;
+		}
 	}
 
 	/**
@@ -519,7 +560,7 @@ class Connection extends ClientConnection {
 					goto start;
 				}
 				elseif (($char === '+') || ($char === '-')) { // inline string
-					$this->error        = ($char === '-');
+					$this->error = $char === '-';
 					$this->pushValue(substr($l, 1));
 					goto start;
 				}
