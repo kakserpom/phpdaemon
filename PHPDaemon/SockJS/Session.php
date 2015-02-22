@@ -158,7 +158,7 @@ class Session {
 		if (!is_array($frames)) {
 			return;
 		}
-		$this->onWakeup();
+		$this->route->onWakeup();
 		foreach ($frames as $frame) {
 			try {
 				$this->route->onFrame($frame, \PHPDaemon\Servers\WebSocket\Pool::STRING);
@@ -166,7 +166,7 @@ class Session {
 				Daemon::uncaughtExceptionHandler($e);
 			}
 		}
-		$this->onSleep();
+		$this->route->onSleep();
 	}
 
 	/**
