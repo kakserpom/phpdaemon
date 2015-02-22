@@ -94,7 +94,7 @@ class Session {
 		$this->appInstance->subscribe('c2s:' . $this->id, [$this, 'c2s']);
 		$this->appInstance->subscribe('poll:' . $this->id, [$this, 'poll'], function($redis) {
 			$this->appInstance->publish('state:' . $this->id, 'started', function ($redis) {
-				// @TODO: remove callback
+				// @TODO: remove this callback
 			});
 		});
 	}
@@ -112,31 +112,6 @@ class Session {
 	}
 
 	/**
-	 * Called when the request wakes up
-	 * @return void
-	 */
-	public function onWakeup() {
-		$this->running   = true;
-		Daemon::$context = $this;
-		$_SESSION = &$this->session;
-		$_GET = &$this->get;
-		$_POST = &$this->post; // supposed to be null
-		$_COOKIE = &$this->cookie;
-		Daemon::$process->setState(Daemon::WSTATE_BUSY);
-	}
-
-	/**
-	 * Called when the request starts sleep
-	 * @return void
-	 */
-	public function onSleep() {
-		Daemon::$context = null;
-		$this->running   = false;
-		unset($_SESSION, $_GET, $_POST, $_COOKIE);
-		Daemon::$process->setState(Daemon::WSTATE_IDLE);
-	}
-
-	/**
 	 * onHandshake
 	 * @return void
 	 */
@@ -144,13 +119,13 @@ class Session {
 		if (!isset($this->route)) {
 			return;
 		}
-		$this->onWakeup();
+		$this->route->onWakeup();
 		try {
 			$this->route->onHandshake();
 		} catch (\Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
-		$this->onSleep();
+		$this->route->onSleep();
 	}
 
 	/**

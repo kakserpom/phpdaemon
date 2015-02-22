@@ -225,23 +225,6 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 	}
 
 	/**
-	 * Set session state
-	 * @param mixed $var
-	 * @return void
-	 */
-	protected function setSessionState($var) {
-		$this->attrs->session = $var;
-	}
-
-	/**
-	 * Get session state
-	 * @return mixed
-	 */
-	protected function getSessionState() {
-		return $this->attrs->session;
-	}
-
-	/**
 	 * Called to check if Request is ready
 	 * @return boolean Ready?
 	 */

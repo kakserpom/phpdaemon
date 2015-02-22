@@ -23,6 +23,7 @@ if (!function_exists('binarySubstr')) {
 if (!function_exists('D')) {
 	function D() {
 		\PHPDaemon\Core\Daemon::log(call_user_func_array('\PHPDaemon\Core\Debug::dump', func_get_args()));
+		\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::backtrace());
 	}
 }
 if (!function_exists('igbinary_serialize')) {

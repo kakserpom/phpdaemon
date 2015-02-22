@@ -47,6 +47,17 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	public function __isset($k) {
 		return isset($this->realConn->{$k});
 	}
+	
+	
+	/**
+	 * Called when new frame received.
+	 * @param  string $data Frame's data.
+	 * @param  string $type Frame's type ("STRING" OR "BINARY").
+	 * @return boolean      Success.
+	 */
+	public function onFrame($data, $type) {
+		$this->realConn->onFrame($data, $type);
+	}
 
 	/**
 	 * __call

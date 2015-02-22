@@ -65,7 +65,6 @@ trait DeferredEventHandlers {
 	 */
 	public function __call($method, $args) {
 		if (substr($method, 0, 2) !== 'on') {
-			// @TODO: exception
 			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
 		}
 		$o = $this->{$method};

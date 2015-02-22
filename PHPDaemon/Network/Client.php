@@ -23,11 +23,6 @@ abstract class Client extends Pool {
 	protected $servers = [];
 
 	/**
-	 * @var boolean Enables tags for distribution
-	 */
-	protected $dtags_enabled = false;
-
-	/**
 	 * @var array Active connections
 	 */
 	protected $servConn = [];
@@ -253,15 +248,6 @@ abstract class Client extends Pool {
 		if (is_object($key)) {
 			return $key->onConnected($cb);
 		}
-		if (
-				($this->dtags_enabled)
-				&& (($sp = strpos($key, '[')) !== FALSE)
-				&& (($ep = strpos($key, ']')) !== FALSE)
-				&& ($ep > $sp)
-		) {
-			$key = substr($key, $sp + 1, $ep - $sp - 1);
-		}
-
 		srand(crc32($key));
 		$addr = array_rand($this->servers);
 		srand();

@@ -2,6 +2,7 @@
 namespace PHPDaemon\Traits;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
@@ -94,7 +95,7 @@ trait Sessions {
 				$sessionEvent->setResult(true);
 				return;
 			}
-			$this->sessionRead($sid, function ($data) use ($sessionEvent) {
+			$this->sessionRead($sid, function ($data) use ($sessionEvent, $sid) {
 				$canDecode = $data !== false && $this->sessionDecode($data);
 				$sessionEvent->setResult($canDecode);
 			});
@@ -209,6 +210,23 @@ trait Sessions {
 			return igbinary_serialize($this->getSessionState());
 		}
 		return false;
+	}
+	
+	/**
+	 * Set session state
+	 * @param mixed $var
+	 * @return void
+	 */
+	protected function setSessionState($var) {
+		$this->attrs->session = $var;
+	}
+
+	/**
+	 * Get session state
+	 * @return mixed
+	 */
+	protected function getSessionState() {
+		return $this->attrs->session;
 	}
 
 	/**

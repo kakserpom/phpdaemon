@@ -24,6 +24,27 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $extensions = [];
 	protected $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
 	protected $buf = '';
+	
+	
+	protected $headers = [];
+	protected $headers_sent = false;
+	public $framebuf = '';
+	
+	/**
+	 * @var array _SERVER
+	 */
+	public $server = [];
+
+	/**
+	 * @var array _COOKIE
+	 */
+	public $cookie = [];
+
+	/**
+	 * @var array _GET
+	 */
+	public $get = [];
+	
 
 	/**
 	 * @var \PHPDaemon\WebSocket\Protocol
@@ -32,9 +53,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $policyReqNotFound = false;
 	protected $currentHeader;
 	protected $EOL = "\r\n";
-	public $session;
-
-	protected $headers = [];
 
 	/**
 	 * @var boolean Is this connection running right now?
@@ -67,34 +85,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	const STATE_HANDSHAKED = 6;
 
 	/**
-	 * @var string Frame buffer
-	 */
-	public $framebuf = '';
-
-	/**
-	 * @var array _SERVER
-	 */
-	public $server = [];
-
-	/**
-	 * @var array _COOKIE
-	 */
-	public $cookie = [];
-
-	protected $headers_sent = false;
-
-
-	/**
-	 * @var array _GET
-	 */
-	public $get = [];
-
-	/**
-	 * @var null _POST
-	 */
-	public $post = null;
-
-	/**
 	 * @var integer Content length from header() method
 	 */
 	protected $contentLength;
@@ -115,59 +105,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 */
 	public function onReady() {
 		$this->setWatermark(null, $this->pool->maxAllowedPacket + 100);
-	}
-
-
-	/**
-	 * Get cookie by name
-	 * @param  string $name Name of cookie
-	 * @return string       Contents
-	 */
-	protected function getCookieStr($name) {
-		return \PHPDaemon\HTTPRequest\Generic::getString($this->cookie[$name]);
-	}
-
-
-	/**
-	 * Set session state
-	 * @param  mixed $var
-	 * @return void
-	 */
-	protected function setSessionState($var) {
-		$this->session = $var;
-	}
-
-	/**
-	 * Get session state
-	 * @return mixed
-	 */
-	protected function getSessionState() {
-		return $this->session;
-	}
-
-	/**
-	 * Called when the request wakes up
-	 * @return void
-	 */
-	public function onWakeup() {
-		$this->running   = true;
-		Daemon::$context = $this;
-		$_SESSION = &$this->session;
-		$_GET = &$this->get;
-		$_POST = &$this->post; // supposed to be null
-		$_COOKIE = &$this->cookie;
-		Daemon::$process->setState(Daemon::WSTATE_BUSY);
-	}
-
-	/**
-	 * Called when the request starts sleep
-	 * @return void
-	 */
-	public function onSleep() {
-		Daemon::$context = null;
-		$this->running   = false;
-		unset($_SESSION, $_GET, $_POST, $_COOKIE);
-		Daemon::$process->setState(Daemon::WSTATE_IDLE);
 	}
 
 	/**
@@ -250,13 +187,13 @@ class Connection extends \PHPDaemon\Network\Connection {
 		if (!isset($this->route)) {
 			return false;
 		}
-		$this->onWakeup();
 		try {
+			$this->route->onWakeup();
 			$this->route->onFrame($data, $type);
 		} catch (\Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
-		$this->onSleep();
+		$this->route->onSleep();
 		return true;
 	}
 
@@ -266,9 +203,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 */
 	public function onHandshake() {
 
-		$this->onWakeup();
 		$this->route = $this->pool->getRoute($this->server['DOCUMENT_URI'], $this);
-		$this->onSleep();
 		if (!$this->route) {
 			return false;
 		}
@@ -322,7 +257,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			return false;
 		}
 		if ($extraHeaders === null && method_exists($this->route, 'onBeforeHandshake')) {
-			$this->onWakeup();
+			$this->route->onWakeup();
 			$ret = $this->route->onBeforeHandshake(function($cb) {
 				$h = '';
 				foreach ($this->headers as $k => $line) {
@@ -336,7 +271,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 					}
 				}
 			});
-			$this->onSleep();
+			$this->route->onSleep();
 			if ($ret !== false) {
 				return;
 			}
@@ -353,9 +288,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$this->headers_sent = true;
 		$this->state = static::STATE_HANDSHAKED;
 		if (is_callable([$this->route, 'onHandshake'])) {
-			$this->onWakeup();
+			$this->route->onWakeup();
 			$this->route->onHandshake();
-			$this->onSleep();
+			$this->route->onSleep();
 		}
 		return true;
 	}
@@ -557,27 +492,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 		// End of protocol discovery
 		// ----------------------------------------------------------
 		return true;
-	}
-
-	/**
-	 * Set the cookie
-	 * @param  string  $name     Name of cookie
-	 * @param  string  $value    Value
-	 * @param  integer $maxage   Optional. Max-Age. Default is 0.
-	 * @param  string  $path     Optional. Path. Default is empty string.
-	 * @param  string  $domain   Optional. Domain. Default is empty string.
-	 * @param  boolean $secure   Optional. Secure. Default is false.
-	 * @param  boolean $HTTPOnly Optional. HTTPOnly. Default is false.
-	 * @return void
-	 */
-	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
-		$this->header(
-			'Set-Cookie: ' . $name . '=' . rawurlencode($value)
-			. (empty($domain) ? '' : '; Domain=' . $domain)
-			. (empty($maxage) ? '' : '; Max-Age=' . $maxage)
-			. (empty($path) ? '' : '; Path=' . $path)
-			. (!$secure ? '' : '; Secure')
-			. (!$HTTPOnly ? '' : '; HttpOnly'), false);
 	}
 
 

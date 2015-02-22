@@ -2,6 +2,7 @@
 namespace PHPDaemon\WebSocket\Traits;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
 use PHPDaemon\Exceptions\ProtocolError;
 
@@ -45,6 +46,11 @@ trait DNode {
 	 * @var boolean Was this object cleaned up?
 	 */
 	protected $cleaned = false;
+	
+	/**
+	 * @var boolean Should __call method call parent::__call()? 
+	 */
+	protected $magicCallParent = false;
 
 	/**
 	 * Default onHandshake() method
@@ -133,6 +139,7 @@ trait DNode {
 					if (isset($v[0]) && is_object($v[0])) {
 						if (isset($v[1]) && is_string($v[1])) {
 							$id = ++$this->counter;
+							$v = CallbackWrapper::wrap($v);
 							if ($this->persistentMode) {
 								$this->persistentCallbacks[$id] = $v;
 							} else {
@@ -261,7 +268,7 @@ trait DNode {
 
 	/**
 	 * Sends a packet
-	 * @param  array &$pct Data
+	 * @param  array $pct Data
 	 * @return void
 	 */
 	protected function sendPacket($pct) {
@@ -333,7 +340,11 @@ trait DNode {
 	public function __call($method, $args) {
 		if (strncmp($method, 'remote_', 7) === 0) {
 			$this->callRemoteArray(substr($method, 7), $args);
-		} else {
+		}
+		elseif ($this->magicCallParent) {
+			return parent::__call($method, $args);
+		}
+		else {
 			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
 		}
 	}
