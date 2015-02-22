@@ -90,7 +90,6 @@ class DeferredEvent {
 	public function setResult($result = null) {
 		$this->result = $result;
 		$this->state  = self::STATE_DONE;
-		D($this->result);
 		if ($this->listeners) {
 			$this->listeners->executeAll($this->result);
 		}

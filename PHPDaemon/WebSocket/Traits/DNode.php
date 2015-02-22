@@ -139,7 +139,6 @@ trait DNode {
 					if (isset($v[0]) && is_object($v[0])) {
 						if (isset($v[1]) && is_string($v[1])) {
 							$id = ++$this->counter;
-							$v = CallbackWrapper::wrap($v);
 							if ($this->persistentMode) {
 								$this->persistentCallbacks[$id] = $v;
 							} else {
