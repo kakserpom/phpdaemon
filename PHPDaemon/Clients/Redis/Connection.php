@@ -81,15 +81,22 @@ class Connection extends ClientConnection implements \Iterator {
 	}
 
 	public function current() {
-		return is_array($this->result) ? $this->result[$this->pos * 2 + 1] : $this->result;
+		if (!is_array($this->result)) {
+			return $this->pos === 0 ? $this->result : null;
+		}
+		return isset($this->result[$this->pos * 2 + 1]) ? $this->result[$this->pos * 2 + 1] : $this->result;
 	}
 
 	public function key() {
-		return is_array($this->result) ? $this->result[$this->pos * 2] : false;
+		if (!is_array($this->result)) {
+			return $this->pos === 0 ? 0: null;
+		}
+		return $this->result[$this->pos * 2] ? $this->result[$this->pos * 2] : false;
 	}
 
 	public function next() {
 		++$this->pos;
+		return $this->current();
 	}
 
 	public function valid() {
