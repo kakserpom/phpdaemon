@@ -12,10 +12,20 @@ use PHPDaemon\Core\CallbackWrapper;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection implements \Iterator {
+	const RESULT_TYPE_MESSAGE = 1;
+
+	const RESULT_TYPE_ARGSVALS = 2;
+
+	const RESULT_TYPE_ASSOC = 3;
+
 	/**
 	 * @var array|null Current result
 	 */
 	public $result = null;
+
+	public $channel = null;
+
+	public $msg = null;
 
 	/**
 	 * @var string Current error message
@@ -23,10 +33,16 @@ class Connection extends ClientConnection implements \Iterator {
 	public $error;
 
 	/**
+	 * @var array Subcriptions
+	 */
+	public $subscribeCb = [];
+
+	public $psubscribeCb = [];
+
+	/**
 	 * @var string Current incoming key
 	 */
 	protected $key;
-
 
 	protected $stack = [];
 	
@@ -36,7 +52,6 @@ class Connection extends ClientConnection implements \Iterator {
 	 * @var integer Current value length
 	 */
 	protected $valueLength = 0;
-
 
 	/**
 	 * @var integer Current level length
@@ -58,17 +73,24 @@ class Connection extends ClientConnection implements \Iterator {
 	 */
 	protected $timeoutRead = 5;
 
-	/**
-	 * @var array Subcriptions
-	 */
-	public $subscribeCb = [];
-
-	public $psubscribeCb = [];
-
 	protected $maxQueue = 10;
 
+	/**
+	 * @var integer Iterator position
+	 */
 	protected $pos = 0;
 
+	protected $resultTypeStack = [];
+
+	protected $resultType = 0;
+
+	protected $argsStack = [];
+
+	protected $args = null;
+
+	/**
+	 * @var null|array Associative result storage
+	 */
 	protected $assocData = null;
 
 	/**
@@ -84,19 +106,33 @@ class Connection extends ClientConnection implements \Iterator {
 		if (!is_array($this->result)) {
 			return $this->pos === 0 ? $this->result : null;
 		}
-		return isset($this->result[$this->pos * 2 + 1]) ? $this->result[$this->pos * 2 + 1] : $this->result;
+		elseif ($this->resultType === static::RESULT_TYPE_MESSAGE) {
+			return $this->result[2]; // message
+		}
+		elseif ($this->resultType === static::RESULT_TYPE_ASSOC) {
+			return $this->result[$this->pos * 2 + 1];
+		}
+		return $this->result[$this->pos];
 	}
 
 	public function key() {
 		if (!is_array($this->result)) {
-			return $this->pos === 0 ? 0: null;
+			return $this->pos === 0 ? 0 : null;
 		}
-		return $this->result[$this->pos * 2] ? $this->result[$this->pos * 2] : false;
+		elseif ($this->resultType === static::RESULT_TYPE_MESSAGE) {
+			return $this->result[1]; // channel
+		}
+		elseif ($this->resultType === static::RESULT_TYPE_ARGSVALS) {
+			return $this->args[$this->pos];
+		}
+		elseif ($this->resultType === static::RESULT_TYPE_ASSOC) {
+			return $this->result[$this->pos * 2];
+		}
+		return $this->pos;
 	}
 
 	public function next() {
 		++$this->pos;
-		return $this->current();
 	}
 
 	public function valid() {
@@ -108,12 +144,25 @@ class Connection extends ClientConnection implements \Iterator {
 			if ($this->assocData === null) {
 				if(!is_array($this->result) || empty($this->result)) {
 					$this->assocData = [];
-				} else {
+				}
+				elseif ($this->resultType === static::RESULT_TYPE_MESSAGE) {
+					$this->assocData = [ $this->result[1] => $this->result[2] ];
+				}
+				elseif ($this->resultType === static::RESULT_TYPE_ARGSVALS) {
+					$hash = [];
+					for ($i = 0, $s = sizeof($this->result); $i < $s; ++$i) {
+						$hash[$this->args[$i]] = $this->result[$i];
+					}
+					$this->assocData = $hash;
+				}
+				elseif ($this->resultType === static::RESULT_TYPE_ASSOC) {
 					$hash = [];
 					for ($i = 0, $s = sizeof($this->result) - 1; $i < $s; ++$i) {
 						$hash[$this->result[$i]] = $this->result[++$i];
 					}
 					$this->assocData = $hash;
+				} else {
+					$this->assocData = $this->result;
 				}
 			}
 			return $this->assocData;
@@ -238,6 +287,7 @@ class Connection extends ClientConnection implements \Iterator {
 				}
 			}
 		}
+		
 		if ($name === 'SUBSCRIBE') {
 			$this->subscribed();
 			$channels = [];
@@ -386,6 +436,29 @@ class Connection extends ClientConnection implements \Iterator {
 				}
 			});
 		} else {
+			if ($name === 'MGET') {
+				$this->resultTypeStack[] = static::RESULT_TYPE_ARGSVALS;
+				$this->argsStack[] = $args;
+			}
+			elseif ($name === 'HMGET') {
+				$this->resultTypeStack[] = static::RESULT_TYPE_ARGSVALS;
+				$a = $args;
+				array_shift($a);
+				$this->argsStack[] = $a;
+			}
+			elseif ($name === 'HGETALL') {
+				$this->resultTypeStack[] = static::RESULT_TYPE_ASSOC;
+				$this->argsStack[] = [];
+			}
+			elseif (($name === 'ZRANGE' || $name === 'ZRANGEBYSCORE' || $name === 'ZREVRANGE' || $name === 'ZREVRANGEBYSCORE') && preg_grep('/WITHSCORES/i', $args)){
+				$this->resultTypeStack[] = static::RESULT_TYPE_ASSOC;
+				$this->argsStack[] = [];
+			}
+			else {
+				$this->resultTypeStack[] = 0;
+				$this->argsStack[] = [];
+			}
+
 			$this->sendCommand($name, $args, $cb);
 
 			if ($name === 'EXEC' || $name === 'DISCARD') {
@@ -413,23 +486,6 @@ class Connection extends ClientConnection implements \Iterator {
 			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
 		}
 	}
-	
-	/**
-	 * Check if arrived data is message from subscription
-	 */
-	protected function isSubMessage() {
-		if (sizeof($this->result) < 3) {
-			return false;
-		}
-		if (!$this->subscribed) {
-			return false;
-		}
-		$mtype = strtolower($this->result[0]);
-		if ($mtype !== 'message' && $mtype !== 'pmessage') {
-			return false;
-		}
-		return $mtype;
-	}
 
 	/**
 	 * Called when connection finishes
@@ -456,6 +512,8 @@ class Connection extends ClientConnection implements \Iterator {
 	protected function onPacket() {
 		$this->result = $this->ptr;
 		if (!$this->subscribed) {
+			$this->resultType = array_shift($this->resultTypeStack);
+			$this->args       = array_shift($this->argsStack);
 			$this->onResponse->executeOne($this);
 			goto clean;
 		} elseif ($this->result[0] === 'message') {
@@ -463,10 +521,15 @@ class Connection extends ClientConnection implements \Iterator {
 		} elseif ($this->result[0] === 'pmessage') {
 			$t = &$this->psubscribeCb;
 		} else {
+			$this->resultType = array_shift($this->resultTypeStack);
+			$this->args       = array_shift($this->argsStack);
 			$this->onResponse->executeOne($this);
 			goto clean;
 		}
 		if (isset($t[$this->result[1]])) {
+			$this->resultType = static::RESULT_TYPE_MESSAGE;
+			$this->channel = $this->result[1];
+			$this->msg     = $this->result[2];
 			foreach ($t[$this->result[1]] as $cb) {
 				if (is_callable($cb)) {
 					call_user_func($cb, $this);
@@ -476,10 +539,14 @@ class Connection extends ClientConnection implements \Iterator {
 			Daemon::log('[Redis client]'. ': PUB/SUB race condition at channel '. Debug::json($this->result[1]));
 		}
 		clean:
-		$this->result    = null;
-		$this->error     = false;
-		$this->pos       = 0;
-		$this->assocData = null;
+		$this->args       = null;
+		$this->result     = null;
+		$this->channel    = null;
+		$this->msg        = null;
+		$this->error      = false;
+		$this->pos        = 0;
+		$this->resultType = 0;
+		$this->assocData  = null;
 		if (!isset($t)) {
 			$this->checkFree();
 		}
@@ -522,7 +589,7 @@ class Connection extends ClientConnection implements \Iterator {
 	 */
 	protected function onRead() {
 		start:
-		if ($this->state === self::STATE_STANDBY) { // outside of packet
+		if ($this->state === static::STATE_STANDBY) { // outside of packet
 			while (($l = $this->readline()) !== null) {
 				if ($l === '') {
 					continue;
@@ -571,13 +638,13 @@ class Connection extends ClientConnection implements \Iterator {
 						return;
 					}
 					$this->setWatermark($this->valueLength + 2);
-					$this->state = self::STATE_BINARY; // binary data block
+					$this->state = static::STATE_BINARY; // binary data block
 					break; // stop reading line-by-line
 				}
 			}
 		}
 
-		if ($this->state === self::STATE_BINARY) { // inside of binary data block
+		if ($this->state === static::STATE_BINARY) { // inside of binary data block
 			if ($this->getInputLength() < $this->valueLength + 2) {
 				return; //we do not have a whole packet
 			}
@@ -586,7 +653,7 @@ class Connection extends ClientConnection implements \Iterator {
 				$this->finish();
 				return;
 			}
-			$this->state = self::STATE_STANDBY;
+			$this->state = static::STATE_STANDBY;
 			$this->setWatermark(3);
 			$this->pushValue($value);
 			goto start;
