@@ -604,7 +604,7 @@ class Connection extends ClientConnection implements \Iterator {
 		$this->msg        = null;
 		$this->error      = false;
 		$this->pos        = 0;
-		$this->resultType = 0;
+		$this->resultType = static::RESULT_TYPE_DEFAULT;
 		$this->assocData  = null;
 		if (!isset($t)) {
 			$this->checkFree();
