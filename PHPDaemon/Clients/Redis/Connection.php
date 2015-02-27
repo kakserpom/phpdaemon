@@ -12,10 +12,19 @@ use PHPDaemon\Core\CallbackWrapper;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class Connection extends ClientConnection implements \Iterator {
+	/**
+	 * Flag - parse message response
+	 */
 	const RESULT_TYPE_MESSAGE = 1;
 
+	/**
+	 * Flag - parse response with arguments
+	 */
 	const RESULT_TYPE_ARGSVALS = 2;
 
+	/**
+	 * Flag - parse response to associative array
+	 */
 	const RESULT_TYPE_ASSOC = 3;
 
 	/**
@@ -23,8 +32,14 @@ class Connection extends ClientConnection implements \Iterator {
 	 */
 	public $result = null;
 
+	/**
+	 * @var string Channel name
+	 */
 	public $channel = null;
 
+	/**
+	 * @var string Message
+	 */
 	public $msg = null;
 
 	/**
@@ -80,12 +95,24 @@ class Connection extends ClientConnection implements \Iterator {
 	 */
 	protected $pos = 0;
 
-	protected $resultTypeStack = [];
+	/**
+	 * @var \SplStack Stack of results types 
+	 */
+	protected $resultTypeStack;
 
+	/**
+	 * @var null|array Current result type
+	 */
 	protected $resultType = 0;
 
-	protected $argsStack = [];
+	/**
+	 * @var \SplStack Stack of commands arguments
+	 */
+	protected $argsStack;
 
+	/**
+	 * @var null|array Current arguments
+	 */
 	protected $args = null;
 
 	/**
@@ -98,6 +125,12 @@ class Connection extends ClientConnection implements \Iterator {
 	 */
 	const STATE_BINARY = 1;
 
+	public function __construct($fd, $pool = null) {
+		parent::__construct($fd, $pool);
+		$this->resultTypeStack = new \SplStack;
+		$this->argsStack       = new \SplStack;
+	}
+
 	public function rewind() {
 		$this->pos = 0;
 	}
@@ -107,11 +140,13 @@ class Connection extends ClientConnection implements \Iterator {
 			return $this->pos === 0 ? $this->result : null;
 		}
 		elseif ($this->resultType === static::RESULT_TYPE_MESSAGE) {
-			return $this->result[2]; // message
+			// message
+			return $this->result[2];
 		}
 		elseif ($this->resultType === static::RESULT_TYPE_ASSOC) {
 			return $this->result[$this->pos * 2 + 1];
 		}
+		// static::RESULT_TYPE_ARGSVALS
 		return $this->result[$this->pos];
 	}
 
@@ -120,7 +155,8 @@ class Connection extends ClientConnection implements \Iterator {
 			return $this->pos === 0 ? 0 : null;
 		}
 		elseif ($this->resultType === static::RESULT_TYPE_MESSAGE) {
-			return $this->result[1]; // channel
+			// channel
+			return $this->result[1];
 		}
 		elseif ($this->resultType === static::RESULT_TYPE_ARGSVALS) {
 			return $this->args[$this->pos];
@@ -139,6 +175,11 @@ class Connection extends ClientConnection implements \Iterator {
 		return is_array($this->result) ? isset($this->result[$this->pos * 2 + 1]) : false;
 	}
 
+	/**
+	 * Get associative result
+	 * @param  string $name
+	 * @return array
+	 */
 	public function __get($name) {
 		if ($name === 'assoc') {
 			if ($this->assocData === null) {
@@ -437,26 +478,26 @@ class Connection extends ClientConnection implements \Iterator {
 			});
 		} else {
 			if ($name === 'MGET') {
-				$this->resultTypeStack[] = static::RESULT_TYPE_ARGSVALS;
-				$this->argsStack[] = $args;
+				$this->resultTypeStack->push(static::RESULT_TYPE_ARGSVALS);
+				$this->argsStack->push($args);
 			}
 			elseif ($name === 'HMGET') {
-				$this->resultTypeStack[] = static::RESULT_TYPE_ARGSVALS;
+				$this->resultTypeStack->push(static::RESULT_TYPE_ARGSVALS);
 				$a = $args;
 				array_shift($a);
-				$this->argsStack[] = $a;
+				$this->argsStack->push($a);
 			}
 			elseif ($name === 'HGETALL') {
-				$this->resultTypeStack[] = static::RESULT_TYPE_ASSOC;
-				$this->argsStack[] = [];
+				$this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
+				$this->argsStack->push([]);
 			}
 			elseif (($name === 'ZRANGE' || $name === 'ZRANGEBYSCORE' || $name === 'ZREVRANGE' || $name === 'ZREVRANGEBYSCORE') && preg_grep('/WITHSCORES/i', $args)){
-				$this->resultTypeStack[] = static::RESULT_TYPE_ASSOC;
-				$this->argsStack[] = [];
+				$this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
+				$this->argsStack->push([]);
 			}
 			else {
-				$this->resultTypeStack[] = 0;
-				$this->argsStack[] = [];
+				$this->resultTypeStack->push(0);
+				$this->argsStack->push([]);
 			}
 
 			$this->sendCommand($name, $args, $cb);
@@ -512,8 +553,8 @@ class Connection extends ClientConnection implements \Iterator {
 	protected function onPacket() {
 		$this->result = $this->ptr;
 		if (!$this->subscribed) {
-			$this->resultType = array_shift($this->resultTypeStack);
-			$this->args       = array_shift($this->argsStack);
+			$this->resultType = $this->resultTypeStack->shift();
+			$this->args       = $this->argsStack->shift();
 			$this->onResponse->executeOne($this);
 			goto clean;
 		} elseif ($this->result[0] === 'message') {
@@ -521,8 +562,8 @@ class Connection extends ClientConnection implements \Iterator {
 		} elseif ($this->result[0] === 'pmessage') {
 			$t = &$this->psubscribeCb;
 		} else {
-			$this->resultType = array_shift($this->resultTypeStack);
-			$this->args       = array_shift($this->argsStack);
+			$this->resultType = $this->resultTypeStack->shift();
+			$this->args       = $this->argsStack->shift();
 			$this->onResponse->executeOne($this);
 			goto clean;
 		}
