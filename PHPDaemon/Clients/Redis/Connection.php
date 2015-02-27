@@ -13,6 +13,11 @@ use PHPDaemon\Core\CallbackWrapper;
  */
 class Connection extends ClientConnection implements \Iterator {
 	/**
+	 * Default flag
+	 */
+	const RESULT_TYPE_DEFAULT = 0;
+
+	/**
 	 * Flag - parse message response
 	 */
 	const RESULT_TYPE_MESSAGE = 1;
@@ -88,8 +93,6 @@ class Connection extends ClientConnection implements \Iterator {
 	 */
 	protected $timeoutRead = 5;
 
-	protected $maxQueue = 10;
-
 	/**
 	 * @var integer Iterator position
 	 */
@@ -139,6 +142,9 @@ class Connection extends ClientConnection implements \Iterator {
 		if (!is_array($this->result)) {
 			return $this->pos === 0 ? $this->result : null;
 		}
+		elseif ($this->resultType === static::RESULT_TYPE_DEFAULT || $this->resultType === static::RESULT_TYPE_ARGSVALS) {
+			return $this->result[$this->pos];
+		}
 		elseif ($this->resultType === static::RESULT_TYPE_MESSAGE) {
 			// message
 			return $this->result[2];
@@ -146,13 +152,14 @@ class Connection extends ClientConnection implements \Iterator {
 		elseif ($this->resultType === static::RESULT_TYPE_ASSOC) {
 			return $this->result[$this->pos * 2 + 1];
 		}
-		// static::RESULT_TYPE_ARGSVALS
-		return $this->result[$this->pos];
 	}
 
 	public function key() {
 		if (!is_array($this->result)) {
 			return $this->pos === 0 ? 0 : null;
+		}
+		elseif ($this->resultType === static::RESULT_TYPE_DEFAULT) {
+			return $this->pos;
 		}
 		elseif ($this->resultType === static::RESULT_TYPE_MESSAGE) {
 			// channel
@@ -164,7 +171,6 @@ class Connection extends ClientConnection implements \Iterator {
 		elseif ($this->resultType === static::RESULT_TYPE_ASSOC) {
 			return $this->result[$this->pos * 2];
 		}
-		return $this->pos;
 	}
 
 	public function next() {
@@ -172,7 +178,18 @@ class Connection extends ClientConnection implements \Iterator {
 	}
 
 	public function valid() {
-		return is_array($this->result) ? isset($this->result[$this->pos * 2 + 1]) : false;
+		if (!is_array($this->result)) {
+			return false;
+		}
+		elseif ($this->resultType === static::RESULT_TYPE_DEFAULT) {
+			return isset($this->result[$this->pos]);
+		}
+		elseif ($this->resultType === static::RESULT_TYPE_ARGSVALS) {
+			return isset($this->args[$this->pos]) && isset($this->result[$this->pos]);
+		}
+		elseif ($this->resultType === static::RESULT_TYPE_MESSAGE || $this->resultType === static::RESULT_TYPE_ASSOC) {
+			return isset($this->result[$this->pos * 2 + 1]);
+		}
 	}
 
 	/**
@@ -489,15 +506,12 @@ class Connection extends ClientConnection implements \Iterator {
 			}
 			elseif ($name === 'HGETALL') {
 				$this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
-				$this->argsStack->push([]);
 			}
 			elseif (($name === 'ZRANGE' || $name === 'ZRANGEBYSCORE' || $name === 'ZREVRANGE' || $name === 'ZREVRANGEBYSCORE') && preg_grep('/WITHSCORES/i', $args)){
 				$this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
-				$this->argsStack->push([]);
 			}
 			else {
-				$this->resultTypeStack->push(0);
-				$this->argsStack->push([]);
+				$this->resultTypeStack->push(static::RESULT_TYPE_DEFAULT);
 			}
 
 			$this->sendCommand($name, $args, $cb);
@@ -553,8 +567,10 @@ class Connection extends ClientConnection implements \Iterator {
 	protected function onPacket() {
 		$this->result = $this->ptr;
 		if (!$this->subscribed) {
-			$this->resultType = $this->resultTypeStack->shift();
-			$this->args       = $this->argsStack->shift();
+			$this->resultType = !$this->resultTypeStack->isEmpty() ? $this->resultTypeStack->shift() : static::RESULT_TYPE_DEFAULT;
+			if ($this->resultType === static::RESULT_TYPE_ARGSVALS) {
+				$this->args = !$this->argsStack->isEmpty() ? $this->argsStack->shift() : [];
+			}
 			$this->onResponse->executeOne($this);
 			goto clean;
 		} elseif ($this->result[0] === 'message') {
@@ -562,8 +578,10 @@ class Connection extends ClientConnection implements \Iterator {
 		} elseif ($this->result[0] === 'pmessage') {
 			$t = &$this->psubscribeCb;
 		} else {
-			$this->resultType = $this->resultTypeStack->shift();
-			$this->args       = $this->argsStack->shift();
+			$this->resultType = !$this->resultTypeStack->isEmpty() ? $this->resultTypeStack->shift() : static::RESULT_TYPE_DEFAULT;
+			if ($this->resultType === static::RESULT_TYPE_ARGSVALS) {
+				$this->args = !$this->argsStack->isEmpty() ? $this->argsStack->shift() : [];
+			}
 			$this->onResponse->executeOne($this);
 			goto clean;
 		}
