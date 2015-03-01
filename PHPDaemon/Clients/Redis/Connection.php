@@ -674,14 +674,12 @@ class Connection extends ClientConnection implements \Iterator {
 					
 					if (is_array($this->ptr)) {
 						$this->ptr[] =& $ptr;
-					} else {
-						$this->ptr =& $ptr;
 					}
 
 					$this->ptr =& $ptr;
 					$this->stack[] = [&$ptr, $length];
 					$this->levelLength = $length;
-					$this->ptr =& $ptr;
+					unset($ptr);
 
 					goto start;
 				}
