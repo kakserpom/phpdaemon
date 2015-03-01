@@ -35,6 +35,18 @@ class Pool extends \PHPDaemon\Network\Client {
 	}
 
 	/**
+	 * Wrapper for scans commands
+	 * @param  string  $cmd    Command
+	 * @param  array   $args   Arguments
+	 * @param  cllable $cbEnd  Callback
+	 * @param  integer $limit  Limit
+	 * @return AutoScan
+	 */
+	public function autoscan($cmd, $args = [], $cbEnd = null, $limit = null) {
+		return new AutoScan($this, $cmd, $args, $cbEnd, $limit);
+	}
+
+	/**
 	 * Setting default config options
 	 * Overriden from NetworkClient::getConfigDefaults
 	 * @return array|bool
