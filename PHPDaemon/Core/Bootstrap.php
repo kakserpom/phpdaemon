@@ -183,7 +183,7 @@ class Bootstrap {
 		$eventVer     = '1.6.1';
 		$eventVerType = 'stable';
 		if (!Daemon::loadModuleIfAbsent('event', $eventVer . '-' . $eventVerType)) {
-			Daemon::log('[EMERG] event extension >= ' . $eventVer . ' not found (or OUTDATED). You have to install it. `pecl install http://pecl.php.net/get/event-' . $eventVer . '.tgz`');
+			Daemon::log('[EMERG] event extension >= ' . $eventVer . ' not found (or OUTDATED). You have to install it. `pecl install http://pecl.php.net/get/event`');
 			$error = true;
 		}
 
