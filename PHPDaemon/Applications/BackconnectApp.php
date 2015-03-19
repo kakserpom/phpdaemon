@@ -1,13 +1,23 @@
 <?php
+namespace PHPDaemon\Applications;
+
+use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Debug;
+use PHPDaemon\Structures\ObjectStorage;
+
 /**
- * BackconnectApp application instance
- *
- * @package Core
- *
+ * @package    Applications
+ * @subpackage BackconnectApp
+ * @author     Zorin Vasily <maintainer@daemon.io>
  */
-class BackconnectApp extends AppInstance {
+class BackconnectApp extends \PHPDaemon\Core\AppInstance {
+	protected $botPool;
+	protected $mongo;
+	protected $mongoBots;
+	protected $timer;
+
 	public $pool;
-	public $clientPools = array();
+	public $clientPools = [];
 	
 	/**
 	 * Setting default config options
@@ -16,34 +26,34 @@ class BackconnectApp extends AppInstance {
 	 * @return array|false
 	 */
 	protected function getConfigDefaults() {
-		return array(
+		return [
 			'listen' => '0.0.0.0:2000,0.0.0.0:2001',
 			'porttimeout' => 60,	   // Таймаут после которого закрывается клиентский порт, если нет ни однго соединения от бота  
 			'timeout' => 120,	   //  Таймаут после которого сбрасываются не активные соединения
 			'timer' => 5,		   // Таймаут сброса данных в mongo
 			'maxworkingclients' => 20, // Максимальное количество обслуживаемых клиентских соединений, остальные ставятся в очередь
-		);
+		];
 	}
+
 	/**
 	 * Constructor.
 	 * @return void
 	 */
 	public function init() {
 		if ($this->isEnabled()) {
-			$this->botPool = BackconnectBotPool::getInstance(array(
-					'listen' => $this->config->listen->value,
-					'maxboundsockets' => 1
-			));
+			$this->botPool = BackconnectBotPool::getInstance([
+				'listen' => $this->config->listen->value,
+				'maxboundsockets' => 1
+			]);
 			$this->botPool->appInstance = $this;
-			$this->mongo = MongoClient::getInstance();
+			$this->mongo = \PHPDaemon\Clients\Mongo\Pool::getInstance();
 			$this->mongoBots = $this->mongo->{'controller.bc'};
-			$app = $this;
-			$this->timer = setTimeout(function($timer) use ($app) {
-				foreach ($app->clientPools as $id => $pool) {
+			$this->timer = setTimeout(function($timer) {
+				foreach ($this->clientPools as $id => $pool) {
 					if (
 						($pool->getNumberOfWorkingClients() === 0)
 						&& ($pool->getNumberOfSpareBots() === 0)
-						&& ($pool->lastBotFinishTime < time() - $app->config->porttimeout->value)
+						&& ($pool->lastBotFinishTime < time() - $this->config->porttimeout->value)
 					) {
 						$pool->finish();
 						continue;
@@ -57,7 +67,7 @@ class BackconnectApp extends AppInstance {
 
 	public function getClientPool($id) {
 		if (!isset($this->clientPools[$id])) {
-			$pool = BackconnectClientPool::getInstance(array('listen' => '0.0.0.0:0'));
+			$pool = BackconnectClientPool::getInstance(['listen' => '0.0.0.0:0']);
 			$pool->boundPort = $pool->bound->getFirst()->port;
 			//Daemon::log('boundPort: '.$pool->boundPort);
 			$pool->appInstance = $this;
@@ -93,7 +103,7 @@ class BackconnectApp extends AppInstance {
 	 * Called when application instance is going to shutdown.
 	 * @return boolean Ready to shutdown?
 	 */
-	public function onShutdown() {
+	public function onShutdown($graceful = false) {
 		if ($this->botPool) {
 			$this->botPool->onShutdown();
 		}
@@ -109,18 +119,20 @@ class BackconnectApp extends AppInstance {
 }
 
 
-class BackconnectBotPool extends NetworkServer {}
+class BackconnectBotPool extends \PHPDaemon\Network\Server {}
 
-class BackconnectBotPoolConnection extends Connection { // bots
+class BackconnectBotPoolConnection extends \PHPDaemon\Network\Connection { // bots
 	const STATE_SPARE = 1;
 	const STATE_LINKED = 2;
+
 	protected $highMark = 1024; // default highmark
 	protected $clientpool;
+	
 	public $linkedClientConn;
 
 	public function __construct($fd = null, $pool = null) {
-			$this->timeout = $pool->appInstance->config->timeout->value;
-			parent::__construct($fd, $pool);
+		$this->timeout = $pool->appInstance->config->timeout->value;
+		parent::__construct($fd, $pool);
 	}
 
 	/**
@@ -145,7 +157,7 @@ class BackconnectBotPoolConnection extends Connection { // bots
 
 	public function linkWithClient($client) {
 		$this->linkedClientConn = $client;
-		$this->state = self::STATE_LINKED;
+		$this->state = static::STATE_LINKED;
 		$this->setWatermark(1, 0xFFFF);
 		$this->unlockRead();
 	}
@@ -155,15 +167,15 @@ class BackconnectBotPoolConnection extends Connection { // bots
 	 * @param string New data.
 	 * @return void
 	 */
-	public function stdin($buf) {
+	public function onRead() {
+		$buf = $this->read($this->bev->input->length);
 		//Daemon::log(get_class($this).' ('.$this->id.'): '.Debug::exportBytes($buf));
-		start:
-		if ($this->state === self::STATE_LINKED) {
+		if ($this->state === static::STATE_LINKED) {
 			if ($this->linkedClientConn) {
 				$this->linkedClientConn->write($buf);
 			}
 		}
-		elseif ($this->state === self::STATE_SPARE) {
+		elseif ($this->state === static::STATE_SPARE) {
 			if ($buf !== '') {
 				Daemon::log(get_class($this).': unexpected data in unlinked bot-connection : '.Debug::exportBytes($buf));
 			}
@@ -193,7 +205,7 @@ class BackconnectBotPoolConnection extends Connection { // bots
 					$this->linkWithClient($client);
 					$client->linkWithBot($this);
 				} else { // adding to the spare bots list
-					$this->state = self::STATE_SPARE;
+					$this->state = static::STATE_SPARE;
 					$this->lockRead();
 					$this->clientpool->addSpareBot($this);
 				}
@@ -203,12 +215,14 @@ class BackconnectBotPoolConnection extends Connection { // bots
 	
 }
 
-class BackconnectClientPool extends NetworkServer {
+class BackconnectClientPool extends \PHPDaemon\Network\Server {
 	protected $spareBots;
 	protected $waitingClients;
+
 	public $clientPoolId;
 	public $lastBotFinishTime;
 	public $workingClients = 0;
+
 	public function init() {
 		$this->spareBots = new ObjectStorage;
 		$this->waitingClients = new ObjectStorage;
@@ -241,9 +255,9 @@ class BackconnectClientPool extends NetworkServer {
 		$this->waitingClients->detach($client);
 	}
 	public function pushStats() {
-		$this->mongoId = $this->appInstance->mongoBots->upsert(array(
+		$this->mongoId = $this->appInstance->mongoBots->upsert([
 				'id' => $this->clientPoolId,
-			),	array(
+		], [
 				'id' => $this->clientPoolId,
 				'boundPort' => $this->boundPort,
 				'spareBots' => $this->getNumberOfSpareBots(),
@@ -251,7 +265,7 @@ class BackconnectClientPool extends NetworkServer {
 				'waitingClients' => $this->getNumberOfWaitingClients(),
 				'mtime' => microtime(true),
 				'timestamp' => time()
-		));
+		]);
 	}
 	public function onReady() {
 		$this->pushStats();
@@ -259,13 +273,9 @@ class BackconnectClientPool extends NetworkServer {
 	}
 	public function onFinish() {
 		unset($this->appInstance->clientPools[$this->clientPoolId]);
-		$this->appInstance->mongoBots->remove(array('_id' => $this->mongoId));
-	}
-	public function onShutdown() {
-		parent::onShutdown();
+		$this->appInstance->mongoBots->remove(['_id' => $this->mongoId]);
 	}
 	public function checkQueue() {
-		start:
 		while (
 			($this->getNumberOfSpareBots() > 0) && ($this->getNumberOfWaitingClients() > 0)
 			&& ($this->getNumberOfWorkingClients() <= $this->appInstance->config->maxworkingclients->value)
@@ -278,10 +288,12 @@ class BackconnectClientPool extends NetworkServer {
 	}
 }
 
-class BackconnectClientPoolConnection extends Connection { // browser
+class BackconnectClientPoolConnection extends \PHPDaemon\Network\Connection { // browser
 	const STATE_QUEUED = 1;
 	const STATE_LINKED = 2;
+
 	protected $highMark = 0xFFFF; // default highmark
+	
 	public $linkedBotConn;
 
 	public function onReady() {
@@ -300,22 +312,17 @@ class BackconnectClientPoolConnection extends Connection { // browser
 
 	public function linkWithBot($bot) {
 		$this->linkedBotConn = $bot;
-		$conn = $this;
-		$this->onWrite = function() use ($conn) {
-			$conn->unlockRead();
+		$this->onWrite = function() {
+			$this->unlockRead();
 		};
-		$this->state = self::STATE_LINKED;
+		$this->state = static::STATE_LINKED;
 		$this->setWatermark(1, 0xFFFF);
 		$this->unlockRead();
 		++$this->pool->workingClients;
 	}
 
-	/**
-	 * Called when new data received.
-	 * @param string New data.
-	 * @return void
-	 */
-	public function stdin($buf) {
+	public function onRead() {
+		$buf = $this->read($this->bev->input->length);
 		if ($this->linkedBotConn) {
 			$this->lockRead();
 			//Daemon::log(get_class($this).': ('.$this->linkedBotConn->id.'): '.Debug::exportBytes($buf));
@@ -340,6 +347,5 @@ class BackconnectClientPoolConnection extends Connection { // browser
 			$this->pool->checkQueue();
 		}
 		$this->pool->removeWaitingClient($this);
-
 	}
 }
