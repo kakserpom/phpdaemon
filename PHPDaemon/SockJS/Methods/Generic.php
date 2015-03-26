@@ -430,7 +430,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 			$this->header('Expires: '.date('r', strtotime('+1 year')));
 			$this->finish();
 		}
-		if (!in_array($_SERVER['REQUEST_METHOD'], explode(', ', $this->allowedMethods), true)) {
+		elseif (!in_array($_SERVER['REQUEST_METHOD'], explode(', ', $this->allowedMethods), true)) {
 			$this->header('405 Method Not Allowed');
 			$this->finish();
 		}
