@@ -58,6 +58,9 @@ class Session {
 	 */
 	public $timeout = 60;
 	public $server;
+	public $get;
+	public $cookie;
+	public $post;
 
 	protected $pollMode;
 
@@ -86,6 +89,14 @@ class Session {
 		$this->id     = $id;
 		$this->appInstance = $appInstance;
 		$this->server = $server;
+		
+		if (isset($this->server['HTTP_COOKIE'])) {
+			Generic::parse_str(strtr($this->server['HTTP_COOKIE'], Generic::$hvaltr), $this->cookie);
+		}
+		if (isset($this->server['QUERY_STRING'])) {
+			Generic::parse_str($this->server['QUERY_STRING'], $this->get);
+		}
+		
 		$this->addr = $server['REMOTE_ADDR'];
 		$this->finishTimer = setTimeout(function($timer) {
 			$this->finish();
