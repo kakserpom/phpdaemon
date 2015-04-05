@@ -67,7 +67,7 @@ class TCP extends Generic {
 			return false;
 		}
 		$port = $this->getPort();
-		if (!$port) {
+		if (!is_int($port)) {
 			Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): no port defined for \'' . $this->uri['uri'] . '\'');
 			return;
 		}
