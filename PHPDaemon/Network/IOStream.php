@@ -550,7 +550,7 @@ abstract class IOStream {
 	 * @param  boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
 	 * @return boolean           Success
 	 */
-	public function freezeInput($at_front = false) {
+	public function freezeInput($at_front = true) {
 		if (isset($this->bev)) {
 			return $this->bev->input->freeze($at_front);
 		}
@@ -562,7 +562,7 @@ abstract class IOStream {
 	 * @param  boolean $at_front At front. Default is true. If the front of a buffer is frozen, operations that drain data from the front of the buffer, or that prepend data to the buffer, will fail until it is unfrozen. If the back a buffer is frozen, operations that append data from the buffer will fail until it is unfrozen
 	 * @return boolean           Success
 	 */
-	public function unfreezeInput($at_front = false) {
+	public function unfreezeInput($at_front = true) {
 		if (isset($this->bev)) {
 			return $this->bev->input->unfreeze($at_front);
 		}
