@@ -767,7 +767,9 @@ abstract class IOStream {
 		}
 		$this->writing = false;
 		if ($this->finished) {
-			$this->close();
+			if ($this->bev->output->length === 0) {
+				$this->close();
+			}
 			return;
 		}
 		if (!$this->ready) {
@@ -861,6 +863,7 @@ abstract class IOStream {
 		if (!isset($this->bev)) {
 			return false;
 		}
+		$this->writing = true;
 		return $this->bev->output->appendFrom($src, $n);
 	}
 
