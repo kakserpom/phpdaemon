@@ -115,6 +115,9 @@ class Connection extends ClientConnection {
 			}
 			list ($params['host'], $params['uri']) = $prepared;
 		}
+		if ($params['uri'] === '') {
+			$params['uri'] = '/';
+		}
 		$this->lastURL = 'http://' . $params['host'] . $params['uri'];
 		if (!isset($params['version'])) {
 			$params['version'] = '1.1';
@@ -184,6 +187,9 @@ class Connection extends ClientConnection {
 				return;
 			}
 			list ($params['host'], $params['uri']) = $prepared;
+		}
+		if ($params['uri'] === '') {
+			$params['uri'] = '/';
 		}
 		$this->lastURL = 'http://' . $params['host'] . $params['uri'];		
 		if (!isset($params['version'])) {
