@@ -3,7 +3,7 @@
 http://github.com/kakserpom/phpdaemon
 
 Asynchronous framework in PHP. It has a huge number of features. Designed for highload.
-Each worker is able to handle thousands of simultaneous connections holding beer can.
+Each worker is able to handle thousands of simultaneous connections.
 Main features and possibilites:
 
  * Powerful servers: HTTP, FastCGI, FlashPolicy, Ident, Socks4/5.
