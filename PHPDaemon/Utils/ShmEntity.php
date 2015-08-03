@@ -53,7 +53,7 @@ class ShmEntity {
 			exit(0);
 		}
 
-		if (!is_file($this->path) || (($this->key = ftok($this->path, 't')) === false)) {
+		if (!is_file($this->path) || ($this->key = ftok($this->path, 't')) === false) {
 			Daemon::log('Couldn\'t ftok() IPC file \'' . $this->path . '\'.');
 			exit(0);
 		}
