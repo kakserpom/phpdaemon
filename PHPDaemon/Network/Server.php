@@ -38,14 +38,14 @@ abstract class Server extends Pool {
 	}
 
 	/**
-	 * Finishes ConnectionPool
-	 * @return boolean Success
+	 * Called when ConnectionPool is finished
+	 * @return void
 	 */
-	public function finish($graceful = false) {
+	protected function onFinish() {
 		$this->closeBound();
-		return parent::finish($graceful);
+		parent::onFinish();
 	}
-
+	
 	/**
 	 * Bind given sockets
 	 * @param  mixed   $addrs Addresses to bind

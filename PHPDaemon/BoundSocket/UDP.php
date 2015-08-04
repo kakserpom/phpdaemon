@@ -113,7 +113,7 @@ class UDP extends Generic {
 				Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 				return false;
 			}
-			if (Daemon::$reusePort && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
+			if (defined('SO_REUSEPORT') && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
 				$errno = socket_last_error();
 				Daemon::$process->log(get_class($this) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 				return false;

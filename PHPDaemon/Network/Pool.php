@@ -252,12 +252,12 @@ abstract class Pool extends ObjectStorage {
 	 * @return boolean Success
 	 */
 	public function finish($graceful = false) {
+		$this->disable();
+		
 		if (!$this->finished) {
 			$this->finished = true;
 			$this->onFinish();
 		}
-
-		$this->disable();
 		
 		$result = true;
 

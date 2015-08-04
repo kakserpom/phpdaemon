@@ -73,7 +73,7 @@ class FileSystem {
 			return;
 		}
 		if (!self::$supported = Daemon::loadModuleIfAbsent('eio', self::$eioVer)) {
-			Daemon::log('FS: missing pecl-eio >= ' . self::$eioVer . '. Filesystem I/O performance compromised. Consider installing pecl-eio. `pecl install http://pecl.php.net/get/eio-' . self::$eioVer . '.tgz`');
+			Daemon::log('FS: missing pecl-eio >= ' . self::$eioVer . '. Filesystem I/O performance compromised. Consider installing pecl-eio. `pecl install http://pecl.php.net/get/eio`');
 			return;
 		}
 		self::$fdCache = new CappedStorageHits(self::$fdCacheSize);

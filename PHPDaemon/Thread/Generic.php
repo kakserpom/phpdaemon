@@ -245,11 +245,11 @@ abstract class Generic {
 			$this->log('caught unknown signal #' . $signo);
 			return;
 		}
-		if (is_callable($c = [$this, strtolower(self::$signals[$signo])])) {
-			call_user_func($c);
+		if (method_exists($this, $m = strtolower(self::$signals[$signo]))) {
+			call_user_func([$this, $m]);
 		}
-		elseif (is_callable($c = [$this, 'sigunknown'])) {
-			call_user_func($c, $signo);
+		elseif (method_exists($this, 'sigunknown')) {
+			call_user_func([$this, 'sigunknown'], $signo);
 		}
 	}
 

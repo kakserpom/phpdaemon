@@ -67,7 +67,7 @@ class TCP extends Generic {
 			return false;
 		}
 		$port = $this->getPort();
-		if (!$port) {
+		if (!is_int($port)) {
 			Daemon::log(get_class($this) . ' (' . get_class($this->pool) . '): no port defined for \'' . $this->uri['uri'] . '\'');
 			return;
 		}
@@ -90,7 +90,7 @@ class TCP extends Generic {
 				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t set option REUSEADDR to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 				return false;
 			}
-			if (Daemon::$reusePort && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
+			if (defined('SO_REUSEPORT') && !socket_set_option($sock, SOL_SOCKET, SO_REUSEPORT, 1)) {
 				$errno = socket_last_error();
 				Daemon::$process->log(get_class($this->pool) . ': Couldn\'t set option REUSEPORT to socket (' . $errno . ' - ' . socket_strerror($errno) . ').');
 				return false;

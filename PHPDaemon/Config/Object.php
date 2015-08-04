@@ -472,8 +472,16 @@ class Object implements \ArrayAccess {
 		if (stripos($uri, 'unix:///') === 0) {
 			$uri = 'unix://localhost/' . substr($uri, 8);
 		}
+		$zeroPortNum = false;
+		$uri = preg_replace_callback('~:0(?:$|/)~', function() use (&$zeroPortNum) {
+			$zeroPortNum = true;
+			return '';
+		}, $uri);
 		$u        = parse_url($uri);
 		$u['uri'] = $uri;
+		if ($zeroPortNum) {
+			$u['port'] = 0;
+		}
 		if (!isset($u['scheme'])) {
 			$u['scheme'] = '';
 		}

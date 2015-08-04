@@ -175,13 +175,6 @@ class Daemon {
 	public static $shm_wstate;
 
 	/**
-	 * Сurrently re-using bound ports across multiple processes is available
-	 * only in BSD flavour operating systems via SO_REUSEPORT socket option
-	 * @var boolean
-	 */
-	public static $reusePort = false;
-
-	/**
 	 * Running under Apache/PHP-FPM in compatibility mode?
 	 * @var boolean
 	 */
@@ -245,13 +238,10 @@ class Daemon {
 
 		Daemon::$config = new Config\Object;
 
-		if (preg_match('~BSD~i', php_uname('s'))) {
-			Daemon::$reusePort = true;
-		}
-
-		if (Daemon::$reusePort && !defined("SO_REUSEPORT")) {
-			define("SO_REUSEPORT", 0x200);
-		} // @TODO: FIXME: this is a BSD-only hack
+		if (preg_match('~BSD~i', php_uname('s')) && !defined("SO_REUSEPORT")) {
+			// @TODO: better if-BSD check
+			define('SO_REUSEPORT', 0x200);
+		} 
 	}
 
 	/**

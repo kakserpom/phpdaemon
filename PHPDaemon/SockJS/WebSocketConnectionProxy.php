@@ -36,7 +36,20 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	 * @return mixed
 	 */
 	public function &__get($k) {
+		if (!isset($this->realConn->{$k})) {
+			return null;
+		}
 		return $this->realConn->{$k};
+	}
+	
+	/**
+	 * __set
+	 * * @param string $k Key
+	 * * @param mixed $$v Value
+	 * @return mixed
+	 */
+	public function __set($k, $v) {
+		return $this->realConn->{$k} = $v;
 	}
 
 	/**

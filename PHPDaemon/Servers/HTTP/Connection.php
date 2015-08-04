@@ -391,8 +391,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 			if (!$this->req->isFinished()) {
 				$this->req->abort();
 			}
-			$this->req = null;
 		}
+		$this->req = null;
 	}
 
 	/**
