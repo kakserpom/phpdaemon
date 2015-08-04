@@ -477,7 +477,7 @@ class Bootstrap {
 	 * @return void
 	 */
 	protected static function printUsage() {
-		echo 'usage: ' . Daemon::$runName . " (start|(hard|graceful)stop|update|reload|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
+		echo 'usage: ' . Daemon::$runName . " (start|(hard|graceful)stop|update|reload|reopenlog|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
 	}
 
 	/**
