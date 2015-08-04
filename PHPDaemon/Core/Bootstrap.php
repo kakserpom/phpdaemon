@@ -30,7 +30,7 @@ class Bootstrap {
 	 * @var array
 	 */
 	protected static $commands = [
-		'start', 'stop', 'hardstop', 'gracefulstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker', 'ipcpath'
+		'start', 'stop', 'hardstop', 'gracefulstop', 'update', 'reload', 'restart', 'hardrestart', 'fullstatus', 'status', 'configtest', 'log', 'runworker', 'ipcpath', 'reopenlog'
 	];
 
 	/**
