@@ -134,7 +134,7 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function onConnected($cb) {
-		if ($this->state == self::STATE_AUTH_ERROR) {
+		if ($this->state === self::STATE_AUTH_ERROR) {
 			call_user_func($cb, $this, false);
 		}
 		elseif ($this->state === self::STATE_AUTH_OK) {
@@ -463,7 +463,7 @@ class Connection extends ClientConnection {
 				$this->state = self::STATE_AUTH_ERROR; // Auth. error
 				$this->finish(); // Unsupported,  finish
 			}
-			elseif ($authType == 9) {
+			elseif ($authType === 9) {
 				// GSS
 				Daemon::log(__CLASS__ . ': Unsupported authentication method: GSS.');
 				$this->state = self::STATE_AUTH_ERROR; // Auth. error
@@ -573,7 +573,7 @@ class Connection extends ClientConnection {
 			$this->errno  = -1;
 			$this->errmsg = $message;
 
-			if ($this->state == self::STATE_AUTH_PACKET_SENT) {
+			if ($this->state === self::STATE_AUTH_PACKET_SENT) {
 				// Auth. error
 				foreach ($this->onConnected as $cb) {
 					call_user_func($cb, $this, FALSE);

@@ -25,7 +25,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected function onRead() {
 		while (($line = $this->readline()) !== null) {
 			$e = explode(' , ', $line);
-			if ((sizeof($e) <> 2) || !ctype_digit($e[0]) || !ctype_digit($e[1])) {
+			if ((sizeof($e) !== 2) || !ctype_digit($e[0]) || !ctype_digit($e[1])) {
 				$this->writeln($line . ' : ERROR : INVALID-PORT');
 				$this->finish();
 				return;

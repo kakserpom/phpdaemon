@@ -74,7 +74,7 @@ public function init() {
 					});
 				}
 			}
-			elseif ($stat['type'] == 'f') {
+			elseif ($stat['type'] === 'f') {
 				$this->file($path);
 			}
 			$job->setResult('stat', $stat);

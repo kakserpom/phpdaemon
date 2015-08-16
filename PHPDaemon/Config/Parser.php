@@ -300,7 +300,7 @@ class Parser {
 							}
 						}
 						elseif ($c === '\'') {
-							if ($elTypes[$i] != null) {
+							if ($elTypes[$i] !== null) {
 								$this->raiseError('Unexpected T_STRING.');
 							}
 
@@ -313,7 +313,7 @@ class Parser {
 							}
 						}
 						elseif ($c === '"') {
-							if ($elTypes[$i] != null) {
+							if ($elTypes[$i] !== null) {
 								$this->raiseError('Unexpected T_STRING_DOUBLE.');
 							}
 

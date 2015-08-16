@@ -80,7 +80,7 @@ class XMLStreamObject {
 	public function toString($str = '') {
 		$str .= "<{$this->name} xmlns='{$this->ns}' ";
 		foreach ($this->attrs as $key => $value) {
-			if ($key != 'xmlns') {
+			if ($key !== 'xmlns') {
 				$value = htmlspecialchars($value);
 				$str .= "$key='$value' ";
 			}
@@ -102,7 +102,7 @@ class XMLStreamObject {
 	 */
 	public function hasSub($name, $ns = null) {
 		foreach ($this->subs as $sub) {
-			if (($name == "*" or $sub->name == $name) and ($ns == null or $sub->ns == $ns)) {
+			if (($name === "*" or $sub->name === $name) and ($ns === null or $sub->ns === $ns)) {
 				return true;
 			}
 		}
@@ -119,7 +119,7 @@ class XMLStreamObject {
 	public function sub($name, $attrs = null, $ns = null) {
 		//@TODO: attrs is ignored
 		foreach ($this->subs as $sub) {
-			if ($sub->name == $name and ($ns == null or $sub->ns == $ns)) {
+			if ($sub->name === $name and ($ns === null or $sub->ns === $ns)) {
 				return $sub;
 			}
 		}

@@ -149,9 +149,7 @@ class FileSystem {
 	 * @return string       Sanitized path
 	 */
 	public static function sanitizePath($path) {
-		$path = str_replace("\x00", '', $path);
-		$path = str_replace("../", '', $path);
-		return $path;
+		return str_replace(["\x00", "../"], '', $path);
 	}
 
 	/**

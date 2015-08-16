@@ -332,7 +332,7 @@ class Object implements \ArrayAccess {
 				$entry = new Entry\Generic;
 			}
 
-			if (in_array($name, ['addincludepath'])) {
+			if ($name === 'addincludepath') {
 				$entry->setStackable();
 			}
 

@@ -129,12 +129,12 @@ class XMLStream {
 	 */
 	public function endXML($parser, $name) {
 		--$this->xml_depth;
-		if ($this->xml_depth == 1) {
+		if ($this->xml_depth === 1) {
 			foreach ($this->xpathhandlers as $handler) {
 				if (is_array($this->xmlobj) && array_key_exists(2, $this->xmlobj)) {
 					$searchxml = $this->xmlobj[2];
 					$nstag     = array_shift($handler[0]);
-					if (($nstag[0] == null or $searchxml->ns == $nstag[0]) and ($nstag[1] == "*" or $nstag[1] == $searchxml->name)) {
+					if (($nstag[0] === null or $searchxml->ns === $nstag[0]) and ($nstag[1] === "*" or $nstag[1] === $searchxml->name)) {
 						foreach ($handler[0] as $nstag) {
 							if ($searchxml !== null and $searchxml->hasSub($nstag[1], $ns = $nstag[0])) {
 								$searchxml = $searchxml->sub($nstag[1], $ns = $nstag[0]);
@@ -169,7 +169,7 @@ class XMLStream {
 			}
 			unset($this->xmlobj[2]);
 		}
-		if ($this->xml_depth == 0) {
+		if ($this->xml_depth === 0) {
 			$this->event('streamEnd');
 		}
 	}
@@ -236,7 +236,7 @@ class XMLStream {
 		}
 		foreach ($ns_tags as $ns_tag) {
 			list($l, $r) = explode("}", $ns_tag);
-			if ($r != null) {
+			if ($r !== null) {
 				$xpart = [substr($l, 1), $r];
 			}
 			else {

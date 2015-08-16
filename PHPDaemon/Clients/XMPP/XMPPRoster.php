@@ -55,14 +55,14 @@ class XMPPRoster {
 				$this->setPresence($payload['from'], $payload['priority'], $payload['show'], $payload['status']);
 			}
 			//Daemon::log("Presence: {$payload['from']} [{$payload['show']}] {$payload['status']}");
-			if (array_key_exists('type', $xml->attrs) and $xml->attrs['type'] == 'subscribe') {
+			if (array_key_exists('type', $xml->attrs) and $xml->attrs['type'] === 'subscribe') {
 				if ($this->auto_subscribe) {
 					$this->xmpp->sendXML("<presence type='subscribed' to='{$xml->attrs['from']}' from='{$this->xmpp->fulljid}' />");
 					$this->xmpp->sendXML("<presence type='subscribe' to='{$xml->attrs['from']}' from='{$this->xmpp->fulljid}' />");
 				}
 				$this->event('subscription_requested', $payload);
 			}
-			elseif (array_key_exists('type', $xml->attrs) and $xml->attrs['type'] == 'subscribed') {
+			elseif (array_key_exists('type', $xml->attrs) and $xml->attrs['type'] === 'subscribed') {
 				$this->event('subscription_accepted', $payload);
 			}
 			else {
@@ -106,27 +106,27 @@ class XMPPRoster {
 			$contacts  = [];
 			foreach ($xmlroster->subs as $item) {
 				$groups = [];
-				if ($item->name == 'item') {
+				if ($item->name === 'item') {
 					$jid          = $item->attrs['jid']; //REQUIRED
 					$name         = isset($item->attrs['name']) ? $item->attrs['name'] : ''; //MAY
 					$subscription = $item->attrs['subscription'];
 					foreach ($item->subs as $subitem) {
-						if ($subitem->name == 'group') {
+						if ($subitem->name === 'group') {
 							$groups[] = $subitem->data;
 						}
 					}
 					$contacts[] = [$jid, $subscription, $name, $groups]; //Store for action if no errors happen
 				}
 				else {
-					$status = "error";
+					$status = 'error';
 				}
 			}
-			if ($status == "result") { //No errors, add contacts
+			if ($status === 'result') { //No errors, add contacts
 				foreach ($contacts as $contact) {
 					$this->_addContact($contact[0], $contact[1], $contact[2], $contact[3]);
 				}
 			}
-			if ($xml->attrs['type'] == 'set') {
+			if ($xml->attrs['type'] === 'set') {
 				$this->xmpp->sendXML('<iq type="reply" id="' . $xml->attrs['id'] . '" to="' . $xml->attrs['from'] . '" />');
 			}
 			if ($cb) {
@@ -182,7 +182,7 @@ class XMPPRoster {
 	 */
 	public function setPresence($presence, $priority, $show, $status) {
 		list($jid, $resource) = explode('/', $presence . '/');
-		if ($show != 'unavailable') {
+		if ($show !== 'unavailable') {
 			if (!$this->isContact($jid)) {
 				$this->_addContact($jid, 'not-in-roster');
 			}
@@ -207,7 +207,7 @@ class XMPPRoster {
 		$current = ['resource' => '', 'active' => '', 'priority' => -129, 'show' => '', 'status' => '']; //Priorities can only be -128 = 127
 		foreach ($this->roster_array[$jid]['presence'] as $resource => $presence) {
 			//Highest available priority or just highest priority
-			if ($presence['priority'] > $current['priority'] && (($presence['show'] == "chat" || $presence['show'] == "available") or ($current['show'] != "chat" or $current['show'] != "available"))) {
+			if ($presence['priority'] > $current['priority'] && (($presence['show'] === 'chat' || $presence['show'] === 'available') or ($current['show'] !== 'chat' or $current['show'] !== 'available'))) {
 				$current             = $presence;
 				$current['resource'] = $resource;
 			}

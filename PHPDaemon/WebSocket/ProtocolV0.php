@@ -126,13 +126,13 @@ class ProtocolV0 extends Protocol {
 
 			++$pos;
 			$c = $n >> 0 & 0x7F;
-			$n = $n >> 7;
+			$n >>= 7;
 
-			if ($pos != 1) {
+			if ($pos !== 1) {
 				$c += 0x80;
 			}
 
-			if ($c != 0x80) {
+			if ($c !== 0x80) {
 				$len = chr($c) . $len;
 				goto char;
 			};

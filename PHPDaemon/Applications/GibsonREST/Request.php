@@ -66,7 +66,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->cmd = array_shift($e);
 			$this->args = sizeof($e) ? array_map('urldecode', $e) : [];
 		}
-		if (!$this->appInstance->gibson->isCommand($this->cmd) && !in_array($this->cmd, ['LOGIN', 'LOGOUT'])) {
+		if (!$this->appInstance->gibson->isCommand($this->cmd) && $this->cmd !== 'LOGIN' && $this->cmd !== 'LOGOUT') {
 			$this->result = ['$err' => 'Unrecognized command'];
 			return false;
 		}
@@ -81,7 +81,7 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 		if ($this->result === null) {
 			foreach (static::getArray($_POST['args']) as $arg) {
 				if (is_string($arg)) {
-					array_push($this->args, $arg);
+					$this->args[] = $arg;
 				}
 			}
 		}

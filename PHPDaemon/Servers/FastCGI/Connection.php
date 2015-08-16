@@ -149,7 +149,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 				. '. Content length: ' . $this->header['conlen'] . ' (' . strlen($this->content) . ') Padding length: ' . $this->header['padlen'] 
 				. ' (' . strlen($pad) . ')');*/
 
-		if ($type == self::FCGI_BEGIN_REQUEST) {
+		if ($type === self::FCGI_BEGIN_REQUEST) {
 			$u = unpack('nrole/Cflags', $this->content);
 
 			$req                    = new \stdClass();
@@ -269,13 +269,13 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 			for ($i = 0, $s = strlen($order); $i < $s; ++$i) {
 				$char = $order[$i];
 
-				if ($char == 'G' && is_array($req->attrs->get)) {
+				if ($char === 'G' && is_array($req->attrs->get)) {
 					$req->attrs->request += $req->attrs->get;
 				}
-				elseif ($char == 'P' && is_array($req->attrs->post)) {
+				elseif ($char === 'P' && is_array($req->attrs->post)) {
 					$req->attrs->request += $req->attrs->post;
 				}
-				elseif ($char == 'C' && is_array($req->attrs->cookie)) {
+				elseif ($char === 'C' && is_array($req->attrs->cookie)) {
 					$req->attrs->request += $req->attrs->cookie;
 				}
 			}

@@ -23,11 +23,11 @@ class Debug {
 			'~' . ($all ? '.' : '[^A-Za-z\d\.\{\}$<>:;\-_/\\\\=+]') . '~s',
 			function ($m) use ($all) {
 				if (!$all) {
-					if ($m[0] == "\r") {
+					if ($m[0] === "\r") {
 						return "\n" . '\r';
 					}
 
-					if ($m[0] == "\n") {
+					if ($m[0] === "\n") {
 						return '\n';
 					}
 				}

@@ -160,13 +160,13 @@ class MongoNode extends \PHPDaemon\Core\AppInstance {
 
 					$cursor->lastOpId = $item['ts'];
 
-					if ($item['op'] == 'i') {
+					if ($item['op'] === 'i') {
 						$this->cacheObject($item['o']);
 					}
-					elseif ($item['op'] == 'd') {
+					elseif ($item['op'] === 'd') {
 						$this->deleteObject($item['o']);
 					}
-					elseif ($item['op'] == 'u') {
+					elseif ($item['op'] === 'u') {
 						if (
 								isset($item['b'])
 								&& ($item['b'] === FALSE)
