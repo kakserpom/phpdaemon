@@ -367,7 +367,6 @@ trait DNode {
 		if (isset($pct['links']) && is_array($pct['links'])) {
 			foreach ($pct['links'] as $link) {
 				static::setPath($args, $link['to'], static::getPath($args, $link['from']));
-				unset($r);
 			}
 		}
 
