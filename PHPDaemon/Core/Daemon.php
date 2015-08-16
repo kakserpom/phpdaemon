@@ -238,7 +238,7 @@ class Daemon {
 
 		Daemon::$config = new Config\Object;
 
-		if (preg_match('~BSD~i', php_uname('s')) && !defined("SO_REUSEPORT")) {
+		if (!defined('SO_REUSEPORT') && strpos(php_uname('s'), 'BSD') !== false) {
 			// @TODO: better if-BSD check
 			define('SO_REUSEPORT', 0x200);
 		} 
