@@ -358,7 +358,7 @@ class Encoding {
 	 */
 	public static function encode($encodingLabel, $text) {
 		$encodingLabel = self::normalizeEncoding($encodingLabel);
-		if ($encodingLabel == 'UTF-8') return Encoding::toUTF8($text);
-		if ($encodingLabel == 'ISO-8859-1') return Encoding::toLatin1($text);
+		if ($encodingLabel === 'UTF-8') return Encoding::toUTF8($text);
+		if ($encodingLabel === 'ISO-8859-1') return Encoding::toLatin1($text);
 	}
 }

@@ -245,7 +245,7 @@ class Connection extends ClientConnection {
 			elseif ($xml->hasSub('bind') and $this->authorized) {
 				$id = $this->getId();
 				$this->iqSet('<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><resource>' . $this->path . '</resource></bind>', function ($xml) {
-					if ($xml->attrs['type'] == 'result') {
+					if ($xml->attrs['type'] === 'result') {
 						$this->fulljid = $xml->sub('bind')->sub('jid')->data;
 						$jidarray      = explode('/', $this->fulljid);
 						$this->jid     = $jidarray[0];
@@ -311,7 +311,7 @@ class Connection extends ClientConnection {
 	 * @param string $subject
 	 */
 	public function message($to, $body, $type = 'chat', $subject = null, $payload = null) {
-		if (is_null($type)) {
+		if ($type === null) {
 			$type = 'chat';
 		}
 
@@ -341,7 +341,7 @@ class Connection extends ClientConnection {
 	 * @param integer $priority
 	 */
 	public function presence($status = null, $show = 'available', $to = null, $type = 'available', $priority = 0) {
-		if ($type == 'available') {
+		if ($type === 'available') {
 			$type = '';
 		}
 		$to     = htmlspecialchars($to);
@@ -349,7 +349,7 @@ class Connection extends ClientConnection {
 		$show = htmlspecialchars($show);
 		$type = htmlspecialchars($type);
 		$priority = htmlspecialchars($priority);
-		if ($show == 'unavailable') {
+		if ($show === 'unavailable') {
 			$type = 'unavailable';
 		}
 
@@ -362,7 +362,7 @@ class Connection extends ClientConnection {
 			$out .= ' type="' . $type . '"';
 		}
 		$inner = '';
-		if ($show != 'available') {
+		if ($show !== 'available') {
 			$inner .= "<show>$show</show>";
 		}
 		if ($status) {

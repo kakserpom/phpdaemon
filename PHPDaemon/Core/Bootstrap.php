@@ -312,7 +312,7 @@ class Bootstrap {
 			}
 		}
 
-		if ($runmode == 'start') {
+		if ($runmode === 'start') {
 			if ($error === FALSE) {
 				Bootstrap::start();
 			}
@@ -337,7 +337,7 @@ class Bootstrap {
 
 			if (
 					$status
-					&& ($runmode == 'fullstatus')
+					&& ($runmode === 'fullstatus')
 			) {
 				echo 'Uptime: ' . DateTime::diffAsText(filemtime(Daemon::$config->pidfile->value), time()) . "\n";
 
@@ -356,7 +356,7 @@ class Bootstrap {
 
 			echo "\n";
 		}
-		elseif ($runmode == 'update') {
+		elseif ($runmode === 'update') {
 			if (
 					(!Bootstrap::$pid)
 					|| (!posix_kill(Bootstrap::$pid, SIGHUP))
@@ -364,7 +364,7 @@ class Bootstrap {
 				echo '[UPDATE] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
 		}
-		elseif ($runmode == 'reopenlog') {
+		elseif ($runmode === 'reopenlog') {
 			if (
 					(!Bootstrap::$pid)
 					|| (!posix_kill(Bootstrap::$pid, SIGUSR1))
@@ -372,7 +372,7 @@ class Bootstrap {
 				echo '[REOPEN-LOG] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
 		}
-		elseif ($runmode == 'reload') {
+		elseif ($runmode === 'reload') {
 			if (
 					(!Bootstrap::$pid)
 					|| (!posix_kill(Bootstrap::$pid, SIGUSR2))
@@ -380,21 +380,21 @@ class Bootstrap {
 				echo '[RELOAD] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
 			}
 		}
-		elseif ($runmode == 'restart') {
+		elseif ($runmode === 'restart') {
 			if ($error === FALSE) {
 				Bootstrap::stop(2);
 				Bootstrap::start();
 			}
 		}
-		elseif ($runmode == 'hardrestart') {
+		elseif ($runmode === 'hardrestart') {
 			Bootstrap::stop(3);
 			Bootstrap::start();
 		}
-		elseif ($runmode == 'ipcpath') {
+		elseif ($runmode === 'ipcpath') {
 			$i = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
 			echo $i->getSocketUrl() . PHP_EOL;
 		}
-		elseif ($runmode == 'configtest') {
+		elseif ($runmode === 'configtest') {
 			$term = new Terminal;
 			$term->enableColor();
 
@@ -430,13 +430,13 @@ class Bootstrap {
 
 			echo "\n";
 		}
-		elseif ($runmode == 'stop') {
+		elseif ($runmode === 'stop') {
 			Bootstrap::stop();
 		}
-		elseif ($runmode == 'gracefulstop') {
+		elseif ($runmode === 'gracefulstop') {
 			Bootstrap::stop(4);
 		}
-		elseif ($runmode == 'hardstop') {
+		elseif ($runmode === 'hardstop') {
 			echo '[HARDSTOP] Sending SIGINT to ' . Bootstrap::$pid . '... ';
 
 			$ok = Bootstrap::$pid && posix_kill(Bootstrap::$pid, SIGINT);
@@ -449,7 +449,7 @@ class Bootstrap {
 				while ($r = Thread\Generic::ifExistsByPid(Bootstrap::$pid)) {
 					usleep(500000);
 
-					if ($i == 9) {
+					if ($i === 9) {
 						echo "\nphpDaemon master-process hasn't finished. Sending SIGKILL... ";
 						posix_kill(Bootstrap::$pid, SIGKILL);
 						sleep(0.2);

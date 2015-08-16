@@ -199,9 +199,10 @@ abstract class IOStream {
 	 * @return mixed
 	 */
 	public function __get($name) {
-		if (in_array($name, [
-			'finished', 'alive', 'freed', 'url'
-		])
+		if (   $name === 'finished'
+			|| $name === 'alive'
+			|| $name === 'freed'
+			|| $name === 'url'
 		) {
 			return $this->{$name};
 		}

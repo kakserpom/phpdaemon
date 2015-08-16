@@ -195,9 +195,10 @@ abstract class Connection extends IOStream {
 	 * @return mixed
 	 */
 	public function __get($name) {
-		if (in_array($name, [
-			'connected', 'hostReal', 'host', 'port'
-		])
+		if (   $name === 'connected'
+			|| $name === 'hostReal'
+			|| $name === 'host'
+			|| $name === 'port'
 		) {
 			return $this->{$name};
 		}

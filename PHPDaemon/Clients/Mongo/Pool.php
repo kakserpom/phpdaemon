@@ -275,7 +275,7 @@ class Pool extends Client {
 				}
 				elseif ($k === 'parse_oplog') {
 				}
-				elseif ($k == 'rp') {
+				elseif ($k === 'rp') {
 					$o['$readPreference'] = $v;
 				}
 				else {
@@ -373,7 +373,7 @@ class Pool extends Client {
 				}
 				elseif ($k === 'parse_oplog') {
 				}
-				elseif ($k == 'rp') {
+				elseif ($k === 'rp') {
 					$o['$readPreference'] = $v;
 				}
 				else {
@@ -835,7 +835,7 @@ class Pool extends Client {
 		if (is_string($f)) {
 			$f = array_map('trim', explode(',', $f));
 		}
-		if (!is_array($f) || sizeof($f) == 0) {
+		if (!is_array($f) || sizeof($f) === 0) {
 			return null;
 		}
 		if (!isset($f[0])) {

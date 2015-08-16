@@ -145,7 +145,7 @@ class Connection extends ClientConnection {
 			$line .= $args[$i];
 		}
 		$this->writeln($line);
-		if ($this->pool->protologging && !in_array($cmd, ['PONG'])) {
+		if ($this->pool->protologging && $cmd !== 'PONG') {
 			Daemon::log('->->->-> ' . $line);
 		}
 		return true;
@@ -252,7 +252,7 @@ class Connection extends ClientConnection {
 			list ($target, $text) = $args;
 			$this->event('notice', $target, $text);
 		}
-		elseif ($cmd == 'RPL_YOURHOST') {
+		elseif ($cmd === 'RPL_YOURHOST') {
 		}
 		elseif ($cmd === 'RPL_MOTDSTART') {
 			$this->motd = $args[1];

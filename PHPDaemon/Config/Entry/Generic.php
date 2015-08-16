@@ -35,7 +35,7 @@ class Generic {
 	 * @return void
 	 */
 	public function __construct() {
-		if (func_num_args() == 1) {
+		if (func_num_args() === 1) {
 			$this->setDefaultValue(func_get_arg(0));
 			$this->setHumanValue(func_get_arg(0));
 		}

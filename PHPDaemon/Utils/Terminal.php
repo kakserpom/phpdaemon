@@ -80,7 +80,7 @@ class Terminal {
 	protected function getMaxColumns() {
 		if (
 				preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
-				&& 2 == sizeof($output)
+				&& sizeof($output) === 2
 		) {
 			return $output[1][0];
 		}
@@ -181,7 +181,7 @@ class Terminal {
 
 		foreach ($rows as $row) {
 			foreach ($row as $k => $v) {
-				if (substr($k, 0, 1) == '_') {
+				if (substr($k, 0, 1) === '_') {
 					continue;
 				}
 

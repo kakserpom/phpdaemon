@@ -470,10 +470,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 		// Protocol discovery, based on HTTP headers...
 		// ----------------------------------------------------------
 		if (isset($this->server['HTTP_SEC_WEBSOCKET_VERSION'])) { // HYBI
-			if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '8') { // Version 8 (FF7, Chrome14)
+			if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] === '8') { // Version 8 (FF7, Chrome14)
 				$this->protocol = new ProtocolV13($this);
 			}
-			elseif ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] == '13') { // newest protocol
+			elseif ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] === '13') { // newest protocol
 				$this->protocol = new ProtocolV13($this);
 			}
 			else {

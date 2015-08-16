@@ -146,7 +146,7 @@ trait DNode {
 							}
 							$v = '';
 							$list[$id] = $path;
-							array_push($list[$id], $k);
+							$list[$id][] = $k;
 							continue;
 						}
 					}
@@ -163,7 +163,7 @@ trait DNode {
 				}
 				$v = '';
 				$list[$id] = $path;
-				array_push($list[$id], $k);
+				$list[$id][] = $k;
 			}
 		}
 	}

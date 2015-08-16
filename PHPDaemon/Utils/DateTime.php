@@ -45,7 +45,7 @@ class DateTime extends \DateTime {
 		$str .= $interval->d ? $interval->d . ' day. ' : '';
 		$str .= $interval->h ? $interval->h . ' hour. ' : '';
 		$str .= $interval->i ? $interval->i . ' min. ' : '';
-		$str .= $interval->s || $str == '' ? $interval->s . ' sec. ' : '';
+		$str .= $interval->s || $str === '' ? $interval->s . ' sec. ' : '';
 
 		return rtrim($str);
 	}

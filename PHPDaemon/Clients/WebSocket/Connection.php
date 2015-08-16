@@ -148,12 +148,12 @@ class Connection extends ClientConnection {
 				$this->trigger('frame', $this->read($this->pctLength));
 			}
 		}
-		if ($this->state == static::STATE_STANDBY) {
+		if ($this->state === static::STATE_STANDBY) {
 			while (($line = $this->readLine()) !== null) {
 				$line = trim($line);
-				if ($line == '') {
+				if ($line === '') {
 					$expectedKey = base64_encode(pack('H*', sha1($this->key . static::GUID)));
-					if (isset($this->headers['HTTP_SEC_WEBSOCKET_ACCEPT']) && $expectedKey == $this->headers['HTTP_SEC_WEBSOCKET_ACCEPT']) {
+					if (isset($this->headers['HTTP_SEC_WEBSOCKET_ACCEPT']) && $expectedKey === $this->headers['HTTP_SEC_WEBSOCKET_ACCEPT']) {
 						$this->state = static::STATE_HEADER;
 						if ($this->onConnected) {
 							$this->connected = true;

@@ -136,7 +136,7 @@ class FileWatcher {
 		else {
 			static $hash = [];
 
-			foreach (array_keys($this->files) as $path) {
+			foreach ($this->files as $path => $v) {
 				if (!file_exists($path)) {
 					// file can be deleted
 					unset($this->files[$path]);

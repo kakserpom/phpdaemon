@@ -258,7 +258,7 @@ class Binary {
 	public static function getLV(&$p, $l = 1, $nul = false, $lrev = false) {
 		$s = static::b2i(binarySubstr($p, 0, $l), !!$lrev);
 		$p = binarySubstr($p, $l);
-		if ($s == 0) {
+		if ($s === 0) {
 			return '';
 		}
 		$r = '';
@@ -266,7 +266,7 @@ class Binary {
 			echo("getLV error: buf length (" . strlen($p) . "): " . Debug::exportBytes($p) . ", must be >= string length (" . $s . ")\n");
 		}
 		elseif ($nul) {
-			if ($p{$s - 1} != "\x00") {
+			if ($p{$s - 1} !== "\x00") {
 				echo("getLV error: Wrong end of NUL-string (" . Debug::exportBytes($p{$s - 1}) . "), len " . $s . "\n");
 			}
 			else {
@@ -381,7 +381,7 @@ class Binary {
 		for ($i = 0, $n = strlen($bitmap) / 8; $i < $n; ++$i) {
 			$r .= chr((int)bindec(binarySubstr($bitmap, $i * 8, 8)));
 		}
-		if ($check_len && (strlen($r) != $check_len)) {
+		if ($check_len && (strlen($r) !== $check_len)) {
 			return false;
 		}
 		return $r;

@@ -148,7 +148,7 @@ class Connection extends ClientConnection {
 				}
 				if ($cur && (($r['length'] === 0) || (binarySubstr($curId, 0, 1) === 'r'))) {
 					if ($cur->tailable) {
-						if ($cur->finished = ($flagBits[0] == '1')) {
+						if ($cur->finished = ($flagBits[0] === '1')) {
 							$cur->destroy();
 						}
 					}

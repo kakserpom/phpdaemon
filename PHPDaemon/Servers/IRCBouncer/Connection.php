@@ -102,7 +102,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$line .= $arg;
 		}
 		$this->writeln($line);
-		if ($this->pool->protologging && !in_array($cmd, ['PONG'])) {
+		if ($this->pool->protologging && $cmd !== 'PONG') {
 			Daemon::log('=>=>=>=> ' . json_encode($line));
 		}
 	}
@@ -133,7 +133,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$line .= $args[$i];
 		}
 		$this->writeln($line);
-		if ($this->pool->protologging && !in_array($cmd, ['PONG'])) {
+		if ($this->pool->protologging && $cmd !== 'PONG') {
 			Daemon::log('=>=>=>=> ' . json_encode($line));
 		}
 	}

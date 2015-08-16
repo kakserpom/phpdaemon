@@ -69,7 +69,7 @@ class Connection extends ClientConnection {
 					$this->state = self::STATE_DATA;
 					break;
 				}
-				elseif ($e[0] == 'STAT') {
+				elseif ($e[0] === 'STAT') {
 					if ($this->result === null) {
 						$this->result = [];
 					}
