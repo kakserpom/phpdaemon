@@ -270,9 +270,9 @@ abstract class Generic {
 			$params[\EventSslContext::OPT_CA_FILE] = $this->cafile;
 		}
 		$method = \EventSslContext::SSLv3_SERVER_METHOD;
-		if($this->ssl == 'tls'){
+		if ($this->ssl === 'tls'){
 			$method = \EventSslContext::TLS_SERVER_METHOD;
-		} elseif($this->ssl == 'v2'){
+		} elseif ($this->ssl === 'v2'){
 			$method = \EventSslContext::SSLv2_SERVER_METHOD;
 		}
 		$this->ctx = new \EventSslContext($method , $params);
