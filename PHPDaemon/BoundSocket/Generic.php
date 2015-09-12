@@ -257,17 +257,25 @@ abstract class Generic {
 		$params = [
 			\EventSslContext::OPT_LOCAL_CERT        => $this->certfile,
 			\EventSslContext::OPT_LOCAL_PK          => $this->pkfile,
-			\EventSslContext::OPT_PASSPHRASE        => $this->passphrase,
 			\EventSslContext::OPT_VERIFY_PEER       => $this->verifypeer,
 			\EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
 		];
+		if ($this->passphrase !== null) {
+			$params[\EventSslContext::OPT_PASSPHRASE] = $this->passphrase;
+		}
 		if ($this->verifydepth !== null) {
 			$params[\EventSslContext::OPT_VERIFY_DEPTH] = $this->verifydepth;
 		}
 		if ($this->cafile !== null) {
 			$params[\EventSslContext::OPT_CA_FILE] = $this->cafile;
 		}
-		$this->ctx = new \EventSslContext(\EventSslContext::TLS_SERVER_METHOD, $params);
+		$method = \EventSslContext::SSLv3_SERVER_METHOD;
+		if($this->ssl == 'tls'){
+			$method = \EventSslContext::TLS_SERVER_METHOD;
+		} elseif($this->ssl == 'v2'){
+			$method = \EventSslContext::SSLv2_SERVER_METHOD;
+		}
+		$this->ctx = new \EventSslContext($method , $params);
 	}
 
 	/**
