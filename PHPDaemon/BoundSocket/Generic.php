@@ -87,7 +87,7 @@ abstract class Generic {
 	 * TLS
 	 * @var mixed
 	 */
-	protected $ssl;
+	protected $tls;
 
 	/**
 	 * Erroneous?
