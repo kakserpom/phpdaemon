@@ -277,10 +277,10 @@ abstract class Generic {
 		}
 		if ($this->tls) {
 			$method = \EventSslContext::TLS_SERVER_METHOD;
-		} elseif ($this->ssl === 'v2'){
-			$method = \EventSslContext::SSLv2_SERVER_METHOD;
-		} elseif ($this->ssl === 'v3') {
+		} elseif ($this->ssl === 'v3' || $this->ssl === true || $this->ssl === '1'){
 			$method = \EventSslContext::SSLv3_SERVER_METHOD;
+		} elseif ($this->ssl === 'v2') {
+			$method = \EventSslContext::SSLv2_SERVER_METHOD;
 		} elseif ($this->ssl === 'v23') {
 			$method = \EventSslContext::SSLv23_SERVER_METHOD;
 		} elseif ($this->ssl) {
