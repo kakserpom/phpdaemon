@@ -9,7 +9,7 @@ use PHPDaemon\FS\FileSystem;
  * Generic
  *
  * @property mixed addr
- * @package Core
+ * @package Coress
  *
  * @author  Zorin Vasily <maintainer@daemon.io>
  * @dynamic_fields
@@ -78,10 +78,16 @@ abstract class Generic {
 	protected $reuse = true;
 
 	/**
-	 * SSL?
-	 * @var boolean
+	 * SSL
+	 * @var mixed
 	 */
-	protected $ssl = false;
+	protected $ssl;
+	
+	/**
+	 * TLS
+	 * @var mixed
+	 */
+	protected $ssl;
 
 	/**
 	 * Erroneous?
@@ -154,8 +160,8 @@ abstract class Generic {
 			return;
 		}
 		$this->importParams();
-		if ($this->ssl) {
-			$this->initSSLContext();
+		if ($this->ssl || $this->tls) {
+			$this->initSecureContext();
 		}
 	}
 
@@ -236,10 +242,10 @@ abstract class Generic {
 	}
 
 	/**
-	 * Initialize SSL context
+	 * Initialize SSL/TLS context
 	 * @return void
 	 */
-	protected function initSSLContext() {
+	protected function initSecureContext() {
 		if (!\EventUtil::sslRandPoll()) {
 			Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
 			$this->erroneous = true;
@@ -269,15 +275,19 @@ abstract class Generic {
 		if ($this->cafile !== null) {
 			$params[\EventSslContext::OPT_CA_FILE] = $this->cafile;
 		}
-		$method = \EventSslContext::SSLv3_SERVER_METHOD;
-		if ($this->ssl === 'v2'){
+		if ($this->tls) {
+			$method = \EventSslContext::TLS_SERVER_METHOD;
+		} elseif ($this->ssl === 'v2'){
 			$method = \EventSslContext::SSLv2_SERVER_METHOD;
 		} elseif ($this->ssl === 'v3') {
 			$method = \EventSslContext::SSLv3_SERVER_METHOD;
 		} elseif ($this->ssl === 'v23') {
 			$method = \EventSslContext::SSLv23_SERVER_METHOD;
+		} elseif ($this->ssl) {
+			Daemon::log(get_class($this) . ': unrecognized SSL version \'' . $this->ssl . '\'');
+			return;
 		} else {
-			$method = \EventSslContext::TLS_SERVER_METHOD;
+			return;
 		}
 		$this->ctx = new \EventSslContext($method , $params);
 	}
