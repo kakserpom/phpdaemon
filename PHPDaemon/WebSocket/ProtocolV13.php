@@ -20,7 +20,7 @@ class ProtocolV13 extends Protocol {
 		0   => 'CONTINUATION',
 		0x1 => 'STRING',
 		0x2 => 'BINARY',
-		0x3 => 'CONNCLOSE',
+		0x8 => 'CONNCLOSE',
 		0x9 => 'PING',
 		0xA => 'PONG',
 	];
