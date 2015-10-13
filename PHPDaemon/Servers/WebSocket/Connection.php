@@ -134,7 +134,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			return false;
 		}
 
-		if ($this->finished) {
+		if ($this->finished && $type != "CONNCLOSE") {
 			return false;
 		}
 
@@ -155,14 +155,18 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @return void
 	 */
 	public function onFinish() {
-		if ($this->route) {
-			$this->route->onFinish();
-		}
-		$this->route = null;
-		if ($this->protocol) {
-			$this->protocol->conn = null;
-			$this->protocol       = null;
-		}
+
+		$this->sendFrame("", "CONNCLOSE", function(){
+		
+			if ($this->route) {
+				$this->route->onFinish();
+			}
+			$this->route = null;
+			if ($this->protocol) {
+				$this->protocol->conn = null;
+				$this->protocol       = null;
+			}
+		});
 	}
 
 	/**
