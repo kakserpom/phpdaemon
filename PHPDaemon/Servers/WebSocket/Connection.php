@@ -156,17 +156,16 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 */
 	public function onFinish() {
 
-		$this->sendFrame("", "CONNCLOSE", function(){
+		$this->sendFrame('', 'CONNCLOSE');
 		
-			if ($this->route) {
-				$this->route->onFinish();
-			}
-			$this->route = null;
-			if ($this->protocol) {
-				$this->protocol->conn = null;
-				$this->protocol       = null;
-			}
-		});
+		if ($this->route) {
+			$this->route->onFinish();
+		}
+		$this->route = null;
+		if ($this->protocol) {
+			$this->protocol->conn = null;
+			$this->protocol       = null;
+		}
 	}
 
 	/**
