@@ -134,7 +134,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			return false;
 		}
 
-		if ($this->finished && $type != "CONNCLOSE") {
+		if ($this->finished && $type !== 'CONNCLOSE') {
 			return false;
 		}
 
