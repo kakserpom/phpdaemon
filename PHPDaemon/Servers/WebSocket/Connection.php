@@ -134,7 +134,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			return false;
 		}
 
-		if ($this->finished) {
+		if ($this->finished && $type !== 'CONNCLOSE') {
 			return false;
 		}
 
@@ -155,6 +155,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @return void
 	 */
 	public function onFinish() {
+
+		$this->sendFrame('', 'CONNCLOSE');
+		
 		if ($this->route) {
 			$this->route->onFinish();
 		}
