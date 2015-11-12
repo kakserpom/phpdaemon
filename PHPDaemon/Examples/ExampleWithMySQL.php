@@ -1,4 +1,13 @@
 <?php
+/*
+Database credentials: add to phpd.conf:
+Pool:\PHPDaemon\Clients\MySQL\Pool{
+    enable 1;
+    server 'tcp://user:password@127.0.0.1/dbname';
+    privileged;
+}
+*/
+
 namespace PHPDaemon\Examples;
 
 use PHPDaemon\HTTPRequest\Generic;
@@ -51,7 +60,7 @@ class ExampleWithMySQLRequest extends Generic {
 
 		});
 
-		$job('select', function ($name, $job) { // registering job named 'showvar'
+		$job('select', function ($name, $job) { // registering job named 'select'
 
 			$this->appInstance->sql->getConnection(function ($sql) use ($name, $job) {
 				if (!$sql->isConnected()) {
