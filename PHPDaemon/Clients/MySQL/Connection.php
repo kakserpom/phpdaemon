@@ -206,7 +206,6 @@ class Connection extends ClientConnection {
 		else {
 			if (!$this->onConnected) {
 				$this->onConnected = new StackCallbacks();
-				$this->onConnected = new StackCallbacks();
 			}
 			$this->onConnected->push($cb);
 		}
