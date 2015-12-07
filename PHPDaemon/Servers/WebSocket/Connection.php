@@ -249,6 +249,20 @@ class Connection extends \PHPDaemon\Network\Connection {
 			return false;
 		}
 
+		if ($extraHeaders === null && method_exists($this->route, 'onBeforeHandshake')) {
+			$this->route->onWakeup();
+			$this->route->onBeforeHandshake();
+
+			$extraHeaders = '';
+			foreach ($this->headers as $k => $line) {
+				if ($k !== 'STATUS') {
+					$extraHeaders .= $line . "\r\n";
+				}
+			}
+
+			$this->route->onSleep();
+		}
+
 		// Handshaking...
 		$handshake = $this->protocol->getHandshakeReply($this->buf, $extraHeaders);
 		if ($handshake === 0) { // not enough data yet
@@ -258,26 +272,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"');
 			$this->finish();
 			return false;
-		}
-		if ($extraHeaders === null && method_exists($this->route, 'onBeforeHandshake')) {
-			$this->route->onWakeup();
-			$ret = $this->route->onBeforeHandshake(function($cb) {
-				$h = '';
-				foreach ($this->headers as $k => $line) {
-					if ($k !== 'STATUS') {
-						$h .= $line . "\r\n";
-					}
-				}
-				if ($this->handshake($h)) {
-					if ($cb !== null) {
-						call_user_func($cb);
-					}
-				}
-			});
-			$this->route->onSleep();
-			if ($ret !== false) {
-				return;
-			}
 		}
 
 		if (!isset($this->protocol)) {
