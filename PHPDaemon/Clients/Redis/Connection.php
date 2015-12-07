@@ -247,6 +247,18 @@ class Connection extends ClientConnection implements \Iterator {
 	}
 
 	/**
+	 * Wrapper for scans commands
+	 * @param  string  $cmd    Command
+	 * @param  array   $args   Arguments
+	 * @param  cllable $cbEnd  Callback
+	 * @param  integer $limit  Limit
+	 * @return AutoScan
+	 */
+	public function autoscan($cmd, $args = [], $cbEnd = null, $limit = null) {
+		return new AutoScan($this, $cmd, $args, $cbEnd, $limit);
+	}
+
+	/**
 	 * @TODO
 	 * @param  string $chan
 	 * @return integer
