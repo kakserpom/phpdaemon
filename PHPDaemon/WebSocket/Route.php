@@ -68,7 +68,7 @@ class Route implements RouteInterface {
 	 * @return void
 	 */
 	public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false) {
-		$this->header(
+		$this->client->header(
 			'Set-Cookie: ' . $name . '=' . rawurlencode($value)
 			. (empty($domain) ? '' : '; Domain=' . $domain)
 			. (empty($maxage) ? '' : '; Max-Age=' . $maxage)
