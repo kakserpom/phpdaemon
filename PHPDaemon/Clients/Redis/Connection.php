@@ -543,7 +543,11 @@ class Connection extends ClientConnection implements \Iterator {
 	 * @return void
 	 */
 	public function sendCommand($name, $args, $cb = null) {
-		$this->onResponse($cb);
+		/*if ($name === 'MULTI') {
+			$this->onResponse(null);
+		} else {
+			$this->onResponse($cb);
+		}*/
 		if (!is_array($args)) {
 			$args = [$args];
 		}

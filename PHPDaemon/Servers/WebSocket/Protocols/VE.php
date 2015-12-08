@@ -86,6 +86,13 @@ class VE extends Connection {
 			return false;
 		}
 
+		if ($type === 'CONNCLOSE') {
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+				return true;
+			}
+		}
+
 		// Binary
 		$type = $this->getFrameType($type);
 		if (($type & self::BINARY) === self::BINARY) {

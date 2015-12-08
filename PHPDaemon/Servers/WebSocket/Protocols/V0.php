@@ -105,8 +105,22 @@ class V0 extends Connection {
 	 * @return boolean         Success.
 	 */
 	public function sendFrame($data, $type = null, $cb = null) {
-		// Binary
+		if (!$this->handshaked) {
+			return false;
+		}
+
+		if ($this->finished && $type !== 'CONNCLOSE') {
+			return false;
+		}
+		if ($type === 'CONNCLOSE') {
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+				return true;
+			}
+		}
+
 		$type = $this->getFrameType($type);
+		// Binary
 		if (($type & self::BINARY) === self::BINARY) {
 			$n   = strlen($data);
 			$len = '';
