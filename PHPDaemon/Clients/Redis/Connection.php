@@ -543,11 +543,11 @@ class Connection extends ClientConnection implements \Iterator {
 	 * @return void
 	 */
 	public function sendCommand($name, $args, $cb = null) {
-		/*if ($name === 'MULTI') {
+		if ($name === 'MULTI') {
 			$this->onResponse(null);
 		} else {
 			$this->onResponse($cb);
-		}*/
+		}
 		if (!is_array($args)) {
 			$args = [$args];
 		}
@@ -555,6 +555,9 @@ class Connection extends ClientConnection implements \Iterator {
 		$this->writeln('*' . sizeof($args));
 		foreach ($args as $arg) {
 			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
+		}
+		if ($name === 'MULTI') {
+			call_user_func($cb, $this);
 		}
 	}
 
