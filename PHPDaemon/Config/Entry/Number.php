@@ -39,7 +39,7 @@ class Number extends Generic {
 		}
 
 		if (
-				($l === 'G')
+				($l === 'g')
 				|| ($l === 'G')
 		) {
 			return ((int)substr($value, 0, -1) * 1000 * 1000 * 1000);
