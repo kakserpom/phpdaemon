@@ -3,9 +3,6 @@ namespace PHPDaemon\Servers\WebSocket;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\WebSocket\ProtocolV0;
-use PHPDaemon\WebSocket\ProtocolV13;
-use PHPDaemon\WebSocket\ProtocolVE;
 use PHPDaemon\WebSocket\Route;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 
@@ -23,12 +20,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $writeReady = true;
 	protected $extensions = [];
 	protected $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
-	protected $buf = '';
 	
 	
 	protected $headers = [];
 	protected $headers_sent = false;
-	public $framebuf = '';
 	
 	/**
 	 * @var array _SERVER
@@ -46,10 +41,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	public $get = [];
 	
 
-	/**
-	 * @var \PHPDaemon\WebSocket\Protocol
-	 */
-	protected $protocol;
 	protected $policyReqNotFound = false;
 	protected $currentHeader;
 	protected $EOL = "\r\n";
@@ -84,6 +75,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 */
 	const STATE_HANDSHAKED = 6;
 
+	const STRING = NULL;
+
+	const BINARY = NULL;
+
+
 	/**
 	 * @var integer Content length from header() method
 	 */
@@ -108,6 +104,26 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
+	 * Get real frame type identificator
+	 * @param $type
+	 * @return integer
+	 */
+	public function getFrameType($type) {
+		if (is_int($type)) {
+			return $type;
+		}
+		if ($type === null) {
+			$type = 'STRING';
+		}
+		$frametype = @constant(get_class($this) . '::' . $type);
+		if ($frametype === null) {
+			Daemon::log(__METHOD__ . ' : Undefined frametype "' . $type . '"');
+		}
+		return $frametype;
+	}
+
+
+	/**
 	 * Called when connection is inherited from HTTP request
 	 * @param  object $req
 	 * @return void
@@ -130,24 +146,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @return boolean         Success.
 	 */
 	public function sendFrame($data, $type = null, $cb = null) {
-		if (!$this->handshaked) {
-			return false;
-		}
-
-		if ($this->finished && $type !== 'CONNCLOSE') {
-			return false;
-		}
-
-		if (!isset($this->protocol)) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client ' . $this->addr);
-			return false;
-		}
-
-		$this->protocol->sendFrame($data, $type);
-		if ($cb) {
-			$this->onWriteOnce($cb);
-		}
-		return true;
+		return false;
 	}
 
 	/**
@@ -162,10 +161,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$this->route->onFinish();
 		}
 		$this->route = null;
-		if ($this->protocol) {
-			$this->protocol->conn = null;
-			$this->protocol       = null;
-		}
 	}
 
 	/**
@@ -201,29 +196,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	}
 
 	/**
-	 * Called when the connection is handshaked.
-	 * @return boolean Ready to handshake ?
-	 */
-	public function onHandshake() {
-
-		$this->route = $this->pool->getRoute($this->server['DOCUMENT_URI'], $this);
-		if (!$this->route) {
-			return false;
-		}
-
-		if (!isset($this->protocol)) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client "' . $this->addr . '"');
-			return false;
-		}
-
-		if ($this->protocol->onHandshake() === false) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * Called when the worker is going to shutdown.
 	 * @return boolean Ready to shutdown ?
 	 */
@@ -238,40 +210,23 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 	/**
 	 * Called when we're going to handshake.
-	 * @param  array   $extraHeaders
 	 * @return boolean               Handshake status
 	 */
-	public function handshake($extraHeaders = null) {
+	public function handshake() {
 
-		if (!$this->onHandshake()) {
+		$this->route = $this->pool->getRoute($this->server['DOCUMENT_URI'], $this);
+		if (!$this->route) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot handshake session for client "' . $this->addr . '"');
 			$this->finish();
 			return false;
 		}
-
-		// Handshaking...
-		$handshake = $this->protocol->getHandshakeReply($this->buf, $extraHeaders);
-		if ($handshake === 0) { // not enough data yet
-			return 0;
-		}
-		if (!$handshake) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"');
-			$this->finish();
-			return false;
-		}
-		if ($extraHeaders === null && method_exists($this->route, 'onBeforeHandshake')) {
+		if (method_exists($this->route, 'onBeforeHandshake')) {
 			$this->route->onWakeup();
 			$ret = $this->route->onBeforeHandshake(function($cb) {
-				$h = '';
-				foreach ($this->headers as $k => $line) {
-					if ($k !== 'STATUS') {
-						$h .= $line . "\r\n";
-					}
-				}
-				if ($this->handshake($h)) {
-					if ($cb !== null) {
-						call_user_func($cb);
-					}
+				if (!$this->sendHandshakeReply()) {
+					Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"');
+					$this->finish();
+					return false;
 				}
 			});
 			$this->route->onSleep();
@@ -279,14 +234,11 @@ class Connection extends \PHPDaemon\Network\Connection {
 				return;
 			}
 		}
-
-		if (!isset($this->protocol)) {
-			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client "' . $this->addr . '"');
+		if (!$this->sendHandshakeReply()) {
+			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"');
 			$this->finish();
 			return false;
 		}
-		$this->write($handshake);
-		$this->buf   = '';
 		$this->handshaked = true;
 		$this->headers_sent = true;
 		$this->state = static::STATE_HANDSHAKED;
@@ -426,22 +378,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 		if ($this->state === self::STATE_CONTENT) {
 			$this->state = self::STATE_PREHANDSHAKE;
 		}
-
-		if ($this->state === self::STATE_PREHANDSHAKE) {
-			$this->buf .= $this->read(1024);
-			if (!$this->handshake()) {
-				return;
-			}
-		}
-		if ($this->state === self::STATE_HANDSHAKED) {
-			if (!isset($this->protocol)) {
-				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot find session-related websocket protocol for client "' . $this->addr . '"');
-				$this->finish();
-				return;
-			}
-			$this->protocol->onRead();
-		}
-
 	}
 
 	/**
@@ -474,10 +410,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 		// ----------------------------------------------------------
 		if (isset($this->server['HTTP_SEC_WEBSOCKET_VERSION'])) { // HYBI
 			if ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] === '8') { // Version 8 (FF7, Chrome14)
-				$this->protocol = new ProtocolV13($this);
+				$this->switchToProtocol('V13');
 			}
 			elseif ($this->server['HTTP_SEC_WEBSOCKET_VERSION'] === '13') { // newest protocol
-				$this->protocol = new ProtocolV13($this);
+				$this->switchToProtocol('V13');
 			}
 			else {
 				Daemon::$process->log(get_class($this) . '::' . __METHOD__ . " : Websocket protocol version " . $this->server['HTTP_SEC_WEBSOCKET_VERSION'] . ' is not yet supported for client "' . $this->addr . '"');
@@ -486,15 +422,34 @@ class Connection extends \PHPDaemon\Network\Connection {
 			}
 		}
 		elseif (!isset($this->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
-			$this->protocol = new ProtocolVE($this);
+			$this->switchToProtocol('VE');
 		}
 		else { // Defaulting to HIXIE (Safari5 and many non-browser clients...)
-			$this->protocol = new ProtocolV0($this);
+			$this->switchToProtocol('V0');
 		}
 		// ----------------------------------------------------------
 		// End of protocol discovery
 		// ----------------------------------------------------------
 		return true;
+	}
+
+	protected function switchToProtocol($proto) {
+		$class = '\\PHPDaemon\\Servers\\WebSocket\\Protocols\\' . $proto;
+		$conn  = new $class(null, $this->pool);
+		$this->pool->attach($conn);
+		$conn->setFd($this->getFd(), $this->getBev());
+		$this->unsetFd();
+		$this->pool->detach($this);
+		$conn->onInheritance($this);
+	}
+
+	public function onInheritance($conn) {
+		$this->server = $conn->server;
+		$this->cookie = $conn->cookie;
+		$this->get = $conn->get;
+		$this->state = self::STATE_PREHANDSHAKE;
+		$this->addr = $conn->addr;
+		$this->onRead();
 	}
 
 
