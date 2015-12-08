@@ -21,7 +21,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	protected $extensions = [];
 	protected $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
 	
-	
 	protected $headers = [];
 	protected $headers_sent = false;
 	
@@ -78,7 +77,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 	const STRING = NULL;
 
 	const BINARY = NULL;
-
 
 	/**
 	 * @var integer Content length from header() method
@@ -248,14 +246,6 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$this->route->onSleep();
 		}
 		return true;
-	}
-
-	/**
-	 * @TODO
-	 * @param  string $s Data
-	 */
-	public function write($s) {
-		parent::write($s);
 	}
 	
 	/**
