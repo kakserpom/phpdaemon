@@ -211,32 +211,41 @@ class Connection extends \PHPDaemon\Network\Connection {
 	 * @return boolean               Handshake status
 	 */
 	public function handshake() {
-
 		$this->route = $this->pool->getRoute($this->server['DOCUMENT_URI'], $this);
 		if (!$this->route) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Cannot handshake session for client "' . $this->addr . '"');
 			$this->finish();
 			return false;
 		}
+
 		if (method_exists($this->route, 'onBeforeHandshake')) {
 			$this->route->onWakeup();
-			$ret = $this->route->onBeforeHandshake(function($cb) {
-				if (!$this->sendHandshakeReply()) {
-					Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"');
-					$this->finish();
-					return false;
-				}
+			$ret = $this->route->onBeforeHandshake(function() {
+				$this->handshakeAfter();
 			});
 			$this->route->onSleep();
 			if ($ret !== false) {
 				return;
 			}
 		}
-		if (!$this->sendHandshakeReply()) {
+
+		$this->handshakeAfter();
+	}
+
+	protected function handshakeAfter() {
+		$extraHeaders = '';
+		foreach ($this->headers as $k => $line) {
+			if ($k !== 'STATUS') {
+				$extraHeaders .= $line . "\r\n";
+			}
+		}
+
+		if (!$this->sendHandshakeReply($extraHeaders)) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"');
 			$this->finish();
 			return false;
 		}
+
 		$this->handshaked = true;
 		$this->headers_sent = true;
 		$this->state = static::STATE_HANDSHAKED;
