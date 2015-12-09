@@ -221,14 +221,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 		if (method_exists($this->route, 'onBeforeHandshake')) {
 			$this->route->onWakeup();
 			$ret = $this->route->onBeforeHandshake(function() {
-				$extraHeaders = '';
-				foreach ($this->headers as $k => $line) {
-					if ($k !== 'STATUS') {
-						$extraHeaders .= $line . "\r\n";
-					}
-				}
-
-				$this->handshakeAfter($extraHeaders);
+				$this->handshakeAfter();
 			});
 			$this->route->onSleep();
 			if ($ret !== false) {
@@ -239,7 +232,14 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$this->handshakeAfter();
 	}
 
-	protected function handshakeAfter($extraHeaders = '') {
+	protected function handshakeAfter() {
+		$extraHeaders = '';
+		foreach ($this->headers as $k => $line) {
+			if ($k !== 'STATUS') {
+				$extraHeaders .= $line . "\r\n";
+			}
+		}
+
 		if (!$this->sendHandshakeReply($extraHeaders)) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Handshake protocol failure for client "' . $this->addr . '"');
 			$this->finish();
