@@ -11,7 +11,7 @@ use PHPDaemon\Utils\Crypt;
  * @author     Zorin Vasily <maintainer@daemon.io>
  */
 class IFrame extends Generic {
-	protected $version = '0.3';
+	protected $version = '1.0.3';
 	protected $contentType = 'text/html';
 	protected $cacheable = true;
 
@@ -35,7 +35,7 @@ class IFrame extends Generic {
 		document.domain = document.domain;
 		_sockjs_onload = function(){SockJS.bootstrap_iframe();};
 	</script>
-	<script src="http://cdn.sockjs.org/sockjs-' . htmlentities($this->version, ENT_QUOTES, 'UTF-8').'.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/sockjs/' . htmlentities($this->version, ENT_QUOTES, 'UTF-8').'/sockjs.min.js"></script>
 </head>
 <body>
 	<h2>Don\'t panic!</h2>
