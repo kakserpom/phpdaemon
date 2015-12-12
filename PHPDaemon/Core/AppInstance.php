@@ -160,7 +160,7 @@ class AppInstance {
 	 * @return AppInstance
 	 */
 	public static function getInstance($name, $spawn = true) {
-		return Daemon::$appResolver->getInstanceByAppName(get_called_class(), $name, $spawn);
+		return Daemon::$appResolver->getInstanceByAppName('\\' . get_called_class(), $name, $spawn);
 	}
 
 	/**
