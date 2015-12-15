@@ -4,7 +4,7 @@ namespace PHPDaemon\Core;
 /**
  * CallbackWrapper
  * @package Core
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class CallbackWrapper {
 	use \PHPDaemon\Traits\ClassWatchdog;

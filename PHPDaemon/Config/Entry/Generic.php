@@ -7,7 +7,7 @@ namespace PHPDaemon\Config\Entry;
  * @package    Core
  * @subpackage Config
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;

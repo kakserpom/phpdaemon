@@ -4,7 +4,7 @@ namespace PHPDaemon\Utils;
 /**
  * Terminal
  * @package PHPDaemon\Utils
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Terminal {
 	use \PHPDaemon\Traits\ClassWatchdog;

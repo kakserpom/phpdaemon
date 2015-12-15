@@ -9,7 +9,7 @@ use PHPDaemon\Structures\StackCallbacks;
 /**
  * IOStream
  * @package PHPDaemon\Network
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 abstract class IOStream {
 	use \PHPDaemon\Traits\ClassWatchdog;

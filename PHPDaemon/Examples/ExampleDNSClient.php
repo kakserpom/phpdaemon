@@ -5,7 +5,7 @@ namespace PHPDaemon\Examples;
  * @package    Examples
  * @subpackage ExampleHTTPClient
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ExampleDNSClient extends \PHPDaemon\Core\AppInstance {
 	/**

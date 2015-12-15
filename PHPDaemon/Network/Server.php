@@ -7,7 +7,7 @@ use PHPDaemon\Network\Pool;
 /**
  * Network server pattern
  * @package PHPDaemon\Network
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 abstract class Server extends Pool {
 

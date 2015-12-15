@@ -6,7 +6,7 @@ namespace PHPDaemon\Thread;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Collection {
 	use \PHPDaemon\Traits\ClassWatchdog;

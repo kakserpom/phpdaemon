@@ -6,7 +6,7 @@
  * @package    Applications
  * @subpackage GearmanNode
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class GearmanNode extends \PHPDaemon\Core\AppInstance {
 

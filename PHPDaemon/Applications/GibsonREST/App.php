@@ -5,7 +5,7 @@ namespace PHPDaemon\Applications\GibsonREST;
  * @package    GibsonREST
  * @subpackage Base
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class App extends \PHPDaemon\Core\AppInstance {
 

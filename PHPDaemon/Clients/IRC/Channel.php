@@ -8,7 +8,7 @@ use PHPDaemon\Utils\IRC;
 /**
  * @package    NetworkClients
  * @subpackage IRCClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Channel extends ObjectStorage {
 	use \PHPDaemon\Traits\EventHandlers;

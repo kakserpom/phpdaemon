@@ -13,7 +13,7 @@ use PHPDaemon\Utils\Terminal;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Bootstrap {
 	use \PHPDaemon\Traits\ClassWatchdog;

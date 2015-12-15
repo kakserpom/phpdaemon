@@ -10,7 +10,7 @@ use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
 /**
  * @package    Libraries
  * @subpackage SockJS
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Application extends \PHPDaemon\Core\AppInstance {
 	protected $redis;

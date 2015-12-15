@@ -5,7 +5,7 @@ namespace PHPDaemon\Examples;
  * @package    Examples
  * @subpackage Mongo
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ExampleWithMongo extends \PHPDaemon\Core\AppInstance {
 	public $mongo;

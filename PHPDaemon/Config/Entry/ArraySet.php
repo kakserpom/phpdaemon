@@ -9,7 +9,7 @@ use PHPDaemon\Config\Entry\Generic;
  * @package    Core
  * @subpackage Config
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ArraySet extends Generic {
 

@@ -10,7 +10,7 @@ use PHPDaemon\FS\FileSystem;
 /**
  * Sessions
  * @package PHPDaemon\Traits
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 trait Sessions {
 	/**

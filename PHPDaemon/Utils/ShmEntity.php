@@ -6,7 +6,7 @@ use PHPDaemon\Core\Daemon;
 /**
  * ShmEntity
  * @package PHPDaemon\Utils
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class ShmEntity {
 	use \PHPDaemon\Traits\ClassWatchdog;

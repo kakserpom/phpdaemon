@@ -8,7 +8,7 @@ use PHPDaemon\Core\Debug;
  *
  * @package DNode
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class ProtocolError extends \Exception {
 }

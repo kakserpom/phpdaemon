@@ -6,7 +6,7 @@ use PHPDaemon\Network\ClientConnection;
 /**
  * @package    Network clients
  * @subpackage MemcacheClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 

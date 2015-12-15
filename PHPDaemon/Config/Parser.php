@@ -14,7 +14,7 @@ use PHPDaemon\Exceptions\InfiniteRecursion;
  * @package    Core
  * @subpackage Config
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Parser {
 	use \PHPDaemon\Traits\ClassWatchdog;

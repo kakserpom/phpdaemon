@@ -10,7 +10,7 @@ namespace PHPDaemon\Clients\Asterisk;
  * @version    2.0
  * @author     Ponomarev Dmitry <ponomarev.base@gmail.com> (original code)
  * @author     TyShkan <denis@tyshkan.ru> (2.0)
- * @author     Zorin Vasily <maintainer@daemon.io> (2.0)
+ * @author     Vasily Zorin <maintainer@daemon.io> (2.0)
  */
 class ConnectionFinished extends \PHPDaemon\Exceptions\ConnectionFinished {
 }

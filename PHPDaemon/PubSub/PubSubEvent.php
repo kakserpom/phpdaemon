@@ -4,7 +4,7 @@ namespace PHPDaemon\PubSub;
 /**
  * PubSubEvent
  * @package PHPDaemon\PubSub
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class PubSubEvent extends \SplObjectStorage {
 	use \PHPDaemon\Traits\ClassWatchdog;

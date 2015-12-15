@@ -6,7 +6,7 @@ use PHPDaemon\Utils\Crypt;
 /**
  * @package    NetworkServers
  * @subpackage DebungConsole
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
 

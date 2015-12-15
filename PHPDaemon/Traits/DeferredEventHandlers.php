@@ -10,7 +10,7 @@ use PHPDaemon\Exceptions\UndefinedEventCalledException;
 /**
  * Deferred event handlers trait
  * @package PHPDaemon\Traits
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 trait DeferredEventHandlers {
 	protected $DefEvHandlersUsed = false;

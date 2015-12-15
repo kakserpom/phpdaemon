@@ -3,11 +3,12 @@ namespace PHPDaemon\Examples;
 use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\DNode\DNode;
 /**
  * @package    Examples
  * @subpackage WebSocket
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ExampleDNode extends \PHPDaemon\Core\AppInstance {
 	/**
@@ -33,8 +34,8 @@ class ExampleDNode extends \PHPDaemon\Core\AppInstance {
 	}
 }
 
-class ExampleDNodeRoute extends \PHPDaemon\DNode\Generic {
-	
+class ExampleDNodeRoute extends \PHPDaemon\WebSocket\Route {
+	use DNode;
 	public function onHandshake() {
 
 		$this->defineLocalMethods([

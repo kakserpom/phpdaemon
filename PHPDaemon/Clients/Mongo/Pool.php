@@ -12,7 +12,7 @@ use PHPDaemon\Core\Debug;
 /**
  * @package    Applications
  * @subpackage MongoClientAsync
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Pool extends Client {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;

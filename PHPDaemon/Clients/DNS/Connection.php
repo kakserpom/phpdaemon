@@ -10,7 +10,7 @@ use PHPDaemon\Core\Debug;
 /**
  * @package    NetworkClients
  * @subpackage DNSClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 	

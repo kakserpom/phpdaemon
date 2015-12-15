@@ -7,7 +7,7 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
  * @package    Clients
  * @subpackage Gibson
  * @protocol http://gibson-db.in/protocol.php
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Client {
 	/**

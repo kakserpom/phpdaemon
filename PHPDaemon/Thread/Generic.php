@@ -10,7 +10,7 @@ use PHPDaemon\Exceptions\ClearStack;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 abstract class Generic {
 	use \PHPDaemon\Traits\ClassWatchdog;

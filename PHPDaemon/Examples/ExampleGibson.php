@@ -3,7 +3,7 @@
  * @package    Examples
  * @subpackage ExampleGibson
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 namespace PHPDaemon\Examples;
 

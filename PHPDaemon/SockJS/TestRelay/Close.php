@@ -9,7 +9,7 @@ use PHPDaemon\Core\Debug;
 /**
  * @package    SockJS
  * @subpackage TestRelay
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Close extends \PHPDaemon\WebSocket\Route {
 	/**

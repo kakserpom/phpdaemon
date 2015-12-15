@@ -11,7 +11,7 @@ use PHPDaemon\FS\FileSystem;
  * @property mixed addr
  * @package Coress
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  * @dynamic_fields
  */
 abstract class Generic {

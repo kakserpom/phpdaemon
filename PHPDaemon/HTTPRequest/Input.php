@@ -8,7 +8,7 @@ use PHPDaemon\FS\File;
 /**
  * HTTP request input buffer
  * @package PHPDaemon\HTTPRequest
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Input extends \EventBuffer {
 	use \PHPDaemon\Traits\ClassWatchdog;

@@ -6,7 +6,7 @@ use PHPDaemon\Core\AppInstance;
 /**
  * TransportContext
  * @package PHPDaemon\Core
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class TransportContext extends AppInstance {
 	/**

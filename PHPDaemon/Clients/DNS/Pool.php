@@ -9,7 +9,7 @@ use PHPDaemon\Network\Client;
 /**
  * @package    NetworkClients
  * @subpackage DNSClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Pool extends Client {
 

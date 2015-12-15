@@ -6,7 +6,7 @@ use PHPDaemon\Core\CallbackWrapper;
 /**
  * PriorityQueueCallbacks
  * @package PHPDaemon\Structures
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class PriorityQueueCallbacks extends \SplPriorityQueue {
 	use \PHPDaemon\Traits\ClassWatchdog;

@@ -9,7 +9,7 @@ use PHPDaemon\HTTPRequest\Generic;
  * @package    Applications
  * @subpackage ServerStatus
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ServerStatusRequest extends Generic {
 

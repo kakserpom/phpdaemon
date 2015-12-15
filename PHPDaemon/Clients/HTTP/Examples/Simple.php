@@ -8,7 +8,7 @@ namespace PHPDaemon\Clients\HTTP\Examples;
 /**
  * @package    NetworkClients
  * @subpackage HTTPClientExample
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Simple extends \PHPDaemon\Core\AppInstance {
 	/**

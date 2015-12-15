@@ -8,7 +8,7 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
 /**
  * Watchdog of __call and __callStatic
  * @package PHPDaemon\Traits
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 trait ClassWatchdog {
 	/**

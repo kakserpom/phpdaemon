@@ -4,7 +4,7 @@
  * Default application resolver
  *
  * @package Core
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class MyAppResolver extends \PHPDaemon\Core\AppResolver {
 

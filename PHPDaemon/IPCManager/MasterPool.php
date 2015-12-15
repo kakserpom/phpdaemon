@@ -5,7 +5,7 @@ namespace PHPDaemon\IPCManager;
  * @package    Applications
  * @subpackage IPCManager
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class MasterPool extends \PHPDaemon\Network\Server {
 	/** @var array */

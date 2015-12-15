@@ -8,7 +8,7 @@ use PHPDaemon\Utils\Crypt;
 /**
  * @package    Libraries
  * @subpackage SockJS
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class IFrame extends Generic {
 	protected $version = '1.0.3';

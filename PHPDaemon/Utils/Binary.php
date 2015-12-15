@@ -6,7 +6,7 @@ use PHPDaemon\Core\Debug;
 /**
  * Binary
  * @package PHPDaemon\Utils
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Binary {
 	use \PHPDaemon\Traits\ClassWatchdog;

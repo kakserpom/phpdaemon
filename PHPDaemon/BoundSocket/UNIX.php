@@ -8,7 +8,7 @@ use PHPDaemon\Core\Daemon;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class UNIX extends Generic {
 	/**

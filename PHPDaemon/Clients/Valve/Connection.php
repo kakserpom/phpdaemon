@@ -9,7 +9,7 @@ use PHPDaemon\Utils\Encoding;
 /**
  * @package    NetworkClients
  * @subpackage HLClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 	/**

@@ -7,7 +7,7 @@ use PHPDaemon\Core\Daemon;
 /**
  * Event handlers trait
  * @package PHPDaemon\Traits
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 trait EventHandlers {
 	/**

@@ -6,7 +6,7 @@ use PHPDaemon\Core\CallbackWrapper;
 /**
  * ComplexJob class
  * @package PHPDaemon\Core
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class ComplexJob implements \ArrayAccess {
 	use \PHPDaemon\Traits\ClassWatchdog;

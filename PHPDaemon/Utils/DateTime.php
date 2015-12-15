@@ -4,7 +4,7 @@ namespace PHPDaemon\Utils;
 /**
  * DateTime
  * @package PHPDaemon\Utils
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class DateTime extends \DateTime {
 	/**

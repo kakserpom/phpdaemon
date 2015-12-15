@@ -10,7 +10,7 @@ use PHPDaemon\Utils\Crypt;
 /**
  * @package    Libraries
  * @subpackage SockJS
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Jsonp extends Generic {
 	protected $delayedStopEnabled = true;

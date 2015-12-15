@@ -4,7 +4,7 @@ namespace PHPDaemon\Servers\Socks;
 /**
  * @package    NetworkServers
  * @subpackage SocksServer
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
 

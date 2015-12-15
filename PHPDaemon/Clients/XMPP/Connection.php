@@ -11,7 +11,7 @@ use PHPDaemon\XMLStream\XMLStream;
 /**
  * @package    NetworkClients
  * @subpackage XMPPClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 

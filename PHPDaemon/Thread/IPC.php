@@ -11,7 +11,7 @@ use PHPDaemon\FS\FileWatcher;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 // @TODO: respawning IPCThread on unexpected failures
 class IPC extends Generic {

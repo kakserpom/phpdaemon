@@ -9,7 +9,7 @@ use PHPDaemon\Utils\Binary;
 /**
  * @package    Applications
  * @subpackage ICMPClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends ClientConnection {
 	/**

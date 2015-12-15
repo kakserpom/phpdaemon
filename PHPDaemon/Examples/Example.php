@@ -7,7 +7,7 @@ use PHPDaemon\Examples\ExampleRequest;
  * @package    Examples
  * @subpackage Base
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Example extends \PHPDaemon\Core\AppInstance {
 

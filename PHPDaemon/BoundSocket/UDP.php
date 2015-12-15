@@ -10,7 +10,7 @@ use PHPDaemon\Core\Timer;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class UDP extends Generic {
 	/**

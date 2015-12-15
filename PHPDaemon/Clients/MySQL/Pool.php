@@ -6,7 +6,7 @@ use PHPDaemon\Network\Client;
 /**
  * @package    Network clients
  * @subpackage MySQLClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Pool extends Client {
 

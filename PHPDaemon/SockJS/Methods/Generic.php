@@ -10,7 +10,7 @@ use PHPDaemon\Exceptions\UndefinedMethodCalled;
  * Contains some base methods
  * @package Libraries
  * @subpackage SockJS
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	protected $stage = 0;

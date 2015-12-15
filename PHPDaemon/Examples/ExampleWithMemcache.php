@@ -4,7 +4,7 @@ namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
  * @package    Examples
  * @subpackage Memcache
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ExampleWithMemcache extends \PHPDaemon\Core\AppInstance {
 	/**

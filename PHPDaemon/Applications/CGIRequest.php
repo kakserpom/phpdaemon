@@ -8,7 +8,7 @@ use PHPDaemon\HTTPRequest\Generic;
  * @package    Applications
  * @subpackage CGI
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class CGIRequest extends Generic {
 

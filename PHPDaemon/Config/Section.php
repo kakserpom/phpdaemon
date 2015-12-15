@@ -18,7 +18,7 @@ use PHPDaemon\Config\Entry\Generic;
  * @package    Core
  * @subpackage Config
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  * @dynamic_fields
  */
 class Section implements \ArrayAccess {

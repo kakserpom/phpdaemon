@@ -5,7 +5,7 @@ namespace PHPDaemon\Examples;
  * @package    Applications
  * @subpackage MongoNode
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class MongoNode extends \PHPDaemon\Core\AppInstance {
 

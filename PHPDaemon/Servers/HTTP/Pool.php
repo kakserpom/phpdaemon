@@ -7,7 +7,7 @@ use PHPDaemon\Config\Entry\Time;
 /**
  * @package    NetworkServer
  * @subpackage HTTPServer
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Pool extends \PHPDaemon\Network\Server {
 

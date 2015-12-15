@@ -8,7 +8,7 @@ use PHPDaemon\Core\CallbackWrapper;
 /**
  * File
  * @package PHPDaemon\FS
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class File {
 	use \PHPDaemon\Traits\ClassWatchdog;

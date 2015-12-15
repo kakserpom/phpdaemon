@@ -4,7 +4,7 @@ namespace PHPDaemon\Utils;
 /**
  * IRC
  * @package PHPDaemon\Utils
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class IRC {
 	use \PHPDaemon\Traits\ClassWatchdog;

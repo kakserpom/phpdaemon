@@ -10,7 +10,7 @@ use PHPDaemon\Request\Generic;
 /**
  * Application resolver
  * @package PHPDaemon\Core
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class AppResolver {
 	use \PHPDaemon\Traits\ClassWatchdog;

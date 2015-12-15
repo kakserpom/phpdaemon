@@ -11,7 +11,7 @@ use PHPDaemon\Thread;
 /**
  * Pool of connections
  * @package PHPDaemon\Network
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 abstract class Pool extends ObjectStorage {
 

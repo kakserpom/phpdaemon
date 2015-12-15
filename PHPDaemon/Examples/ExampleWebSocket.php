@@ -7,7 +7,7 @@ use PHPDaemon\Core\Debug;
  * @package    Examples
  * @subpackage WebSocket
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ExampleWebSocket extends \PHPDaemon\Core\AppInstance {
 	/**

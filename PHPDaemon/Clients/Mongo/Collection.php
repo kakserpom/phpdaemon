@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients\Mongo;
 /**
  * @package    Applications
  * @subpackage MongoClientAsync
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Collection {
 	use \PHPDaemon\Traits\ClassWatchdog;

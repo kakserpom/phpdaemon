@@ -10,7 +10,7 @@ use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
 /**
  * @package    SockJS
  * @subpackage TestRelay
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Application extends \PHPDaemon\Core\AppInstance {
 	/**

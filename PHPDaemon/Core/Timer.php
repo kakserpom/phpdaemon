@@ -6,7 +6,7 @@ use PHPDaemon\Core\Daemon;
 /**
  * Timed event
  * @package PHPDaemon\Core
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Timer {
 	use \PHPDaemon\Traits\ClassWatchdog;

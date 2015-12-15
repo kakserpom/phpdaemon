@@ -4,7 +4,7 @@ namespace PHPDaemon\Clients\Valve;
 /**
  * @package    NetworkClients
  * @subpackage HLClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  * @link       https://developer.valvesoftware.com/wiki/Server_queries
  */
 class Pool extends \PHPDaemon\Network\Client {

@@ -9,7 +9,7 @@ use PHPDaemon\Utils\IRC;
 /**
  * @package    NetworkServers
  * @subpackage IRCBouncer
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends \PHPDaemon\Network\Connection {
 	

@@ -5,7 +5,7 @@ namespace PHPDaemon\Examples;
  * @package    Examples
  * @subpackage Base
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 
 class ExampleIRCBot extends \PHPDaemon\Core\AppInstance {

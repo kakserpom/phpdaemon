@@ -4,7 +4,7 @@ namespace PHPDaemon\Utils;
 /**
  * MIME class
  * @package PHPDaemon\Utils
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class MIME {
 	use \PHPDaemon\Traits\ClassWatchdog;

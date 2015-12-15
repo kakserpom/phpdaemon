@@ -14,7 +14,7 @@ use PHPDaemon\Cache\CappedStorageHits;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Worker extends Generic {
 

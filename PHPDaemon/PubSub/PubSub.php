@@ -6,7 +6,7 @@ use PHPDaemon\PubSub\PubSubEvent;
 /**
  * PubSub
  * @package PHPDaemon\PubSub
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class PubSub {
 	use \PHPDaemon\Traits\ClassWatchdog;

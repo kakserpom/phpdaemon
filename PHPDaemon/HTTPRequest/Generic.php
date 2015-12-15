@@ -15,7 +15,7 @@ use PHPDaemon\Traits\ClassWatchdog;
 /**
  * HTTP request
  * @package PHPDaemon\HTTPRequest
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 abstract class Generic extends \PHPDaemon\Request\Generic {
 	use DeferredEventHandlers;

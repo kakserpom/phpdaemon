@@ -6,7 +6,7 @@ use PHPDaemon\Structures\StackCallbacks;
 /**
  * Item
  * @package PHPDaemon\Cache
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Item {
 	use \PHPDaemon\Traits\ClassWatchdog;

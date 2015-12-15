@@ -5,7 +5,7 @@ namespace PHPDaemon\Examples;
  * @package    Examples
  * @subpackage UDPEchoServer
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class UDPEchoServer extends \PHPDaemon\Network\Server {
 

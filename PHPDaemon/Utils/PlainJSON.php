@@ -5,7 +5,7 @@ use PHPDaemon\Core\Daemon;
 /**
  * PlainJSON
  * @package   PHPDaemon\Utils
- * @author    Zorin Vasily <maintainer@daemon.io>
+ * @author    Vasily Zorin <maintainer@daemon.io>
  * @author    Efimenko Dmitriy <ezheg89@gmail.com>
  *
  * Use:

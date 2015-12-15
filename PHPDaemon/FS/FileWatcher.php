@@ -7,7 +7,7 @@ use PHPDaemon\Core\Timer;
 /**
  * Implementation of the file watcher
  * @package PHPDaemon\FS
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class FileWatcher {
 	use \PHPDaemon\Traits\ClassWatchdog;

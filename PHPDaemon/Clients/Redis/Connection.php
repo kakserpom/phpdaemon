@@ -9,7 +9,7 @@ use PHPDaemon\Core\CallbackWrapper;
 /**
  * @package    NetworkClients
  * @subpackage RedisClient
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Connection extends ClientConnection implements \Iterator {
 	/**

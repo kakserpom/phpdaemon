@@ -7,7 +7,7 @@ use PHPDaemon\HTTPRequest\Generic;
  * @package    Examples
  * @subpackage PostgreSQL
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ExampleWithPostgreSQL extends \PHPDaemon\Core\AppInstance {
 

@@ -5,7 +5,7 @@ namespace PHPDaemon\Applications;
 	 * @package    Applications
 	 * @subpackage FileReader
 	 *
-	 * @author     Zorin Vasily <maintainer@daemon.io>
+	 * @author     Vasily Zorin <maintainer@daemon.io>
 	 */
 /**
  * Class FileReader

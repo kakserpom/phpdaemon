@@ -14,7 +14,7 @@ use PHPDaemon\Core\Daemon;
  * @package    Core
  * @subpackage Config
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  * @dynamic_fields
  */
 class Object implements \ArrayAccess {

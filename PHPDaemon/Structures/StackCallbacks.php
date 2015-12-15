@@ -6,7 +6,7 @@ use PHPDaemon\Core\CallbackWrapper;
 /**
  * StackCallbacks
  * @package PHPDaemon\Structures
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class StackCallbacks extends \SplStack {
 	use \PHPDaemon\Traits\ClassWatchdog;

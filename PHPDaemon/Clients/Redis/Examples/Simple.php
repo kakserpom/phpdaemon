@@ -8,7 +8,7 @@ namespace PHPDaemon\Clients\Redis\Examples;
 /**
  * @package    NetworkClients
  * @subpackage RedisClientExample
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class Simple extends \PHPDaemon\Core\AppInstance {
 	/**

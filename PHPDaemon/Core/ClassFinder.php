@@ -6,7 +6,7 @@ namespace PHPDaemon\Core;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class ClassFinder {
 	use \PHPDaemon\Traits\ClassWatchdog;

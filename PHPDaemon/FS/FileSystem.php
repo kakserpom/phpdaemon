@@ -9,7 +9,7 @@ use PHPDaemon\Core\CallbackWrapper;
 /**
  * FileSystem
  * @package PHPDaemon\FS
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class FileSystem {
 	use \PHPDaemon\Traits\ClassWatchdog;

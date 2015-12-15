@@ -7,7 +7,7 @@ use PHPDaemon\HTTPRequest\Generic;
  * @package    Examples
  * @subpackage Sandbox
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ExampleSandbox extends \PHPDaemon\Core\AppInstance {
 

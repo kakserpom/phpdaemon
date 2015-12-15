@@ -7,7 +7,7 @@ use PHPDaemon\Core\Debug;
 /**
  * Watchdog of __set in static objects
  * @package PHPDaemon\Traits
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 trait StaticObjectWatchdog {
 	/**

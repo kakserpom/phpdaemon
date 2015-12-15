@@ -8,7 +8,7 @@ use PHPDaemon\Core\Debug;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Route implements RouteInterface {
 	use \PHPDaemon\Traits\StaticObjectWatchdog;

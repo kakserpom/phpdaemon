@@ -6,7 +6,7 @@ namespace PHPDaemon\WebSocket;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 interface RouteInterface {
 	// @TODO: fill

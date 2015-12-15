@@ -6,7 +6,7 @@ use PHPDaemon\Core\Daemon;
 /**
  * Debug static functions
  * @package PHPDaemon\Core
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Debug {
 	use \PHPDaemon\Traits\ClassWatchdog;

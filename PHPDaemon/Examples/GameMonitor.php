@@ -3,7 +3,7 @@ namespace PHPDaemon\Examples;use PHPDaemon\HTTPRequest\Generic;
 /**
  * @package GameMonitor
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 // db.servers.ensureIndex({address:1}, {unique:true});
 class GameMonitor extends \PHPDaemon\Core\AppInstance {

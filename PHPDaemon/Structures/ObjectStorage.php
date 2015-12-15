@@ -4,7 +4,7 @@ namespace PHPDaemon\Structures;
 /**
  * ObjectStorage
  * @package PHPDaemon\Structures
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class ObjectStorage extends \SplObjectStorage {
 	use \PHPDaemon\Traits\ClassWatchdog;

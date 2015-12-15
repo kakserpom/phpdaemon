@@ -5,7 +5,7 @@ namespace PHPDaemon\Examples;
  * @package    NetworkServers
  * @subpackage TelnetHoneypot
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class TelnetHoneypot extends \PHPDaemon\Network\Server {
 	public $connectionClass = '\PHPDaemon\Examples\TelnetHoneypotConnection';

@@ -17,7 +17,7 @@ use PHPDaemon\Core\Debug;
  * @package    Examples
  * @subpackage MySQL
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
 class ExampleWithMySQL extends \PHPDaemon\Core\AppInstance {
 	public $sql;

@@ -14,7 +14,7 @@ use PHPDaemon\Structures\StackCallbacks;
 /**
  * Connection
  * @package PHPDaemon\Network
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 abstract class Connection extends IOStream {
 

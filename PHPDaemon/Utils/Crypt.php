@@ -7,7 +7,7 @@ use PHPDaemon\FS\FileSystem;
 /**
  * Crypt
  * @package PHPDaemon\Utils
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class Crypt {
 	use \PHPDaemon\Traits\ClassWatchdog;

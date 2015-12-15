@@ -9,7 +9,7 @@ use PHPDaemon\Structures\StackCallbacks;
 /**
  * Network client connection pattern
  * @package PHPDaemon\Network
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 class ClientConnection extends Connection {
 

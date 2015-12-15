@@ -13,7 +13,7 @@ use PHPDaemon\Structures\PriorityQueueCallbacks;
 /**
  * Network client pattern
  * @package PHPDaemon\Network
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
 abstract class Client extends Pool {
 
