@@ -40,7 +40,7 @@ class Crypt {
 			$rounds = 128;
 		}
 		for ($i = 0; $i < $rounds; ++$i) {
-			$hash = keccak_hash($hash, $size);
+			$hash = \keccak_hash($hash, $size);
 		}
 		if ($plain) {
 			return $hash;
