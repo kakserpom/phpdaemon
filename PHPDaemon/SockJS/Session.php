@@ -222,6 +222,7 @@ class Session {
 			return;
 		}
 		$this->finished = true;
+		$this->onFinish();
 		$this->sendPacket('c'.json_encode([3000,'Go away!']));
 	}
 
