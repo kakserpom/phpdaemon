@@ -480,4 +480,9 @@ class ShellCommand extends IOStream {
 		$this->onEOF = CallbackWrapper::wrap($cb);
 		return $this;
 	}
+
+	public function getStatus()
+	{
+		return !empty($this->pd) ? proc_get_status($this->pd) : null;
+	}
 }
