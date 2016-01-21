@@ -228,6 +228,19 @@ class Connection extends ClientConnection implements \Iterator {
 	}
 
 	/**
+	 * Converts array into hash
+	 * @param array $array
+	 * @return array $hash
+	 */
+	public function arrayToHash($array) {
+		$hash = [];
+		for ($i = 0, $s = sizeof($array) - 1; $i < $s; ++$i) {
+			$hash[$array[$i]] = $array[++$i];
+		}
+		return $hash;
+	}
+
+	/**
 	 * @TODO
 	 * @param  string  $key
 	 * @param  integer $timeout
@@ -516,6 +529,18 @@ class Connection extends ClientConnection implements \Iterator {
 				array_shift($a);
 				$this->argsStack->push($a);
 			}
+			elseif ($name === 'HMSET') {
+				if (sizeof($args) === 2) {
+					if (is_array($args[1])) {
+						$newArgs = [$args[0]];
+						foreach ($args[1] as $key => $value) {
+							$newArgs[] = $key;
+							$newArgs[] = $value;
+						}
+						$args = $newArgs;
+					}
+				}
+			}
 			elseif ($name === 'HGETALL') {
 				$this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
 			}
@@ -557,7 +582,9 @@ class Connection extends ClientConnection implements \Iterator {
 			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
 		}
 		if ($name === 'MULTI') {
-			call_user_func($cb, $this);
+			if ($cb !== null) {
+				call_user_func($cb, $this);
+			}
 		}
 	}
 
