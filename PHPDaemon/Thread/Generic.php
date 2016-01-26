@@ -240,7 +240,7 @@ abstract class Generic {
 	 * @param integer Signal's number
 	 * @return void
 	 */
-	protected function sighandler($signo) {
+	public function sighandler($signo) {
 		if (!isset(self::$signals[$signo])) {
 			$this->log('caught unknown signal #' . $signo);
 			return;
