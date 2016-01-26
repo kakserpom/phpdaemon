@@ -61,9 +61,13 @@ class ComplexJob implements \ArrayAccess {
 
 	protected $more = null;
 
+	protected $moreFirstFlag;
+
 	protected $maxConcurrency = -1;
 
 	protected $backlog;
+
+	public $vars = [];
 
 	/**
 	 * Constructor
@@ -217,6 +221,7 @@ class ComplexJob implements \ArrayAccess {
 	public function more($cb = null) {
 		if ($cb !== null) {
 			$this->more = $cb;
+			$this->moreFirstFlag = true;
 			return $this;
 		}
 		if ($this->more !== null) {
@@ -224,8 +229,15 @@ class ComplexJob implements \ArrayAccess {
 				iterator:
 				$it = $this->more;
 				while (!$this->isQueueFull() && $it->valid()) {
+					if ($this->moreFirstFlag) {
+						$this->moreFirstFlag = false;
+					} else {
+						$it->next();
+						if (!$it->valid()) {
+							break;
+						}
+					}
 					$this->addJob($it->key(), $it->current());
-					$it->next();
 				}
 			} else {
 				if (($r = call_user_func($this->more, $this)) instanceof \Iterator) {
@@ -233,8 +245,8 @@ class ComplexJob implements \ArrayAccess {
 					goto iterator;
 				}
 			}
-			return $this;
 		}
+		return $this;
 	}
 
 	/**
