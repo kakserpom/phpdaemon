@@ -414,7 +414,7 @@ class Connection extends ClientConnection {
 				return;
 			}
 			$this->pctSize = Binary::bytes2int($this->read(3), true);
-			$this->setWatermark($this->pctSize);
+			$this->setWatermark($this->pctSize, $this->pctSize);
 			$this->state = self::STATE_BODY;
 			$this->seq   = ord($this->read(1)) + 1;
 		}
