@@ -372,8 +372,8 @@ abstract class IOStream {
 		if ($high !== null) {
 			$this->highMark = $high;
 		}
-		if ($this->highMark !== null && $this->lowMark > $this->highMark) {
-			$this->highMark = $this->lowMark;
+		if ($this->highMark > 0) {
+			$this->highMark = max($this->lowMark, $this->highMark);
 		}
 		$this->bev->setWatermark(\Event::READ, $this->lowMark, $this->highMark);
 	}
