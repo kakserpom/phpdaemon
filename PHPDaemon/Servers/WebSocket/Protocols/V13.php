@@ -195,7 +195,7 @@ class V13 extends Connection {
 				}
 				if ($this->pool->maxAllowedPacket <= $dataLength) {
 					// Too big packet
-					$this>finish();
+					$this->finish();
 					return;
 				}
 				if ($isMasked) {
