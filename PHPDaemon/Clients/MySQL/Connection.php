@@ -553,6 +553,9 @@ class Connection extends ClientConnection {
 				}
 			}
 		}
+		if ($this->finished) {
+			return;
+		}
 		$this->drain($this->pctSize - $l + $this->bev->input->length); // drain the rest of packet
 		goto packet;
 	}
