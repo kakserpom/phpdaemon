@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\MySQL;
 
-use PHPDaemon\Clients\MySQL\ConnectionFinished;
-use PHPDaemon\Clients\MySQL\Pool;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
@@ -557,6 +555,16 @@ class Connection extends ClientConnection {
 		}
 		$this->drain($this->pctSize - $l + $this->bev->input->length); // drain the rest of packet
 		goto packet;
+	}
+
+	/**
+	 * Called when connection finishes
+	 * @return void
+	 */
+	public function onFinish()
+	{
+		$this->command(Pool::COM_QUIT);
+		parent::onFinish();
 	}
 
 	/**
