@@ -348,6 +348,9 @@ class Connection extends ClientConnection {
 	 * @return boolean            Success
 	 */
 	public function query($q, $callback = NULL) {
+		if ($this->finished) {
+			throw new ConnectionFinished;
+		}
 		return $this->command(Pool::COM_QUERY, $q, $callback);
 	}
 
@@ -371,10 +374,6 @@ class Connection extends ClientConnection {
 	 * @return boolean            Success
 	 */
 	public function command($cmd, $q = '', $callback = NULL) {
-		if ($this->finished) {
-			throw new ConnectionFinished;
-		}
-
 		if ($this->phase !== self::PHASE_HANDSHAKED) {
 			return false;
 		}
