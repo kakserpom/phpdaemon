@@ -63,4 +63,12 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 			}
 		}
 	}
+
+	/**
+	 * Called when the session finished
+	 * @return void
+	 */
+	public function onFinish() {
+		$this->writeln('Bye!');
+	}
 }

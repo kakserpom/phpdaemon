@@ -57,6 +57,11 @@ abstract class IOStream {
 	protected $writing = true;
 
 	/**
+	 * @var boolean Timeout?
+	 */
+	protected $timedout = false;
+
+	/**
 	 * @var integer Default low mark. Minimum number of bytes in buffer
 	 */
 	protected $lowMark = 1;
@@ -819,7 +824,11 @@ abstract class IOStream {
 		if ($events & \EventBufferEvent::CONNECTED) {
 			$this->onWriteEv($bev);
 		}
-		elseif ($events & (\EventBufferEvent::ERROR | \EventBufferEvent::EOF | \EventBufferEvent::TIMEOUT)) {
+		elseif ($events & \EventBufferEvent::TIMEOUT) {
+			$this->timedout = true;
+			$this->finish();
+		}
+		elseif ($events & (\EventBufferEvent::ERROR | \EventBufferEvent::EOF)) {
 			try {
 				if ($this->finished) {
 					return;
