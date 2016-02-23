@@ -1399,6 +1399,7 @@ class Pool extends Client {
 			'user' => $p['user'],
 			'password' => $p['password'],
 			'auth_message' => '',
+			'conn' => array_key_exists('conn', $p) ? $p['conn'] : null,
 		];
 		$this->sasl_scrum_sha1_step($session);
 	}
@@ -1464,17 +1465,24 @@ class Pool extends Client {
 		} elseif ($session['step'] == 4) {
 
 			$in_payload = $this->sasl_scrum_sha1_extract_payload($input['payload']);
-			call_user_func($session['cb'], $input['done'] ? ['server_signature' => $session['server_signature']] : ['errmsg' => 'Authentication failed.']);
+			$res = $input['done'] ? [
+				'ok' => 1, 
+				'server_signature' => $session['server_signature'],
+			] : [
+				'ok' => 0,
+				'errmsg' => 'Authentication failed.',
+			];
+			call_user_func($session['cb'], $res);
 			return;
 
 		}
 
 		$this->sasl_scrum_sha1_conversation($session['dbname'], $query, function($res) use ($session) {
 			$this->sasl_scrum_sha1_step($session, $res);
-		});
+		}, $session['conn']);
 	}
 
-	public function sasl_scrum_sha1_conversation($dbname, $query, $cb)
+	public function sasl_scrum_sha1_conversation($dbname, $query, $cb, $conn = null)
 	{
 		if ($this->safeMode) {
 			static::safeModeEnc($query);
@@ -1484,7 +1492,7 @@ class Pool extends Client {
 			$this->request(self::OP_QUERY, pack('V', 0)
 				. $dbname . '.$cmd' . "\x00"
 				. pack('VV', 0, -1)
-				. bson_encode($query), true, null, function ($conn, $reqId = null) use ($dbname, $cb) {
+				. bson_encode($query), true, $conn, function ($conn, $reqId = null) use ($dbname, $cb) {
 					if (!$conn) {
 						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
 						return;
