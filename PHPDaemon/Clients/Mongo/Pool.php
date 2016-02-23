@@ -1431,7 +1431,7 @@ class Pool extends Client {
 			elseif (strlen($in_payload['i']) < 3) $error = 'Incorrect SCRAM-SHA-1 iteration count: ' . $in_payload['i'];
 			elseif (strpos($in_payload['r'], $session['nonce']) !== 0) $error = 'Server SCRAM-SHA-1 nonce does not match client nonce';
 			if (!empty($error)) {
-				call_user_func($session['cb'], $input);
+				call_user_func($session['cb'], ['ok' => 0, 'errmsg' => $error]);
 				return;
 			} else {
 				$session['conversation_id'] = $input['conversationId'];
