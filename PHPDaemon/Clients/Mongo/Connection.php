@@ -67,31 +67,23 @@ class Connection extends ClientConnection {
 		if ($this->connected) {
 			parent::onReady();
 			return;
-		}
+		}		
 		$this->dbname = $this->path;
-		$this->pool->getNonce(['dbname' => $this->dbname],
+		$this->pool->sasl_scrum_sha1_auth([
+				'user'     => $this->user,
+				'password' => $this->password,
+				'dbname'   => $this->dbname,
+				'conn'     => $this
+			],
 			function ($result) {
-				if (isset($result['$err'])) {
-					Daemon::log('MongoClient: getNonce() error with '.$this->url.': '.$result['$err']);
+				if (!isset($result['ok']) || !$result['ok']) {
+					Daemon::log('MongoClient: authentication error with ' . $this->url . ': ' . $result['errmsg']);
 					$this->finish();
+					return;
 				}
-				$this->pool->auth([
-						'user'     => $this->user,
-						'password' => $this->password,
-						'nonce'    => $result['nonce'],
-						'dbname'   => $this->dbname,
-					],
-					function ($result) {
-						if (!isset($result['ok']) || !$result['ok']) {
-							Daemon::log('MongoClient: authentication error with ' . $this->url . ': ' . $result['errmsg']);
-							$this->finish();
-							return;
-						}
-						$this->connected = true;
-						$this->onReady();
-					}, $this);
-			}, $this
-		);
+				$this->connected = true;
+				$this->onReady();
+			}, $this);
 	}
 
 	/**
