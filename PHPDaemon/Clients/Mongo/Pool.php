@@ -1389,4 +1389,125 @@ class Pool extends Client {
 	public function __get($name) {
 		return $this->getCollection($name);
 	}
+
+	public function sasl_scrum_sha1_auth($p, $cb)
+	{			
+		$session = [
+			'cb' => $cb,
+			'step' => 0,
+			'dbname' => $p['dbname'],
+			'user' => $p['user'],
+			'password' => $p['password'],
+			'auth_message' => '',
+		];
+		$this->sasl_scrum_sha1_step($session);
+	}
+
+	public function sasl_scrum_sha1_step($session, $input = null)
+	{
+		$session['step']++;
+		$query = [];
+
+		if (!is_null($input) && (!empty($input['$err']) || !empty($input['errmsg']))) {			
+			call_user_func($session['cb'], $input);
+			return;
+		}
+
+		if ($session['step'] == 1) {
+
+			$session['nonce'] = base64_encode(openssl_random_pseudo_bytes(24));
+			$payload = 'n,,n=' . $session['user'] . ',r=' . $session['nonce'];
+			$query = ['saslStart' => 1, 'mechanism' => 'SCRAM-SHA-1', 'payload' => base64_encode($payload)];
+			$session['auth_message'] .= 'n=' . $session['user'] . ',r=' . $session['nonce'] . ',';
+
+		} elseif ($session['step'] == 2) {
+			$in_payload = $this->sasl_scrum_sha1_extract_payload($input['payload']);
+
+			$error = null;
+			if (count($in_payload) != 3) $error = 'Incorrect number of arguments for first SCRAM-SHA-1 server message, got ' . count($in_payload) . 'expected 3';
+			elseif (strlen($in_payload['r']) < 2) $error = 'Incorrect SCRAM-SHA-1 client|server nonce: ' . $in_payload['r'];
+			elseif (strlen($in_payload['s']) < 6) $error = 'Incorrect SCRAM-SHA-1 salt: ' . $in_payload['s'];
+			elseif (strlen($in_payload['i']) < 3) $error = 'Incorrect SCRAM-SHA-1 iteration count: ' . $in_payload['i'];
+			elseif (strpos($in_payload['r'], $session['nonce']) !== 0) $error = 'Server SCRAM-SHA-1 nonce does not match client nonce';
+			if (!empty($error)) {
+				call_user_func($session['cb'], $input);
+				return;
+			} else {
+				$session['conversation_id'] = $input['conversationId'];
+				$session['nonce'] = $in_payload['r'];
+			}
+
+			$payload = 'c=biws,r=' . $session['nonce'];
+			$session['auth_message'] .= base64_decode($input['payload']) . ',' . $payload;
+
+			$decoded_salt = base64_decode($in_payload['s']);
+			$password = md5($session['user'] . ':mongo:' . $session['password']);
+			$salted_password = hash_pbkdf2('sha1', $password, $decoded_salt, (int) $in_payload['i'], 0, TRUE);
+
+			$client_key = hash_hmac('sha1', 'Client Key', $salted_password, true);
+			$stored_key = sha1($client_key, true);
+			$client_sign = hash_hmac('sha1', $session['auth_message'], $stored_key, true);			
+			$client_proof = $client_key ^ $client_sign;
+
+			$payload .= ',p=' . base64_encode($client_proof);
+
+			$query = ['saslContinue' => 1, 'conversationId' => $session['conversation_id'], 'payload' => base64_encode($payload)];
+
+		} elseif ($session['step'] == 3) {
+
+			$in_payload = $this->sasl_scrum_sha1_extract_payload($input['payload']);
+			if (!empty($in_payload['v'])) {
+				$session['server_signature'] = $in_payload['v'];
+				$query = ['saslContinue' => 1, 'conversationId' => $session['conversation_id'], 'payload' => base64_encode('')];
+			}
+
+		} elseif ($session['step'] == 4) {
+
+			$in_payload = $this->sasl_scrum_sha1_extract_payload($input['payload']);
+			call_user_func($session['cb'], $input['done'] ? ['server_signature' => $session['server_signature']] : ['errmsg' => 'Authentication failed.']);
+			return;
+
+		}
+
+		$this->sasl_scrum_sha1_conversation($session['dbname'], $query, function($res) use ($session) {
+			$this->sasl_scrum_sha1_step($session, $res);
+		});
+	}
+
+	public function sasl_scrum_sha1_conversation($dbname, $query, $cb)
+	{
+		if ($this->safeMode) {
+			static::safeModeEnc($query);
+		}
+
+		try {			
+			$this->request(self::OP_QUERY, pack('V', 0)
+				. $dbname . '.$cmd' . "\x00"
+				. pack('VV', 0, -1)
+				. bson_encode($query), true, null, function ($conn, $reqId = null) use ($dbname, $cb) {
+					if (!$conn) {
+						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						return;
+					}
+					$conn->requests[$reqId] = [$dbname, $cb, true];
+				});
+		} catch (\MongoException $e) {
+			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+			if ($cb !== null) {
+				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+			}
+		}
+	}
+
+	public function sasl_scrum_sha1_extract_payload($payload)
+	{
+		$result = [];
+		$payload = base64_decode($payload);
+		foreach (explode(',', $payload) as $line) {
+			if (preg_match('/^([a-z]+)=(.*)/', $line, $ms)) {
+				$result[$ms[1]] = $ms[2];
+			}
+		}
+		return $result;
+	}
 }
