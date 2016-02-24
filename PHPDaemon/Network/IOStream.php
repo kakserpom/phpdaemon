@@ -835,7 +835,7 @@ abstract class IOStream {
 				}
 				if ($events & \EventBufferEvent::ERROR) {
 					$errno = \EventUtil::getLastSocketErrno();
-					if ($errno !== 0) {
+					if ($errno !== 0 && $errno !== 104) {
 						$this->log('Socket error #' . $errno . ':' . \EventUtil::getLastSocketError());
 					}
 					if ($this->ssl && $this->bev) {
