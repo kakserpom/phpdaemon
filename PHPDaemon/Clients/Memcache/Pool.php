@@ -22,7 +22,9 @@ class Pool extends \PHPDaemon\Network\Client {
 			'port'           => 11211,
 
 			/* [integer] Maximum connections per server */
-			'maxconnperserv' => 32
+			'maxconnperserv' => 32,
+
+			'prefix' => '',
 		];
 	}
 
@@ -34,7 +36,7 @@ class Pool extends \PHPDaemon\Network\Client {
 	 * @return void
 	 */
 	public function get($key, $onResponse) {
-		$this->requestByKey($key, 'get ' . $this->prefix . $key . "\r\n", $onResponse);
+		$this->requestByKey($key, 'get ' . $this->config->prefix->value . $key . "\r\n", $onResponse);
 	}
 
 	/**
@@ -55,7 +57,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->checkFree();
 			}
-			$conn->writeln('set ' . $this->prefix . $key . ' 0 ' . $exp . ' '
+			$conn->writeln('set ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' '
 						   . strlen($value) . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value
 			);
 		});
@@ -79,7 +81,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->checkFree();
 			}
-			$conn->writeln('add ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value)
+			$conn->writeln('add ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . strlen($value)
 						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
@@ -101,7 +103,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->checkFree();
 			}
-			$conn->writeln('delete ' . $this->prefix . $key . ' ' . $time);
+			$conn->writeln('delete ' . $this->config->prefix->value . $key . ' ' . $time);
 		});
 	}
 
@@ -123,7 +125,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->checkFree();
 			}
-			$conn->writeln('replace ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value)
+			$conn->writeln('replace ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . strlen($value)
 						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
@@ -146,7 +148,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->checkFree();
 			}
-			$conn->writeln('replace ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value)
+			$conn->writeln('replace ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . strlen($value)
 						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
@@ -169,7 +171,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->setFree(false);
 			}
-			$conn->writeln('prepend ' . $this->prefix . $key . ' 0 ' . $exp . ' ' . strlen($value)
+			$conn->writeln('prepend ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . strlen($value)
 						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}

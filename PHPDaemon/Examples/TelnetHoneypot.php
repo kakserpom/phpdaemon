@@ -48,7 +48,6 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 					($cmd === 'exit')
 					|| ($cmd === 'quit')
 			) {
-				$this->writeln('Quit');
 				$this->finish();
 			}
 			else {

@@ -33,11 +33,6 @@ abstract class Client extends Pool {
 	protected $servConnFree = [];
 
 	/**
-	 * @var string Prefix for all keys
-	 */
-	protected $prefix = '';
-
-	/**
 	 * @var integer
 	 */
 	protected $maxConnPerServ = 32;
