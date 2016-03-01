@@ -57,7 +57,7 @@ class Pool extends Client {
 		}
 		$this->getConnection($dest,	function ($conn) use ($url, $params) {
 			if (!$conn->isConnected()) {
-				call_user_func($params['resultcb'], false);
+				$params['resultcb'](false);
 				return;
 			}
 			$conn->get($url, $params);
@@ -94,7 +94,7 @@ class Pool extends Client {
 		}
 		$this->getConnection($dest, function ($conn) use ($url, $data, $params) {
 			if (!$conn->isConnected()) {
-				call_user_func($params['resultcb'], false);
+				$params['resultcb'](false);
 				return;
 			}
 			$conn->post($url, $data, $params);

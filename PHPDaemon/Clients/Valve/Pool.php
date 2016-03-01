@@ -31,7 +31,7 @@ class Pool extends \PHPDaemon\Network\Client {
 		$e = explode(':', $addr);
 		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/', function ($conn) use ($cb, $addr, $data, $name) {
 			if (!$conn->connected) {
-				call_user_func($cb, $conn, false);
+				$cb($conn, false);
 				return;
 			}
 			$conn->request($type, $data, $cb);
@@ -49,12 +49,12 @@ class Pool extends \PHPDaemon\Network\Client {
 		$e = explode(':', $addr);
 		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/ping', function ($conn) use ($cb) {
 			if (!$conn->connected) {
-				call_user_func($cb, $conn, false);
+				$cb($conn, false);
 				return;
 			}
 			$mt = microtime(true);
 			$conn->request('ping', null, function ($conn, $success) use ($mt, $cb) {
-				call_user_func($cb, $conn, $success ? (microtime(true) - $mt) : false);
+				$cb($conn, $success ? (microtime(true) - $mt) : false);
 			});
 		});
 	}

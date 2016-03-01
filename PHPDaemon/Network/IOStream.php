@@ -759,7 +759,7 @@ abstract class IOStream {
 	 */
 	public function onWriteOnce($cb) {
 		if (!$this->writing) {
-			call_user_func($cb, $this);
+			$cb($this);
 			return;
 		}
 		$this->onWriteOnce->push($cb);

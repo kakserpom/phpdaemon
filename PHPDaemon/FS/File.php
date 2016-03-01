@@ -131,7 +131,7 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
@@ -139,7 +139,7 @@ class File {
 			$fp = fopen($this->path, 'r+');
 			$r  = $fp && ftruncate($fp, $offset);
 			if ($cb) {
-				call_user_func($cb, $this, $r);
+				$cb($this, $r);
 			}
 			return $r;
 		}
@@ -156,22 +156,22 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
-			call_user_func($cb, $this, FileSystem::statPrepare(fstat($this->fd)));
+			$cb($this, FileSystem::statPrepare(fstat($this->fd)));
 			return false;
 		}
 		if ($this->stat) {
-			call_user_func($cb, $this, $this->stat);
+			$cb($this, $this->stat);
 			return true;
 		}
 		return eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
 			$stat       = FileSystem::statPrepare($stat);
 			$file->stat = $stat;
-			call_user_func($cb, $file, $stat);
+			$cb($file, $stat);
 		}, $this);
 	}
 
@@ -185,18 +185,18 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd || $this->fd === -1) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
-			call_user_func($cb, $this, FileSystem::statPrepare(fstat($this->fd)));
+			$cb($this, FileSystem::statPrepare(fstat($this->fd)));
 			return true;
 		}
 		return eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
 			$stat       = FileSystem::statPrepare($stat);
 			$file->stat = $stat;
-			call_user_func($cb, $file, $stat);
+			$cb($file, $stat);
 		}, $this);
 	}
 
@@ -210,23 +210,23 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if ($this->statvfs) {
-			call_user_func($cb, $this, $this->statvfs);
+			$cb($this, $this->statvfs);
 			return true;
 		}
 		return eio_fstatvfs($this->fd, $pri, function ($file, $stat) use ($cb) {
 			$file->statvfs = $stat;
-			call_user_func($cb, $file, $stat);
+			$cb($file, $stat);
 		}, $this);
 	}
 
@@ -240,12 +240,12 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
-			call_user_func($cb, $this, true);
+			$cb($this, true);
 			return false;
 		}
 		return eio_fsync($this->fd, $pri, $cb, $this);
@@ -261,12 +261,12 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
-			call_user_func($cb, $this, true);
+			$cb($this, true);
 			return false;
 		}
 		return eio_fdatasync($this->fd, $pri, $cb, $this);
@@ -284,13 +284,13 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if ($data === '') {
 			if ($cb) {
-				call_user_func($cb, $this, 0);
+				$cb($this, 0);
 			}
 			return false;
 		}
@@ -300,7 +300,7 @@ class File {
 			}
 			$r = fwrite($this->fd, $data);
 			if ($cb) {
-				call_user_func($cb, $this, $r);
+				$cb($this, $r);
 			}
 			return false;
 		}
@@ -332,7 +332,7 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
@@ -342,7 +342,7 @@ class File {
 				$r = $r && chgrp($this->path, $gid);
 			}
 			if ($cb) {
-				call_user_func($cb, $this, $r);
+				$cb($this, $r);
 			}
 			return false;
 		}
@@ -361,14 +361,14 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
 			$r = touch($this->path, $mtime, $atime);
 			if ($cb) {
-				call_user_func($cb, $this, $r);
+				$cb($this, $r);
 			}
 			return false;
 		}
@@ -396,13 +396,13 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
@@ -432,13 +432,13 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
@@ -447,7 +447,7 @@ class File {
 		$handler = function ($file, $sent = -1) use (&$ret, $outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
 			if ($outfd instanceof IOStream) {
 				if ($outfd->isFreed()) {
-					call_user_func($cb, $file, false);
+					$cb($file, false);
 					return;
 				}
 				$ofd = $outfd->getFd();
@@ -456,7 +456,7 @@ class File {
 				$ofd = $outfd;
 			}
 			if (!$ret) {
-				call_user_func($cb, $file, false);
+				$cb($file, false);
 				return;
 			}
 			if ($sent === -1) {
@@ -465,11 +465,11 @@ class File {
 			$offset += $sent;
 			$length -= $sent;
 			if ($length <= 0) {
-				call_user_func($cb, $file, true);
+				$cb($file, true);
 				return;
 			}
 			if (!$ofd) {
-				call_user_func($cb, $file, false);
+				$cb($file, false);
 				return;
 			}
 			$c   = min($chunkSize, $length);
@@ -512,13 +512,13 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		if (!FileSystem::$supported) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
@@ -549,7 +549,7 @@ class File {
 			$len = min($file->chunkSize, $size - $offset);
 			if ($offset >= $size) {
 				if ($cb) {
-					call_user_func($cb, $file, $buf);
+					$cb($file, $buf);
 				}
 				return;
 			}
@@ -567,14 +567,14 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		$this->statRefresh(function ($file, $stat) use ($cb, $pri) {
 			if (!$stat) {
 				if ($cb) {
-					call_user_func($cb, $file, false);
+					$cb($file, false);
 				}
 				return;
 			}
@@ -601,7 +601,7 @@ class File {
 			$offset += strlen($data);
 			$len = min($file->chunkSize, $size - $offset);
 			if ($offset >= $size) {
-				call_user_func($cb, $file, true);
+				$cb($file, true);
 				return;
 			}
 			eio_read($file->fd, $len, $offset, $pri, $this->readAllChunkedGenHandler($cb, $chunkcb, $size, $offset, $pri), $file);
@@ -619,13 +619,13 @@ class File {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!$this->fd) {
 			if ($cb) {
-				call_user_func($cb, $this, false);
+				$cb($this, false);
 			}
 			return false;
 		}
 		return $this->statRefresh(function ($file, $stat) use ($cb, $chunkcb, $pri) {
 			if (!$stat) {
-				call_user_func($cb, $file, false);
+				$cb($file, false);
 				return;
 			}
 			$offset = 0;

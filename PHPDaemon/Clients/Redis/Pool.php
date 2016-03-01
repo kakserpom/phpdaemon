@@ -142,7 +142,7 @@ class Pool extends \PHPDaemon\Network\Client {
 	protected function sendCommand($addr, $cmd, $args, $cb) {
 		$this->getConnection($addr, function ($conn) use ($cmd, $args, $cb) {
 			if (!$conn->isConnected()) {
-				call_user_func($cb, false);
+				$cb(false);
 				return;
 			}
 

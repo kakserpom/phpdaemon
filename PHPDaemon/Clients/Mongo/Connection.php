@@ -170,10 +170,7 @@ class Connection extends ClientConnection {
 				}
 				$this->setFree(true);
 				if (isset($req[2]) && $req[2] && $req[1]) {
-					call_user_func(
-						$req[1],
-						sizeof($items) ? $items[0] : false
-					);
+					$req[1](sizeof($items) ? $items[0] : false);
 
 					if ($cur) {
 						if ($cur instanceof Cursor) {

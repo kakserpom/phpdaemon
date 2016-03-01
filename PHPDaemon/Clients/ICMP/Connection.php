@@ -102,7 +102,7 @@ class Connection extends ClientConnection {
 				$el = $el->unwrap();
 			}
 			list ($cb, $st) = $el;
-			call_user_func($cb, microtime(true) - $st, $status);
+			$cb(microtime(true) - $st, $status);
 		}
 		$this->finish();
 	}

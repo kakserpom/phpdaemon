@@ -116,7 +116,7 @@ class CallbackWrapper {
 	 * @static
 	 * @param callable $cb
 	 * @param double $timeout = null
-	 * @return object
+	 * @return \Closure
 	 */
 	public static function wrap($cb, $timeout = null, $ctx = false) {
 		if ($cb instanceof CallbackWrapper || ((Daemon::$context === null) && ($timeout === null))) {

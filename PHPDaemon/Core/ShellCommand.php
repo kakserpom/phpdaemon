@@ -161,7 +161,7 @@ class ShellCommand extends IOStream {
 			$data .= $o->readUnlimited();
 		});
 		$o->bind('eof', function($o) use (&$data, $cb) {
-			call_user_func($cb, $o, $data);
+			$cb($o, $data);
 			$o->close();
 		});
 		$o->execute($binPath, $args, $env);

@@ -114,7 +114,7 @@ class V0 extends Connection {
 		}
 		if ($type === 'CONNCLOSE') {
 			if ($cb !== null) {
-				call_user_func($cb, $this);
+				$cb($this);
 				return true;
 			}
 		}

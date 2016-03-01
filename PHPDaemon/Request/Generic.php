@@ -542,9 +542,9 @@ abstract class Generic {
 			$this->onWakeup();
 		}
 
-		while (($c = array_shift($this->shutdownFuncs)) !== NULL) {
+		while (($cb = array_shift($this->shutdownFuncs)) !== NULL) {
 			try {
-				call_user_func($c, $this);
+				$cb($this);
 			} catch (\Exception $e) {
 				Daemon::uncaughtExceptionHandler($e);
 				// @TODO: break?
@@ -590,8 +590,8 @@ abstract class Generic {
 	 * @return void
 	 */
 	protected function postFinishHandler($cb = null) {
-		if ($cb) {
-			call_user_func($cb);
+		if ($cb !== null) {
+			$cb();
 		}
 	}
 

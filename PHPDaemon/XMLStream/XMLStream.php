@@ -148,14 +148,14 @@ class XMLStream {
 							if ($handler[2] === null) {
 								$handler[2] = $this;
 							}
-							call_user_func($handler[1], $this->xmlobj[2]);
+							$handler[1]($this->xmlobj[2]);
 						}
 					}
 				}
 			}
 			foreach ($this->idhandlers as $id => $handler) {
 				if (array_key_exists('id', $this->xmlobj[2]->attrs) and $this->xmlobj[2]->attrs['id'] == $id) {
-					call_user_func($handler, $this->xmlobj[2]);
+					$handler($this->xmlobj[2]);
 					#id handlers are only used once
 					unset($this->idhandlers[$id]);
 					break;

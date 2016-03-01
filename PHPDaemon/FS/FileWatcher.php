@@ -107,7 +107,7 @@ class FileWatcher {
 		}
 		foreach ($this->files[$path] as $cb) {
 			if (is_callable($cb) || is_array($cb)) {
-				call_user_func($cb, $path);
+				$cb($path);
 			}
 			elseif (!Daemon::$process->IPCManager->importFile($cb, $path)) {
 				$this->rmWatch($path, $cb);

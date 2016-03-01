@@ -313,7 +313,7 @@ abstract class Connection extends IOStream {
 	 */
 	public function onConnected($cb) {
 		if ($this->connected) {
-			call_user_func($cb, $this);
+			$cb($this);
 		}
 		else {
 			if (!$this->onConnected) {

@@ -111,12 +111,12 @@ trait Sessions {
 	public function sessionRead($sid, $cb = null) {
 		FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), $this->sessionPrefix) . basename($sid), 'r+!', function ($fp) use ($cb) {
 			if (!$fp) {
-				call_user_func($cb, false);
+				$cb(false);
 				return;
 			}
 			$fp->readAll(function ($fp, $data) use ($cb) {
 				$this->sessionFp = $fp;
-				call_user_func($cb, $data);
+				$cb($data);
 			});
 		});
 	}
@@ -129,7 +129,7 @@ trait Sessions {
 	public function sessionCommit($cb = null) {
 		if (!$this->sessionFp || $this->sessionFlushing) {
 			if ($cb) {
-				call_user_func($cb, false);
+				$cb(false);
 			}
 			return;
 		}
@@ -141,7 +141,7 @@ trait Sessions {
 			$file->truncate($l, function ($file, $result) use ($cb) {
 				$this->sessionFlushing = false;
 				if ($cb) {
-					call_user_func($cb, true);
+					$cb(true);
 				}
 			});
 		});
@@ -179,7 +179,7 @@ trait Sessions {
 	protected function sessionStartNew($cb = null) {
 		FileSystem::tempnam(session_save_path(), $this->sessionPrefix, function ($fp) use ($cb) {
 			if (!$fp) {
-				call_user_func($cb, false);
+				$cb(false);
 				return;
 			}
 			$this->sessionFp = $fp;
@@ -193,7 +193,7 @@ trait Sessions {
 				, ini_get('session.cookie_secure')
 				, ini_get('session.cookie_httponly')
 			);
-			call_user_func($cb, true);
+			$cb(true);
 		});
 	}
 

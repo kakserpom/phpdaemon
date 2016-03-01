@@ -52,7 +52,7 @@ class Lock {
 		Crypt::randomString(16, null, function($token) use ($cb) {
 			$this->token = $token;
 			$this->pool->set($this->key, $this->token, 'NX', 'EX', $this->timeout, function($redis) use ($cb) {
-				call_user_func($cb, $this, $redis->result === 'OK', $redis);
+				$cb($this, $redis->result === 'OK', $redis);
 			});
 		});
 		return $this;
@@ -68,7 +68,7 @@ class Lock {
 		$this->pool->eval('if redis.call("get",KEYS[1]) == ARGV[1] then return redis.call("del",KEYS[1]) else return 0 end',
 		 1, $this->key, $this->token, function($redis) use ($cb) {
 		 	if ($cb !== null) {
-		 		call_user_func($cb, $this, $redis->result, $redis);
+		 		$cb($this, $redis->result, $redis);
 		 	}
 		});
 		return $this;

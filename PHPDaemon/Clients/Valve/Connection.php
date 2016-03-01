@@ -26,7 +26,7 @@ class Connection extends ClientConnection {
 	public function requestPlayers($cb) {
 		$this->request('challenge', null, function ($conn, $result) use ($cb) {
 			if (is_array($result)) {
-				call_user_func($cb, $conn, $result);
+				$cb($conn, $result);
 				return;
 			}
 			$conn->request('players', $result, $cb);

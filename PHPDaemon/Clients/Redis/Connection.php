@@ -385,7 +385,7 @@ class Connection extends ClientConnection implements \Iterator {
 						$channels[] = $chan;
 					} else {
 						if ($opcb !== null) {
-							call_user_func($opcb, $this);
+							$opcb($this);
 						}
 					}
 				}
@@ -408,7 +408,7 @@ class Connection extends ClientConnection implements \Iterator {
 						$channels[] = $chan;
 					} else {
 						if ($opcb !== null) {
-							call_user_func($opcb, $this);
+							$opcb($this);
 						}
 					}
 				}
@@ -426,7 +426,7 @@ class Connection extends ClientConnection implements \Iterator {
 				foreach ($arg as $chan) {
 					if (!isset($this->subscribeCb[$chan])) {
 						if ($opcb !== null) {
-							call_user_func($opcb, $this);
+							$opcb($this);
 						}
 						return;
 					}
@@ -436,7 +436,7 @@ class Connection extends ClientConnection implements \Iterator {
 						unset($this->subscribeCb[$chan]);
 					} else {
 						if ($opcb !== null) {
-							call_user_func($opcb, $this);
+							$opcb($this);
 						}
 					}
 				}
@@ -452,7 +452,7 @@ class Connection extends ClientConnection implements \Iterator {
 			$old = $this->subscribeCb;
 			$this->sendCommand('UNSUBSCRIBE', $args, function($redis) use ($cb, $args, $old) {
 				if (!$redis) {
-					call_user_func($cb, $redis);
+					$cb($redis);
 					return;
 				}
 				foreach ($args as $arg) {
@@ -467,7 +467,7 @@ class Connection extends ClientConnection implements \Iterator {
 					}
 				}
 				if ($cb !== null) {
-					call_user_func($cb, $this);
+					$cb($this);
 				}
 			});
 		}
@@ -484,7 +484,7 @@ class Connection extends ClientConnection implements \Iterator {
 						unset($this->psubscribeCb[$chan]);
 					} else {
 						if ($opcb !== null) {
-							call_user_func($opcb, $this);
+							$opcb($this);
 						}
 					}
 				}
@@ -500,7 +500,7 @@ class Connection extends ClientConnection implements \Iterator {
 			$old = $this->psubscribeCb;
 			$this->sendCommand('PUNSUBSCRIBE', $args, function($redis) use ($cb, $args, $old) {
 				if (!$redis) {
-					call_user_func($cb, $redis);
+					$cb($redis);
 					return;
 				}
 				foreach ($args as $arg) {
@@ -515,7 +515,7 @@ class Connection extends ClientConnection implements \Iterator {
 					}
 				}
 				if ($cb !== null) {
-					call_user_func($cb, $this);
+					$cb($this);
 				}
 			});
 		} else {
@@ -583,7 +583,7 @@ class Connection extends ClientConnection implements \Iterator {
 		}
 		if ($name === 'MULTI') {
 			if ($cb !== null) {
-				call_user_func($cb, $this);
+				$cb($this);
 			}
 		}
 	}
@@ -637,7 +637,7 @@ class Connection extends ClientConnection implements \Iterator {
 			$this->msg     = $this->result[2];
 			foreach ($t[$this->result[1]] as $cb) {
 				if (is_callable($cb)) {
-					call_user_func($cb, $this);
+					$cb($this);
 				}
 			}
 		} elseif ($this->pool->config->logpubsubracecondition->value) {

@@ -404,7 +404,7 @@ class Connection extends ClientConnection {
 				}
 			}
 			$vcard['from'] = $xml->attrs['from'];
-			call_user_func($cb, $vcard);
+			$cb($vcard);
 		});
 		$id = htmlspecialchars($id);
 		$jid = htmlspecialchars($jid);

@@ -129,10 +129,10 @@ class Connection extends ClientConnection {
 	 */
 	public function onConnected($cb) {
 		if ($this->state === self::CONN_STATE_HANDSHAKED_ERROR) {
-			call_user_func($cb, $this);
+			$cb($this);
 		}
 		elseif ($this->state === self::CONN_STATE_HANDSHAKED_OK) {
-			call_user_func($cb, $this);
+			$cb($this);
 		}
 		else {
 			if (!$this->onConnected) {
@@ -275,7 +275,7 @@ class Connection extends ClientConnection {
 								$this->packets[$action_id][] = $packet;
 								if (count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) === count($this->assertions[$action_id])) {
 									if (is_callable($this->callbacks[$action_id])) {
-										call_user_func($this->callbacks[$action_id], $this, $this->packets[$action_id]);
+										$this->callbacks[$action_id]($this, $this->packets[$action_id]);
 										unset($this->callbacks[$action_id]);
 									}
 
@@ -285,7 +285,7 @@ class Connection extends ClientConnection {
 							}
 							else {
 								if (is_callable($this->callbacks[$action_id])) {
-									call_user_func($this->callbacks[$action_id], $this, $packet);
+									$this->callbacks[$action_id]($this, $packet);
 									unset($this->callbacks[$action_id]);
 								}
 							}

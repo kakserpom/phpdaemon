@@ -154,7 +154,7 @@ class Pool extends Client {
 		}
 		$hostname = rtrim($hostname, '.') . '.';
 		if (isset($this->hosts[$hostname])) {
-			call_user_func($cb, $this->hosts[$hostname]);
+			$cb($this->hosts[$hostname]);
 			return;
 		}
 		if (!$noncache && ($item = $this->resolveCache->get($hostname))) { // cache hit
@@ -163,7 +163,7 @@ class Pool extends Client {
 				$item->addListener($cb);
 			}
 			else { // hit
-				call_user_func($cb, $ip);
+				$cb($ip);
 			}
 			return;
 		}
@@ -175,7 +175,7 @@ class Pool extends Client {
 		$this->get($hostname, function ($response) use ($cb, $noncache, $hostname, $pool) {
 			if (!isset($response['A'])) {
 				if ($noncache) {
-					call_user_func($cb, false);
+					$cb(false);
 				}
 				else {
 					$pool->resolveCache->put($hostname, false, 5); // 5 - TTL of unsuccessful request
@@ -183,7 +183,7 @@ class Pool extends Client {
 				return;
 			}
 			if (!isset($response['A'])) {
-				call_user_func($cb, false);
+				$cb(false);
 				return;
 			}
 			$addrs = [];
@@ -196,7 +196,7 @@ class Pool extends Client {
 				$addrs = $addrs[0];
 			}
 			if ($noncache) {
-				call_user_func($cb, $addrs);
+				$cb($addrs);
 			}
 			else {
 				$pool->resolveCache->put($hostname, $addrs, $ttl);
@@ -218,16 +218,16 @@ class Pool extends Client {
 			$this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool) {
 				$pool->get($hostname, $cb, $noncache);
 			});
-			return null;
+			return;
 		}
 		$this->getConnectionByKey($hostname, function ($conn) use ($cb, $hostname) {
 			if (!$conn || !$conn->isConnected()) {
-				call_user_func($cb, false);
+				$cb(false);
 			}
 			else {
 				$conn->get($hostname, $cb);
 			}
 		});
-		return null;
+		return;
 	}
 }

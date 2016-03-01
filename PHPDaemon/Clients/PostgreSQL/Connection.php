@@ -135,10 +135,10 @@ class Connection extends ClientConnection {
 	 */
 	public function onConnected($cb) {
 		if ($this->state === self::STATE_AUTH_ERROR) {
-			call_user_func($cb, $this, false);
+			$cb($this, false);
 		}
 		elseif ($this->state === self::STATE_AUTH_OK) {
-			call_user_func($cb, $this, true);
+			$cb($this, true);
 		}
 		else {
 			if (!$this->onConnected) {
@@ -431,7 +431,7 @@ class Connection extends ClientConnection {
 				$this->state = self::STATE_AUTH_OK;
 
 				foreach ($this->onConnected as $cb) {
-					call_user_func($cb, $this, TRUE);
+					$cb($this, TRUE);
 				}
 			} // @todo move to constant values
 			elseif ($authType === 2) {
@@ -576,7 +576,7 @@ class Connection extends ClientConnection {
 			if ($this->state === self::STATE_AUTH_PACKET_SENT) {
 				// Auth. error
 				foreach ($this->onConnected as $cb) {
-					call_user_func($cb, $this, FALSE);
+					$cb($this, FALSE);
 				}
 
 				$this->state = self::STATE_AUTH_ERROR;

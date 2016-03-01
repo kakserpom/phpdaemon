@@ -186,7 +186,7 @@ class ComplexJob implements \ArrayAccess {
 			$this->jobs  = [];
 			$this->state = self::STATE_DONE;
 			foreach ($this->listeners as $cb) {
-				call_user_func($cb, $this);
+				$cb($this);
 			}
 			if (!$this->keep && $this->resultsNum >= $this->jobsNum) {
 				$this->cleanup();
@@ -279,7 +279,7 @@ class ComplexJob implements \ArrayAccess {
 		++$this->jobsNum;
 		if (($this->state === self::STATE_RUNNING) || ($this->state === self::STATE_DONE)) {
 			$this->state = self::STATE_RUNNING;
-			call_user_func($cb, $name, $this);
+			$cb($name, $this);
 		}
 		return true;
 	}
@@ -302,7 +302,7 @@ class ComplexJob implements \ArrayAccess {
 	 */
 	public function addListener($cb) {
 		if ($this->state === self::STATE_DONE) {
-			call_user_func($cb, $this);
+			$cb($this);
 			return;
 		}
 		$this->listeners[] = CallbackWrapper::wrap($cb);
@@ -316,7 +316,7 @@ class ComplexJob implements \ArrayAccess {
 		if ($this->state === self::STATE_WAITING) {
 			$this->state = self::STATE_RUNNING;
 			foreach ($this->jobs as $name => $cb) {
-				call_user_func($cb, $name, $this);
+				$cb($name, $this);
 				$this->jobs[$name] = null;
 			}
 			$this->checkIfAllReady();

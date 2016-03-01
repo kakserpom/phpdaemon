@@ -131,7 +131,7 @@ class Pool extends Server {
 			if (!is_callable($route)) {
 				return false;
 			}
-			$ret = call_user_func($route, $client); // calling the route callback
+			$ret = $route($client); // calling the route callback
 			if (!$ret instanceof Route) {
 				return false;
 			}

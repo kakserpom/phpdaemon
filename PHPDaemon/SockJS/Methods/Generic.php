@@ -247,23 +247,23 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 		$this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function($redis) use ($cb) {
 			$this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode), function($redis) use ($cb) {
 				if (!$redis) {
-					$cb === null || call_user_func($cb);
+					$cb === null || $cb();
 					return;
 				}
 				if ($redis->result > 0) {
-					$cb === null || call_user_func($cb);
+					$cb === null || $cb();
 					return;
 				}
 				$this->appInstance->setnx('sess:' . $this->sessId, $this->attrs->server['REQUEST_URI'], function($redis) use ($cb) {
 					if (!$redis || $redis->result === 0) {
 						$this->error(3000);
-						$cb === null || call_user_func($cb);
+						$cb === null || $cb();
 						return;
 					}
 					$this->appInstance->expire('sess:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value, function($redis) use ($cb) {
 						if (!$redis || $redis->result === 0) {
 							$this->error(3000);
-							$cb === null || call_user_func($cb);
+							$cb === null || $cb();
 							return;
 						}
 						$this->appInstance->subscribe('state:' . $this->sessId, function($redis) use ($cb) {
@@ -281,10 +281,10 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 							$this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode), function($redis) use ($cb) {
 								if (!$redis || $redis->result === 0) {
 									$this->error(3000);
-									$cb === null || call_user_func($cb);
+									$cb === null || $cb();
 									return;
 								}
-								$cb === null || call_user_func($cb);
+								$cb === null || $cb();
 							});
 						}, function ($redis) use ($cb) {
 							if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
@@ -292,7 +292,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 								$this->finish();
 								$this->unsubscribeReal('state:' . $this->sessId);
 							}
-							$cb === null || call_user_func($cb);
+							$cb === null || $cb();
 						});
 					});
 				});
@@ -351,7 +351,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 							$this->anotherConnectionStillOpen();
 							return;
 						}
-						call_user_func($cb);
+						$cb === null || $cb();
 					});
 				});
 			});

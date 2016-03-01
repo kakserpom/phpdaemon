@@ -130,7 +130,7 @@ class XMPPRoster {
 				$this->xmpp->sendXML('<iq type="reply" id="' . $xml->attrs['id'] . '" to="' . $xml->attrs['from'] . '" />');
 			}
 			if ($cb) {
-				call_user_func($cb, $status);
+				$cb($status);
 			}
 		});
 	}

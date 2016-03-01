@@ -80,7 +80,7 @@ class Crypt {
 		$iterLimit = max($len, $len * 64);
 		static::randomInts(2 * $len, function($ints) use ($cb, $chars, $charsLen, $len, $mask, &$iterLimit) {
 			if ($ints === false) {
-				call_user_func($cb, false);
+				$cb(false);
 				return;
 			}
 			$r = '';
@@ -99,11 +99,11 @@ class Crypt {
 			$d = $len - strlen($r);
 			if ($d > 0) {
 				static::randomString($d, $chars, function($r2) use ($r, $cb) {
-					call_user_func($cb, $r . $r2);
+					$cb($r . $r2);
 				});
 				return;
 			}
-			call_user_func($cb, $r);
+			$cb($r);
 		}, $pri, $hang);
 	}
 
@@ -140,11 +140,11 @@ class Crypt {
 	public static function randomBytes($len, $cb, $pri = 0, $hang = false) {
 		FileSystem::open('/dev/' . ($hang ? '' : 'u') . 'random', 'r', function ($file) use ($len, $cb, $pri) {
 			if (!$file) {
-				call_user_func($cb, false);
+				$cb(false);
 				return;
 			}
 			$file->read($len, 0, function($file, $data) use ($cb) {
-				call_user_func($cb, $data);
+				$cb($data);
 			}, $pri);
 		}, null, $pri);
 	}
@@ -160,7 +160,7 @@ class Crypt {
 	public static function randomInts($numInts, $cb, $pri = 0, $hang = false) {
 		static::randomBytes(PHP_INT_SIZE * $numInts, function($bytes) use ($cb, $numInts) {
 			if ($bytes === false) {
-				call_user_func($cb, false);
+				$cb(false);
 				return;
 			}
 			$ints = [];
@@ -173,7 +173,7 @@ class Crypt {
 				$thisInt = $thisInt & PHP_INT_MAX;
 				$ints[] = $thisInt;
 			}
-			call_user_func($cb, $ints);
+			$cb($ints);
 		}, $pri, $hang);
 	}
 
@@ -188,7 +188,7 @@ class Crypt {
 	public static function randomInts32($numInts, $cb, $pri = 0, $hang = false) {
 		static::randomBytes(4 * $numInts, function($bytes) use ($cb, $numInts) {
 			if ($bytes === false) {
-				call_user_func($cb, false);
+				$cb(false);
 				return;
 			}
 			$ints = [];
@@ -201,7 +201,7 @@ class Crypt {
 				$thisInt = $thisInt & 0xFFFFFFFF;
 				$ints[] = $thisInt;
 			}
-			call_user_func($cb, $ints);
+			$cb($ints);
 		}, $pri, $hang);
 	}
 

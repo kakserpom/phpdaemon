@@ -168,7 +168,7 @@ class Pool extends Client {
 			$cb($conn);
 		}
 		elseif ($this->finished) {
-			call_user_func($cb, false);
+			$cb(false);
 		}
 		else {
 			$this->getConnectionRR($cb);
@@ -189,7 +189,7 @@ class Pool extends Client {
 			if (!$conn || $conn->isFinished()) {
 				if ($this->finished) {
 					if ($sentcb !== null) {
-						call_user_func($sentcb, false);
+						$sentcb(false);
 					}
 				} else {
 					$this->getConnectionRR($this->requestCbProducer($opcode, $data, $reply, $sentcb));
@@ -204,7 +204,7 @@ class Pool extends Client {
 				$conn->setFree(false);
 			}
 			if ($sentcb !== null) {
-				call_user_func($sentcb, $conn, $reqId);
+				$sentcb($conn, $reqId);
 			}
 		};
 	}
@@ -221,7 +221,7 @@ class Pool extends Client {
 			if (!$cursor->isFinished()) {
 				$cursor->getMore();
 			} else {
-				call_user_func($cb, $cursor);
+				$cb($cursor);
 			}
 		});
 	}
@@ -313,7 +313,7 @@ class Pool extends Client {
 									. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 				, true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, false, isset($p['parse_oplog']), isset($p['tailable'])];
@@ -321,7 +321,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $o, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $o, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -338,7 +338,7 @@ class Pool extends Client {
 			$db = $this;
 			$this->cache->get($p['cachekey'], function ($r) use ($db, $p, $cb) {
 				if ($r->result !== NULL) {
-					call_user_func($cb, bson_decode($r->result));
+					$cb(bson_decode($r->result));
 				}
 				else {
 					unset($p['cachekey']);
@@ -404,7 +404,7 @@ class Pool extends Client {
 									. (isset($p['fields']) ? bson_encode($p['fields']) : '')
 				, true, null, function($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -412,7 +412,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $o, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $o, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -481,7 +481,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -489,7 +489,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -522,7 +522,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['dbname'], $cb, true];
@@ -530,7 +530,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -558,7 +558,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['dbname'], $cb, true];
@@ -566,7 +566,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -641,7 +641,7 @@ class Pool extends Client {
 				. bson_encode($params)
 				, true, $conn, function ($conn, $reqId = null) use ($db, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$db, $cb, true];
@@ -649,7 +649,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage()]);
+				$cb(['$err' => $e->getMessage()]);
 			}
 		} 
 	}
@@ -725,7 +725,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -733,7 +733,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -772,7 +772,7 @@ class Pool extends Client {
 				. bson_encode(['$eval' => new \MongoCode($code)])
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['db'], $cb, true];
@@ -780,7 +780,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -819,7 +819,7 @@ class Pool extends Client {
 			. bson_encode($query)
 			. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 				if (!$conn) {
-					!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+					!$cb || $cb(['$err' => 'Connection error.']);
 					return;
 				}
 				$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -949,7 +949,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, true];
@@ -957,7 +957,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -1016,7 +1016,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, false];
@@ -1024,7 +1024,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -1061,7 +1061,7 @@ class Pool extends Client {
 				. bson_encode($query)
 				. (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$p['col'], $cb, false];
@@ -1069,7 +1069,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		} 
 	}
@@ -1109,7 +1109,7 @@ class Pool extends Client {
 			. bson_encode($data)
 		, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
 			if (!$conn) {
-				!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+				!$cb || $cb(['$err' => 'Connection error.']);
 				return;
 			}
 			if ($cb !== NULL) {
@@ -1225,7 +1225,7 @@ class Pool extends Client {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
 				if ($cb !== null) {
-					call_user_func($cb, ['$err' => $e->getMessage(), '$doc' => $doc]);
+					$cb(['$err' => $e->getMessage(), '$doc' => $doc]);
 				}
 			}
 		} 
@@ -1271,7 +1271,7 @@ class Pool extends Client {
 			} catch (\MongoException $e) {
 				Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 				if ($cb !== null) {
-					call_user_func($cb, ['$err' => $e->getMessage(), '$doc' => $doc]);
+					$cb(['$err' => $e->getMessage(), '$doc' => $doc]);
 				}
 			} 
 
@@ -1319,7 +1319,7 @@ class Pool extends Client {
 						   . bson_encode($cond)
 			, false, null, function ($conn, $reqId = null) use ($col, $cb, $params) {
 				if (!$conn) {
-					!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+					!$cb || $cb(['$err' => 'Connection error.']);
 					return;
 				}
 				if ($cb !== NULL) {
@@ -1329,7 +1329,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $cond]);
+				$cb(['$err' => $e->getMessage(), '$query' => $cond]);
 			}
 		} 
 	}
@@ -1353,7 +1353,7 @@ class Pool extends Client {
 			. pack('V', $number)
 			. $id, false, $conn, function ($conn, $reqId = null) use ($id) {
 				if (!$conn) {
-					!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+					!$cb || $cb(['$err' => 'Connection error.']);
 					return;
 				}
 				$conn->requests[$reqId] = [$id];
@@ -1494,7 +1494,7 @@ class Pool extends Client {
 				. pack('VV', 0, -1)
 				. bson_encode($query), true, $conn, function ($conn, $reqId = null) use ($dbname, $cb) {
 					if (!$conn) {
-						!$cb || call_user_func($cb, ['$err' => 'Connection error.']);
+						!$cb || $cb(['$err' => 'Connection error.']);
 						return;
 					}
 					$conn->requests[$reqId] = [$dbname, $cb, true];
@@ -1502,7 +1502,7 @@ class Pool extends Client {
 		} catch (\MongoException $e) {
 			Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
 			if ($cb !== null) {
-				call_user_func($cb, ['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+				$cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
 			}
 		}
 	}

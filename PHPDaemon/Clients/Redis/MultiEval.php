@@ -153,7 +153,7 @@ class MultiEval {
 	public function execute() {
 		if (!count($this->stack)) {
 			foreach ($this->listeners as $cb) {
-				call_user_func($cb, $this->pool);
+				$cb($this->pool);
 			}
 			return;
 		}
@@ -161,7 +161,7 @@ class MultiEval {
 		$params = $this->getParams();
 		$params[] = function($redis) {
 			foreach ($this->listeners as $cb) {
-				call_user_func($cb, $redis);
+				$cb($redis);
 			}
 		};
 

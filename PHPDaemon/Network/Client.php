@@ -120,7 +120,7 @@ abstract class Client extends Pool {
 			}
 			else {
 				if ($cb) {
-					call_user_func($cb, false);
+					$cb(false);
 				}
 				return false;
 			}

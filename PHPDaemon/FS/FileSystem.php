@@ -175,11 +175,11 @@ class FileSystem {
 	public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
-			call_user_func($cb, $path, FileSystem::statPrepare(@stat($path)));
+			$cb($path, FileSystem::statPrepare(@stat($path)));
 			return true;
 		}
 		return eio_stat($path, $pri, function ($path, $stat) use ($cb) {
-			call_user_func($cb, $path, FileSystem::statPrepare($stat));
+			$cb($path, FileSystem::statPrepare($stat));
 		}, $path);
 	}
 
@@ -195,7 +195,7 @@ class FileSystem {
 		if (!self::$supported) {
 			$r = unlink($path);
 			if ($cb) {
-				call_user_func($cb, $path, $r);
+				$cb($path, $r);
 			}
 			return $r;
 		}
@@ -215,7 +215,7 @@ class FileSystem {
 		if (!self::$supported) {
 			$r = rename($path, $newpath);
 			if ($cb) {
-				call_user_func($cb, $path, $newpath, $r);
+				$cb($path, $newpath, $r);
 			}
 			return $r;
 		}
@@ -232,7 +232,7 @@ class FileSystem {
 	public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
-			call_user_func($cb, $path, false);
+			$cb($path, false);
 			return false;
 		}
 		return eio_statvfs($path, $pri, $cb, $path);
@@ -248,11 +248,11 @@ class FileSystem {
 	public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
-			call_user_func($cb, $path, FileSystem::statPrepare(lstat($path)));
+			$cb($path, FileSystem::statPrepare(lstat($path)));
 			return true;
 		}
 		return eio_lstat($path, $pri, function ($path, $stat) use ($cb) {
-			call_user_func($cb, $path, FileSystem::statPrepare($stat));
+			$cb($path, FileSystem::statPrepare($stat));
 		}, $path);
 	}
 
@@ -266,7 +266,7 @@ class FileSystem {
 	public static function realpath($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
-			call_user_func($cb, $path, realpath($path));
+			$cb($path, realpath($path));
 			return true;
 		}
 		return eio_realpath($path, $pri, $cb, $path);
@@ -282,7 +282,7 @@ class FileSystem {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			if ($cb) {
-				call_user_func($cb, false);
+				$cb(false);
 			}
 			return false;
 		}
@@ -299,7 +299,7 @@ class FileSystem {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
 			if ($cb) {
-				call_user_func($cb, false);
+				$cb(false);
 			}
 			return false;
 		}
@@ -320,7 +320,7 @@ class FileSystem {
 		if (!FileSystem::$supported) {
 			$r = touch($path, $mtime, $atime);
 			if ($cb) {
-				call_user_func($cb, $r);
+				$cb($r);
 			}
 			return $r;
 		}
@@ -339,7 +339,7 @@ class FileSystem {
 		if (!FileSystem::$supported) {
 			$r = rmdir($path);
 			if ($cb) {
-				call_user_func($cb, $path, $r);
+				$cb($path, $r);
 			}
 			return $r;
 		}
@@ -359,7 +359,7 @@ class FileSystem {
 		if (!FileSystem::$supported) {
 			$r = mkdir($path, $mode);
 			if ($cb) {
-				call_user_func($cb, $path, $r);
+				$cb($path, $r);
 			}
 			return $r;
 		}
@@ -379,7 +379,7 @@ class FileSystem {
 		if (!FileSystem::$supported) {
 			$r = glob($path);
 			if ($cb) {
-				call_user_func($cb, $path, $r);
+				$cb($path, $r);
 			}
 			return true;
 		}
@@ -400,7 +400,7 @@ class FileSystem {
 			$fp = fopen($path, 'r+');
 			$r  = $fp && ftruncate($fp, $offset);
 			if ($cb) {
-				call_user_func($cb, $path, $r);
+				$cb($path, $r);
 			}
 			return $r;
 		}
@@ -421,17 +421,17 @@ class FileSystem {
 	public static function sendfile($outfd, $path, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!self::$supported) {
-			call_user_func($cb, $path, false);
+			$cb($path, false);
 			return false;
 		}
 		$noncache = true;
 		FileSystem::open($path, 'r!', function ($file) use ($cb, $noncache, $startCb, $path, $pri, $outfd, $offset, $length) {
 			if (!$file) {
-				call_user_func($cb, $path, false);
+				$cb($path, false);
 				return;
 			}
 			$file->sendfile($outfd, function ($file, $success) use ($cb, $noncache) {
-				call_user_func($cb, $file->path, $success);
+				$cb($file->path, $success);
 				if ($noncache) {
 					$file->close();
 				}
@@ -457,7 +457,7 @@ class FileSystem {
 			if ($gid !== -1) {
 				$r = $r && chgrp($path, $gid);
 			}
-			call_user_func($cb, $path, $r);
+			$cb($path, $r);
 			return $r;
 		}
 		return eio_chown($path, $uid, $gid, $pri, $cb, $path);
@@ -473,12 +473,12 @@ class FileSystem {
 	public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
-			call_user_func($cb, $path, file_get_contents($path));
+			$cb($path, file_get_contents($path));
 			return true;
 		}
 		return FileSystem::open($path, 'r!', function ($file) use ($path, $cb, $pri, $path) {
 			if (!$file) {
-				call_user_func($cb, $path, false);
+				$cb($path, false);
 				return;
 			}
 			$file->readAll($cb, $pri);
@@ -497,12 +497,12 @@ class FileSystem {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
 			call_user_func($chunkcb, $path, $r = readfile($path));
-			call_user_func($cb, $r !== false);
+			$cb($r !== false);
 			return;
 		}
 		FileSystem::open($path, 'r!', function ($file) use ($path, $cb, $chunkcb, $pri) {
 			if (!$file) {
-				call_user_func($cb, $path, false);
+				$cb($path, false);
 				return;
 			}
 			$file->readAllChunked($cb, $chunkcb, $pri);
@@ -550,7 +550,7 @@ class FileSystem {
 	protected static function tempnamHandler($dir, $prefix, $cb, &$tries) {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (++$tries >= 3) {
-			call_user_func($cb, false);
+			$cb(false);
 			return;
 		}
 		$path = FileSystem::genRndTempnam($dir, $prefix);
@@ -559,7 +559,7 @@ class FileSystem {
 				static::tempnamHandler($dir, $prefix, $cb, $tries);
 				return;
 			}
-			call_user_func($cb, $file);
+			$cb($file);
 		});
 	}
 
@@ -594,11 +594,11 @@ class FileSystem {
 			$mode = File::convertFlags($flags, true);
 			$fd   = fopen($path, $mode);
 			if (!$fd) {
-				call_user_func($cb, false);
+				$cb(false);
 				return false;
 			}
 			$file = new File($fd, $path);
-			call_user_func($cb, $file);
+			$cb($file);
 			return true;
 		}
 		$fdCacheKey = $path . "\x00" . $flags;
@@ -610,7 +610,7 @@ class FileSystem {
 				$item->addListener($cb);
 			}
 			else { // hit
-				call_user_func($cb, $file);
+				$cb($file);
 			}
 			return null;
 		}
@@ -621,7 +621,7 @@ class FileSystem {
 		return eio_open($path, $flags, $mode, $pri, function ($path, $fd) use ($cb, $flags, $fdCacheKey, $noncache) {
 			if ($fd === -1) {
 				if ($noncache) {
-					call_user_func($cb, false);
+					$cb(false);
 				}
 				else {
 					FileSystem::$fdCache->put($fdCacheKey, false, self::$badFDttl);
@@ -638,7 +638,7 @@ class FileSystem {
 						FileSystem::$fdCache->put($fdCacheKey, $file);
 					}
 					else {
-						call_user_func($cb, $file);
+						$cb($file);
 					}
 				});
 			}
@@ -648,7 +648,7 @@ class FileSystem {
 					FileSystem::$fdCache->put($fdCacheKey, $file);
 				}
 				else {
-					call_user_func($cb, $file);
+					$cb($file);
 				}
 			}
 		}, $path);

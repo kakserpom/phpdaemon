@@ -201,7 +201,7 @@ class Connection extends ClientConnection {
 		$qtypeInt  = array_search($qtype, Pool::$type, true);
 		$qclassInt = array_search($qclass, Pool::$class, true);
 		if (($qtypeInt === false) || ($qclassInt === false)) {
-			call_user_func($cb, false);
+			$cb(false);
 			return;
 		}
 		$q      = Binary::labels($hostname) . // domain

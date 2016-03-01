@@ -196,10 +196,10 @@ class Connection extends ClientConnection {
 	 */
 	public function onConnected($cb) {
 		if ($this->phase === self::PHASE_AUTH_ERR) {
-			call_user_func($cb, $this, false);
+			$cb($this, false);
 		}
 		elseif ($this->phase === self::PHASE_HANDSHAKED) {
-			call_user_func($cb, $this, true);
+			$cb($this, true);
 		}
 		else {
 			if (!$this->onConnected) {

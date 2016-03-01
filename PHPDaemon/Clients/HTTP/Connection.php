@@ -109,7 +109,7 @@ class Connection extends ClientConnection {
 			$prepared = Pool::parseUrl($url);
 			if (!$prepared) {
 				if (isset($params['resultcb'])) {
-					call_user_func($params['resultcb'], false);
+					$params['resultcb'](false);
 				}
 				return;
 			}
@@ -182,7 +182,7 @@ class Connection extends ClientConnection {
 			$prepared = Pool::parseUrl($url);
 			if (!$prepared) {
 				if (isset($params['resultcb'])) {
-					call_user_func($params['resultcb'], false);
+					$params['resultcb'](false);
 				}
 				return;
 			}

@@ -272,7 +272,7 @@ class Collection {
 			'new' => true,
 			'upsert' => true,
 		], $plain ? function ($lastError) use ($cb) {
-			call_user_func($cb, isset($lastError['value']['seq']) ? $lastError['value']['seq'] : false);
+			$cb(isset($lastError['value']['seq']) ? $lastError['value']['seq'] : false);
 		} : $cb);
 	}
 
