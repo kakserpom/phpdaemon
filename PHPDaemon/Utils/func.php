@@ -22,8 +22,7 @@ if (!function_exists('binarySubstr')) {
 }
 if (!function_exists('D')) {
 	function D() {
-		$func = '\PHPDaemon\Core\Debug::dump';
-		\PHPDaemon\Core\Daemon::log($func(...func_get_args()));
+		\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump(...func_get_args()));
 		//\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::backtrace());
 	}
 }
