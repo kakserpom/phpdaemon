@@ -600,12 +600,12 @@ class Connection extends ClientConnection implements \Iterator {
 		/* we should reassign subscriptions */
 		foreach ($this->subscribeCb as $sub => $cbs) {
 			foreach ($cbs as $cb) {
-				call_user_func([$this->pool, 'subscribe'], $sub, $cb);
+				$this->pool->subscribe($sub, $cb);
 			}
 		}
 		foreach ($this->psubscribeCb as $sub => $cbs) {
 			foreach ($cbs as $cb) {
-				call_user_func([$this->pool, 'psubscribe'], $sub, $cb);
+				$this->pool->psubscribe($sub, $cb);
 			}
 		}
 	}

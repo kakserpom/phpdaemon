@@ -348,7 +348,8 @@ class Connection extends ClientConnection {
 		if ($this->eofTerminated) {
 			$body = $this->readUnlimited();
 			if($this->chunkcb) {
-				call_user_func($this->chunkcb, $body);
+				$func = $this->chunkcb;
+				$func($body);
 			}
 			$this->body .= $body;
 			return;
@@ -386,7 +387,8 @@ class Connection extends ClientConnection {
 				$this->curChunk .= $this->read($n);
 				if ($this->curChunkSize <= strlen($this->curChunk)) {
 					if($this->chunkcb) {
-						call_user_func($this->chunkcb, $this->curChunk);
+						$func = $this->chunkcb;
+						$func($this->curChunk);
 					}
 					$this->body .= $this->curChunk;
 					$this->curChunkSize = null;
@@ -399,7 +401,8 @@ class Connection extends ClientConnection {
 		else {
 			$body = $this->read($this->contentLength - strlen($this->body));
 			if($this->chunkcb) {
-				call_user_func($this->chunkcb, $body);
+				$func = $this->chunkcb;
+				$func($body);
 			}
 			$this->body .= $body;
 			if (($this->contentLength !== -1) && (strlen($this->body) >= $this->contentLength)) {

@@ -164,8 +164,7 @@ class MultiEval {
 				$cb($redis);
 			}
 		};
-
-		call_user_func_array([$this->pool, 'eval'], $params);
+		$this->pool->eval(...$params);
 	}
 
 	/**
@@ -177,6 +176,6 @@ class MultiEval {
 			$this->execute();
 			return;
 		}
-		call_user_func_array([$this, 'add'], func_get_args());
+		$this->add(...func_get_args());
 	}
 }

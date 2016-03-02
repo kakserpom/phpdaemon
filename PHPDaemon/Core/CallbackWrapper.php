@@ -168,7 +168,8 @@ class CallbackWrapper {
 		}
 		if ($this->context === null || Daemon::$context !== null) {
 			try {
-				return call_user_func_array($this->cb, func_get_args());
+				$cb = $this->cb;
+				return $cb(...func_get_args());
 			} catch (\Exception $e) {
 				Daemon::uncaughtExceptionHandler($e);
 			}
@@ -176,7 +177,8 @@ class CallbackWrapper {
 		}
 		$this->context->onWakeup();
 		try {
-			$result = call_user_func_array($this->cb, func_get_args());
+			$cb = $this->cb;
+			$result = $cb(...func_get_args());
 			$this->context->onSleep();
 			return $result;
 		} catch (\Exception $e) {

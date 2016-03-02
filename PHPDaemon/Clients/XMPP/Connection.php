@@ -279,7 +279,8 @@ class Connection extends ClientConnection {
 		$this->xml->addXPathHandler('{urn:ietf:params:xml:ns:xmpp-sasl}failure', function ($xml) {
 			if ($this->onConnected) {
 				$this->connected = false;
-				call_user_func($this->onConnected, $this);
+				$func = $this->onConnected;
+				$func($this);
 				$this->onConnected = null;
 			}
 			$this->finish();

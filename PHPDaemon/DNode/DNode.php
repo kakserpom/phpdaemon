@@ -192,7 +192,7 @@ trait DNode {
 	 */
 	public function callRemoteArray($method, $args) {
 		if (isset($this->remoteMethods[$method])) {
-			call_user_func_array($this->remoteMethods[$method], $args);
+			$this->remoteMethods[$method](...$args);
 			return $this;
 		}
 		$pct = [
@@ -372,22 +372,23 @@ trait DNode {
 
 		if (is_string($m)) {
 			if (isset($this->localMethods[$m])) {
-				call_user_func_array($this->localMethods[$m], $args);
+				$this->localMethods[$m](...$args);
 			}
 			elseif (method_exists($this, $m . 'Method')) {
-				call_user_func_array([$this, $m . 'Method'], $args);
+				$func = [$this, $m . 'Method'];
+				$func(...$args);
 			} else {
 				$this->handleException(new UndefinedMethodCalled);
 			}
 		}
 		elseif (is_int($m)) {
 			if (isset($this->callbacks[$m])) {
-				if (!call_user_func_array($this->callbacks[$m], $args)) {
+				if (!$this->callbacks[$m](...$args)) {
 					unset($this->callbacks[$m]);
 				}
 			}
 			elseif (isset($this->persistentCallbacks[$m])) {
-				call_user_func_array($this->persistentCallbacks[$m], $args);
+				$this->persistentCallbacks[$m](...$args);
 			}
 			else {
 				$this->handleException(new UndefinedMethodCalled);

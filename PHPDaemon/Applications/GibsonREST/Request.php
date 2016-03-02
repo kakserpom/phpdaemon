@@ -100,7 +100,8 @@ class Request extends \PHPDaemon\HTTPRequest\Generic {
 			$this->result = $conn->result;
 			$this->wakeup();
 		};
-		call_user_func_array([$this->appInstance->gibson, $this->cmd], $args);
+		$func = [$this->appInstance->gibson, $this->cmd];
+		$func(...$args);
 	}
 
 	/**

@@ -64,7 +64,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 		}
 		$cb = $this->extract();
 		if ($cb) {
-			call_user_func_array($cb, func_get_args());
+			$cb(...func_get_args());
 		}
 		return true;
 	}
@@ -83,7 +83,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue {
 		do {
 			$cb = $this->extract();
 			if ($cb) {
-				call_user_func_array($cb, $args);
+				$cb(...$args);
 				++$n;
 			}
 		} while (!$this->isEmpty());

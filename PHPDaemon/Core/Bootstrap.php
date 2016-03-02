@@ -84,8 +84,8 @@ class Bootstrap {
 	 * @return void
 	 */
 	public static function init($configFile = null) {
-		if (!version_compare(PHP_VERSION, '5.4.0', '>=')) {
-			Daemon::log('PHP >= 5.4.0 required.');
+		if (!version_compare(PHP_VERSION, '5.6.0', '>=')) {
+			Daemon::log('PHP >= 5.6.0 required.');
 			return;
 		}
 

@@ -544,7 +544,7 @@ class Parser {
 	 * @return mixed|void
 	 */
 	protected function token($token, $c) {
-		return call_user_func($this->tokens[$token], $c);
+		return $this->tokens[$token]($c);
 	}
 
 	/**

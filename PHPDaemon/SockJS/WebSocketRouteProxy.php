@@ -48,7 +48,8 @@ class WebSocketRouteProxy implements \PHPDaemon\WebSocket\RouteInterface {
 	 * @return mixed
 	 */
 	public function __call($method, $args) {
-		return call_user_func_array([$this->realRoute, $method], $args);
+		$func = [$this->realRoute, $method];
+		$func(...$args);
 	}
 
 	/**

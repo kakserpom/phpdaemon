@@ -240,7 +240,8 @@ class ComplexJob implements \ArrayAccess {
 					$this->addJob($it->key(), $it->current());
 				}
 			} else {
-				if (($r = call_user_func($this->more, $this)) instanceof \Iterator) {
+				$func = $this->more;
+				if (($r = $func($this)) instanceof \Iterator) {
 					$this->more = $r;
 					goto iterator;
 				}

@@ -41,11 +41,11 @@ class Scan extends \PHPDaemon\Core\AppInstance {
 			};
 
 			// test 1
-			// call_user_func_array([$this->redis, 'scan'], $params);
+			// $this->redis->scan(...$params);
 
 			// test 2
 			$this->redis->autoscan('scan', $params, $cbEnd, 50);
 		};
-		call_user_func_array([$this->redis, 'mset'], $params);
+		$this->redis->mset(...$params);
 	}
 }

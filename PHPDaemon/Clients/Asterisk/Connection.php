@@ -223,7 +223,8 @@ class Connection extends ClientConnection {
 					if ($packet['response'] === 'success') {
 						if ($this->state === self::CONN_STATE_CHALLENGE_PACKET_SENT) {
 							if (is_callable($this->onChallenge)) {
-								call_user_func($this->onChallenge, $this, $packet['challenge']);
+								$func = $this->onChallenge;
+								$func($this, $packet['challenge']);
 							}
 						}
 						else {

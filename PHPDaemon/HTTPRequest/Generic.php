@@ -932,9 +932,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			$this->sessionCommit($cb);
 		}
 		else {
-			if ($cb) {
-				call_user_func($cb);
-			}
+			$cb === null || $cb();
 		}
 	}
 }

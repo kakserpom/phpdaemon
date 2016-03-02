@@ -235,7 +235,8 @@ class Cursor implements \Iterator {
 		$this->destroyed = true;
 		if ($notify) {
 			if ($this->callback) {
-				call_user_func($this->callback, $this);
+				$func = $this->callback;
+				$func($this);
 			}
 		}
 		unset($this->conn->cursors[$this->id]);

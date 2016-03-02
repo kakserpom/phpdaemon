@@ -496,7 +496,7 @@ class FileSystem {
 	public static function readfileChunked($path, $cb, $chunkcb, $pri = EIO_PRI_DEFAULT) {
 		$cb = CallbackWrapper::forceWrap($cb);
 		if (!FileSystem::$supported) {
-			call_user_func($chunkcb, $path, $r = readfile($path));
+			$chunkcb($path, $r = readfile($path));
 			$cb($r !== false);
 			return;
 		}

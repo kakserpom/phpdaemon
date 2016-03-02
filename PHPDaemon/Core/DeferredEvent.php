@@ -141,7 +141,8 @@ class DeferredEvent {
 				++$i;
 			}
 			$this->state = self::STATE_RUNNING;
-			call_user_func($this->producer, $this);
+			$func = $this->producer;
+			$func($this);
 		}
 	}
 
@@ -151,6 +152,6 @@ class DeferredEvent {
 	 * @return void
 	 */
 	public function __invoke() {
-		call_user_func_array([$this, 'addListener'], func_get_args());
+		$this->addListener(...func_get_args());
 	}
 }

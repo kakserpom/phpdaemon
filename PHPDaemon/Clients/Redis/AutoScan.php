@@ -89,14 +89,17 @@ class AutoScan {
 		$args[] = function($redis) {
 			$this->conn   = $redis;
 			$this->cursor = $redis->result[0];
-			call_user_func($this->cb, $redis);
+			$func = $this->cb;
+			$func($redis);
 			
 			if (!is_numeric($redis->result[0]) || !$redis->result[0] || ($this->limit && ++$this->num > $this->limit)) {
-				call_user_func($this->cbEnd, $redis, $this);
+				$func = $this->cbEnd;
+				$func($redis, $this);
 				return;
 			}
 			$this->doIteration();
 		};
-		call_user_func_array([$this->conn, $this->cmd], $args);
+		$func = [$this->conn, $this->cmd];
+		$func(... $args);
 	}
 }

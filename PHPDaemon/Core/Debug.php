@@ -66,7 +66,7 @@ class Debug {
 		Daemon::log('Debug::proxy #'.$n.': SPAWNED ('.json_encode($name). ')');
 		return function() use ($cb, $name, $n) {
 			Daemon::log('Debug::proxy #'.$n.': CALLED ('.json_encode($name). ')');
-			call_user_func_array($cb, func_get_args());
+			$cb(...func_get_args());
 		};
 
 	}

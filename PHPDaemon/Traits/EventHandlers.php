@@ -40,7 +40,7 @@ trait EventHandlers {
 		if (isset($this->eventHandlers[$name])) {
 			$this->lastEventName = $name;
 			foreach ($this->eventHandlers[$name] as $cb) {
-				if (call_user_func_array($cb, $args) === true) {
+				if ($cb(...$args) === true) {
 					return $this;
 				}
 			}
@@ -63,7 +63,7 @@ trait EventHandlers {
 		if (isset($this->eventHandlers[$name])) {
 			$this->lastEventName = $name;
 			foreach ($this->eventHandlers[$name] as $cb) {
-				if (call_user_func_array($cb, $args) === true) {
+				if ($cb(...$args) === true) {
 					return $this;
 				}
 			}
@@ -87,7 +87,7 @@ trait EventHandlers {
 		if (isset($this->eventHandlers[$name])) {
 			$this->lastEventName = $name;
 			foreach ($this->eventHandlers[$name] as $cb) {
-				if (call_user_func_array($cb, $args) !== 0) {
+				if ($cb(...$args) !== 0) {
 					++$cnt;
 				}
 			}

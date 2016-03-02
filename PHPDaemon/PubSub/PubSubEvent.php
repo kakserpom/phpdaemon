@@ -78,8 +78,8 @@ class PubSubEvent extends \SplObjectStorage {
 		$act = $this->count() === 0;
 		$this->attach($obj, $cb);
 		if ($act) {
-			if ($this->actCb !== null) {
-				call_user_func($this->actCb, $this);
+			if (($func = $this->actCb) !== null) {
+				$func($this);
 			}
 		}
 		return $this;
@@ -93,8 +93,8 @@ class PubSubEvent extends \SplObjectStorage {
 	public function unsub($obj) {
 		$this->detach($obj);
 		if ($this->count() === 0) {
-			if ($this->deactCb !== null) {
-				call_user_func($this->deactCb, $this);
+			if (($func = $this->deactCb) !== null) {
+				$func($this);
 			}
 		}
 		return $this;
@@ -107,7 +107,8 @@ class PubSubEvent extends \SplObjectStorage {
 	 */
 	public function pub($data) {
 		foreach ($this as $obj) {
-			call_user_func($this->getInfo(), $data);
+			$func = $this->getInfo();
+			$func($data);
 		}
 		return $this;
 	}

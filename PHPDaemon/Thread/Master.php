@@ -110,10 +110,11 @@ class Master extends Generic {
 		}
 		else { // we are NOT using libevent in Master
 			$lastTimerCall = microtime(true);
+			$func = $this->timerCb;
 			while (!$this->breakMainLoop) {
 				$this->callbacks->executeAll($this);
 				if (microtime(true) > $lastTimerCall + Daemon::$config->mpmdelay->value) {
-					call_user_func($this->timerCb, null);
+					$func(null);
 					$lastTimerCall = microtime(true);
 				}
 				$this->sigwait();
@@ -136,8 +137,8 @@ class Master extends Generic {
 	 */
 	protected function callMPM() {
 		$state = Daemon::getStateOfWorkers($this);
-		if (isset(Daemon::$config->mpm->value) && is_callable(Daemon::$config->mpm->value)) {
-			return call_user_func(Daemon::$config->mpm->value, $this, $state);
+		if (isset(Daemon::$config->mpm->value) && is_callable($func = Daemon::$config->mpm->value)) {
+			$func($this, $state);
 		}
 
 		$upToMinWorkers      = Daemon::$config->minworkers->value - $state['alive'];

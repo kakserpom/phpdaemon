@@ -401,10 +401,12 @@ class File {
 			return false;
 		}
 		if (!FileSystem::$supported) {
-			if ($cb) {
-				$cb($this, false);
+			if ($offset !== null) {
+				fseek($this->fd, $length);
 			}
-			return false;
+			$data = fread($this->fd, $length);
+			$cb === null || $cb($this, $data);
+			return $data;
 		}
 		$this->offset += $length;
 		eio_read(
@@ -477,7 +479,7 @@ class File {
 		};
 		if ($length !== null) {
 			if ($startCb !== null) {
-				if (!call_user_func($startCb, $this, $length, $handler)) {
+				if (!$startCb($this, $length, $handler)) {
 					$handler($this);
 				}
 			}
@@ -489,7 +491,7 @@ class File {
 		$this->statRefresh(function ($file, $stat) use ($startCb, $handler, &$length) {
 			$length = $stat['size'];
 			if ($startCb !== null) {
-				if (!call_user_func($startCb, $file, $length, $handler)) {
+				if (!$startCb($file, $length, $handler)) {
 					$handler($file);
 				}
 			}
@@ -597,7 +599,7 @@ class File {
 	 */
 	protected function readAllChunkedGenHandler($cb, $chunkcb, $size, &$offset, $pri) {
 		return function ($file, $data) use ($cb, $chunkcb, $size, &$offset, $pri) {
-			call_user_func($chunkcb, $file, $data);
+			$chunkcb($file, $data);
 			$offset += strlen($data);
 			$len = min($file->chunkSize, $size - $offset);
 			if ($offset >= $size) {

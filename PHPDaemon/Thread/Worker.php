@@ -285,7 +285,8 @@ class Worker extends Generic {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$context, 'header'], func_get_args());
+				$func = [Daemon::$context, 'header'];
+				return $func(...func_get_args());
 			}
 			$this->override('header');
 
@@ -293,7 +294,8 @@ class Worker extends Generic {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$context, 'isUploadedFile'], func_get_args());
+				$func = [Daemon::$context, 'isUploadedFile'];
+				return $func(...func_get_args());
 			}
 			$this->override('is_uploaded_file');
 
@@ -301,7 +303,8 @@ class Worker extends Generic {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$context, 'moveUploadedFile'], func_get_args());
+				$func = [Daemon::$context, 'moveUploadedFile'];
+				return $func(...func_get_args());
 			}
 			$this->override('move_uploaded_file');
 
@@ -326,7 +329,8 @@ class Worker extends Generic {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				return call_user_func_array([Daemon::$context, 'setcookie'], func_get_args());
+				$func = [Daemon::$context, 'setcookie'];
+				return $func(...func_get_args());
 			}
 			$this->override('setcookie');
 

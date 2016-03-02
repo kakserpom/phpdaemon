@@ -71,6 +71,6 @@ trait DeferredEventHandlers {
 		if (!$o) {
 			throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
 		}
-		return call_user_func_array($o, $args);
+		return $o(...$args);
 	}
 }

@@ -174,7 +174,8 @@ class AppInstance {
 		if (!$this->enableRPC || !is_callable([$this, $method])) {
 			return false;
 		}
-		return call_user_func_array([$this, $method], $args);
+		$func = [$this, $method];
+		return $func(...$args);
 	}
 
 	/**

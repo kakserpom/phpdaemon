@@ -48,7 +48,8 @@ class Pool extends AppInstance {
 				Daemon::log($realclass . ' class not exists.');
 				return;
 			}
-			$this->pool = call_user_func([$realclass, 'getInstance'], $name);
+			$func = [$realclass, 'getInstance'];
+			$this->pool = $func($name);
 			$this->pool->appInstance = $this;
 		}
 	}
@@ -64,7 +65,7 @@ class Pool extends AppInstance {
 		if (!is_callable($f = [$this->pool, 'RPCall'])) {
 			return false;
 		}
-		return call_user_func($f, $method, $args);
+		return $f($method, $args);
 	}
 
 	/**
