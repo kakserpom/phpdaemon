@@ -24,8 +24,7 @@ class ObjectStorage extends \SplObjectStorage {
 		$method = array_shift($args);
 		$n      = 0;
 		foreach ($this as $obj) {
-			$func = [$obj, $method];
-			$func(...$args);
+			$obj->$method(...$args);
 			++$n;
 		}
 		return $n;

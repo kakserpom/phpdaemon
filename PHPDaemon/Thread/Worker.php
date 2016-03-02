@@ -285,8 +285,7 @@ class Worker extends Generic {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				$func = [Daemon::$context, 'header'];
-				return $func(...func_get_args());
+				return Daemon::$context->header(...func_get_args());
 			}
 			$this->override('header');
 
@@ -294,8 +293,7 @@ class Worker extends Generic {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				$func = [Daemon::$context, 'isUploadedFile'];
-				return $func(...func_get_args());
+				return Daemon::$context->isUploadedFile(...func_get_args());
 			}
 			$this->override('is_uploaded_file');
 
@@ -303,8 +301,7 @@ class Worker extends Generic {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				$func = [Daemon::$context, 'moveUploadedFile'];
-				return $func(...func_get_args());
+				return Daemon::$context->moveUploadedFile(...func_get_args());
 			}
 			$this->override('move_uploaded_file');
 
@@ -329,8 +326,7 @@ class Worker extends Generic {
 				if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
 					return false;
 				}
-				$func = [Daemon::$context, 'setcookie'];
-				return $func(...func_get_args());
+				return Daemon::$context->setcookie(...func_get_args());
 			}
 			$this->override('setcookie');
 

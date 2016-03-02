@@ -246,8 +246,7 @@ abstract class Generic {
 			return;
 		}
 		if (method_exists($this, $m = strtolower(self::$signals[$signo]))) {
-			$func = [$this, $m];
-			$func();
+			$this->$m();
 		}
 		elseif (method_exists($this, 'sigunknown')) {
 			$this->sigunknown($signo);
