@@ -8,8 +8,6 @@ use PHPDaemon\Core\Daemon;
 
 class Pool extends Client {
 
-    use LoggerT;
-
     /**
      * Setting default config options
      * Overriden from NetworkClient::getConfigDefaults
