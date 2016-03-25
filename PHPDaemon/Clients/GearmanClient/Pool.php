@@ -1,11 +1,13 @@
 <?php
-namespace PHPDaemon\Clients\Gearman;
+namespace PHPDaemon\Clients\GearmanClient;
 
 use PHPDaemon\Network\Client;
 use PHPDaemon\Config;
-use PHPDaemon\Core\Daemon;
 
-
+/**
+ * Class Pool
+ * @package PHPDaemon\Clients\GearmanClient
+ */
 class Pool extends Client {
 
     /**
