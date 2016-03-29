@@ -54,6 +54,16 @@ class Application extends \PHPDaemon\Core\AppInstance {
 	}
 
 	/**
+	 * Set Redis instance
+	 * @param \PHPDaemon\Clients\Redis\Pool $redis
+	 * @return $this
+	 */
+	public function setRedis(\PHPDaemon\Clients\Redis\Pool $redis) {
+		$this->redis = $redis;
+		return $this;
+	}
+
+	/**
 	 * getLocalSubscribersCount
 	 * @param  string $chan
 	 * @return integer
