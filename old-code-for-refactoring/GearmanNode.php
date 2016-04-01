@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Gearman Node
+ * GearmanClient Node
  *
  * @package    Applications
  * @subpackage GearmanNode
