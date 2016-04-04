@@ -343,42 +343,71 @@ class Connection extends ClientConnection {
 	/**
 	 * Sends SQL-query
 	 * @param  string   $q        Query
-	 * @param  callable $callback Optional. Callback called when response received
-	 * @callback $callback ( Connection $conn, boolean $success )
+	 * @param  callable $cb Optional. Callback called when response received
+	 * @callback $cb ( Connection $conn, boolean $success )
 	 * @return boolean            Success
 	 */
-	public function query($q, $callback = NULL) {
+	public function query($q, $cb = null) {
 		if ($this->finished) {
 			throw new ConnectionFinished;
 		}
-		return $this->command(Pool::COM_QUERY, $q, $callback);
+		return $this->command(Pool::COM_QUERY, $q, $cb);
+	}
+
+	/**
+	 * Begins a transaction
+	 * @param  callable $cb Optional. Callback called when response received
+	 * @throws ConnectionFinished
+	 */
+	public function begin($cb = null) {
+		$this->query('BEGIN', $cb);
+		$this->acquire();
+	}
+
+	/**
+	 * Commit a transaction
+	 * @param  callable $cb Optional. Callback called when response received
+	 * @throws ConnectionFinished
+	 */
+	public function commit($cb = null) {
+		$this->query('COMMIT', $cb);
+		$this->release();
+	}
+
+	/**
+	 * Rollback a transaction
+	 * @throws ConnectionFinished
+	 */
+	public function rollback($cb = null) {
+		$this->query('ROLLBACK', $cb);
+		$this->release();
 	}
 
 	/**
 	 * Sends echo-request
-	 * @param  callable $callback Optional. Callback called when response received
-	 * @callback $callback ( Connection $conn, boolean $success )
+	 * @param  callable $cb Optional. Callback called when response received
+	 * @callback $cb ( Connection $conn, boolean $success )
 	 * @return boolean            Success
 	 */
-	public function ping($callback = NULL) {
-		return $this->command(Pool::COM_PING, '', $callback);
+	public function ping($cb = NULL) {
+		return $this->command(Pool::COM_PING, '', $cb);
 	}
 
 	/**
 	 * Sends arbitrary command
 	 * @param  string   $cmd      Command
 	 * @param  string   $q        Data
-	 * @param  callable $callback Optional
+	 * @param  callable $cb Optional
 	 * @throws ConnectionFinished
-	 * @callback $callback ( Connection $conn, boolean $success )
+	 * @callback $cb ( Connection $conn, boolean $success )
 	 * @return boolean            Success
 	 */
-	public function command($cmd, $q = '', $callback = NULL) {
+	public function command($cmd, $q = '', $cb = NULL) {
 		if ($this->phase !== self::PHASE_HANDSHAKED) {
 			return false;
 		}
 
-		$this->onResponse->push($callback);
+		$this->onResponse->push($cb);
 		$this->seq = 0;
 		$this->sendPacket(chr($cmd) . $q);
 
