@@ -393,7 +393,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 		if (!isset($this->server['HTTP_CONNECTION'])
 				|| (!preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->server['HTTP_CONNECTION'])) // "Upgrade" is not always alone (ie. "Connection: Keep-alive, Upgrade")
 				|| !isset($this->server['HTTP_UPGRADE'])
-				|| (strtolower($this->server['HTTP_UPGRADE']) !== 'websocket') // Lowercase compare important
+				|| (strtolower($this->server['HTTP_UPGRADE']) !== 'websocket') // Lowercase comparison iss important
 		) {
 			$this->finish();
 			return false;
