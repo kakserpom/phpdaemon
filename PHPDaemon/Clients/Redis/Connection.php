@@ -344,7 +344,7 @@ class Connection extends ClientConnection implements \Iterator {
 	 * @return void
 	 */
 	public function command($name, $args, $cb = null) {
-		if ($name === 'MULTI') {
+		if ($name === 'MULTI' || $name === 'WATCH') {
 			$this->acquire();
 		}
 		// PUB/SUB handling
