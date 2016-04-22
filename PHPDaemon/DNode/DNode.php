@@ -110,7 +110,7 @@ trait DNode {
 	 * @param  mixed   &$arg Argument
 	 * @return boolean
 	 */
-	protected static function ensureCallback(&$arg) {
+	public static function ensureCallback(&$arg) {
 		if ($arg instanceof \Closure) {
 			return true;
 		}
