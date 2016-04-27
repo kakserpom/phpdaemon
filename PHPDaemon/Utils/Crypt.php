@@ -19,7 +19,7 @@ class Crypt {
 	 * @param  boolean $plain Is plain text?
 	 * @return string
 	 */
-	public static function hash($str, $salt = '', $plain = false) {ra
+	public static function hash($str, $salt = '', $plain = false) {
 		$size = 512;
 		$rounds = 1;
 		if (strncmp($salt, '$', 1) === 0) {
