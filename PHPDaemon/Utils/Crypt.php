@@ -19,7 +19,7 @@ class Crypt {
 	 * @param  boolean $plain Is plain text?
 	 * @return string
 	 */
-	public static function hash($str, $salt = '', $plain = false) {
+	public static function hash($str, $salt = '', $plain = false) {ra
 		$size = 512;
 		$rounds = 1;
 		if (strncmp($salt, '$', 1) === 0) {
@@ -138,6 +138,7 @@ class Crypt {
 	 * @return integer
 	 */
 	public static function randomBytes($len, $cb, $pri = 0, $hang = false) {
+		$cb = CallbackWrapper::wrap($cb);
 		FileSystem::open('/dev/' . ($hang ? '' : 'u') . 'random', 'r', function ($file) use ($len, $cb, $pri) {
 			if (!$file) {
 				$cb(false);
