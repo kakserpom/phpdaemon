@@ -35,10 +35,12 @@ class XhrSend extends Generic {
 			return;
 		}
 		$this->appInstance->publish('c2s:' . $this->sessId, $this->attrs->raw, function($redis) {
-			if ($redis->result === 0) {
-				$this->header('404 Not Found');
-			} else {
-				$this->header('204 No Content');
+			if (!$this->headers_sent) {
+				if ($redis->result === 0) {
+					$this->header('404 Not Found');
+				} else {
+					$this->header('204 No Content');
+				}
 			}
 			$this->finish();
 		});

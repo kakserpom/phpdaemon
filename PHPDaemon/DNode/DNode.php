@@ -378,7 +378,9 @@ trait DNode {
 				$func = [$this, $m . 'Method'];
 				$func(...$args);
 			} else {
-				$this->handleException(new UndefinedMethodCalled);
+				$this->handleException(new UndefinedMethodCalled(
+					'DNode: local method ' . json_encode($m) . ' does not exist. Packet: ' . json_encode($pct)
+				));
 			}
 		}
 		elseif (is_int($m)) {
@@ -391,10 +393,14 @@ trait DNode {
 				$this->persistentCallbacks[$m](...$args);
 			}
 			else {
-				$this->handleException(new UndefinedMethodCalled);
+				$this->handleException(new UndefinedMethodCalled(
+					'DNode: local callback # ' . $m . ' is not registered. Packet: ' . json_encode($pct)
+				));
 			}
 		} else {
-			$this->handleException(new ProtocolError);
+			$this->handleException(new ProtocolError(
+				'DNode: \'method\' must be string or integer. Packet: ' . json_encode($pct)
+			));
 		}
 	}
 
