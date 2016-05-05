@@ -29,7 +29,7 @@ class Pool extends \PHPDaemon\Network\Client {
 	 */
 	public function request($addr, $type, $data, $cb) {
 		$e = explode(':', $addr);
-		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/', function ($conn) use ($cb, $addr, $data, $name) {
+		$this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/', function ($conn) use ($cb, $addr, $data, $type) {
 			if (!$conn->connected) {
 				$cb($conn, false);
 				return;
