@@ -2,6 +2,7 @@
 namespace PHPDaemon\Utils;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\FS\FileSystem;
 
 /**
@@ -138,6 +139,7 @@ class Crypt {
 	 * @return integer
 	 */
 	public static function randomBytes($len, $cb, $pri = 0, $hang = false) {
+		$cb = CallbackWrapper::wrap($cb);
 		FileSystem::open('/dev/' . ($hang ? '' : 'u') . 'random', 'r', function ($file) use ($len, $cb, $pri) {
 			if (!$file) {
 				$cb(false);

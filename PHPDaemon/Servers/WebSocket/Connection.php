@@ -189,7 +189,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		} catch (\Exception $e) {
 			Daemon::uncaughtExceptionHandler($e);
 		}
-		$this->route->onSleep();
+		if ($this->route) {
+			$this->route->onSleep();
+		}
 		return true;
 	}
 
@@ -223,7 +225,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 			$ret = $this->route->onBeforeHandshake(function() {
 				$this->handshakeAfter();
 			});
-			$this->route->onSleep();
+			if ($this->route) {
+				$this->route->onSleep();
+			}
 			if ($ret !== false) {
 				return;
 			}
@@ -252,7 +256,9 @@ class Connection extends \PHPDaemon\Network\Connection {
 		if (is_callable([$this->route, 'onHandshake'])) {
 			$this->route->onWakeup();
 			$this->route->onHandshake();
-			$this->route->onSleep();
+			if ($this->route) {
+				$this->route->onSleep();
+			}
 		}
 		return true;
 	}
