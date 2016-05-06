@@ -22,10 +22,10 @@ SockJS\Application {}
 
 $uri = $req->attrs->server['DOCUMENT_URI'];
 
-if(strpos($uri, '/sockjspage/') === 0) {
+if(mb_orig_strpos($uri, '/sockjspage/') === 0) {
 	return 'SockJS\\Examples\\Simple';
 }
-if(strpos($uri, '/sockjs/') === 0) {
+if(mb_orig_strpos($uri, '/sockjs/') === 0) {
 	return 'SockJS\\Application';
 }
 */

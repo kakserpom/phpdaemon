@@ -110,7 +110,7 @@ class Terminal {
 
 		$paramstr = "  \033[1m--" . $name . $valstr . "\033[0m";
 
-		$pl = strlen($paramstr);
+		$pl = mb_orig_strlen($paramstr);
 		if ($pl + 2 >= $paramw) {
 			$paramw = $pl + 3;
 		}
@@ -136,7 +136,7 @@ class Terminal {
 			while (sizeof($m) > 0) {
 				$el = array_shift($m);
 
-				if (strlen($descstr) + strlen($el) >= $descw) {
+				if (strlen($descstr) + mb_orig_strlen($el) >= $descw) {
 					$rightcolumn[] = $descstr;
 					$descstr       = '';
 				}
@@ -186,7 +186,7 @@ class Terminal {
 				}
 
 				if (!isset($pad[$k]) || (strlen($v) > $pad[$k])) {
-					$pad[$k] = strlen($v);
+					$pad[$k] = mb_orig_strlen($v);
 				}
 			}
 		}

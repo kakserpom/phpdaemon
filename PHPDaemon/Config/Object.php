@@ -452,7 +452,7 @@ class Object implements \ArrayAccess {
 	 * @return boolean Exists?
 	 */
 	public static function parseCfgUri($uri, $source = null) {
-		if (strpos($uri, '://') === false) {
+		if (mb_orig_strpos($uri, '://') === false) {
 			if (strncmp($uri, 'unix:', 5) === 0) {
 				$e = explode(':', $uri);
 				if (sizeof($e) === 4) {

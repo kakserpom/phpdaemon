@@ -97,7 +97,7 @@ class V13 extends Connection {
 		$rsv2 = 0;
 		$rsv3 = 0;
 		$this->write(chr(bindec($fin . $rsv1 . $rsv2 . $rsv3 . str_pad(decbin($this->getFrameType($type)), 4, '0', STR_PAD_LEFT))));
-		$dataLength  = strlen($data);
+		$dataLength  = mb_orig_strlen($data);
 		$isMasked    = false;
 		$isMaskedInt = $isMasked ? 128 : 0;
 		if ($dataLength <= 125) {
@@ -142,7 +142,7 @@ class V13 extends Connection {
 	 * @return mixed
 	 */
 	public function mask($data, $mask) {
-		for ($i = 0, $l = strlen($data), $ml = strlen($mask); $i < $l; $i++) {
+		for ($i = 0, $l = mb_orig_strlen($data), $ml = mb_orig_strlen($mask); $i < $l; $i++) {
 			$data[$i] = $data[$i] ^ $mask[$i % $ml];
 		}
 		return $data;

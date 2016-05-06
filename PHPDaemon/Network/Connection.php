@@ -584,7 +584,7 @@ abstract class Connection extends IOStream {
 		if ($this->host === null) {
 			$this->host = $this->hostReal;
 		}
-		$l = strlen($pton);
+		$l = mb_orig_strlen($pton);
 		if ($l === 4) {
 			$this->addr = $host . ':' . $port;
 			/* @TODO: use EventUtil::SOCK_DGRAM */
@@ -648,7 +648,7 @@ abstract class Connection extends IOStream {
 			$this->host = $this->hostReal;
 		}
 		// TCP
-		$l = strlen($pton);
+		$l = mb_orig_strlen($pton);
 		if ($l === 4) {
 			$this->addr = $host . ':' . $port;
 			if (!$this->bevConnectEnabled) {

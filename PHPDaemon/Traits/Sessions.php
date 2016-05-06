@@ -135,7 +135,7 @@ trait Sessions {
 		}
 		$this->sessionFlushing = true;
 		$data                  = $this->sessionEncode();
-		$l                     = strlen($data);
+		$l                     = mb_orig_strlen($data);
 		$cb = CallbackWrapper::wrap($cb);
 		$this->sessionFp->write($data, function ($file, $result) use ($l, $cb) {
 			$file->truncate($l, function ($file, $result) use ($cb) {
@@ -183,7 +183,7 @@ trait Sessions {
 				return;
 			}
 			$this->sessionFp = $fp;
-			$this->sessionId = substr(basename($fp->path), strlen($this->sessionPrefix));
+			$this->sessionId = substr(basename($fp->path), mb_orig_strlen($this->sessionPrefix));
 			$this->setcookie(
 				ini_get('session.name')
 				, $this->sessionId
@@ -281,18 +281,18 @@ trait Sessions {
 	protected function unserialize_php($session_data) {
 		$return_data = array();
 		$offset = 0;
-		while ($offset < strlen($session_data)) {
+		while ($offset < mb_orig_strlen($session_data)) {
 			if (!strstr(substr($session_data, $offset), "|")) {
 				return $return_data;
 				//throw new \Exception("invalid session data, remaining: " . substr($session_data, $offset));
 			}
-			$pos = strpos($session_data, "|", $offset);
+			$pos = mb_orig_strpos($session_data, "|", $offset);
 			$num = $pos - $offset;
 			$varname = substr($session_data, $offset, $num);
 			$offset += $num + 1;
 			$data = unserialize(substr($session_data, $offset));
 			$return_data[$varname] = $data;
-			$offset += strlen(serialize($data));
+			$offset += mb_orig_strlen(serialize($data));
 		}
 		return $return_data;
 	}

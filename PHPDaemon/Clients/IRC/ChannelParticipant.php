@@ -75,13 +75,13 @@ class ChannelParticipant {
 	 * @TODO DESCR
 	 */
 	public function onModeUpdate() {
-		if (strpos($this->mode, 'o') !== false) {
+		if (mb_orig_strpos($this->mode, 'o') !== false) {
 			$this->flag = '@';
 		}
-		elseif (strpos($this->mode, 'h') !== false) {
+		elseif (mb_orig_strpos($this->mode, 'h') !== false) {
 			$this->flag = '%';
 		}
-		elseif (strpos($this->mode, 'v') !== false) {
+		elseif (mb_orig_strpos($this->mode, 'v') !== false) {
 			$this->flag = '+';
 		}
 		else {

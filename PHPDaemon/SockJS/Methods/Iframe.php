@@ -52,7 +52,7 @@ class IFrame extends Generic {
 				return;
 			}
 		}
-		$this->header('Content-Length: '.strlen($html));
+		$this->header('Content-Length: '.mb_orig_strlen($html));
 		echo $html;
 		$this->finish();
 	}

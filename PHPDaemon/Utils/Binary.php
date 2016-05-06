@@ -21,9 +21,9 @@ class Binary {
 		$e = explode('.', $q);
 		$r = '';
 		for ($i = 0, $s = sizeof($e); $i < $s; ++$i) {
-			$r .= chr(strlen($e[$i])) . $e[$i];
+			$r .= chr(mb_orig_strlen($e[$i])) . $e[$i];
 		}
-		if (binarySubstr($r, -1) !== "\x00") {
+		if (mb_orig_substr($r, -1) !== "\x00") {
 			$r .= "\x00";
 		}
 		return $r;
@@ -37,13 +37,13 @@ class Binary {
 	 */
 	public static function parseLabels(&$data, $orig = null) {
 		$str = '';
-		while (strlen($data) > 0) {
+		while (mb_orig_strlen($data) > 0) {
 			$l = ord($data[0]);
 
 			if ($l >= 192) {
-				$pos  = Binary::bytes2int(chr($l - 192) . binarySubstr($data, 1, 1));
-				$data = binarySubstr($data, 2);
-				$ref  = binarySubstr($orig, $pos);
+				$pos  = Binary::bytes2int(chr($l - 192) . mb_orig_substr($data, 1, 1));
+				$data = mb_orig_substr($data, 2);
+				$ref  = mb_orig_substr($orig, $pos);
 				return $str . Binary::parseLabels($ref);
 			}
 
@@ -65,7 +65,7 @@ class Binary {
 	 * @return string
 	 */
 	public static function LV($str, $len = 1, $lrev = FALSE) {
-		$l = static::i2b($len, strlen($str));
+		$l = static::i2b($len, mb_orig_strlen($str));
 		if ($lrev) {
 			$l = strrev($l);
 		}
@@ -151,7 +151,7 @@ class Binary {
 	 */
 	public static function getByte(&$p) {
 		$r = static::bytes2int($p{0});
-		$p = binarySubstr($p, 1);
+		$p = mb_orig_substr($p, 1);
 		return (int)$r;
 	}
 
@@ -162,7 +162,7 @@ class Binary {
 	 */
 	public static function getChar(&$p) {
 		$r = $p{0};
-		$p = binarySubstr($p, 1);
+		$p = mb_orig_substr($p, 1);
 		return $r;
 	}
 
@@ -173,8 +173,8 @@ class Binary {
 	 * @return integer
 	 */
 	public static function getWord(&$p, $l = false) {
-		$r = static::bytes2int(binarySubstr($p, 0, 2), !!$l);
-		$p = binarySubstr($p, 2);
+		$r = static::bytes2int(mb_orig_substr($p, 0, 2), !!$l);
+		$p = mb_orig_substr($p, 2);
 		return intval($r);
 	}
 
@@ -185,8 +185,8 @@ class Binary {
 	 * @return string
 	 */
 	public static function getStrWord(&$p, $l = false) {
-		$r = binarySubstr($p, 0, 2);
-		$p = binarySubstr($p, 2);
+		$r = mb_orig_substr($p, 0, 2);
+		$p = mb_orig_substr($p, 2);
 		if ($l) {
 			$r = strrev($r);
 		}
@@ -200,8 +200,8 @@ class Binary {
 	 * @return integer
 	 */
 	public static function getDWord(&$p, $l = false) {
-		$r = static::bytes2int(binarySubstr($p, 0, 4), !!$l);
-		$p = binarySubstr($p, 4);
+		$r = static::bytes2int(mb_orig_substr($p, 0, 4), !!$l);
+		$p = mb_orig_substr($p, 4);
 		return intval($r);
 	}
 
@@ -212,8 +212,8 @@ class Binary {
 	 * @return integer
 	 */
 	public static function getQword(&$p, $l = false) {
-		$r = static::bytes2int(binarySubstr($p, 0, 8), !!$l);
-		$p = binarySubstr($p, 8);
+		$r = static::bytes2int(mb_orig_substr($p, 0, 8), !!$l);
+		$p = mb_orig_substr($p, 8);
 		return intval($r);
 	}
 
@@ -224,11 +224,11 @@ class Binary {
 	 * @return string
 	 */
 	public static function getStrQWord(&$p, $l = false) {
-		$r = binarySubstr($p, 0, 8);
+		$r = mb_orig_substr($p, 0, 8);
 		if ($l) {
 			$r = strrev($r);
 		}
-		$p = binarySubstr($p, 8);
+		$p = mb_orig_substr($p, 8);
 		return $r;
 	}
 
@@ -238,12 +238,12 @@ class Binary {
 	 * @return string
 	 */
 	public static function getString(&$str) {
-		$p = strpos($str, "\x00");
+		$p = mb_orig_strpos($str, "\x00");
 		if ($p === false) {
 			return '';
 		}
-		$r   = binarySubstr($str, 0, $p);
-		$str = binarySubstr($str, $p + 1);
+		$r   = mb_orig_substr($str, 0, $p);
+		$str = mb_orig_substr($str, $p + 1);
 		return $r;
 	}
 
@@ -256,14 +256,14 @@ class Binary {
 	 * @return string
 	 */
 	public static function getLV(&$p, $l = 1, $nul = false, $lrev = false) {
-		$s = static::b2i(binarySubstr($p, 0, $l), !!$lrev);
-		$p = binarySubstr($p, $l);
+		$s = static::b2i(mb_orig_substr($p, 0, $l), !!$lrev);
+		$p = mb_orig_substr($p, $l);
 		if ($s === 0) {
 			return '';
 		}
 		$r = '';
-		if (strlen($p) < $s) {
-			echo("getLV error: buf length (" . strlen($p) . "): " . Debug::exportBytes($p) . ", must be >= string length (" . $s . ")\n");
+		if (mb_orig_strlen($p) < $s) {
+			echo("getLV error: buf length (" . mb_orig_strlen($p) . "): " . Debug::exportBytes($p) . ", must be >= string length (" . $s . ")\n");
 		}
 		elseif ($nul) {
 			if ($p{$s - 1} !== "\x00") {
@@ -274,13 +274,13 @@ class Binary {
 				if ($d < 0) {
 					$d = 0;
 				}
-				$r = binarySubstr($p, 0, $d);
-				$p = binarySubstr($p, $s);
+				$r = mb_orig_substr($p, 0, $d);
+				$p = mb_orig_substr($p, $s);
 			}
 		}
 		else {
-			$r = binarySubstr($p, 0, $s);
-			$p = binarySubstr($p, $s);
+			$r = mb_orig_substr($p, 0, $s);
+			$p = mb_orig_substr($p, $s);
 		}
 		return $r;
 	}
@@ -296,15 +296,15 @@ class Binary {
 		$hexstr = dechex($int);
 
 		if ($len === NULL) {
-			if (strlen($hexstr) % 2) {
+			if (mb_orig_strlen($hexstr) % 2) {
 				$hexstr = "0" . $hexstr;
 			}
 		}
 		else {
-			$hexstr = str_repeat('0', $len * 2 - strlen($hexstr)) . $hexstr;
+			$hexstr = str_repeat('0', $len * 2 - mb_orig_strlen($hexstr)) . $hexstr;
 		}
 
-		$bytes = strlen($hexstr) / 2;
+		$bytes = mb_orig_strlen($hexstr) / 2;
 		$bin   = '';
 
 		for ($i = 0; $i < $bytes; ++$i) {
@@ -351,9 +351,9 @@ class Binary {
 			$str = strrev($str);
 		}
 		$dec = 0;
-		$len = strlen($str);
+		$len = mb_orig_strlen($str);
 		for ($i = 0; $i < $len; ++$i) {
-			$dec += ord(binarySubstr($str, $i, 1)) * pow(0x100, $len - $i - 1);
+			$dec += ord(mb_orig_substr($str, $i, 1)) * pow(0x100, $len - $i - 1);
 		}
 		return $dec;
 	}
@@ -377,11 +377,11 @@ class Binary {
 	 */
 	public static function bitmap2bytes($bitmap, $check_len = 0) {
 		$r      = '';
-		$bitmap = str_pad($bitmap, ceil(strlen($bitmap) / 8) * 8, '0', STR_PAD_LEFT);
-		for ($i = 0, $n = strlen($bitmap) / 8; $i < $n; ++$i) {
-			$r .= chr((int)bindec(binarySubstr($bitmap, $i * 8, 8)));
+		$bitmap = str_pad($bitmap, ceil(mb_orig_strlen($bitmap) / 8) * 8, '0', STR_PAD_LEFT);
+		for ($i = 0, $n = mb_orig_strlen($bitmap) / 8; $i < $n; ++$i) {
+			$r .= chr((int)bindec(mb_orig_substr($bitmap, $i * 8, 8)));
 		}
-		if ($check_len && (strlen($r) !== $check_len)) {
+		if ($check_len && (mb_orig_strlen($r) !== $check_len)) {
 			return false;
 		}
 		return $r;

@@ -90,7 +90,7 @@ class Connection extends ClientConnection {
 		list($this->nick, $this->realname) = explode('/', $this->path . '/John Doe');
 		$this->command('USER', $this->user, 0, '*', $this->realname);
 		$this->command('NICK', $this->nick);
-		if (strlen($this->password)) {
+		if (mb_orig_strlen($this->password)) {
 			$this->message('NickServ', 'IDENTIFY ' . $this->password);
 		}
 	}
@@ -107,7 +107,7 @@ class Connection extends ClientConnection {
 		$line = $cmd;
 		for ($i = 1, $s = func_num_args(); $i < $s; ++$i) {
 			$arg = func_get_arg($i);
-			if (($i + 1 === $s) && (strpos($arg, "\x20") !== false)) {
+			if (($i + 1 === $s) && (mb_orig_strpos($arg, "\x20") !== false)) {
 				$line .= ' :';
 			}
 			else {
@@ -136,7 +136,7 @@ class Connection extends ClientConnection {
 		}
 		$line = $cmd;
 		for ($i = 0, $s = sizeof($args); $i < $s; ++$i) {
-			if (($i + 1 === $s) && (strpos($args[$i], "\x20") !== false)) {
+			if (($i + 1 === $s) && (mb_orig_strpos($args[$i], "\x20") !== false)) {
 				$line .= ' :';
 			}
 			else {
@@ -213,7 +213,7 @@ class Connection extends ClientConnection {
 			$this->channel($channel)->addMode($target, $mode);
 		}
 		else {
-			if (strpos($this->mode, $mode) === false) {
+			if (mb_orig_strpos($this->mode, $mode) === false) {
 				$this->mode .= $mode;
 			}
 		}
@@ -361,12 +361,12 @@ class Connection extends ClientConnection {
 				$channel = null;
 				list ($target, $mode) = $args;
 			}
-			if (strlen($mode)) {
+			if (mb_orig_strlen($mode)) {
 				if ($mode[0] === '+') {
-					$this->addMode($channel, $target, binarySubstr($mode, 1));
+					$this->addMode($channel, $target, mb_orig_substr($mode, 1));
 				}
 				elseif ($mode[0] === '-') {
-					$this->removeMode($channel, $target, binarySubstr($mode, 1));
+					$this->removeMode($channel, $target, mb_orig_substr($mode, 1));
 				}
 			}
 		}
@@ -382,7 +382,7 @@ class Connection extends ClientConnection {
 				'from'    => $from,
 				'to'      => $target,
 				'body'    => $body,
-				'private' => substr($target, 0, 1) !== '#',
+				'private' => mb_orig_substr($target, 0, 1) !== '#',
 			];
 			$this->event($msg['private'] ? 'privateMsg' : 'channelMsg', $msg);
 			$this->event('msg', $msg);
@@ -414,23 +414,23 @@ class Connection extends ClientConnection {
 			if ($line === '') {
 				continue;
 			}
-			if (strlen($line) > 512) {
+			if (mb_orig_strlen($line) > 512) {
 				Daemon::$process->log('IRCClientConnection error: buffer overflow.');
 				$this->finish();
 				return;
 			}
-			$line = binarySubstr($line, 0, -strlen($this->EOL));
-			$p    = strpos($line, ' :', 1);
+			$line = mb_orig_substr($line, 0, -mb_orig_strlen($this->EOL));
+			$p    = mb_orig_strpos($line, ' :', 1);
 			$max  = $p !== false ? substr_count($line, "\x20", 0, $p + 1) + 1 : 18;
 			$e    = explode("\x20", $line, $max);
 			$i    = 0;
-			$from = IRC::parseUsermask($e[$i]{0} === ':' ? binarySubstr($e[$i++], 1) : null);
+			$from = IRC::parseUsermask($e[$i]{0} === ':' ? mb_orig_substr($e[$i++], 1) : null);
 			$cmd  = $e[$i++];
 			$args = [];
 
 			for ($s = min(sizeof($e), 14); $i < $s; ++$i) {
 				if ($e[$i][0] === ':') {
-					$args[] = binarySubstr($e[$i], 1);
+					$args[] = mb_orig_substr($e[$i], 1);
 					break;
 				}
 				$args[] = $e[$i];
@@ -443,7 +443,7 @@ class Connection extends ClientConnection {
 			$this->lastLine = $line;
 			$this->onCommand($from, $cmd, $args);
 		}
-		if (strlen($this->buf) > 512) {
+		if (mb_orig_strlen($this->buf) > 512) {
 			Daemon::$process->log('IRCClientConnection error: buffer overflow.');
 			$this->finish();
 		}

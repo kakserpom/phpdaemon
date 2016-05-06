@@ -170,7 +170,7 @@ class Parser {
 		}
 
 		$this->data    = str_replace("\r", '', $this->data);
-		$this->length     = strlen($this->data);
+		$this->length     = mb_orig_strlen($this->data);
 		$this->state[] = [static::T_ALL, $this->target];
 		$this->tokens  = [
 			static::T_COMMENT => function ($c) {

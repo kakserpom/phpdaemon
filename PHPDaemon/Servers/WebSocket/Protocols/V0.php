@@ -59,11 +59,11 @@ class V0 extends Connection {
 	 * @return string Result
 	 */
 	protected function _computeFinalKey($key1, $key2, $data) {
-		if (strlen($data) < 8) {
+		if (mb_orig_strlen($data) < 8) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->addr . '"');
 			return false;
 		}
-		return md5($this->_computeKey($key1) . $this->_computeKey($key2) . binarySubstr($data, 0, 8), true);
+		return md5($this->_computeKey($key1) . $this->_computeKey($key2) . mb_orig_substr($data, 0, 8), true);
 	}
 
 	/**
@@ -75,8 +75,8 @@ class V0 extends Connection {
 		$spaces = 0;
 		$digits = '';
 
-		for ($i = 0, $s = strlen($key); $i < $s; ++$i) {
-			$c = binarySubstr($key, $i, 1);
+		for ($i = 0, $s = mb_orig_strlen($key); $i < $s; ++$i) {
+			$c = mb_orig_substr($key, $i, 1);
 
 			if ($c === "\x20") {
 				++$spaces;
@@ -122,7 +122,7 @@ class V0 extends Connection {
 		$type = $this->getFrameType($type);
 		// Binary
 		if (($type & self::BINARY) === self::BINARY) {
-			$n   = strlen($data);
+			$n   = mb_orig_strlen($data);
 			$len = '';
 			$pos = 0;
 
@@ -168,7 +168,7 @@ class V0 extends Connection {
 		if ($this->state === self::STATE_HANDSHAKED) {
 			while (($buflen = $this->getInputLength()) >= 2) {
 				$hdr = $this->look(10);
-				$frametype = ord(binarySubstr($hdr, 0, 1));
+				$frametype = ord(mb_orig_substr($hdr, 0, 1));
 				if (($frametype & 0x80) === 0x80) {
 					$len = 0;
 					$i = 0;
@@ -177,7 +177,7 @@ class V0 extends Connection {
 							// not enough data yet
 							return;
 						}
-						$b = ord(binarySubstr($hdr, ++$i, 1));
+						$b = ord(mb_orig_substr($hdr, ++$i, 1));
 						$n = $b & 0x7F;
 						$len *= 0x80;
 						$len += $n;

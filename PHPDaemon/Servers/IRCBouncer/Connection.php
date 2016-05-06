@@ -93,7 +93,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$line = ':' . $from . ' ' . $cmd;
 		for ($i = 2, $s = func_num_args(); $i < $s; ++$i) {
 			$arg = func_get_arg($i);
-			if (($i + 1 === $s) && (strpos($arg, "\x20") !== false)) {
+			if (($i + 1 === $s) && (mb_orig_strpos($arg, "\x20") !== false)) {
 				$line .= ' :';
 			}
 			else {
@@ -124,7 +124,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$cmd  = IRC::getCodeByCommand($cmd);
 		$line = ':' . $from . ' ' . $cmd;
 		for ($i = 0, $s = sizeof($args); $i < $s; ++$i) {
-			if (($i + 1 === $s) && (strpos($args[$i], "\x20") !== false)) {
+			if (($i + 1 === $s) && (mb_orig_strpos($args[$i], "\x20") !== false)) {
 				$line .= ' :';
 			}
 			else {
@@ -176,10 +176,10 @@ class Connection extends \PHPDaemon\Network\Connection {
 		$this->command($this->usermask, 'RPL_TOPIC', $chan->irc->nick, $chan->name, $chan->topic);
 		$names  = $chan->exportNicksArray();
 		$packet = '';
-		$maxlen = 510 - 7 - strlen($this->pool->config->servername->value) - $chan->irc->nick - 1;
+		$maxlen = 510 - 7 - mb_orig_strlen($this->pool->config->servername->value) - $chan->irc->nick - 1;
 		for ($i = 0, $s = sizeof($names); $i < $s; ++$i) {
 			$packet .= ($packet !== '' ? ' ' : '') . $names[$i];
-			if (!isset($names[$i + 1]) || (strlen($packet) + strlen($names[$i + 1]) + 1 > $maxlen)) {
+			if (!isset($names[$i + 1]) || (mb_orig_strlen($packet) + mb_orig_strlen($names[$i + 1]) + 1 > $maxlen)) {
 				$this->command(null, 'RPL_NAMREPLY', $chan->irc->nick, $chan->type, $chan->name, $packet);
 				$packet = '';
 			}
@@ -281,13 +281,13 @@ class Connection extends \PHPDaemon\Network\Connection {
 			if ($line === '') {
 				continue;
 			}
-			if (strlen($line) > 512) {
+			if (mb_orig_strlen($line) > 512) {
 				Daemon::$process->log('IRCBouncerConnection error: buffer overflow.');
 				$this->finish();
 				return;
 			}
-			$line = binarySubstr($line, 0, -strlen($this->EOL));
-			$p    = strpos($line, ':', 1);
+			$line = mb_orig_substr($line, 0, -mb_orig_strlen($this->EOL));
+			$p    = mb_orig_strpos($line, ':', 1);
 			$max  = $p ? substr_count($line, "\x20", 0, $p) + 1 : 18;
 			$e    = explode("\x20", $line, $max);
 			$i    = 0;
@@ -296,7 +296,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 			for ($s = min(sizeof($e), 14); $i < $s; ++$i) {
 				if ($e[$i][0] === ':') {
-					$args[] = binarySubstr($e[$i], 1);
+					$args[] = mb_orig_substr($e[$i], 1);
 					break;
 				}
 				$args[] = $e[$i];
@@ -308,7 +308,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 			}
 			$this->onCommand($cmd, $args);
 		}
-		if (strlen($this->buf) > 512) {
+		if (mb_orig_strlen($this->buf) > 512) {
 			Daemon::$process->log('IRCClientConnection error: buffer overflow.');
 			$this->finish();
 		}

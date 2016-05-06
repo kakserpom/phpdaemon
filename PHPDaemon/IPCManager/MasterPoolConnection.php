@@ -82,7 +82,7 @@ class MasterPoolConnection extends Connection {
 	 */
 	public function sendPacket($p) {
 		$data = igbinary_serialize($p);
-		$this->write(pack('N', strlen($data)) . $data);
+		$this->write(pack('N', mb_orig_strlen($data)) . $data);
 	}
 
 	/**

@@ -48,8 +48,8 @@ class VE extends Connection {
 		$spaces = 0;
 		$digits = '';
 
-		for ($i = 0, $s = strlen($key); $i < $s; ++$i) {
-			$c = binarySubstr($key, $i, 1);
+		for ($i = 0, $s = mb_orig_strlen($key); $i < $s; ++$i) {
+			$c = mb_orig_substr($key, $i, 1);
 
 			if ($c === "\x20") {
 				++$spaces;
@@ -96,7 +96,7 @@ class VE extends Connection {
 		// Binary
 		$type = $this->getFrameType($type);
 		if (($type & self::BINARY) === self::BINARY) {
-			$n   = strlen($data);
+			$n   = mb_orig_strlen($data);
 			$len = '';
 			$pos = 0;
 
@@ -134,7 +134,7 @@ class VE extends Connection {
 	public function onRead() {
 		while (($buflen = $this->getInputLength()) >= 2) {
 			$hdr       = $this->look(10);
-			$frametype = ord(binarySubstr($hdr, 0, 1));
+			$frametype = ord(mb_orig_substr($hdr, 0, 1));
 			if (($frametype & 0x80) === 0x80) {
 				$len = 0;
 				$i   = 0;
@@ -142,7 +142,7 @@ class VE extends Connection {
 					if ($buflen < $i + 1) {
 						return;
 					}
-					$b = ord(binarySubstr($hdr, ++$i, 1));
+					$b = ord(mb_orig_substr($hdr, ++$i, 1));
 					$n = $b & 0x7F;
 					$len *= 0x80;
 					$len += $n;

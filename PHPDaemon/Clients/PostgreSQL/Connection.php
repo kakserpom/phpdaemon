@@ -111,15 +111,15 @@ class Connection extends ClientConnection {
 		$e      = explode('.', $this->protover);
 		$packet = pack('nn', $e[0], $e[1]);
 
-		if (strlen($this->user)) {
+		if (mb_orig_strlen($this->user)) {
 			$packet .= "user\x00" . $this->user . "\x00";
 		}
 
-		if (strlen($this->dbname)) {
+		if (mb_orig_strlen($this->dbname)) {
 			$packet .= "database\x00" . $this->dbname . "\x00";
 		}
 
-		if (strlen($this->options)) {
+		if (mb_orig_strlen($this->options)) {
 			$packet .= "options\x00" . $this->options . "\x00";
 		}
 
@@ -160,10 +160,10 @@ class Connection extends ClientConnection {
 		}
 
 		$dec = 0;
-		$len = strlen($str);
+		$len = mb_orig_strlen($str);
 
 		for ($i = 0; $i < $len; ++$i) {
-			$dec += ord(binarySubstr($str, $i, 1)) * pow(0x100, $len - $i - 1);
+			$dec += ord(mb_orig_substr($str, $i, 1)) * pow(0x100, $len - $i - 1);
 		}
 
 		return $dec;
@@ -180,15 +180,15 @@ class Connection extends ClientConnection {
 		$hexstr = dechex($int);
 
 		if ($len === NULL) {
-			if (strlen($hexstr) % 2) {
+			if (mb_orig_strlen($hexstr) % 2) {
 				$hexstr = "0" . $hexstr;
 			}
 		}
 		else {
-			$hexstr = str_repeat('0', $len * 2 - strlen($hexstr)) . $hexstr;
+			$hexstr = str_repeat('0', $len * 2 - mb_orig_strlen($hexstr)) . $hexstr;
 		}
 
-		$bytes = strlen($hexstr) / 2;
+		$bytes = mb_orig_strlen($hexstr) / 2;
 		$bin   = '';
 
 		for ($i = 0; $i < $bytes; ++$i) {
@@ -205,7 +205,7 @@ class Connection extends ClientConnection {
 	 * @return boolean         Success
 	 */
 	public function sendPacket($type = '', $packet) {
-		$header = $type . pack('N', strlen($packet) + 4);
+		$header = $type . pack('N', mb_orig_strlen($packet) + 4);
 
 		$this->write($header);
 		$this->write($packet);
@@ -227,7 +227,7 @@ class Connection extends ClientConnection {
 			return "\251";
 		}
 
-		$l = strlen($s);
+		$l = mb_orig_strlen($s);
 
 		if ($l <= 250) {
 			return chr($l) . $s;
@@ -251,7 +251,7 @@ class Connection extends ClientConnection {
 	 * @return integer     Result
 	 */
 	public function parseEncodedBinary(&$s, &$p) {
-		$f = ord(binarySubstr($s, $p, 1));
+		$f = ord(mb_orig_substr($s, $p, 1));
 		++$p;
 
 		if ($f <= 250) {
@@ -270,20 +270,20 @@ class Connection extends ClientConnection {
 			$o = $p;
 			$p += 2;
 
-			return $this->bytes2int(binarySubstr($s, $o, 2));
+			return $this->bytes2int(mb_orig_substr($s, $o, 2));
 		}
 
 		if ($f === 253) {
 			$o = $p;
 			$p += 3;
 
-			return $this->bytes2int(binarySubstr($s, $o, 3));
+			return $this->bytes2int(mb_orig_substr($s, $o, 3));
 		}
 
 		$o = $p;
 		$p = +8;
 
-		return $this->bytes2int(binarySubstr($s, $o, 8));
+		return $this->bytes2int(mb_orig_substr($s, $o, 8));
 	}
 
 	/**
@@ -305,7 +305,7 @@ class Connection extends ClientConnection {
 		$o = $p;
 		$p += $l;
 
-		return binarySubstr($s, $o, $l);
+		return mb_orig_substr($s, $o, $l);
 	}
 
 	/**
@@ -398,16 +398,16 @@ class Connection extends ClientConnection {
 
 		start:
 
-		$this->buflen = strlen($this->buf);
+		$this->buflen = mb_orig_strlen($this->buf);
 
 		if ($this->buflen < 5) {
 			// Not enough data buffered yet
 			return;
 		}
 
-		$type = binarySubstr($this->buf, 0, 1);
+		$type = mb_orig_substr($this->buf, 0, 1);
 
-		list(, $length) = unpack('N', binarySubstr($this->buf, 1, 4));
+		list(, $length) = unpack('N', mb_orig_substr($this->buf, 1, 4));
 		$length -= 4;
 
 		if ($this->buflen < 5 + $length) {
@@ -415,8 +415,8 @@ class Connection extends ClientConnection {
 			return;
 		}
 
-		$packet    = binarySubstr($this->buf, 5, $length);
-		$this->buf = binarySubstr($this->buf, 5 + $length);
+		$packet    = mb_orig_substr($this->buf, 5, $length);
+		$this->buf = mb_orig_substr($this->buf, 5 + $length);
 
 		if ($type === 'R') {
 			// Authentication request
@@ -447,13 +447,13 @@ class Connection extends ClientConnection {
 			}
 			elseif ($authType === 4) {
 				// Crypt
-				$salt = binarySubstr($packet, 4, 2);
+				$salt = mb_orig_substr($packet, 4, 2);
 				$this->sendPacket('p', crypt($this->password, $salt)); // Password Message
 				$this->state = self::STATE_AUTH_PACKET_SENT;
 			}
 			elseif ($authType === 5) {
 				// MD5
-				$salt = binarySubstr($packet, 4, 4);
+				$salt = mb_orig_substr($packet, 4, 4);
 				$this->sendPacket('p', 'md5' . md5(md5($this->password . $this->user) . $salt)); // Password Message
 				$this->state = self::STATE_AUTH_PACKET_SENT;
 			}
@@ -472,12 +472,12 @@ class Connection extends ClientConnection {
 		}
 		elseif ($type === 'T') {
 			// Row Description
-			list(, $numfields) = unpack('n', binarySubstr($packet, 0, 2));
+			list(, $numfields) = unpack('n', mb_orig_substr($packet, 0, 2));
 			$p = 2;
 
 			for ($i = 0; $i < $numfields; ++$i) {
 				list($name) = $this->decodeNULstrings($packet, 1, $p);
-				$field = unpack('NtableOID/nattrNo/NdataType/ndataTypeSize/NtypeMod/nformat', binarySubstr($packet, $p, 18));
+				$field = unpack('NtableOID/nattrNo/NdataType/ndataTypeSize/NtypeMod/nformat', mb_orig_substr($packet, $p, 18));
 				$p += 18;
 				$field['name']        = $name;
 				$this->resultFields[] = $field;
@@ -485,12 +485,12 @@ class Connection extends ClientConnection {
 		}
 		elseif ($type === 'D') {
 			// Data Row
-			list(, $numfields) = unpack('n', binarySubstr($packet, 0, 2));
+			list(, $numfields) = unpack('n', mb_orig_substr($packet, 0, 2));
 			$p   = 2;
 			$row = [];
 
 			for ($i = 0; $i < $numfields; ++$i) {
-				list(, $length) = unpack('N', binarySubstr($packet, $p, 4));
+				list(, $length) = unpack('N', mb_orig_substr($packet, $p, 4));
 				$p += 4;
 
 				if ($length === 0xffffffff) {
@@ -502,7 +502,7 @@ class Connection extends ClientConnection {
 					$value = NULL;
 				}
 				else {
-					$value = binarySubstr($packet, $p, $length);
+					$value = mb_orig_substr($packet, $p, $length);
 					$p += $length;
 				}
 
@@ -523,13 +523,13 @@ class Connection extends ClientConnection {
 		}
 		elseif ($type === 'C') {
 			// Close command
-			$type = binarySubstr($packet, 0, 1);
+			$type = mb_orig_substr($packet, 0, 1);
 
 			if (
 					($type === 'S')
 					|| ($type === 'P')
 			) {
-				list($name) = $this->decodeNULstrings(binarySubstr($packet, 1));
+				list($name) = $this->decodeNULstrings(mb_orig_substr($packet, 1));
 			}
 			else {
 				$tag = $this->decodeNULstrings($packet);
@@ -561,10 +561,10 @@ class Connection extends ClientConnection {
 			$code    = ord($packet);
 			$message = '';
 
-			foreach ($this->decodeNULstrings(binarySubstr($packet, 1), 0xFF) as $p) {
+			foreach ($this->decodeNULstrings(mb_orig_substr($packet, 1), 0xFF) as $p) {
 				if ($message !== '') {
 					$message .= ' ';
-					$p = binarySubstr($p, 1);
+					$p = mb_orig_substr($p, 1);
 				}
 
 				$message .= $p;
@@ -647,13 +647,13 @@ class Connection extends ClientConnection {
 		$r = [];
 
 		for ($i = 0; $i < $limit; ++$i) {
-			$pos = strpos($data, "\x00", $p);
+			$pos = mb_orig_strpos($data, "\x00", $p);
 
 			if ($pos === FALSE) {
 				break;
 			}
 
-			$r[] = binarySubstr($data, $p, $pos - $p);
+			$r[] = mb_orig_substr($data, $p, $pos - $p);
 
 			$p = $pos + 1;
 		}

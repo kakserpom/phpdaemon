@@ -96,8 +96,8 @@ class Connection extends ClientConnection {
 			$class    = isset(Pool::$class[$classInt]) ? Pool::$class[$classInt] : 'UNK(' . $classInt . ')';
 			$ttl      = Binary::getDWord($pct);
 			$length   = Binary::getWord($pct);
-			$data     = binarySubstr($pct, 0, $length);
-			$pct      = binarySubstr($pct, $length);
+			$data     = mb_orig_substr($pct, 0, $length);
+			$pct      = mb_orig_substr($pct, $length);
 
 			$record = [
 				'name'  => $name,
@@ -230,7 +230,7 @@ class Connection extends ClientConnection {
 			$this->write($packet);
 		}
 		else {
-			$this->write(Binary::word(strlen($packet)) . $packet);
+			$this->write(Binary::word(mb_orig_strlen($packet)) . $packet);
 		}
 	}
 

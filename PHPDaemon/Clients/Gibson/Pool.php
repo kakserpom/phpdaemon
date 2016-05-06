@@ -67,7 +67,7 @@ class Pool extends \PHPDaemon\Network\Client {
 			throw new UndefinedMethodCalled;
 		}
 		$data = implode("\x20", $args);
-		$this->requestByServer(null, pack('LS', strlen($data) + 2, $this->opCodes[$name]) . $data, $onResponse);
+		$this->requestByServer(null, pack('LS', mb_orig_strlen($data) + 2, $this->opCodes[$name]) . $data, $onResponse);
 	}
 
 	/**

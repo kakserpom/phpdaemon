@@ -288,7 +288,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			self::parse_str($this->attrs->server['HTTP_CONTENT_TYPE'], $this->contype, true);
 			$found = false;
 			foreach ($this->contype as $k => $v) {
-				if (strpos($k, '/') === false) {
+				if (mb_orig_strpos($k, '/') === false) {
 					continue;
 				}
 				if (!$found) {
@@ -343,7 +343,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] === 'nginx') {
 			if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'])) {
 				$URLprefix = $this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'];
-				$l         = strlen($URLprefix);
+				$l         = mb_orig_strlen($URLprefix);
 				foreach (['PHP_SELF', 'REQUEST_URI', 'SCRIPT_NAME', 'DOCUMENT_URI'] as $k) {
 					if (!isset($this->attrs->server[$k])) {
 						continue;
@@ -354,7 +354,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 				}
 			}
 			$prefix    = 'file.';
-			$prefixlen = strlen($prefix);
+			$prefixlen = mb_orig_strlen($prefix);
 			foreach ($this->attrs->post as $k => $v) {
 				if (strncmp($k, $prefix, $prefixlen) === 0) {
 					$e = explode('.', substr($k, $prefixlen));
@@ -373,7 +373,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 				if (!isset($file['tmp_name'])
 						|| !isset($file['name'])
 						|| !ctype_digit(basename($file['tmp_name']))
-						|| (strpos(pathinfo($file['tmp_name'], PATHINFO_DIRNAME), $uploadTmp) !== 0)
+						|| (mb_orig_strpos(pathinfo($file['tmp_name'], PATHINFO_DIRNAME), $uploadTmp) !== 0)
 				) {
 					unset($this->attrs->files[$k]);
 					continue;
@@ -463,7 +463,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 			return false;
 		}
 
-		$l = strlen($s);
+		$l = mb_orig_strlen($s);
 		$this->responseLength += $l;
 
 		$this->ensureSentHeaders();
@@ -473,7 +473,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 				$c = min($this->upstream->pool->config->chunksize->value, $l - $o);
 
 				$chunk = dechex($c) . "\r\n"
-						. ($c === $l ? $s : binarySubstr($s, $o, $c)) // content
+						. ($c === $l ? $s : mb_orig_substr($s, $o, $c)) // content
 						. "\r\n";
 
 				if ($this->sendfp) {
@@ -839,7 +839,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 		if (!$path) {
 			return false;
 		}
-		if (strpos($path, $this->getUploadTempDir() . '/') !== 0) {
+		if (mb_orig_strpos($path, $this->getUploadTempDir() . '/') !== 0) {
 			return false;
 		}
 		foreach ($this->attrs->files as $file) {

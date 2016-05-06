@@ -100,13 +100,13 @@ class XMLStream {
 		}
 		$ns = $this->current_ns[$this->xml_depth];
 		foreach ($attr as $key => $value) {
-			if (strpos($key, ':') !== false) {
+			if (mb_orig_strpos($key, ':') !== false) {
 				$key                = explode(':', $key);
 				$key                = $key[1];
 				$this->ns_map[$key] = $value;
 			}
 		}
-		if (strpos($name, ':') !== false) {
+		if (mb_orig_strpos($name, ':') !== false) {
 			$name = explode(':', $name);
 			$ns   = $this->ns_map[$name[0]];
 			$name = $name[1];

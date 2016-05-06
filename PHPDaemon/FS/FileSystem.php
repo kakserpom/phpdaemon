@@ -602,7 +602,7 @@ class FileSystem {
 			return true;
 		}
 		$fdCacheKey = $path . "\x00" . $flags;
-		$noncache   = strpos($flags, '!') !== false;
+		$noncache   = mb_orig_strpos($flags, '!') !== false;
 		$flags      = File::convertFlags($flags);
 		if (!$noncache && ($item = FileSystem::$fdCache->get($fdCacheKey))) { // cache hit
 			$file = $item->getValue();

@@ -227,7 +227,7 @@ class Connection extends ClientConnection {
 		} else {
 			$body = 'unsupported Content-Type';
 		}
-		$this->writeln('Content-Length: ' . strlen($body));
+		$this->writeln('Content-Length: ' . mb_orig_strlen($body));
 		if (isset($params['headers'])) {
 			$this->customRequestHeaders($params['headers']);
 		}
@@ -383,9 +383,9 @@ class Connection extends ClientConnection {
 						return;
 					}
 				}
-				$n   = $this->curChunkSize - strlen($this->curChunk);
+				$n   = $this->curChunkSize - mb_orig_strlen($this->curChunk);
 				$this->curChunk .= $this->read($n);
-				if ($this->curChunkSize <= strlen($this->curChunk)) {
+				if ($this->curChunkSize <= mb_orig_strlen($this->curChunk)) {
 					if($this->chunkcb) {
 						$func = $this->chunkcb;
 						$func($this->curChunk);
@@ -399,13 +399,13 @@ class Connection extends ClientConnection {
 
 		}
 		else {
-			$body = $this->read($this->contentLength - strlen($this->body));
+			$body = $this->read($this->contentLength - mb_orig_strlen($this->body));
 			if($this->chunkcb) {
 				$func = $this->chunkcb;
 				$func($body);
 			}
 			$this->body .= $body;
-			if (($this->contentLength !== -1) && (strlen($this->body) >= $this->contentLength)) {
+			if (($this->contentLength !== -1) && (mb_orig_strlen($this->body) >= $this->contentLength)) {
 				$this->requestFinished();
 			}
 		}

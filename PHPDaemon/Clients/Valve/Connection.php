@@ -103,8 +103,8 @@ class Connection extends ClientConnection {
 			$result = self::parsePlayers($pct);
 		}
 		elseif ($type === Pool::S2A_SERVERQUERY_GETCHALLENGE) {
-			$result = binarySubstr($pct, 0, 4);
-			$pct    = binarySubstr($pct, 5);
+			$result = mb_orig_substr($pct, 0, 4);
+			$pct    = mb_orig_substr($pct, 5);
 		}
 		elseif ($type === Pool::S2A_PONG) {
 			$result = true;
@@ -129,11 +129,11 @@ class Connection extends ClientConnection {
 			$n     = Binary::getByte($st);
 			$name  = Binary::getString($st);
 			$score = Binary::getDWord($st, TRUE);
-			if (strlen($st) === 0) {
+			if (mb_orig_strlen($st) === 0) {
 				break;
 			}
-			$u       = unpack('f', binarySubstr($st, 0, 4));
-			$st      = binarySubstr($st, 4);
+			$u       = unpack('f', mb_orig_substr($st, 0, 4));
+			$st      = mb_orig_substr($st, 4);
 			$seconds = $u[1];
 			if ($seconds === -1) {
 				continue;

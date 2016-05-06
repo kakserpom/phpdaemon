@@ -1,35 +1,34 @@
 <?php
 
-if (function_exists('mb_substr') && ini_get('mbstring.func_overload') & 2) {
-	/**
-	 * @param string $s
-	 * @param int $p
-	 * @param int|null $l
-	 * @return string
-	 */
-	function binarySubstr($s, $p, $l = 0xFFFFFFF) {
-		return mb_substr($s, $p, $l, 'ASCII');
+if (!function_exists('mb_orig_substr')) {
+	function mb_orig_substr(...$args)
+	{
+		return substr(...$args);
 	}
-} else {
+
+	function mb_orig_strrpos(...$args)
+	{
+		return strrpos(...$args);
+	}
+
 	/**
-	 * @param string $s
-	 * @param int $p
-	 * @param int|null $l
-	 * @return string
+	 * @param string $haystack
+	 * @param mixed $needle
+	 * @param int $offset
+	 * @return bool|int
 	 */
-	function binarySubstr($s, $p, $l = null) {
-		if ($l === null) {
-			$ret = substr($s, $p);
-		}
-		else {
-			$ret = substr($s, $p, $l);
-		}
+	function mb_orig_strpos($haystack, $needle, $offset = 0)
+	{
+		return strpos($haystack, $needle, $offset);
+	}
 
-		if ($ret === false) {
-			$ret = '';
-		}
-
-		return $ret;
+	/**
+	 * @param string $input
+	 * @return int
+	 */
+	function mb_orig_strlen($input)
+	{
+		return strlen($input);
 	}
 }
 

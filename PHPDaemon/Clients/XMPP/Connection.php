@@ -262,7 +262,7 @@ class Connection extends ClientConnection {
 				});
 			}
 			else {
-				if (strlen($this->password)) {
+				if (mb_orig_strlen($this->password)) {
 					$this->sendXML("<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='PLAIN'>" . base64_encode("\x00" . $this->user . "\x00" . $this->password) . "</auth>");
 				}
 				else {

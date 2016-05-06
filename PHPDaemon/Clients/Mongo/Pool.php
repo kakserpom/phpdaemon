@@ -198,7 +198,7 @@ class Pool extends Client {
 			}
 			$reqId = ++$conn->lastReqId;
 			$this->lastRequestConnection = $conn;
-			$conn->write(pack('VVVV', strlen($data) + 16, $reqId, 0, $opcode));
+			$conn->write(pack('VVVV', mb_orig_strlen($data) + 16, $reqId, 0, $opcode));
 			$conn->write($data);
 			if ($reply) {
 				$conn->setFree(false);
@@ -441,7 +441,7 @@ class Pool extends Client {
 			$p['where'] = [];
 		}
 
-		if (strpos($p['col'], '.') === false) {
+		if (mb_orig_strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 
@@ -686,7 +686,7 @@ class Pool extends Client {
 			$p['max'] = [];
 		}
 
-		if (strpos($p['col'], '.') === false) {
+		if (mb_orig_strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 
@@ -890,7 +890,7 @@ class Pool extends Client {
 			$p['key'] = '';
 		}
 
-		if (strpos($p['col'], '.') === false) {
+		if (mb_orig_strpos($p['col'], '.') === false) {
 			$p['col'] = $this->dbname . '.' . $p['col'];
 		}
 	}
@@ -1086,7 +1086,7 @@ class Pool extends Client {
 	 * @return void
 	 */
 	public function update($col, $cond, $data, $flags = 0, $cb = NULL, $params = []) {
-		if (strpos($col, '.') === false) {
+		if (mb_orig_strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 
@@ -1199,7 +1199,7 @@ class Pool extends Client {
 	 * @return MongoId
 	 */
 	public function insert($col, $doc = [], $cb = NULL, $params = []) {
-		if (strpos($col, '.') === false) {
+		if (mb_orig_strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 
@@ -1255,7 +1255,7 @@ class Pool extends Client {
 	 * @return array IDs
 	 */
 	public function insertMulti($col, $docs = [], $cb = NULL, $params = []) {
-		if (strpos($col, '.') === false) {
+		if (mb_orig_strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 
@@ -1300,7 +1300,7 @@ class Pool extends Client {
 	 * @return void
 	 */
 	public function remove($col, $cond = [], $cb = NULL, $params = []) {
-		if (strpos($col, '.') === false) {
+		if (mb_orig_strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 
@@ -1343,7 +1343,7 @@ class Pool extends Client {
 	 * @return void
 	 */
 	public function getMore($col, $id, $number, $conn) {
-		if (strpos($col, '.') === false) {
+		if (mb_orig_strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 
@@ -1367,7 +1367,7 @@ class Pool extends Client {
 	 * @return Collection
 	 */
 	public function getCollection($col) {
-		if (strpos($col, '.') === false) {
+		if (mb_orig_strpos($col, '.') === false) {
 			$col = $this->dbname . '.' . $col;
 		}
 		else {
@@ -1426,10 +1426,10 @@ class Pool extends Client {
 
 			$error = null;
 			if (count($in_payload) != 3) $error = 'Incorrect number of arguments for first SCRAM-SHA-1 server message, got ' . count($in_payload) . 'expected 3';
-			elseif (strlen($in_payload['r']) < 2) $error = 'Incorrect SCRAM-SHA-1 client|server nonce: ' . $in_payload['r'];
-			elseif (strlen($in_payload['s']) < 6) $error = 'Incorrect SCRAM-SHA-1 salt: ' . $in_payload['s'];
-			elseif (strlen($in_payload['i']) < 3) $error = 'Incorrect SCRAM-SHA-1 iteration count: ' . $in_payload['i'];
-			elseif (strpos($in_payload['r'], $session['nonce']) !== 0) $error = 'Server SCRAM-SHA-1 nonce does not match client nonce';
+			elseif (mb_orig_strlen($in_payload['r']) < 2) $error = 'Incorrect SCRAM-SHA-1 client|server nonce: ' . $in_payload['r'];
+			elseif (mb_orig_strlen($in_payload['s']) < 6) $error = 'Incorrect SCRAM-SHA-1 salt: ' . $in_payload['s'];
+			elseif (mb_orig_strlen($in_payload['i']) < 3) $error = 'Incorrect SCRAM-SHA-1 iteration count: ' . $in_payload['i'];
+			elseif (mb_orig_strpos($in_payload['r'], $session['nonce']) !== 0) $error = 'Server SCRAM-SHA-1 nonce does not match client nonce';
 			if (!empty($error)) {
 				$session['cb'](['ok' => 0, 'errmsg' => $error]);
 				return;

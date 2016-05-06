@@ -126,10 +126,10 @@ class ShmEntity {
 			}
 		}
 		$sOffset = $offset % $this->segsize;
-		$d = $this->segsize - ($sOffset + strlen($data));
+		$d = $this->segsize - ($sOffset + mb_orig_strlen($data));
 		if ($d < 0) {
-			$this->write(binarySubstr($data, $d), ($segno+1) * $this->segsize);
-			$data = binarySubstr($data, 0, $d);
+			$this->write(mb_orig_substr($data, $d), ($segno+1) * $this->segsize);
+			$data = mb_orig_substr($data, 0, $d);
 		}
 		//Daemon::log('writing to #'.$offset.' (segno '.$segno.')');
 		shmop_write($this->segments[$segno], $data, $sOffset);
@@ -152,7 +152,7 @@ class ShmEntity {
 					goto ret;
 				}
 			}
-			$read = shmop_read($this->segments[$segno], $sOffset, min($length - strlen($ret), $this->segsize));
+			$read = shmop_read($this->segments[$segno], $sOffset, min($length - mb_orig_strlen($ret), $this->segsize));
 			//Daemon::log('read '.strlen($read).' from segno #'.$segno);
 			$ret .= $read;
 			if (strlen($ret) >= $length) {

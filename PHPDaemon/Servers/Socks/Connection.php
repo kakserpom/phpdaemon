@@ -83,7 +83,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 				$m           = "\x00";
 				$this->state = self::STATE_AUTHORIZED;
 			}
-			elseif (strpos($methods, "\x02") !== false) {
+			elseif (mb_orig_strpos($methods, "\x02") !== false) {
 				// Username/Password authentication
 				$m           = "\x02";
 				$this->state = self::STATE_HANDSHAKED;
@@ -219,7 +219,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 				. "\x00"; // Reserved
 		if ($addr) {
 			$reply .=
-					(strpos($addr, ':') === FALSE ? "\x01" : "\x04") // IPv4/IPv6
+					(mb_orig_strpos($addr, ':') === FALSE ? "\x01" : "\x04") // IPv4/IPv6
 					. inet_pton($addr) // Address
 					. "\x00\x00"; //pack('n',$port) // Port
 		}
