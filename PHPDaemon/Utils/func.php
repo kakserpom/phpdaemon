@@ -6,6 +6,11 @@ if (!function_exists('mb_orig_substr')) {
 		return substr(...$args);
 	}
 
+	function mb_orig_strrpos(...$args)
+	{
+		return strrpos(...$args);
+	}
+
 	/**
 	 * @param string $haystack
 	 * @param mixed $needle
