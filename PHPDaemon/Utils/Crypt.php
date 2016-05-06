@@ -70,13 +70,13 @@ class Crypt {
 					.' Please rewrite your code with callback function in third argument' . PHP_EOL . Debug::backtrace());
 
 			$r = '';
-			$m = strlen($chars) - 1;
+			$m = mb_orig_strlen($chars) - 1;
 			for ($i = 0; $i < $len; ++$i) {
 				$r .= $chars[mt_rand(0, $m)];
 			}
 			return $r;
 		}
-		$charsLen = strlen($chars);
+		$charsLen = mb_orig_strlen($chars);
 		$mask = static::getMinimalBitMask($charsLen - 1);
 		$iterLimit = max($len, $len * 64);
 		static::randomInts(2 * $len, function($ints) use ($cb, $chars, $charsLen, $len, $mask, &$iterLimit) {
@@ -97,7 +97,7 @@ class Crypt {
 					return false;
 				}
 			}
-			$d = $len - strlen($r);
+			$d = $len - mb_orig_strlen($r);
 			if ($d > 0) {
 				static::randomString($d, $chars, function($r2) use ($r, $cb) {
 					$cb($r . $r2);
@@ -117,7 +117,7 @@ class Crypt {
 	public static function stringIdx($str, $idx) {
 		// FIXME: Make the const-time hack below work for all integer sizes, or
 		// check it properly
-		$l = strlen($str);
+		$l = mb_orig_strlen($str);
 		if ($l > 65535 || $idx > $l) {
 			return false;
 		}
@@ -230,8 +230,8 @@ class Crypt {
 	 * @return boolean    Equal?
 	 */
 	public static function compareStrings($a, $b) {
-		$al = strlen($a);
-		$bl = strlen($b);
+		$al = mb_orig_strlen($a);
+		$bl = mb_orig_strlen($b);
 		if ($al !== $bl) {
 			return false;
 		}

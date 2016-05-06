@@ -437,7 +437,7 @@ class ShellCommand extends IOStream {
 		if (!isset($this->bevWrite)) {
 			return false;
 		}
-		if (!strlen($data)) {
+		if (!mb_orig_strlen($data)) {
 			return true;
 		}
 		$this->writing   = true;
@@ -462,7 +462,7 @@ class ShellCommand extends IOStream {
 		if (!isset($this->bevWrite)) {
 			return false;
 		}
-		if (!strlen($data) && !strlen($this->EOL)) {
+		if (!mb_orig_strlen($data) && !mb_orig_strlen($this->EOL)) {
 			return true;
 		}
 		$this->writing = true;

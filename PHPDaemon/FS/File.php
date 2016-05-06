@@ -100,8 +100,8 @@ class File {
 	 * @return mixed
 	 */
 	public static function convertFlags($mode, $text = false) {
-		$plus = strpos($mode, '+') !== false;
-		$sync = strpos($mode, 's') !== false;
+		$plus = mb_orig_strpos($mode, '+') !== false;
+		$sync = mb_orig_strpos($mode, 's') !== false;
 		$type = strtr($mode, ['b' => '', '+' => '', 's' => '', '!' => '']);
 		if ($text) {
 			return $type;
@@ -307,7 +307,7 @@ class File {
 		if ($cb !== null) {
 			$this->onWriteOnce->push($cb);
 		}
-		$l = strlen($data);
+		$l = mb_orig_strlen($data);
 		if ($offset === null) {
 			$offset = $this->offset;
 			$this->offset += $l;
@@ -547,7 +547,7 @@ class File {
 	protected function readAllGenHandler($cb, $size, &$offset, &$pri, &$buf) {
 		return function ($file, $data) use ($cb, $size, &$offset, &$pri, &$buf) {
 			$buf .= $data;
-			$offset += strlen($data);
+			$offset += mb_orig_strlen($data);
 			$len = min($file->chunkSize, $size - $offset);
 			if ($offset >= $size) {
 				if ($cb) {
@@ -600,7 +600,7 @@ class File {
 	protected function readAllChunkedGenHandler($cb, $chunkcb, $size, &$offset, $pri) {
 		return function ($file, $data) use ($cb, $chunkcb, $size, &$offset, $pri) {
 			$chunkcb($file, $data);
-			$offset += strlen($data);
+			$offset += mb_orig_strlen($data);
 			$len = min($file->chunkSize, $size - $offset);
 			if ($offset >= $size) {
 				$cb($file, true);

@@ -114,7 +114,7 @@ class Channel extends ObjectStorage {
 			return;
 		}
 		$participant = $this->nicknames[$nick];
-		if (strpos($participant->mode, $mode) === false) {
+		if (mb_orig_strpos($participant->mode, $mode) === false) {
 			$participant->mode .= $mode;
 		}
 		$participant->onModeUpdate();

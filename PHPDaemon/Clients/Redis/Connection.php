@@ -579,7 +579,7 @@ class Connection extends ClientConnection implements \Iterator {
 		array_unshift($args, $name);
 		$this->writeln('*' . sizeof($args));
 		foreach ($args as $arg) {
-			$this->writeln('$' . strlen($arg) . $this->EOL . $arg);
+			$this->writeln('$' . mb_orig_strlen($arg) . $this->EOL . $arg);
 		}
 		if ($name === 'MULTI') {
 			if ($cb !== null) {

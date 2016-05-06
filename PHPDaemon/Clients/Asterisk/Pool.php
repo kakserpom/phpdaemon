@@ -70,11 +70,11 @@ class Pool extends Client {
 		$safe   = false;
 
 		foreach (self::$safeCaseValues as $item) {
-			if (strncasecmp($header, $item, strlen($item)) === 0) {
+			if (strncasecmp($header, $item, mb_orig_strlen($item)) === 0) {
 				$safe = true;
 				break;
 			}
-			if (strncasecmp($value, $item, strlen($item)) === 0) {
+			if (strncasecmp($value, $item, mb_orig_strlen($item)) === 0) {
 				$safe = true;
 				break;
 			}

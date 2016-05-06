@@ -1,11 +1,31 @@
 <?php
 
 if (!function_exists('mb_orig_substr')) {
-	function mb_orig_substr(...$args) {
+	function mb_orig_substr(...$args)
+	{
 		return substr(...$args);
 	}
-}
 
+	/**
+	 * @param string $haystack
+	 * @param mixed $needle
+	 * @param int $offset
+	 * @return bool|int
+	 */
+	function mb_orig_strpos($haystack, $needle, $offset = 0)
+	{
+		return strpos($haystack, $needle, $offset);
+	}
+
+	/**
+	 * @param string $input
+	 * @return int
+	 */
+	function mb_orig_strlen($input)
+	{
+		return strlen($input);
+	}
+}
 
 if (!function_exists('D')) {
 	function D() {

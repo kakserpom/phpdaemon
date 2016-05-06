@@ -122,7 +122,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic {
 	 * @return boolean        Success
 	 */
 	public function outputFrame($s, $flush = true) {
-		$this->bytesSent += strlen($s);
+		$this->bytesSent += mb_orig_strlen($s);
 		return parent::out($s, $flush);
 	}
 

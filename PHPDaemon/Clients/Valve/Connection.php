@@ -129,7 +129,7 @@ class Connection extends ClientConnection {
 			$n     = Binary::getByte($st);
 			$name  = Binary::getString($st);
 			$score = Binary::getDWord($st, TRUE);
-			if (strlen($st) === 0) {
+			if (mb_orig_strlen($st) === 0) {
 				break;
 			}
 			$u       = unpack('f', mb_orig_substr($st, 0, 4));

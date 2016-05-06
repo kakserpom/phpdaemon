@@ -67,7 +67,7 @@ class UDP extends Generic {
 	 * @return integer
 	 */
 	public function sendTo($data, $flags, $host, $port) {
-		return socket_sendto($this->fd, $data, strlen($data), $flags, $host, $port);
+		return socket_sendto($this->fd, $data, mb_orig_strlen($data), $flags, $host, $port);
 	}
 
 	/**

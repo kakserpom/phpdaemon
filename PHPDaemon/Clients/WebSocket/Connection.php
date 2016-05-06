@@ -187,7 +187,7 @@ class Connection extends ClientConnection {
 	 * @param boolean $isMasked
 	 */
 	public function sendFrame($payload, $type = Pool::TYPE_TEXT, $isMasked = true) {
-		$payloadLength = strlen($payload);
+		$payloadLength = mb_orig_strlen($payload);
 		if ($payloadLength > $this->pool->maxAllowedPacket) {
 			Daemon::$process->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
 			return;
@@ -260,9 +260,9 @@ class Connection extends ClientConnection {
 	 */
 	protected static function mask($mask, $str) {
 		$out = '';
-		$l = strlen($str);
-		$ml = strlen($mask);
-		while (($o = strlen($out)) < $l) {
+		$l = mb_orig_strlen($str);
+		$ml = mb_orig_strlen($mask);
+		while (($o = mb_orig_strlen($out)) < $l) {
 			$out .= mb_orig_substr($str, $o, $ml) ^ $mask;
 		}
 		return $out;

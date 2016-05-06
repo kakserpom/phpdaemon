@@ -48,7 +48,7 @@ class VE extends Connection {
 		$spaces = 0;
 		$digits = '';
 
-		for ($i = 0, $s = strlen($key); $i < $s; ++$i) {
+		for ($i = 0, $s = mb_orig_strlen($key); $i < $s; ++$i) {
 			$c = mb_orig_substr($key, $i, 1);
 
 			if ($c === "\x20") {
@@ -96,7 +96,7 @@ class VE extends Connection {
 		// Binary
 		$type = $this->getFrameType($type);
 		if (($type & self::BINARY) === self::BINARY) {
-			$n   = strlen($data);
+			$n   = mb_orig_strlen($data);
 			$len = '';
 			$pos = 0;
 

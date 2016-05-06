@@ -214,7 +214,7 @@ class Connection extends ClientConnection {
 	 * @return void
 	 */
 	public function onReady() {
-		if (strlen($this->path) && !strlen($this->dbname)) {
+		if (mb_orig_strlen($this->path) && !mb_orig_strlen($this->dbname)) {
 			$this->dbname = $this->path;
 		}
 	}
@@ -226,7 +226,7 @@ class Connection extends ClientConnection {
 	 */
 	public function sendPacket($packet) {
 		//Daemon::log('Client --> Server: ' . Debug::exportBytes($packet) . "\n\n");
-		return $this->write(Binary::int2bytes(3, strlen($packet), true) . chr($this->seq++) . $packet);
+		return $this->write(Binary::int2bytes(3, mb_orig_strlen($packet), true) . chr($this->seq++) . $packet);
 	}
 
 	/**
@@ -239,7 +239,7 @@ class Connection extends ClientConnection {
 			return "\251";
 		}
 
-		$l = strlen($s);
+		$l = mb_orig_strlen($s);
 
 		if ($l <= 250) {
 			return chr($l) . $s;

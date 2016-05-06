@@ -230,7 +230,7 @@ class Connection extends ClientConnection {
 			$this->write($packet);
 		}
 		else {
-			$this->write(Binary::word(strlen($packet)) . $packet);
+			$this->write(Binary::word(mb_orig_strlen($packet)) . $packet);
 		}
 	}
 

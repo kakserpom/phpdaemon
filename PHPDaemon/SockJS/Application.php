@@ -362,7 +362,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 			}
 			$sessId = array_pop($extra);
 			$serverId = array_pop($extra);
-			if ($sessId === '' || $serverId === '' || strpos($sessId, '.') !== false || strpos($serverId, '.') !== false) {
+			if ($sessId === '' || $serverId === '' || mb_orig_strpos($sessId, '.') !== false || mb_orig_strpos($serverId, '.') !== false) {
 				return $this->callMethod('NotFound', $req, $upstream);	
 			}
 		}
@@ -370,7 +370,7 @@ class Application extends \PHPDaemon\Core\AppInstance {
 		$req->attrs->serverId = $serverId;
 		$req->attrs->path = $path;
 		$req = $this->callMethod($method, $req, $upstream);
-		if ($req instanceof Methods\Iframe && strlen($version)) {
+		if ($req instanceof Methods\Iframe && mb_orig_strlen($version)) {
 			$req->attrs->version = $version;
 		}
 		return $req;

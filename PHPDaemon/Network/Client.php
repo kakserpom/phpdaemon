@@ -76,7 +76,7 @@ abstract class Client extends Pool {
 	protected function applyConfig() {
 		parent::applyConfig();
 		if (isset($this->config->servers)) {
-			$servers       = array_filter(array_map('trim', explode(',', $this->config->servers->value)), 'strlen');
+			$servers       = array_filter(array_map('trim', explode(',', $this->config->servers->value)), 'mb_orig_strlen');
 			$this->servers = [];
 			foreach ($servers as $s) {
 				$this->addServer($s);

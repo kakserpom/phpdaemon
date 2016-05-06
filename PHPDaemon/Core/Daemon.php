@@ -238,7 +238,7 @@ class Daemon {
 
 		Daemon::$config = new Config\Object;
 
-		if (!defined('SO_REUSEPORT') && strpos(php_uname('s'), 'BSD') !== false) {
+		if (!defined('SO_REUSEPORT') && mb_orig_strpos(php_uname('s'), 'BSD') !== false) {
 			// @TODO: better if-BSD check
 			define('SO_REUSEPORT', 0x200);
 		} 
@@ -339,7 +339,7 @@ class Daemon {
 			Daemon::$context->out($s, false);
 		}
 		else {
-			Daemon::log('Unexcepted output (len. ' . strlen($s) . '): \'' . $s . '\'');
+			Daemon::log('Unexcepted output (len. ' . mb_orig_strlen($s) . '): \'' . $s . '\'');
 		}
 		--$n;
 		Daemon::$obInStack = $n > 0;
@@ -358,9 +358,9 @@ class Daemon {
 			}
 		}
 		$msg = $e->getMessage();
-		Daemon::log('Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')' . (strlen($msg) ? ': ' . $msg : '') . ".\n" . $e->getTraceAsString());
+		Daemon::log('Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')' . (mb_orig_strlen($msg) ? ': ' . $msg : '') . ".\n" . $e->getTraceAsString());
 		if (Daemon::$context instanceof \PHPDaemon\Request\Generic) {
-			Daemon::$context->out('<b>Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')</b>' . (strlen($msg) ? ': ' . $msg : '') . '.<br />');
+			Daemon::$context->out('<b>Uncaught ' . get_class($e) . ' (' . $e->getCode() . ')</b>' . (mb_orig_strlen($msg) ? ': ' . $msg : '') . '.<br />');
 		}
 	}
 
@@ -614,9 +614,9 @@ class Daemon {
 		$readed = 0;
 		$readedStr = '';
 		while (($buf = Daemon::$shm_wstate->read($readed, 1024)) !== false) {
-			$readed += strlen($buf);
+			$readed += mb_orig_strlen($buf);
 			$readedStr .= $buf;
-			for ($i = 0, $buflen = strlen($buf); $i < $buflen; ++$i) {
+			for ($i = 0, $buflen = mb_orig_strlen($buf); $i < $buflen; ++$i) {
 				$code = ord($buf[$i]);
 				if ($code >= 100) {
 					// reloaded (shutdown)

@@ -59,7 +59,7 @@ class V0 extends Connection {
 	 * @return string Result
 	 */
 	protected function _computeFinalKey($key1, $key2, $data) {
-		if (strlen($data) < 8) {
+		if (mb_orig_strlen($data) < 8) {
 			Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' : Invalid handshake data for client "' . $this->addr . '"');
 			return false;
 		}
@@ -75,7 +75,7 @@ class V0 extends Connection {
 		$spaces = 0;
 		$digits = '';
 
-		for ($i = 0, $s = strlen($key); $i < $s; ++$i) {
+		for ($i = 0, $s = mb_orig_strlen($key); $i < $s; ++$i) {
 			$c = mb_orig_substr($key, $i, 1);
 
 			if ($c === "\x20") {
@@ -122,7 +122,7 @@ class V0 extends Connection {
 		$type = $this->getFrameType($type);
 		// Binary
 		if (($type & self::BINARY) === self::BINARY) {
-			$n   = strlen($data);
+			$n   = mb_orig_strlen($data);
 			$len = '';
 			$pos = 0;
 

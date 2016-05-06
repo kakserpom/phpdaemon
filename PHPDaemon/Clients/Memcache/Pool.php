@@ -58,7 +58,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->checkFree();
 			}
 			$conn->writeln('set ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' '
-						   . strlen($value) . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value
+						   . mb_orig_strlen($value) . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value
 			);
 		});
 	}
@@ -81,7 +81,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->checkFree();
 			}
-			$conn->writeln('add ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . strlen($value)
+			$conn->writeln('add ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . mb_orig_strlen($value)
 						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
@@ -125,7 +125,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->checkFree();
 			}
-			$conn->writeln('replace ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . strlen($value)
+			$conn->writeln('replace ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . mb_orig_strlen($value)
 						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
@@ -148,7 +148,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->checkFree();
 			}
-			$conn->writeln('replace ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . strlen($value)
+			$conn->writeln('replace ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . mb_orig_strlen($value)
 						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}
@@ -171,7 +171,7 @@ class Pool extends \PHPDaemon\Network\Client {
 				$conn->onResponse->push($onResponse);
 				$conn->setFree(false);
 			}
-			$conn->writeln('prepend ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . strlen($value)
+			$conn->writeln('prepend ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . mb_orig_strlen($value)
 						   . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
 		});
 	}

@@ -43,7 +43,7 @@ class Connection extends ClientConnection {
 	 */
 	public function sendEcho($cb, $data = 'phpdaemon') {
 		++$this->seq;
-		if (strlen($data) % 2 !== 0) {
+		if (mb_orig_strlen($data) % 2 !== 0) {
 			$data .= "\x00";
 		}
 		$packet = pack('ccnnn',
@@ -66,8 +66,8 @@ class Connection extends ClientConnection {
 	protected static function checksum($data) {
 		$bit = unpack('n*', $data);
 		$sum = array_sum($bit);
-		if (strlen($data) % 2) {
-			$temp = unpack('C*', $data[strlen($data) - 1]);
+		if (mb_orig_strlen($data) % 2) {
+			$temp = unpack('C*', $data[mb_orig_strlen($data) - 1]);
 			$sum += $temp[1];
 		}
 		$sum = ($sum >> 16) + ($sum & 0xffff);

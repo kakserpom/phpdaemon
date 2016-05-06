@@ -230,7 +230,7 @@ class Input extends \EventBuffer {
 	 */
 	public function readFromString($chunk, $final = true) {
 		$this->add($chunk);
-		$this->readed += strlen($chunk);
+		$this->readed += mb_orig_strlen($chunk);
 		if ($final) {
 			$this->onRead();
 		}
@@ -272,7 +272,7 @@ class Input extends \EventBuffer {
 					$this->log('parseBody(): SEEKBOUNDARY: got unexpected data before boundary (length = ' . $p . '): ' . Debug::exportBytes($extra));
 				}
 			}
-			$this->drain(strlen($this->boundary) + 4); // drain
+			$this->drain(mb_orig_strlen($this->boundary) + 4); // drain
 			$this->state = self::STATE_HEADERS;
 		}
 		if ($this->state === self::STATE_HEADERS) {
@@ -342,7 +342,7 @@ class Input extends \EventBuffer {
 			$chunkEnd2 = $this->search("\r\n--" . $this->boundary . "--\r\n");
 			if ($chunkEnd1 === false && $chunkEnd2 === false) {
 				/*  we have only piece of Part in buffer */
-				$l = $this->length - strlen($this->boundary) - 8;
+				$l = $this->length - mb_orig_strlen($this->boundary) - 8;
 				if ($l <= 0) {
 					return;
 				}

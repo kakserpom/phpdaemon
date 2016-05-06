@@ -90,7 +90,7 @@ class Connection extends ClientConnection {
 		list($this->nick, $this->realname) = explode('/', $this->path . '/John Doe');
 		$this->command('USER', $this->user, 0, '*', $this->realname);
 		$this->command('NICK', $this->nick);
-		if (strlen($this->password)) {
+		if (mb_orig_strlen($this->password)) {
 			$this->message('NickServ', 'IDENTIFY ' . $this->password);
 		}
 	}
@@ -107,7 +107,7 @@ class Connection extends ClientConnection {
 		$line = $cmd;
 		for ($i = 1, $s = func_num_args(); $i < $s; ++$i) {
 			$arg = func_get_arg($i);
-			if (($i + 1 === $s) && (strpos($arg, "\x20") !== false)) {
+			if (($i + 1 === $s) && (mb_orig_strpos($arg, "\x20") !== false)) {
 				$line .= ' :';
 			}
 			else {
@@ -136,7 +136,7 @@ class Connection extends ClientConnection {
 		}
 		$line = $cmd;
 		for ($i = 0, $s = sizeof($args); $i < $s; ++$i) {
-			if (($i + 1 === $s) && (strpos($args[$i], "\x20") !== false)) {
+			if (($i + 1 === $s) && (mb_orig_strpos($args[$i], "\x20") !== false)) {
 				$line .= ' :';
 			}
 			else {
@@ -213,7 +213,7 @@ class Connection extends ClientConnection {
 			$this->channel($channel)->addMode($target, $mode);
 		}
 		else {
-			if (strpos($this->mode, $mode) === false) {
+			if (mb_orig_strpos($this->mode, $mode) === false) {
 				$this->mode .= $mode;
 			}
 		}
@@ -361,7 +361,7 @@ class Connection extends ClientConnection {
 				$channel = null;
 				list ($target, $mode) = $args;
 			}
-			if (strlen($mode)) {
+			if (mb_orig_strlen($mode)) {
 				if ($mode[0] === '+') {
 					$this->addMode($channel, $target, mb_orig_substr($mode, 1));
 				}
@@ -414,13 +414,13 @@ class Connection extends ClientConnection {
 			if ($line === '') {
 				continue;
 			}
-			if (strlen($line) > 512) {
+			if (mb_orig_strlen($line) > 512) {
 				Daemon::$process->log('IRCClientConnection error: buffer overflow.');
 				$this->finish();
 				return;
 			}
-			$line = mb_orig_substr($line, 0, -strlen($this->EOL));
-			$p    = strpos($line, ' :', 1);
+			$line = mb_orig_substr($line, 0, -mb_orig_strlen($this->EOL));
+			$p    = mb_orig_strpos($line, ' :', 1);
 			$max  = $p !== false ? substr_count($line, "\x20", 0, $p + 1) + 1 : 18;
 			$e    = explode("\x20", $line, $max);
 			$i    = 0;
@@ -443,7 +443,7 @@ class Connection extends ClientConnection {
 			$this->lastLine = $line;
 			$this->onCommand($from, $cmd, $args);
 		}
-		if (strlen($this->buf) > 512) {
+		if (mb_orig_strlen($this->buf) > 512) {
 			Daemon::$process->log('IRCClientConnection error: buffer overflow.');
 			$this->finish();
 		}

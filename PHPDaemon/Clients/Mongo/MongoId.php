@@ -29,16 +29,16 @@ class MongoId extends \MongoId {
 			}
 			return false;
 		}
-		elseif (strlen($id) === 24) {
+		elseif (mb_orig_strlen($id) === 24) {
 			 if (!ctype_xdigit($id)) {
 				return false;
 			}
 		} elseif (ctype_alnum($id)) {
 			$id = gmp_strval(gmp_init(strrev($id), 62), 16);
-			if (strlen($id) > 24) {
+			if (mb_orig_strlen($id) > 24) {
 				return false;
 			}
-			if (strlen($id) < 24) {
+			if (mb_orig_strlen($id) < 24) {
 				$id = str_pad($id, 24, '0', STR_PAD_LEFT);
 			}
 		} else {
@@ -51,11 +51,11 @@ class MongoId extends \MongoId {
 	 * @param string $id
 	 */
 	public function __construct($id = null) {
-		if ($id !== null && strlen($id) < 20 && ctype_alnum($id)) {
+		if ($id !== null && mb_orig_strlen($id) < 20 && ctype_alnum($id)) {
 			$id = gmp_strval(gmp_init(strrev($id), 62), 16);
-			if (strlen($id) > 24) {
+			if (mb_orig_strlen($id) > 24) {
 				$id = 'FFFFFFFFFFFFFFFFFFFFFFFF';
-			} elseif (strlen($id) < 24) {
+			} elseif (mb_orig_strlen($id) < 24) {
 				$id = str_pad($id, 24, '0', STR_PAD_LEFT);
 			}
 		}

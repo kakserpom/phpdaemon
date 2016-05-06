@@ -421,7 +421,7 @@ abstract class IOStream {
 			return false;
 		}
 		$in = $this->bev->input;
-		$l  = strlen($str);
+		$l  = mb_orig_strlen($str);
 		$ll = $in->length;
 		if ($ll === 0) {
 			return $l === 0 ? true : null;
@@ -622,7 +622,7 @@ abstract class IOStream {
 		if (!isset($this->bev)) {
 			return false;
 		}
-		if (!strlen($data)) {
+		if (!mb_orig_strlen($data)) {
 			return true;
 		}
 		$this->writing   = true;
@@ -647,7 +647,7 @@ abstract class IOStream {
 		if (!isset($this->bev)) {
 			return false;
 		}
-		if (!strlen($data) && !strlen($this->EOL)) {
+		if (!mb_orig_strlen($data) && !mb_orig_strlen($this->EOL)) {
 			return true;
 		}
 		$this->writing = true;

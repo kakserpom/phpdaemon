@@ -21,7 +21,7 @@ class Binary {
 		$e = explode('.', $q);
 		$r = '';
 		for ($i = 0, $s = sizeof($e); $i < $s; ++$i) {
-			$r .= chr(strlen($e[$i])) . $e[$i];
+			$r .= chr(mb_orig_strlen($e[$i])) . $e[$i];
 		}
 		if (mb_orig_substr($r, -1) !== "\x00") {
 			$r .= "\x00";
@@ -37,7 +37,7 @@ class Binary {
 	 */
 	public static function parseLabels(&$data, $orig = null) {
 		$str = '';
-		while (strlen($data) > 0) {
+		while (mb_orig_strlen($data) > 0) {
 			$l = ord($data[0]);
 
 			if ($l >= 192) {
@@ -65,7 +65,7 @@ class Binary {
 	 * @return string
 	 */
 	public static function LV($str, $len = 1, $lrev = FALSE) {
-		$l = static::i2b($len, strlen($str));
+		$l = static::i2b($len, mb_orig_strlen($str));
 		if ($lrev) {
 			$l = strrev($l);
 		}
@@ -238,7 +238,7 @@ class Binary {
 	 * @return string
 	 */
 	public static function getString(&$str) {
-		$p = strpos($str, "\x00");
+		$p = mb_orig_strpos($str, "\x00");
 		if ($p === false) {
 			return '';
 		}
@@ -262,8 +262,8 @@ class Binary {
 			return '';
 		}
 		$r = '';
-		if (strlen($p) < $s) {
-			echo("getLV error: buf length (" . strlen($p) . "): " . Debug::exportBytes($p) . ", must be >= string length (" . $s . ")\n");
+		if (mb_orig_strlen($p) < $s) {
+			echo("getLV error: buf length (" . mb_orig_strlen($p) . "): " . Debug::exportBytes($p) . ", must be >= string length (" . $s . ")\n");
 		}
 		elseif ($nul) {
 			if ($p{$s - 1} !== "\x00") {
@@ -296,15 +296,15 @@ class Binary {
 		$hexstr = dechex($int);
 
 		if ($len === NULL) {
-			if (strlen($hexstr) % 2) {
+			if (mb_orig_strlen($hexstr) % 2) {
 				$hexstr = "0" . $hexstr;
 			}
 		}
 		else {
-			$hexstr = str_repeat('0', $len * 2 - strlen($hexstr)) . $hexstr;
+			$hexstr = str_repeat('0', $len * 2 - mb_orig_strlen($hexstr)) . $hexstr;
 		}
 
-		$bytes = strlen($hexstr) / 2;
+		$bytes = mb_orig_strlen($hexstr) / 2;
 		$bin   = '';
 
 		for ($i = 0; $i < $bytes; ++$i) {
@@ -351,7 +351,7 @@ class Binary {
 			$str = strrev($str);
 		}
 		$dec = 0;
-		$len = strlen($str);
+		$len = mb_orig_strlen($str);
 		for ($i = 0; $i < $len; ++$i) {
 			$dec += ord(mb_orig_substr($str, $i, 1)) * pow(0x100, $len - $i - 1);
 		}
@@ -377,11 +377,11 @@ class Binary {
 	 */
 	public static function bitmap2bytes($bitmap, $check_len = 0) {
 		$r      = '';
-		$bitmap = str_pad($bitmap, ceil(strlen($bitmap) / 8) * 8, '0', STR_PAD_LEFT);
-		for ($i = 0, $n = strlen($bitmap) / 8; $i < $n; ++$i) {
+		$bitmap = str_pad($bitmap, ceil(mb_orig_strlen($bitmap) / 8) * 8, '0', STR_PAD_LEFT);
+		for ($i = 0, $n = mb_orig_strlen($bitmap) / 8; $i < $n; ++$i) {
 			$r .= chr((int)bindec(mb_orig_substr($bitmap, $i * 8, 8)));
 		}
-		if ($check_len && (strlen($r) !== $check_len)) {
+		if ($check_len && (mb_orig_strlen($r) !== $check_len)) {
 			return false;
 		}
 		return $r;

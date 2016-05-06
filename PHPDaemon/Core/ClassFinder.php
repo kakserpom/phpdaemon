@@ -40,7 +40,7 @@ class ClassFinder {
 		if ('Pool' === $class || 'TransportContext' === $class) {
 			return '\\PHPDaemon\\Core\\' . $class;
 		}
-		if (strpos($class, '\\') === false && $namespace === null) {
+		if (mb_orig_strpos($class, '\\') === false && $namespace === null) {
 			if ('Example' === substr($class, 0, 7)) {
 				array_unshift($e, 'Examples');
 			}

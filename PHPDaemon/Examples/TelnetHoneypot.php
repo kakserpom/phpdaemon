@@ -32,10 +32,10 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 	public function onRead() {
 		while (!is_null($line = $this->readline())) {
 			$finish =
-				(strpos($line, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
-					|| (strpos($line, $s = "\xff\xec") !== FALSE)
-					|| (strpos($line, $s = "\x03") !== FALSE)
-					|| (strpos($line, $s = "\x04") !== FALSE);
+				(mb_orig_strpos($line, $s = "\xff\xf4\xff\xfd\x06") !== FALSE)
+					|| (mb_orig_strpos($line, $s = "\xff\xec") !== FALSE)
+					|| (mb_orig_strpos($line, $s = "\x03") !== FALSE)
+					|| (mb_orig_strpos($line, $s = "\x04") !== FALSE);
 
 			$e   = explode(' ', rtrim($line, "\r\n"), 2);
 
@@ -55,7 +55,7 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection {
 			}
 
 			if (
-				(strlen($line) > 1024)
+				(mb_orig_strlen($line) > 1024)
 				|| $finish
 			) {
 				$this->finish();

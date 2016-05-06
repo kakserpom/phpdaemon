@@ -122,7 +122,7 @@ class Pool extends Client {
 		foreach ($mixed as $k => $v) {
 			if (is_int($k) || ctype_digit($k)) {
 				if (sizeof($buf) > 0) {
-					if (strpos($url, '?') !== false) {
+					if (mb_orig_strpos($url, '?') !== false) {
 						$queryDelimiter = '&';
 					}
 					$url .= $queryDelimiter . http_build_query($buf);

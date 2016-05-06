@@ -39,7 +39,7 @@ class WorkerConnection extends Connection {
 		if ($p['op'] === 'spawnInstance') {
 			$fullname = $p['appfullname'];
 			$fullname = str_replace('-', ':', $fullname);
-			if (strpos($fullname, ':') === false) {
+			if (mb_orig_strpos($fullname, ':') === false) {
 				$fullname .= ':';
 			}
 			list($app, $name) = explode(':', $fullname, 2);
@@ -65,7 +65,7 @@ class WorkerConnection extends Connection {
 			}, 5);
 		}
 		elseif ($p['op'] === 'call') {
-			if (strpos($p['appfullname'], ':') === false) {
+			if (mb_orig_strpos($p['appfullname'], ':') === false) {
 				$p['appfullname'] .= ':';
 			}
 			list($app, $name) = explode(':', $p['appfullname'], 2);
@@ -84,7 +84,7 @@ class WorkerConnection extends Connection {
 			return;
 		}
 		$data = \igbinary_serialize($p);
-		$this->write(pack('N', strlen($data)) . $data);
+		$this->write(pack('N', mb_orig_strlen($data)) . $data);
 	}
 
 	/**

@@ -146,8 +146,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		$this->state = self::STATE_ROOT;
 
 		/*Daemon::log('[DEBUG] FastCGI-record ' . $this->header['ttype'] . '). Request ID: ' . $rid 
-				. '. Content length: ' . $this->header['conlen'] . ' (' . strlen($this->content) . ') Padding length: ' . $this->header['padlen'] 
-				. ' (' . strlen($pad) . ')');*/
+				. '. Content length: ' . $this->header['conlen'] . ' (' . mb_orig_strlen($this->content) . ') Padding length: ' . $this->header['padlen'] 
+				. ' (' . mb_orig_strlen($pad) . ')');*/
 
 		if ($type === self::FCGI_BEGIN_REQUEST) {
 			$u = unpack('nrole/Cflags', $this->content);
@@ -266,7 +266,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 				&& $req->attrs->paramsDone
 		) {
 			$order = $this->pool->variablesOrder ?: 'GPC';
-			for ($i = 0, $s = strlen($order); $i < $s; ++$i) {
+			for ($i = 0, $s = mb_orig_strlen($order); $i < $s; ++$i) {
 				$char = $order[$i];
 
 				if ($char === 'G' && is_array($req->attrs->get)) {
@@ -293,8 +293,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 	 */
 	public function requestOut($req, $out) {
 		$cs = $this->pool->config->chunksize->value;
-		if (strlen($out) > $cs) {
-			while (($ol = strlen($out)) > 0) {
+		if (mb_orig_strlen($out) > $cs) {
+			while (($ol = mb_orig_strlen($out)) > 0) {
 				$l = min($cs, $ol);
 				if ($this->sendChunk($req, mb_orig_substr($out, 0, $l)) === false) {
 					$req->abort();
@@ -320,7 +320,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		return $this->write(
 			"\x01" // protocol version
 			. "\x06" // record type (STDOUT)
-			. pack('nn', $req->attrs->id, strlen($chunk)) // id, content length
+			. pack('nn', $req->attrs->id, mb_orig_strlen($chunk)) // id, content length
 			. "\x00" // padding length
 			. "\x00" // reserved 
 		) && $this->write($chunk); // content
@@ -349,7 +349,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		$this->write(
 			"\x01" // protocol version
 			. "\x03" // record type (END_REQUEST)
-			. pack('nn', $req->attrs->id, strlen($c)) // id, content length
+			. pack('nn', $req->attrs->id, mb_orig_strlen($c)) // id, content length
 			. "\x00" // padding length
 			. "\x00" // reserved
 			. $c // content

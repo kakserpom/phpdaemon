@@ -111,15 +111,15 @@ class Connection extends ClientConnection {
 		$e      = explode('.', $this->protover);
 		$packet = pack('nn', $e[0], $e[1]);
 
-		if (strlen($this->user)) {
+		if (mb_orig_strlen($this->user)) {
 			$packet .= "user\x00" . $this->user . "\x00";
 		}
 
-		if (strlen($this->dbname)) {
+		if (mb_orig_strlen($this->dbname)) {
 			$packet .= "database\x00" . $this->dbname . "\x00";
 		}
 
-		if (strlen($this->options)) {
+		if (mb_orig_strlen($this->options)) {
 			$packet .= "options\x00" . $this->options . "\x00";
 		}
 
@@ -160,7 +160,7 @@ class Connection extends ClientConnection {
 		}
 
 		$dec = 0;
-		$len = strlen($str);
+		$len = mb_orig_strlen($str);
 
 		for ($i = 0; $i < $len; ++$i) {
 			$dec += ord(mb_orig_substr($str, $i, 1)) * pow(0x100, $len - $i - 1);
@@ -180,15 +180,15 @@ class Connection extends ClientConnection {
 		$hexstr = dechex($int);
 
 		if ($len === NULL) {
-			if (strlen($hexstr) % 2) {
+			if (mb_orig_strlen($hexstr) % 2) {
 				$hexstr = "0" . $hexstr;
 			}
 		}
 		else {
-			$hexstr = str_repeat('0', $len * 2 - strlen($hexstr)) . $hexstr;
+			$hexstr = str_repeat('0', $len * 2 - mb_orig_strlen($hexstr)) . $hexstr;
 		}
 
-		$bytes = strlen($hexstr) / 2;
+		$bytes = mb_orig_strlen($hexstr) / 2;
 		$bin   = '';
 
 		for ($i = 0; $i < $bytes; ++$i) {
@@ -205,7 +205,7 @@ class Connection extends ClientConnection {
 	 * @return boolean         Success
 	 */
 	public function sendPacket($type = '', $packet) {
-		$header = $type . pack('N', strlen($packet) + 4);
+		$header = $type . pack('N', mb_orig_strlen($packet) + 4);
 
 		$this->write($header);
 		$this->write($packet);
@@ -227,7 +227,7 @@ class Connection extends ClientConnection {
 			return "\251";
 		}
 
-		$l = strlen($s);
+		$l = mb_orig_strlen($s);
 
 		if ($l <= 250) {
 			return chr($l) . $s;
@@ -398,7 +398,7 @@ class Connection extends ClientConnection {
 
 		start:
 
-		$this->buflen = strlen($this->buf);
+		$this->buflen = mb_orig_strlen($this->buf);
 
 		if ($this->buflen < 5) {
 			// Not enough data buffered yet
@@ -647,7 +647,7 @@ class Connection extends ClientConnection {
 		$r = [];
 
 		for ($i = 0; $i < $limit; ++$i) {
-			$pos = strpos($data, "\x00", $p);
+			$pos = mb_orig_strpos($data, "\x00", $p);
 
 			if ($pos === FALSE) {
 				break;

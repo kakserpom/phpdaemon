@@ -35,7 +35,7 @@ class AppResolver {
 					||
 					(!isset($section->enable) && !isset($section->disable))
 			) {
-				if (strpos($fullname, ':') === false) {
+				if (mb_orig_strpos($fullname, ':') === false) {
 					$fullname .= ':';
 				}
 				list($appName, $instance) = explode(':', $fullname, 2);
@@ -135,7 +135,7 @@ class AppResolver {
 		else {
 			$appName = $defaultApp;
 		}
-		if (strpos($appName, ':') === false) {
+		if (mb_orig_strpos($appName, ':') === false) {
 			$appName .= ':';
 		}
 		list($app, $instance) = explode(':', $appName, 2);
