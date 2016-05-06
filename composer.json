@@ -21,7 +21,7 @@
         "source": "https://github.com/kakserpom/phpdaemon/releases"
     },
     "require": {
-        "php": ">=5.4",
+        "php": ">=5.6",
         "ext-event" : ">=1.6.0",
         "ext-pcntl" : "*",
         "ext-shmop" : "*",
