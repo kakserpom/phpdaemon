@@ -363,10 +363,10 @@ class Connection extends ClientConnection {
 			}
 			if (strlen($mode)) {
 				if ($mode[0] === '+') {
-					$this->addMode($channel, $target, binarySubstr($mode, 1));
+					$this->addMode($channel, $target, mb_orig_substr($mode, 1));
 				}
 				elseif ($mode[0] === '-') {
-					$this->removeMode($channel, $target, binarySubstr($mode, 1));
+					$this->removeMode($channel, $target, mb_orig_substr($mode, 1));
 				}
 			}
 		}
@@ -382,7 +382,7 @@ class Connection extends ClientConnection {
 				'from'    => $from,
 				'to'      => $target,
 				'body'    => $body,
-				'private' => substr($target, 0, 1) !== '#',
+				'private' => mb_orig_substr($target, 0, 1) !== '#',
 			];
 			$this->event($msg['private'] ? 'privateMsg' : 'channelMsg', $msg);
 			$this->event('msg', $msg);
@@ -419,18 +419,18 @@ class Connection extends ClientConnection {
 				$this->finish();
 				return;
 			}
-			$line = binarySubstr($line, 0, -strlen($this->EOL));
+			$line = mb_orig_substr($line, 0, -strlen($this->EOL));
 			$p    = strpos($line, ' :', 1);
 			$max  = $p !== false ? substr_count($line, "\x20", 0, $p + 1) + 1 : 18;
 			$e    = explode("\x20", $line, $max);
 			$i    = 0;
-			$from = IRC::parseUsermask($e[$i]{0} === ':' ? binarySubstr($e[$i++], 1) : null);
+			$from = IRC::parseUsermask($e[$i]{0} === ':' ? mb_orig_substr($e[$i++], 1) : null);
 			$cmd  = $e[$i++];
 			$args = [];
 
 			for ($s = min(sizeof($e), 14); $i < $s; ++$i) {
 				if ($e[$i][0] === ':') {
-					$args[] = binarySubstr($e[$i], 1);
+					$args[] = mb_orig_substr($e[$i], 1);
 					break;
 				}
 				$args[] = $e[$i];

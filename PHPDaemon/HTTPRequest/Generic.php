@@ -473,7 +473,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic {
 				$c = min($this->upstream->pool->config->chunksize->value, $l - $o);
 
 				$chunk = dechex($c) . "\r\n"
-						. ($c === $l ? $s : binarySubstr($s, $o, $c)) // content
+						. ($c === $l ? $s : mb_orig_substr($s, $o, $c)) // content
 						. "\r\n";
 
 				if ($this->sendfp) {

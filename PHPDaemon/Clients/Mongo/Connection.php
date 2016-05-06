@@ -111,8 +111,8 @@ class Connection extends ClientConnection {
 			$this->state = self::STATE_ROOT;
 			$this->setWatermark(16, 0xFFFFFF);
 			if ($this->hdr['opCode'] === Pool::OP_REPLY) {
-				$r             = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', binarySubstr($pct, 0, 20));
-				$r['cursorId'] = binarySubstr($pct, 4, 8);
+				$r             = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', mb_orig_substr($pct, 0, 20));
+				$r['cursorId'] = mb_orig_substr($pct, 4, 8);
 				$id            = (int)$this->hdr['responseTo'];
 				if (isset($this->requests[$id])) {
 					$req = $this->requests[$id];
@@ -138,7 +138,7 @@ class Connection extends ClientConnection {
 				else {
 					$cur = isset($this->cursors[$curId]) ? $this->cursors[$curId] : false;
 				}
-				if ($cur && (($r['length'] === 0) || (binarySubstr($curId, 0, 1) === 'r'))) {
+				if ($cur && (($r['length'] === 0) || (mb_orig_substr($curId, 0, 1) === 'r'))) {
 					if ($cur->tailable) {
 						if ($cur->finished = ($flagBits[0] === '1')) {
 							$cur->destroy();
@@ -152,12 +152,12 @@ class Connection extends ClientConnection {
 				$p     = 20;
 				$items = [];
 				while ($p < $this->hdr['plen']) {
-					$dl  = unpack('Vlen', binarySubstr($pct, $p, 4));
-					$doc = bson_decode(binarySubstr($pct, $p, $dl['len']));
+					$dl  = unpack('Vlen', mb_orig_substr($pct, $p, 4));
+					$doc = bson_decode(mb_orig_substr($pct, $p, $dl['len']));
 
 					if ($cur) {
 						if ($cur->parseOplog && isset($doc['ts'])) {
-							$tsdata    = unpack('Vsec/Vinc', binarySubstr($pct, $p + 8, 8));
+							$tsdata    = unpack('Vsec/Vinc', mb_orig_substr($pct, $p + 8, 8));
 							$doc['ts'] = $tsdata['sec'].' '.$tsdata['inc'];
 						}
 						$cur->items[] = $doc;

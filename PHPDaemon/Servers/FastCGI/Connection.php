@@ -230,7 +230,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 						++$p;
 					}
 					else {
-						$u       = unpack('Nlen', chr(ord($this->content{$p}) & 0x7f) . binarySubstr($this->content, $p + 1, 3));
+						$u       = unpack('Nlen', chr(ord($this->content{$p}) & 0x7f) . mb_orig_substr($this->content, $p + 1, 3));
 						$namelen = $u['len'];
 						$p += 4;
 					}
@@ -239,12 +239,12 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 						++$p;
 					}
 					else {
-						$u    = unpack('Nlen', chr(ord($this->content{$p}) & 0x7f) . binarySubstr($this->content, $p + 1, 3));
+						$u    = unpack('Nlen', chr(ord($this->content{$p}) & 0x7f) . mb_orig_substr($this->content, $p + 1, 3));
 						$vlen = $u['len'];
 						$p += 4;
 					}
 
-					$req->attrs->server[binarySubstr($this->content, $p, $namelen)] = binarySubstr($this->content, $p + $namelen, $vlen);
+					$req->attrs->server[mb_orig_substr($this->content, $p, $namelen)] = mb_orig_substr($this->content, $p + $namelen, $vlen);
 					$p += $namelen + $vlen;
 				}
 			}
@@ -296,11 +296,11 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 		if (strlen($out) > $cs) {
 			while (($ol = strlen($out)) > 0) {
 				$l = min($cs, $ol);
-				if ($this->sendChunk($req, binarySubstr($out, 0, $l)) === false) {
+				if ($this->sendChunk($req, mb_orig_substr($out, 0, $l)) === false) {
 					$req->abort();
 					return false;
 				}
-				$out = binarySubstr($out, $l);
+				$out = mb_orig_substr($out, $l);
 			}
 		}
 		elseif ($this->sendChunk($req, $out) === false) {

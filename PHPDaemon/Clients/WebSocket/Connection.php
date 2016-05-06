@@ -102,7 +102,7 @@ class Connection extends ClientConnection {
 				$this->finish();
 				return;
 			}
-			$sb = ord(binarySubstr($hdr, 1));
+			$sb = ord(mb_orig_substr($hdr, 1));
 			$sbm = Binary::getbitmap($sb);
 			$this->isMasked = (bool) $sbm{0};
 			$payloadLength = $sb & 127;
@@ -263,7 +263,7 @@ class Connection extends ClientConnection {
 		$l = strlen($str);
 		$ml = strlen($mask);
 		while (($o = strlen($out)) < $l) {
-			$out .= binarySubstr($str, $o, $ml) ^ $mask;
+			$out .= mb_orig_substr($str, $o, $ml) ^ $mask;
 		}
 		return $out;
 	}

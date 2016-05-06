@@ -286,7 +286,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 				$this->finish();
 				return;
 			}
-			$line = binarySubstr($line, 0, -strlen($this->EOL));
+			$line = mb_orig_substr($line, 0, -strlen($this->EOL));
 			$p    = strpos($line, ':', 1);
 			$max  = $p ? substr_count($line, "\x20", 0, $p) + 1 : 18;
 			$e    = explode("\x20", $line, $max);
@@ -296,7 +296,7 @@ class Connection extends \PHPDaemon\Network\Connection {
 
 			for ($s = min(sizeof($e), 14); $i < $s; ++$i) {
 				if ($e[$i][0] === ':') {
-					$args[] = binarySubstr($e[$i], 1);
+					$args[] = mb_orig_substr($e[$i], 1);
 					break;
 				}
 				$args[] = $e[$i];

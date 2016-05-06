@@ -128,8 +128,8 @@ class ShmEntity {
 		$sOffset = $offset % $this->segsize;
 		$d = $this->segsize - ($sOffset + strlen($data));
 		if ($d < 0) {
-			$this->write(binarySubstr($data, $d), ($segno+1) * $this->segsize);
-			$data = binarySubstr($data, 0, $d);
+			$this->write(mb_orig_substr($data, $d), ($segno+1) * $this->segsize);
+			$data = mb_orig_substr($data, 0, $d);
 		}
 		//Daemon::log('writing to #'.$offset.' (segno '.$segno.')');
 		shmop_write($this->segments[$segno], $data, $sOffset);

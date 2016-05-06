@@ -1,37 +1,11 @@
 <?php
 
-if (function_exists('mb_substr') && ini_get('mbstring.func_overload') & 2) {
-	/**
-	 * @param string $s
-	 * @param int $p
-	 * @param int|null $l
-	 * @return string
-	 */
-	function binarySubstr($s, $p, $l = 0xFFFFFFF) {
-		return mb_substr($s, $p, $l, 'ASCII');
-	}
-} else {
-	/**
-	 * @param string $s
-	 * @param int $p
-	 * @param int|null $l
-	 * @return string
-	 */
-	function binarySubstr($s, $p, $l = null) {
-		if ($l === null) {
-			$ret = substr($s, $p);
-		}
-		else {
-			$ret = substr($s, $p, $l);
-		}
-
-		if ($ret === false) {
-			$ret = '';
-		}
-
-		return $ret;
+if (!function_exists('mb_orig_substr')) {
+	function mb_orig_substr(...$args) {
+		return substr(...$args);
 	}
 }
+
 
 if (!function_exists('D')) {
 	function D() {

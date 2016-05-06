@@ -210,8 +210,8 @@ class Cursor implements \Iterator {
 		if ($this->finished || $this->destroyed) {
 			return;
 		}
-		if (binarySubstr($this->id, 0, 1) === 'c') {
-			$this->conn->pool->getMore($this->col, binarySubstr($this->id, 1), $number, $this->conn);
+		if (mb_orig_substr($this->id, 0, 1) === 'c') {
+			$this->conn->pool->getMore($this->col, mb_orig_substr($this->id, 1), $number, $this->conn);
 		}
 	}
 
@@ -258,8 +258,8 @@ class Cursor implements \Iterator {
 	 */
 	public function __destruct() {
 		try {
-			if (binarySubstr($this->id, 0, 1) === 'c') {
-				$this->conn->pool->killCursors([binarySubstr($this->id, 1)], $this->conn);
+			if (mb_orig_substr($this->id, 0, 1) === 'c') {
+				$this->conn->pool->killCursors([mb_orig_substr($this->id, 1)], $this->conn);
 			}
 		} catch (ConnectionFinished $e) {}
 	}
