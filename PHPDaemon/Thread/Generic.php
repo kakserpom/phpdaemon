@@ -411,29 +411,23 @@ abstract class Generic {
 
 	/**
 	 * Sets a title of the current process
-	 * @param string Title
+	 *
 	 * @param string $title
 	 * @return boolean Success
 	 */
-	protected function setTitle($title) {
-		if (is_callable('cli_set_process_title')) {
-			return \cli_set_process_title($title);
-		}
-		if (Daemon::loadModuleIfAbsent('proctitle')) {
-			return \setproctitle($title);
-		}
-		return false;
+	protected function setTitle($title)
+	{
+		return cli_set_process_title($title);
 	}
 
 	/**
 	 * Returns a title of the current process
+	 * 
 	 * @return string
 	 */
-	protected function getTitle() {
-		if (is_callable('cli_get_process_title')) {
-			return \cli_get_process_title();
-		}
-		return false;
+	protected function getTitle()
+	{
+		return cli_get_process_title();
 	}
 
 	/**
