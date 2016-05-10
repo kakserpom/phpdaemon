@@ -14,7 +14,7 @@ class Collection {
 
 	/**
 	 * Array of threads
-	 * @var array|Generic[]
+	 * @var Generic[]
 	 */
 	public $threads = [];
 
@@ -26,10 +26,10 @@ class Collection {
 
 	/**
 	 * Pushes certain thread to the collection
-	 * @param object Generic to push
+	 * @param Generic Generic to push
 	 * @return void
 	 */
-	public function push($thread) {
+	public function push(Generic $thread) {
 		$id = ++$this->spawnCounter;
 		$thread->setId($id);
 		$this->threads[$id] = $thread;
