@@ -1,15 +1,19 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest\Generic;class ExamplePubSubTestPageRequest extends Generic {
+use PHPDaemon\HTTPRequest\Generic;
 
-/**
+class ExamplePubSubTestPageRequest extends Generic
+{
+
+    /**
  * Called when request iterated.
  * @return integer Status.
  */
-public function run() {
-$this->header('Content-Type: text/html');
-?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+public function run()
+{
+    $this->header('Content-Type: text/html');
+    ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -35,5 +39,6 @@ $this->header('Content-Type: text/html');
 </body>
 </html>
 <?php
+
 }
 }
