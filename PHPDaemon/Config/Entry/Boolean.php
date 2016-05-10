@@ -11,15 +11,16 @@ use PHPDaemon\Config\Entry\Generic;
  *
  * @author     Vasily Zorin <maintainer@daemon.io>
  */
-class Boolean extends Generic {
+class Boolean extends Generic
+{
 
-	/**
-	 * Converts human-readable value to plain
-	 * @param $value
-	 * @return bool
-	 */
-	public static function HumanToPlain($value) {
-		return (boolean)$value;
-	}
-
+    /**
+     * Converts human-readable value to plain
+     * @param $value
+     * @return bool
+     */
+    public static function HumanToPlain($value)
+    {
+        return (boolean)$value;
+    }
 }

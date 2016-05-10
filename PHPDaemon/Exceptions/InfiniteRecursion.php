@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Exceptions;
 
-class InfiniteRecursion extends \Exception {
+class InfiniteRecursion extends \Exception
+{
 }

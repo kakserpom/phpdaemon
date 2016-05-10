@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Exceptions;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 
@@ -10,5 +11,6 @@ use PHPDaemon\Core\Debug;
  *
  * @author  Vasily Zorin <maintainer@daemon.io>
  */
-class ProtocolError extends \Exception {
+class ProtocolError extends \Exception
+{
 }

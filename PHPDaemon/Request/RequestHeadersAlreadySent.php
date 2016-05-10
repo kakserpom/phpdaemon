@@ -8,5 +8,6 @@ namespace PHPDaemon\Request;
  *
  * @author  Vasily Zorin <maintainer@daemon.io>
  */
-class RequestHeadersAlreadySent extends \Exception {
+class RequestHeadersAlreadySent extends \Exception
+{
 }

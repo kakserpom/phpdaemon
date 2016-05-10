@@ -11,15 +11,16 @@ use PHPDaemon\Config\Entry\Generic;
  *
  * @author     Vasily Zorin <maintainer@daemon.io>
  */
-class Double extends Generic {
+class Double extends Generic
+{
 
-	/**
-	 * Converts human-readable value to plain
-	 * @param $value
-	 * @return double
-	 */
-	public static function HumanToPlain($value) {
-		return (double) $value;
-	}
-
+    /**
+     * Converts human-readable value to plain
+     * @param $value
+     * @return double
+     */
+    public static function HumanToPlain($value)
+    {
+        return (double) $value;
+    }
 }

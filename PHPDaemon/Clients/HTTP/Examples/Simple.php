@@ -10,27 +10,30 @@ namespace PHPDaemon\Clients\HTTP\Examples;
  * @subpackage HTTPClientExample
  * @author     Vasily Zorin <maintainer@daemon.io>
  */
-class Simple extends \PHPDaemon\Core\AppInstance {
-	/**
-	 * @var Pool
-	 */
-	public $httpclient;
+class Simple extends \PHPDaemon\Core\AppInstance
+{
+    /**
+     * @var Pool
+     */
+    public $httpclient;
 
-	/**
-	 * Constructor.
-	 * @return void
-	 */
-	public function init() {
-		$this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
-	}
+    /**
+     * Constructor.
+     * @return void
+     */
+    public function init()
+    {
+        $this->httpclient = \PHPDaemon\Clients\HTTP\Pool::getInstance();
+    }
 
-	/**
-	 * Creates Request.
-	 * @param object Request.
-	 * @param object Upstream application instance.
-	 * @return SimpleRequest Request.
-	 */
-	public function beginRequest($req, $upstream) {
-		return new SimpleRequest($this, $upstream, $req);
-	}
+    /**
+     * Creates Request.
+     * @param object Request.
+     * @param object Upstream application instance.
+     * @return SimpleRequest Request.
+     */
+    public function beginRequest($req, $upstream)
+    {
+        return new SimpleRequest($this, $upstream, $req);
+    }
 }

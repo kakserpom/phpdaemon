@@ -10,23 +10,25 @@ use PHPDaemon\Utils\Crypt;
  * @subpackage SockJS
  * @author     Vasily Zorin <maintainer@daemon.io>
  */
-class IFrame extends Generic {
-	protected $version = '1.0.3';
-	protected $contentType = 'text/html';
-	protected $cacheable = true;
+class Iframe extends Generic
+{
+    protected $version = '1.0.3';
+    protected $contentType = 'text/html';
+    protected $cacheable = true;
 
-	/**
-	 * Constructor
-	 * @return void
-	 */
-	public function init() {
-		parent::init();
-		if (isset($this->attrs->version)) {
-			$this->version = $this->attrs->version;
-		}
-		$this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
-		$this->header('Expires: '.date('r', strtotime('+1 year')));
-		$html = '<!DOCTYPE html>
+    /**
+     * Constructor
+     * @return void
+     */
+    public function init()
+    {
+        parent::init();
+        if (isset($this->attrs->version)) {
+            $this->version = $this->attrs->version;
+        }
+        $this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
+        $this->header('Expires: '.date('r', strtotime('+1 year')));
+        $html = '<!DOCTYPE html>
 <html>
 <head>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -42,24 +44,26 @@ class IFrame extends Generic {
 	<p>This is a SockJS hidden iframe. It\'s used for cross domain magic.</p>
 </body>
 </html>';
-		$etag = 'W/"'.sha1($html).'"';
-		$this->header('ETag: '.$etag);	
-		if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
-			if ($_SERVER['HTTP_IF_NONE_MATCH'] === $etag) {
-				$this->status(304);
-				$this->removeHeader('Content-Type');
-				$this->finish();
-				return;
-			}
-		}
-		$this->header('Content-Length: '.mb_orig_strlen($html));
-		echo $html;
-		$this->finish();
-	}
+        $etag = 'W/"'.sha1($html).'"';
+        $this->header('ETag: '.$etag);
+        if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
+            if ($_SERVER['HTTP_IF_NONE_MATCH'] === $etag) {
+                $this->status(304);
+                $this->removeHeader('Content-Type');
+                $this->finish();
+                return;
+            }
+        }
+        $this->header('Content-Length: '.mb_orig_strlen($html));
+        echo $html;
+        $this->finish();
+    }
 
-	/**
-	 * Called when request iterated
-	 * @return void
-	 */
-	public function run() {}
+    /**
+     * Called when request iterated
+     * @return void
+     */
+    public function run()
+    {
+    }
 }
