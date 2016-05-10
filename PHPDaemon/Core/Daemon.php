@@ -677,11 +677,15 @@ class Daemon {
 		$mt = explode(' ', microtime());
 
 		//$msg = substr($msg, 0, 1024) . Debug::backtrace();
-		if (is_resource(STDERR)) {
+		if (defined('STDERR') && is_resource(STDERR)) {
 			fwrite(STDERR, '[PHPD] ' . $msg . "\n");
 		}
 
-		$msg = str_replace("\x01", $msg, date(strtr(Daemon::$config->logformat->value, ['%msg%' => "\x01", '\\u' => '\\u', 'u' => sprintf('%06d', $mt[0] * 1000000)]))) . "\n";
+		$logformat = Daemon::$config->logformat;
+		if (is_object($logformat)) {
+			$logformat = $logformat->value;
+		}
+		$msg = str_replace("\x01", $msg, date(strtr($logformat, ['%msg%' => "\x01", '\\u' => '\\u', 'u' => sprintf('%06d', $mt[0] * 1000000)]))) . "\n";
 
 		if (Daemon::$logpointerAsync) {
 			Daemon::$logpointerAsync->write($msg);
