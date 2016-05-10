@@ -3,7 +3,6 @@ language: php
 php:
   - 5.6
   - 7.0
-  - hhvm
 
 sudo: false
 
@@ -13,6 +12,16 @@ cache:
     - $HOME/.composer/cache
 
 install:
+  # Install ext-event
+  - curl http://pecl.php.net/get/event-2.0.4.tgz | tar -xz
+  - pushd event-2.0.4
+  - phpize
+  - ./configure
+  - make
+  - make install
+  - popd
+  - echo "extension=event.so" >> "$(php -r 'echo php_ini_loaded_file();')"
+  # Composer
   - composer self-update --quiet
   - COMPOSER_DISCARD_CHANGES=true composer --prefer-source update --no-interaction --no-progress
 
