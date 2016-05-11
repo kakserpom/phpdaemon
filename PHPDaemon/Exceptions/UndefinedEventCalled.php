@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Exceptions;
 
-class UndefinedEventCalled extends \Exception {
+class UndefinedEventCalled extends \Exception
+{
 }

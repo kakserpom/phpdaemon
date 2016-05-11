@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Utils;
+
 use PHPDaemon\Core\Daemon;
 
 /**
@@ -14,44 +15,49 @@ use PHPDaemon\Core\Daemon;
  *  echo PlainJSON::apply(json_encode([ ['name' => 'Mary' ], $obj1, $obj2]));
  *  // [{"name":"Mary"},{"name":"John"},{"name":"Smit"}]
  */
-class PlainJSON implements \JsonSerializable {
-	use \PHPDaemon\Traits\ClassWatchdog;
-	use \PHPDaemon\Traits\StaticObjectWatchdog;
+class PlainJSON implements \JsonSerializable
+{
+    use \PHPDaemon\Traits\ClassWatchdog;
+    use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	protected $id;
-	
-	static protected $tr = [];
+    protected $id;
+    
+    protected static $tr = [];
 
-	/**
-	 * Save
-	 * @param string $str JSON string
-	 */
-	public function __construct($str) {
-		$this->id = Daemon::uniqid();
-		static::$tr['"' . $this->id . '"'] = $str;
-	}
+    /**
+     * Save
+     * @param string $str JSON string
+     */
+    public function __construct($str)
+    {
+        $this->id = Daemon::uniqid();
+        static::$tr['"' . $this->id . '"'] = $str;
+    }
 
-	/**
-	 * Clean cache
-	 */
-	public function __destruct() {
-		unset(static::$tr[$this->id]);
-	}
+    /**
+     * Clean cache
+     */
+    public function __destruct()
+    {
+        unset(static::$tr[$this->id]);
+    }
 
-	/**
-	 * jsonSerialize
-	 * @return string
-	 */
-	public function jsonSerialize() {
-		return $this->id;
-	}
+    /**
+     * jsonSerialize
+     * @return string
+     */
+    public function jsonSerialize()
+    {
+        return $this->id;
+    }
 
-	/**
-	 * Apply
-	 * @param  string $data JSON string
-	 * @return string       Result JSON
-	 */
-	public static function apply($data) {
-		return strtr($data, static::$tr);
-	}
+    /**
+     * Apply
+     * @param  string $data JSON string
+     * @return string       Result JSON
+     */
+    public static function apply($data)
+    {
+        return strtr($data, static::$tr);
+    }
 }

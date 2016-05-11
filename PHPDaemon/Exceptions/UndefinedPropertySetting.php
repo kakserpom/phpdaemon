@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Exceptions;
 
-class UndefinedPropertySetting extends \Exception {
+class UndefinedPropertySetting extends \Exception
+{
 }

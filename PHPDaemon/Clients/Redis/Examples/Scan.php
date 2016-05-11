@@ -13,39 +13,41 @@ use PHPDaemon\Core\Debug;
  * @subpackage RedisClientExample
  * @author     Efimenko Dmitriy <ezheg89@gmail.com>
  */
-class Scan extends \PHPDaemon\Core\AppInstance {
-	/**
-	 * @var Pool
-	 */
-	public $redis;
+class Scan extends \PHPDaemon\Core\AppInstance
+{
+    /**
+     * @var Pool
+     */
+    public $redis;
 
-	/**
-	 * Called when the worker is ready to go
-	 * @return void
-	 */
-	public function onReady() {
-		$this->redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
+    /**
+     * Called when the worker is ready to go
+     * @return void
+     */
+    public function onReady()
+    {
+        $this->redis = \PHPDaemon\Clients\Redis\Pool::getInstance();
 
-		$params = [];
-		foreach (range(0, 100) as $i) {
-			$params[] = 'myset' . $i;
-			$params[] = 'value' . $i;
-		}
-		$params[] = function($redis) {
-			$params = [function($redis) {
-				D('Count: ' . count($redis->result[1]) . '; Next: ' . $redis->result[0]);
-			}];
-			
-			$cbEnd = function($redis, $scan) {
-				D('Full scan end!');
-			};
+        $params = [];
+        foreach (range(0, 100) as $i) {
+            $params[] = 'myset' . $i;
+            $params[] = 'value' . $i;
+        }
+        $params[] = function ($redis) {
+            $params = [function ($redis) {
+                D('Count: ' . count($redis->result[1]) . '; Next: ' . $redis->result[0]);
+            }];
+            
+            $cbEnd = function ($redis, $scan) {
+                D('Full scan end!');
+            };
 
-			// test 1
-			// $this->redis->scan(...$params);
+            // test 1
+            // $this->redis->scan(...$params);
 
-			// test 2
-			$this->redis->autoscan('scan', $params, $cbEnd, 50);
-		};
-		$this->redis->mset(...$params);
-	}
+            // test 2
+            $this->redis->autoscan('scan', $params, $cbEnd, 50);
+        };
+        $this->redis->mset(...$params);
+    }
 }

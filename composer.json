@@ -27,6 +27,9 @@
         "ext-shmop" : "*",
         "ext-sockets": "*"
     },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "~2.6.0"
+    },
     "bin": ["bin/phpd"],
     "autoload": {
         "psr-0": { "PHPDaemon": "" },

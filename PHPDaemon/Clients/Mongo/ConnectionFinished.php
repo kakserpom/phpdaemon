@@ -6,5 +6,6 @@ namespace PHPDaemon\Clients\Mongo;
  * @subpackage MongoClientAsync
  * @author     Vasily Zorin <maintainer@daemon.io>
  */
-class ConnectionFinished extends \PHPDaemon\Exceptions\ConnectionFinished {
+class ConnectionFinished extends \PHPDaemon\Exceptions\ConnectionFinished
+{
 }

@@ -11,12 +11,14 @@ use PHPDaemon\Core\Debug;
  * @subpackage TestRelay
  * @author     Vasily Zorin <maintainer@daemon.io>
  */
-class Close extends \PHPDaemon\WebSocket\Route {
-	/**
-	 * Called when the connection is handshaked.
-	 * @return void
-	 */
-	public function onHandshake() {
-		$this->client->finish();
-	}
+class Close extends \PHPDaemon\WebSocket\Route
+{
+    /**
+     * Called when the connection is handshaked.
+     * @return void
+     */
+    public function onHandshake()
+    {
+        $this->client->finish();
+    }
 }

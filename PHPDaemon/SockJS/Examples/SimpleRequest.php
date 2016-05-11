@@ -1,17 +1,20 @@
 <?php
 namespace PHPDaemon\SockJS\Examples;
+
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\HTTPRequest\Generic;
 
-class SimpleRequest extends Generic {
-	/**
-	 * Called when request iterated.
-	 * @return integer Status.
-	 */
-	public function run() {
-		$this->header('Content-Type: text/html');
-	?>
+class SimpleRequest extends Generic
+{
+    /**
+     * Called when request iterated.
+     * @return integer Status.
+     */
+    public function run()
+    {
+        $this->header('Content-Type: text/html');
+        ?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -54,5 +57,6 @@ class SimpleRequest extends Generic {
 </html>
 
 <?php
-	}
+
+    }
 }

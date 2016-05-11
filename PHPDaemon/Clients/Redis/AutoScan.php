@@ -10,96 +10,101 @@ use PHPDaemon\Core\CallbackWrapper;
  * @subpackage RedisClient
  * @author     Efimenko Dmitriy <ezheg89@gmail.com>
  */
-class AutoScan {
-	use \PHPDaemon\Traits\ClassWatchdog;
-	use \PHPDaemon\Traits\StaticObjectWatchdog;
+class AutoScan
+{
+    use \PHPDaemon\Traits\ClassWatchdog;
+    use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	protected $conn;
+    protected $conn;
 
-	protected $cmd;
+    protected $cmd;
 
-	protected $cursor = 0;
+    protected $cursor = 0;
 
-	protected $args;
+    protected $args;
 
-	protected $limit = false;
+    protected $limit = false;
 
-	protected $num = 0;
+    protected $num = 0;
 
-	protected $isFreeze = false;
+    protected $isFreeze = false;
 
-	protected $cb;
+    protected $cb;
 
-	protected $cbEnd;
+    protected $cbEnd;
 
-	/**
-	 * Constructor
-	 * @param  Pool    $pool   Redis pool or connection
-	 * @param  string  $cmd    Command
-	 * @param  array   $args   Arguments
-	 * @param  cllable $cbEnd  Callback
-	 * @param  integer $limit  Limit
-	 */
-	public function __construct($pool, $cmd, $args = [], $cbEnd = null, $limit = false) {
-		$this->conn  = $pool;
-		$this->cmd   = $cmd;
-		$this->args  = empty($args) ? [] : $args;
-		$this->limit = $limit;
-		if (is_numeric($this->args[0])) {
-			array_shift($this->args);
-		}
-		for ($i = sizeof($this->args) - 1; $i >= 0; --$i) {
-			$a = $this->args[$i];
-			if ((is_array($a) || is_object($a)) && is_callable($a)) {
-				$this->cb   = CallbackWrapper::wrap($a);
-				$this->args = array_slice($this->args, 0, $i);
-				break;
-			}
-			elseif ($a !== null) {
-				break;
-			}
-		}
-		if ($cbEnd !== null) {
-			$this->cbEnd = CallbackWrapper::wrap($cbEnd);
-		}
-		$this->doIteration();
-	}
+    /**
+     * Constructor
+     * @param  Pool    $pool   Redis pool or connection
+     * @param  string  $cmd    Command
+     * @param  array   $args   Arguments
+     * @param  cllable $cbEnd  Callback
+     * @param  integer $limit  Limit
+     */
+    public function __construct($pool, $cmd, $args = [], $cbEnd = null, $limit = false)
+    {
+        $this->conn  = $pool;
+        $this->cmd   = $cmd;
+        $this->args  = empty($args) ? [] : $args;
+        $this->limit = $limit;
+        if (is_numeric($this->args[0])) {
+            array_shift($this->args);
+        }
+        for ($i = sizeof($this->args) - 1; $i >= 0; --$i) {
+            $a = $this->args[$i];
+            if ((is_array($a) || is_object($a)) && is_callable($a)) {
+                $this->cb   = CallbackWrapper::wrap($a);
+                $this->args = array_slice($this->args, 0, $i);
+                break;
+            } elseif ($a !== null) {
+                break;
+            }
+        }
+        if ($cbEnd !== null) {
+            $this->cbEnd = CallbackWrapper::wrap($cbEnd);
+        }
+        $this->doIteration();
+    }
 
-	public function freeze() {
-		$this->isFreeze = true;
-	}
+    public function freeze()
+    {
+        $this->isFreeze = true;
+    }
 
-	public function run() {
-		$this->isFreeze = false;
-		$this->doIteration();
-	}
+    public function run()
+    {
+        $this->isFreeze = false;
+        $this->doIteration();
+    }
 
-	public function reset() {
-		$this->num = 0;
-		$this->isFreeze = false;
-	}
+    public function reset()
+    {
+        $this->num = 0;
+        $this->isFreeze = false;
+    }
 
-	protected function doIteration() {
-		if ($this->isFreeze) {
-			return;
-		}
+    protected function doIteration()
+    {
+        if ($this->isFreeze) {
+            return;
+        }
 
-		$args = $this->args;
-		array_unshift($args, $this->cursor);
-		$args[] = function($redis) {
-			$this->conn   = $redis;
-			$this->cursor = $redis->result[0];
-			$func = $this->cb;
-			$func($redis);
-			
-			if (!is_numeric($redis->result[0]) || !$redis->result[0] || ($this->limit && ++$this->num > $this->limit)) {
-				$func = $this->cbEnd;
-				$func($redis, $this);
-				return;
-			}
-			$this->doIteration();
-		};
-		$func = [$this->conn, $this->cmd];
-		$func(... $args);
-	}
+        $args = $this->args;
+        array_unshift($args, $this->cursor);
+        $args[] = function ($redis) {
+            $this->conn   = $redis;
+            $this->cursor = $redis->result[0];
+            $func = $this->cb;
+            $func($redis);
+            
+            if (!is_numeric($redis->result[0]) || !$redis->result[0] || ($this->limit && ++$this->num > $this->limit)) {
+                $func = $this->cbEnd;
+                $func($redis, $this);
+                return;
+            }
+            $this->doIteration();
+        };
+        $func = [$this->conn, $this->cmd];
+        $func(... $args);
+    }
 }
