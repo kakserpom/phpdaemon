@@ -580,7 +580,7 @@ class Daemon
     }
 
     /**
-     * Open logs.
+     * Open logs
      * @return void
      */
     public static function openLogs()
@@ -625,11 +625,10 @@ class Daemon
             'reloading' => 0,
         ];
         $readed = 0;
-        $readedStr = '';
         while (($buf = Daemon::$shm_wstate->read($readed, 1024)) !== false) {
-            $readed += mb_orig_strlen($buf);
-            $readedStr .= $buf;
-            for ($i = 0, $buflen = mb_orig_strlen($buf); $i < $buflen; ++$i) {
+            $buflen = mb_orig_strlen($buf);
+            $readed += $buflen;
+            for ($i = 0; $i < $buflen; ++$i) {
                 $code = ord($buf[$i]);
                 if ($code >= 100) {
                     // reloaded (shutdown)
@@ -666,12 +665,11 @@ class Daemon
                 }
             }
         }
-        //Daemon::log('readedStr: '.Debug::exportBytes($readedStr, true));
         return $stat;
     }
 
     /**
-     * Send message to log.
+     * Send message to the log
      * @param  mixed  ...$args Arguments
      * @return string message
      */
@@ -685,7 +683,6 @@ class Daemon
         }
         $mt = explode(' ', microtime());
 
-        //$msg = substr($msg, 0, 1024) . Debug::backtrace();
         if (is_resource(STDERR)) {
             fwrite(STDERR, '[PHPD] ' . $msg . "\n");
         }
@@ -700,7 +697,7 @@ class Daemon
     }
 
     /**
-     * spawn new master process.
+     * Spawn a master process
      * @return null|integer - success
      */
     public static function spawnMaster()

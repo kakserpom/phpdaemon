@@ -152,23 +152,20 @@ class ShmEntity
         $ret = '';
         $segno = floor($offset / $this->segsize);
         $sOffset = $offset % $this->segsize;
-
         while (true) {
-            ++$segno;
-
             if (!isset($this->segments[$segno])) {
                 if (!$this->open($segno)) {
                     goto ret;
                 }
             }
 
-            $read = shmop_read($this->segments[$segno], $sOffset, min($length - mb_orig_strlen($ret), $this->segsize));
-            //Daemon::log('read '.strlen($read).' from segno #'.$segno);
-            $ret .= $read;
+            $ret .= shmop_read($this->segments[$segno], $sOffset, min($length - mb_orig_strlen($ret), $this->segsize));
 
-            if (strlen($ret) >= $length) {
+            if (mb_orig_strlen($ret) >= $length) {
                 goto ret;
             }
+
+            ++$segno;
             
             $sOffset = 0;
         }
