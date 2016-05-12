@@ -50,9 +50,9 @@ class Binary
                 return $str . Binary::parseLabels($ref);
             }
 
-            $p = substr($data, 1, $l);
+            $p = mb_orig_substr($data, 1, $l);
             $str .= $p . (($l !== 0) ? '.' : '');
-            $data = substr($data, $l + 1);
+            $data = mb_orig_substr($data, $l + 1);
             if ($l === 0) {
                 break;
             }
@@ -190,7 +190,7 @@ class Binary
     {
         $r = static::bytes2int(mb_orig_substr($p, 0, 2), !!$l);
         $p = mb_orig_substr($p, 2);
-        return intval($r);
+        return (int) $r;
     }
 
     /**
@@ -219,7 +219,7 @@ class Binary
     {
         $r = static::bytes2int(mb_orig_substr($p, 0, 4), !!$l);
         $p = mb_orig_substr($p, 4);
-        return intval($r);
+        return (int) $r;
     }
 
     /**
@@ -232,7 +232,7 @@ class Binary
     {
         $r = static::bytes2int(mb_orig_substr($p, 0, 8), !!$l);
         $p = mb_orig_substr($p, 8);
-        return intval($r);
+        return (int) $r;
     }
 
     /**
