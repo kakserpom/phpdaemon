@@ -47,7 +47,7 @@ class Binary
                 $pos  = Binary::bytes2int(chr($l - 192) . mb_orig_substr($data, 1, 1));
                 $data = mb_orig_substr($data, 2);
                 $ref  = mb_orig_substr($orig, $pos);
-                return $str . Binary::parseLabels($ref);
+                return $str . Binary::parseLabels($ref, $orig);
             }
 
             $p = substr($data, 1, $l);

@@ -59,6 +59,11 @@ class Pool extends Client
         3   => 'CH',
         255 => 'ANY',
     ];
+    
+    /**
+    * @var array resolve.conf file parsed 
+    */
+    public $nameServers = [];
 
     /**
      * Constructor
@@ -113,7 +118,8 @@ class Pool extends Client
                 if ($file) {
                     preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
                     foreach ($m[1] as $s) {
-                        $pool->addServer('udp://' . $s);
+                        $pool->nameServers[] = $s;
+                        //$pool->addServer('udp://' . $s);
                         //$pool->addServer('tcp://' . $s);
                     }
                 }
@@ -130,7 +136,7 @@ class Pool extends Client
                         $ip    = $h[1];
                         foreach ($hosts as $host) {
                             $host               = rtrim($host, '.') . '.';
-                            $pool->hosts[$host] = $ip;
+                            $pool->hosts[$host][] = $ip;
                         }
                     }
                 }
@@ -145,15 +151,16 @@ class Pool extends Client
      * @param  string   $hostname Hostname
      * @param  callable $cb       Callback
      * @param  boolean  $noncache Noncache?
+     * @param  array    $nameServers
      * @callback $cb ( array|string $addrs )
      * @return void
      */
-    public function resolve($hostname, $cb, $noncache = false)
+    public function resolve($hostname, $cb, $noncache = false, $nameServers = false)
     {
         if (!$this->preloading->hasCompleted()) {
             $pool = $this;
-            $this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool) {
-                $pool->resolve($hostname, $cb, $noncache);
+            $this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool, $nameServers) {
+                $pool->resolve($hostname, $cb, $noncache, $nameServers);
             });
             return;
         }
@@ -184,15 +191,23 @@ class Pool extends Client
                 }
                 return;
             }
-            if (!isset($response['A'])) {
+            if (!isset($response['A']) && !isset($response['AAAA'])) {
                 $cb(false);
                 return;
             }
             $addrs = [];
             $ttl   = 0;
-            foreach ($response['A'] as $r) {
-                $addrs[] = $r['ip'];
-                $ttl     = $r['ttl'];
+            if(isset($response['A'])) {
+                foreach ($response['A'] as $r) {
+                    $addrs[] = $r['ip'];
+                    $ttl = $r['ttl'];
+                }
+            }
+            if(isset($response['AAAA'])) {
+                foreach ($response['AAAA'] as $r) {
+                    $addrs[] = $r['ip'];
+                    $ttl = $r['ttl'];
+                }
             }
             if (sizeof($addrs) === 1) {
                 $addrs = $addrs[0];
@@ -202,7 +217,7 @@ class Pool extends Client
             } else {
                 $pool->resolveCache->put($hostname, $addrs, $ttl);
             }
-        });
+        }, $noncache, $nameServers);
     }
 
     /**
@@ -210,25 +225,59 @@ class Pool extends Client
      * @param  string   $hostname Hostname
      * @param  callable $cb       Callback
      * @param  boolean  $noncache Noncache?
+     * @param  array    $nameServers
+     * @param  string   $proto
      * @callback $cb ( )
      * @return void
      */
-    public function get($hostname, $cb, $noncache = false)
+    public function get($hostname, $cb, $noncache = false, $nameServers = false, $proto = 'udp') 
     {
+        $pool = $this;
+        if(!$nameServers){
+            $nameServers = $this->nameServers;
+        }
         if (!$this->preloading->hasCompleted()) {
-            $pool = $this;
-            $this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool) {
-                $pool->get($hostname, $cb, $noncache);
+            $this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool, $nameServers, $proto) {
+                $pool->get($hostname, $cb, $noncache, $nameServers, $proto);
             });
             return;
         }
-        $this->getConnectionByKey($hostname, function ($conn) use ($cb, $hostname) {
+        $nameServer = reset ($nameServers);
+        $isIpv6 = filter_var($nameServer, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+        if($isIpv6){
+            $nameServer = '[' . $nameServer . ']';
+        }
+        $onGetConnection = function ($conn) use ($cb, $hostname, $nameServers, $noncache, $pool, $proto) {
             if (!$conn || !$conn->isConnected()) {
-                $cb(false);
+                if($proto == 'udp'){
+                    //Fail to  connect via udp, trying by tcp
+                    $pool->get($hostname, $cb, $noncache, $nameServers, 'tcp');
+                    return;
+                }
+                array_shift ($nameServers);
+                if(!$nameServers) {
+                    //Totally fail to resolve name
+                    $cb(false);
+                }else{
+                    //Fail connect to curr Ns, but we can try another ns
+                    $pool->get($hostname, $cb, $noncache, $nameServers, 'udp');
+                }
             } else {
-                $conn->get($hostname, $cb);
+                $conn->get($hostname, function($response) use ($hostname, $cb, $proto, $noncache, $nameServers, $pool){
+                    if($response === false && $proto == 'udp'){
+                        //Fail to  connect via udp, trying by tcp
+                        $pool->get($hostname, $cb, $noncache, $nameServers, 'tcp');
+                    }else {
+                        call_user_func($cb, $response);
+                    }
+                });
             }
-        });
-        return;
-    }
+		};
+        @list($host, $type, $class) = explode(':', $hostname, 3);
+        if($type == 'AXFR'){
+            $proto = 'tcp';
+        }
+        $this->getConnection($proto . '://' . $nameServer , $onGetConnection);
+		return;
+	}
 }
