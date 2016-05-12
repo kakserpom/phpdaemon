@@ -284,10 +284,11 @@ class Binary
         }
         $r = '';
         if (mb_orig_strlen($p) < $s) {
-            echo("getLV error: buf length (" . mb_orig_strlen($p) . "): " . Debug::exportBytes($p) . ", must be >= string length (" . $s . ")\n");
+            Daemon::log('getLV error: buf length (' . mb_orig_strlen($p) . '): ' . Debug::exportBytes($p) . ', must be >= string length (' . $s . ")\n");
         } elseif ($nul) {
-            if ($p{$s - 1} !== "\x00") {
-                echo("getLV error: Wrong end of NUL-string (" . Debug::exportBytes($p{$s - 1}) . "), len " . $s . "\n");
+            $lastByte = mb_orig_substr($p, -1);
+            if ($lastByte !== "\x00") {
+                Daemon:log('getLV error: Wrong end of NUL-string (' . Debug::exportBytes($lastByte) . '), len ' . $s . "\n");
             } else {
                 $d = $s - 1;
                 if ($d < 0) {
