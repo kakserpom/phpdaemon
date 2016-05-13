@@ -206,7 +206,7 @@ class UDP extends Generic
             $key = '[' . $host . ']:' . $port;
             if (!isset($this->portsMap[$key])) {
                 if ($this->pool->allowedClients !== null) {
-                    if (!self::netMatch($conn->pool->allowedClients, $host)) {
+                    if (!self::netMatch($this->pool->allowedClients, $host)) {
                         Daemon::log('Connection is not allowed (' . $host . ')');
                     }
                     continue;
