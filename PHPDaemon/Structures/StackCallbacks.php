@@ -73,16 +73,16 @@ class StackCallbacks extends \SplStack
 
     /**
      * Executes all callbacks with given arguments
-     * @param  mixed   ...$args Arguments
-     * @return integer
+     * @param array $args
+     * @return int
      */
-    public function executeAll()
+    public function executeAll(...$args)
     {
         if ($this->isEmpty()) {
             return 0;
         }
-        $args = func_get_args();
-        $n    = 0;
+
+        $n = 0;
         do {
             $cb = $this->shift();
             if ($cb) {
@@ -93,6 +93,7 @@ class StackCallbacks extends \SplStack
                 }
             }
         } while (!$this->isEmpty());
+
         return $n;
     }
 
