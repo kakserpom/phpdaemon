@@ -262,7 +262,7 @@ class Pool extends Client
                 }
             } else {
                 $conn->get($hostname, function($response) use ($hostname, $cb, $proto, $noncache, $nameServers, $pool){
-                    if($response === false && $proto == 'udp'){
+                    if($response === false && $proto === 'udp'){
                         //Fail to  connect via udp, trying by tcp
                         $pool->get($hostname, $cb, $noncache, $nameServers, 'tcp');
                     }else {
