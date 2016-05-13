@@ -119,8 +119,6 @@ class Pool extends Client
                     preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
                     foreach ($m[1] as $s) {
                         $pool->nameServers[] = $s;
-                        //$pool->addServer('udp://' . $s);
-                        //$pool->addServer('tcp://' . $s);
                     }
                 }
                 $job->setResult($jobname);
