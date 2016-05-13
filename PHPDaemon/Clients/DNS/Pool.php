@@ -247,7 +247,7 @@ class Pool extends Client
         }
         $onGetConnection = function ($conn) use ($cb, $hostname, $nameServers, $noncache, $pool, $proto) {
             if (!$conn || !$conn->isConnected()) {
-                if($proto == 'udp'){
+                if($proto === 'udp'){
                     //Fail to  connect via udp, trying by tcp
                     $pool->get($hostname, $cb, $noncache, $nameServers, 'tcp');
                     return;
