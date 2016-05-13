@@ -482,6 +482,7 @@ class Object implements \ArrayAccess
             return '';
         }, $uri);
         $u        = parse_url($uri);
+        $u['host'] = trim($u['host'], '][');
         $u['uri'] = $uri;
         if ($zeroPortNum) {
             $u['port'] = 0;

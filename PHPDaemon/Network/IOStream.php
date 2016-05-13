@@ -326,7 +326,7 @@ abstract class IOStream
         }
         $this->bev->setWatermark(\Event::READ, $this->lowMark, $this->highMark);
         init:
-        if ($this->keepalive) {
+        if ($this->keepalive && $this->fd != null) {
             $this->setKeepalive(true);
         }
         if (!$this->inited) {
@@ -548,6 +548,9 @@ abstract class IOStream
     {
         if ($n === 0) {
             return '';
+        }
+        if(empty($this->bev)){
+            return false;
         }
         if ($this->bev->input->length < $n) {
             return false;

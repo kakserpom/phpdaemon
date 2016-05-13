@@ -536,7 +536,7 @@ abstract class Connection extends IOStream
         if (@inet_pton($host) === false) { // dirty check
             \PHPDaemon\Clients\DNS\Pool::getInstance()->resolve($host, function ($result) use ($host) {
                 if ($result === false) {
-                    Daemon::log(get_class($this) . '->connectRaw : enable to resolve hostname: ' . $host);
+                    Daemon::log(get_class($this) . '->connectRaw : unable to resolve hostname: ' . $host);
                     $this->onFailureEv();
                     return;
                 }
@@ -583,7 +583,7 @@ abstract class Connection extends IOStream
         if ($pton === false) { // dirty check
             \PHPDaemon\Clients\DNS\Pool::getInstance()->resolve($host, function ($result) use ($host, $port) {
                 if (!$result) {
-                    Daemon::log(get_class($this) . '->connectUdp : enable to resolve hostname: ' . $host);
+                    Daemon::log(get_class($this) . '->connectUdp : unable to resolve hostname: ' . $host);
                     $this->onStateEv($this->bev, \EventBufferEvent::ERROR);
                     return;
                 }
