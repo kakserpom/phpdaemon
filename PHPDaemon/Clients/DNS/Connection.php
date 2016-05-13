@@ -14,22 +14,19 @@ use PHPDaemon\Core\Debug;
  */
 class Connection extends ClientConnection
 {
-    
+
     /**
      * @TODO DESCR
      */
     const STATE_PACKET = 1;
-
-    /**
-     * @var integer Sequence
-     */
-    protected $seq = 0;
-
     /**
      * @var array Response
      */
     public $response = [];
-
+    /**
+     * @var integer Sequence
+     */
+    protected $seq = 0;
     /**
      * @var boolean Current packet size
      */
@@ -46,39 +43,57 @@ class Connection extends ClientConnection
     protected $highMark = 512;
 
     protected $rcodeMessages = [
-        0       => 'Success',
-        1       => 'Format Error',
-        2       => 'Server Failure',
-        3       => 'Non-Existent Domain',
-        4       => 'Not Implemented',
-        5       => 'Query Refused',
-        6       => 'Name Exists when it should not',
-        7       => 'RR Set Exists when it should not',
-        8       => 'RR Set that should exist does not',
-        9       => 'Not Authorized',
-        10      => 'Name not contained in zone',
-        16      => 'TSIG Signature Failure',
-        17      => 'Key not recognized',
-        18      => 'Signature out of time window',
-        19      => 'Bad TKEY Mode', 
-        20      => 'Duplicate key name',
-        21      => 'Algorithm not supported',
-        22      => 'Bad Truncation',
-        23      => 'Bad/missing server cookie'
+        0 => 'Success',
+        1 => 'Format Error',
+        2 => 'Server Failure',
+        3 => 'Non-Existent Domain',
+        4 => 'Not Implemented',
+        5 => 'Query Refused',
+        6 => 'Name Exists when it should not',
+        7 => 'RR Set Exists when it should not',
+        8 => 'RR Set that should exist does not',
+        9 => 'Not Authorized',
+        10 => 'Name not contained in zone',
+        16 => 'TSIG Signature Failure',
+        17 => 'Key not recognized',
+        18 => 'Signature out of time window',
+        19 => 'Bad TKEY Mode',
+        20 => 'Duplicate key name',
+        21 => 'Algorithm not supported',
+        22 => 'Bad Truncation',
+        23 => 'Bad/missing server cookie'
     ];
-    
+
     /**
-     * @param  int $rcode
-     * @return string
+     * Called when new data received
+     * @return void
      */
-    protected function getMessageByRcode($rcode){
-        if(isset($this->rcodeMessages[$rcode])){
-            return $this->rcodeMessages[$rcode];
-        }else{
-            return 'UNKNOWN ERROR';
+    public function onRead()
+    {
+        start:
+        if ($this->type === 'udp') {
+            $this->onUdpPacket($this->read($this->getInputLength()));
+            return;
         }
+        if ($this->state === self::STATE_ROOT) {
+            if (false === ($hdr = $this->readExact(2))) {
+                return; // not enough data
+            }
+            $this->pctSize = Binary::bytes2int($hdr);
+            $this->setWatermark($this->pctSize);
+            $this->state = self::STATE_PACKET;
+        }
+        if ($this->state === self::STATE_PACKET) {
+            if (false === ($pct = $this->readExact($this->pctSize))) {
+                return; // not enough data
+            }
+            $this->state = self::STATE_ROOT;
+            $this->setWatermark(2);
+            $this->onUdpPacket($pct);
+        }
+        goto start;
     }
-    
+
     /**
      * Called when new UDP packet received.
      * @param  string $pct
@@ -86,13 +101,12 @@ class Connection extends ClientConnection
      */
     public function onUdpPacket($pct)
     {
-        if(mb_orig_strlen($pct) < 10){
+        if (mb_orig_strlen($pct) < 10) {
             return;
         }
-        $orig           = $pct;
+        $orig = $pct;
         $this->response = [];
-        /*$id = */
-        Binary::getWord($pct);
+        Binary::getWord($pct); // ID
         $bitmap = Binary::getBitmap(Binary::getByte($pct)) . Binary::getBitmap(Binary::getByte($pct));
         //$qr = (int) $bitmap[0];
         $opcode = bindec(substr($bitmap, 1, 4));
@@ -104,79 +118,79 @@ class Connection extends ClientConnection
         $rcode = bindec(mb_orig_substr($bitmap, 12));
         $this->response['status'] = [
             'rcode' => $rcode,
-            'msg'   => $this->getMessageByRcode($rcode)
+            'msg' => $this->getMessageByRcode($rcode)
         ];
         $qdcount = Binary::getWord($pct);
         $ancount = Binary::getWord($pct);
         $nscount = Binary::getWord($pct);
         $arcount = Binary::getWord($pct);
         for ($i = 0; $i < $qdcount; ++$i) {
-            $name     = Binary::parseLabels($pct, $orig);
-            $typeInt  = Binary::getWord($pct);
-            $type     = isset(Pool::$type[$typeInt]) ? Pool::$type[$typeInt] : 'UNK(' . $typeInt . ')';
+            $name = Binary::parseLabels($pct, $orig);
+            $typeInt = Binary::getWord($pct);
+            $type = isset(Pool::$type[$typeInt]) ? Pool::$type[$typeInt] : 'UNK(' . $typeInt . ')';
             $classInt = Binary::getWord($pct);
-            $class    = isset(Pool::$class[$classInt]) ? Pool::$class[$classInt] : 'UNK(' . $classInt . ')';
+            $class = isset(Pool::$class[$classInt]) ? Pool::$class[$classInt] : 'UNK(' . $classInt . ')';
             if (!isset($this->response[$type])) {
                 $this->response[$type] = [];
             }
-            $record                    = [
-                'name'  => $name,
-                'type'  => $type,
+            $record = [
+                'name' => $name,
+                'type' => $type,
                 'class' => $class,
             ];
             $this->response['query'][] = $record;
         }
         $getResRecord = function (&$pct) use ($orig) {
-            $name     = Binary::parseLabels($pct, $orig);
-            $typeInt  = Binary::getWord($pct);
-            $type     = isset(Pool::$type[$typeInt]) ? Pool::$type[$typeInt] : 'UNK(' . $typeInt . ')';
+            $name = Binary::parseLabels($pct, $orig);
+            $typeInt = Binary::getWord($pct);
+            $type = isset(Pool::$type[$typeInt]) ? Pool::$type[$typeInt] : 'UNK(' . $typeInt . ')';
             $classInt = Binary::getWord($pct);
-            $class    = isset(Pool::$class[$classInt]) ? Pool::$class[$classInt] : 'UNK(' . $classInt . ')';
-            $ttl      = Binary::getDWord($pct);
-            $length   = Binary::getWord($pct);
-            $data     = mb_orig_substr($pct, 0, $length);
-            $pct      = mb_orig_substr($pct, $length);
+            $class = isset(Pool::$class[$classInt]) ? Pool::$class[$classInt] : 'UNK(' . $classInt . ')';
+            $ttl = Binary::getDWord($pct);
+            $length = Binary::getWord($pct);
+            $data = mb_orig_substr($pct, 0, $length);
+            $pct = mb_orig_substr($pct, $length);
 
             $record = [
-                'name'  => $name,
-                'type'  => $type,
+                'name' => $name,
+                'type' => $type,
                 'class' => $class,
-                'ttl'   => $ttl,
+                'ttl' => $ttl,
             ];
 
             if (($type === 'A') || ($type === 'AAAA')) {
                 if ($data === "\x00") {
-                    $record['ip']  = false;
+                    $record['ip'] = false;
                     $record['ttl'] = 5;
                 } else {
                     $record['ip'] = inet_ntop($data);
                 }
-            }elseif ($type === 'NS') {
+            } elseif ($type === 'NS') {
                 $record['ns'] = Binary::parseLabels($data, $orig);
-            }elseif ($type === 'CNAME') {
+            } elseif ($type === 'CNAME') {
                 $record['cname'] = Binary::parseLabels($data, $orig);
-            }
-            elseif ($type === 'SOA') {
-                $record['mname']    = Binary::parseLabels($data, $orig);
-                $record['rname']    = Binary::parseLabels($data, $orig);
-                $record['serial']   = Binary::getDWord($data);
-                $record['refresh']  = Binary::getDWord($data);
-                $record['retry']    = Binary::getDWord($data);
-                $record['expire']   = Binary::getDWord($data);
-                $record['nx']       = Binary::getDWord($data);
-            }elseif ($type === 'MX') {
+            } elseif ($type === 'SOA') {
+                $record['mname'] = Binary::parseLabels($data, $orig);
+                $record['rname'] = Binary::parseLabels($data, $orig);
+                $record['serial'] = Binary::getDWord($data);
+                $record['refresh'] = Binary::getDWord($data);
+                $record['retry'] = Binary::getDWord($data);
+                $record['expire'] = Binary::getDWord($data);
+                $record['nx'] = Binary::getDWord($data);
+            } elseif ($type === 'MX') {
                 $record['preference'] = Binary::getWord($data);
                 $record['exchange'] = Binary::parseLabels($data, $orig);
             } elseif ($type === 'TXT') {
-                $txt = [];
-                while(mb_orig_strlen($data) > 0 && count($txt) < 1000) {
-                    $txt[] = Binary::parseLabels($data, $orig);
+                $record['text'] = '';
+                $lastLength = -1;
+                while (($length = mb_orig_strlen($data)) > 0 && ($length !== $lastLength)) {
+                    $record['text'] .= Binary::parseLabels($data, $orig);
+                    $lastLength = $length;
                 }
-                $record['text'] = implode('', $txt);
             } elseif ($type === 'SRV') {
-                $record['priority']        = Binary::getWord($data);
-                $record['weight']        = Binary::getWord($data);
-                $record['port']        = Binary::getWord($data);
+                $record['priority'] = Binary::getWord($data);
+                $record['weight'] = Binary::getWord($data);
+                $record['port'] = Binary::getWord($data);
                 $record['target'] = Binary::parseLabels($data, $orig);
             }
 
@@ -213,39 +227,22 @@ class Connection extends ClientConnection
     }
 
     /**
-     * Called when new data received
-     * @return void
+     * @param  int $rcode
+     * @return string
      */
-    public function onRead()
+    protected function getMessageByRcode($rcode)
     {
-        start:
-        if ($this->type === 'udp') {
-            $this->onUdpPacket($this->read($this->getInputLength()));
-             return;
+        if (isset($this->rcodeMessages[$rcode])) {
+            return $this->rcodeMessages[$rcode];
+        } else {
+            return 'UNKNOWN ERROR';
         }
-        if ($this->state === self::STATE_ROOT) {
-            if (false === ($hdr = $this->readExact(2))) {
-                return; // not enough data
-            }
-            $this->pctSize = Binary::bytes2int($hdr);
-            $this->setWatermark($this->pctSize);
-            $this->state = self::STATE_PACKET;
-        }
-        if ($this->state === self::STATE_PACKET) {
-            if (false === ($pct = $this->readExact($this->pctSize))) {
-                return; // not enough data
-            }
-            $this->state = self::STATE_ROOT;
-            $this->setWatermark(2);
-            $this->onUdpPacket($pct);
-        }
-        goto start;
     }
 
     /**
      * Gets the host information
-     * @param  string   $hostname Hostname
-     * @param  callable $cb       Callback
+     * @param  string $hostname Hostname
+     * @param  callable $cb Callback
      * @callback $cb ( )
      * @return void
      */
@@ -253,39 +250,39 @@ class Connection extends ClientConnection
     {
         $this->onResponse->push($cb);
         $this->setFree(false);
-        $e         = explode(':', $hostname, 3);
-        $hostname  = $e[0];
-        $qtype     = isset($e[1]) ? $e[1] : 'A';
-        $qclass    = isset($e[2]) ? $e[2] : 'IN';
-        $QD        = [];
-        $qtypeInt  = array_search($qtype, Pool::$type, true);
+        $e = explode(':', $hostname, 3);
+        $hostname = $e[0];
+        $qtype = isset($e[1]) ? $e[1] : 'A';
+        $qclass = isset($e[2]) ? $e[2] : 'IN';
+        $QD = [];
+        $qtypeInt = array_search($qtype, Pool::$type, true);
         $qclassInt = array_search($qclass, Pool::$class, true);
         if (($qtypeInt === false) || ($qclassInt === false)) {
             $cb(false);
             return;
         }
-        $q      = Binary::labels($hostname) . // domain
-                Binary::word($qtypeInt) .
-                Binary::word($qclassInt);
-        $QD[]   = $q;
+        $q = Binary::labels($hostname) . // domain
+            Binary::word($qtypeInt) .
+            Binary::word($qclassInt);
+        $QD[] = $q;
         $packet =
-                Binary::word(++$this->seq) . // Query ID
-                Binary::bitmap2bytes(
-                    '0' . // QR = 0
-                    '0000' . // OPCODE = 0000 (standard query)
-                    '0' . // AA = 0
-                    '0' . // TC = 0
-                    '1' . // RD = 1
+            Binary::word(++$this->seq) . // Query ID
+            Binary::bitmap2bytes(
+                '0' . // QR = 0
+                '0000' . // OPCODE = 0000 (standard query)
+                '0' . // AA = 0
+                '0' . // TC = 0
+                '1' . // RD = 1
 
-                    '0' . // RA = 0, 
-                    '000' . // reserved
-                    '0000' // RCODE
-, 2) .
-                Binary::word(sizeof($QD)) . // QDCOUNT
-                Binary::word(0) . // ANCOUNT
-                Binary::word(0) . // NSCOUNT
-                Binary::word(0) . // ARCOUNT
-                implode('', $QD);
+                '0' . // RA = 0,
+                '000' . // reserved
+                '0000' // RCODE
+                , 2) .
+            Binary::word(sizeof($QD)) . // QDCOUNT
+            Binary::word(0) . // ANCOUNT
+            Binary::word(0) . // NSCOUNT
+            Binary::word(0) . // ARCOUNT
+            implode('', $QD);
         if ($this->type === 'udp') {
             $this->write($packet);
         } else {

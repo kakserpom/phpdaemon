@@ -172,7 +172,7 @@ trait EventHandlers
      * @param callable     $cb    Callback, optional
      * @return this
      */
-    public function off($event, $cb)
+    public function off($event, $cb = null)
     {
         return $this->unbind($event, $cb);
     }

@@ -549,10 +549,7 @@ abstract class IOStream
         if ($n === 0) {
             return '';
         }
-        if(empty($this->bev)){
-            return false;
-        }
-        if ($this->bev->input->length < $n) {
+        if (!$this->bev || $this->bev->input->length < $n) {
             return false;
         }
         return $this->read($n);

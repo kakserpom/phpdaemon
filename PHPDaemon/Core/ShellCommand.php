@@ -498,8 +498,7 @@ class ShellCommand extends IOStream
      */
     public function onEOF($cb = null)
     {
-        $this->onEOF = CallbackWrapper::wrap($cb);
-        return $this;
+        return $this->bind('eof', $cb);
     }
 
     public function getStatus()
