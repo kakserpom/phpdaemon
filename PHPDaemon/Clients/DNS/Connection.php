@@ -169,12 +169,8 @@ class Connection extends ClientConnection
                 $record['exchange'] = Binary::parseLabels($data, $orig);
             } elseif ($type === 'TXT') {
                 $txt = [];
-                while(mb_orig_strlen($data) > 0) {
-                    $txtEntry = Binary::parseLabels($data, $orig);
-                    $txt[] = $txtEntry;
-                    if(!$txtEntry){
-                        break;
-                    }
+                while(mb_orig_strlen($data) > 0 && count($txt) < 1000) {
+                    $txt[] = Binary::parseLabels($data, $orig);
                 }
                 $record['text'] = implode('', $txt);
             } elseif ($type === 'SRV') {
@@ -242,7 +238,6 @@ class Connection extends ClientConnection
             $this->state = self::STATE_ROOT;
             $this->setWatermark(2);
             $this->onUdpPacket($pct);
-            return;
         }
         goto start;
     }

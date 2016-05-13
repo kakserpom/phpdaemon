@@ -549,6 +549,9 @@ abstract class IOStream
         if ($n === 0) {
             return '';
         }
+        if(empty($this->bev)){
+            return false;
+        }
         if ($this->bev->input->length < $n) {
             return false;
         }
