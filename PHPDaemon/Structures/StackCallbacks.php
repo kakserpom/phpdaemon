@@ -73,26 +73,25 @@ class StackCallbacks extends \SplStack
 
     /**
      * Executes all callbacks with given arguments
-     * @param  mixed   ...$args Arguments
-     * @return integer
+     * @param array $args
+     * @return int
      */
-    public function executeAll()
+    public function executeAll(...$args)
     {
         if ($this->isEmpty()) {
             return 0;
         }
-        $args = func_get_args();
-        $n    = 0;
-        do {
-            $cb = $this->shift();
-            if ($cb) {
-                $cb(...$args);
-                ++$n;
-                if ($cb instanceof CallbackWrapper) {
-                    $cb->cancel();
-                }
+
+        $n = 0;
+        
+        foreach ($this as $cb) {
+            $cb(...$args);
+            ++$n;
+            if ($cb instanceof CallbackWrapper) {
+                $cb->cancel();
             }
-        } while (!$this->isEmpty());
+        }
+
         return $n;
     }
 
