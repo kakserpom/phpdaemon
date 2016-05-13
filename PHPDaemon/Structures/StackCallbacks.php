@@ -85,10 +85,12 @@ class StackCallbacks extends \SplStack
         $n = 0;
         
         foreach ($this as $cb) {
-            $cb(...$args);
-            ++$n;
-            if ($cb instanceof CallbackWrapper) {
-                $cb->cancel();
+            if ($cb) {
+                $cb(...$args);
+                ++$n;
+                if ($cb instanceof CallbackWrapper) {
+                    $cb->cancel();
+                }
             }
         }
 
