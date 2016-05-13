@@ -230,7 +230,7 @@ class Pool extends Client
      * @callback $cb ( )
      * @return void
      */
-    public function get($hostname, $cb, $noncache = false, $nameServers = false, $proto = 'udp') 
+    public function get($hostname, $cb, $noncache = false, $nameServers = [], $proto = 'udp') 
     {
         $pool = $this;
         if(!$nameServers){
@@ -273,8 +273,8 @@ class Pool extends Client
                 });
             }
 		};
-        @list($host, $type, $class) = explode(':', $hostname, 3);
-        if($type == 'AXFR'){
+        list($host, $type, $class) = explode(':', $hostname . '::', 3);
+        if($type === 'AXFR'){
             $proto = 'tcp';
         }
         $this->getConnection($proto . '://' . $nameServer , $onGetConnection);

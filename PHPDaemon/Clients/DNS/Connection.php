@@ -26,11 +26,6 @@ class Connection extends ClientConnection
     protected $seq = 0;
 
     /**
-     * @var boolean Keepalive?
-     */
-    protected $keepalive = false;
-
-    /**
      * @var array Response
      */
     public $response = [];
@@ -50,7 +45,7 @@ class Connection extends ClientConnection
      */
     protected $highMark = 512;
 
-    private $rcodeMessages = [
+    protected $rcodeMessages = [
         0       => 'Success',
         1       => 'Format Error',
         2       => 'Server Failure',
@@ -76,8 +71,8 @@ class Connection extends ClientConnection
      * @param  int $rcode
      * @return string
      */
-    private function getMessageByRcode($rcode){
-        if(!empty($this->rcodeMessages[$rcode])){
+    protected function getMessageByRcode($rcode){
+        if(isset($this->rcodeMessages[$rcode])){
             return $this->rcodeMessages[$rcode];
         }else{
             return 'UNKNOWN ERROR';
@@ -91,7 +86,7 @@ class Connection extends ClientConnection
      */
     public function onUdpPacket($pct)
     {
-        if(strlen($pct) < 10){
+        if(mb_orig_strlen($pct) < 10){
             return;
         }
         $orig           = $pct;
@@ -106,7 +101,7 @@ class Connection extends ClientConnection
         //$rd = (int) $bitmap[7];
         //$ra = (int) $bitmap[8];
         //$z = bindec(substr($bitmap, 9, 3));
-        $rcode = bindec(substr($bitmap, 12));
+        $rcode = bindec(mb_orig_substr($bitmap, 12));
         $this->response['status'] = [
             'rcode' => $rcode,
             'msg'   => $this->getMessageByRcode($rcode)
@@ -149,7 +144,7 @@ class Connection extends ClientConnection
                 'ttl'   => $ttl,
             ];
 
-            if (($type === 'A') OR ($type === 'AAAA')) {
+            if (($type === 'A') || ($type === 'AAAA')) {
                 if ($data === "\x00") {
                     $record['ip']  = false;
                     $record['ttl'] = 5;
@@ -161,24 +156,28 @@ class Connection extends ClientConnection
             }elseif ($type === 'CNAME') {
                 $record['cname'] = Binary::parseLabels($data, $orig);
             }
-            elseif ($type == 'SOA') {
-                $record['mname']     = Binary::parseLabels($data, $orig);
-                $record['rname']     = Binary::parseLabels($data, $orig);
-                $record['serial']     = Binary::getDWord($data);
-                $record['refresh']     = Binary::getDWord($data);
-                $record['retry']     = Binary::getDWord($data);
-                $record['expire']    = Binary::getDWord($data);
-                $record['nx']        = Binary::getDWord($data);
-            }elseif ($type == 'MX') {
+            elseif ($type === 'SOA') {
+                $record['mname']    = Binary::parseLabels($data, $orig);
+                $record['rname']    = Binary::parseLabels($data, $orig);
+                $record['serial']   = Binary::getDWord($data);
+                $record['refresh']  = Binary::getDWord($data);
+                $record['retry']    = Binary::getDWord($data);
+                $record['expire']   = Binary::getDWord($data);
+                $record['nx']       = Binary::getDWord($data);
+            }elseif ($type === 'MX') {
                 $record['preference'] = Binary::getWord($data);
                 $record['exchange'] = Binary::parseLabels($data, $orig);
-            } elseif ($type == 'TXT') {
+            } elseif ($type === 'TXT') {
                 $txt = [];
-                while(strlen($data) > 0) {
-                    $txt[] = Binary::parseLabels($data, $orig);
+                while(mb_orig_strlen($data) > 0) {
+                    $txtEntry = Binary::parseLabels($data, $orig);
+                    $txt[] = $txtEntry;
+                    if(!$txtEntry){
+                        break;
+                    }
                 }
                 $record['text'] = implode('', $txt);
-            } elseif ($type == 'SRV') {
+            } elseif ($type === 'SRV') {
                 $record['priority']        = Binary::getWord($data);
                 $record['weight']        = Binary::getWord($data);
                 $record['port']        = Binary::getWord($data);
