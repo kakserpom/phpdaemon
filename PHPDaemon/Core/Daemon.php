@@ -667,20 +667,20 @@ class Daemon
         }
         return $stat;
     }
-
+    
     /**
-     * Send message to the log
-     * @param  mixed  ...$args Arguments
-     * @return string message
+     *  Send message to the log
+     *
+     * @param array ...$args
      */
-    public static function log()
+    public static function log(...$args)
     {
-        $args = func_get_args();
         if (sizeof($args) === 1) {
             $msg = is_scalar($args[0]) ? $args[0] : Debug::dump($args[0]);
         } else {
             $msg = Debug::dump($args);
         }
+
         $mt = explode(' ', microtime());
 
         if (is_resource(STDERR)) {
