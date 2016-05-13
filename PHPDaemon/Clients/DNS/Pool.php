@@ -153,7 +153,7 @@ class Pool extends Client
      * @callback $cb ( array|string $addrs )
      * @return void
      */
-    public function resolve($hostname, $cb, $noncache = false, $nameServers = false)
+    public function resolve($hostname, $cb, $noncache = false, $nameServers = [])
     {
         if (!$this->preloading->hasCompleted()) {
             $pool = $this;
@@ -195,13 +195,13 @@ class Pool extends Client
             }
             $addrs = [];
             $ttl   = 0;
-            if(isset($response['A'])) {
+            if (isset($response['A'])) {
                 foreach ($response['A'] as $r) {
                     $addrs[] = $r['ip'];
                     $ttl = $r['ttl'];
                 }
             }
-            if(isset($response['AAAA'])) {
+            if (isset($response['AAAA'])) {
                 foreach ($response['AAAA'] as $r) {
                     $addrs[] = $r['ip'];
                     $ttl = $r['ttl'];
