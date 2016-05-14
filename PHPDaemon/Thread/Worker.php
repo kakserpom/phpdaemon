@@ -259,12 +259,14 @@ class Worker extends Generic
     }
 
     /**
-     * @param string $f
+     * Override a standard PHP function
+     * @param string $camelCase e.g. isUploadedFile
+     * @param string $real e.g. is_uploaded_file
      */
-    protected function override($f)
+    protected function override($camelCase, $real)
     {
-        runkit_function_rename($f, $f.'_native');
-        runkit_function_rename('PHPDaemon\\Thread\\'.$f, $f);
+        runkit_function_rename($real, $real . '_native');
+        runkit_function_rename('PHPDaemon\\Thread\\' . $camelCase, $real);
     }
 
     /**
@@ -293,25 +295,25 @@ class Worker extends Generic
             }
             $this->override('header');
 
-            function is_uploaded_file()
+            function isUploadedFile()
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
                 }
                 return Daemon::$context->isUploadedFile(...func_get_args());
             }
-            $this->override('is_uploaded_file');
+            $this->override('isUploadedFile', 'is_uploaded_file');
 
-            function move_uploaded_file()
+            function moveUploadedFile()
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
                 }
                 return Daemon::$context->moveUploadedFile(...func_get_args());
             }
-            $this->override('move_uploaded_file');
+            $this->override('moveUploadedFile', 'move_uploaded_file');
 
-            function headers_sent(&$file = null, &$line = null)
+            function headersSent(&$file = null, &$line = null)
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
@@ -319,16 +321,16 @@ class Worker extends Generic
                 return Daemon::$context->headers_sent($file, $line);
             }
 
-            //$this->override('headers_sent');
+            //$this->override('headersSent', 'headers_sent); // Commented out due to a runkit bug
 
-            function headers_list()
+            function headersList()
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
                 }
                 return Daemon::$context->headers_list();
             }
-            $this->override('headers_list');
+            $this->override('headersList', 'headers_list');
 
             function setcookie()
             {
@@ -342,14 +344,14 @@ class Worker extends Generic
             /**
              * @param callable $cb
              */
-            function register_shutdown_function($cb)
+            function registerShutdownFunction($cb)
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
                 }
                 return Daemon::$context->registerShutdownFunction($cb);
             }
-            $this->override('register_shutdown_function');
+            $this->override('registerShutdownFunction', 'register_shutdown_function');
 
             runkit_function_copy('create_function', 'create_function_native');
             runkit_function_redefine('create_function', '$arg,$body', 'return \PHPDaemon\Core\Daemon::$process->createFunction($arg,$body);');
