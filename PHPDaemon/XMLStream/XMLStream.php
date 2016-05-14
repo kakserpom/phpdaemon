@@ -205,18 +205,7 @@ class XMLStream
         $this->lastid++;
         return $this->lastid;
     }
-
-    /**
-     * Set SSL
-     *
-     * @param bool $use
-     * @return integer
-     */
-    public function useSSL($use = true)
-    {
-        $this->use_ssl = $use;
-    }
-
+    
     /**
      * Add ID Handler
      *

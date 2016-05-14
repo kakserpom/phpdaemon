@@ -106,8 +106,9 @@ class Connection extends ClientConnection
      */
     public function startXMLStream()
     {
-        $this->sendXML('<?xml version="1.0"?>' .
-                       '<stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="' . $this->host . '" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">'
+        $this->sendXML(
+            '<?xml version="1.0"?>' .
+            '<stream:stream xmlns:stream="http://etherx.jabber.org/streams" version="1.0" xmlns="jabber:client" to="' . $this->host . '" xml:lang="en" xmlns:xml="http://www.w3.org/XML/1998/namespace">'
         );
     }
 
@@ -398,7 +399,7 @@ class Connection extends ClientConnection
      * @param callable $cb
      * @callback $cb ( )
      */
-    public function getVCard($jid = null, $cb)
+    public function getVCard($jid, $cb)
     {
         $id = $this->getId();
         $this->xml->addIdHandler($id, function ($xml) use ($cb) {
@@ -418,8 +419,9 @@ class Connection extends ClientConnection
             $cb($vcard);
         });
         $id = htmlspecialchars($id);
-        $jid = htmlspecialchars($jid);
-        if ($jid) {
+
+        if ($jid != null) {
+            $jid = htmlspecialchars($jid);
             $this->send('<iq type="get" id="' . $id . '" to="' . $jid . '"><vCard xmlns="vcard-temp" /></iq>');
         } else {
             $this->send('<iq type="get" id="' . $id . '"><vCard xmlns="vcard-temp" /></iq>');

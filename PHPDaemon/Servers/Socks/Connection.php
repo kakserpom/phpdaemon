@@ -8,7 +8,6 @@ namespace PHPDaemon\Servers\Socks;
  */
 class Connection extends \PHPDaemon\Network\Connection
 {
-
     /**
      * @var string protocol version (X'04' / X'05')
      */
@@ -24,7 +23,7 @@ class Connection extends \PHPDaemon\Network\Connection
     /**
      * @TODO DESCR
      */
-    const STATE_ABORTED    = 1;
+    const STATE_ABORTED = 1;
 
     /**
      * @TODO DESCR
@@ -39,7 +38,7 @@ class Connection extends \PHPDaemon\Network\Connection
     /**
      * @TODO DESCR
      */
-    const STATE_DATAFLOW   = 4;
+    const STATE_DATAFLOW = 4;
 
     protected $lowMark = 2;
     protected $highMark = 32768;
@@ -82,15 +81,15 @@ class Connection extends \PHPDaemon\Network\Connection
 
             if (!$this->pool->config->auth->value) {
                 // No auth
-                $m           = "\x00";
+                $m = "\x00";
                 $this->state = self::STATE_AUTHORIZED;
             } elseif (mb_orig_strpos($methods, "\x02") !== false) {
                 // Username/Password authentication
-                $m           = "\x02";
+                $m = "\x02";
                 $this->state = self::STATE_HANDSHAKED;
             } else {
                 // No allowed methods
-                $m           = "\xFF";
+                $m = "\xFF";
                 $this->state = self::STATE_ABORTED;
             }
 
@@ -121,7 +120,7 @@ class Connection extends \PHPDaemon\Network\Connection
                 return;
             }
             $username = $this->look(2, $ulen);
-            $plen     = ord($this->look(2 + $ulen, 1));
+            $plen = ord($this->look(2 + $ulen, 1));
 
             if ($l < 3 + $ulen + $plen) {
                 // Not enough data yet
@@ -130,15 +129,13 @@ class Connection extends \PHPDaemon\Network\Connection
             $this->drain(3 + $ulen);
             $password = $this->read($plen);
 
-            if (
-                    ($username !== $this->pool->config->username->value)
-                    || ($password !== $this->pool->config->password->value)
-            ) {
+            if (($username !== $this->pool->config->username->value)
+                || ($password !== $this->pool->config->password->value)) {
                 $this->state = self::STATE_ABORTED;
-                $m           = "\x01";
+                $m = "\x01";
             } else {
                 $this->state = self::STATE_AUTHORIZED;
-                $m           = "\x00";
+                $m = "\x00";
             }
             $this->write($this->ver . $m);
 
@@ -166,7 +163,7 @@ class Connection extends \PHPDaemon\Network\Connection
             if ($atype === "\x01") {
                 $address = inet_ntop($this->read(4));
             } elseif ($atype === "\x03") {
-                $len     = ord($this->read(1));
+                $len = ord($this->read(1));
                 $address = $this->read($len);
             } elseif ($atype === "\x04") {
                 $address = inet_ntop($this->read(16));
@@ -175,7 +172,7 @@ class Connection extends \PHPDaemon\Network\Connection
                 return;
             }
 
-            $u    = unpack('nport', $this->read(2));
+            $u = unpack('nport', $this->read(2));
             $port = $u['port'];
 
             $this->destAddr = $address;
@@ -200,25 +197,25 @@ class Connection extends \PHPDaemon\Network\Connection
     /**
      * @TODO
      * @param integer $code
-     * @param string  $addr
+     * @param string $addr
      * @param integer $port
      */
     public function onSlaveReady($code, $addr, $port)
     {
         $reply =
-                $this->ver // Version
-                . chr($code) // Status
-                . "\x00"; // Reserved
+            $this->ver // Version
+            . chr($code) // Status
+            . "\x00"; // Reserved
         if ($addr) {
             $reply .=
-                    (mb_orig_strpos($addr, ':') === false ? "\x01" : "\x04") // IPv4/IPv6
-                    . inet_pton($addr) // Address
-                    . "\x00\x00"; //pack('n',$port) // Port
+                (mb_orig_strpos($addr, ':') === false ? "\x01" : "\x04") // IPv4/IPv6
+                . inet_pton($addr) // Address
+                . "\x00\x00"; //pack('n',$port) // Port
         } else {
             $reply .=
-                    "\x01"
-                    . "\x00\x00\x00\x00"
-                    . "\x00\x00";
+                "\x01"
+                . "\x00\x00\x00\x00"
+                . "\x00\x00";
         }
 
         $this->write($reply);

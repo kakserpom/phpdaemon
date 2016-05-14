@@ -8,7 +8,6 @@ use PHPDaemon\Servers\WebSocket\Connection;
  * WebSocket protocol hixie-76
  * @see    http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76
  */
-
 class V0 extends Connection
 {
 
@@ -27,7 +26,12 @@ class V0 extends Connection
         if (!isset($this->server['HTTP_SEC_WEBSOCKET_KEY1']) || !isset($this->server['HTTP_SEC_WEBSOCKET_KEY2'])) {
             return false;
         }
-        $final_key = $this->_computeFinalKey($this->server['HTTP_SEC_WEBSOCKET_KEY1'], $this->server['HTTP_SEC_WEBSOCKET_KEY2'], $this->key);
+
+        $final_key = $this->_computeFinalKey(
+            $this->server['HTTP_SEC_WEBSOCKET_KEY1'],
+            $this->server['HTTP_SEC_WEBSOCKET_KEY2'],
+            $this->key
+        );
         $this->key = null;
 
         if (!$final_key) {
@@ -39,10 +43,10 @@ class V0 extends Connection
         }
 
         $this->write("HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
-                . "Upgrade: WebSocket\r\n"
-                . "Connection: Upgrade\r\n"
-                . "Sec-WebSocket-Origin: " . $this->server['HTTP_ORIGIN'] . "\r\n"
-                . "Sec-WebSocket-Location: ws://" . $this->server['HTTP_HOST'] . $this->server['REQUEST_URI'] . "\r\n");
+            . "Upgrade: WebSocket\r\n"
+            . "Connection: Upgrade\r\n"
+            . "Sec-WebSocket-Origin: " . $this->server['HTTP_ORIGIN'] . "\r\n"
+            . "Sec-WebSocket-Location: ws://" . $this->server['HTTP_HOST'] . $this->server['REQUEST_URI'] . "\r\n");
         if ($this->pool->config->expose->value) {
             $this->writeln('X-Powered-By: phpDaemon/' . Daemon::$version);
         }
@@ -100,9 +104,9 @@ class V0 extends Connection
 
     /**
      * Sends a frame.
-     * @param  string   $data  Frame's data.
-     * @param  string   $type  Frame's type. ("STRING" OR "BINARY")
-     * @param  callable $cb    Optional. Callback called when the frame is received by client.
+     * @param  string $data Frame's data.
+     * @param  string $type Frame's type. ("STRING" OR "BINARY")
+     * @param  callable $cb Optional. Callback called when the frame is received by client.
      * @callback $cb ( )
      * @return boolean         Success.
      */
@@ -125,7 +129,7 @@ class V0 extends Connection
         $type = $this->getFrameType($type);
         // Binary
         if (($type & self::BINARY) === self::BINARY) {
-            $n   = mb_orig_strlen($data);
+            $n = mb_orig_strlen($data);
             $len = '';
             $pos = 0;
 
@@ -145,8 +149,7 @@ class V0 extends Connection
             };
 
             $this->write(chr(self::BINARY) . $len . $data);
-        }
-        // String
+        } // String
         else {
             $this->write(chr(self::STRING) . $data . "\xFF");
         }
@@ -157,7 +160,7 @@ class V0 extends Connection
     }
 
     /**
-     * Called when new data received 
+     * Called when new data received
      * @return void
      */
     public function onRead()

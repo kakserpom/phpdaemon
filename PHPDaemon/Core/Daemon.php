@@ -268,10 +268,15 @@ class Daemon
     public static function uniqid()
     {
         static $n = 0;
-        return str_shuffle(md5(str_shuffle(
-                                   microtime(true) . chr(mt_rand(0, 0xFF))
-                                   . Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
-                                   . (++$n) . mt_rand(0, mt_getrandmax()))));
+        return str_shuffle(
+            md5(
+                str_shuffle(
+                    microtime(true) . chr(mt_rand(0, 0xFF))
+                    . Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
+                    . (++$n) . mt_rand(0, mt_getrandmax())
+                )
+            )
+        );
     }
 
     /**
@@ -319,11 +324,9 @@ class Daemon
      */
     public static function checkAutoGC()
     {
-        if (
-                (Daemon::$config->autogc->value > 0)
-                && (Daemon::$process->counterGC > 0)
-                && (Daemon::$process->counterGC >= Daemon::$config->autogc->value)
-        ) {
+        if ((Daemon::$config->autogc->value > 0)
+            && (Daemon::$process->counterGC > 0)
+            && (Daemon::$process->counterGC >= Daemon::$config->autogc->value)) {
             Daemon::$process->counterGC = 0;
             return true;
         }
@@ -463,10 +466,7 @@ class Daemon
             self::$support[self::SUPPORT_RUNKIT_IMPORT] = true;
         }
 
-        if (
-                self::supported(self::SUPPORT_RUNKIT_MODIFY)
-                && ini_get('runkit.internal_override')
-        ) {
+        if (self::supported(self::SUPPORT_RUNKIT_MODIFY) && ini_get('runkit.internal_override')) {
             self::$support[self::SUPPORT_RUNKIT_INTERNAL_MODIFY] = true;
         }
     }

@@ -30,7 +30,7 @@ trait DNode
     protected $persistentMode = false;
 
     /**
-     * @var integer Incremental counter of callback functions registered by callRemote() 
+     * @var integer Incremental counter of callback functions registered by callRemote()
      */
     protected $counter = 0;
 
@@ -48,9 +48,9 @@ trait DNode
      * @var boolean Was this object cleaned up?
      */
     protected $cleaned = false;
-    
+
     /**
-     * @var boolean Should __call method call parent::__call()? 
+     * @var boolean Should __call method call parent::__call()?
      */
     protected $magicCallParent = false;
 
@@ -89,8 +89,8 @@ trait DNode
 
     /**
      * Calls a local method
-     * @param  string $method  Method name
-     * @param  mixed  ...$args Arguments
+     * @param  string $method Method name
+     * @param  mixed ...$args Arguments
      * @return this
      */
     public function callLocal()
@@ -112,7 +112,7 @@ trait DNode
     /**
      * Ensures that the variable passed by reference holds a valid callback-function
      * If it doesn't, its value will be reset to null
-     * @param  mixed   &$arg Argument
+     * @param  mixed &$arg Argument
      * @return boolean
      */
     public static function ensureCallback(&$arg)
@@ -177,8 +177,8 @@ trait DNode
 
     /**
      * Calls a remote method
-     * @param  string $method  Method name
-     * @param  mixed  ...$args Arguments
+     * @param  string $method Method name
+     * @param  mixed ...$args Arguments
      * @return this
      */
     public function callRemote()
@@ -195,7 +195,7 @@ trait DNode
     /**
      * Calls a remote method with array of arguments
      * @param  string $method Method name
-     * @param  array  $args   Arguments
+     * @param  array $args Arguments
      * @return this
      */
     public function callRemoteArray($method, $args)
@@ -288,7 +288,7 @@ trait DNode
             return;
         }
         if (is_string($pct['method']) && ctype_digit($pct['method'])) {
-            $pct['method'] = (int) $pct['method'];
+            $pct['method'] = (int)$pct['method'];
         }
         $this->client->sendFrame(static::toJson($pct) . "\n");
     }
@@ -349,7 +349,7 @@ trait DNode
     /**
      * Magic __call method
      * @param  string $method Method name
-     * @param  array  $args   Arguments
+     * @param  array $args Arguments
      * @throws UndefinedMethodCalled if method name not start from 'remote_'
      * @return mixed
      */

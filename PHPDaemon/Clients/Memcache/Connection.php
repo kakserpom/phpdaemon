@@ -10,37 +10,36 @@ use PHPDaemon\Network\ClientConnection;
  */
 class Connection extends ClientConnection
 {
-
     /**
      * DESCR
      */
     const STATE_DATA = 1;
-    
+
     /**
      * @var mixed current result
      */
     public $result;
-    
+
     /**
      * @var string flags of incoming value
      */
     public $valueFlags;
-    
+
     /**
      * @var integer length of incoming value
      */
     public $valueLength;
-    
+
     /**
      * @var string error message
      */
     public $error;
-    
+
     /**
      * @var string current incoming key
      */
     public $key;
-    
+
     /**
      * @var string
      */
@@ -50,7 +49,7 @@ class Connection extends ClientConnection
      * @var integer
      */
     protected $maxQueue = 10;
-    
+
     /**
      * Called when new data received
      * @return void
@@ -63,10 +62,10 @@ class Connection extends ClientConnection
                 $e = explode(' ', $l);
 
                 if ($e[0] === 'VALUE') {
-                    $this->key         = $e[1];
-                    $this->valueFlags  = $e[2];
+                    $this->key = $e[1];
+                    $this->valueFlags = $e[2];
                     $this->valueLength = $e[3];
-                    $this->result      = '';
+                    $this->result = '';
                     $this->setWatermark($this->valueLength);
                     $this->state = self::STATE_DATA;
                     break;
@@ -76,17 +75,11 @@ class Connection extends ClientConnection
                     }
 
                     $this->result[$e[1]] = $e[2];
-                } elseif (
-                        ($e[0] === 'STORED')
-                        || ($e[0] === 'END')
-                        || ($e[0] === 'DELETED')
-                        || ($e[0] === 'ERROR')
-                        || ($e[0] === 'CLIENT_ERROR')
-                        || ($e[0] === 'SERVER_ERROR')
-                ) {
+                } elseif (($e[0] === 'STORED') || ($e[0] === 'END') || ($e[0] === 'DELETED') || ($e[0] === 'ERROR')
+                    || ($e[0] === 'CLIENT_ERROR') || ($e[0] === 'SERVER_ERROR')) {
                     if ($e[0] !== 'END') {
                         $this->result = false;
-                        $this->error  = isset($e[1]) ? $e[1] : null;
+                        $this->error = isset($e[1]) ? $e[1] : null;
                     }
                     $this->onResponse->executeOne($this);
                     $this->checkFree();

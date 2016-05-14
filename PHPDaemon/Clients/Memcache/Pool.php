@@ -61,8 +61,10 @@ class Pool extends \PHPDaemon\Network\Client
                 $conn->onResponse->push($onResponse);
                 $conn->checkFree();
             }
-            $conn->writeln('set ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' '
-                           . mb_orig_strlen($value) . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value
+
+            $conn->writeln(
+                'set ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' '
+                . mb_orig_strlen($value) . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value
             );
         });
     }

@@ -9,17 +9,16 @@ use PHPDaemon\Utils\Binary;
  * Websocket protocol 13
  * @see    http://datatracker.ietf.org/doc/rfc6455/?include_text=1
  */
-
 class V13 extends Connection
 {
     const CONTINUATION = 0;
-    const STRING       = 0x1;
-    const BINARY       = 0x2;
-    const CONNCLOSE    = 0x8;
-    const PING         = 0x9;
-    const PONG         = 0xA;
+    const STRING = 0x1;
+    const BINARY = 0x2;
+    const CONNCLOSE = 0x8;
+    const PING = 0x9;
+    const PONG = 0xA;
     protected static $opcodes = [
-        0   => 'CONTINUATION',
+        0 => 'CONTINUATION',
         0x1 => 'STRING',
         0x2 => 'BINARY',
         0x8 => 'CONNCLOSE',
@@ -50,13 +49,23 @@ class V13 extends Connection
         if (!isset($this->server['HTTP_SEC_WEBSOCKET_ORIGIN'])) {
             $this->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '';
         }
-        $this->write("HTTP/1.1 101 Switching Protocols\r\n"
-                . "Upgrade: WebSocket\r\n"
-                . "Connection: Upgrade\r\n"
-                . "Date: " . date('r') . "\r\n"
-                . "Sec-WebSocket-Origin: " . $this->server['HTTP_SEC_WEBSOCKET_ORIGIN'] . "\r\n"
-                . "Sec-WebSocket-Location: ws://" . $this->server['HTTP_HOST'] . $this->server['REQUEST_URI'] . "\r\n"
-                . "Sec-WebSocket-Accept: " . base64_encode(sha1(trim($this->server['HTTP_SEC_WEBSOCKET_KEY']) . "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", true)) . "\r\n"
+        $this->write(
+            "HTTP/1.1 101 Switching Protocols\r\n"
+            . "Upgrade: WebSocket\r\n"
+            . "Connection: Upgrade\r\n"
+            . "Date: " . date('r') . "\r\n"
+            . "Sec-WebSocket-Origin: " . $this->server['HTTP_SEC_WEBSOCKET_ORIGIN'] . "\r\n"
+            . "Sec-WebSocket-Location: ws://" . $this->server['HTTP_HOST'] . $this->server['REQUEST_URI'] . "\r\n"
+            . "Sec-WebSocket-Accept: "
+            . base64_encode(
+                sha1(
+                    trim(
+                        $this->server['HTTP_SEC_WEBSOCKET_KEY']
+                    )
+                    . "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
+                    true
+                )
+            ) . "\r\n"
         );
         if (isset($this->server['HTTP_SEC_WEBSOCKET_PROTOCOL'])) {
             $this->writeln("Sec-WebSocket-Protocol: " . $this->server['HTTP_SEC_WEBSOCKET_PROTOCOL']);
@@ -74,9 +83,9 @@ class V13 extends Connection
 
     /**
      * Sends a frame.
-     * @param  string   $data  Frame's data.
-     * @param  string   $type  Frame's type. ("STRING" OR "BINARY")
-     * @param  callable $cb    Optional. Callback called when the frame is received by client.
+     * @param  string $data Frame's data.
+     * @param  string $type Frame's type. ("STRING" OR "BINARY")
+     * @param  callable $cb Optional. Callback called when the frame is received by client.
      * @callback $cb ( )
      * @return boolean         Success.
      */
@@ -99,32 +108,47 @@ class V13 extends Connection
         $rsv1 = 0;
         $rsv2 = 0;
         $rsv3 = 0;
-        $this->write(chr(bindec($fin . $rsv1 . $rsv2 . $rsv3 . str_pad(decbin($this->getFrameType($type)), 4, '0', STR_PAD_LEFT))));
-        $dataLength  = mb_orig_strlen($data);
-        $isMasked    = false;
+        $this->write(
+            chr(
+                bindec(
+                    $fin . $rsv1 . $rsv2 . $rsv3
+                    . str_pad(
+                        decbin(
+                            $this->getFrameType($type)
+                        ),
+                        4,
+                        '0',
+                        STR_PAD_LEFT
+                    )
+                )
+            )
+        )
+        ;
+        $dataLength = mb_orig_strlen($data);
+        $isMasked = false;
         $isMaskedInt = $isMasked ? 128 : 0;
         if ($dataLength <= 125) {
             $this->write(chr($dataLength + $isMaskedInt));
         } elseif ($dataLength <= 65535) {
             $this->write(chr(126 + $isMaskedInt) . // 126 + 128
-                    chr($dataLength >> 8) .
-                    chr($dataLength & 0xFF));
+                chr($dataLength >> 8) .
+                chr($dataLength & 0xFF));
         } else {
             $this->write(chr(127 + $isMaskedInt) . // 127 + 128
-                    chr($dataLength >> 56) .
-                    chr($dataLength >> 48) .
-                    chr($dataLength >> 40) .
-                    chr($dataLength >> 32) .
-                    chr($dataLength >> 24) .
-                    chr($dataLength >> 16) .
-                    chr($dataLength >> 8) .
-                    chr($dataLength & 0xFF));
+                chr($dataLength >> 56) .
+                chr($dataLength >> 48) .
+                chr($dataLength >> 40) .
+                chr($dataLength >> 32) .
+                chr($dataLength >> 24) .
+                chr($dataLength >> 16) .
+                chr($dataLength >> 8) .
+                chr($dataLength & 0xFF));
         }
         if ($isMasked) {
-            $mask    = chr(mt_rand(0, 0xFF)) .
-                    chr(mt_rand(0, 0xFF)) .
-                    chr(mt_rand(0, 0xFF)) .
-                    chr(mt_rand(0, 0xFF));
+            $mask = chr(mt_rand(0, 0xFF)) .
+                chr(mt_rand(0, 0xFF)) .
+                chr(mt_rand(0, 0xFF)) .
+                chr(mt_rand(0, 0xFF));
             $this->write($mask . $this->mask($data, $mask));
         } else {
             $this->write($data);

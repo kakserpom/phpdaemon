@@ -70,7 +70,7 @@ class Generic
     {
         $old              = $this->value;
         $this->value      = $value;
-        $this->humanValue = static::PlainToHuman($value);
+        $this->humanValue = static::plainToHuman($value);
         $this->onUpdate($old);
     }
 
@@ -128,7 +128,7 @@ class Generic
      */
     public function pushHumanValue($value)
     {
-        $this->pushValue(static::HumanToPlain($value));
+        $this->pushValue(static::humanToPlain($value));
     }
 
     /**
@@ -174,7 +174,7 @@ class Generic
     {
         $this->humanValue = $value;
         $old              = $this->value;
-        $this->value      = static::HumanToPlain($value);
+        $this->value      = static::humanToPlain($value);
         $this->onUpdate($old);
     }
 
@@ -183,7 +183,7 @@ class Generic
      * @param mixed
      * @return mixed
      */
-    public static function HumanToPlain($value)
+    public static function humanToPlain($value)
     {
         return $value;
     }
@@ -193,7 +193,7 @@ class Generic
      * @param mixed
      * @return mixed
      */
-    public static function PlainToHuman($value)
+    public static function plainToHuman($value)
     {
         return $value;
     }

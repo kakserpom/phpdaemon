@@ -56,8 +56,11 @@ class Master extends Generic
         class_exists('Timer'); // ensure loading this class
         gc_enable();
 
-        /* This line must be commented according to current libevent binding implementation. May be uncommented in future. */
-        //$this->eventBase = new \EventBase; 
+        /*
+         * @todo This line must be commented according to current libevent binding implementation.
+         * May be uncommented in future.
+         */
+        //$this->eventBase = new \EventBase;
 
         if ($this->eventBase) {
             $this->registerEventSignals();
@@ -78,7 +81,6 @@ class Master extends Generic
             min(
                 Daemon::$config->startworkers->value,
                 Daemon::$config->maxworkers->value
-
             )
         );
         $this->timerCb = function ($event) use (&$cbs) {

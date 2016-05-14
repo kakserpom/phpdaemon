@@ -13,13 +13,12 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class ExtFunc extends Generic
 {
-
     /**
      * Converts human-readable value to plain
      * @param $value
      * @return callable|null
      */
-    public static function HumanToPlain($value)
+    public static function humanToPlain($value)
     {
         $cb = include($value);
         return is_callable($cb) ? $cb : null;

@@ -14,31 +14,30 @@ use PHPDaemon\Traits\EventHandlers;
  */
 class Connection extends ClientConnection
 {
+    /**
+     * @TODO DESCR
+     */
+    const CONN_STATE_START = 0;
 
     /**
      * @TODO DESCR
      */
-    const CONN_STATE_START                             = 0;
+    const CONN_STATE_GOT_INITIAL_PACKET = 0.1;
 
     /**
      * @TODO DESCR
      */
-    const CONN_STATE_GOT_INITIAL_PACKET                = 0.1;
+    const CONN_STATE_AUTH = 1;
 
     /**
      * @TODO DESCR
      */
-    const CONN_STATE_AUTH                              = 1;
+    const CONN_STATE_LOGIN_PACKET_SENT = 1.1;
 
     /**
      * @TODO DESCR
      */
-    const CONN_STATE_LOGIN_PACKET_SENT                 = 1.1;
-
-    /**
-     * @TODO DESCR
-     */
-    const CONN_STATE_CHALLENGE_PACKET_SENT             = 1.2;
+    const CONN_STATE_CHALLENGE_PACKET_SENT = 1.2;
 
     /**
      * @TODO DESCR
@@ -48,27 +47,27 @@ class Connection extends ClientConnection
     /**
      * @TODO DESCR
      */
-    const CONN_STATE_HANDSHAKED_OK                     = 2.1;
+    const CONN_STATE_HANDSHAKED_OK = 2.1;
 
     /**
      * @TODO DESCR
      */
-    const CONN_STATE_HANDSHAKED_ERROR                  = 2.2;
+    const CONN_STATE_HANDSHAKED_ERROR = 2.2;
 
     /**
      * @TODO DESCR
      */
-    const INPUT_STATE_START                            = 0;
+    const INPUT_STATE_START = 0;
 
     /**
      * @TODO DESCR
      */
-    const INPUT_STATE_END_OF_PACKET                    = 1;
+    const INPUT_STATE_END_OF_PACKET = 1;
 
     /**
      * @TODO DESCR
      */
-    const INPUT_STATE_PROCESSING                       = 2;
+    const INPUT_STATE_PROCESSING = 2;
 
     /**
      * @var string EOL
@@ -160,7 +159,7 @@ class Connection extends ClientConnection
         $url = parse_url($this->url);
 
         $this->username = $url['user'];
-        $this->secret   = $url['pass'];
+        $this->secret = $url['pass'];
     }
 
     /**
@@ -212,7 +211,7 @@ class Connection extends ClientConnection
             //Daemon::log('>>> '.$line);
             if ($line === '') {
                 $this->instate = self::INPUT_STATE_END_OF_PACKET;
-                $packet        =& $this->packets[$this->cnt];
+                $packet =& $this->packets[$this->cnt];
                 ++$this->cnt;
             } else {
                 $this->instate = self::INPUT_STATE_PROCESSING;
@@ -232,7 +231,10 @@ class Connection extends ClientConnection
                             if ($packet['message'] === 'authentication accepted') {
                                 $this->state = self::CONN_STATE_HANDSHAKED_OK;
 
-                                Daemon::$process->log(__METHOD__ . ': Authentication ok. Connected to ' . parse_url($this->addr, PHP_URL_HOST));
+                                Daemon::$process->log(
+                                    __METHOD__ . ': Authentication ok. Connected to ' .
+                                    parse_url($this->addr, PHP_URL_HOST)
+                                );
 
                                 if ($this->onConnected) {
                                     $this->connected = true;
@@ -246,7 +248,10 @@ class Connection extends ClientConnection
                     } else {
                         $this->state = self::CONN_STATE_HANDSHAKED_ERROR;
 
-                        Daemon::$process->log(__METHOD__ . ': Authentication failed. Connection to ' . parse_url($this->addr, PHP_URL_HOST) . ' failed.');
+                        Daemon::$process->log(
+                            __METHOD__ . ': Authentication failed. Connection to ' .
+                            parse_url($this->addr, PHP_URL_HOST) . ' failed.'
+                        );
 
                         if ($this->onConnected) {
                             $this->connected = false;
@@ -265,15 +270,23 @@ class Connection extends ClientConnection
                     if (isset($packet['event']) && !isset($packet['actionid'])) {
                         $this->event('event_' . $packet['event'], $packet);
                         $this->event('event', $packet);
-                    }
-                    // Response
+                    } // Response
                     elseif (isset($packet['actionid'])) {
                         $action_id =& $packet['actionid'];
 
                         if (isset($this->callbacks[$action_id])) {
                             if (isset($this->assertions[$action_id])) {
                                 $this->packets[$action_id][] = $packet;
-                                if (count(array_uintersect_uassoc($this->assertions[$action_id], $packet, 'strcasecmp', 'strcasecmp')) === count($this->assertions[$action_id])) {
+
+                                $assertations = count(
+                                    array_uintersect_uassoc(
+                                        $this->assertions[$action_id],
+                                        $packet,
+                                        'strcasecmp',
+                                        'strcasecmp'
+                                    )
+                                );
+                                if ($assertations === count($this->assertions[$action_id])) {
                                     if (is_callable($this->callbacks[$action_id])) {
                                         $this->callbacks[$action_id]($this, $this->packets[$action_id]);
                                         unset($this->callbacks[$action_id]);
@@ -310,12 +323,12 @@ class Connection extends ClientConnection
 
         if ($this->pool->config->authtype->value === 'md5') {
             $this->challenge(function ($conn, $challenge) {
-                $packet      = "Action: Login\r\n"
-                        . "AuthType: MD5\r\n"
-                        . "Username: " . $this->username . "\r\n"
-                        . "Key: " . md5($challenge . $this->secret) . "\r\n"
-                        . "Events: on\r\n"
-                        . "\r\n";
+                $packet = "Action: Login\r\n"
+                    . "AuthType: MD5\r\n"
+                    . "Username: " . $this->username . "\r\n"
+                    . "Key: " . md5($challenge . $this->secret) . "\r\n"
+                    . "Events: on\r\n"
+                    . "\r\n";
                 $this->state = self::CONN_STATE_LOGIN_PACKET_SENT_AFTER_CHALLENGE;
                 $conn->write($packet);
             });
@@ -354,11 +367,12 @@ class Connection extends ClientConnection
     protected function challenge($cb)
     {
         $this->onChallenge = $cb;
-        $this->state       = self::CONN_STATE_CHALLENGE_PACKET_SENT;
+        $this->state = self::CONN_STATE_CHALLENGE_PACKET_SENT;
         $this->write(
             "Action: Challenge\r\n"
             . "AuthType: MD5\r\n"
-            . "\r\n");
+            . "\r\n"
+        );
     }
 
     /**
@@ -404,8 +418,8 @@ class Connection extends ClientConnection
      *   *Filename: Configuration filename (e.g. foo.conf)
      *   Category: Category in configuration file
      *
-     * @param  string   $filename Filename
-     * @param  callable $cb       Callback called when response received
+     * @param  string $filename Filename
+     * @param  callable $cb Callback called when response received
      * @callback $cb ( Connection $conn, array $packet )
      * @return void
      */
@@ -424,7 +438,7 @@ class Connection extends ClientConnection
      * Variables:
      *    Filename: Configuration filename (e.g. foo.conf)
      *
-     * @param  string   $filename Filename
+     * @param  string $filename Filename
      * @param callable $cb Callback called when response received
      * @callback $cb ( Connection $conn, array $packet )
      * @return void
@@ -443,10 +457,10 @@ class Connection extends ClientConnection
      * Channel: Channel to set variable for
      *  *Variable: Variable name
      *  *Value: Value
-     * 
-     * @param string   $channel
-     * @param string   $variable
-     * @param string   $value
+     *
+     * @param string $channel
+     * @param string $variable
+     * @param string $value
      * @param callable $cb
      * @callback $cb ( Connection $conn, array $packet )
      * @return void
@@ -461,7 +475,7 @@ class Connection extends ClientConnection
 
         if (isset($variable, $value)) {
             $cmd .= "Variable: " . trim($variable) . "\r\n"
-                    . "Value: " . trim($value) . "\r\n";
+                . "Value: " . trim($value) . "\r\n";
 
             $this->command($cmd, $cb);
         }
@@ -482,8 +496,10 @@ class Connection extends ClientConnection
      */
     public function coreShowChannels($cb)
     {
-        $this->command("Action: CoreShowChannels\r\n", $cb,
-                       ['event' => 'coreshowchannelscomplete', 'eventlist' => 'complete']
+        $this->command(
+            "Action: CoreShowChannels\r\n",
+            $cb,
+            ['event' => 'coreshowchannelscomplete', 'eventlist' => 'complete']
         );
     }
 
@@ -500,7 +516,7 @@ class Connection extends ClientConnection
      * value for the specified channel variables.
      *
      * @param  callable $cb
-     * @param  string   $channel
+     * @param  string $channel
      * @callback $cb ( Connection $conn, array $packet )
      * @return void
      */
@@ -528,8 +544,8 @@ class Connection extends ClientConnection
      * *Priority: Priority to transfer to
      * ActionID: Optional Action id for message matching.
      *
-     * @param array    $params
-     * @param callable $cb     Callback called when response received
+     * @param array $params
+     * @param callable $cb Callback called when response received
      * @callback $cb ( Connection $conn, array $packet )
      * @return void
      */
@@ -557,8 +573,8 @@ class Connection extends ClientConnection
      * Data : Data if Application parameter is used
      * ActionID: Optional Action id for message matching.
      *
-     * @param array    $params
-     * @param callable $cb     Callback called when response received
+     * @param array $params
+     * @param callable $cb Callback called when response received
      * @callback $cb ( Connection $conn, array $packet )
      * @return void
      */
@@ -572,14 +588,14 @@ class Connection extends ClientConnection
     /**
      * Action: ExtensionState
      * Synopsis: Get an extension's state.
-     * Description: function can be used to retrieve the state from any	hinted extension.
+     * Description: function can be used to retrieve the state from any    hinted extension.
      * Variables: (Names marked with * are required)
      * *Exten: Extension to get state
      * Context: Context for exten
      * ActionID: Optional Action id for message matching.
      *
-     * @param array    $params
-     * @param callable $cb     Callback called when response received
+     * @param array $params
+     * @param callable $cb Callback called when response received
      * @callback $cb ( Connection $conn, array $packet )
      * @return void
      */
@@ -607,10 +623,10 @@ class Connection extends ClientConnection
      * For almost any actions in Action: ListCommands
      * Privilege: depends on $action
      *
-     * @param string   $action    Action
-     * @param callable $cb        Callback called when response received
-     * @param array    $params    Parameters
-     * @param array    $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent
+     * @param string $action Action
+     * @param callable $cb Callback called when response received
+     * @param array $params Parameters
+     * @param array $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent
      * @callback $cb ( Connection $conn, array $packet )
      * @return void
      */
@@ -650,9 +666,9 @@ class Connection extends ClientConnection
 
     /**
      * Sends arbitrary command
-     * @param string   $packet    A packet for sending by the connected client to Asterisk
-     * @param callable $cb        Callback called when response received
-     * @param array    $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent
+     * @param string $packet A packet for sending by the connected client to Asterisk
+     * @param callable $cb Callback called when response received
+     * @param array $assertion If more events may follow as response this is a main part or full an action complete event indicating that all data has been sent
      */
     protected function command($packet, $cb, $assertion = null)
     {
@@ -682,7 +698,7 @@ class Connection extends ClientConnection
 
     /**
      * Generate AMI packet string from associative array provided
-     * @param  array  $params
+     * @param  array $params
      * @return string
      */
     protected function implodeParams(array $params)

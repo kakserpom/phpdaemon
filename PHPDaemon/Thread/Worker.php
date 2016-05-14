@@ -427,10 +427,7 @@ class Worker extends Generic
             if ($su === false) {
                 Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . '\', user not found. You must replace config-variable \'user\' with existing username.');
                 exit(0);
-            } elseif (
-                    ($su['uid'] != posix_getuid())
-                    && (!posix_setuid($su['uid']))
-            ) {
+            } elseif ($su['uid'] != posix_getuid() & !posix_setuid($su['uid'])) {
                 Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
                 exit(0);
             }
@@ -496,19 +493,15 @@ class Worker extends Generic
             return;
         }
 
-        if (
-                (Daemon::$config->maxmemoryusage->value > 0)
-                && (memory_get_usage(true) > Daemon::$config->maxmemoryusage->value)
-        ) {
+        if (Daemon::$config->maxmemoryusage->value > 0
+            && (memory_get_usage(true) > Daemon::$config->maxmemoryusage->value)) {
             $this->log('\'maxmemory\' exceed. Graceful shutdown.');
 
             $this->gracefulRestart();
         }
 
-        if (
-                (Daemon::$config->maxrequests->value > 0)
-                && ($this->reqCounter >= Daemon::$config->maxrequests->value)
-        ) {
+        if (Daemon::$config->maxrequests->value > 0
+                && ($this->reqCounter >= Daemon::$config->maxrequests->value)) {
             $this->log('\'max-requests\' exceed. Graceful shutdown.');
 
             $this->gracefulRestart();

@@ -312,9 +312,24 @@ class Object implements \ArrayAccess
         static $sizes = ['maxmemoryusage'];
         static $times = ['maxidle', 'autoreload', 'mpmdelay', 'eiosetmaxpolltime', 'lambdacachettl'];
         static $numbers = [
-            'maxrequests', 'autogc', 'startworkers', 'workerpriority', 'minworkers', 'maxworkers', 'minspareworkers', 'maxspareworkers', 'masterpriority', 'ipcthreadpriority',
-            'eiosetmaxidle', 'eiosetmaxparallel', 'eiosetmaxpollreqs', 'eiosetminparallel', 'verbose', 'verbosetty',
-            'lambdacachemaxsize', 'lambdacachecapwindow',
+            'maxrequests',
+            'autogc',
+            'startworkers',
+            'workerpriority',
+            'minworkers',
+            'maxworkers',
+            'minspareworkers',
+            'maxspareworkers',
+            'masterpriority',
+            'ipcthreadpriority',
+            'eiosetmaxidle',
+            'eiosetmaxparallel',
+            'eiosetmaxpollreqs',
+            'eiosetminparallel',
+            'verbose',
+            'verbosetty',
+            'lambdacachemaxsize',
+            'lambdacachecapwindow',
         ];
 
         foreach ($this as $name => $value) {
@@ -374,22 +389,15 @@ class Object implements \ArrayAccess
      */
     protected function onLoad()
     {
-        if (
-                isset($this->minspareworkers->value)
-                && $this->minspareworkers->value > 0
-                && isset($this->maxspareworkers->value)
-                && $this->maxspareworkers->value > 0
-        ) {
+        if (isset($this->minspareworkers->value) && $this->minspareworkers->value > 0
+            && isset($this->maxspareworkers->value) && $this->maxspareworkers->value > 0) {
             if ($this->minspareworkers->value > $this->maxspareworkers->value) {
                 Daemon::log('\'minspareworkers\' (' . $this->minspareworkers->value . ')  cannot be greater than \'maxspareworkers\' (' . $this->maxspareworkers->value . ').');
                 $this->minspareworkers->value = $this->maxspareworkers->value;
             }
         }
 
-        if (
-                isset($this->minworkers->value)
-                && isset($this->maxworkers->value)
-        ) {
+        if (isset($this->minworkers->value) && isset($this->maxworkers->value)) {
             if ($this->minworkers->value > $this->maxworkers->value) {
                 $this->minworkers->value = $this->maxworkers->value;
             }
@@ -437,7 +445,7 @@ class Object implements \ArrayAccess
      */
     public function offsetSet($prop, $value)
     {
-        $prop          = $this->getRealPropertyName($prop);
+        $prop = $this->getRealPropertyName($prop);
         $this->{$prop} = $value;
     }
 
@@ -481,7 +489,7 @@ class Object implements \ArrayAccess
             $zeroPortNum = true;
             return '';
         }, $uri);
-        $u        = parse_url($uri);
+        $u = parse_url($uri);
         $u['host'] = trim($u['host'], '][');
         $u['uri'] = $uri;
         if ($zeroPortNum) {
@@ -494,7 +502,7 @@ class Object implements \ArrayAccess
         if (!isset($u['fragment'])) {
             return $u;
         }
-        $hash  = '#' . $u['fragment'];
+        $hash = '#' . $u['fragment'];
         $error = false;
         preg_replace_callback('~(#+)(.+?)(?=#|$)|(.+)~', function ($m) use (&$u, &$error, $uri) {
             if ($error) {
@@ -506,7 +514,7 @@ class Object implements \ArrayAccess
                 if (sizeof($e) === 2) {
                     list($key, $value) = $e;
                 } else {
-                    $key   = $value;
+                    $key = $value;
                     $value = true;
                 }
                 $u['params'][$key] = $value;
@@ -540,10 +548,7 @@ class Object implements \ArrayAccess
                 $k = 'configfile';
             }
 
-            if (
-                    ($k === 'user')
-                    || ($k === 'group')
-            ) {
+            if (($k === 'user') || ($k === 'group')) {
                 if ($v === '') {
                     $v = null;
                 }

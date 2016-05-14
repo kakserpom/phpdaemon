@@ -12,7 +12,6 @@ use PHPDaemon\HTTPRequest\Generic;
  */
 class CGIRequest extends Generic
 {
-
     /**
      * @var bool
      */
@@ -30,12 +29,12 @@ class CGIRequest extends Generic
     {
         $this->header('Content-Type: text/html'); // default header.
 
-        $this->proc                 = new \PHPDaemon\Core\ShellCommand();
+        $this->proc = new \PHPDaemon\Core\ShellCommand();
         $this->proc->readPacketSize = $this->appInstance->readPacketSize;
         $this->proc->onReadData([$this, 'onReadData']);
         $this->proc->onWrite([$this, 'onWrite']);
         $this->proc->binPath = $this->appInstance->binPath;
-        $this->proc->chroot  = $this->appInstance->chroot;
+        $this->proc->chroot = $this->appInstance->chroot;
 
         if (isset($this->attrs->server['BINPATH'])) {
             if (isset($this->appInstance->binAliases[$this->attrs->server['BINPATH']])) {
@@ -45,31 +44,19 @@ class CGIRequest extends Generic
             }
         }
 
-        if (
-                isset($this->attrs->server['CHROOT'])
-                && $this->appInstance->config->allowoverridechroot->value
-        ) {
+        if (isset($this->attrs->server['CHROOT']) && $this->appInstance->config->allowoverridechroot->value) {
             $this->proc->chroot = $this->attrs->server['CHROOT'];
         }
 
-        if (
-                isset($this->attrs->server['SETUSER'])
-                && $this->appInstance->config->allowoverrideuser->value
-        ) {
+        if (isset($this->attrs->server['SETUSER']) && $this->appInstance->config->allowoverrideuser->value) {
             $this->proc->setUser = $this->attrs->server['SETUSER'];
         }
 
-        if (
-                isset($this->attrs->server['SETGROUP'])
-                && $this->appInstance->config->allowoverridegroup->value
-        ) {
+        if (isset($this->attrs->server['SETGROUP']) && $this->appInstance->config->allowoverridegroup->value) {
             $this->proc->setGroup = $this->attrs->server['SETGROUP'];
         }
 
-        if (
-                isset($this->attrs->server['CWD'])
-                && $this->appInstance->config->allowoverridecwd->value
-        ) {
+        if (isset($this->attrs->server['CWD']) && $this->appInstance->config->allowoverridecwd->value) {
             $this->proc->cwd = $this->attrs->server['CWD'];
         } elseif ($this->appInstance->config->cwd->value !== null) {
             $this->proc->cwd = $this->appInstance->config->cwd->value;
@@ -124,7 +111,7 @@ class CGIRequest extends Generic
     /**
      * Called when new data received from process.
      * @param object $process Process pointer.
-     * @param string $data    Data.
+     * @param string $data Data.
      * @return void
      */
     public function onReadData($process, $data)

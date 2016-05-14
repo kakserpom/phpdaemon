@@ -14,7 +14,6 @@ use PHPDaemon\Core\Debug;
  */
 class Connection extends ClientConnection
 {
-
     /**
      * @TODO DESCR
      */
@@ -257,32 +256,36 @@ class Connection extends ClientConnection
         $QD = [];
         $qtypeInt = array_search($qtype, Pool::$type, true);
         $qclassInt = array_search($qclass, Pool::$class, true);
+
         if (($qtypeInt === false) || ($qclassInt === false)) {
             $cb(false);
             return;
         }
+
         $q = Binary::labels($hostname) . // domain
             Binary::word($qtypeInt) .
             Binary::word($qclassInt);
+
         $QD[] = $q;
-        $packet =
-            Binary::word(++$this->seq) . // Query ID
+
+        $packet = Binary::word(++$this->seq) . // Query ID
             Binary::bitmap2bytes(
                 '0' . // QR = 0
                 '0000' . // OPCODE = 0000 (standard query)
                 '0' . // AA = 0
                 '0' . // TC = 0
                 '1' . // RD = 1
-
                 '0' . // RA = 0,
                 '000' . // reserved
-                '0000' // RCODE
-                , 2) .
+                '0000', // RCODE
+                2
+            ) .
             Binary::word(sizeof($QD)) . // QDCOUNT
             Binary::word(0) . // ANCOUNT
             Binary::word(0) . // NSCOUNT
             Binary::word(0) . // ARCOUNT
             implode('', $QD);
+
         if ($this->type === 'udp') {
             $this->write($packet);
         } else {

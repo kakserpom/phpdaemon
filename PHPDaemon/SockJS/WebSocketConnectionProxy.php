@@ -24,7 +24,7 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface
     /**
      * __construct
      * @param Application $sockjs
-     * @param object      $conn
+     * @param object $conn
      */
     public function __construct($sockjs, $conn)
     {
@@ -44,7 +44,7 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface
         }
         return $this->realConn->{$k};
     }
-    
+
     /**
      * __set
      * * @param string $k Key
@@ -58,15 +58,15 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface
 
     /**
      * __isset
-     * @param  string  $k 
+     * @param  string $k
      * @return boolean
      */
     public function __isset($k)
     {
         return isset($this->realConn->{$k});
     }
-    
-    
+
+
     /**
      * Called when new frame received.
      * @param  string $data Frame's data.
@@ -81,7 +81,7 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface
     /**
      * __call
      * @param  string $method
-     * @param  array  $args
+     * @param  array $args
      * @return mixed
      */
     public function __call($method, $args)
@@ -99,12 +99,12 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface
     {
         return json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
-    
+
     /**
      * Sends a frame.
-     * @param string   $data Frame's data.
-     * @param integer  $type Frame's type. See the constants.
-     * @param callback $cb   Optional. Callback called when the frame is received by client.
+     * @param string $data Frame's data.
+     * @param integer $type Frame's type. See the constants.
+     * @param callback $cb Optional. Callback called when the frame is received by client.
      * @callback $cb ( )
      * @return boolean Success.
      */
@@ -116,9 +116,9 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface
 
     /**
      * Sends a frame.
-     * @param  string   $data Frame's data.
-     * @param  integer  $type Frame's type. See the constants.
-     * @param  callback $cb   Optional. Callback called when the frame is received by client.
+     * @param  string $data Frame's data.
+     * @param  integer $type Frame's type. See the constants.
+     * @param  callback $cb Optional. Callback called when the frame is received by client.
      * @callback $cb ( )
      * @return boolean Success.
      */

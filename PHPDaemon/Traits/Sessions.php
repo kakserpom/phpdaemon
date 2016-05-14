@@ -215,7 +215,7 @@ trait Sessions
     {
         $type = ini_get('session.serialize_handler');
         if ($type === 'php') {
-            return $this->serialize_php($this->getSessionState());
+            return $this->serializePHP($this->getSessionState());
         }
         if ($type === 'php_binary') {
             return igbinary_serialize($this->getSessionState());
@@ -251,7 +251,7 @@ trait Sessions
     {
         $type = ini_get('session.serialize_handler');
         if ($type === 'php') {
-            $this->setSessionState($this->unserialize_php($str));
+            $this->setSessionState($this->unserializePHP($str));
             return true;
         }
         if ($type === 'php_binary') {
@@ -267,7 +267,7 @@ trait Sessions
      * @param  array  $array
      * @return string
      */
-    public function serialize_php($array)
+    public function serializePHP($array)
     {
         $raw = '';
         $line = 0;
@@ -294,7 +294,7 @@ trait Sessions
      * @param  string $session_data
      * @return array
      */
-    protected function unserialize_php($session_data)
+    protected function unserializePHP($session_data)
     {
         $return_data = array();
         $offset = 0;
