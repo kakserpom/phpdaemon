@@ -260,7 +260,7 @@ class Worker extends Generic
 
     /**
      * Override a standard PHP function
-     * @param string $camelCase e.g. isUploadedFile
+     * @param string $local e.g. isUploadedFile
      * @param string $real e.g. is_uploaded_file
      */
     protected function override($camelCase, $real)
@@ -284,7 +284,7 @@ class Worker extends Generic
                     runkit_constant_add($k, $v);
                 }
             }
-            $this->override('define');
+            $this->override('define', 'define');
 
             function header()
             {
@@ -293,7 +293,7 @@ class Worker extends Generic
                 }
                 return Daemon::$context->header(...func_get_args());
             }
-            $this->override('header');
+            $this->override('header', 'header');
 
             function isUploadedFile()
             {
@@ -339,7 +339,7 @@ class Worker extends Generic
                 }
                 return Daemon::$context->setcookie(...func_get_args());
             }
-            $this->override('setcookie');
+            $this->override('setcookie', 'setcookie');
 
             /**
              * @param callable $cb
