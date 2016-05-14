@@ -408,7 +408,7 @@ abstract class IOStream
     }
 
     /**
-     * Called when the session constructed
+     * Constructor
      * @return void
      */
     protected function init()

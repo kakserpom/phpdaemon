@@ -2,6 +2,7 @@
 namespace PHPDaemon\Clients\GearmanClient;
 
 use PHPDaemon\Network\ClientConnection;
+use PHPDaemon\Utils\Crypt;
 
 
 /**
@@ -14,63 +15,6 @@ use PHPDaemon\Network\ClientConnection;
  * @author Popov Gennadiy <me@westtrade.tk>
  */
 class  Connection extends ClientConnection {
-
-    /**
-     * Request codes
-     *
-     * @var array
-     */
-    private $requestCommandList = [
-        'CAN_DO' => 1,
-        'CANT_DO' => 2,
-        'RESET_ABILITIES' => 3,
-        'PRE_SLEEP' => 4,
-        'SUBMIT_JOB' => 7,
-        'GRAB_JOB' => 9,
-        'WORK_STATUS' => 12,
-        'WORK_COMPLETE' => 13,
-        'WORK_FAIL' => 14,
-        'GET_STATUS' => 15,
-        'ECHO_REQ' => 16,
-        'SUBMIT_JOB_BG' => 18,
-        'SUBMIT_JOB_HIGH' => 21,
-        'SET_CLIENT_ID' => 22,
-        'CAN_DO_TIMEOUT' => 23,
-        'ALL_YOURS' => 24,
-        'WORK_EXCEPTION' => 25,
-        'OPTION_REQ' => 26,
-        'OPTION_RES' => 27,
-        'WORK_DATA' => 28,
-        'WORK_WARNING' => 29,
-        'GRAB_JOB_UNIQ' => 30,
-        'SUBMIT_JOB_HIGH_BG' => 32,
-        'SUBMIT_JOB_LOW' => 33,
-        'SUBMIT_JOB_LOW_BG' => 34,
-        'SUBMIT_JOB_SCHED' => 35,
-        'SUBMIT_JOB_EPOCH' => 36,
-    ];
-
-    /**
-     * Response codes
-     *
-     * @var array
-     */
-    private $responseCommandList = [
-        'NOOP' => 6,
-        'JOB_CREATED' => 8,
-        'NO_JOB' => 10,
-        'JOB_ASSIGN' => 11,
-        'WORK_STATUS' => 12,
-        'WORK_COMPLETE' => 13,
-        'WORK_FAIL' => 14,
-        'ECHO_RES' => 17,
-        'ERROR' => 19,
-        'STATUS_RES' => 20,
-        'WORK_EXCEPTION' => 25,
-        'OPTION_RES' => 27,
-        'WORK_WARNING' => 29,
-        'JOB_ASSIGN_UNIQ' => 31,
-    ];
 
     /**
      * Magic code for request
@@ -102,66 +46,153 @@ class  Connection extends ClientConnection {
      */
     const ARGS_DELIMITER        = "\0";
 
-    /**
-     * Flag
-     * @var bool
-     */
-    private $jobAwaitResult     = false;
+
 
     /**
-     * Generate a random string token
+     * Request codes
      *
-     * @param int $length How many characters do we want?
-     * @param string $keySpaces A string of all possible characters  to select from
-     *
-     * @return string
+     * @var array
      */
-    private function generateUniqueToken($length = 10, $keySpaces = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+    protected static $requestCommandList = [
+        'CAN_DO' => 1,
+        'CANT_DO' => 2,
+        'RESET_ABILITIES' => 3,
+        'PRE_SLEEP' => 4,
+        'SUBMIT_JOB' => 7,
+        'GRAB_JOB' => 9,
+        'WORK_STATUS' => 12,
+        'WORK_COMPLETE' => 13,
+        'WORK_FAIL' => 14,
+        'GET_STATUS' => 15,
+        'ECHO_REQ' => 16,
+        'SUBMIT_JOB_BG' => 18,
+        'SUBMIT_JOB_HIGH' => 21,
+        'SET_CLIENT_ID' => 22,
+        'CAN_DO_TIMEOUT' => 23,
+        'ALL_YOURS' => 24,
+        'WORK_EXCEPTION' => 25,
+        'OPTION_REQ' => 26,
+        'OPTION_RES' => 27,
+        'WORK_DATA' => 28,
+        'WORK_WARNING' => 29,
+        'GRAB_JOB_UNIQ' => 30,
+        'SUBMIT_JOB_HIGH_BG' => 32,
+        'SUBMIT_JOB_LOW' => 33,
+        'SUBMIT_JOB_LOW_BG' => 34,
+        'SUBMIT_JOB_SCHED' => 35,
+        'SUBMIT_JOB_EPOCH' => 36,
+    ];
+    protected static $requestCommandListFlipped;
 
-        $half = intval($length / 2);
-        $result = substr(str_shuffle($keySpaces), 0, $half) . substr(str_shuffle($keySpaces), 0, $length - $half);
+    /**
+     * Response codes
+     *
+     * @var array
+     */
+    protected static $responseCommandList = [
+        'NOOP' => 6,
+        'JOB_CREATED' => 8,
+        'NO_JOB' => 10,
+        'JOB_ASSIGN' => 11,
+        'WORK_STATUS' => 12,
+        'WORK_COMPLETE' => 13,
+        'WORK_FAIL' => 14,
+        'ECHO_RES' => 17,
+        'ERROR' => 19,
+        'STATUS_RES' => 20,
+        'WORK_EXCEPTION' => 25,
+        'OPTION_RES' => 27,
+        'WORK_WARNING' => 29,
+        'JOB_ASSIGN_UNIQ' => 31,
+    ];
 
-        return $result;
+    protected static $responseCommandListFlipped;
+
+    /**
+     * @var \SplStack
+     */
+    protected $reqStack;
+
+
+    /**
+     * @var mixed
+     */
+    public $response;
+
+    /**
+     * @var string
+     */
+    public $responseType;
+
+    /**
+     * @var string
+     */
+    public $responseCommand;
+
+    /**
+     * Constructor
+     * @return void
+     */
+    protected function init()
+    {
+        $this->reqStack = new \SplStack;
     }
-
     /**
      * Called when new data received
      *
      * @return void
      */
-    public function onRead() {
-
-        if (($head = $this->readExact(static::HEADER_LENGTH)) === false) {
+    public function onRead()
+    {
+        if (($head = $this->lookExact(static::HEADER_LENGTH)) === false) {
             return;
         }
 
-        $head = unpack(static::HEADER_READ_FORMAT, $head);
-        list($magic, $type, $size) = array_values($head);
+        list($magic, $typeInt, $size) = unpack(static::HEADER_READ_FORMAT, $head);
 
-        $type_array = $magic === static::MAGIC_RESPONSE ? $this->responseCommandList : $this->requestCommandList;
-
-        $TYPE_CODE = NULL;
-
-        foreach ($type_array as $key => $info) {
-
-            if (intval($info[0]) === intval($type)) {
-                $TYPE_CODE = $key;
-                break;
-            }
+        if ($this->getInputLength() < static::HEADER_LENGTH + $size) {
+            return;
         }
 
-        if (!$this->jobAwaitResult || 'WORK_COMPLETE' === $TYPE_CODE) {
+        $this->drain(static::HEADER_LENGTH);
+        $pct = $this->read($size);
 
-            $body = $this->read($size);
-            $argv = strlen($body) ? explode(static::ARGS_DELIMITER, $body) : [];
-
-            $this->jobAwaitResult = false;
-            $this->onResponse->executeOne($this, $argv);
-
+        if ($magic === static::MAGIC_RESPONSE) {
+            $this->responseType = static::responseCommandListFlipped[$typeInt];
+            $this->responseCommand = $this->reqStack->isEmpty()
+                ? ''
+                : $this->reqStack->shift();
+            if ($this->responseCommand === 'SUBMIT_JOB' && $this->responseType !== 'WORK_COMPLETE') {
+                return;
+            }
+            $this->response = explode(static::ARGS_DELIMITER, $pct);
+            $this->onResponse->executeOne($this);
+            $this->responseType = null;
+            $this->responseCommand = null;
+            $this->responseType = null;
             $this->checkFree();
-            return ;
+            return;
+        } else {
+            $type = static::$requestCommandListFlipped[$typeInt];
+            // @TODO
         }
     }
+    
+    /**
+     * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+     * @return void
+     */
+    public function onReady()
+    {
+        if (static::$requestCommandListFlipped === null) {
+            static::$requestCommandListFlipped = array_flip(static::$requestCommandList);
+        }
+        if (static::$responseCommandListFlipped === null) {
+            static::$responseCommandListFlipped = array_flip(static::$responseCommandList);
+        }
+        parent::onReady();
+    }
+
 
     /**
      * Function send ECHO
@@ -169,138 +200,48 @@ class  Connection extends ClientConnection {
      * @param $payload
      * @param callable|null $cb
      */
-    public function sendEcho ($payload, callable $cb = null) {
+    public function sendEcho ($payload, $cb = null)
+    {
         $this->sendCommand('ECHO_REQ', $payload, $cb);
     }
 
     /**
      * Function run task and wait result in callback
      *
-     * @param $function_name
-     * @param $payload
-     * @param null $context
-     * @param null $unique
+     * @param $params
+     * @param callable $cb = null
+     * @param boolean $unique
      */
-    public function runJob($function_name, $payload, callable $resultCallback, $unique = null) {
-
-        if ($unique) {
-            $unique =  $this->generateUniqueToken();
+    public function submitJob($params, $cb = null)
+    {
+        $closure = function () use (&$params, $cb)
+        {
+            $this->sendCommand('SUBMIT_JOB'
+                . (isset($params['pri']) ? '_ ' . strtoupper($params['pri']) : '')
+                . (isset($params['bg']) && $params['bg'] ? '_BG' : ''),
+                [$params['function'], $params['unique'], $params['payload']],
+                $cb
+            );
+        };
+        if (isset($params['unique'])) {
+            $closure();
+        } else {
+            Crypt::randomString(10, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', function($random) use ($closure) {
+                $params['unique'] = $random;
+                $closure();
+            });
         }
-
-        $this->jobAwaitResult = true;
-        $this->sendCommand('SUBMIT_JOB', [$function_name, $unique,  $payload], $resultCallback);
-    }
-
-    /**
-     * Function run task and wait result in callback
-     *
-     * @param $function_name
-     * @param $payload
-     * @param null $context
-     * @param null $unique
-     */
-    public function doNormal($function_name, $payload, callable $resultCallback, $unique = null) {
-
-        if ($unique) {
-            $unique = $this->generateUniqueToken();
-        }
-
-        $this->sendCommand('SUBMIT_JOB', [$function_name, $unique,  $payload], $resultCallback);
-    }
-
-    /**
-     * Function run task in background
-     *
-     * @param $function_name
-     * @param $payload
-     * @param null $context
-     * @param null $unique
-     */
-    public function doBackground($function_name, $payload, callable $resultCallback, $unique = null) {
-
-        if ($unique) {
-            $unique = $this->generateUniqueToken();
-        }
-
-        $this->sendCommand('SUBMIT_JOB_BG', [$function_name, $unique,  $payload], $resultCallback);
-    }
-
-    /**
-     * Function run task with high prority
-     *
-     * @param $function_name
-     * @param $payload
-     * @param null $context
-     * @param stirng $unique
-     */
-    public function doHigh($function_name, $payload, callable $resultCallback, $unique = null) {
-
-        if (!is_string($unique)) {
-            $unique = $this->generateUniqueToken();
-        }
-
-        $this->sendCommand('SUBMIT_JOB_HIGH', [$function_name, $unique,  $payload], $resultCallback);
-    }
-
-    /**
-     * Function run task in background with high prority
-     *
-     * @param $function_name
-     * @param $payload
-     * @param null $context
-     * @param null $unique
-     */
-    public function doHighBackground($function_name, $payload, callable $resultCallback, $unique = null) {
-
-        if ($unique) {
-            $unique = $this->generateUniqueToken();
-        }
-
-        $this->sendCommand('SUBMIT_JOB_HIGH_BG', [$function_name, $unique,  $payload], $resultCallback);
-    }
-
-    /**
-     * Function run task with low priority
-     *
-     * @param $function_name
-     * @param $payload
-     * @param null $context
-     * @param null $unique
-     */
-    public function doLow($function_name, $payload, callable $resultCallback, $unique = null) {
-
-        if ($unique) {
-            $unique = $this->generateUniqueToken();
-        }
-
-        $this->sendCommand('SUBMIT_JOB_LOW', [$function_name, $unique,  $payload], $resultCallback);
-    }
-
-    /**
-     * Function run task in background with low priority
-     *
-     * @param $function_name
-     * @param $payload
-     * @param null $context
-     * @param null $unique
-     */
-    public function doLowBackground($function_name, $payload, callable $resultCallback, $unique = null) {
-
-        if ($unique) {
-            $unique = $this->generateUniqueToken();
-        }
-
-        $this->sendCommand('SUBMIT_JOB_LOW_BG', [$function_name, $unique,  $payload], $resultCallback);
     }
 
     /**
      * Get job status
      * 
-     * @param $job_handle Job handle that was given in JOB_CREATED packet.
+     * @param mixed $jobHandle Job handle that was given in JOB_CREATED packet.
+     * @param callable $cb = null
      *
      */
-    public function doStatus($job_handle, callable $resultCallback) {
-        $this->sendCommand('GET_STATUS', [$job_handle], $resultCallback);
+    public function getStatus($jobHandle, $cb = null) {
+        $this->sendCommand('GET_STATUS', [$jobHandle], $cb);
     }
 
     /**
@@ -311,34 +252,31 @@ class  Connection extends ClientConnection {
      * @url http://gearman.org/protocol/
      *
      *
-     * @param int $option_name
-     * @param callable $doneCallback
+     * @param int $optionName
+     * @param callable $cb = null
      */
-    public function setConnectionOption($option_name, callable $doneCallback) {
-        $this->sendCommand('OPTION_RES', [$option_name], $doneCallback);
+    public function setConnectionOption($optionName, $cb = null) {
+        $this->sendCommand('OPTION_RES', [$optionName], $cb);
     }
 
     /**
-     * Low level commands sender
+     * Send a command
      *
      * @param $commandName
      * @param $payload
-     * @param $doneCallback callable|null $doneCallback
+     * @param callable $cb = null
      */
-    private function sendCommand($commandName, $payload, callable $doneCallback = null) {
+    public function sendCommand($commandName, $payload, $cb = null) {
 
-        $payload = (array) $payload;
-        $payload = array_map(function($item){ return !is_scalar($item) ? serialize($item) : $item; }, $payload);
-        $payload = implode(static::ARGS_DELIMITER, $payload);
-
-        $len = strlen($payload);
-
-        list($command_id) = $this->requestCommandList[$commandName];
-        $this->onResponse->push($doneCallback);
-
-        $sendData = pack(static::HEADER_WRITE_FORMAT, static::MAGIC_REQUEST, $command_id, $len);
-        $sendData .= $payload;
-
-        $this->write($sendData);
+        $pct = implode(
+            static::ARGS_DELIMITER,
+            array_map(function($item){ return !is_scalar($item) ? serialize($item) : $item; }, (array) $payload)
+        );
+        $this->reqStack->push($commandName);
+        $this->onResponse->push($cb);
+        $this->write(pack(
+            static::HEADER_WRITE_FORMAT,
+            static::MAGIC_REQUEST, $this->requestCommandList[$commandName], mb_orig_strlen($pct)));
+        $this->write($pct);
     }
 }

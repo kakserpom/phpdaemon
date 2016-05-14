@@ -349,7 +349,7 @@ class Connection extends ClientConnection implements \Iterator
         if ($name === 'MULTI' || $name === 'WATCH') {
             $this->acquire();
         } // PUB/SUB handling
-        elseif (substr($name, -9) === 'SUBSCRIBE') {
+        elseif (mb_orig_substr($name, -9) === 'SUBSCRIBE') {
             if (!$this->subscribed) {
                 $this->subscribed = true;
                 $this->pool->servConnSub[$this->url] = $this;
@@ -692,15 +692,16 @@ class Connection extends ClientConnection implements \Iterator
                     continue;
                 }
                 $char = $l{0};
+                $val = mb_orig_substr($l, 1);
                 if ($char === ':') { // inline integer
-                    $this->pushValue((int)substr($l, 1));
+                    $this->pushValue((int) $val);
                     goto start;
                 } elseif (($char === '+') || ($char === '-')) { // inline string
                     $this->error = $char === '-';
-                    $this->pushValue(substr($l, 1));
+                    $this->pushValue($val);
                     goto start;
                 } elseif ($char === '*') { // defines number of elements of incoming array
-                    $length = (int)substr($l, 1);
+                    $length = (int) $val;
                     if ($length <= 0) {
                         $this->pushValue([]);
                         goto start;
@@ -723,7 +724,7 @@ class Connection extends ClientConnection implements \Iterator
                         $this->pushValue(null);
                         goto start;
                     }
-                    $this->valueLength = (int)substr($l, 1);
+                    $this->valueLength = (int) $val;
                     if ($this->valueLength + 2 > $this->pool->maxAllowedPacket) {
                         $this->log('max-allowed-packet (' . $this->pool->config->maxallowedpacket->getHumanValue() . ') exceed, aborting connection');
                         $this->finish();
