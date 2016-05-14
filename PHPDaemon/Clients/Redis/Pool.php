@@ -12,6 +12,9 @@ use PHPDaemon\Network\ClientConnection;
  */
 class Pool extends \PHPDaemon\Network\Client
 {
+    /**
+     * @var Connection[]
+     */
     public $servConnSub = [];
 
     protected $currentMasterAddr;
