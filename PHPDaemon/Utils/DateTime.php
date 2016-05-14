@@ -1,20 +1,19 @@
 <?php
-namespace PHPDaemon\Utils;
-
 /**
- * DateTime
- * @package PHPDaemon\Utils
  * @author  Vasily Zorin <maintainer@daemon.io>
  */
+
+namespace PHPDaemon\Utils;
+
 class DateTime extends \DateTime
 {
     /**
      * Support timestamp and available date format
      * @param string       $time
-     * @param DateTimeZone $timezone
+     * @param \DateTimeZone $timezone
      * @link http://php.net/manual/en/datetime.construct.php
      */
-    public function __construct($time = 'now', DateTimeZone $timezone = null)
+    public function __construct($time = 'now', \DateTimeZone $timezone = null)
     {
         if (is_int($time)) {
             parent::__construct('now', $timezone);
