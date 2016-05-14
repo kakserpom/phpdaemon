@@ -1,4 +1,6 @@
-## phpDaemon:
+phpDaemon
+=========
+[![Build Status](https://travis-ci.org/kakserpom/phpdaemon.svg?branch=master)](https://travis-ci.org/kakserpom/phpdaemon)
 
 http://github.com/kakserpom/phpdaemon
 
