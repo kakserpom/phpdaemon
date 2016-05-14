@@ -109,12 +109,6 @@ class  Connection extends ClientConnection {
     protected static $responseCommandListFlipped;
 
     /**
-     * @var \SplStack
-     */
-    protected $reqStack;
-
-
-    /**
      * @var mixed
      */
     public $response;
@@ -129,14 +123,6 @@ class  Connection extends ClientConnection {
      */
     public $responseCommand;
 
-    /**
-     * Constructor
-     * @return void
-     */
-    protected function init()
-    {
-        $this->reqStack = new \SplStack;
-    }
     /**
      * Called when new data received
      *
@@ -159,12 +145,6 @@ class  Connection extends ClientConnection {
 
         if ($magic === static::MAGIC_RESPONSE) {
             $this->responseType = static::responseCommandListFlipped[$typeInt];
-            $this->responseCommand = $this->reqStack->isEmpty()
-                ? ''
-                : $this->reqStack->shift();
-            if ($this->responseCommand === 'SUBMIT_JOB' && $this->responseType !== 'WORK_COMPLETE') {
-                return;
-            }
             $this->response = explode(static::ARGS_DELIMITER, $pct);
             $this->onResponse->executeOne($this);
             $this->responseType = null;
@@ -272,7 +252,6 @@ class  Connection extends ClientConnection {
             static::ARGS_DELIMITER,
             array_map(function($item){ return !is_scalar($item) ? serialize($item) : $item; }, (array) $payload)
         );
-        $this->reqStack->push($commandName);
         $this->onResponse->push($cb);
         $this->write(pack(
             static::HEADER_WRITE_FORMAT,
