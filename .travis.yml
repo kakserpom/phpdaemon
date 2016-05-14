@@ -27,3 +27,4 @@ install:
 
 script:
   - ./vendor/bin/phpcs --standard=PSR2 --report=emacs --extensions=php --warning-severity=0 PHPDaemon/
+  - ./vendor/bin/phpunit -v --debug --coverage-clover=coverage.clover
