@@ -69,17 +69,17 @@ class Input extends \EventBuffer
      * State: seek nearest boundary
      */
     const STATE_SEEKBOUNDARY = 0;
-    
+
     /**
      * State: headers
      */
     const STATE_HEADERS = 1;
-    
+
     /**
      * State: body
      */
     const STATE_BODY = 2;
-    
+
     /**
      * State: upload
      */
@@ -168,7 +168,7 @@ class Input extends \EventBuffer
         }
         $this->curPart =& $foo;
         $this->req->attrs->inputDone = true;
-        $this->req->attrs->raw       = '';
+        $this->req->attrs->raw = '';
         if (($l = $this->length) > 0) {
             $this->req->attrs->raw = $this->read($l);
             if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
@@ -234,7 +234,7 @@ class Input extends \EventBuffer
 
     /**
      * Append string to input buffer
-     * @param  string  $chunk Piece of request input
+     * @param  string $chunk Piece of request input
      * @param  boolean $final Final call is THIS SEQUENCE of calls (not mandatory final in request)?
      * @return void
      */
@@ -291,7 +291,7 @@ class Input extends \EventBuffer
         if ($this->state === self::STATE_HEADERS) {
             // parse the part's headers
             $this->curPartDisp = false;
-            $i                 = 0;
+            $i = 0;
             do {
                 $l = $this->readline(\EventBuffer::EOL_CRLF);
                 if ($l === null) {
@@ -301,7 +301,7 @@ class Input extends \EventBuffer
                     break;
                 }
 
-                $e    = explode(':', $l, 2);
+                $e = explode(':', $l, 2);
                 $e[0] = strtr(strtoupper($e[0]), Generic::$htr);
                 if (isset($e[1])) {
                     $e[1] = ltrim($e[1]);
@@ -315,25 +315,25 @@ class Input extends \EventBuffer
                         break;
                     }
                     $this->curPartDisp['name'] = trim($this->curPartDisp['name'], '"');
-                    $name                      = $this->curPartDisp['name'];
+                    $name = $this->curPartDisp['name'];
                     if (isset($this->curPartDisp['filename'])) {
                         $this->curPartDisp['filename'] = trim($this->curPartDisp['filename'], '"');
                         if (!ini_get('file_uploads')) {
                             break;
                         }
                         $this->req->attrs->files[$name] = [
-                            'name'     => $this->curPartDisp['filename'],
-                            'type'     => '',
+                            'name' => $this->curPartDisp['filename'],
+                            'type' => '',
                             'tmp_name' => null,
-                            'fp'       => null,
-                            'error'    => UPLOAD_ERR_OK,
-                            'size'     => 0,
+                            'fp' => null,
+                            'error' => UPLOAD_ERR_OK,
+                            'size' => 0,
                         ];
-                        $this->curPart                  = & $this->req->attrs->files[$name];
+                        $this->curPart = &$this->req->attrs->files[$name];
                         $this->req->onUploadFileStart($this);
                         $this->state = self::STATE_UPLOAD;
                     } else {
-                        $this->curPart = & $this->req->attrs->post[$name];
+                        $this->curPart = &$this->req->attrs->post[$name];
                         $this->curPart = '';
                     }
                 } elseif (($e[0] === 'CONTENT_TYPE') && isset($e[1])) {
@@ -379,30 +379,25 @@ class Input extends \EventBuffer
             } else {    /* we have entire Part in buffer */
 
                 if ($chunkEnd1 === false) {
-                    $l        = $chunkEnd2;
+                    $l = $chunkEnd2;
                     $endOfMsg = true;
                 } else {
-                    $l        = $chunkEnd1;
+                    $l = $chunkEnd1;
                     $endOfMsg = false;
                 }
-                if (
-                        ($this->state === self::STATE_BODY)
-                        && isset($this->curPartDisp['name'])
-                ) {
+
+                if (($this->state === self::STATE_BODY) && isset($this->curPartDisp['name'])) {
                     $this->curPart .= $this->read($l);
                     if ($this->curPartDisp['name'] === 'MAX_FILE_SIZE') {
-                        $this->maxFileSize = (int) $this->curPart;
+                        $this->maxFileSize = (int)$this->curPart;
                     }
-                } elseif (
-                        ($this->state === self::STATE_UPLOAD)
-                        && isset($this->curPartDisp['filename'])
-                ) {
+                } elseif (($this->state === self::STATE_UPLOAD) && isset($this->curPartDisp['filename'])) {
                     $this->curPart['size'] += $l;
                     $this->curChunkSize = $l;
                     $this->req->onUploadFileChunk($this, true);
                 }
 
-                $this->state    = self::STATE_SEEKBOUNDARY;
+                $this->state = self::STATE_SEEKBOUNDARY;
                 if ($endOfMsg) { // end of whole message
                     $this->sendEOF();
                 } else {
@@ -421,7 +416,7 @@ class Input extends \EventBuffer
         if (!$this->curChunkSize) {
             return false;
         }
-        $chunk              = $this->read($this->curChunkSize);
+        $chunk = $this->read($this->curChunkSize);
         $this->curChunkSize = null;
         return $chunk;
     }
@@ -429,7 +424,7 @@ class Input extends \EventBuffer
     /**
      * Write current upload chunk to file descriptor
      * @todo   It is not supported yet (callback missing in EventBuffer->write())
-     * @param  mixed    $fd File destriptor
+     * @param  mixed $fd File destriptor
      * @param  callable $cb Callback
      * @return boolean      Success
      */

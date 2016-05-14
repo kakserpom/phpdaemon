@@ -23,9 +23,9 @@ class Lock
 
     /**
      * Constructor
-     * @param string  $key
+     * @param string $key
      * @param integer $timeout
-     * @param Pool    $pool
+     * @param Pool $pool
      */
     public function __construct($key, $timeout, $pool)
     {
@@ -70,12 +70,18 @@ class Lock
      */
     public function release($cb = null)
     {
-        $this->pool->eval('if redis.call("get",KEYS[1]) == ARGV[1] then return redis.call("del",KEYS[1]) else return 0 end',
-         1, $this->key, $this->token, function ($redis) use ($cb) {
-            if ($cb !== null) {
-                $cb($this, $redis->result, $redis);
+        $this->pool->eval(
+            'if redis.call("get",KEYS[1]) == ARGV[1] then return redis.call("del",KEYS[1]) else return 0 end',
+            1,
+            $this->key,
+            $this->token,
+            function ($redis) use ($cb) {
+                if ($cb !== null) {
+                    $cb($this, $redis->result, $redis);
+                }
             }
-        });
+        );
+        
         return $this;
     }
 }

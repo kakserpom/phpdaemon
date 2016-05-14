@@ -1,7 +1,6 @@
 <?php
-namespace PHPDaemon\Config\Entry;
 
-use PHPDaemon\Config\Entry\Generic;
+namespace PHPDaemon\Config\Entry;
 
 /**
  * Array config entry
@@ -13,13 +12,12 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class ArraySet extends Generic
 {
-
     /**
      * Converts human-readable value to plain
      * @param array|string $value
      * @return array
      */
-    public static function HumanToPlain($value)
+    public static function humanToPlain($value)
     {
         if (is_array($value)) {
             return $value;

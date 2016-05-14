@@ -16,18 +16,18 @@ abstract class Generic
      * @var integer
      */
     const STATE_FINISHED = 1;
-    
+
     /**
      * State: waiting.
      * @var integer
      */
-    const STATE_WAITING  = 2;
-    
+    const STATE_WAITING = 2;
+
     /**
      * State: running.
      * @var integer
      */
-    const STATE_RUNNING  = 3;
+    const STATE_RUNNING = 3;
 
     /**
      * Related Application instance
@@ -109,16 +109,16 @@ abstract class Generic
 
     /**
      * Constructor
-     * @param AppInstance $appInstance                        Parent AppInstance.
-     * @param IRequestUpstream $upstream                      Upstream.
-     * @param object $parent                                  Source request.
+     * @param AppInstance $appInstance Parent AppInstance.
+     * @param IRequestUpstream $upstream Upstream.
+     * @param object $parent Source request.
      */
     public function __construct($appInstance, IRequestUpstream $upstream, $parent = null)
     {
         ++Daemon::$process->reqCounter;
         $this->appInstance = $appInstance;
-        $this->upstream    = $upstream;
-        $this->ev          = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
+        $this->upstream = $upstream;
+        $this->ev = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
         if ($this->priority !== null) {
             $this->ev->priority = $this->priority;
         }
@@ -281,7 +281,7 @@ abstract class Generic
     protected function preinit($req)
     {
         if ($req === null) {
-            $req        = new \stdClass;
+            $req = new \stdClass;
             $req->attrs = new \stdClass;
         }
 
@@ -421,7 +421,7 @@ abstract class Generic
      * Delays the request execution for the given number of seconds
      *
      * @param integer $time Time to sleep in seconds
-     * @param boolean $set    Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
+     * @param boolean $set Set this parameter to true when use call it outside of Request->run() or if you don't want to interrupt execution now
      * @throws RequestSleep
      * @return void
      */
@@ -504,8 +504,8 @@ abstract class Generic
      */
     public function onWakeup()
     {
-        $this->running   = true;
-        Daemon::$req     = $this;
+        $this->running = true;
+        Daemon::$req = $this;
         Daemon::$context = $this;
         Daemon::$process->setState(Daemon::WSTATE_BUSY);
     }
@@ -516,9 +516,9 @@ abstract class Generic
      */
     public function onSleep()
     {
-        Daemon::$req     = null;
+        Daemon::$req = null;
         Daemon::$context = null;
-        $this->running   = false;
+        $this->running = false;
         Daemon::$process->setState(Daemon::WSTATE_IDLE);
     }
 
@@ -536,14 +536,9 @@ abstract class Generic
         $this->onWakeup();
         $this->onAbort();
 
-        if (
-                (ignore_user_abort() === 1)
-                && (
-                        ($this->state === Generic::STATE_RUNNING)
-                        || ($this->state === Generic::STATE_WAITING)
-                )
-                && !Daemon::$compatMode
-        ) {
+        if ((ignore_user_abort() === 1)
+            && (($this->state === Generic::STATE_RUNNING) || ($this->state === Generic::STATE_WAITING))
+            && !Daemon::$compatMode) {
             $this->upstream->endRequest($this);
         } else {
             $this->finish(-1);

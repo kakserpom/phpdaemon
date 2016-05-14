@@ -18,7 +18,6 @@ use PHPDaemon\Structures\StackCallbacks;
  */
 abstract class Connection extends IOStream
 {
-
     /**
      * @var string Path
      */
@@ -175,7 +174,7 @@ abstract class Connection extends IOStream
 
     /**
      * Sets peer name
-     * @param  string  $host Hostname
+     * @param  string $host Hostname
      * @param  integer $port Port
      * @return void
      */
@@ -291,7 +290,6 @@ abstract class Connection extends IOStream
                 $this->onFailure();
             }
             $this->connected = false;
-            ;
         } catch (\Exception $e) {
             Daemon::uncaughtExceptionHandler($e);
         }
@@ -310,7 +308,7 @@ abstract class Connection extends IOStream
 
     /**
      * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
-     * @param  string  $data Data to send
+     * @param  string $data Data to send
      * @return boolean       Success
      */
     public function write($data)
@@ -384,7 +382,7 @@ abstract class Connection extends IOStream
             return false;
         }
         $params = [
-            \EventSslContext::OPT_VERIFY_PEER       => $this->verifypeer,
+            \EventSslContext::OPT_VERIFY_PEER => $this->verifypeer,
             \EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
         ];
         if ($this->certfile !== null) {
@@ -436,14 +434,14 @@ abstract class Connection extends IOStream
 
     /**
      * Connects to URL
-     * @param  string   $url URL
-     * @param  callable $cb  Callback
+     * @param  string $url URL
+     * @param  callable $cb Callback
      * @return boolean       Success
      */
     public function connect($url, $cb = null)
     {
         $this->uri = Config\Object::parseCfgUri($url);
-        $u         =& $this->uri;
+        $u =& $this->uri;
         if (!$u) {
             return false;
         }
@@ -467,10 +465,10 @@ abstract class Connection extends IOStream
             $this->setContext($this->initSSLContext(), \EventBufferEvent::SSL_CONNECTING);
         }
 
-        $this->url    = $url;
+        $this->url = $url;
         $this->scheme = strtolower($u['scheme']);
-        $this->host   = isset($u['host']) ? $u['host'] : null;
-        $this->port   = isset($u['port']) ? $u['port'] : 0;
+        $this->host = isset($u['host']) ? $u['host'] : null;
+        $this->port = isset($u['port']) ? $u['port'] : 0;
 
         if (isset($u['pass'])) {
             $this->password = $u['pass'];
@@ -502,7 +500,7 @@ abstract class Connection extends IOStream
 
     /**
      * Establish UNIX socket connection
-     * @param  string  $path Path
+     * @param  string $path Path
      * @return boolean       Success
      */
     public function connectUnix($path)
@@ -520,14 +518,14 @@ abstract class Connection extends IOStream
             return true;
         }
         $this->bevConnect = true;
-        $this->addr       = 'unix:' . $path;
+        $this->addr = 'unix:' . $path;
         $this->setFd(null);
         return true;
     }
 
     /**
      * Establish raw socket connection
-     * @param  string  $host Hostname
+     * @param  string $host Hostname
      * @return boolean       Success
      */
     public function connectRaw($host)
@@ -557,7 +555,7 @@ abstract class Connection extends IOStream
             $this->host = $this->hostReal;
         }
         $this->addr = $this->hostReal . ':raw';
-        $fd         = socket_create(\EventUtil::AF_INET, \EventUtil::SOCK_RAW, 1);
+        $fd = socket_create(\EventUtil::AF_INET, \EventUtil::SOCK_RAW, 1);
         if (!$fd) {
             return false;
         }
@@ -572,14 +570,14 @@ abstract class Connection extends IOStream
 
     /**
      * Establish UDP connection
-     * @param  string  $host Hostname
+     * @param  string $host Hostname
      * @param  integer $port Port
      * @return boolean       Success
      */
     public function connectUdp($host, $port)
     {
         $this->type = 'udp';
-        $pton       = @inet_pton($host);
+        $pton = @inet_pton($host);
         if ($pton === false) { // dirty check
             \PHPDaemon\Clients\DNS\Pool::getInstance()->resolve($host, function ($result) use ($host, $port) {
                 if (!$result) {
@@ -610,7 +608,7 @@ abstract class Connection extends IOStream
             $fd = socket_create(\EventUtil::AF_INET, SOCK_DGRAM, \EventUtil::SOL_UDP);
         } elseif ($l === 16) {
             $this->addr = '[' . $host . ']:' . $port;
-            $fd         = socket_create(\EventUtil::AF_INET6, SOCK_DGRAM, \EventUtil::SOL_UDP);
+            $fd = socket_create(\EventUtil::AF_INET6, SOCK_DGRAM, \EventUtil::SOL_UDP);
         } else {
             return false;
         }
@@ -629,15 +627,15 @@ abstract class Connection extends IOStream
 
     /**
      * Establish TCP connection
-     * @param  string  $host Hostname
+     * @param  string $host Hostname
      * @param  integer $port Port
      * @return boolean       Success
      */
     public function connectTcp($host, $port)
     {
         $this->type = 'tcp';
-        $pton       = @inet_pton($host);
-        $fd         = null;
+        $pton = @inet_pton($host);
+        $fd = null;
         if ($pton === false) { // dirty check
             \PHPDaemon\Clients\DNS\Pool::getInstance()->resolve($this->host, function ($result) use ($host, $port) {
                 if (!$result) {
@@ -687,8 +685,10 @@ abstract class Connection extends IOStream
         }
         if (!$this->bevConnectEnabled) {
             $this->fd = $fd;
-            $this->setTimeouts($this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
-                            $this->timeoutWrite!== null ? $this->timeoutWrite : $this->timeout);
+            $this->setTimeouts(
+                $this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
+                $this->timeoutWrite !== null ? $this->timeoutWrite : $this->timeout
+            );
             socket_connect($fd, $host, $port);
             socket_getsockname($fd, $this->locAddr, $this->locPort);
         } else {
@@ -726,7 +726,7 @@ abstract class Connection extends IOStream
 
     /**
      * Set timeouts
-     * @param  integer $read  Read timeout in seconds
+     * @param  integer $read Read timeout in seconds
      * @param  integer $write Write timeout in seconds
      * @return void
      */
@@ -734,16 +734,24 @@ abstract class Connection extends IOStream
     {
         parent::setTimeouts($read, $write);
         if ($this->fd !== null) {
-            $this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_SNDTIMEO, ['sec' => $this->timeoutWrite, 'usec' => 0]);
-            $this->setOption(\EventUtil::SOL_SOCKET, \EventUtil::SO_RCVTIMEO, ['sec' => $this->timeoutRead, 'usec' => 0]);
+            $this->setOption(
+                \EventUtil::SOL_SOCKET,
+                \EventUtil::SO_SNDTIMEO,
+                ['sec' => $this->timeoutWrite, 'usec' => 0]
+            );
+            $this->setOption(
+                \EventUtil::SOL_SOCKET,
+                \EventUtil::SO_RCVTIMEO,
+                ['sec' => $this->timeoutRead, 'usec' => 0]
+            );
         }
     }
 
     /**
      * Set socket option
-     * @param  integer $level   Level
+     * @param  integer $level Level
      * @param  integer $optname Option
-     * @param  mixed   $val     Value
+     * @param  mixed $val Value
      * @return void
      */
     public function setOption($level, $optname, $val)

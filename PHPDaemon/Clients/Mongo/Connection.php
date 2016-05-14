@@ -71,7 +71,8 @@ class Connection extends ClientConnection
             return;
         }
         $this->dbname = $this->path;
-        $this->pool->sasl_scrum_sha1_auth([
+        $this->pool->saslScrumSHA1Auth(
+            [
                 'user'     => $this->user,
                 'password' => $this->password,
                 'dbname'   => $this->dbname,
@@ -85,7 +86,9 @@ class Connection extends ClientConnection
                 }
                 $this->connected = true;
                 $this->onReady();
-            }, $this);
+            },
+            $this
+        );
     }
 
     /**

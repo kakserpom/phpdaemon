@@ -57,10 +57,7 @@ class IPCManager extends AppInstance
         $perWorker      = 1;
         $instancesCount = [];
         foreach (Daemon::$config as $name => $section) {
-            if (
-                    (!$section instanceof Config\Section)
-                    || !isset($section->limitinstances)
-            ) {
+            if ((!$section instanceof Config\Section) || !isset($section->limitinstances)) {
                 continue;
             }
             $instancesCount[$name] = 0;

@@ -10,7 +10,6 @@ use PHPDaemon\Network\Client;
  */
 class Pool extends Client
 {
-
     /**
      * Setting default config options
      * Overriden from NetworkClient::getConfigDefaults
@@ -20,20 +19,20 @@ class Pool extends Client
     {
         return [
             /* [integer] Default port */
-            'port'    => 80,
+            'port' => 80,
 
             /* [integer] Default SSL port */
             'sslport' => 443,
 
             /* [boolean] Send User-Agent header? */
-            'expose'  => 1,
+            'expose' => 1,
         ];
     }
 
     /**
      * Performs GET-request
-     * @param string   $url
-     * @param array    $params
+     * @param string $url
+     * @param array $params
      * @param callable $resultcb
      * @call  ( url $url, array $params )
      * @call  ( url $url, callable $resultcb )
@@ -56,7 +55,7 @@ class Pool extends Client
         } else {
             $dest = 'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($params['scheme'] === 'https' ? '#ssl' : '');
         }
-        $this->getConnection($dest,    function ($conn) use ($url, $params) {
+        $this->getConnection($dest, function ($conn) use ($url, $params) {
             if (!$conn->isConnected()) {
                 $params['resultcb'](false);
                 return;
@@ -67,16 +66,20 @@ class Pool extends Client
 
     /**
      * Performs HTTP request
-     * @param string   $url
-     * @param array    $data
-     * @param array    $params
+     * @param string $url
+     * @param array $data
+     * @param array $params
      * @param callable $resultcb
      * @call  ( url $url, array $data, array $params )
      * @call  ( url $url, array $data, callable $resultcb )
      * @callback $resultcb ( Connection $conn, boolean $success )
      */
-    public function post($url, $data = [], $params)
+    public function post($url, $data, $params)
     {
+        if (!$data) {
+            $data = [];
+        }
+
         if (is_callable($params)) {
             $params = ['resultcb' => $params];
         }
@@ -116,10 +119,10 @@ class Pool extends Client
         if (!is_array($mixed)) {
             return false;
         }
-        $url            = '';
-        $buf            = [];
+        $url = '';
+        $buf = [];
         $queryDelimiter = '?';
-        $mixed[]        = '';
+        $mixed[] = '';
         foreach ($mixed as $k => $v) {
             if (is_int($k) || ctype_digit($k)) {
                 if (sizeof($buf) > 0) {
@@ -150,7 +153,7 @@ class Pool extends Client
         if (false === $url) {
             return false;
         }
-        $u   = parse_url($url);
+        $u = parse_url($url);
         $uri = '';
         if (isset($u['path'])) {
             $uri .= $u['path'];

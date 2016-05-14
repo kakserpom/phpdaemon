@@ -144,11 +144,11 @@ abstract class Generic extends \PHPDaemon\Request\Generic
     protected function preinit($req)
     {
         if ($req === null) {
-            $req                    = new \stdClass;
-            $req->attrs             = new \stdClass;
-            $req->attrs->inputDone  = true;
+            $req = new \stdClass;
+            $req->attrs = new \stdClass;
+            $req->attrs->inputDone = true;
             $req->attrs->paramsDone = true;
-            $req->attrs->chunked    = false;
+            $req->attrs->chunked = false;
         }
 
         $this->attrs = $req->attrs;
@@ -173,9 +173,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic
 
     /**
      * Output whole contents of file
-     * @param  string   $path Path
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return boolean        Success
      */
     public function sendfile($path, $cb, $pri = EIO_PRI_DEFAULT)
@@ -202,20 +202,28 @@ abstract class Generic extends \PHPDaemon\Request\Generic
             return true;
         }
         $first = true;
-        FileSystem::readfileChunked($path, $cb, function ($file, $chunk) use (&$first) { // readed chunk
-            if ($this->upstream->isFreed()) {
-                return false;
-            }
-            if ($first) {
-                try {
-                    $this->header('Content-Length: ' . $file->stat['size']);
-                } catch (RequestHeadersAlreadySent $e) {
+
+        FileSystem::readfileChunked(
+            $path,
+            $cb,
+            function ($file, $chunk) use (&$first) {
+                // readed chunk
+                if ($this->upstream->isFreed()) {
+                    return false;
                 }
-                $first = false;
+
+                if ($first) {
+                    try {
+                        $this->header('Content-Length: ' . $file->stat['size']);
+                    } catch (RequestHeadersAlreadySent $e) {
+                    }
+                    $first = false;
+                }
+                $this->out($chunk);
+                return true;
             }
-            $this->out($chunk);
-            return true;
-        });
+        );
+
         return true;
     }
 
@@ -239,20 +247,22 @@ abstract class Generic extends \PHPDaemon\Request\Generic
             return false;
         }
         if (isset($this->appInstance->passphrase)) {
-            if (
-                    !isset($this->attrs->server['PASSPHRASE'])
-                    || ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
-            ) {
+            if (!isset($this->attrs->server['PASSPHRASE'])
+                || ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])) {
                 $this->finish();
             }
+
             return false;
         }
+
         if ($this->attrs->input->isFrozen()) {
             return false;
         }
+
         if ($this->sleepTime === 0) {
             $this->wakeup();
         }
+
         return true;
     }
 
@@ -276,23 +286,19 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         } else {
             $this->attrs->contentLength = (int)$this->attrs->server['HTTP_CONTENT_LENGTH'];
         }
-        if (
-                isset($this->attrs->server['CONTENT_TYPE'])
-                && !isset($this->attrs->server['HTTP_CONTENT_TYPE'])
-        ) {
+
+        if (isset($this->attrs->server['CONTENT_TYPE']) && !isset($this->attrs->server['HTTP_CONTENT_TYPE'])) {
             $this->attrs->server['HTTP_CONTENT_TYPE'] = $this->attrs->server['CONTENT_TYPE'];
         }
 
         if (isset($this->attrs->server['QUERY_STRING'])) {
-            self::parse_str($this->attrs->server['QUERY_STRING'], $this->attrs->get);
+            self::parseStr($this->attrs->server['QUERY_STRING'], $this->attrs->get);
         }
-        if (
-                isset($this->attrs->server['REQUEST_METHOD'])
-                && ($this->attrs->server['REQUEST_METHOD'] === 'POST' || $this->attrs->server['REQUEST_METHOD'] === 'PUT')
-                && isset($this->attrs->server['HTTP_CONTENT_TYPE'])
-        ) {
+        if (isset($this->attrs->server['REQUEST_METHOD'])
+            && ($this->attrs->server['REQUEST_METHOD'] === 'POST' || $this->attrs->server['REQUEST_METHOD'] === 'PUT')
+            && isset($this->attrs->server['HTTP_CONTENT_TYPE'])) {
             $this->attrs->server['REQUEST_METHOD_POST'] = true;
-            self::parse_str($this->attrs->server['HTTP_CONTENT_TYPE'], $this->contype, true);
+            self::parseStr($this->attrs->server['HTTP_CONTENT_TYPE'], $this->contype, true);
             $found = false;
             foreach ($this->contype as $k => $v) {
                 if (mb_orig_strpos($k, '/') === false) {
@@ -306,7 +312,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
             }
 
             if (isset($this->contype['multipart/form-data'])
-                    && (isset($this->contype['boundary']))
+                && (isset($this->contype['boundary']))
             ) {
                 $this->attrs->input->setBoundary($this->contype['boundary']);
             }
@@ -315,18 +321,15 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         }
 
         if (isset($this->attrs->server['HTTP_COOKIE'])) {
-            self::parse_str($this->attrs->server['HTTP_COOKIE'], $this->attrs->cookie, true);
+            self::parseStr($this->attrs->server['HTTP_COOKIE'], $this->attrs->cookie, true);
         }
 
         if (isset($this->attrs->server['HTTP_AUTHORIZATION'])) {
             $e = explode(' ', $this->attrs->server['HTTP_AUTHORIZATION'], 2);
 
-            if (
-                    ($e[0] === 'Basic')
-                    && isset($e[1])
-            ) {
+            if (($e[0] === 'Basic') && isset($e[1])) {
                 $e[1] = base64_decode($e[1]);
-                $e    = explode(':', $e[1], 2);
+                $e = explode(':', $e[1], 2);
 
                 if (isset($e[1])) {
                     list($this->attrs->server['PHP_AUTH_USER'], $this->attrs->server['PHP_AUTH_PW']) = $e;
@@ -349,7 +352,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS']) && $this->attrs->server['REQUEST_PREPARED_UPLOADS'] === 'nginx') {
             if (isset($this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'])) {
                 $URLprefix = $this->attrs->server['REQUEST_PREPARED_UPLOADS_URL_PREFIX'];
-                $l         = mb_orig_strlen($URLprefix);
+                $l = mb_orig_strlen($URLprefix);
                 foreach (['PHP_SELF', 'REQUEST_URI', 'SCRIPT_NAME', 'DOCUMENT_URI'] as $k) {
                     if (!isset($this->attrs->server[$k])) {
                         continue;
@@ -359,7 +362,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
                     }
                 }
             }
-            $prefix    = 'file.';
+            $prefix = 'file.';
             $prefixlen = mb_orig_strlen($prefix);
             foreach ($this->attrs->post as $k => $v) {
                 if (strncmp($k, $prefix, $prefixlen) === 0) {
@@ -377,9 +380,9 @@ abstract class Generic extends \PHPDaemon\Request\Generic
             $uploadTmp = $this->getUploadTempDir();
             foreach ($this->attrs->files as $k => &$file) {
                 if (!isset($file['tmp_name'])
-                        || !isset($file['name'])
-                        || !ctype_digit(basename($file['tmp_name']))
-                        || (mb_orig_strpos(pathinfo($file['tmp_name'], PATHINFO_DIRNAME), $uploadTmp) !== 0)
+                    || !isset($file['name'])
+                    || !ctype_digit(basename($file['tmp_name']))
+                    || (mb_orig_strpos(pathinfo($file['tmp_name'], PATHINFO_DIRNAME), $uploadTmp) !== 0)
                 ) {
                     unset($this->attrs->files[$k]);
                     continue;
@@ -394,7 +397,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
             unset($file);
         }
         if (isset($this->attrs->server['REQUEST_BODY_FILE'])
-                && $this->upstream->pool->config->autoreadbodyfile->value
+            && $this->upstream->pool->config->autoreadbodyfile->value
         ) {
             $this->readBodyFile();
         }
@@ -417,7 +420,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         $http11 = $this->attrs->server['SERVER_PROTOCOL'] === 'HTTP/1.1';
         if ($this->contentLength === null
             && $this->upstream->checkChunkedEncCap()
-            && $http11) {
+            && $http11
+        ) {
             $this->attrs->chunked = true;
         }
         if ($this->attrs->chunked) {
@@ -444,14 +448,14 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         $h .= "\r\n";
         $this->headers_sent_file = __FILE__;
         $this->headers_sent_line = __LINE__;
-        $this->headers_sent      = true;
+        $this->headers_sent = true;
         $this->upstream->requestOut($this, $h);
         return false;
     }
 
     /**
      * Output some data
-     * @param  string  $s     String to out
+     * @param  string $s String to out
      * @param  boolean $flush ob_flush?
      * @return boolean        Success
      */
@@ -480,8 +484,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic
                 $c = min($this->upstream->pool->config->chunksize->value, $l - $o);
 
                 $chunk = dechex($c) . "\r\n"
-                        . ($c === $l ? $s : mb_orig_substr($s, $o, $c)) // content
-                        . "\r\n";
+                    . ($c === $l ? $s : mb_orig_substr($s, $o, $c)) // content
+                    . "\r\n";
 
                 if ($this->sendfp) {
                     $this->sendfp->write($chunk);
@@ -517,7 +521,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
 
     /**
      * Outputs data with headers (split by \r\n\r\n)
-     * @param  string  $s Data
+     * @param  string $s Data
      * @return boolean    Success
      */
     public function combinedOut($s)
@@ -560,13 +564,13 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         if (!Daemon::$obInStack) { // preventing recursion
             @ob_flush();
         }
-        $_GET     = & $this->attrs->get;
-        $_POST    = & $this->attrs->post;
-        $_COOKIE  = & $this->attrs->cookie;
-        $_REQUEST = & $this->attrs->request;
-        $_SESSION = & $this->attrs->session;
-        $_FILES   = & $this->attrs->files;
-        $_SERVER  = & $this->attrs->server;
+        $_GET = &$this->attrs->get;
+        $_POST = &$this->attrs->post;
+        $_COOKIE = &$this->attrs->cookie;
+        $_REQUEST = &$this->attrs->request;
+        $_SESSION = &$this->attrs->session;
+        $_FILES = &$this->attrs->files;
+        $_SERVER = &$this->attrs->server;
     }
 
     /**
@@ -605,11 +609,11 @@ abstract class Generic extends \PHPDaemon\Request\Generic
 
     /**
      * Checks if headers have been sent
-     * @param  string  &$file File name
+     * @param  string &$file File name
      * @param  integer &$line Line in file
      * @return boolean        Success
      */
-    public function headers_sent(&$file, &$line)
+    public function headersSent(&$file, &$line)
     {
         $file = $this->headers_sent_file;
         $line = $this->headers_sent_line;
@@ -620,38 +624,47 @@ abstract class Generic extends \PHPDaemon\Request\Generic
      * Return current list of headers
      * @return array Headers
      */
-    public function headers_list()
+    public function headersList()
     {
         return array_values($this->headers);
     }
 
     /**
      * Set the cookie
-     * @param string  $name     Name of cookie
-     * @param string  $value    Value
-     * @param integer $maxage   Optional. Max-Age. Default is 0
-     * @param string  $path     Optional. Path. Default is empty string
-     * @param string  $domain   Optional. Domain. Default is empty string
-     * @param boolean $secure   Optional. Secure. Default is false
+     * @param string $name Name of cookie
+     * @param string $value Value
+     * @param integer $maxage Optional. Max-Age. Default is 0
+     * @param string $path Optional. Path. Default is empty string
+     * @param string $domain Optional. Domain. Default is empty string
+     * @param boolean $secure Optional. Secure. Default is false
      * @param boolean $HTTPOnly Optional. HTTPOnly. Default is false
      * @return void
      */
-    public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false)
-    {
+    public function setcookie(
+        $name,
+        $value = '',
+        $maxage = 0,
+        $path = '',
+        $domain = '',
+        $secure = false,
+        $HTTPOnly = false
+    ) {
         $this->header(
             'Set-Cookie: ' . $name . '=' . rawurlencode($value)
             . (empty($domain) ? '' : '; Domain=' . $domain)
             . (empty($maxage) ? '' : '; Max-Age=' . $maxage)
             . (empty($path) ? '' : '; Path=' . $path)
             . (!$secure ? '' : '; Secure')
-            . (!$HTTPOnly ? '' : '; HttpOnly'), false);
+            . (!$HTTPOnly ? '' : '; HttpOnly'),
+            false
+        );
     }
 
     /**
      * Send the header
-     * @param  string  $s       Header. Example: 'Location: http://php.net/'
+     * @param  string $s Header. Example: 'Location: http://php.net/'
      * @param  boolean $replace Optional. Replace?
-     * @param  integer $code    Optional. HTTP response code
+     * @param  integer $code Optional. HTTP response code
      * @throws \PHPDaemon\Request\RequestHeadersAlreadySent
      * @return boolean Success
      */
@@ -679,7 +692,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         $k = strtr(strtoupper($e[0]), Generic::$htr);
 
         if ($k === 'CONTENT_TYPE') {
-            self::parse_str(strtolower($e[1]), $ctype, true);
+            self::parseStr(strtolower($e[1]), $ctype, true);
             if (!isset($ctype['charset'])) {
                 $ctype['charset'] = $this->upstream->pool->config->defaultcharset->value;
 
@@ -773,10 +786,10 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         $this->freezeInput();
         FileSystem::tempnam(ini_get('upload_tmp_dir'), 'php', function ($fp) use ($in) {
             if (!$fp) {
-                $in->curPart['fp']    = false;
+                $in->curPart['fp'] = false;
                 $in->curPart['error'] = UPLOAD_ERR_NO_TMP_DIR;
             } else {
-                $in->curPart['fp']       = $fp;
+                $in->curPart['fp'] = $fp;
                 $in->curPart['tmp_name'] = $fp->path;
             }
             $this->unfreezeInput();
@@ -785,7 +798,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
 
     /**
      * Called when chunk of incoming file has arrived
-     * @param  Input   $in   Input buffer
+     * @param  Input $in Input buffer
      * @param  boolean $last Last?
      * @return void
      */
@@ -850,7 +863,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
 
     /**
      * Tells whether the file was uploaded via HTTP POST
-     * @param  string  $path The filename being checked
+     * @param  string $path The filename being checked
      * @return boolean       Whether if this is uploaded file
      */
     public function isUploadedFile($path)
@@ -871,8 +884,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic
 
     /**
      * Moves an uploaded file to a new location
-     * @param  string  $filename The filename of the uploaded file
-     * @param  string  $dest     The destination of the moved file
+     * @param  string $filename The filename of the uploaded file
+     * @param  string $dest The destination of the moved file
      * @return boolean           Success
      */
     public function moveUploadedFile($filename, $dest)
@@ -892,28 +905,32 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         if (!isset($this->attrs->server['REQUEST_BODY_FILE'])) {
             return false;
         }
-        FileSystem::readfileChunked($this->attrs->server['REQUEST_BODY_FILE'],
+
+        FileSystem::readfileChunked(
+            $this->attrs->server['REQUEST_BODY_FILE'],
             function ($file, $success) {
                 $this->attrs->inputDone = true;
                 if ($this->sleepTime === 0) {
                     $this->wakeup();
                 }
             },
-            function ($file, $chunk) { // readed chunk
+            function ($file, $chunk) {
+                // readed chunk
                 $this->stdin($chunk);
             }
         );
+
         return true;
     }
 
     /**
      * Replacement for default parse_str(), it supoorts UCS-2 like this: %uXXXX
-     * @param  string  $s      String to parse
-     * @param  array   &$var   Reference to the resulting array
+     * @param  string $s String to parse
+     * @param  array &$var Reference to the resulting array
      * @param  boolean $header Header-style string
      * @return void
      */
-    public static function parse_str($s, &$var, $header = false)
+    public static function parseStr($s, &$var, $header = false)
     {
         static $cb;
         if ($cb === null) {
@@ -924,10 +941,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         if ($header) {
             $s = strtr($s, Generic::$hvaltr);
         }
-        if (
-                (stripos($s, '%u') !== false)
-                && preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)
-        ) {
+        if ((stripos($s, '%u') !== false)
+            && preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)) {
             $s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i', $cb, $s);
         }
         parse_str($s, $var);
@@ -943,7 +958,7 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         if (!$this->headers_sent) {
             $this->out('');
         }
-        $this->sendfp       = null;
+        $this->sendfp = null;
         if (isset($this->attrs->files)) {
             foreach ($this->attrs->files as $f) {
                 if (isset($f['tmp_name'])) {

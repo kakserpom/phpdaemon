@@ -66,15 +66,15 @@ class SimpleRequest extends Generic
         }
 
         ?>
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="UTF-8">
-	<title>Clients\Redis Simple example</title>
-</head>
-<body>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Clients\Redis Simple example</title>
+        </head>
+        <body>
 
-<?php
+        <?php
         if ($r = $this->job->getResult('testquery')) {
             echo '<h1>It works! Be happy! ;-)</h1>Result of query: <pre>';
             var_dump($r);
@@ -85,10 +85,10 @@ class SimpleRequest extends Generic
         echo '<br />Request (http) took: ' . round(microtime(true) - $this->attrs->server['REQUEST_TIME_FLOAT'], 6);
 
         ?>
-</body>
-</html>
+        </body>
+        </html>
 
-<?php
+        <?php
 
     }
 }

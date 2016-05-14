@@ -39,21 +39,23 @@ class FileWatcher
             stream_set_blocking($this->inotify, 0);
         }
 
-        Timer::add(function ($event) {
-
-            Daemon::$process->fileWatcher->watch();
-            if (sizeof(Daemon::$process->fileWatcher->files) > 0) {
-                $event->timeout();
-            }
-
-        }, 1e6 * 1, 'fileWatcher');
+        Timer::add(
+            function ($event) {
+                Daemon::$process->fileWatcher->watch();
+                if (sizeof(Daemon::$process->fileWatcher->files) > 0) {
+                    $event->timeout();
+                }
+            },
+            1e6 * 1,
+            'fileWatcher'
+        );
     }
 
     /**
      * Adds your subscription on object in FS
-     * @param  string  $path	Path
-     * @param  mixed   $cb		Callback
-     * @param  integer $flags	Look inotify_add_watch()
+     * @param  string $path Path
+     * @param  mixed $cb Callback
+     * @param  integer $flags Look inotify_add_watch()
      * @return true
      */
     public function addWatch($path, $cb, $flags = null)
@@ -62,7 +64,7 @@ class FileWatcher
         if (!isset($this->files[$path])) {
             $this->files[$path] = [];
             if ($this->inotify) {
-                $this->descriptors[inotify_add_watch($this->inotify, $path, $flags ? : IN_MODIFY)] = $path;
+                $this->descriptors[inotify_add_watch($this->inotify, $path, $flags ?: IN_MODIFY)] = $path;
             }
         }
         $this->files[$path][] = $cb;
@@ -72,8 +74,8 @@ class FileWatcher
 
     /**
      * Cancels your subscription on object in FS
-     * @param  string  $path	Path
-     * @param  mixed   $cb		Callback
+     * @param  string $path Path
+     * @param  mixed $cb Callback
      * @return boolean
      */
     public function rmWatch($path, $cb)
@@ -147,10 +149,7 @@ class FileWatcher
 
                 $mt = filemtime($path);
 
-                if (
-                        isset($hash[$path])
-                        && ($mt > $hash[$path])
-                ) {
+                if (isset($hash[$path]) && ($mt > $hash[$path])) {
                     $this->onFileChanged($path);
                 }
 

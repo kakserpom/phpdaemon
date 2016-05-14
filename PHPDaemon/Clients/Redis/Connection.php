@@ -66,7 +66,7 @@ class Connection extends ClientConnection implements \Iterator
     protected $key;
 
     protected $stack = [];
-    
+
     protected $ptr;
 
     /**
@@ -100,7 +100,7 @@ class Connection extends ClientConnection implements \Iterator
     protected $pos = 0;
 
     /**
-     * @var \SplStack Stack of results types 
+     * @var \SplStack Stack of results types
      */
     protected $resultTypeStack;
 
@@ -133,7 +133,7 @@ class Connection extends ClientConnection implements \Iterator
     {
         parent::__construct($fd, $pool);
         $this->resultTypeStack = new \SplStack;
-        $this->argsStack       = new \SplStack;
+        $this->argsStack = new \SplStack;
     }
 
     public function rewind()
@@ -201,7 +201,7 @@ class Connection extends ClientConnection implements \Iterator
                 if (!is_array($this->result) || empty($this->result)) {
                     $this->assocData = [];
                 } elseif ($this->resultType === static::RESULT_TYPE_MESSAGE) {
-                    $this->assocData = [ $this->result[1] => $this->result[2] ];
+                    $this->assocData = [$this->result[1] => $this->result[2]];
                 } elseif ($this->resultType === static::RESULT_TYPE_ARGSVALS) {
                     $hash = [];
                     for ($i = 0, $s = sizeof($this->result); $i < $s; ++$i) {
@@ -238,7 +238,7 @@ class Connection extends ClientConnection implements \Iterator
 
     /**
      * @TODO
-     * @param  string  $key
+     * @param  string $key
      * @param  integer $timeout
      * @return Lock
      */
@@ -249,7 +249,7 @@ class Connection extends ClientConnection implements \Iterator
 
     /**
      * Easy wrapper for queue of eval's
-     * @param  callable  $cb
+     * @param  callable $cb
      * @return MultiEval
      */
     public function meval($cb = null)
@@ -259,10 +259,10 @@ class Connection extends ClientConnection implements \Iterator
 
     /**
      * Wrapper for scans commands
-     * @param  string  $cmd    Command
-     * @param  array   $args   Arguments
-     * @param  cllable $cbEnd  Callback
-     * @param  integer $limit  Limit
+     * @param  string $cmd Command
+     * @param  array $args Arguments
+     * @param  cllable $cbEnd Callback
+     * @param  integer $limit Limit
      * @return AutoScan
      */
     public function autoscan($cmd, $args = [], $cbEnd = null, $limit = null)
@@ -338,8 +338,8 @@ class Connection extends ClientConnection implements \Iterator
 
     /**
      * @TODO
-     * @param  string   $name
-     * @param  array    $args
+     * @param  string $name
+     * @param  array $args
      * @param  callable $cb
      * @callback $cb ( )
      * @return void
@@ -348,8 +348,7 @@ class Connection extends ClientConnection implements \Iterator
     {
         if ($name === 'MULTI' || $name === 'WATCH') {
             $this->acquire();
-        }
-        // PUB/SUB handling
+        } // PUB/SUB handling
         elseif (substr($name, -9) === 'SUBSCRIBE') {
             if (!$this->subscribed) {
                 $this->subscribed = true;
@@ -371,7 +370,7 @@ class Connection extends ClientConnection implements \Iterator
                 }
             }
         }
-        
+
         if ($name === 'SUBSCRIBE') {
             $this->subscribed();
             $channels = [];
@@ -444,9 +443,7 @@ class Connection extends ClientConnection implements \Iterator
                 $this->sendCommand($name, $channels, $opcb);
             }
         } elseif ($name === 'UNSUBSCRIBEREAL') {
-            
             /* Race-condition-free UNSUBSCRIBE */
-
             $old = $this->subscribeCb;
             $this->sendCommand('UNSUBSCRIBE', $args, function ($redis) use ($cb, $args, $old) {
                 if (!$redis) {
@@ -490,9 +487,7 @@ class Connection extends ClientConnection implements \Iterator
                 $this->sendCommand($name, $channels, $opcb);
             }
         } elseif ($name === 'PUNSUBSCRIBEREAL') {
-            
             /* Race-condition-free PUNSUBSCRIBE */
-
             $old = $this->psubscribeCb;
             $this->sendCommand('PUNSUBSCRIBE', $args, function ($redis) use ($cb, $args, $old) {
                 if (!$redis) {
@@ -536,7 +531,8 @@ class Connection extends ClientConnection implements \Iterator
                 }
             } elseif ($name === 'HGETALL') {
                 $this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
-            } elseif (($name === 'ZRANGE' || $name === 'ZRANGEBYSCORE' || $name === 'ZREVRANGE' || $name === 'ZREVRANGEBYSCORE') && preg_grep('/WITHSCORES/i', $args)) {
+            } elseif (($name === 'ZRANGE' || $name === 'ZRANGEBYSCORE' || $name === 'ZREVRANGE' || $name === 'ZREVRANGEBYSCORE')
+                && preg_grep('/WITHSCORES/i', $args)) {
                 $this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
             } else {
                 $this->resultTypeStack->push(static::RESULT_TYPE_DEFAULT);
@@ -552,8 +548,8 @@ class Connection extends ClientConnection implements \Iterator
 
     /**
      * @TODO
-     * @param  string   $name
-     * @param  array    $args
+     * @param  string $name
+     * @param  array $args
      * @param  callable $cb
      * @callback $cb ( )
      * @return void
@@ -628,24 +624,24 @@ class Connection extends ClientConnection implements \Iterator
         if (isset($t[$this->result[1]])) {
             $this->resultType = static::RESULT_TYPE_MESSAGE;
             $this->channel = $this->result[1];
-            $this->msg     = $this->result[2];
+            $this->msg = $this->result[2];
             foreach ($t[$this->result[1]] as $cb) {
                 if (is_callable($cb)) {
                     $cb($this);
                 }
             }
         } elseif ($this->pool->config->logpubsubracecondition->value) {
-            Daemon::log('[Redis client]'. ': PUB/SUB race condition at channel '. Debug::json($this->result[1]));
+            Daemon::log('[Redis client]' . ': PUB/SUB race condition at channel ' . Debug::json($this->result[1]));
         }
         clean:
-        $this->args       = null;
-        $this->result     = null;
-        $this->channel    = null;
-        $this->msg        = null;
-        $this->error      = false;
-        $this->pos        = 0;
+        $this->args = null;
+        $this->result = null;
+        $this->channel = null;
+        $this->msg = null;
+        $this->error = false;
+        $this->pos = 0;
         $this->resultType = static::RESULT_TYPE_DEFAULT;
-        $this->assocData  = null;
+        $this->assocData = null;
         if (!isset($t)) {
             $this->checkFree();
         }
@@ -697,21 +693,21 @@ class Connection extends ClientConnection implements \Iterator
                 }
                 $char = $l{0};
                 if ($char === ':') { // inline integer
-                    $this->pushValue((int) substr($l, 1));
+                    $this->pushValue((int)substr($l, 1));
                     goto start;
                 } elseif (($char === '+') || ($char === '-')) { // inline string
                     $this->error = $char === '-';
                     $this->pushValue(substr($l, 1));
                     goto start;
                 } elseif ($char === '*') { // defines number of elements of incoming array
-                    $length = (int) substr($l, 1);
+                    $length = (int)substr($l, 1);
                     if ($length <= 0) {
                         $this->pushValue([]);
                         goto start;
                     }
 
                     $ptr = [];
-                    
+
                     if (is_array($this->ptr)) {
                         $this->ptr[] =& $ptr;
                     }
@@ -729,7 +725,7 @@ class Connection extends ClientConnection implements \Iterator
                     }
                     $this->valueLength = (int)substr($l, 1);
                     if ($this->valueLength + 2 > $this->pool->maxAllowedPacket) {
-                        $this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
+                        $this->log('max-allowed-packet (' . $this->pool->config->maxallowedpacket->getHumanValue() . ') exceed, aborting connection');
                         $this->finish();
                         return;
                     }

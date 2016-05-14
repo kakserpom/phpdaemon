@@ -23,38 +23,38 @@ class Pool extends Client
     /**
      * @TODO DESCR
      */
-    const OP_REPLY        = 1;
-    
+    const OP_REPLY = 1;
+
     /**
      * @TODO DESCR
      */
-    const OP_MSG          = 1000;
-    
+    const OP_MSG = 1000;
+
     /**
      * @TODO DESCR
      */
-    const OP_UPDATE       = 2001;
-    
+    const OP_UPDATE = 2001;
+
     /**
      * @TODO DESCR
      */
-    const OP_INSERT       = 2002;
-    
+    const OP_INSERT = 2002;
+
     /**
      * @TODO DESCR
      */
-    const OP_QUERY        = 2004;
-    
+    const OP_QUERY = 2004;
+
     /**
      * @TODO DESCR
      */
-    const OP_GETMORE      = 2005;
-    
+    const OP_GETMORE = 2005;
+
     /**
      * @TODO DESCR
      */
-    const OP_DELETE       = 2006;
-    
+    const OP_DELETE = 2006;
+
     /**
      * @TODO DESCR
      */
@@ -91,11 +91,11 @@ class Pool extends Client
     {
         return [
             /* [string|array] default server list */
-            'servers'        => 'tcp://127.0.0.1',
+            'servers' => 'tcp://127.0.0.1',
 
             /* [integer] default port */
-            'port'           => 27017,
-            
+            'port' => 27017,
+
             /* [integer] maxconnperserv */
             'maxconnperserv' => 32,
         ];
@@ -119,7 +119,7 @@ class Pool extends Client
 
     /**
      * Sets default database name
-     * @param  string  $name Database name
+     * @param  string $name Database name
      * @return boolean       Success
      */
     public function selectDB($name)
@@ -133,7 +133,7 @@ class Pool extends Client
      * Generates auth. key
      * @param  string $username Username
      * @param  string $password Password
-     * @param  string $nonce    Nonce
+     * @param  string $nonce Nonce
      * @return string           MD5 hash
      */
     public static function getAuthKey($username, $password, $nonce)
@@ -143,9 +143,9 @@ class Pool extends Client
 
     /**
      * Adds mongo server
-     * @param string  $url    URL
+     * @param string $url URL
      * @param integer $weight Weight
-     * @param mixed   $mock   @deprecated
+     * @param mixed $mock @deprecated
      * @return void
      */
     public function addServer($url, $weight = null, $mock = null)
@@ -155,11 +155,11 @@ class Pool extends Client
 
     /**
      * Gets the key
-     * @param  integer    $opcode Opcode (see constants above)
-     * @param  string     $data   Data
-     * @param  boolean    $reply  Is an answer expected?
-     * @param  Connection $conn   Connection. Optional
-     * @param  callable   $sentcb Sent callback
+     * @param  integer $opcode Opcode (see constants above)
+     * @param  string $data Data
+     * @param  boolean $reply Is an answer expected?
+     * @param  Connection $conn Connection. Optional
+     * @param  callable $sentcb Sent callback
      * @callback $sentcb ( )
      * @throws ConnectionFinished
      * @return void
@@ -181,9 +181,9 @@ class Pool extends Client
 
     /**
      * @TODO DESCR
-     * @param  integer  $opcode Opcode (see constants above)
-     * @param  string   $data   Data
-     * @param  boolean  $reply  Is an answer expected?
+     * @param  integer $opcode Opcode (see constants above)
+     * @param  string $data Data
+     * @param  boolean $reply Is an answer expected?
      * @param  callable $sentcb Sent callback
      * @callback $sentcb ( )
      * @return callable
@@ -216,7 +216,7 @@ class Pool extends Client
 
     /**
      * Finds objects in collection and fires callback when got all objects
-     * @param  array    $p  Hash of properties (offset, limit, opts, tailable, await, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+     * @param  array $p Hash of properties (offset, limit, opts, tailable, await, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -234,7 +234,7 @@ class Pool extends Client
 
     /**
      * Finds objects in collection
-     * @param  array    $p  Hash of properties (offset, limit, opts, tailable, await, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+     * @param  array $p Hash of properties (offset, limit, opts, tailable, await, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -254,7 +254,7 @@ class Pool extends Client
         }
 
         if (isset($p['tailable']) && $p['tailable']) {
-            $p['opts'] = '01000'.(isset($p['await']) && $p['await']?'1':'0').'00';
+            $p['opts'] = '01000' . (isset($p['await']) && $p['await'] ? '1' : '0') . '00';
         }
 
         if (!isset($p['where'])) {
@@ -267,12 +267,7 @@ class Pool extends Client
         $s = false;
 
         foreach ($p as $k => $v) {
-            if (
-                    ($k === 'sort')
-                    || ($k === 'hint')
-                    || ($k === 'explain')
-                    || ($k === 'snapshot')
-            ) {
+            if (($k === 'sort') || ($k === 'hint') || ($k === 'explain') || ($k === 'snapshot')) {
                 if (!$s) {
                     $s = true;
                 }
@@ -308,29 +303,36 @@ class Pool extends Client
                 $bson = str_replace("\x11\$gt", "\x09\$gt", $bson);
             }
             $cb = CallbackWrapper::wrap($cb);
-            $this->request(self::OP_QUERY,
-                                    chr(bindec(strrev($p['opts']))) . "\x00\x00\x00"
-                                    . $p['col'] . "\x00"
-                                    . pack('VV', $p['offset'], $p['limit'])
-                                    . $bson
-                                    . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                chr(bindec(strrev($p['opts']))) . "\x00\x00\x00" . $p['col'] . "\x00"
+                . pack('VV', $p['offset'], $p['limit']) . $bson
+                . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['col'], $cb, false, isset($p['parse_oplog']), isset($p['tailable'])];
-                });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $o, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $o,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Finds one object in collection
-     * @param  array    $p  Hash of properties (offset,  opts, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+     * @param  array $p Hash of properties (offset,  opts, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -360,12 +362,7 @@ class Pool extends Client
         $s = false;
 
         foreach ($p as $k => $v) {
-            if (
-                    ($k === 'sort')
-                    || ($k === 'hint')
-                    || ($k === 'explain')
-                    || ($k === 'snapshot')
-            ) {
+            if (($k === 'sort') || ($k === 'hint') || ($k === 'explain') || ($k === 'snapshot')) {
                 if (!$s) {
                     $s = true;
                 }
@@ -394,29 +391,35 @@ class Pool extends Client
             static::safeModeEnc($o);
         }
         try {
-            $this->request(self::OP_QUERY,
-                                    pack('V', $p['opts'])
-                                    . $p['col'] . "\x00"
-                                    . pack('VV', $p['offset'], -1)
-                                    . bson_encode($o)
-                                    . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $p['col'] . "\x00" . pack('VV', $p['offset'], -1)
+                . bson_encode($o) . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['col'], $cb, true];
-                });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $o, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $o,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Counts objects in collection
-     * @param  array    $p  Hash of properties (offset, limit, opts, where, col)
+     * @param  array $p Hash of properties (offset, limit, opts, where, col)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -446,8 +449,8 @@ class Pool extends Client
         $e = explode('.', $p['col'], 2);
 
         $query = [
-            'count'  => $e[1],
-            'query'  => $p['where'],
+            'count' => $e[1],
+            'query' => $p['where'],
             'fields' => ['_id' => 1],
         ];
 
@@ -461,10 +464,7 @@ class Pool extends Client
 
         if (is_string($p['where'])) {
             $query['where'] = new \MongoCode($p['where']);
-        } elseif (
-                is_object($p['where'])
-                || sizeof($p['where'])
-        ) {
+        } elseif (is_object($p['where']) || sizeof($p['where'])) {
             $query['query'] = $p['where'];
         }
         $cb = CallbackWrapper::wrap($cb);
@@ -472,28 +472,35 @@ class Pool extends Client
             static::safeModeEnc($query);
         }
         try {
-            $this->request(self::OP_QUERY, pack('V', $p['opts'])
-                . $e[0] . '.$cmd' . "\x00"
-                . pack('VV', $p['offset'], $p['limit'])
-                . bson_encode($query)
-                . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $e[0] . '.$cmd' . "\x00" . pack('VV', $p['offset'], $p['limit'])
+                . bson_encode($query) . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['col'], $cb, true];
-            });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Sends authenciation packet
-     * @param  array    $p  Hash of properties (dbname, user, password, nonce)
+     * @param  array $p Hash of properties (dbname, user, password, nonce)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -506,36 +513,43 @@ class Pool extends Client
 
         $query = [
             'authenticate' => 1,
-            'user'         => $p['user'],
-            'nonce'        => $p['nonce'],
-            'key'          => self::getAuthKey($p['user'], $p['password'], $p['nonce']),
+            'user' => $p['user'],
+            'nonce' => $p['nonce'],
+            'key' => self::getAuthKey($p['user'], $p['password'], $p['nonce']),
         ];
         if ($this->safeMode) {
             static::safeModeEnc($query);
         }
         try {
-            $this->request(self::OP_QUERY, pack('V', $p['opts'])
-                . $p['dbname'] . '.$cmd' . "\x00"
-                . pack('VV', 0, -1)
-                . bson_encode($query)
-                . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $p['dbname'] . '.$cmd' . "\x00" . pack('VV', 0, -1)
+                . bson_encode($query) . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['dbname'], $cb, true];
-            });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Sends request of nonce
-     * @param  array    $p  Hash of properties
+     * @param  array $p Hash of properties
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -551,33 +565,41 @@ class Pool extends Client
         ];
         $cb = CallbackWrapper::wrap($cb);
         try {
-            $this->request(self::OP_QUERY, pack('V', $p['opts'])
-                . $p['dbname'] . '.$cmd' . "\x00"
-                . pack('VV', 0, -1)
-                . bson_encode($query)
-                . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $p['dbname'] . '.$cmd' . "\x00"
+                . pack('VV', 0, -1) . bson_encode($query)
+                . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['dbname'], $cb, true];
-                });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * @TODO DESCR
-     * @param  array  $keys
+     * @param  array $keys
      * @return string
      */
     public function getIndexName($keys)
     {
-        $name  = '';
+        $name = '';
         $first = true;
         foreach ($keys as $k => $v) {
             $name .= ($first ? '_' : '') . $k . '_' . $v;
@@ -588,19 +610,19 @@ class Pool extends Client
 
     /**
      * Ensure index
-     * @param  string   $ns      Collection
-     * @param  array    $keys    Keys
-     * @param  array    $options Optional. Options
-     * @param  callable $cb      Optional. Callback called when response received
+     * @param  string $ns Collection
+     * @param  array $keys Keys
+     * @param  array $options Optional. Options
+     * @param  callable $cb Optional. Callback called when response received
      * @callback $cb ( )
      * @return void
      */
     public function ensureIndex($ns, $keys, $options = [], $cb = null)
     {
-        $e   = explode('.', $ns, 2);
+        $e = explode('.', $ns, 2);
         $doc = [
-            'ns'   => $ns,
-            'key'  => $keys,
+            'ns' => $ns,
+            'key' => $keys,
             'name' => isset($options['name']) ? $options['name'] : $this->getIndexName($keys),
         ];
         if (isset($options['unique'])) {
@@ -623,32 +645,35 @@ class Pool extends Client
 
     /**
      * Gets last error
-     * @param  string     $db     Dbname
-     * @param  callable   $cb     Callback called when response received
-     * @param  array      $params Parameters.
-     * @param  Connection $conn   Connection. Optional
+     * @param  string $db Dbname
+     * @param  callable $cb Callback called when response received
+     * @param  array $params Parameters.
+     * @param  Connection $conn Connection. Optional
      * @callback $cb ( )
      * @return void
      */
     public function lastError($db, $cb, $params = [], $conn = null)
     {
-        $e                      = explode('.', $db, 2);
+        $e = explode('.', $db, 2);
         $params['getlasterror'] = 1;
         $cb = CallbackWrapper::wrap($cb);
         try {
-            $this->request(self::OP_QUERY,
-                pack('V', 0)
-                . $e[0] . '.$cmd' . "\x00"
-                . pack('VV', 0, -1)
-                . bson_encode($params), true, $conn, function ($conn, $reqId = null) use ($db, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', 0) . $e[0] . '.$cmd' . "\x00"
+                . pack('VV', 0, -1) . bson_encode($params),
+                true,
+                $conn,
+                function ($conn, $reqId = null) use ($db, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$db, $cb, true];
-            });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
                 $cb(['$err' => $e->getMessage()]);
             }
@@ -657,7 +682,7 @@ class Pool extends Client
 
     /**
      * Find objects in collection using min/max specifiers
-     * @param  array    $p  Hash of properties (offset, limit, opts, where, col, min, max)
+     * @param  array $p Hash of properties (offset, limit, opts, where, col, min, max)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -708,10 +733,7 @@ class Pool extends Client
 
         if (is_string($p['where'])) {
             $query['where'] = new \MongoCode($p['where']);
-        } elseif (
-                is_object($p['where'])
-                || sizeof($p['where'])
-        ) {
+        } elseif (is_object($p['where']) || sizeof($p['where'])) {
             $query['query'] = $p['where'];
         }
 
@@ -720,29 +742,37 @@ class Pool extends Client
             static::safeModeEnc($query);
         }
         try {
-            $this->request(self::OP_QUERY, pack('V', $p['opts'])
-                . $e[0] . '.$cmd' . "\x00"
-                . pack('VV', $p['offset'], $p['limit'])
-                . bson_encode($query)
-                . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $e[0] . '.$cmd' . "\x00"
+                . pack('VV', $p['offset'], $p['limit']) . bson_encode($query)
+                . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['col'], $cb, true];
-            });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Evaluates a code on the server side
-     * @param  string   $code Code
-     * @param  callable $cb   Callback called when response received
+     * @param  string $code Code
+     * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
      */
@@ -768,28 +798,36 @@ class Pool extends Client
 
         $cb = CallbackWrapper::wrap($cb);
         try {
-            $this->request(self::OP_QUERY, pack('V', $p['opts'])
-                . $p['db'] . '.$cmd' . "\x00"
-                . pack('VV', $p['offset'], $p['limit'])
-                . bson_encode(['$eval' => new \MongoCode($code)])
-                . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $p['db'] . '.$cmd' . "\x00"
+                . pack('VV', $p['offset'], $p['limit']) . bson_encode(['$eval' => new \MongoCode($code)])
+                . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['db'], $cb, true];
-                });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Returns distinct values of the property
-     * @param  array    $p  Hash of properties (offset, limit, opts, key, col, where)
+     * @param  array $p Hash of properties (offset, limit, opts, key, col, where)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -801,7 +839,7 @@ class Pool extends Client
 
         $query = [
             'distinct' => $e[1],
-            'key'      => $p['key'],
+            'key' => $p['key'],
         ];
 
         if (isset($p[$k = 'rp'])) {
@@ -816,17 +854,21 @@ class Pool extends Client
             $query['query'] = $p['where'];
         }
         $cb = CallbackWrapper::wrap($cb);
-        $this->request(self::OP_QUERY, pack('V', $p['opts'])
-            . $e[0] . '.$cmd' . "\x00"
-            . pack('VV', $p['offset'], $p['limit'])
-            . bson_encode($query)
-            . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+        $this->request(
+            self::OP_QUERY,
+            pack('V', $p['opts']) . $e[0] . '.$cmd' . "\x00"
+            . pack('VV', $p['offset'], $p['limit']) . bson_encode($query)
+            . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+            true,
+            null,
+            function ($conn, $reqId = null) use ($p, $cb) {
                 if (!$conn) {
                     !$cb || $cb(['$err' => 'Connection error.']);
                     return;
                 }
                 $conn->requests[$reqId] = [$p['col'], $cb, true];
-        });
+            }
+        );
     }
 
     /**
@@ -900,7 +942,7 @@ class Pool extends Client
 
     /**
      * Find and modify
-     * @param  array    $p  Hash of properties
+     * @param  array $p Hash of properties
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -928,13 +970,13 @@ class Pool extends Client
             $query['update'] = $p['update'];
         }
         if (isset($p['new'])) {
-            $query['new'] = (boolean) $p['new'];
+            $query['new'] = (boolean)$p['new'];
         }
         if (isset($p['remove'])) {
-            $query['remove'] = (boolean) $p['remove'];
+            $query['remove'] = (boolean)$p['remove'];
         }
         if (isset($p['upsert'])) {
-            $query['upsert'] = (boolean) $p['upsert'];
+            $query['upsert'] = (boolean)$p['upsert'];
         }
         if (isset($p['where'])) {
             $query['query'] = $p['where'];
@@ -946,28 +988,36 @@ class Pool extends Client
         }
         $cb = CallbackWrapper::wrap($cb);
         try {
-            $this->request(self::OP_QUERY, pack('V', $p['opts'])
-                . $e[0] . '.$cmd' . "\x00"
-                . pack('VV', $p['offset'], $p['limit'])
-                . bson_encode($query)
-                . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $e[0] . '.$cmd' . "\x00"
+                . pack('VV', $p['offset'], $p['limit']) . bson_encode($query)
+                . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['col'], $cb, true];
-            });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Groupping function
-     * @param  array    $p  Hash of properties (offset, limit, opts, key, col, reduce, initial)
+     * @param  array $p Hash of properties (offset, limit, opts, key, col, reduce, initial)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -983,8 +1033,8 @@ class Pool extends Client
 
         $query = [
             'group' => [
-                'ns'      => $e[1],
-                'key'     => $p['key'],
+                'ns' => $e[1],
+                'key' => $p['key'],
                 '$reduce' => $p['reduce'],
                 'initial' => $p['initial'],
             ]
@@ -1014,28 +1064,36 @@ class Pool extends Client
         }
         $cb = CallbackWrapper::wrap($cb);
         try {
-            $this->request(self::OP_QUERY, pack('V', $p['opts'])
-                . $e[0] . '.$cmd' . "\x00"
-                . pack('VV', $p['offset'], $p['limit'])
-                . bson_encode($query)
-                . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $e[0] . '.$cmd' . "\x00"
+                . pack('VV', $p['offset'], $p['limit']) . bson_encode($query)
+                . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['col'], $cb, false];
-                });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Aggregate function
-     * @param  array    $p  Hash of properties (offset, limit, opts, key, col)
+     * @param  array $p Hash of properties (offset, limit, opts, key, col)
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -1060,33 +1118,40 @@ class Pool extends Client
         }
         $cb = CallbackWrapper::wrap($cb);
         try {
-            $this->request(self::OP_QUERY, pack('V', $p['opts'])
-                . $e[0] . '.$cmd' . "\x00"
-                . pack('VV', $p['offset'], $p['limit'])
-                . bson_encode($query)
-                . (isset($p['fields']) ? bson_encode($p['fields']) : ''), true, null, function ($conn, $reqId = null) use ($p, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', $p['opts']) . $e[0] . '.$cmd' . "\x00" . pack('VV', $p['offset'], $p['limit'])
+                . bson_encode($query) . (isset($p['fields']) ? bson_encode($p['fields']) : ''),
+                true,
+                null,
+                function ($conn, $reqId = null) use ($p, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$p['col'], $cb, false];
-                });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
     /**
      * Updates one object in collection
-     * @param  string   $col    Collection's name
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  integer  $flags  Optional. Flags
-     * @param  callable $cb     Optional. Callback
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  integer $flags Optional. Flags
+     * @param  callable $cb Optional. Callback
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return void
      */
@@ -1107,29 +1172,31 @@ class Pool extends Client
             static::safeModeEnc($cond);
             static::safeModeEnc($data);
         }
-        $this->request(self::OP_UPDATE,
-            "\x00\x00\x00\x00"
-            . $col . "\x00"
-            . pack('V', $flags)
-            . bson_encode($cond)
-            . bson_encode($data), false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
-            if (!$conn) {
-                !$cb || $cb(['$err' => 'Connection error.']);
-                return;
+
+        $this->request(
+            self::OP_UPDATE,
+            "\x00\x00\x00\x00" . $col . "\x00" . pack('V', $flags) . bson_encode($cond) . bson_encode($data),
+            false,
+            null,
+            function ($conn, $reqId = null) use ($cb, $col, $params) {
+                if (!$conn) {
+                    !$cb || $cb(['$err' => 'Connection error.']);
+                    return;
+                }
+                if ($cb !== null) {
+                    $this->lastError($col, $cb, $params, $conn);
+                }
             }
-            if ($cb !== null) {
-                $this->lastError($col, $cb, $params, $conn);
-            }
-        });
+        );
     }
 
     /**
      * Updates one object in collection
-     * @param  string   $col    Collection's name
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  callable $cb     Optional. Callback
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  callable $cb Optional. Callback
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return void
      */
@@ -1140,11 +1207,11 @@ class Pool extends Client
 
     /**
      * Updates several objects in collection
-     * @param  string   $col    Collection's name
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  callable $cb     Optional. Callback
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  callable $cb Optional. Callback
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return void
      */
@@ -1155,12 +1222,12 @@ class Pool extends Client
 
     /**
      * Upserts an object (updates if exists, insert if not exists)
-     * @param  string   $col    Collection's name
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  boolean  $multi  Optional. Multi
-     * @param  callable $cb     Optional. Callback
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  boolean $multi Optional. Multi
+     * @param  callable $cb Optional. Callback
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return void
      */
@@ -1171,11 +1238,11 @@ class Pool extends Client
 
     /**
      * Upserts an object (updates if exists, insert if not exists)
-     * @param  string   $col    Collection's name
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  callable $cb     Optional. Callback
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  callable $cb Optional. Callback
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return void
      */
@@ -1186,11 +1253,11 @@ class Pool extends Client
 
     /**
      * Upserts an object (updates if exists, insert if not exists)
-     * @param  string   $col    Collection's name
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  callable $cb     Optional. Callback
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  callable $cb Optional. Callback
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return void
      */
@@ -1201,10 +1268,10 @@ class Pool extends Client
 
     /**
      * Inserts an object
-     * @param  string   $col    Collection's name
-     * @param  array    $doc    Document
-     * @param  callable $cb     Optional. Callback
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $doc Document
+     * @param  callable $cb Optional. Callback
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return MongoId
      */
@@ -1221,18 +1288,21 @@ class Pool extends Client
             static::safeModeEnc($doc);
         }
         try {
-            $this->request(self::OP_INSERT,
-                                    "\x00\x00\x00\x00"
-                                    . $col . "\x00"
-                                    . bson_encode($doc), false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
-                if ($cb !== null) {
-                    $this->lastError($col, $cb, $params, $conn);
+            $this->request(
+                self::OP_INSERT,
+                "\x00\x00\x00\x00" . $col . "\x00" . bson_encode($doc),
+                false,
+                null,
+                function ($conn, $reqId = null) use ($cb, $col, $params) {
+                    if ($cb !== null) {
+                        $this->lastError($col, $cb, $params, $conn);
+                    }
                 }
-            });
+            );
 
             return $doc['_id'];
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
                 if ($cb !== null) {
                     $cb(['$err' => $e->getMessage(), '$doc' => $doc]);
@@ -1243,24 +1313,30 @@ class Pool extends Client
 
     /**
      * Sends a request to kill certain cursors on the server side
-     * @param  array      $cursors Array of cursors
-     * @param  Connection $conn    Connection
+     * @param  array $cursors Array of cursors
+     * @param  Connection $conn Connection
      * @return void
      */
-    public function killCursors($cursors = [], $conn)
+    public function killCursors($cursors, $conn)
     {
-        $this->request(self::OP_KILL_CURSORS,
-                       "\x00\x00\x00\x00"
-                       . pack('V', sizeof($cursors))
-                       . implode('', $cursors), false, $conn);
+        if (!$cursors) {
+            $cursors = [];
+        }
+
+        $this->request(
+            self::OP_KILL_CURSORS,
+            "\x00\x00\x00\x00" . pack('V', sizeof($cursors)) . implode('', $cursors),
+            false,
+            $conn
+        );
     }
 
     /**
      * Inserts several documents
-     * @param  string   $col    Collection's name
-     * @param  array    $docs   Array of docs
-     * @param  callable $cb     Optional. Callback
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $docs Array of docs
+     * @param  callable $cb Optional. Callback
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return array IDs
      */
@@ -1270,7 +1346,7 @@ class Pool extends Client
             $col = $this->dbname . '.' . $col;
         }
 
-        $ids  = [];
+        $ids = [];
         $bson = '';
 
         foreach ($docs as &$doc) {
@@ -1280,7 +1356,7 @@ class Pool extends Client
             try {
                 $bson .= bson_encode($doc);
             } catch (\MongoException $e) {
-                Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+                Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
                 if ($cb !== null) {
                     $cb(['$err' => $e->getMessage(), '$doc' => $doc]);
                 }
@@ -1289,23 +1365,27 @@ class Pool extends Client
             $ids[] = $doc['_id'];
         }
 
-        $this->request(self::OP_INSERT,
-                       "\x00\x00\x00\x00"
-                       . $col . "\x00"
-                       . $bson, false, null, function ($conn, $reqId = null) use ($cb, $col, $params) {
-            if ($cb !== null) {
-                $this->lastError($col, $cb, $params, $conn);
+        $this->request(
+            self::OP_INSERT,
+            "\x00\x00\x00\x00" . $col . "\x00" . $bson,
+            false,
+            null,
+            function ($conn, $reqId = null) use ($cb, $col, $params) {
+                if ($cb !== null) {
+                    $this->lastError($col, $cb, $params, $conn);
+                }
             }
-        });
+        );
+
         return $ids;
     }
 
     /**
      * Remove objects from collection
-     * @param  string   $col    Collection's name
-     * @param  array    $cond   Conditions
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Parameters
+     * @param  string $col Collection's name
+     * @param  array $cond Conditions
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Parameters
      * @callback $cb ( )
      * @return void
      */
@@ -1323,21 +1403,23 @@ class Pool extends Client
             static::safeModeEnc($cond);
         }
         try {
-            $this->request(self::OP_DELETE,
-                           "\x00\x00\x00\x00"
-                           . $col . "\x00"
-                           . "\x00\x00\x00\x00"
-                           . bson_encode($cond), false, null, function ($conn, $reqId = null) use ($col, $cb, $params) {
-                if (!$conn) {
-                    !$cb || $cb(['$err' => 'Connection error.']);
-                    return;
+            $this->request(
+                self::OP_DELETE,
+                "\x00\x00\x00\x00" . $col . "\x00" . "\x00\x00\x00\x00" . bson_encode($cond),
+                false,
+                null,
+                function ($conn, $reqId = null) use ($col, $cb, $params) {
+                    if (!$conn) {
+                        !$cb || $cb(['$err' => 'Connection error.']);
+                        return;
+                    }
+                    if ($cb !== null) {
+                        $this->lastError($col, $cb, $params, $conn);
+                    }
                 }
-                if ($cb !== null) {
-                    $this->lastError($col, $cb, $params, $conn);
-                }
-            });
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
                 $cb(['$err' => $e->getMessage(), '$query' => $cond]);
             }
@@ -1346,10 +1428,10 @@ class Pool extends Client
 
     /**
      * Asks for more objects
-     * @param  string     $col    Collection's name
-     * @param  string     $id     Cursor's ID
-     * @param  integer    $number Number of objects
-     * @param  Connection $conn   Connection
+     * @param  string $col Collection's name
+     * @param  string $id Cursor's ID
+     * @param  integer $number Number of objects
+     * @param  Connection $conn Connection
      * @return void
      */
     public function getMore($col, $id, $number, $conn)
@@ -1358,11 +1440,12 @@ class Pool extends Client
             $col = $this->dbname . '.' . $col;
         }
 
-        $this->request(self::OP_GETMORE,
-             "\x00\x00\x00\x00"
-            . $col . "\x00"
-            . pack('V', $number)
-            . $id, false, $conn, function ($conn, $reqId = null) use ($id) {
+        $this->request(
+            self::OP_GETMORE,
+            "\x00\x00\x00\x00" . $col . "\x00" . pack('V', $number) . $id,
+            false,
+            $conn,
+            function ($conn, $reqId = null) use ($id) {
                 if (!$conn) {
                     !$cb || $cb(['$err' => 'Connection error.']);
                     return;
@@ -1402,7 +1485,7 @@ class Pool extends Client
         return $this->getCollection($name);
     }
 
-    public function sasl_scrum_sha1_auth($p, $cb)
+    public function saslScrumSHA1Auth($p, $cb)
     {
         $session = [
             'cb' => $cb,
@@ -1413,10 +1496,10 @@ class Pool extends Client
             'auth_message' => '',
             'conn' => array_key_exists('conn', $p) ? $p['conn'] : null,
         ];
-        $this->sasl_scrum_sha1_step($session);
+        $this->saslScrumSHA1Step($session);
     }
 
-    public function sasl_scrum_sha1_step($session, $input = null)
+    public function saslScrumSHA1Step($session, $input = null)
     {
         $session['step']++;
         $query = [];
@@ -1432,7 +1515,7 @@ class Pool extends Client
             $query = ['saslStart' => 1, 'mechanism' => 'SCRAM-SHA-1', 'payload' => base64_encode($payload)];
             $session['auth_message'] .= 'n=' . $session['user'] . ',r=' . $session['nonce'] . ',';
         } elseif ($session['step'] == 2) {
-            $in_payload = $this->sasl_scrum_sha1_extract_payload($input['payload']);
+            $in_payload = $this->saslScrumSHA1ExtractPayload($input['payload']);
 
             $error = null;
             if (count($in_payload) != 3) {
@@ -1459,7 +1542,7 @@ class Pool extends Client
 
             $decoded_salt = base64_decode($in_payload['s']);
             $password = md5($session['user'] . ':mongo:' . $session['password']);
-            $salted_password = hash_pbkdf2('sha1', $password, $decoded_salt, (int) $in_payload['i'], 0, true);
+            $salted_password = hash_pbkdf2('sha1', $password, $decoded_salt, (int)$in_payload['i'], 0, true);
 
             $client_key = hash_hmac('sha1', 'Client Key', $salted_password, true);
             $stored_key = sha1($client_key, true);
@@ -1468,15 +1551,23 @@ class Pool extends Client
 
             $payload .= ',p=' . base64_encode($client_proof);
 
-            $query = ['saslContinue' => 1, 'conversationId' => $session['conversation_id'], 'payload' => base64_encode($payload)];
+            $query = [
+                'saslContinue' => 1,
+                'conversationId' => $session['conversation_id'],
+                'payload' => base64_encode($payload)
+            ];
         } elseif ($session['step'] == 3) {
-            $in_payload = $this->sasl_scrum_sha1_extract_payload($input['payload']);
+            $in_payload = $this->saslScrumSHA1ExtractPayload($input['payload']);
             if (!empty($in_payload['v'])) {
                 $session['server_signature'] = $in_payload['v'];
-                $query = ['saslContinue' => 1, 'conversationId' => $session['conversation_id'], 'payload' => base64_encode('')];
+                $query = [
+                    'saslContinue' => 1,
+                    'conversationId' => $session['conversation_id'],
+                    'payload' => base64_encode('')
+                ];
             }
         } elseif ($session['step'] == 4) {
-            $in_payload = $this->sasl_scrum_sha1_extract_payload($input['payload']);
+            $in_payload = $this->saslScrumSHA1ExtractPayload($input['payload']);
             $res = $input['done'] ? [
                 'ok' => 1,
                 'server_signature' => $session['server_signature'],
@@ -1488,37 +1579,44 @@ class Pool extends Client
             return;
         }
 
-        $this->sasl_scrum_sha1_conversation($session['dbname'], $query, function ($res) use ($session) {
-            $this->sasl_scrum_sha1_step($session, $res);
+        $this->saslScrumSHA1Conversation($session['dbname'], $query, function ($res) use ($session) {
+            $this->saslScrumSHA1Step($session, $res);
         }, $session['conn']);
     }
 
-    public function sasl_scrum_sha1_conversation($dbname, $query, $cb, $conn = null)
+    public function saslScrumSHA1Conversation($dbname, $query, $cb, $conn = null)
     {
         if ($this->safeMode) {
             static::safeModeEnc($query);
         }
 
         try {
-            $this->request(self::OP_QUERY, pack('V', 0)
-                . $dbname . '.$cmd' . "\x00"
-                . pack('VV', 0, -1)
-                . bson_encode($query), true, $conn, function ($conn, $reqId = null) use ($dbname, $cb) {
+            $this->request(
+                self::OP_QUERY,
+                pack('V', 0) . $dbname . '.$cmd' . "\x00" . pack('VV', 0, -1) . bson_encode($query),
+                true,
+                $conn,
+                function ($conn, $reqId = null) use ($dbname, $cb) {
                     if (!$conn) {
                         !$cb || $cb(['$err' => 'Connection error.']);
                         return;
                     }
                     $conn->requests[$reqId] = [$dbname, $cb, true];
-                });
+                }
+            );
         } catch (\MongoException $e) {
-            Daemon::log('MongoClient exception: '.$e->getMessage().': '.$e->getTraceAsString());
+            Daemon::log('MongoClient exception: ' . $e->getMessage() . ': ' . $e->getTraceAsString());
             if ($cb !== null) {
-                $cb(['$err' => $e->getMessage(), '$query' => $query, '$fields' => isset($p['fields']) ? $p['fields'] : null]);
+                $cb([
+                    '$err' => $e->getMessage(),
+                    '$query' => $query,
+                    '$fields' => isset($p['fields']) ? $p['fields'] : null
+                ]);
             }
         }
     }
 
-    public function sasl_scrum_sha1_extract_payload($payload)
+    public function saslScrumSHA1ExtractPayload($payload)
     {
         $result = [];
         $payload = base64_decode($payload);

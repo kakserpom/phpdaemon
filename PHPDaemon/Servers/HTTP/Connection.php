@@ -16,7 +16,6 @@ use PHPDaemon\Request\IRequestUpstream;
  */
 class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstream
 {
-
     protected $initialLowMark = 1;
 
     /**
@@ -35,15 +34,15 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
     /**
      * @TODO DESCR
      */
-    const STATE_FIRSTLINE  = 1;
+    const STATE_FIRSTLINE = 1;
     /**
      * @TODO DESCR
      */
-    const STATE_HEADERS    = 2;
+    const STATE_HEADERS = 2;
     /**
      * @TODO DESCR
      */
-    const STATE_CONTENT    = 3;
+    const STATE_CONTENT = 3;
     /**
      * @TODO DESCR
      */
@@ -59,7 +58,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
      * @return boolean Succes
      */
     public function checkSendfileCap()
-    { // @DISCUSS
+    {
+        // @todo DISCUSS
         return true;
     }
 
@@ -68,7 +68,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
      * @return boolean Succes
      */
     public function checkChunkedEncCap()
-    { // @DISCUSS
+    {
+        // @todo DISCUSS
         return true;
     }
 
@@ -103,19 +104,19 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
         if (isset($u['host'])) {
             $this->req->attrs->server['HTTP_HOST'] = $u['host'];
         }
-        $srv                       = & $this->req->attrs->server;
-        $srv['REQUEST_METHOD']     = $e[0];
-        $srv['REQUEST_TIME']       = time();
+        $srv = &$this->req->attrs->server;
+        $srv['REQUEST_METHOD'] = $e[0];
+        $srv['REQUEST_TIME'] = time();
         $srv['REQUEST_TIME_FLOAT'] = microtime(true);
-        $srv['REQUEST_URI']        = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
-        $srv['DOCUMENT_URI']       = $u['path'];
-        $srv['PHP_SELF']           = $u['path'];
-        $srv['QUERY_STRING']       = isset($u['query']) ? $u['query'] : null;
-        $srv['SCRIPT_NAME']        = $srv['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
-        $srv['SERVER_PROTOCOL']    = isset($e[2]) ? $e[2] : 'HTTP/1.1';
-        $srv['REMOTE_ADDR']        = $this->host;
-        $srv['REMOTE_PORT']        = $this->port;
-        $srv['HTTPS']              = $this->ssl ? 'on' : 'off';
+        $srv['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
+        $srv['DOCUMENT_URI'] = $u['path'];
+        $srv['PHP_SELF'] = $u['path'];
+        $srv['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
+        $srv['SCRIPT_NAME'] = $srv['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
+        $srv['SERVER_PROTOCOL'] = isset($e[2]) ? $e[2] : 'HTTP/1.1';
+        $srv['REMOTE_ADDR'] = $this->host;
+        $srv['REMOTE_PORT'] = $this->port;
+        $srv['HTTPS'] = $this->ssl ? 'on' : 'off';
         return true;
     }
 
@@ -131,7 +132,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
             }
             $e = explode(': ', $l);
             if (isset($e[1])) {
-                $this->currentHeader                            = 'HTTP_' . strtoupper(strtr($e[0], Generic::$htr));
+                $this->currentHeader = 'HTTP_' . strtoupper(strtr($e[0], Generic::$htr));
                 $this->req->attrs->server[$this->currentHeader] = $e[1];
             } elseif (($e[0][0] === "\t" || $e[0][0] === "\x20") && $this->currentHeader) {
                 // multiline header continued
@@ -151,21 +152,21 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
      */
     protected function newRequest()
     {
-        $req                     = new \stdClass;
-        $req->attrs              = new \stdClass();
-        $req->attrs->request     = [];
-        $req->attrs->get         = [];
-        $req->attrs->post        = [];
-        $req->attrs->cookie      = [];
-        $req->attrs->server      = [];
-        $req->attrs->files       = [];
-        $req->attrs->session     = null;
-        $req->attrs->paramsDone  = false;
-        $req->attrs->inputDone   = false;
-        $req->attrs->input       = new Input();
+        $req = new \stdClass;
+        $req->attrs = new \stdClass();
+        $req->attrs->request = [];
+        $req->attrs->get = [];
+        $req->attrs->post = [];
+        $req->attrs->cookie = [];
+        $req->attrs->server = [];
+        $req->attrs->files = [];
+        $req->attrs->session = null;
+        $req->attrs->paramsDone = false;
+        $req->attrs->inputDone = false;
+        $req->attrs->input = new Input();
         $req->attrs->inputReaded = 0;
-        $req->attrs->chunked     = false;
-        $req->upstream           = $this;
+        $req->attrs->chunked = false;
+        $req->upstream = $this;
         return $req;
     }
 
@@ -176,31 +177,41 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
     protected function httpProcessHeaders()
     {
         $this->req->attrs->paramsDone = true;
-        if (
-                isset($this->req->attrs->server['HTTP_CONNECTION']) && preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->req->attrs->server['HTTP_CONNECTION'])
-                && isset($this->req->attrs->server['HTTP_UPGRADE']) && (strtolower($this->req->attrs->server['HTTP_UPGRADE']) === 'websocket')
-        ) {
+        if (isset($this->req->attrs->server['HTTP_CONNECTION'])
+            && preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->req->attrs->server['HTTP_CONNECTION'])
+            && isset($this->req->attrs->server['HTTP_UPGRADE'])
+            && (strtolower($this->req->attrs->server['HTTP_UPGRADE']) === 'websocket')) {
             if ($this->pool->WS) {
                 $this->pool->WS->inheritFromRequest($this->req, $this);
             }
             return false;
         }
 
-        $this->req = Daemon::$appResolver->getRequest($this->req, $this, isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null);
+        $this->req = Daemon::$appResolver->getRequest(
+            $this->req,
+            $this,
+            isset($this->pool->config->responder->value) ? $this->pool->config->responder->value : null
+        );
+
         if ($this->req instanceof \stdClass) {
             $this->endRequest($this->req, 0, 0);
             return false;
         } else {
-            if ($this->pool->config->sendfile->value && (!$this->pool->config->sendfileonlybycommand->value || isset($this->req->attrs->server['USE_SENDFILE']))
-                    && !isset($this->req->attrs->server['DONT_USE_SENDFILE'])
-            ) {
+            if ($this->pool->config->sendfile->value
+                && (!$this->pool->config->sendfileonlybycommand->value || isset($this->req->attrs->server['USE_SENDFILE']))
+                && !isset($this->req->attrs->server['DONT_USE_SENDFILE'])) {
                 $req = $this->req;
-                FileSystem::tempnam($this->pool->config->sendfiledir->value, $this->pool->config->sendfileprefix->value, function ($fn) use ($req) {
-                    FileSystem::open($fn, 'wb', function ($file) use ($req) {
-                        $req->sendfp = $file;
-                    });
-                    $req->header('X-Sendfile: ' . $fn);
-                });
+
+                FileSystem::tempnam(
+                    $this->pool->config->sendfiledir->value,
+                    $this->pool->config->sendfileprefix->value,
+                    function ($fn) use ($req) {
+                        FileSystem::open($fn, 'wb', function ($file) use ($req) {
+                            $req->sendfp = $file;
+                        });
+                        $req->header('X-Sendfile: ' . $fn);
+                    }
+                );
             }
             $this->req->callInit();
         }
@@ -236,7 +247,12 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
                 return;
             }
             if ($d) {
-                if (($FP = \PHPDaemon\Servers\FlashPolicy\Pool::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
+                $FP = \PHPDaemon\Servers\FlashPolicy\Pool::getInstance(
+                    $this->pool->config->fpsname->value,
+                    false
+                );
+                if ($FP && $FP->policyData
+                ) {
                     $this->write($FP->policyData . "\x00");
                 }
                 $this->finish();
@@ -329,8 +345,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
     /**
      * Handles the output from downstream requests.
-     * @param  object  $req \PHPDaemon\Request\Generic.
-     * @param  string  $s   The output.
+     * @param  object $req \PHPDaemon\Request\Generic.
+     * @param  string $s The output.
      * @return boolean      Success
      */
     public function requestOut($req, $s)
@@ -377,7 +393,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
             return;
         }
         $req->attrs->input = null;
-        $this->req   = null;
+        $this->req = null;
         $this->state = self::STATE_ROOT;
         $this->unfreezeInput();
     }

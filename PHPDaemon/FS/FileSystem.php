@@ -93,11 +93,16 @@ class FileSystem
         }
         self::updateConfig();
         self::$fd = eio_get_event_stream();
-        self::$ev = new \Event(Daemon::$process->eventBase, self::$fd, \Event::READ | \Event::PERSIST, function ($fd, $events, $arg) {
-            while (eio_nreqs()) {
-                eio_poll();
+        self::$ev = new \Event(
+            Daemon::$process->eventBase,
+            self::$fd,
+            \Event::READ | \Event::PERSIST,
+            function ($fd, $events, $arg) {
+                while (eio_nreqs()) {
+                    eio_poll();
+                }
             }
-        });
+        );
         self::$ev->add();
     }
 
@@ -174,9 +179,9 @@ class FileSystem
 
     /**
      * Gets stat() information
-     * @param  string   $path Path
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|true
      */
     public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT)
@@ -193,9 +198,9 @@ class FileSystem
 
     /**
      * Unlink file
-     * @param  string   $path Path
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public static function unlink($path, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -213,10 +218,10 @@ class FileSystem
 
     /**
      * Rename
-     * @param  string   $path    Path
-     * @param  string   $newpath New path
-     * @param  callable $cb      Callback
-     * @param  integer  $pri     Priority
+     * @param  string $path Path
+     * @param  string $newpath New path
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public static function rename($path, $newpath, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -234,9 +239,9 @@ class FileSystem
 
     /**
      * statvfs()
-     * @param  string   $path Path
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT)
@@ -251,9 +256,9 @@ class FileSystem
 
     /**
      * lstat()
-     * @param  string   $path Path
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|true
      */
     public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT)
@@ -270,9 +275,9 @@ class FileSystem
 
     /**
      * realpath()
-     * @param  string   $path Path
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|true
      */
     public static function realpath($path, $cb, $pri = EIO_PRI_DEFAULT)
@@ -287,8 +292,8 @@ class FileSystem
 
     /**
      * sync()
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public static function sync($cb = null, $pri = EIO_PRI_DEFAULT)
@@ -305,8 +310,8 @@ class FileSystem
 
     /**
      * statfs()
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public static function syncfs($cb = null, $pri = EIO_PRI_DEFAULT)
@@ -323,11 +328,11 @@ class FileSystem
 
     /**
      * touch()
-     * @param  string   $path  Path
-     * @param  integer  $mtime Last modification time
-     * @param  integer  $atime Last access time
-     * @param  callable $cb    Callback
-     * @param  integer  $pri   Priority
+     * @param  string $path Path
+     * @param  integer $mtime Last modification time
+     * @param  integer $atime Last access time
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public static function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -345,9 +350,9 @@ class FileSystem
 
     /**
      * Removes empty directory
-     * @param  string   $path Path
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public static function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -365,10 +370,10 @@ class FileSystem
 
     /**
      * Creates directory
-     * @param  string   $path Path
-     * @param  integer  $mode Mode (octal)
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  integer $mode Mode (octal)
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public static function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -386,10 +391,10 @@ class FileSystem
 
     /**
      * Readdir()
-     * @param  string   $path  Path
-     * @param  callable $cb    Callback
-     * @param  integer  $flags Flags
-     * @param  integer  $pri   Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback
+     * @param  integer $flags Flags
+     * @param  integer $pri Priority
      * @return resource|true
      */
     public static function readdir($path, $cb = null, $flags, $pri = EIO_PRI_DEFAULT)
@@ -407,10 +412,10 @@ class FileSystem
 
     /**
      * Truncate file
-     * @param  string   $path   Path
-     * @param  integer  $offset Offset
-     * @param  callable $cb     Callback
-     * @param  integer  $pri    Priority
+     * @param  string $path Path
+     * @param  integer $offset Offset
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public static function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -418,7 +423,7 @@ class FileSystem
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
             $fp = fopen($path, 'r+');
-            $r  = $fp && ftruncate($fp, $offset);
+            $r = $fp && ftruncate($fp, $offset);
             if ($cb) {
                 $cb($path, $r);
             }
@@ -429,46 +434,68 @@ class FileSystem
 
     /**
      * sendfile()
-     * @param  mixed    $outfd   File descriptor
-     * @param  string   $path    Path
-     * @param  callable $cb      Callback
+     * @param  mixed $outfd File descriptor
+     * @param  string $path Path
+     * @param  callable $cb Callback
      * @param  callable $startCb Start callback
-     * @param  integer  $offset  Offset
-     * @param  integer  $length  Length
-     * @param  integer  $pri     Priority
+     * @param  integer $offset Offset
+     * @param  integer $length Length
+     * @param  integer $pri Priority
      * @return true              Success
      */
-    public static function sendfile($outfd, $path, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT)
-    {
+    public static function sendfile(
+        $outfd,
+        $path,
+        $cb,
+        $startCb = null,
+        $offset = 0,
+        $length = null,
+        $pri = EIO_PRI_DEFAULT
+    ) {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
             $cb($path, false);
             return false;
         }
-        $noncache = true;
-        FileSystem::open($path, 'r!', function ($file) use ($cb, $noncache, $startCb, $path, $pri, $outfd, $offset, $length) {
-            if (!$file) {
-                $cb($path, false);
-                return;
-            }
-            $file->sendfile($outfd, function ($file, $success) use ($cb, $noncache) {
-                $cb($file->path, $success);
-                if ($noncache) {
-                    $file->close();
-                }
-            }, $startCb, $offset, $length, $pri);
 
-        }, $pri);
+        $noncache = true;
+
+        FileSystem::open(
+            $path,
+            'r!',
+            function ($file) use ($cb, $noncache, $startCb, $path, $pri, $outfd, $offset, $length) {
+                if (!$file) {
+                    $cb($path, false);
+                    return;
+                }
+
+                $file->sendfile(
+                    $outfd,
+                    function ($file, $success) use ($cb, $noncache) {
+                        $cb($file->path, $success);
+                        if ($noncache) {
+                            $file->close();
+                        }
+                    },
+                    $startCb,
+                    $offset,
+                    $length,
+                    $pri
+                );
+            },
+            $pri
+        );
+
         return true;
     }
 
     /**
      * Changes ownership of file/directory
-     * @param  string   $path Path
-     * @param  integer  $uid  User ID
-     * @param  integer  $gid  Group ID
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  integer $uid User ID
+     * @param  integer $gid Group ID
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public static function chown($path, $uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT)
@@ -482,14 +509,15 @@ class FileSystem
             $cb($path, $r);
             return $r;
         }
+
         return eio_chown($path, $uid, $gid, $pri, $cb, $path);
     }
 
     /**
      * Reads whole file
-     * @param  string   $path Path
-     * @param  callable $cb   Callback (Path, Contents)
-     * @param  integer  $pri  Priority
+     * @param  string $path Path
+     * @param  callable $cb Callback (Path, Contents)
+     * @param  integer $pri Priority
      * @return resource|true
      */
     public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT)
@@ -510,10 +538,10 @@ class FileSystem
 
     /**
      * Reads file chunk-by-chunk
-     * @param  string   $path    Path
-     * @param  callable $cb      Callback (Path, Success)
+     * @param  string $path Path
+     * @param  callable $cb Callback (Path, Success)
      * @param  callable $chunkcb Chunk callback (Path, Chunk)
-     * @param  integer  $pri     Priority
+     * @param  integer $pri Priority
      * @return resource
      */
     public static function readfileChunked($path, $cb, $chunkcb, $pri = EIO_PRI_DEFAULT)
@@ -535,7 +563,7 @@ class FileSystem
 
     /**
      * Returns random temporary file name
-     * @param  string $dir    Directory
+     * @param  string $dir Directory
      * @param  string $prefix Prefix
      * @return string         Path
      */
@@ -544,17 +572,23 @@ class FileSystem
         if (!$dir) {
             $dir = sys_get_temp_dir();
         }
+
         static $n = 0;
-        return $dir . '/' . $prefix . str_shuffle(md5(str_shuffle(
-                                                          microtime(true) . chr(mt_rand(0, 0xFF))
-                                                          . Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
-                                                          . (++$n) . mt_rand(0, mt_getrandmax()))
-                                                  ));
+
+        return $dir . '/' . $prefix . str_shuffle(
+            md5(
+                str_shuffle(
+                    microtime(true) . chr(mt_rand(0, 0xFF))
+                    . Daemon::$process->getPid() . chr(mt_rand(0, 0xFF))
+                    . (++$n) . mt_rand(0, mt_getrandmax())
+                )
+            )
+        );
     }
 
     /**
      * Returns random temporary file name
-     * @param  string $dir    Directory
+     * @param  string $dir Directory
      * @param  string $prefix Prefix
      * @return string         Path
      */
@@ -592,9 +626,9 @@ class FileSystem
 
     /**
      * Obtain exclusive temporary file
-     * @param  string   $dir    Directory
-     * @param  string   $prefix Prefix
-     * @param  callable $cb     Callback (File)
+     * @param  string $dir Directory
+     * @param  string $prefix Prefix
+     * @param  callable $cb Callback (File)
      * @return resource
      */
     public static function tempnam($dir, $prefix, $cb)
@@ -609,11 +643,11 @@ class FileSystem
 
     /**
      * Open file
-     * @param  string   $path  Path
-     * @param  string   $flags Flags
-     * @param  callable $cb    Callback (File)
-     * @param  integer  $mode  Mode (see EIO_S_I* constants)
-     * @param  integer  $pri   Priority
+     * @param  string $path Path
+     * @param  string $flags Flags
+     * @param  callable $cb Callback (File)
+     * @param  integer $mode Mode (see EIO_S_I* constants)
+     * @param  integer $pri Priority
      * @return resource
      */
     public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT)
@@ -621,7 +655,7 @@ class FileSystem
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
             $mode = File::convertFlags($flags, true);
-            $fd   = fopen($path, $mode);
+            $fd = fopen($path, $mode);
             if (!$fd) {
                 $cb(false);
                 return false;
@@ -631,8 +665,8 @@ class FileSystem
             return true;
         }
         $fdCacheKey = $path . "\x00" . $flags;
-        $noncache   = mb_orig_strpos($flags, '!') !== false;
-        $flags      = File::convertFlags($flags);
+        $noncache = mb_orig_strpos($flags, '!') !== false;
+        $flags = File::convertFlags($flags);
         if (!$noncache && ($item = FileSystem::$fdCache->get($fdCacheKey))) { // cache hit
             $file = $item->getValue();
             if ($file === null) { // operation in progress
@@ -654,7 +688,7 @@ class FileSystem
                 }
                 return;
             }
-            $file         = new File($fd, $path);
+            $file = new File($fd, $path);
             $file->append = ($flags | EIO_O_APPEND) === $flags;
             if ($file->append) {
                 $file->stat(function ($file, $stat) use ($cb, $noncache, $fdCacheKey) {

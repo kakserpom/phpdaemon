@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPDaemon\SockJS\Examples;
 
 use PHPDaemon\Core\Daemon;
@@ -39,7 +40,8 @@ class Simple extends \PHPDaemon\Core\AppInstance
      */
     public function onReady()
     {
-        \PHPDaemon\Servers\WebSocket\Pool::getInstance()->addRoute('/sockjs',
+        \PHPDaemon\Servers\WebSocket\Pool::getInstance()->addRoute(
+            '/sockjs',
             function ($client) {
                 return new SimpleRoute($client, $this);
             }

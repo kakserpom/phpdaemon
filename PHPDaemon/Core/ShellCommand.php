@@ -64,7 +64,7 @@ class ShellCommand extends IOStream
     /**
      * @var array Hash of environment's variables
      */
-    protected $env = []; // 
+    protected $env = [];
 
     /**
      * @var string Chdir
@@ -155,10 +155,10 @@ class ShellCommand extends IOStream
 
     /**
      * Execute
-     * @param  string   $binPath Binpath
-     * @param  callable $cb 	 Callback
-     * @param  array    $args    Optional. Arguments
-     * @param  array    $env     Optional. Hash of environment's variables
+     * @param string $binPath Binpath
+     * @param callable $cb Callback
+     * @param array $args Optional. Arguments
+     * @param array $env Optional. Hash of environment's variables
      */
     public static function exec($binPath = null, $cb = null, $args = null, $env = null)
     {
@@ -177,7 +177,7 @@ class ShellCommand extends IOStream
 
     /**
      * Sets fd
-     * @param  resource          $fd File descriptor
+     * @param  resource $fd File descriptor
      * @param  \EventBufferEvent $bev
      * @return void
      */
@@ -189,10 +189,25 @@ class ShellCommand extends IOStream
             return;
         }
         $this->fdWrite = $this->pipes[0];
-        $flags         = !is_resource($this->fd) ? \EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
+        $flags = !is_resource($this->fd) ? \EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
         $flags |= \EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
-        $this->bev      = new \EventBufferEvent(Daemon::$process->eventBase, $this->fd, 0, [$this, 'onReadEv'], null, [$this, 'onStateEv']);
-        $this->bevWrite = new \EventBufferEvent(Daemon::$process->eventBase, $this->fdWrite, 0, null, [$this, 'onWriteEv'], null);
+
+        $this->bev = new \EventBufferEvent(
+            Daemon::$process->eventBase,
+            $this->fd,
+            0,
+            [$this, 'onReadEv'],
+            null,
+            [$this, 'onStateEv']
+        );
+        $this->bevWrite = new \EventBufferEvent(
+            Daemon::$process->eventBase,
+            $this->fdWrite,
+            0,
+            null,
+            [$this, 'onWriteEv'],
+            null
+        );
         if (!$this->bev || !$this->bevWrite) {
             $this->finish();
             return;
@@ -314,8 +329,8 @@ class ShellCommand extends IOStream
     /**
      * Execute
      * @param  string $binPath Optional. Binpath
-     * @param  array  $args    Optional. Arguments
-     * @param  array  $env     Optional. Hash of environment's variables
+     * @param  array $args Optional. Arguments
+     * @param  array $env Optional. Hash of environment's variables
      * @return this
      */
     public function execute($binPath = null, $args = null, $env = null)
@@ -333,15 +348,8 @@ class ShellCommand extends IOStream
         }
         $this->cmd = $this->binPath . static::buildArgs($this->args) . ($this->outputErrors ? ' 2>&1' : '');
 
-        if (
-                isset($this->setUser)
-                || isset($this->setGroup)
-        ) {
-            if (
-                    isset($this->setUser)
-                    && isset($this->setGroup)
-                    && ($this->setUser !== $this->setGroup)
-            ) {
+        if (isset($this->setUser) || isset($this->setGroup)) {
+            if (isset($this->setUser) && isset($this->setGroup) && ($this->setUser !== $this->setGroup)) {
                 $this->cmd = 'sudo -g ' . escapeshellarg($this->setGroup) . '  -u ' . escapeshellarg($this->setUser) . ' ' . $this->cmd;
             } else {
                 $this->cmd = 'su ' . escapeshellarg($this->setGroup) . ' -c ' . escapeshellarg($this->cmd);
@@ -361,10 +369,7 @@ class ShellCommand extends IOStream
             1 => ['pipe', 'w'] // stdout is a pipe that the child will write to
         ];
 
-        if (
-                ($this->errlogfile !== null)
-                && !$this->outputErrors
-        ) {
+        if (($this->errlogfile !== null) && !$this->outputErrors) {
             $pipesDescr[2] = ['file', $this->errlogfile, 'a']; // @TODO: refactoring
         }
 
@@ -459,7 +464,7 @@ class ShellCommand extends IOStream
         if (!mb_orig_strlen($data)) {
             return true;
         }
-        $this->writing   = true;
+        $this->writing = true;
         Daemon::$noError = true;
         if (!$this->bevWrite->write($data) || !Daemon::$noError) {
             $this->close();

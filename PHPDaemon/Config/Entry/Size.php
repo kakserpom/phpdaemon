@@ -19,7 +19,7 @@ class Size extends Generic
      * @param $value
      * @return int
      */
-    public static function HumanToPlain($value)
+    public static function humanToPlain($value)
     {
         $l = substr($value, -1);
 

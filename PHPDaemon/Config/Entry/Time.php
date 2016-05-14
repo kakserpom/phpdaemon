@@ -19,7 +19,7 @@ class Time extends Generic
      * @param $value
      * @return int
      */
-    public static function HumanToPlain($value)
+    public static function humanToPlain($value)
     {
         $time = 0;
 

@@ -35,7 +35,9 @@ class Debug
                 }
 
                 return sprintf('\x%02x', ord($m[0]));
-            }, $str);
+            },
+            $str
+        );
     }
 
     /**

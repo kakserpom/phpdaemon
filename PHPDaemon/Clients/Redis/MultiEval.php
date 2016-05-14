@@ -7,7 +7,7 @@ use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * Easy wrapper for queue of eval's
- * 
+ *
  * @package    NetworkClients
  * @subpackage RedisClient
  * @author     Efimenko Dmitriy <ezheg89@gmail.com>
@@ -18,7 +18,7 @@ use PHPDaemon\Core\CallbackWrapper;
  * $eval->add('redis.call("del",KEYS[1])', [$key2]);
  * $eval->add('redis.call("expireat",KEYS[1],ARGV[1])', $key1, $arg2);
  * $eval->exec();
- * 
+ *
  * Use exampe 2:
  * var $eval = $this->redis->meval($cb);
  * $eval('redis.call("set",KEYS[1],ARGV[1])', [$key1], [$arg1]);
@@ -47,8 +47,8 @@ class MultiEval
 
     /**
      * Constructor
-     * @param callable $cb   Callback
-     * @param Pool     $pool Redis pool
+     * @param callable $cb Callback
+     * @param Pool $pool Redis pool
      */
     public function __construct($cb, $pool)
     {
@@ -69,22 +69,22 @@ class MultiEval
 
     /**
      * Adds eval command in stack
-     * @param string $cmd  Lua script
-     * @param mixed  $keys Keys
-     * @param mixed  $argv Arguments
+     * @param string $cmd Lua script
+     * @param mixed $keys Keys
+     * @param mixed $argv Arguments
      */
     public function add($cmd, $keys = null, $argv = null)
     {
         if ($keys !== null) {
             if (is_scalar($keys)) {
-                $keys = [(string) $keys];
+                $keys = [(string)$keys];
             } elseif (!is_array($keys)) {
                 throw new \Exception("Keys must be an array or scalar");
             }
         }
         if ($argv !== null) {
             if (is_scalar($argv)) {
-                $argv = [(string) $argv];
+                $argv = [(string)$argv];
             } elseif (!is_array($argv)) {
                 throw new \Exception("Argv must be an array or scalar");
             }
@@ -123,7 +123,7 @@ class MultiEval
 
             if (!empty($keys)) {
                 $cmd = preg_replace_callback('~KEYS\[(\d+)\]~', function ($m) use (&$KEYS, &$KEYNUM, $keys) {
-                    $key = $keys[ $m[1] - 1 ];
+                    $key = $keys[$m[1] - 1];
                     if (!isset($KEYS[$key])) {
                         $KEYS[$key] = ++$KEYNUM;
                     }
@@ -133,7 +133,7 @@ class MultiEval
 
             if (!empty($argv)) {
                 $cmd = preg_replace_callback('~ARGV\[(\d+)\]~', function ($m) use (&$ARGV, &$ARGNUM, $argv) {
-                    $arg = $argv[ $m[1] - 1 ];
+                    $arg = $argv[$m[1] - 1];
                     if (!isset($ARGV[$arg])) {
                         $ARGV[$arg] = ++$ARGNUM;
                     }

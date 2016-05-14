@@ -18,7 +18,8 @@ class SimpleRequest extends Generic
         } catch (\Exception $e) {
         }
 
-        $this->appInstance->httpclient->get('http://www.google.com/robots.txt',
+        $this->appInstance->httpclient->get(
+            'http://www.google.com/robots.txt',
             function ($conn, $success) {
                 echo $conn->body;
                 $this->finish();

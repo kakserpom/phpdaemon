@@ -77,13 +77,13 @@ class File
 
     /**
      * File constructor
-     * @param resource $fd   Descriptor
-     * @param string   $path Path
+     * @param resource $fd Descriptor
+     * @param string $path Path
      */
     public function __construct($fd, $path)
     {
-        $this->fd          = $fd;
-        $this->path        = $path;
+        $this->fd = $fd;
+        $this->path = $path;
         $this->onWriteOnce = new StackCallbacks;
     }
 
@@ -98,7 +98,7 @@ class File
 
     /**
      * Converts string of flags to integer or standard text representation
-     * @param  string  $mode Mode
+     * @param  string $mode Mode
      * @param  boolean $text Text?
      * @return mixed
      */
@@ -117,7 +117,7 @@ class File
             'x' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_EXCL | EIO_O_CREAT,
             'c' => ($plus ? EIO_O_RDWR : EIO_O_WRONLY) | EIO_O_CREAT,
         ];
-        $m     = $types[$type];
+        $m = $types[$type];
         if ($sync) {
             $m |= EIO_O_FSYNC;
         }
@@ -126,9 +126,9 @@ class File
 
     /**
      * Truncates this file
-     * @param  integer  $offset Offset. Default is 0
-     * @param  callable $cb     Callback
-     * @param  integer  $pri    Priority
+     * @param  integer $offset Offset. Default is 0
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public function truncate($offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -142,7 +142,7 @@ class File
         }
         if (!FileSystem::$supported) {
             $fp = fopen($this->path, 'r+');
-            $r  = $fp && ftruncate($fp, $offset);
+            $r = $fp && ftruncate($fp, $offset);
             if ($cb) {
                 $cb($this, $r);
             }
@@ -153,8 +153,8 @@ class File
 
     /**
      * Stat()
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public function stat($cb, $pri = EIO_PRI_DEFAULT)
@@ -175,7 +175,7 @@ class File
             return true;
         }
         return eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
-            $stat       = FileSystem::statPrepare($stat);
+            $stat = FileSystem::statPrepare($stat);
             $file->stat = $stat;
             $cb($file, $stat);
         }, $this);
@@ -183,8 +183,8 @@ class File
 
     /**
      * Stat() non-cached
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public function statRefresh($cb, $pri = EIO_PRI_DEFAULT)
@@ -201,7 +201,7 @@ class File
             return true;
         }
         return eio_fstat($this->fd, $pri, function ($file, $stat) use ($cb) {
-            $stat       = FileSystem::statPrepare($stat);
+            $stat = FileSystem::statPrepare($stat);
             $file->stat = $stat;
             $cb($file, $stat);
         }, $this);
@@ -209,8 +209,8 @@ class File
 
     /**
      * Statvfs()
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|boolean
      */
     public function statvfs($cb, $pri = EIO_PRI_DEFAULT)
@@ -240,8 +240,8 @@ class File
 
     /**
      * Sync()
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public function sync($cb, $pri = EIO_PRI_DEFAULT)
@@ -262,8 +262,8 @@ class File
 
     /**
      * Datasync()
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public function datasync($cb, $pri = EIO_PRI_DEFAULT)
@@ -284,10 +284,10 @@ class File
 
     /**
      * Writes data to file
-     * @param  string   $data   Data
-     * @param  callable $cb     Callback
-     * @param  integer  $offset Offset
-     * @param  integer  $pri    Priority
+     * @param  string $data Data
+     * @param  callable $cb Callback
+     * @param  integer $offset Offset
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public function write($data, $cb = null, $offset = null, $pri = EIO_PRI_DEFAULT)
@@ -324,19 +324,27 @@ class File
             $this->offset += $l;
         }
         $this->writing = true;
-        $res           = eio_write($this->fd, $data, $l, $offset, $pri, function ($file, $result) {
-            $this->writing = false;
-            $this->onWriteOnce->executeAll($file, $result);
-        }, $this);
+        $res = eio_write(
+            $this->fd,
+            $data,
+            $l,
+            $offset,
+            $pri,
+            function ($file, $result) {
+                $this->writing = false;
+                $this->onWriteOnce->executeAll($file, $result);
+            },
+            $this
+        );
         return $res;
     }
 
     /**
      * Changes ownership of this file
-     * @param  integer  $uid User ID
-     * @param  integer  $gid Group ID
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  integer $uid User ID
+     * @param  integer $gid Group ID
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT)
@@ -363,10 +371,10 @@ class File
 
     /**
      * touch()
-     * @param  integer  $mtime Last modification time
-     * @param  integer  $atime Last access time
-     * @param  callable $cb    Callback
-     * @param  integer  $pri   Priority
+     * @param  integer $mtime Last modification time
+     * @param  integer $atime Last access time
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public function touch($mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -394,16 +402,16 @@ class File
      */
     public function clearStatCache()
     {
-        $this->stat    = null;
+        $this->stat = null;
         $this->statvfs = null;
     }
 
     /**
      * Reads data from file
-     * @param  integer  $length Length
-     * @param  integer  $offset Offset
-     * @param  callable $cb     Callback
-     * @param  integer  $pri    Priority
+     * @param  integer $length Length
+     * @param  integer $offset Offset
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return boolean
      */
     public function read($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -437,12 +445,12 @@ class File
 
     /**
      * sendfile()
-     * @param  mixed    $outfd   File descriptor
-     * @param  callable $cb      Callback
+     * @param  mixed $outfd File descriptor
+     * @param  callable $cb Callback
      * @param  callable $startCb Start callback
-     * @param  integer  $offset  Offset
-     * @param  integer  $length  Length
-     * @param  integer  $pri     Priority
+     * @param  integer $offset Offset
+     * @param  integer $length Length
+     * @param  integer $pri Priority
      * @return boolean           Success
      */
     public function sendfile($outfd, $cb, $startCb = null, $offset = 0, $length = null, $pri = EIO_PRI_DEFAULT)
@@ -461,8 +469,21 @@ class File
             return false;
         }
         static $chunkSize = 1024;
-        $ret     = true;
-        $handler = function ($file, $sent = -1) use (&$ret, $outfd, $cb, &$handler, &$offset, &$length, $pri, $chunkSize) {
+        $ret = true;
+
+        $handler = function (
+            $file,
+            $sent = -1
+        ) use (
+            &$ret,
+            $outfd,
+            $cb,
+            &$handler,
+            &$offset,
+            &$length,
+            $pri,
+            $chunkSize
+        ) {
             if ($outfd instanceof IOStream) {
                 if ($outfd->isFreed()) {
                     $cb($file, false);
@@ -489,7 +510,7 @@ class File
                 $cb($file, false);
                 return;
             }
-            $c   = min($chunkSize, $length);
+            $c = min($chunkSize, $length);
             $ret = eio_sendfile($ofd, $file->fd, $offset, $c, $pri, $handler, $file);
         };
         if ($length !== null) {
@@ -517,10 +538,10 @@ class File
 
     /**
      * readahead()
-     * @param  integer  $length Length
-     * @param  integer  $offset Offset
-     * @param  callable $cb     Callback
-     * @param  integer  $pri    Priority
+     * @param  integer $length Length
+     * @param  integer $offset Offset
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public function readahead($length, $offset = null, $cb = null, $pri = EIO_PRI_DEFAULT)
@@ -552,10 +573,10 @@ class File
     /**
      * Generates closure-callback for readAll
      * @param  callable $cb
-     * @param  integer  $size
-     * @param  integer  &$offset
-     * @param  integer  &$pri
-     * @param  string   &$buf
+     * @param  integer $size
+     * @param  integer &$offset
+     * @param  integer &$pri
+     * @param  string &$buf
      * @return callable
      */
     protected function readAllGenHandler($cb, $size, &$offset, &$pri, &$buf)
@@ -576,8 +597,8 @@ class File
 
     /**
      * Reads whole file
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return boolean       Success
      */
     public function readAll($cb, $pri = EIO_PRI_DEFAULT)
@@ -589,18 +610,31 @@ class File
             }
             return false;
         }
-        $this->statRefresh(function ($file, $stat) use ($cb, $pri) {
-            if (!$stat) {
-                if ($cb) {
-                    $cb($file, false);
+        $this->statRefresh(
+            function ($file, $stat) use ($cb, $pri) {
+                if (!$stat) {
+                    if ($cb) {
+                        $cb($file, false);
+                    }
+                    return;
                 }
-                return;
-            }
-            $offset = 0;
-            $buf    = '';
-            $size   = $stat['size'];
-            eio_read($file->fd, min($file->chunkSize, $size), 0, $pri, $this->readAllGenHandler($cb, $size, $offset, $pri, $buf), $file);
-        }, $pri);
+
+                $offset = 0;
+                $buf = '';
+                $size = $stat['size'];
+
+                eio_read(
+                    $file->fd,
+                    min($file->chunkSize, $size),
+                    0,
+                    $pri,
+                    $this->readAllGenHandler($cb, $size, $offset, $pri, $buf),
+                    $file
+                );
+            },
+            $pri
+        );
+
         return true;
     }
 
@@ -608,9 +642,9 @@ class File
      * Generates closure-callback for readAllChunked
      * @param  callable $cb
      * @param  callable $chunkcb
-     * @param  integer  $size
-     * @param  integer  $offset
-     * @param  integer  $pri
+     * @param  integer $size
+     * @param  integer $offset
+     * @param  integer $pri
      * @return callable
      */
     protected function readAllChunkedGenHandler($cb, $chunkcb, $size, &$offset, $pri)
@@ -619,19 +653,28 @@ class File
             $chunkcb($file, $data);
             $offset += mb_orig_strlen($data);
             $len = min($file->chunkSize, $size - $offset);
+
             if ($offset >= $size) {
                 $cb($file, true);
                 return;
             }
-            eio_read($file->fd, $len, $offset, $pri, $this->readAllChunkedGenHandler($cb, $chunkcb, $size, $offset, $pri), $file);
+
+            eio_read(
+                $file->fd,
+                $len,
+                $offset,
+                $pri,
+                $this->readAllChunkedGenHandler($cb, $chunkcb, $size, $offset, $pri),
+                $file
+            );
         };
     }
 
     /**
      * Reads file chunk-by-chunk
-     * @param  callable $cb      Callback
+     * @param  callable $cb Callback
      * @param  callable $chunkcb Callback of chunk
-     * @param  integer  $pri     Priority
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public function readAllChunked($cb = null, $chunkcb = null, $pri = EIO_PRI_DEFAULT)
@@ -643,15 +686,27 @@ class File
             }
             return false;
         }
-        return $this->statRefresh(function ($file, $stat) use ($cb, $chunkcb, $pri) {
-            if (!$stat) {
-                $cb($file, false);
-                return;
-            }
-            $offset = 0;
-            $size   = $stat['size'];
-            eio_read($file->fd, min($file->chunkSize, $size), $offset, $pri, $this->readAllChunkedGenHandler($cb, $chunkcb, $size, $offset, $pri), $file);
-        }, $pri);
+        return $this->statRefresh(
+            function ($file, $stat) use ($cb, $chunkcb, $pri) {
+                if (!$stat) {
+                    $cb($file, false);
+                    return;
+                }
+
+                $offset = 0;
+                $size = $stat['size'];
+
+                eio_read(
+                    $file->fd,
+                    min($file->chunkSize, $size),
+                    $offset,
+                    $pri,
+                    $this->readAllChunkedGenHandler($cb, $chunkcb, $size, $offset, $pri),
+                    $file
+                );
+            },
+            $pri
+        );
     }
 
     /**
@@ -675,9 +730,9 @@ class File
 
     /**
      * Move pointer to arbitrary position
-     * @param  integer  $offset Offset
-     * @param  callable $cb     Callback
-     * @param  integer  $pri    Priority
+     * @param  integer $offset Offset
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return resource|false
      */
     public function seek($offset, $cb, $pri = EIO_PRI_DEFAULT)
@@ -723,7 +778,7 @@ class File
             fclose($this->fd);
             return false;
         }
-        $r        = eio_close($this->fd, EIO_PRI_MAX);
+        $r = eio_close($this->fd, EIO_PRI_MAX);
         $this->fd = null;
         return $r;
     }

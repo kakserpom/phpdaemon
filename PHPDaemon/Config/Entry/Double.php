@@ -13,13 +13,12 @@ use PHPDaemon\Config\Entry\Generic;
  */
 class Double extends Generic
 {
-
     /**
      * Converts human-readable value to plain
      * @param $value
      * @return double
      */
-    public static function HumanToPlain($value)
+    public static function humanToPlain($value)
     {
         return (double) $value;
     }

@@ -25,11 +25,12 @@ class VE extends Connection
             $this->server['HTTP_SEC_WEBSOCKET_ORIGIN'] = '';
         }
 
-        $this->write("HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
-                . "Upgrade: WebSocket\r\n"
-                . "Connection: Upgrade\r\n"
-                . "Sec-WebSocket-Origin: " . $this->server['HTTP_ORIGIN'] . "\r\n"
-                . "Sec-WebSocket-Location: ws://" . $this->server['HTTP_HOST'] . $this->server['REQUEST_URI'] . "\r\n"
+        $this->write(
+            "HTTP/1.1 101 Web Socket Protocol Handshake\r\n"
+            . "Upgrade: WebSocket\r\n"
+            . "Connection: Upgrade\r\n"
+            . "Sec-WebSocket-Origin: " . $this->server['HTTP_ORIGIN'] . "\r\n"
+            . "Sec-WebSocket-Location: ws://" . $this->server['HTTP_HOST'] . $this->server['REQUEST_URI'] . "\r\n"
         );
         if ($this->pool->config->expose->value) {
             $this->writeln('X-Powered-By: phpDaemon/' . Daemon::$version);
@@ -72,9 +73,9 @@ class VE extends Connection
 
     /**
      * Sends a frame.
-     * @param  string   $data  Frame's data.
-     * @param  string   $type  Frame's type. ("STRING" OR "BINARY")
-     * @param  callable $cb    Optional. Callback called when the frame is received by client.
+     * @param  string $data Frame's data.
+     * @param  string $type Frame's type. ("STRING" OR "BINARY")
+     * @param  callable $cb Optional. Callback called when the frame is received by client.
      * @callback $cb ( )
      * @return boolean         Success.
      */
@@ -98,7 +99,7 @@ class VE extends Connection
         // Binary
         $type = $this->getFrameType($type);
         if (($type & self::BINARY) === self::BINARY) {
-            $n   = mb_orig_strlen($data);
+            $n = mb_orig_strlen($data);
             $len = '';
             $pos = 0;
 
@@ -118,8 +119,7 @@ class VE extends Connection
             };
 
             $this->write(chr(self::BINARY) . $len . $data);
-        }
-        // String
+        } // String
         else {
             $this->write(chr(self::STRING) . $data . "\xFF");
         }
@@ -136,11 +136,11 @@ class VE extends Connection
     public function onRead()
     {
         while (($buflen = $this->getInputLength()) >= 2) {
-            $hdr       = $this->look(10);
+            $hdr = $this->look(10);
             $frametype = ord(mb_orig_substr($hdr, 0, 1));
             if (($frametype & 0x80) === 0x80) {
                 $len = 0;
-                $i   = 0;
+                $i = 0;
                 do {
                     if ($buflen < $i + 1) {
                         return;

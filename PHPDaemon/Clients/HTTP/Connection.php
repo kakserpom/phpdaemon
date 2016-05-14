@@ -15,7 +15,6 @@ use PHPDaemon\Network\ClientConnection;
  */
 class Connection extends ClientConnection
 {
-
     /**
      * State: headers
      */
@@ -24,7 +23,7 @@ class Connection extends ClientConnection
     /**
      * State: body
      */
-    const STATE_BODY    = 2;
+    const STATE_BODY = 2;
 
     /**
      * @var array Associative array of headers
@@ -100,7 +99,7 @@ class Connection extends ClientConnection
     /**
      * Performs GET-request
      * @param string $url
-     * @param array  $params
+     * @param array $params
      */
     public function get($url, $params = null)
     {
@@ -169,14 +168,18 @@ class Connection extends ClientConnection
         }
     }
 
-    /** 
+    /**
      * Performs POST-request
      * @param string $url
-     * @param array  $data
-     * @param array  $params
+     * @param array $data
+     * @param array $params
      */
-    public function post($url, $data = [], $params = null)
+    public function post($url, $data, $params = null)
     {
+        if (!$data) {
+            $data = [];
+        }
+
         if (!is_array($params)) {
             $params = ['resultcb' => $params];
         }
@@ -291,17 +294,17 @@ class Connection extends ClientConnection
                     $this->contentLength = -1;
                 }
                 if (isset($this->headers['HTTP_TRANSFER_ENCODING'])) {
-                    $e             = explode(', ', strtolower($this->headers['HTTP_TRANSFER_ENCODING']));
+                    $e = explode(', ', strtolower($this->headers['HTTP_TRANSFER_ENCODING']));
                     $this->chunked = in_array('chunked', $e, true);
                 } else {
                     $this->chunked = false;
                 }
                 if (isset($this->headers['HTTP_CONNECTION'])) {
-                    $e               = explode(', ', strtolower($this->headers['HTTP_CONNECTION']));
+                    $e = explode(', ', strtolower($this->headers['HTTP_CONNECTION']));
                     $this->keepalive = in_array('keep-alive', $e, true);
                 }
                 if (isset($this->headers['HTTP_CONTENT_TYPE'])) {
-                    parse_str('type='.strtr($this->headers['HTTP_CONTENT_TYPE'], [';' => '&', ' ' => '']), $p);
+                    parse_str('type=' . strtr($this->headers['HTTP_CONTENT_TYPE'], [';' => '&', ' ' => '']), $p);
                     $this->contentType = $p['type'];
                     if (isset($p['charset'])) {
                         $this->charset = strtolower($p['charset']);
@@ -315,9 +318,9 @@ class Connection extends ClientConnection
             }
             if ($this->state === self::STATE_ROOT) {
                 $this->headers['STATUS'] = $line;
-                $e                       = explode(' ', $this->headers['STATUS']);
-                $this->responseCode      = isset($e[1]) ? (int)$e[1] : 0;
-                $this->state             = self::STATE_HEADERS;
+                $e = explode(' ', $this->headers['STATUS']);
+                $this->responseCode = isset($e[1]) ? (int)$e[1] : 0;
+                $this->state = self::STATE_HEADERS;
             } elseif ($this->state === self::STATE_HEADERS) {
                 $e = explode(': ', $line);
 
@@ -384,7 +387,7 @@ class Connection extends ClientConnection
                         return;
                     }
                 }
-                $n   = $this->curChunkSize - mb_orig_strlen($this->curChunk);
+                $n = $this->curChunkSize - mb_orig_strlen($this->curChunk);
                 $this->curChunk .= $this->read($n);
                 if ($this->curChunkSize <= mb_orig_strlen($this->curChunk)) {
                     if ($this->chunkcb) {
@@ -393,7 +396,7 @@ class Connection extends ClientConnection
                     }
                     $this->body .= $this->curChunk;
                     $this->curChunkSize = null;
-                    $this->curChunk     = '';
+                    $this->curChunk = '';
                     goto chunk;
                 }
             }
@@ -437,17 +440,17 @@ class Connection extends ClientConnection
     protected function requestFinished()
     {
         $this->onResponse->executeOne($this, true);
-        $this->state         = self::STATE_ROOT;
+        $this->state = self::STATE_ROOT;
         $this->contentLength = -1;
-        $this->curChunkSize  = null;
-        $this->chunked       = false;
+        $this->curChunkSize = null;
+        $this->chunked = false;
         $this->eofTerminated = false;
-        $this->headers       = [];
-        $this->rawHeaders    = null;
-        $this->contentType   = null;
-        $this->charset       = null;
-        $this->body          = '';
-        $this->responseCode  = 0;
+        $this->headers = [];
+        $this->rawHeaders = null;
+        $this->contentType = null;
+        $this->charset = null;
+        $this->body = '';
+        $this->responseCode = 0;
         if (!$this->keepalive) {
             $this->finish();
         }

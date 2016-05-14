@@ -12,7 +12,6 @@ use PHPDaemon\Request\IRequestUpstream;
  */
 class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstream
 {
-
     /**
      * @var integer initial value of the minimal amout of bytes in buffer
      */
@@ -27,43 +26,43 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
     protected $requests = [];
 
-    const FCGI_BEGIN_REQUEST     = 1;
-    const FCGI_ABORT_REQUEST     = 2;
-    const FCGI_END_REQUEST       = 3;
-    const FCGI_PARAMS            = 4;
-    const FCGI_STDIN             = 5;
-    const FCGI_STDOUT            = 6;
-    const FCGI_STDERR            = 7;
-    const FCGI_DATA              = 8;
-    const FCGI_GET_VALUES        = 9;
+    const FCGI_BEGIN_REQUEST = 1;
+    const FCGI_ABORT_REQUEST = 2;
+    const FCGI_END_REQUEST = 3;
+    const FCGI_PARAMS = 4;
+    const FCGI_STDIN = 5;
+    const FCGI_STDOUT = 6;
+    const FCGI_STDERR = 7;
+    const FCGI_DATA = 8;
+    const FCGI_GET_VALUES = 9;
     const FCGI_GET_VALUES_RESULT = 10;
-    const FCGI_UNKNOWN_TYPE      = 11;
+    const FCGI_UNKNOWN_TYPE = 11;
 
-    const FCGI_RESPONDER  = 1;
+    const FCGI_RESPONDER = 1;
     const FCGI_AUTHORIZER = 2;
-    const FCGI_FILTER     = 3;
+    const FCGI_FILTER = 3;
 
     const STATE_CONTENT = 1;
     const STATE_PADDING = 2;
 
     protected static $roles = [
-        self::FCGI_RESPONDER  => 'FCGI_RESPONDER',
+        self::FCGI_RESPONDER => 'FCGI_RESPONDER',
         self::FCGI_AUTHORIZER => 'FCGI_AUTHORIZER',
-        self::FCGI_FILTER     => 'FCGI_FILTER',
+        self::FCGI_FILTER => 'FCGI_FILTER',
     ];
 
     protected static $requestTypes = [
-        self::FCGI_BEGIN_REQUEST     => 'FCGI_BEGIN_REQUEST',
-        self::FCGI_ABORT_REQUEST     => 'FCGI_ABORT_REQUEST',
-        self::FCGI_END_REQUEST       => 'FCGI_END_REQUEST',
-        self::FCGI_PARAMS            => 'FCGI_PARAMS',
-        self::FCGI_STDIN             => 'FCGI_STDIN',
-        self::FCGI_STDOUT            => 'FCGI_STDOUT',
-        self::FCGI_STDERR            => 'FCGI_STDERR',
-        self::FCGI_DATA              => 'FCGI_DATA',
-        self::FCGI_GET_VALUES        => 'FCGI_GET_VALUES',
+        self::FCGI_BEGIN_REQUEST => 'FCGI_BEGIN_REQUEST',
+        self::FCGI_ABORT_REQUEST => 'FCGI_ABORT_REQUEST',
+        self::FCGI_END_REQUEST => 'FCGI_END_REQUEST',
+        self::FCGI_PARAMS => 'FCGI_PARAMS',
+        self::FCGI_STDIN => 'FCGI_STDIN',
+        self::FCGI_STDOUT => 'FCGI_STDOUT',
+        self::FCGI_STDERR => 'FCGI_STDERR',
+        self::FCGI_DATA => 'FCGI_DATA',
+        self::FCGI_GET_VALUES => 'FCGI_GET_VALUES',
         self::FCGI_GET_VALUES_RESULT => 'FCGI_GET_VALUES_RESULT',
-        self::FCGI_UNKNOWN_TYPE      => 'FCGI_UNKNOWN_TYPE',
+        self::FCGI_UNKNOWN_TYPE => 'FCGI_UNKNOWN_TYPE',
     ];
 
     protected $header;
@@ -74,7 +73,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
      * @return bool
      */
     public function checkSendfileCap()
-    { // @DISCUSS
+    {
+        // @todo DISCUSS
         return false;
     }
 
@@ -83,7 +83,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
      * @return bool
      */
     public function checkChunkedEncCap()
-    { // @DISCUSS
+    {
+        // @todo DISCUSS
         return false;
     }
 
@@ -115,13 +116,13 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
             if ($this->header['conlen'] > 0) {
                 $this->setWatermark($this->header['conlen'], $this->header['conlen']);
             }
-            $type                  = $this->header['type'];
+            $type = $this->header['type'];
             $this->header['ttype'] = isset(self::$requestTypes[$type]) ? self::$requestTypes[$type] : $type;
-            $rid                   = $this->header['reqid'];
-            $this->state           = self::STATE_CONTENT;
+            $rid = $this->header['reqid'];
+            $this->state = self::STATE_CONTENT;
         } else {
             $type = $this->header['type'];
-            $rid  = $this->header['reqid'];
+            $rid = $this->header['reqid'];
         }
         if ($this->state === self::STATE_CONTENT) {
             $this->content = $this->readExact($this->header['conlen']);
@@ -148,32 +149,32 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
         $this->setWatermark(8, 0xFFFFFF);
         $this->state = self::STATE_ROOT;
 
-        /*Daemon::log('[DEBUG] FastCGI-record ' . $this->header['ttype'] . '). Request ID: ' . $rid 
-                . '. Content length: ' . $this->header['conlen'] . ' (' . mb_orig_strlen($this->content) . ') Padding length: ' . $this->header['padlen'] 
-                . ' (' . mb_orig_strlen($pad) . ')');*/
+//        /*Daemon::log('[DEBUG] FastCGI-record ' . $this->header['ttype'] . '). Request ID: ' . $rid
+//                . '. Content length: ' . $this->header['conlen'] . ' (' . mb_orig_strlen($this->content) . ') Padding length: ' . $this->header['padlen']
+//                . ' (' . mb_orig_strlen($pad) . ')');*/
 
         if ($type === self::FCGI_BEGIN_REQUEST) {
             $u = unpack('nrole/Cflags', $this->content);
 
-            $req                    = new \stdClass();
-            $req->attrs             = new \stdClass;
-            $req->attrs->request    = [];
-            $req->attrs->get        = [];
-            $req->attrs->post       = [];
-            $req->attrs->cookie     = [];
-            $req->attrs->server     = [];
-            $req->attrs->files      = [];
-            $req->attrs->session    = null;
-            $req->attrs->role       = self::$roles[$u['role']];
-            $req->attrs->flags      = $u['flags'];
-            $req->attrs->id         = $this->header['reqid'];
+            $req = new \stdClass();
+            $req->attrs = new \stdClass;
+            $req->attrs->request = [];
+            $req->attrs->get = [];
+            $req->attrs->post = [];
+            $req->attrs->cookie = [];
+            $req->attrs->server = [];
+            $req->attrs->files = [];
+            $req->attrs->session = null;
+            $req->attrs->role = self::$roles[$u['role']];
+            $req->attrs->flags = $u['flags'];
+            $req->attrs->id = $this->header['reqid'];
             $req->attrs->paramsDone = false;
-            $req->attrs->inputDone  = false;
-            $req->attrs->input      = new \PHPDaemon\HTTPRequest\Input();
-            $req->attrs->chunked    = false;
-            $req->attrs->noHttpVer  = true;
-            $req->queueId           = $rid;
-            $this->requests[$rid]   = $req;
+            $req->attrs->inputDone = false;
+            $req->attrs->input = new \PHPDaemon\HTTPRequest\Input();
+            $req->attrs->chunked = false;
+            $req->attrs->noHttpVer = true;
+            $req->queueId = $rid;
+            $this->requests[$rid] = $req;
         } elseif (isset($this->requests[$rid])) {
             $req = $this->requests[$rid];
         } else {
@@ -193,20 +194,18 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
                 }
                 $req->attrs->paramsDone = true;
 
-                $req       = Daemon::$appResolver->getRequest($req, $this);
+                $req = Daemon::$appResolver->getRequest($req, $this);
 
                 if ($req instanceof \stdClass) {
                     $this->endRequest($req, 0, 0);
                     unset($this->requests[$rid]);
                 } else {
-                    if (
-                            $this->pool->config->sendfile->value
-                            && (
-                                    !$this->pool->config->sendfileonlybycommand->value
-                                    || isset($req->attrs->server['USE_SENDFILE'])
-                            )
-                            && !isset($req->attrs->server['DONT_USE_SENDFILE'])
-                    ) {
+                    if ($this->pool->config->sendfile->value
+                        && (
+                            !$this->pool->config->sendfileonlybycommand->value
+                            || isset($req->attrs->server['USE_SENDFILE'])
+                        )
+                        && !isset($req->attrs->server['DONT_USE_SENDFILE'])) {
                         $fn = tempnam(
                             $this->pool->config->sendfiledir->value,
                             $this->pool->config->sendfileprefix->value
@@ -227,7 +226,10 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
                     if (($namelen = ord($this->content{$p})) < 128) {
                         ++$p;
                     } else {
-                        $u       = unpack('Nlen', chr(ord($this->content{$p}) & 0x7f) . mb_orig_substr($this->content, $p + 1, 3));
+                        $u = unpack(
+                            'Nlen',
+                            chr(ord($this->content{$p}) & 0x7f) . mb_orig_substr($this->content, $p + 1, 3)
+                        );
                         $namelen = $u['len'];
                         $p += 4;
                     }
@@ -235,12 +237,19 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
                     if (($vlen = ord($this->content{$p})) < 128) {
                         ++$p;
                     } else {
-                        $u    = unpack('Nlen', chr(ord($this->content{$p}) & 0x7f) . mb_orig_substr($this->content, $p + 1, 3));
+                        $u = unpack(
+                            'Nlen',
+                            chr(ord($this->content{$p}) & 0x7f) . mb_orig_substr($this->content, $p + 1, 3)
+                        );
                         $vlen = $u['len'];
                         $p += 4;
                     }
 
-                    $req->attrs->server[mb_orig_substr($this->content, $p, $namelen)] = mb_orig_substr($this->content, $p + $namelen, $vlen);
+                    $req->attrs->server[mb_orig_substr($this->content, $p, $namelen)] = mb_orig_substr(
+                        $this->content,
+                        $p + $namelen,
+                        $vlen
+                    );
                     $p += $namelen + $vlen;
                 }
             }
@@ -255,10 +264,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
             }
         }
 
-        if (
-                $req->attrs->inputDone
-                && $req->attrs->paramsDone
-        ) {
+        if ($req->attrs->inputDone && $req->attrs->paramsDone) {
             $order = $this->pool->variablesOrder ?: 'GPC';
             for ($i = 0, $s = mb_orig_strlen($order); $i < $s; ++$i) {
                 $char = $order[$i];
@@ -279,8 +285,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
     /**
      * Handles the output from downstream requests
-     * @param  object  $req Request
-     * @param  string  $out The output
+     * @param  object $req Request
+     * @param  string $out The output
      * @return boolean      Success
      */
     public function requestOut($req, $out)
@@ -304,19 +310,23 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
     /**
      * Sends a chunk
-     * @param  object  $req   Request
-     * @param  string  $chunk Data
+     * @param  object $req Request
+     * @param  string $chunk Data
      * @return bool
      */
     public function sendChunk($req, $chunk)
     {
-        return $this->write(
-            "\x01" // protocol version
+        $packet = "\x01" // protocol version
             . "\x06" // record type (STDOUT)
-            . pack('nn', $req->attrs->id, mb_orig_strlen($chunk)) // id, content length
+            . pack(
+                'nn',
+                $req->attrs->id,
+                mb_orig_strlen($chunk)
+            ) // id, content length
             . "\x00" // padding length
-            . "\x00" // reserved 
-        ) && $this->write($chunk); // content
+            . "\x00";// reserved
+
+        return $this->write($packet) && $this->write($chunk); // content
     }
 
     /**
@@ -339,7 +349,7 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
     public function endRequest($req, $appStatus, $protoStatus)
     {
         $c = pack('NC', $appStatus, $protoStatus) // app status, protocol status
-                . "\x00\x00\x00";
+            . "\x00\x00\x00";
 
         $this->write(
             "\x01" // protocol version

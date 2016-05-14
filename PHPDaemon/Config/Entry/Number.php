@@ -19,31 +19,22 @@ class Number extends Generic
      * @param $value
      * @return int|null
      */
-    public static function HumanToPlain($value)
+    public static function humanToPlain($value)
     {
         if ($value === null) {
             return null;
         }
         $l = substr($value, -1);
 
-        if (
-                ($l === 'k')
-                || ($l === 'K')
-        ) {
+        if (($l === 'k') || ($l === 'K')) {
             return ((int)substr($value, 0, -1) * 1000);
         }
 
-        if (
-                ($l === 'm')
-                || ($l === 'M')
-        ) {
+        if (($l === 'm') || ($l === 'M')) {
             return ((int)substr($value, 0, -1) * 1000 * 1000);
         }
 
-        if (
-                ($l === 'g')
-                || ($l === 'G')
-        ) {
+        if (($l === 'g') || ($l === 'G')) {
             return ((int)substr($value, 0, -1) * 1000 * 1000 * 1000);
         }
         return (int)$value;

@@ -31,11 +31,8 @@ class AppResolver
             if (isset($section->limitinstances)) {
                 continue;
             }
-            if (
-                    (isset($section->enable) && $section->enable->value)
-                    ||
-                    (!isset($section->enable) && !isset($section->disable))
-            ) {
+            if ((isset($section->enable) && $section->enable->value) ||
+                (!isset($section->enable) && !isset($section->disable))) {
                 if (mb_orig_strpos($fullname, ':') === false) {
                     $fullname .= ':';
                 }

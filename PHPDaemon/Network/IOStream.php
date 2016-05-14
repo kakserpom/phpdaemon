@@ -164,8 +164,8 @@ abstract class IOStream
 
     /**
      * IOStream constructor
-     * @param resource $fd   File descriptor. Optional
-     * @param object   $pool Pool. Optional
+     * @param resource $fd File descriptor. Optional
+     * @param object $pool Pool. Optional
      */
     public function __construct($fd = null, $pool = null)
     {
@@ -254,21 +254,21 @@ abstract class IOStream
 
     /**
      * Sets context mode
-     * @param  object  $ctx  Context
+     * @param  object $ctx Context
      * @param  integer $mode Mode
      * @return void
      */
 
     public function setContext($ctx, $mode)
     {
-        $this->ctx     = $ctx;
+        $this->ctx = $ctx;
         $this->ctxMode = $mode;
     }
 
     /**
      * Sets fd
-     * @param  resource $fd  File descriptor
-     * @param  object   $bev EventBufferEvent
+     * @param  resource $fd File descriptor
+     * @param  object $bev EventBufferEvent
      * @return void
      */
     public function setFd($fd, $bev = null)
@@ -291,7 +291,14 @@ abstract class IOStream
             $flags |= \EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
             if ($this->ctx) {
                 if ($this->ctx instanceof \EventSslContext) {
-                    $this->bev = \EventBufferEvent::sslSocket(Daemon::$process->eventBase, $this->fd, $this->ctx, $this->ctxMode, $flags);
+                    $this->bev = \EventBufferEvent::sslSocket(
+                        Daemon::$process->eventBase,
+                        $this->fd,
+                        $this->ctx,
+                        $this->ctxMode,
+                        $flags
+                    );
+
                     if ($this->bev) {
                         $this->bev->setCallbacks([$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
                     }
@@ -301,7 +308,14 @@ abstract class IOStream
                     return;
                 }
             } else {
-                $this->bev = new \EventBufferEvent(Daemon::$process->eventBase, $this->fd, $flags, [$this, 'onReadEv'], [$this, 'onWriteEv'], [$this, 'onStateEv']);
+                $this->bev = new \EventBufferEvent(
+                    Daemon::$process->eventBase,
+                    $this->fd,
+                    $flags,
+                    [$this, 'onReadEv'],
+                    [$this, 'onWriteEv'],
+                    [$this, 'onStateEv']
+                );
             }
             if (!$this->bev) {
                 return;
@@ -310,8 +324,10 @@ abstract class IOStream
         if ($this->priority !== null) {
             $this->bev->priority = $this->priority;
         }
-        $this->setTimeouts($this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
-                            $this->timeoutWrite!== null ? $this->timeoutWrite : $this->timeout);
+        $this->setTimeouts(
+            $this->timeoutRead !== null ? $this->timeoutRead : $this->timeout,
+            $this->timeoutWrite !== null ? $this->timeoutWrite : $this->timeout
+        );
         if ($this->bevConnect && ($this->fd === null)) {
             //$this->bev->connectHost(Daemon::$process->dnsBase, $this->hostReal, $this->port);
             $this->bev->connect($this->addr);
@@ -347,13 +363,13 @@ abstract class IOStream
 
     /**
      * Set timeouts
-     * @param  integer $read  Read timeout in seconds
+     * @param  integer $read Read timeout in seconds
      * @param  integer $write Write timeout in seconds
      * @return void
      */
     public function setTimeouts($read, $write)
     {
-        $this->timeoutRead  = $read;
+        $this->timeoutRead = $read;
         $this->timeoutWrite = $write;
         if ($this->bev) {
             $this->bev->setTimeouts($this->timeoutRead, $this->timeoutWrite);
@@ -367,13 +383,13 @@ abstract class IOStream
      */
     public function setPriority($p)
     {
-        $this->priority      = $p;
+        $this->priority = $p;
         $this->bev->priority = $p;
     }
 
     /**
      * Sets watermark
-     * @param  integer|null $low  Low
+     * @param  integer|null $low Low
      * @param  integer|null $high High
      * @return void
      */
@@ -401,7 +417,7 @@ abstract class IOStream
 
     /**
      * Reads line from buffer
-     * @param  integer     $eol EOLS_*
+     * @param  integer $eol EOLS_*
      * @return string|null
      */
     public function readLine($eol = null)
@@ -409,7 +425,7 @@ abstract class IOStream
         if (!isset($this->bev)) {
             return null;
         }
-        return $this->bev->input->readLine($eol ? : $this->EOLS);
+        return $this->bev->input->readLine($eol ?: $this->EOLS);
     }
 
     /**
@@ -424,7 +440,7 @@ abstract class IOStream
 
     /**
      * Drains buffer it matches the string
-     * @param  string       $str Data
+     * @param  string $str Data
      * @return boolean|null      Success
      */
     public function drainIfMatch($str)
@@ -433,7 +449,7 @@ abstract class IOStream
             return false;
         }
         $in = $this->bev->input;
-        $l  = mb_orig_strlen($str);
+        $l = mb_orig_strlen($str);
         $ll = $in->length;
         if ($ll === 0) {
             return $l === 0 ? true : null;
@@ -472,7 +488,7 @@ abstract class IOStream
 
     /**
      * Prepends data to input buffer
-     * @param  string  $str Data
+     * @param  string $str Data
      * @return boolean      Success
      */
     public function prependInput($str)
@@ -485,7 +501,7 @@ abstract class IOStream
 
     /**
      * Prepends data to output buffer
-     * @param  string  $str Data
+     * @param  string $str Data
      * @return boolean      Success
      */
     public function prependOutput($str)
@@ -529,9 +545,9 @@ abstract class IOStream
 
     /**
      * Searches first occurence of the string in input buffer
-     * @param  string  $what  Needle
+     * @param  string $what Needle
      * @param  integer $start Offset start
-     * @param  integer $end   Offset end
+     * @param  integer $end Offset end
      * @return integer        Position
      */
     public function search($what, $start = 0, $end = -1)
@@ -541,7 +557,7 @@ abstract class IOStream
 
     /**
      * Reads exact $n bytes from buffer
-     * @param  integer      $n Number of bytes to read
+     * @param  integer $n Number of bytes to read
      * @return string|false
      */
     public function readExact($n)
@@ -636,7 +652,7 @@ abstract class IOStream
 
     /**
      * Send data to the connection. Note that it just writes to buffer that flushes at every baseloop
-     * @param  string  $data Data to send
+     * @param  string $data Data to send
      * @return boolean       Success
      */
     public function write($data)
@@ -651,7 +667,7 @@ abstract class IOStream
         if (!mb_orig_strlen($data)) {
             return true;
         }
-        $this->writing   = true;
+        $this->writing = true;
         Daemon::$noError = true;
         if (!$this->bev->write($data) || !Daemon::$noError) {
             $this->close();
@@ -662,7 +678,7 @@ abstract class IOStream
 
     /**
      * Send data and appending \n to connection. Note that it just writes to buffer flushed at every baseloop
-     * @param  string  $data Data to send
+     * @param  string $data Data to send
      * @return boolean       Success
      */
     public function writeln($data)
@@ -734,7 +750,7 @@ abstract class IOStream
     public function unsetFd()
     {
         $this->bev = null;
-        $this->fd  = null;
+        $this->fd = null;
     }
 
     /**
@@ -852,7 +868,7 @@ abstract class IOStream
 
     /**
      * Called when the connection state changed
-     * @param  object  $bev    EventBufferEvent
+     * @param  object $bev EventBufferEvent
      * @param  integer $events Events
      * @return void
      */
@@ -891,7 +907,7 @@ abstract class IOStream
     /**
      * Moves arbitrary number of bytes from input buffer to given buffer
      * @param  \EventBuffer $dest Destination nuffer
-     * @param  integer      $n    Max. number of bytes to move
+     * @param  integer $n Max. number of bytes to move
      * @return integer|false
      */
     public function moveToBuffer(\EventBuffer $dest, $n)
@@ -905,7 +921,7 @@ abstract class IOStream
     /**
      * Moves arbitrary number of bytes from given buffer to output buffer
      * @param  \EventBuffer $src Source buffer
-     * @param  integer      $n   Max. number of bytes to move
+     * @param  integer $n Max. number of bytes to move
      * @return integer|false
      */
     public function writeFromBuffer(\EventBuffer $src, $n)
@@ -919,7 +935,7 @@ abstract class IOStream
 
     /**
      * Read data from the connection's buffer
-     * @param  integer      $n Max. number of bytes to read
+     * @param  integer $n Max. number of bytes to read
      * @return string|false    Readed data
      */
     public function read($n)

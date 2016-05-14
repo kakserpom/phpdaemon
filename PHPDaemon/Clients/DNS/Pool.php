@@ -18,22 +18,72 @@ class Pool extends Client
      * @var array Record Types [code => "name", ...]
      */
     public static $type = [
-        1     => 'A', 2 => 'NS', 3 => 'MD', 4 => 'MF', 5 => 'CNAME',
-        6     => 'SOA', 7 => 'MB', 8 => 'MG', 9 => 'MR', 10 => 'RR',
-        11    => 'WKS', 12 => 'PTR', 13 => 'HINFO', 14 => 'MINFO',
-        15    => 'MX', 16 => 'TXT', 17 => 'RP', 18 => 'AFSDB',
-        19    => 'X25', 20 => 'ISDN',
-        21    => 'RT', 22 => 'NSAP', 23 => 'NSAP-PTR', 24 => 'SIG',
-        25    => 'KEY', 26 => 'PX', 27 => 'GPOS', 28 => 'AAAA', 29 => 'LOC',
-        30    => 'NXT', 31 => 'EID', 32 => 'NIMLOC', 33 => 'SRV',
-        34    => 'ATMA', 35 => 'NAPTR', 36 => 'KX', 37 => 'CERT', 38 => 'A6',
-        39    => 'DNAME', 40 => 'SINK', 41 => 'OPT', 42 => 'APL', 43 => 'DS',
-        44    => 'SSHFP', 45 => 'IPSECKEY', 46 => 'RRSIG', 47 => 'NSEC',
-        48    => 'DNSKEY', 49 => 'DHCID', 50 => 'NSEC3', 51 => 'NSEC3PARAM',
-        55    => 'HIP', 99 => 'SPF', 100 => 'UINFO', 101 => 'UID', 102 => 'GID',
-        103   => 'UNSPEC', 249 => 'TKEY', 250 => 'TSIG', 251 => 'IXFR',
-        252   => 'AXFR', 253 => 'MAILB', 254 => 'MAILA', 255 => 'ALL',
-        32768 => 'TA', 32769 => 'DLV',
+        1 => 'A',
+        2 => 'NS',
+        3 => 'MD',
+        4 => 'MF',
+        5 => 'CNAME',
+        6 => 'SOA',
+        7 => 'MB',
+        8 => 'MG',
+        9 => 'MR',
+        10 => 'RR',
+        11 => 'WKS',
+        12 => 'PTR',
+        13 => 'HINFO',
+        14 => 'MINFO',
+        15 => 'MX',
+        16 => 'TXT',
+        17 => 'RP',
+        18 => 'AFSDB',
+        19 => 'X25',
+        20 => 'ISDN',
+        21 => 'RT',
+        22 => 'NSAP',
+        23 => 'NSAP-PTR',
+        24 => 'SIG',
+        25 => 'KEY',
+        26 => 'PX',
+        27 => 'GPOS',
+        28 => 'AAAA',
+        29 => 'LOC',
+        30 => 'NXT',
+        31 => 'EID',
+        32 => 'NIMLOC',
+        33 => 'SRV',
+        34 => 'ATMA',
+        35 => 'NAPTR',
+        36 => 'KX',
+        37 => 'CERT',
+        38 => 'A6',
+        39 => 'DNAME',
+        40 => 'SINK',
+        41 => 'OPT',
+        42 => 'APL',
+        43 => 'DS',
+        44 => 'SSHFP',
+        45 => 'IPSECKEY',
+        46 => 'RRSIG',
+        47 => 'NSEC',
+        48 => 'DNSKEY',
+        49 => 'DHCID',
+        50 => 'NSEC3',
+        51 => 'NSEC3PARAM',
+        55 => 'HIP',
+        99 => 'SPF',
+        100 => 'UINFO',
+        101 => 'UID',
+        102 => 'GID',
+        103 => 'UNSPEC',
+        249 => 'TKEY',
+        250 => 'TSIG',
+        251 => 'IXFR',
+        252 => 'AXFR',
+        253 => 'MAILB',
+        254 => 'MAILA',
+        255 => 'ALL',
+        32768 => 'TA',
+        32769 => 'DLV',
     ];
 
     /**
@@ -55,14 +105,14 @@ class Pool extends Client
      * @var array Classes [code => "class"]
      */
     public static $class = [
-        1   => 'IN',
-        3   => 'CH',
+        1 => 'IN',
+        3 => 'CH',
         255 => 'ANY',
     ];
-    
+
     /**
-    * @var array resolve.conf file parsed 
-    */
+     * @var array resolve.conf file parsed
+     */
     public $nameServers = [];
 
     /**
@@ -82,22 +132,22 @@ class Pool extends Client
     {
         return [
             /* [integer] port */
-            'port'             => 53,
-            
+            'port' => 53,
+
             /* [integer] resolvecachesize */
             'resolvecachesize' => 128,
-            
+
             /* [string] Servers */
-            'servers'          => '',
-            
+            'servers' => '',
+
             /* [string] hostsfile */
-            'hostsfile'        => '/etc/hosts',
-            
+            'hostsfile' => '/etc/hosts',
+
             /* [string] resolvfile */
-            'resolvfile'       => '/etc/resolv.conf',
-            
+            'resolvfile' => '/etc/resolv.conf',
+
             /* [boolean] Expose? */
-            'expose'           => 1,
+            'expose' => 1,
         ];
     }
 
@@ -131,9 +181,9 @@ class Pool extends Client
                     $pool->hosts = [];
                     foreach ($m as $h) {
                         $hosts = preg_split('~\s+~', $h[2]);
-                        $ip    = $h[1];
+                        $ip = $h[1];
                         foreach ($hosts as $host) {
-                            $host               = rtrim($host, '.') . '.';
+                            $host = rtrim($host, '.') . '.';
                             $pool->hosts[$host][] = $ip;
                         }
                     }
@@ -146,10 +196,10 @@ class Pool extends Client
 
     /**
      * Resolves the host
-     * @param  string   $hostname Hostname
-     * @param  callable $cb       Callback
-     * @param  boolean  $noncache Noncache?
-     * @param  array    $nameServers
+     * @param  string $hostname Hostname
+     * @param  callable $cb Callback
+     * @param  boolean $noncache Noncache?
+     * @param  array $nameServers
      * @callback $cb ( array|string $addrs )
      * @return void
      */
@@ -194,7 +244,7 @@ class Pool extends Client
                 return;
             }
             $addrs = [];
-            $ttl   = 0;
+            $ttl = 0;
             if (isset($response['A'])) {
                 foreach ($response['A'] as $r) {
                     $addrs[] = $r['ip'];
@@ -220,62 +270,72 @@ class Pool extends Client
 
     /**
      * Gets the host information
-     * @param  string   $hostname Hostname
-     * @param  callable $cb       Callback
-     * @param  boolean  $noncache Noncache?
-     * @param  array    $nameServers
-     * @param  string   $proto
+     * @param  string $hostname Hostname
+     * @param  callable $cb Callback
+     * @param  boolean $noncache Noncache?
+     * @param  array $nameServers
+     * @param  string $proto
      * @callback $cb ( )
      * @return void
      */
-    public function get($hostname, $cb, $noncache = false, $nameServers = [], $proto = 'udp') 
+    public function get($hostname, $cb, $noncache = false, $nameServers = [], $proto = 'udp')
     {
         $pool = $this;
-        if(!$nameServers){
+        if (!$nameServers) {
             $nameServers = $this->nameServers;
         }
         if (!$this->preloading->hasCompleted()) {
-            $this->preloading->addListener(function ($job) use ($hostname, $cb, $noncache, $pool, $nameServers, $proto) {
+            $this->preloading->addListener(function ($job) use (
+                $hostname,
+                $cb,
+                $noncache,
+                $pool,
+                $nameServers,
+                $proto
+            ) {
                 $pool->get($hostname, $cb, $noncache, $nameServers, $proto);
             });
             return;
         }
-        $nameServer = reset ($nameServers);
+        $nameServer = reset($nameServers);
         $isIpv6 = filter_var($nameServer, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
-        if($isIpv6){
+        if ($isIpv6) {
             $nameServer = '[' . $nameServer . ']';
         }
         $onGetConnection = function ($conn) use ($cb, $hostname, $nameServers, $noncache, $pool, $proto) {
             if (!$conn || !$conn->isConnected()) {
-                if($proto === 'udp'){
+                if ($proto === 'udp') {
                     //Fail to  connect via udp, trying by tcp
                     $pool->get($hostname, $cb, $noncache, $nameServers, 'tcp');
                     return;
                 }
-                array_shift ($nameServers);
-                if(!$nameServers) {
+                array_shift($nameServers);
+                if (!$nameServers) {
                     //Totally fail to resolve name
                     $cb(false);
-                }else{
+                } else {
                     //Fail connect to curr Ns, but we can try another ns
                     $pool->get($hostname, $cb, $noncache, $nameServers, 'udp');
                 }
             } else {
-                $conn->get($hostname, function($response) use ($hostname, $cb, $proto, $noncache, $nameServers, $pool){
-                    if($response === false && $proto === 'udp'){
-                        //Fail to  connect via udp, trying by tcp
-                        $pool->get($hostname, $cb, $noncache, $nameServers, 'tcp');
-                    }else {
-                        call_user_func($cb, $response);
+                $conn->get(
+                    $hostname,
+                    function ($response) use ($hostname, $cb, $proto, $noncache, $nameServers, $pool) {
+                        if ($response === false && $proto === 'udp') {
+                            //Fail to  connect via udp, trying by tcp
+                            $pool->get($hostname, $cb, $noncache, $nameServers, 'tcp');
+                        } else {
+                            call_user_func($cb, $response);
+                        }
                     }
-                });
+                );
             }
-		};
+        };
         list($host, $type, $class) = explode(':', $hostname . '::', 3);
-        if($type === 'AXFR'){
+        if ($type === 'AXFR') {
             $proto = 'tcp';
         }
-        $this->getConnection($proto . '://' . $nameServer , $onGetConnection);
-		return;
-	}
+        $this->getConnection($proto . '://' . $nameServer, $onGetConnection);
+        return;
+    }
 }
