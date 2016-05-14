@@ -392,12 +392,12 @@ class FileSystem
     /**
      * Readdir()
      * @param  string $path Path
-     * @param  callable $cb Callback
-     * @param  integer $flags Flags
-     * @param  integer $pri Priority
+     * @param  callable $cb = null Callback
+     * @param  integer $flags = null Flags
+     * @param  integer $pri = EIO_PRI_DEFAULT Priority
      * @return resource|true
      */
-    public static function readdir($path, $cb = null, $flags, $pri = EIO_PRI_DEFAULT)
+    public static function readdir($path, $cb = null, $flags = null, $pri = EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -494,11 +494,11 @@ class FileSystem
      * @param  string $path Path
      * @param  integer $uid User ID
      * @param  integer $gid Group ID
-     * @param  callable $cb Callback
-     * @param  integer $pri Priority
+     * @param  callable $cb = null Callback
+     * @param  integer $pri = EIO_PRI_DEFAULT Priority
      * @return resource|boolean
      */
-    public static function chown($path, $uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT)
+    public static function chown($path, $uid, $gid = -1, $cb = null, $pri = EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {

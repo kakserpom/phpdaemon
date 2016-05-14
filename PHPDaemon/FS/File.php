@@ -343,11 +343,11 @@ class File
      * Changes ownership of this file
      * @param  integer $uid User ID
      * @param  integer $gid Group ID
-     * @param  callable $cb Callback
-     * @param  integer $pri Priority
+     * @param  callable $cb = null Callback
+     * @param  integer $pri = EIO_PRI_DEFAULT Priority
      * @return resource|false
      */
-    public function chown($uid, $gid = -1, $cb, $pri = EIO_PRI_DEFAULT)
+    public function chown($uid, $gid = -1, $cb = null, $pri = EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!$this->fd) {
