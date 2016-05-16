@@ -1,9 +1,9 @@
 <?php
+
 namespace PHPDaemon\Clients\GearmanClient;
 
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Crypt;
-
 
 /**
  * @package NetworkClients
@@ -14,38 +14,37 @@ use PHPDaemon\Utils\Crypt;
  *
  * @author Popov Gennadiy <me@westtrade.tk>
  */
-class  Connection extends ClientConnection {
-
+class Connection extends ClientConnection
+{
     /**
      * Magic code for request
      */
-    const MAGIC_REQUEST         = "\0REQ";
+    const MAGIC_REQUEST = "\0REQ";
 
     /**
      * Magic code for response
      */
-    const MAGIC_RESPONSE        = "\0RES";
+    const MAGIC_RESPONSE = "\0RES";
 
     /*
      * Byte length of header
      */
-    const HEADER_LENGTH         = 12;
+    const HEADER_LENGTH = 12;
 
     /**
      * Header binary format
      */
-    const HEADER_WRITE_FORMAT   = "a4NN";
+    const HEADER_WRITE_FORMAT = "a4NN";
 
     /**
      * Header read format
      */
-    const HEADER_READ_FORMAT    = "a4magic/Ntype/Nsize";
+    const HEADER_READ_FORMAT = "a4magic/Ntype/Nsize";
 
     /**
      * Delimeter for function arguments
      */
-    const ARGS_DELIMITER        = "\0";
-
+    const ARGS_DELIMITER = "\0";
 
 
     /**
@@ -157,7 +156,7 @@ class  Connection extends ClientConnection {
             // @TODO
         }
     }
-    
+
     /**
      * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
      * @return void
@@ -180,7 +179,7 @@ class  Connection extends ClientConnection {
      * @param $payload
      * @param callable|null $cb
      */
-    public function sendEcho ($payload, $cb = null)
+    public function sendEcho($payload, $cb = null)
     {
         $this->sendCommand('ECHO_REQ', $payload, $cb);
     }
@@ -194,9 +193,9 @@ class  Connection extends ClientConnection {
      */
     public function submitJob($params, $cb = null)
     {
-        $closure = function () use (&$params, $cb)
-        {
-            $this->sendCommand('SUBMIT_JOB'
+        $closure = function () use (&$params, $cb) {
+            $this->sendCommand(
+                'SUBMIT_JOB'
                 . (isset($params['pri']) ? '_ ' . strtoupper($params['pri']) : '')
                 . (isset($params['bg']) && $params['bg'] ? '_BG' : ''),
                 [$params['function'], $params['unique'], $params['payload']],
@@ -206,21 +205,26 @@ class  Connection extends ClientConnection {
         if (isset($params['unique'])) {
             $closure();
         } else {
-            Crypt::randomString(10, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', function($random) use ($closure) {
-                $params['unique'] = $random;
-                $closure();
-            });
+            Crypt::randomString(
+                10,
+                '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                function ($random) use ($closure) {
+                    $params['unique'] = $random;
+                    $closure();
+                }
+            );
         }
     }
 
     /**
      * Get job status
-     * 
+     *
      * @param mixed $jobHandle Job handle that was given in JOB_CREATED packet.
      * @param callable $cb = null
      *
      */
-    public function getStatus($jobHandle, $cb = null) {
+    public function getStatus($jobHandle, $cb = null)
+    {
         $this->sendCommand('GET_STATUS', [$jobHandle], $cb);
     }
 
@@ -235,7 +239,8 @@ class  Connection extends ClientConnection {
      * @param int $optionName
      * @param callable $cb = null
      */
-    public function setConnectionOption($optionName, $cb = null) {
+    public function setConnectionOption($optionName, $cb = null)
+    {
         $this->sendCommand('OPTION_RES', [$optionName], $cb);
     }
 
@@ -246,16 +251,24 @@ class  Connection extends ClientConnection {
      * @param $payload
      * @param callable $cb = null
      */
-    public function sendCommand($commandName, $payload, $cb = null) {
+    public function sendCommand($commandName, $payload, $cb = null)
+    {
 
         $pct = implode(
             static::ARGS_DELIMITER,
-            array_map(function($item){ return !is_scalar($item) ? serialize($item) : $item; }, (array) $payload)
+            array_map(function ($item) {
+                return !is_scalar($item) ? serialize($item) : $item;
+            }, (array)$payload)
         );
         $this->onResponse->push($cb);
-        $this->write(pack(
-            static::HEADER_WRITE_FORMAT,
-            static::MAGIC_REQUEST, $this->requestCommandList[$commandName], mb_orig_strlen($pct)));
+        $this->write(
+            pack(
+                static::HEADER_WRITE_FORMAT,
+                static::MAGIC_REQUEST,
+                $this->requestCommandList[$commandName],
+                mb_orig_strlen($pct)
+            )
+        );
         $this->write($pct);
     }
 }
