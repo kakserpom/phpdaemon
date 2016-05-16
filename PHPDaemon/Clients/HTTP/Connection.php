@@ -109,7 +109,8 @@ class Connection extends ClientConnection
     /**
      * Constructor
      */
-    protected function init() {
+    protected function init()
+    {
         $this->requests = new \SplStack;
     }
 
@@ -120,7 +121,8 @@ class Connection extends ClientConnection
      * @param &$params
      * @return void
      */
-    protected function sendRequestHeaders($type, $url, &$params) {
+    protected function sendRequestHeaders($type, $url, &$params)
+    {
         if (!is_array($params)) {
             $params = ['resultcb' => $params];
         }
