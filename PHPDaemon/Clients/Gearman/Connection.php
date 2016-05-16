@@ -6,13 +6,7 @@ use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Crypt;
 
 /**
- * @package NetworkClients
- * @subpackage GearmanClient
- * @protocol http://gearman.org/protocol/
- *
- * @interface http://php.net/manual/ru/class.gearmanclient.php
- *
- * @author Popov Gennadiy <me@westtrade.tk>
+ * Class Connections
  */
 class Connection extends ClientConnection
 {

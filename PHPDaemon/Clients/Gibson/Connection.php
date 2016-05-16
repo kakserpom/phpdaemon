@@ -7,10 +7,7 @@ use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
 
 /**
- * @package    Examples
- * @subpackage ExampleGibson
- * @protocol http://gibson-db.in/protocol.php
- * @author     Vasily Zorin <maintainer@daemon.io>
+ * Class Connection
  */
 class Connection extends ClientConnection
 {

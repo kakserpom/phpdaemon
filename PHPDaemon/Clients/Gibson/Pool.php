@@ -4,10 +4,7 @@ namespace PHPDaemon\Clients\Gibson;
 use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 /**
- * @package    Clients
- * @subpackage Gibson
- * @protocol http://gibson-db.in/protocol.php
- * @author     Vasily Zorin <maintainer@daemon.io>
+ * Class Connection
  */
 class Pool extends \PHPDaemon\Network\Client
 {
