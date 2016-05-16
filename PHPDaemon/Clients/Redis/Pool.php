@@ -12,6 +12,9 @@ use PHPDaemon\Network\ClientConnection;
  */
 class Pool extends \PHPDaemon\Network\Client
 {
+    /**
+     * @var Connection[]
+     */
     public $servConnSub = [];
 
     protected $currentMasterAddr;
@@ -82,16 +85,18 @@ class Pool extends \PHPDaemon\Network\Client
     }
 
     /**
-     * @TODO
      * @param  string $chan
      * @return integer
      */
     public function getLocalSubscribersCount($chan)
     {
+        $count = 0;
+
         foreach ($this->servConnSub as $conn) {
-            return $conn->getLocalSubscribersCount($chan);
+            $count += $conn->getLocalSubscribersCount($chan);
         }
-        return 0;
+
+        return $count;
     }
 
     /**
