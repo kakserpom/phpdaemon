@@ -97,12 +97,30 @@ class Connection extends ClientConnection
     public $eofTerminated = false;
 
     /**
-     * Performs GET-request
-     * @param string $url
-     * @param array $params
+     * @var \SplStack
      */
-    public function get($url, $params = null)
-    {
+    protected $requests;
+
+    /**
+     * @var string
+     */
+    public $reqType;
+
+    /**
+     * Constructor
+     */
+    protected function init() {
+        $this->requests = new \SplStack;
+    }
+
+    /**
+     * Send request headers
+     * @param $type
+     * @param $url
+     * @param &$params
+     * @return void
+     */
+    protected function sendRequestHeaders($type, $url, &$params) {
         if (!is_array($params)) {
             $params = ['resultcb' => $params];
         }
@@ -123,7 +141,7 @@ class Connection extends ClientConnection
         if (!isset($params['version'])) {
             $params['version'] = '1.1';
         }
-        $this->writeln('GET ' . $params['uri'] . ' HTTP/' . $params['version']);
+        $this->writeln($type . ' ' . $params['uri'] . ' HTTP/' . $params['version']);
         if (isset($params['proxy'])) {
             if (isset($params['proxy']['auth'])) {
                 $this->writeln('Proxy-Authorization: basic ' . base64_encode($params['proxy']['auth']['username'] . ':' . $params['proxy']['auth']['password']));
@@ -146,8 +164,29 @@ class Connection extends ClientConnection
             $this->chunkcb = $params['chunkcb'];
         }
         $this->writeln('');
+        $this->requests->push($type);
         $this->onResponse($params['resultcb']);
         $this->checkFree();
+    }
+
+    /**
+     * Perform a HEAD request
+     * @param string $url
+     * @param array $params
+     */
+    public function head($url, $params = null)
+    {
+        $this->sendRequestHeaders('HEAD', $url, $params);
+    }
+
+    /**
+     * Perform a GET request
+     * @param string $url
+     * @param array $params
+     */
+    public function get($url, $params = null)
+    {
+        $this->sendRequestHeaders('GET', $url, $params);
     }
 
     /**
@@ -169,80 +208,35 @@ class Connection extends ClientConnection
     }
 
     /**
-     * Performs POST-request
+     * Perform a POST request
      * @param string $url
      * @param array $data
      * @param array $params
      */
-    public function post($url, $data, $params = null)
+    public function post($url, $data = [], $params = null)
     {
-        if (!$data) {
-            $data = [];
-        }
-
-        if (!is_array($params)) {
-            $params = ['resultcb' => $params];
-        }
-        if (!isset($params['uri']) || !isset($params['host'])) {
-            $prepared = Pool::parseUrl($url);
-            if (!$prepared) {
-                if (isset($params['resultcb'])) {
-                    $params['resultcb'](false);
-                }
-                return;
+        foreach ($data as $val) {
+            if ($val instanceof UploadFile) {
+                $params['contentType'] = 'multipart/form-data';
             }
-            list($params['host'], $params['uri']) = $prepared;
-        }
-        if ($params['uri'] === '') {
-            $params['uri'] = '/';
-        }
-        $this->lastURL = 'http://' . $params['host'] . $params['uri'];
-        if (!isset($params['version'])) {
-            $params['version'] = '1.1';
         }
         if (!isset($params['contentType'])) {
             $params['contentType'] = 'application/x-www-form-urlencoded';
         }
-        $this->writeln('POST ' . $params['uri'] . ' HTTP/' . $params['version']);
-        if (isset($params['proxy'])) {
-            if (isset($params['proxy']['auth'])) {
-                $this->writeln('Proxy-Authorization: basic ' . base64_encode($params['proxy']['auth']['username'] . ':' . $params['proxy']['auth']['password']));
-            }
-        }
-        if (!isset($params['keepalive']) || !$params['keepalive']) {
-            $this->writeln('Connection: close');
-        }
-        $this->writeln('Host: ' . $params['host']);
-        if ($this->pool->config->expose->value && !isset($params['headers']['User-Agent'])) {
-            $this->writeln('User-Agent: phpDaemon/' . Daemon::$version);
-        }
-        if (isset($params['cookie']) && sizeof($params['cookie'])) {
-            $this->writeln('Cookie: ' . http_build_query($params['cookie'], '', '; '));
-        }
-        foreach ($data as $val) {
-            if (is_object($val) && $val instanceof UploadFile) {
-                $params['contentType'] = 'multipart/form-data';
-            }
-        }
-        $this->writeln('Content-Type: ' . $params['contentType']);
         if ($params['contentType'] === 'application/x-www-form-urlencoded') {
             $body = http_build_query($data, '', '&', PHP_QUERY_RFC3986);
         } elseif ($params['contentType'] === 'application/x-json') {
             $body = json_encode($data);
         } else {
-            $body = 'unsupported Content-Type';
+            $body = 'Unsupported Content-Type';
         }
-        $this->writeln('Content-Length: ' . mb_orig_strlen($body));
-        if (isset($params['headers'])) {
-            $this->customRequestHeaders($params['headers']);
+        if (!isset($params['customHeaders'])) {
+            $params['customHeaders'] = [];
         }
-        if (isset($params['rawHeaders']) && $params['rawHeaders']) {
-            $this->rawHeaders = [];
-        }
-        $this->writeln('');
+        $params['customHeaders']['Content-Length'] = mb_orig_strlen($body);
+        $this->sendRequestHeaders('POST', $url, $params);
         $this->write($body);
         $this->writeln('');
-        $this->onResponse($params['resultcb']);
     }
 
     /**
@@ -282,6 +276,13 @@ class Connection extends ClientConnection
         if ($this->state === self::STATE_BODY) {
             goto body;
         }
+        if ($this->reqType === null) {
+            if ($this->requests->isEmpty()) {
+                $this->finish();
+                return;
+            }
+            $this->reqType = $this->requests->shift();
+        }
         while (($line = $this->readLine()) !== null) {
             if ($line !== '') {
                 if ($this->rawHeaders !== null) {
@@ -313,7 +314,11 @@ class Connection extends ClientConnection
                 if ($this->contentLength === -1 && !$this->chunked && !$this->keepalive) {
                     $this->eofTerminated = true;
                 }
-                $this->state = self::STATE_BODY;
+                if ($this->reqType === 'HEAD') {
+                    $this->requestFinished();
+                } else {
+                    $this->state = self::STATE_BODY;
+                }
                 break;
             }
             if ($this->state === self::STATE_ROOT) {
@@ -451,6 +456,7 @@ class Connection extends ClientConnection
         $this->charset = null;
         $this->body = '';
         $this->responseCode = 0;
+        $this->reqType = null;
         if (!$this->keepalive) {
             $this->finish();
         }

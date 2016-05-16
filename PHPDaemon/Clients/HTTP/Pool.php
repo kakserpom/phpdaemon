@@ -30,7 +30,43 @@ class Pool extends Client
     }
 
     /**
-     * Performs GET-request
+     * Perform a HEAD request
+     * @param string $url
+     * @param array $params
+     * @param callable $resultcb
+     * @call  ( url $url, array $params )
+     * @call  ( url $url, callable $resultcb )
+     * @callback $resultcb ( Connection $conn, boolean $success )
+     */
+    public function head($url, $params)
+    {
+        if (is_callable($params)) {
+            $params = ['resultcb' => $params];
+        }
+        if (!isset($params['uri']) || !isset($params['host'])) {
+            list($params['scheme'], $params['host'], $params['uri'], $params['port']) = static::parseUrl($url);
+        }
+        if (isset($params['connect'])) {
+            $dest = $params['connect'];
+        } elseif (isset($params['proxy']) && $params['proxy']) {
+            if ($params['proxy']['type'] === 'http') {
+                $dest = 'tcp://' . $params['proxy']['addr'];
+            }
+        } else {
+            $dest = 'tcp://' . $params['host'] . (isset($params['port']) ? ':' . $params['port'] : null) . ($params['scheme'] === 'https' ? '#ssl' : '');
+        }
+        $this->getConnection($dest, function ($conn) use ($url, $params) {
+            if (!$conn->isConnected()) {
+                $params['resultcb'](false);
+                return;
+            }
+            $conn->head($url, $params);
+        });
+    }
+
+
+    /**
+     * Perform a GET request
      * @param string $url
      * @param array $params
      * @param callable $resultcb
@@ -65,7 +101,7 @@ class Pool extends Client
     }
 
     /**
-     * Performs HTTP request
+     * Perform a POST request
      * @param string $url
      * @param array $data
      * @param array $params
