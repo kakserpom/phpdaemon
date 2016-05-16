@@ -53,7 +53,7 @@ class WorkerConnection extends Connection
                 return;
             }
             $path = $p['path'];
-            TImer::add(function ($event) use ($path) {
+            Timer::add(function ($event) use ($path) {
                 if (Daemon::supported(Daemon::SUPPORT_RUNKIT_IMPORT)) {
                     //Daemon::log('--start runkit_import('.$path.')');
                     runkit_import($path, RUNKIT_IMPORT_FUNCTIONS | RUNKIT_IMPORT_CLASSES | RUNKIT_IMPORT_OVERRIDE);
