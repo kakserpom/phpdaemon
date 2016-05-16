@@ -71,9 +71,9 @@ class Debug
         static $i = 0;
         $n = ++$i;
         Daemon::log('Debug::proxy #'.$n.': SPAWNED ('.json_encode($name). ')');
-        return function () use ($cb, $name, $n) {
+        return function (...$args) use ($cb, $name, $n) {
             Daemon::log('Debug::proxy #'.$n.': CALLED ('.json_encode($name). ')');
-            $cb(...func_get_args());
+            $cb(...$args);
         };
     }
 
@@ -81,11 +81,11 @@ class Debug
      * Wrapper of var_dump
      * @return string Result of var_dump()
      */
-    public static function dump()
+    public static function dump(...$args)
     {
         ob_start();
 
-        foreach (func_get_args() as $v) {
+        foreach ($args as $v) {
             var_dump($v);
         }
 
@@ -113,11 +113,11 @@ class Debug
      * Wrapper of debug_zval_dump
      * @return string Result of debug_zval_dump()
      */
-    public static function zdump()
+    public static function zdump(...$args)
     {
         ob_start();
 
-        foreach (func_get_args() as $v) {
+        foreach ($args as $v) {
             debug_zval_dump($v);
         }
 

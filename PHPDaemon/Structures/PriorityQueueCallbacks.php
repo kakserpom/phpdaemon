@@ -63,14 +63,14 @@ class PriorityQueueCallbacks extends \SplPriorityQueue
      * @param  mixed   ...$args Arguments
      * @return boolean
      */
-    public function executeOne()
+    public function executeOne(...$args)
     {
         if ($this->isEmpty()) {
             return false;
         }
         $cb = $this->extract();
         if ($cb) {
-            $cb(...func_get_args());
+            $cb(...$args);
         }
         return true;
     }
@@ -80,12 +80,11 @@ class PriorityQueueCallbacks extends \SplPriorityQueue
      * @param  mixed   ...$args Arguments
      * @return integer
      */
-    public function executeAll()
+    public function executeAll(...$args)
     {
         if ($this->isEmpty()) {
             return 0;
         }
-        $args = func_get_args();
         $n    = 0;
         do {
             $cb = $this->extract();

@@ -17,13 +17,11 @@ class ObjectStorage extends \SplObjectStorage
      * @param  mixed  ...$args Arguments
      * @return integer Number of called objects
      */
-    public function each()
+    public function each($method, ...$args)
     {
         if ($this->count() === 0) {
             return 0;
         }
-        $args   = func_get_args();
-        $method = array_shift($args);
         $n      = 0;
         foreach ($this as $obj) {
             $obj->$method(...$args);

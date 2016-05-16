@@ -176,12 +176,12 @@ class MultiEval
      * Adds eval command or calls execute() method
      * @return void
      */
-    public function __invoke()
+    public function __invoke(...$args)
     {
-        if (func_num_args() === 0) {
+        if (!count($args)) {
             $this->execute();
             return;
         }
-        $this->add(...func_get_args());
+        $this->add(...$args);
     }
 }

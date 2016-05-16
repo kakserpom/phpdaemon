@@ -32,10 +32,8 @@ trait EventHandlers
      * @param  mixed  ...$args Arguments
      * @return this
      */
-    public function event()
+    public function event($name, ...$args)
     {
-        $args = func_get_args();
-        $name = array_shift($args);
         if ($this->addThisToEvents) {
             array_unshift($args, $this);
         }
@@ -56,10 +54,8 @@ trait EventHandlers
      * @param  mixed  ...$args Arguments
      * @return this
      */
-    public function trigger()
+    public function trigger($name, ...$args)
     {
-        $args = func_get_args();
-        $name = array_shift($args);
         if ($this->addThisToEvents) {
             array_unshift($args, $this);
         }
@@ -80,10 +76,8 @@ trait EventHandlers
      * @param  mixed  ...$args Arguments
      * @return integer
      */
-    public function triggerAndCount()
+    public function triggerAndCount($name, ...$args)
     {
-        $args = func_get_args();
-        $name = array_shift($args);
         if ($this->addThisToEvents) {
             array_unshift($args, $this);
         }

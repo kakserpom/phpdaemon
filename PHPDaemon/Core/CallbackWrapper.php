@@ -170,7 +170,7 @@ class CallbackWrapper
      * @param  mixed ...$args Arguments
      * @return mixed
      */
-    public function __invoke()
+    public function __invoke(...$args)
     {
         if ($this->timer !== null) {
             Timer::remove($this->timer);
@@ -182,7 +182,7 @@ class CallbackWrapper
         if ($this->context === null || Daemon::$context !== null) {
             try {
                 $cb = $this->cb;
-                return $cb(...func_get_args());
+                return $cb(...$args);
             } catch (\Exception $e) {
                 Daemon::uncaughtExceptionHandler($e);
             }
@@ -191,7 +191,7 @@ class CallbackWrapper
         $this->context->onWakeup();
         try {
             $cb = $this->cb;
-            $result = $cb(...func_get_args());
+            $result = $cb(...$args);
             $this->context->onSleep();
             return $result;
         } catch (\Exception $e) {

@@ -33,9 +33,9 @@ if (!function_exists('mb_orig_substr')) {
 }
 
 if (!function_exists('D')) {
-    function D()
+    function D(...$args)
     {
-        \PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump(...func_get_args()));
+        \PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump(...$args));
         //\PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::backtrace());
     }
 }

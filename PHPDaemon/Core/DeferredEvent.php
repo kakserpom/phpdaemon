@@ -158,8 +158,8 @@ class DeferredEvent
      * @param  mixed ...$args Arguments
      * @return void
      */
-    public function __invoke()
+    public function __invoke(...$args)
     {
-        $this->addListener(...func_get_args());
+        $this->addListener(...$args);
     }
 }

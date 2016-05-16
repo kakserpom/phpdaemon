@@ -286,30 +286,30 @@ class Worker extends Generic
             }
             $this->override('define', 'define');
 
-            function header()
+            function header(...$args)
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
                 }
-                return Daemon::$context->header(...func_get_args());
+                return Daemon::$context->header(...$args);
             }
             $this->override('header', 'header');
 
-            function isUploadedFile()
+            function isUploadedFile(...$args)
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
                 }
-                return Daemon::$context->isUploadedFile(...func_get_args());
+                return Daemon::$context->isUploadedFile(...$args);
             }
             $this->override('isUploadedFile', 'is_uploaded_file');
 
-            function moveUploadedFile()
+            function moveUploadedFile(...$args)
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
                 }
-                return Daemon::$context->moveUploadedFile(...func_get_args());
+                return Daemon::$context->moveUploadedFile(...$args);
             }
             $this->override('moveUploadedFile', 'move_uploaded_file');
 
@@ -332,12 +332,12 @@ class Worker extends Generic
             }
             $this->override('headersList', 'headers_list');
 
-            function setcookie()
+            function setcookie(...$args)
             {
                 if (!Daemon::$context instanceof \PHPDaemon\Request\Generic) {
                     return false;
                 }
-                return Daemon::$context->setcookie(...func_get_args());
+                return Daemon::$context->setcookie(...$args);
             }
             $this->override('setcookie', 'setcookie');
 

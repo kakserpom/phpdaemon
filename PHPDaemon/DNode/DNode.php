@@ -93,9 +93,8 @@ trait DNode
      * @param  mixed ...$args Arguments
      * @return this
      */
-    public function callLocal()
+    public function callLocal(...$args)
     {
-        $args = func_get_args();
         if (!sizeof($args)) {
             return $this;
         }
@@ -181,13 +180,8 @@ trait DNode
      * @param  mixed ...$args Arguments
      * @return this
      */
-    public function callRemote()
+    public function callRemote($method, ...$args)
     {
-        $args = func_get_args();
-        if (!sizeof($args)) {
-            return $this;
-        }
-        $method = array_shift($args);
         $this->callRemoteArray($method, $args);
         return $this;
     }
