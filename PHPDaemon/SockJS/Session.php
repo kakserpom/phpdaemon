@@ -94,10 +94,10 @@ class Session
         $this->server = $server;
         
         if (isset($this->server['HTTP_COOKIE'])) {
-            Generic::parse_str(strtr($this->server['HTTP_COOKIE'], Generic::$hvaltr), $this->cookie);
+            Generic::parseStr(strtr($this->server['HTTP_COOKIE'], Generic::$hvaltr), $this->cookie);
         }
         if (isset($this->server['QUERY_STRING'])) {
-            Generic::parse_str($this->server['QUERY_STRING'], $this->get);
+            Generic::parseStr($this->server['QUERY_STRING'], $this->get);
         }
         
         $this->addr = $server['REMOTE_ADDR'];

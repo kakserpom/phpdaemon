@@ -172,7 +172,7 @@ class Input extends \EventBuffer
         if (($l = $this->length) > 0) {
             $this->req->attrs->raw = $this->read($l);
             if (isset($this->req->contype['application/x-www-form-urlencoded'])) {
-                Generic::parse_str($this->req->attrs->raw, $this->req->attrs->post);
+                Generic::parseStr($this->req->attrs->raw, $this->req->attrs->post);
             }
             if (isset($this->req->contype['application/json']) || isset($this->req->contype['application/x-json'])) {
                 $this->req->attrs->post = json_decode($this->req->attrs->raw, true);
@@ -307,7 +307,7 @@ class Input extends \EventBuffer
                     $e[1] = ltrim($e[1]);
                 }
                 if (($e[0] === 'CONTENT_DISPOSITION') && isset($e[1])) {
-                    Generic::parse_str($e[1], $this->curPartDisp, true);
+                    Generic::parseStr($e[1], $this->curPartDisp, true);
                     if (!isset($this->curPartDisp['form-data'])) {
                         break;
                     }
