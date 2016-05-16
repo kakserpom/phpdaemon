@@ -38,14 +38,14 @@ class StackCallbacks extends \SplStack
      * @param  mixed   ...$args Arguments
      * @return boolean
      */
-    public function executeOne()
+    public function executeOne(...$args)
     {
         if ($this->isEmpty()) {
             return false;
         }
         $cb = $this->shift();
         if ($cb) {
-            $cb(...func_get_args());
+            $cb(...$args);
             if ($cb instanceof CallbackWrapper) {
                 $cb->cancel();
             }
@@ -58,7 +58,7 @@ class StackCallbacks extends \SplStack
      * @param  mixed   ...$args Arguments
      * @return boolean
      */
-    public function executeAndKeepOne()
+    public function executeAndKeepOne(...$args)
     {
         if ($this->isEmpty()) {
             return false;
@@ -66,7 +66,7 @@ class StackCallbacks extends \SplStack
         $cb = $this->shift();
         $this->unshift($cb);
         if ($cb) {
-            $cb(...func_get_args());
+            $cb(...$args);
         }
         return true;
     }
