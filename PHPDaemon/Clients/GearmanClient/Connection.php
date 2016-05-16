@@ -143,7 +143,7 @@ class Connection extends ClientConnection
         $pct = $this->read($size);
 
         if ($magic === static::MAGIC_RESPONSE) {
-            $this->responseType = static::responseCommandListFlipped[$typeInt];
+            $this->responseType = static::$responseCommandListFlipped[$typeInt];
             $this->response = explode(static::ARGS_DELIMITER, $pct);
             $this->onResponse->executeOne($this);
             $this->responseType = null;
