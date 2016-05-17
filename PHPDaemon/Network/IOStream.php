@@ -291,8 +291,7 @@ abstract class IOStream
             $flags |= \EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
             if ($this->ctx) {
                 if ($this->ctx instanceof \EventSslContext) {
-                    $this->bev = \EventBufferEvent::sslSocket(
-                        Daemon::$process->eventBase,
+                    $this->bev = Daemon::$process->loop->bufferEventSsl(
                         $this->fd,
                         $this->ctx,
                         $this->ctxMode,
@@ -308,8 +307,7 @@ abstract class IOStream
                     return;
                 }
             } else {
-                $this->bev = new \EventBufferEvent(
-                    Daemon::$process->eventBase,
+                $this->bev = Daemon::$process->loop->bufferEvent(
                     $this->fd,
                     $flags,
                     [$this, 'onReadEv'],
@@ -709,7 +707,7 @@ abstract class IOStream
             return;
         }
         $this->finished = true;
-        Daemon::$process->eventBase->stop();
+        Daemon::$process->loop->interrupt();
         $this->onFinish();
         if (!$this->writing) {
             $this->close();
@@ -736,7 +734,7 @@ abstract class IOStream
                 $this->bev->free();
             }
             $this->bev = null;
-            //Daemon::$process->eventBase->stop();
+            //Daemon::$process->loop->interrupt();
         }
         if ($this->pool) {
             $this->pool->detach($this);

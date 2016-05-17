@@ -346,8 +346,7 @@ abstract class Generic
         }
         $this->enabled = true;
         if ($this->ev === null) {
-            $this->ev = new \EventListener(
-                Daemon::$process->eventBase,
+            $this->ev = Daemon::$process->loop->listener(
                 [$this, 'onAcceptEv'],
                 null,
                 \EventListener::OPT_CLOSE_ON_FREE | \EventListener::OPT_REUSEABLE,

@@ -58,13 +58,6 @@ class Worker extends Generic
     protected $autoReloadLast = 0;
 
     /**
-     * Event base
-     * @var EventBase
-     * @deprecated
-     */
-    public $eventBase;
-
-    /**
      * Event loop
      * @var EventLoop
      */
@@ -143,8 +136,6 @@ class Worker extends Generic
         } else {
             $this->loop = new EventLoop;
         }
-        $this->eventBase = $this->loop->getBase();
-
         Daemon::$process = $this;
         if (Daemon::$logpointerAsync) {
             Daemon::$logpointerAsync->fd = null;
@@ -599,7 +590,7 @@ class Worker extends Generic
             if (!$self->reloadReady) {
                 $event->timeout();
             } else {
-                $self->eventBase->exit();
+                $self->loop->stop();
             }
         }, 1e6, 'checkReloadReady');
         while (!$this->reloadReady) {

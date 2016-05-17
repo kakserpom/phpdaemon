@@ -32,6 +32,22 @@ class EventLoop
         return \Event::signal($this->base, ...$args);
     }
 
+    public function timer(...$args) {
+        return \Event::timer($this->base, ...$args);
+    }
+
+    public function listener(...$args) {
+        return new \EventListener($this->base, ...$args);
+    }
+
+    public function bufferEvent(...$args) {
+        return new \EventBufferEvent($this->base, ...$args);
+    }
+
+    public function bufferEventSsl(...$args) {
+        return \EventBufferEvent::sslSocket($this->base, ...$args);
+    }
+
     public function interrupt($cb = null) {
         if ($cb !== null) {
             $this->callbacks->push($cb);
@@ -42,6 +58,10 @@ class EventLoop
     public function stop() {
         $this->stopped = true;
         $this->interrupt();
+    }
+
+    public function event(...$args) {
+        return new \Event($this->base, ...$args);
     }
 
     public function run() {

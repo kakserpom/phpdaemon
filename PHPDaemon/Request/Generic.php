@@ -118,7 +118,7 @@ abstract class Generic
         ++Daemon::$process->reqCounter;
         $this->appInstance = $appInstance;
         $this->upstream = $upstream;
-        $this->ev = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
+        $this->ev = Daemon::$process->loop->timer([$this, 'eventCall']);
         if ($this->priority !== null) {
             $this->ev->priority = $this->priority;
         }

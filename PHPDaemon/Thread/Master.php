@@ -71,7 +71,7 @@ class Master extends Generic
         $this->collections['ipcthreads'] = $this->ipcthreads;
 
         Daemon::$appResolver->preload(true);
-        
+
         $this->spawnIPCThread();
         $this->spawnWorkers(
             min(
@@ -253,8 +253,8 @@ class Master extends Generic
         }
         if ($n > 0) {
             $this->lastMpmActionTs = microtime(true);
-            if ($this->eventBase) {
-                $this->eventBase->stop();
+            if ($this->loop) {
+                $this->loop->interrupt();
             }
         }
         return true;
@@ -283,8 +283,8 @@ class Master extends Generic
                 exit;
             }
         });
-        if ($this->eventBase) {
-            $this->eventBase->stop();
+        if ($this->loop) {
+            $this->loop->interrupt();
         }
         return true;
     }
