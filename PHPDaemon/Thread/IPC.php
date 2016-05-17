@@ -3,6 +3,7 @@ namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\EventLoop;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\FS\FileWatcher;
 
@@ -18,9 +19,9 @@ class IPC extends Generic
 {
     /**
      * Event base
-     * @var EventBase
+     * @var EventLoop
      */
-    public $eventBase;
+    public $loop;
 
     /**
      * Break main loop?
@@ -77,11 +78,10 @@ class IPC extends Generic
         if (Daemon::$process instanceof Master) {
             Daemon::$process->unregisterSignals();
         }
-        if (Daemon::$process->eventBase) {
-            Daemon::$process->eventBase->reinit();
-            $this->eventBase = Daemon::$process->eventBase;
+        if (Daemon::$process && Daemon::$process->loop) {
+            $this->loop = Daemon::$process->loop->reinit();
         } else {
-            $this->eventBase = new \EventBase();
+            $this->loop = new EventLoop;
         }
         Daemon::$process = $this;
         if (Daemon::$logpointerAsync) {
@@ -107,11 +107,7 @@ class IPC extends Generic
             $this->log('cannot instantiate IPCManager');
         }
 
-        while (!$this->breakMainLoop) {
-            if (!$this->eventBase->dispatch()) {
-                break;
-            }
-        }
+        $this->loop->run();
     }
 
     /**

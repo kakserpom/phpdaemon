@@ -4,9 +4,9 @@ namespace PHPDaemon\Thread;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
-use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Cache\CappedStorageHits;
 
 /**
@@ -32,12 +32,6 @@ class Worker extends Generic
     public $reload = false;
 
     protected $graceful = false;
-
-    /**
-     * Reload time
-     * @var integer
-     */
-    protected $reloadTime = 0;
 
     /**
      * Reload delay
@@ -66,14 +60,15 @@ class Worker extends Generic
     /**
      * Event base
      * @var EventBase
+     * @deprecated
      */
     public $eventBase;
 
     /**
-     * DNS base
-     * @var EventDnsBase
+     * Event loop
+     * @var EventLoop
      */
-    public $dnsBase;
+    public $loop;
 
     /**
      * State
@@ -122,12 +117,7 @@ class Worker extends Generic
      * @var integer
      */
     public $counterGC = 0;
-
-    /**
-     * Stack of callbacks to execute
-     * @var \PHPDaemon\Structures\StackCallbacks
-     */
-    public $callbacks;
+    
 
     /** @var \PHPDaemon\IPCManager\IPCManager */
     public $IPCManager;
@@ -143,20 +133,20 @@ class Worker extends Generic
         $this->lambdaCache = new CappedStorageHits;
         $this->lambdaCache->setMaxCacheSize(Daemon::$config->lambdacachemaxsize->value);
         $this->lambdaCache->setCapWindow(Daemon::$config->lambdacachecapwindow->value);
-
-        $this->callbacks = new StackCallbacks();
+        
         if (Daemon::$process instanceof Master) {
             Daemon::$process->unregisterSignals();
         }
-        if (Daemon::$process && Daemon::$process->eventBase) {
-            Daemon::$process->eventBase->reinit();
-            $this->eventBase = Daemon::$process->eventBase;
+
+        if (Daemon::$process && Daemon::$process->loop) {
+            $this->loop = Daemon::$process->loop->reinit();
         } else {
-            $this->eventBase = new \EventBase();
+            $this->loop = new EventLoop;
         }
+        $this->eventBase = $this->loop->getBase();
+
         Daemon::$process = $this;
         if (Daemon::$logpointerAsync) {
-            $oldfd                       = Daemon::$logpointerAsync->fd;
             Daemon::$logpointerAsync->fd = null;
             Daemon::$logpointerAsync     = null;
         }
@@ -186,8 +176,6 @@ class Worker extends Generic
         $this->overrideNativeFuncs();
 
         $this->setState(Daemon::WSTATE_INIT);
-        ;
-        $this->dnsBase = new \EventDnsBase($this->eventBase, false); // @TODO: test with true
         $this->registerEventSignals();
 
         FileSystem::init();
@@ -221,16 +209,10 @@ class Worker extends Generic
             }
 
             $this->breakMainLoopCheck();
-            if ($this->breakMainLoop) {
-                $this->eventBase->exit();
-                return;
-            }
-
             if (Daemon::checkAutoGC()) {
-                $this->callbacks->push(function ($thread) {
+                $this->loop->interrupt(function () {
                     gc_collect_cycles();
                 });
-                $this->eventBase->exit();
             }
 
             $event->timeout();
@@ -248,13 +230,7 @@ class Worker extends Generic
                 $event->timeout();
             }, 1e6 * Daemon::$config->autoreload->value, 'watchIncludedFiles');
         }
-
-        while (!$this->breakMainLoop) {
-            $this->callbacks->executeAll($this);
-            if (!$this->eventBase->dispatch()) {
-                break;
-            }
-        }
+        $this->loop->run();
         $this->shutdown();
     }
 
@@ -480,18 +456,16 @@ class Worker extends Generic
         $time = microtime(true);
 
         if ($this->terminated || $this->breakMainLoop) {
+            $this->loop->stop();
             return;
         }
 
         if ($this->shutdown) {
-            $this->breakMainLoop = true;
+            $this->loop->stop();
             return;
         }
 
         if ($this->reload) {
-            if ($time > $this->reloadTime) {
-                $this->breakMainLoop = true;
-            }
             return;
         }
 
@@ -528,9 +502,11 @@ class Worker extends Generic
      */
     public function gracefulRestart()
     {
-        $this->reload     = true;
         $this->graceful = true;
-        $this->reloadTime = microtime(true) + $this->reloadDelay;
+        $this->reload = true;
+        Timer::add(function() {
+            $this->loop->stop();
+        }, $this->reloadDelay * 1e6);
         $this->setState($this->state);
     }
 
@@ -540,9 +516,10 @@ class Worker extends Generic
      */
     public function gracefulStop()
     {
-        $this->breakMainLoop = true;
         $this->graceful = true;
-        $this->reloadTime = microtime(true) + $this->reloadDelay;
+        Timer::add(function() {
+            $this->loop->stop();
+        }, $this->reloadDelay * 1e6);
         $this->setState($this->state);
     }
 
@@ -605,10 +582,6 @@ class Worker extends Generic
 
         $this->reloadReady = $this->appInstancesReloadReady();
 
-        if ($this->reload && $this->graceful) {
-            $this->reloadReady = $this->reloadReady && (microtime(true) > $this->reloadTime);
-        }
-
         if (Daemon::$config->logevents->value) {
             $this->log('reloadReady = ' . Debug::dump($this->reloadReady));
         }
@@ -630,7 +603,7 @@ class Worker extends Generic
             }
         }, 1e6, 'checkReloadReady');
         while (!$this->reloadReady) {
-            $this->eventBase->loop();
+            $this->loop->run();
         }
         FileSystem::waitAllEvents(); // ensure that all I/O events completed before suicide
         exit(0); // R.I.P.
@@ -687,8 +660,7 @@ class Worker extends Generic
         }
 
         $this->graceful = false;
-        $this->breakMainLoop = true;
-        $this->eventBase->exit();
+        $this->loop->stop();
     }
 
     /**

@@ -3,6 +3,7 @@ namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
@@ -28,16 +29,12 @@ class Master extends Generic
     public $reload = false;
     /** @var int */
     public $connCounter = 0;
-    /** @var StackCallbacks */
-    public $callbacks;
     /** @var Collection */
     public $workers;
     /** @var Collection */
     public $ipcthreads;
-    /** @var EventBase */
-    public $eventBase;
     /** @var */
-    public $eventBaseConfig;
+    public $loop;
     /** @var */
     public $lastMpmActionTs;
     /** @var int */
@@ -60,9 +57,9 @@ class Master extends Generic
          * @todo This line must be commented according to current libevent binding implementation.
          * May be uncommented in future.
          */
-        //$this->eventBase = new \EventBase;
+        //$this->loop = new EventLoop;
 
-        if ($this->eventBase) {
+        if ($this->loop) {
             $this->registerEventSignals();
         } else {
             $this->registerSignals();
@@ -74,8 +71,7 @@ class Master extends Generic
         $this->collections['ipcthreads'] = $this->ipcthreads;
 
         Daemon::$appResolver->preload(true);
-
-        $this->callbacks = new StackCallbacks();
+        
         $this->spawnIPCThread();
         $this->spawnWorkers(
             min(
@@ -104,14 +100,9 @@ class Master extends Generic
             }
         };
 
-        if ($this->eventBase) { // we are using libevent in Master
+        if ($this->loop) { // we are using libevent in Master
             Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
-            while (!$this->breakMainLoop) {
-                $this->callbacks->executeAll($this);
-                if (!$this->eventBase->dispatch()) {
-                    break;
-                }
-            }
+            $this->loop->run();
         } else { // we are NOT using libevent in Master
             $lastTimerCall = microtime(true);
             $func = $this->timerCb;

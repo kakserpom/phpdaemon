@@ -143,7 +143,7 @@ abstract class Generic
      */
     protected function registerEventSignals()
     {
-        if (!$this->eventBase) {
+        if (!$this->loop) {
             return;
         }
         foreach (self::$signals as $no => $name) {
@@ -151,7 +151,7 @@ abstract class Generic
                 continue;
             }
 
-            $ev = \Event::signal($this->eventBase, $no, [$this, 'eventSighandler'], [$no]);
+            $ev = $this->loop->signal($no, [$this, 'eventSighandler'], [$no]);
             if (!$ev) {
                 $this->log('Cannot event_set for ' . $name . ' signal');
             }
