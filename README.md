@@ -2,7 +2,7 @@ phpDaemon
 =========
 [![Build Status](https://travis-ci.org/kakserpom/phpdaemon.svg?branch=master)](https://travis-ci.org/kakserpom/phpdaemon)
 
-http://github.com/kakserpom/phpdaemon
+https://github.com/kakserpom/phpdaemon
 
 Asynchronous framework in PHP. It has a huge number of features. Designed for highload.
 Each worker is capable of handling thousands of simultaneous connections.
