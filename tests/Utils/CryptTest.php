@@ -5,46 +5,20 @@
 
 namespace Tests\Utils;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Timer;
-use PHPDaemon\Thread\Master;
 use PHPDaemon\Utils\Crypt;
+use Tests\Generic;
 
-class CryptTest extends \PHPUnit_Framework_TestCase
+class CryptTest extends Generic
 {
-    protected function tearDown()
+    public function testRandomInts()
     {
-        while (!Daemon::$process->eventBase->loop()) {
-            /**
-             * Weight timers
-             */
-        }
-    }
+        $this->prepareAsync();
 
-    public function testConstructWithTimestampAndDefaultTimeZone()
-    {
-        Daemon::$process = new Master();
-        Daemon::$process->eventBase = new \EventBase();
+        Crypt::randomInts(5, function ($ints) {
+            self::assertCount(5, $ints, '$ints must contain 5 elements');
+            $this->completeAsync();
+        });
 
-        $callbacksStack = new \SplStack();
-
-        foreach (range(1, 25) as $neededIntegers) {
-            $cb = function ($resultIntegers) use ($neededIntegers, $callbacksStack) {
-                $callbacksStack->shift();
-
-                self::assertCount($neededIntegers, $resultIntegers);
-
-                foreach ($resultIntegers as $integer) {
-                    self::assertInternalType('integer', $integer);
-                }
-            };
-
-            $callbacksStack->push($neededIntegers);
-            Crypt::randomInts($neededIntegers, $cb);
-        }
-
-        Timer::add(function ($event) use ($callbacksStack) {
-            self::assertSame(0, $callbacksStack->count(), 'Some callbacks didnt finished in ' . __METHOD__);
-        }, 2e6);
+        $this->runAsync(__METHOD__);
     }
 }
