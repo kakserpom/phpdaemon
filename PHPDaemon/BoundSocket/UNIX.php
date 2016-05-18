@@ -33,6 +33,11 @@ class UNIX extends Generic
      * @var string
      */
     protected $path;
+    /**
+     * Listener mode?
+     * @var boolean
+     */
+    protected $listenerMode = false;
 
     /**
      * toString handler
@@ -41,49 +46,6 @@ class UNIX extends Generic
     public function __toString()
     {
         return $this->path;
-    }
-
-    /**
-     * Listener mode?
-     * @var boolean
-     */
-    protected $listenerMode = false;
-
-    /**
-     * Called when socket is bound
-     * @return boolean Success
-     */
-    protected function onBound()
-    {
-        touch($this->path);
-        chmod($this->path, 0770);
-        if ($this->group === null && !empty($this->uri['pass'])) {
-            $this->group = $this->uri['pass'];
-        }
-        if ($this->group === null && isset(Daemon::$config->group->value)) {
-            $this->group = Daemon::$config->group->value;
-        }
-        if ($this->group !== null) {
-            if (!@chgrp($this->path, $this->group)) {
-                unlink($this->path);
-                Daemon::log('Couldn\'t change group of the socket \'' . $this->path . '\' to \'' . $this->group . '\'.');
-                return false;
-            }
-        }
-        if ($this->user === null && !empty($this->uri['user'])) {
-            $this->user = $this->uri['user'];
-        }
-        if ($this->user === null && isset(Daemon::$config->user->value)) {
-            $this->user = Daemon::$config->user->value;
-        }
-        if ($this->user !== null) {
-            if (!@chown($this->path, $this->user)) {
-                unlink($this->path);
-                Daemon::log('Couldn\'t change owner of the socket \'' . $this->path . '\' to \'' . $this->user . '\'.');
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -136,6 +98,43 @@ class UNIX extends Generic
             Daemon::$process->log(get_class($this) . ': Couldn\'t listen UNIX-socket \'' . $this->path . '\' (' . $errno . ' - ' . socket_strerror($errno) . ')');
         }
         $this->setFd($sock);
+        return true;
+    }
+
+    /**
+     * Called when socket is bound
+     * @return boolean Success
+     */
+    protected function onBound()
+    {
+        touch($this->path);
+        chmod($this->path, 0770);
+        if ($this->group === null && !empty($this->uri['pass'])) {
+            $this->group = $this->uri['pass'];
+        }
+        if ($this->group === null && isset(Daemon::$config->group->value)) {
+            $this->group = Daemon::$config->group->value;
+        }
+        if ($this->group !== null) {
+            if (!@chgrp($this->path, $this->group)) {
+                unlink($this->path);
+                Daemon::log('Couldn\'t change group of the socket \'' . $this->path . '\' to \'' . $this->group . '\'.');
+                return false;
+            }
+        }
+        if ($this->user === null && !empty($this->uri['user'])) {
+            $this->user = $this->uri['user'];
+        }
+        if ($this->user === null && isset(Daemon::$config->user->value)) {
+            $this->user = Daemon::$config->user->value;
+        }
+        if ($this->user !== null) {
+            if (!@chown($this->path, $this->user)) {
+                unlink($this->path);
+                Daemon::log('Couldn\'t change owner of the socket \'' . $this->path . '\' to \'' . $this->user . '\'.');
+                return false;
+            }
+        }
         return true;
     }
 }

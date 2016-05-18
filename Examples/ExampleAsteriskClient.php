@@ -18,20 +18,6 @@ class ExampleAsteriskClient extends AppInstance
     public $asteriskconn;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * @return array|false
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            'url' => 'tcp://user:password@localhost:5038',
-            'reconnect' => 1,
-            'asteriskclient-name' => ''
-        ];
-    }
-
-    /**
      * Constructor.
      * @return void
      */
@@ -79,5 +65,19 @@ class ExampleAsteriskClient extends AppInstance
             return $this->asteriskclient->onShutdown();
         }
         return true;
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * @return array|false
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            'url' => 'tcp://user:password@localhost:5038',
+            'reconnect' => 1,
+            'asteriskclient-name' => ''
+        ];
     }
 }

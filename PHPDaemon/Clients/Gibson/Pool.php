@@ -36,28 +36,6 @@ class Pool extends \PHPDaemon\Network\Client
     ];
 
     /**
-     * Setting default config options
-     * Overriden from NetworkClient::getConfigDefaults
-     * @return array|bool
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            /* [string|array] Default servers */
-            'servers' => 'unix:///var/run/gibson.sock',
-
-            /* [integer] Default port */
-            'port' => 10128,
-
-            /* [integer] Maximum connections per server */
-            'maxconnperserv' => 32,
-
-            /* [integer] Maximum allowed size of packet */
-            'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
-        ];
-    }
-
-    /**
      * Magic __call
      * Example:
      * $gibson->set(3600, 'key', 'value');
@@ -88,5 +66,27 @@ class Pool extends \PHPDaemon\Network\Client
     public function isCommand($name)
     {
         return isset($this->opCodes[strtolower($name)]);
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from NetworkClient::getConfigDefaults
+     * @return array|bool
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            /* [string|array] Default servers */
+            'servers' => 'unix:///var/run/gibson.sock',
+
+            /* [integer] Default port */
+            'port' => 10128,
+
+            /* [integer] Maximum connections per server */
+            'maxconnperserv' => 32,
+
+            /* [integer] Maximum allowed size of packet */
+            'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
+        ];
     }
 }

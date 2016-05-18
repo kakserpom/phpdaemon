@@ -11,18 +11,6 @@ use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
 class Application extends \PHPDaemon\Core\AppInstance
 {
     /**
-     * Setting default config options
-     * @return array|bool
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            /* [string] WSS name */
-            'wss-name' => '',
-        ];
-    }
-
-    /**
      * Called when the worker is ready to go.
      * @return void
      */
@@ -46,5 +34,17 @@ class Application extends \PHPDaemon\Core\AppInstance
             return new EchoFeed($client, $this);
         });
         $ws->setRouteOptions('cookie_needed_echo', ['cookie_needed' => true]);
+    }
+
+    /**
+     * Setting default config options
+     * @return array|bool
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            /* [string] WSS name */
+            'wss-name' => '',
+        ];
     }
 }

@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Gibson;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
 
@@ -12,73 +10,55 @@ use PHPDaemon\Utils\Binary;
 class Connection extends ClientConnection
 {
     /**
-     * @var string error message
-     */
-    public $error;
-
-    /**
      * Generic error while executing the query.
      */
     const REPL_ERR = 0x00;
-
     /**
      * Specified key was not found.
      */
     const REPL_ERR_NOT_FOUND = 0x01;
-
     /**
      * Expected a number ( TTL or TIME ) but the specified value was invalid.
      */
     const REPL_ERR_NAN = 0x02;
-
     /**
      * The server reached configuration memory limit and will not accept any new value until its freeing routine will be executed.
      */
     const REPL_ERR_MEM = 0x03;
-
     /**
      * The specificed key was locked by a OP_LOCK or a OP_MLOCK query.
      */
     const REPL_ERR_LOCKED = 0x04;
-
     /**
      * Query succesfully executed, no data follows.
      */
     const REPL_OK = 0x05;
-
     /**
      * Query succesfully executed, value data follows.
      */
     const REPL_VAL = 0x06;
-
     /**
      * Query succesfully executed, multiple key => value data follows.
      */
     const REPL_KVAL = 0x07;
-
     const STATE_PACKET_HDR = 0x01;
     const STATE_PACKET_DATA = 0x02;
-
     /**
      * Raw string data follows.
      */
     const GB_ENC_PLAIN = 0x00;
-
     /**
      * Compressed data, this is a reserved value not used for replies.
      */
     const GB_ENC_LZF = 0x01;
-
     /**
      * Packed long number follows, four bytes for 32bit architectures, eight bytes for 64bit.
      */
     const GB_ENC_NUMBER = 0x02;
-
     /**
-     * @var integer Default low mark. Minimum number of bytes in buffer
+     * @var string error message
      */
-    protected $lowMark = 2;
-
+    public $error;
     public $responseCode;
     public $encoding;
     public $responseLength;
@@ -86,7 +66,10 @@ class Connection extends ClientConnection
     public $isFinal = false;
     public $totalNum;
     public $readedNum;
-
+    /**
+     * @var integer Default low mark. Minimum number of bytes in buffer
+     */
+    protected $lowMark = 2;
     protected $maxQueue = 10;
 
     /**

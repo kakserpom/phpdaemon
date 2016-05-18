@@ -13,23 +13,6 @@ class App extends \PHPDaemon\Core\AppInstance
     public $gibson;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * Uncomment and return array with your default options
-     * @return array|false
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            'gibson-name' => '',
-            'auth' => 0,
-            'username' => 'admin',
-            'password' => 'gibson',
-            'credver' => 1,
-        ];
-    }
-
-    /**
      * Constructor.
      * @return void
      */
@@ -47,5 +30,22 @@ class App extends \PHPDaemon\Core\AppInstance
     public function beginRequest($req, $upstream)
     {
         return new Request($this, $upstream, $req);
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * Uncomment and return array with your default options
+     * @return array|false
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            'gibson-name' => '',
+            'auth' => 0,
+            'username' => 'admin',
+            'password' => 'gibson',
+            'credver' => 1,
+        ];
     }
 }

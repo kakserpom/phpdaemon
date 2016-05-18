@@ -2,15 +2,11 @@
 namespace PHPDaemon\HTTPRequest;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
-use PHPDaemon\Utils\MIME;
 use PHPDaemon\Traits\DeferredEventHandlers;
-use PHPDaemon\Traits\EventHandlers;
-use PHPDaemon\Traits\StaticObjectWatchdog;
-use PHPDaemon\Traits\ClassWatchdog;
+use PHPDaemon\Utils\MIME;
 
 /**
  * HTTP request

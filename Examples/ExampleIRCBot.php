@@ -14,20 +14,6 @@ class ExampleIRCBot extends \PHPDaemon\Core\AppInstance
     public $conn;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * Uncomment and return array with your default options
-     * @return array|false
-     */
-    protected function getConfigDefaults()
-    {
-        $random = sprintf('%x', crc32(posix_getpid() . "\x00" . microtime(true)));
-        return [
-            'url' => 'irc://guest_' . $random . ':password@hobana.freenode.net/Bot_phpDaemon'
-        ];
-    }
-
-    /**
      * Constructor.
      * @return void
      */
@@ -96,5 +82,19 @@ class ExampleIRCBot extends \PHPDaemon\Core\AppInstance
             return $this->client->onShutdown();
         }
         return true;
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * Uncomment and return array with your default options
+     * @return array|false
+     */
+    protected function getConfigDefaults()
+    {
+        $random = sprintf('%x', crc32(posix_getpid() . "\x00" . microtime(true)));
+        return [
+            'url' => 'irc://guest_' . $random . ':password@hobana.freenode.net/Bot_phpDaemon'
+        ];
     }
 }

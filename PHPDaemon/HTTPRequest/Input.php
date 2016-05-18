@@ -15,74 +15,61 @@ class Input extends \EventBuffer
     use \PHPDaemon\Traits\StaticObjectWatchdog;
 
     /**
-     * @var string Boundary
-     */
-    protected $boundary;
-
-    /**
-     * @var integer Maximum file size from multi-part query
-     */
-    protected $maxFileSize = 0;
-
-    /**
-     * @var integer Readed
-     */
-    protected $readed = 0;
-
-    /**
-     * @var boolean Frozen
-     */
-    protected $frozen = false;
-
-    /**
-     * @var boolean EOF
-     */
-    protected $EOF = false;
-
-    /**
-     * @var array Current Part
-     */
-    public $curPart;
-
-    /**
-     * @var array Content dispostion of current Part
-     */
-    protected $curPartDisp = false;
-
-    /**
-     * @var Generic Related Request
-     */
-    protected $req;
-
-    /**
-     * @var integer (self::STATE_*) State of multi-part processor
-     */
-    protected $state = self::STATE_SEEKBOUNDARY;
-
-    /**
-     * @var integer Size of current upload chunk
-     */
-    protected $curChunkSize;
-
-    /**
      * State: seek nearest boundary
      */
     const STATE_SEEKBOUNDARY = 0;
-
     /**
      * State: headers
      */
     const STATE_HEADERS = 1;
-
     /**
      * State: body
      */
     const STATE_BODY = 2;
-
     /**
      * State: upload
      */
     const STATE_UPLOAD = 3;
+    /**
+     * @var array Current Part
+     */
+    public $curPart;
+    /**
+     * @var string Boundary
+     */
+    protected $boundary;
+    /**
+     * @var integer Maximum file size from multi-part query
+     */
+    protected $maxFileSize = 0;
+    /**
+     * @var integer Readed
+     */
+    protected $readed = 0;
+    /**
+     * @var boolean Frozen
+     */
+    protected $frozen = false;
+    /**
+     * @var boolean EOF
+     */
+    protected $EOF = false;
+    /**
+     * @var array Content dispostion of current Part
+     */
+    protected $curPartDisp = false;
+    /**
+     * @var Generic Related Request
+     */
+    protected $req;
+    /**
+     * @var integer (self::STATE_*) State of multi-part processor
+     */
+    protected $state = self::STATE_SEEKBOUNDARY;
+    /**
+     * @var integer Size of current upload chunk
+     */
+    protected $curChunkSize;
 
     /**
      * Set boundary
@@ -123,31 +110,29 @@ class Input extends \EventBuffer
     }
 
     /**
-     * Is frozen?
-     * @return boolean
-     */
-    public function isFrozen()
-    {
-        return $this->frozen;
-    }
-
-    /**
-     * Is EOF?
-     * @return boolean
-     */
-    public function isEof()
-    {
-        return $this->EOF;
-    }
-
-    /**
-     * Set request
-     * @param  Generic $req Request
+     * onRead
      * @return void
      */
-    public function setRequest(Generic $req)
+    protected function onRead()
     {
-        $this->req = $req;
+        if (!empty($this->boundary)) {
+            $this->req->attrs->input->parseMultipart();
+        }
+        if (($this->req->attrs->contentLength <= $this->readed) && !$this->EOF) {
+            $this->sendEOF();
+        }
+    }
+
+    /**
+     * Send EOF
+     * @return void
+     */
+    public function sendEOF()
+    {
+        if (!$this->EOF) {
+            $this->EOF = true;
+            $this->onEOF();
+        }
     }
 
     /**
@@ -182,29 +167,31 @@ class Input extends \EventBuffer
     }
 
     /**
-     * onRead
-     * @return void
+     * Is frozen?
+     * @return boolean
      */
-    protected function onRead()
+    public function isFrozen()
     {
-        if (!empty($this->boundary)) {
-            $this->req->attrs->input->parseMultipart();
-        }
-        if (($this->req->attrs->contentLength <= $this->readed) && !$this->EOF) {
-            $this->sendEOF();
-        }
+        return $this->frozen;
     }
 
     /**
-     * Send EOF
+     * Is EOF?
+     * @return boolean
+     */
+    public function isEof()
+    {
+        return $this->EOF;
+    }
+
+    /**
+     * Set request
+     * @param  Generic $req Request
      * @return void
      */
-    public function sendEOF()
+    public function setRequest(Generic $req)
     {
-        if (!$this->EOF) {
-            $this->EOF = true;
-            $this->onEOF();
-        }
+        $this->req = $req;
     }
 
     /**
@@ -407,6 +394,16 @@ class Input extends \EventBuffer
     }
 
     /**
+     * Log
+     * @param  string $msg Message
+     * @return void
+     */
+    public function log($msg)
+    {
+        Daemon::log(get_class($this) . ': ' . $msg);
+    }
+
+    /**
      * Get current upload chunk as string
      * @return string Chunk body
      */
@@ -436,15 +433,5 @@ class Input extends \EventBuffer
         $this->write($fd, $this->curChunkSize);
         $this->curChunkSize = null;
         return true;
-    }
-
-    /**
-     * Log
-     * @param  string $msg Message
-     * @return void
-     */
-    public function log($msg)
-    {
-        Daemon::log(get_class($this) . ': ' . $msg);
     }
 }

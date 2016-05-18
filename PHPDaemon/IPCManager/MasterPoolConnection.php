@@ -6,65 +6,22 @@ use PHPDaemon\Network\Connection;
 
 class MasterPoolConnection extends Connection
 {
-    /** @var array */
-    public $instancesCount = [];
-    /** @var null */
-    protected $timeout = null;
-    /** @var int */
-    protected $lowMark = 4; // initial value of the minimal amout of bytes in buffer
-    /** @var int */
-    protected $highMark = 0xFFFF; // initial value of the maximum amout of bytes in buffer
-    /** @var */
-    protected $workerId;
     /**
      * @TODO DESCR
      */
     const STATE_CONTENT = 1;
+    /** @var array */
+    public $instancesCount = [];
+        /** @var null */
+    protected $timeout = null; // initial value of the minimal amout of bytes in buffer
+    /** @var int */
+    protected $lowMark = 4; // initial value of the maximum amout of bytes in buffer
+/** @var int */
+    protected $highMark = 0xFFFF;
+    /** @var */
+    protected $workerId;
     /** @var */
     protected $packetLength;
-
-    /**
-     * @param $p
-     */
-    protected function onPacket($p)
-    {
-        if (!is_array($p)) {
-            return;
-        }
-        //Daemon::log(Debug::dump($p));;
-        if ($p['op'] === 'start') {
-            $this->workerId = $p['workerId'];
-            $this->pool->workers[$this->workerId] = $this;
-            $this->pool->appInstance->updatedWorkers();
-        } elseif ($p['op'] === 'broadcastCall') {
-            $p['op'] = 'call';
-            foreach ($this->pool->workers as $worker) {
-                $worker->sendPacket($p);
-            }
-        } elseif ($p['op'] === 'directCall') {
-            $p['op'] = 'call';
-            if (!isset($this->pool->workers[$p['workerId']])) {
-                Daemon::$process->log('directCall(). not sent.');
-                return;
-            }
-            $this->pool->workers[$p['workerId']]->sendPacket($p);
-        } elseif ($p['op'] === 'singleCall') {
-            $p['op'] = 'call';
-            $sent = false;
-            foreach ($this->pool->workers as $worker) {
-                $worker->sendPacket($p);
-                $sent = true;
-                break;
-            }
-            if (!$sent) {
-                Daemon::$process->log('singleCall(). not sent.');
-            }
-        } elseif ($p['op'] === 'addIncludedFiles') {
-            foreach ($p['files'] as $file) {
-                Daemon::$process->fileWatcher->addWatch($file, $this->workerId);
-            }
-        }
-    }
 
     /**
      * @TODO DESCR
@@ -110,5 +67,48 @@ class MasterPoolConnection extends Connection
             $this->onPacket(igbinary_unserialize($packet));
         }
         goto start;
+    }
+
+    /**
+     * @param $p
+     */
+    protected function onPacket($p)
+    {
+        if (!is_array($p)) {
+            return;
+        }
+        //Daemon::log(Debug::dump($p));;
+        if ($p['op'] === 'start') {
+            $this->workerId = $p['workerId'];
+            $this->pool->workers[$this->workerId] = $this;
+            $this->pool->appInstance->updatedWorkers();
+        } elseif ($p['op'] === 'broadcastCall') {
+            $p['op'] = 'call';
+            foreach ($this->pool->workers as $worker) {
+                $worker->sendPacket($p);
+            }
+        } elseif ($p['op'] === 'directCall') {
+            $p['op'] = 'call';
+            if (!isset($this->pool->workers[$p['workerId']])) {
+                Daemon::$process->log('directCall(). not sent.');
+                return;
+            }
+            $this->pool->workers[$p['workerId']]->sendPacket($p);
+        } elseif ($p['op'] === 'singleCall') {
+            $p['op'] = 'call';
+            $sent = false;
+            foreach ($this->pool->workers as $worker) {
+                $worker->sendPacket($p);
+                $sent = true;
+                break;
+            }
+            if (!$sent) {
+                Daemon::$process->log('singleCall(). not sent.');
+            }
+        } elseif ($p['op'] === 'addIncludedFiles') {
+            foreach ($p['files'] as $file) {
+                Daemon::$process->fileWatcher->addWatch($file, $this->workerId);
+            }
+        }
     }
 }

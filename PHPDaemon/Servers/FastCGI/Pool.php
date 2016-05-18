@@ -17,6 +17,21 @@ class Pool extends \PHPDaemon\Network\Server
     public $variablesOrder;
 
     /**
+     * Called when worker is going to update configuration
+     * @return void
+     */
+    public function onConfigUpdated()
+    {
+        parent::onConfigUpdated();
+
+        if (($order = ini_get('request_order')) || ($order = ini_get('variables_order'))) {
+            $this->variablesOrder = $order;
+        } else {
+            $this->variablesOrder = null;
+        }
+    }
+
+    /**
      * Setting default config options
      * Overriden from ConnectionPool::getConfigDefaults
      * @return array|bool
@@ -63,20 +78,5 @@ class Pool extends \PHPDaemon\Network\Server
             /* [Size] Maximum uploading file size. */
             'upload-max-size' => new Size(ini_get('upload_max_filesize')),
         ];
-    }
-
-    /**
-     * Called when worker is going to update configuration
-     * @return void
-     */
-    public function onConfigUpdated()
-    {
-        parent::onConfigUpdated();
-
-        if (($order = ini_get('request_order')) || ($order = ini_get('variables_order'))) {
-            $this->variablesOrder = $order;
-        } else {
-            $this->variablesOrder = null;
-        }
     }
 }

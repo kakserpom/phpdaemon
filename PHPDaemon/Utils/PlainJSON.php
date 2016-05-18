@@ -20,9 +20,8 @@ class PlainJSON implements \JsonSerializable
     use \PHPDaemon\Traits\ClassWatchdog;
     use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-    protected $id;
-
     protected static $tr = [];
+    protected $id;
 
     /**
      * Save
@@ -32,6 +31,16 @@ class PlainJSON implements \JsonSerializable
     {
         $this->id = Daemon::uniqid();
         static::$tr['"' . $this->id . '"'] = $str;
+    }
+
+    /**
+     * Apply
+     * @param  string $data JSON string
+     * @return string       Result JSON
+     */
+    public static function apply($data)
+    {
+        return strtr($data, static::$tr);
     }
 
     /**
@@ -49,15 +58,5 @@ class PlainJSON implements \JsonSerializable
     public function jsonSerialize()
     {
         return $this->id;
-    }
-
-    /**
-     * Apply
-     * @param  string $data JSON string
-     * @return string       Result JSON
-     */
-    public static function apply($data)
-    {
-        return strtr($data, static::$tr);
     }
 }

@@ -10,27 +10,6 @@ class Pool extends \PHPDaemon\Network\Client
 {
 
     /**
-     * Setting default config options
-     * Overriden from NetworkClient::getConfigDefaults
-     * @return array|bool
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            /* [string|array] Default servers */
-            'servers' => 'tcp://127.0.0.1',
-
-            /* [integer] Default port */
-            'port' => 11211,
-
-            /* [integer] Maximum connections per server */
-            'maxconnperserv' => 32,
-
-            'prefix' => '',
-        ];
-    }
-
-    /**
      * Gets the key
      * @param  string $key Key
      * @param  callable $onResponse Callback called when response received
@@ -196,5 +175,26 @@ class Pool extends \PHPDaemon\Network\Client
     public function stats($onResponse, $server = null)
     {
         $this->requestByServer($server, 'stats' . "\r\n", $onResponse);
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from NetworkClient::getConfigDefaults
+     * @return array|bool
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            /* [string|array] Default servers */
+            'servers' => 'tcp://127.0.0.1',
+
+            /* [integer] Default port */
+            'port' => 11211,
+
+            /* [integer] Maximum connections per server */
+            'maxconnperserv' => 32,
+
+            'prefix' => '',
+        ];
     }
 }

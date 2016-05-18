@@ -13,17 +13,6 @@ class Example extends \PHPDaemon\Core\AppInstance
     public $counter = 0;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * Uncomment and return array with your default options
-     * @return boolean
-     */
-    protected function getConfigDefaults()
-    {
-        return false;
-    }
-
-    /**
      * Constructor.
      * @return void
      */
@@ -59,5 +48,16 @@ class Example extends \PHPDaemon\Core\AppInstance
     public function beginRequest($req, $upstream)
     {
         return new ExampleRequest($this, $upstream, $req);
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * Uncomment and return array with your default options
+     * @return boolean
+     */
+    protected function getConfigDefaults()
+    {
+        return false;
     }
 }

@@ -1,10 +1,7 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
-use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 /**
  * Contains some base methods
@@ -112,38 +109,51 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     }
 
     /**
-     * afterHeaders
+     * CORS
      * @return void
      */
-    public function afterHeaders()
+    protected function CORS()
     {
+        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
+            $this->header('Access-Control-Allow-Headers: ' . $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+        }
+        if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] !== 'null') {
+            $this->header('Access-Control-Allow-Origin:' . $_SERVER['HTTP_ORIGIN']);
+        } else {
+            $this->header('Access-Control-Allow-Origin: *');
+        }
+        $this->header('Access-Control-Allow-Credentials: true');
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            $this->header('204 No Content');
+            $this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
+            $this->header('Access-Control-Max-Age: 31536000');
+            $this->header('Access-Control-Allow-Methods: OPTIONS, ' . $this->allowedMethods);
+            $this->header('Expires: ' . date('r', strtotime('+1 year')));
+            $this->finish();
+        } elseif (!in_array($_SERVER['REQUEST_METHOD'], explode(', ', $this->allowedMethods), true)) {
+            $this->header('405 Method Not Allowed');
+            $this->finish();
+        }
     }
 
     /**
-     * Output some data
-     * @param  string $s String to out
-     * @param  boolean $flush
-     * @return boolean        Success
+     * contentType
+     * @param  string $type Content-Type
+     * @return void
      */
-    public function outputFrame($s, $flush = true)
+    protected function contentType($type)
     {
-        $this->bytesSent += mb_orig_strlen($s);
-        return parent::out($s, $flush);
+        $this->header('Content-Type: ' . $type . '; charset=UTF-8');
     }
 
     /**
-     * gcCheck
+     * noncache
      * @return void
      */
-    public function gcCheck()
+    protected function noncache()
     {
-        if ($this->stopped) {
-            return;
-        }
-        $max = $this->appInstance->config->gcmaxresponsesize->value;
-        if ($max > 0 && $this->bytesSent > $max) {
-            $this->stop();
-        }
+        $this->header('Pragma: no-cache');
+        $this->header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     }
 
     /**
@@ -158,52 +168,6 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
             Timer::setTimeout($this->heartbeatTimer);
         }
         return parent::out($s, $flush);;
-    }
-
-
-    /**
-     * Called when request iterated
-     * @return void
-     */
-    public function run()
-    {
-        $this->sleep(30);
-    }
-
-    /**
-     * w8in
-     * @return void
-     */
-    public function w8in()
-    {
-    }
-
-    /**
-     * s2c
-     * @param  object $redis
-     * @return void
-     */
-    public function s2c($redis)
-    {
-        if (!$redis) {
-            return;
-        }
-        list(, $chan, $msg) = $redis->result;
-        $frames = json_decode($msg, true);
-        if (!is_array($frames) || !sizeof($frames)) {
-            return;
-        }
-        foreach ($frames as $frame) {
-            $this->sendFrame($frame);
-        }
-        if (!in_array('stream', $this->pollMode)) {
-            $this->heartbeatOnFinish = false;
-            $this->stop();
-            return;
-        }
-        if ($this->gcEnabled) {
-            $this->gcCheck();
-        }
     }
 
     /**
@@ -226,18 +190,97 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     }
 
     /**
-     * On finish
+     * Send frame
+     * @param  string $frame
      * @return void
      */
-    public function onFinish()
+    protected function sendFrame($frame)
     {
-        $this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
-        $this->appInstance->unsubscribe('w8in:' . $this->sessId, [$this, 'w8in']);
-        Timer::remove($this->heartbeatTimer);
-        if ($this->heartbeatOnFinish) {
-            $this->sendFrame('h');
+        if (substr($frame, 0, 1) === 'c') {
+            $this->finish();
         }
-        parent::onFinish();
+    }
+
+    /**
+     * gcCheck
+     * @return void
+     */
+    public function gcCheck()
+    {
+        if ($this->stopped) {
+            return;
+        }
+        $max = $this->appInstance->config->gcmaxresponsesize->value;
+        if ($max > 0 && $this->bytesSent > $max) {
+            $this->stop();
+        }
+    }
+
+    /**
+     * afterHeaders
+     * @return void
+     */
+    public function afterHeaders()
+    {
+    }
+
+    /**
+     * acquire
+     * @param  callable $cb
+     * @callback $cb ( )
+     * @return void
+     */
+    protected function acquire($cb)
+    {
+        $this->appInstance->getkey('error:' . $this->sessId, function ($redis) use ($cb) {
+            if (!$redis) {
+                $this->internalServerError();
+                return;
+            }
+            if ($redis->result !== null) {
+                $this->error((int)$redis->result);
+                return;
+            }
+            if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 0) {
+                $this->anotherConnectionStillOpen();
+                return;
+            }
+            $this->appInstance->publish('w8in:' . $this->sessId, '', function ($redis) use ($cb) {
+                if (!$redis) {
+                    $this->internalServerError();
+                    return;
+                }
+                if ($redis->result > 0) {
+                    $this->anotherConnectionStillOpen();
+                    return;
+                }
+                $this->appInstance->subscribe('w8in:' . $this->sessId, [$this, 'w8in'], function ($redis) use ($cb) {
+                    if (!$redis) {
+                        $this->internalServerError();
+                        return;
+                    }
+                    if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
+                        $this->anotherConnectionStillOpen();
+                        return;
+                    }
+                    $this->appInstance->publish('w8in:' . $this->sessId, '', function ($redis) use ($cb) {
+                        if (!$redis) {
+                            $this->internalServerError();
+                            return;
+                        }
+                        if ($redis->result > 1) {
+                            $this->anotherConnectionStillOpen();
+                            return;
+                        }
+                        if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
+                            $this->anotherConnectionStillOpen();
+                            return;
+                        }
+                        $cb === null || $cb();
+                    });
+                });
+            });
+        });
     }
 
     /**
@@ -249,6 +292,30 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
         $this->header('500 Internal Server Error');
         $this->out('"callback" parameter required');
         $this->finish();
+    }
+
+    /**
+     * error
+     * @param  integer $code
+     * @return void
+     */
+    protected function error($code)
+    {
+        $this->sendFrame('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]));
+    }
+
+    /**
+     * anotherConnectionStillOpen
+     * @return void
+     */
+    protected function anotherConnectionStillOpen()
+    {
+        $this->appInstance->setkey('error:' . $this->sessId, 1002, function () {
+            $this->appInstance->expire('error:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value,
+                function () {
+                    $this->error(2010);
+                });
+        });
     }
 
     /**
@@ -323,145 +390,74 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     }
 
     /**
-     * acquire
-     * @param  callable $cb
-     * @callback $cb ( )
-     * @return void
+     * Output some data
+     * @param  string $s String to out
+     * @param  boolean $flush
+     * @return boolean        Success
      */
-    protected function acquire($cb)
+    public function outputFrame($s, $flush = true)
     {
-        $this->appInstance->getkey('error:' . $this->sessId, function ($redis) use ($cb) {
-            if (!$redis) {
-                $this->internalServerError();
-                return;
-            }
-            if ($redis->result !== null) {
-                $this->error((int)$redis->result);
-                return;
-            }
-            if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 0) {
-                $this->anotherConnectionStillOpen();
-                return;
-            }
-            $this->appInstance->publish('w8in:' . $this->sessId, '', function ($redis) use ($cb) {
-                if (!$redis) {
-                    $this->internalServerError();
-                    return;
-                }
-                if ($redis->result > 0) {
-                    $this->anotherConnectionStillOpen();
-                    return;
-                }
-                $this->appInstance->subscribe('w8in:' . $this->sessId, [$this, 'w8in'], function ($redis) use ($cb) {
-                    if (!$redis) {
-                        $this->internalServerError();
-                        return;
-                    }
-                    if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
-                        $this->anotherConnectionStillOpen();
-                        return;
-                    }
-                    $this->appInstance->publish('w8in:' . $this->sessId, '', function ($redis) use ($cb) {
-                        if (!$redis) {
-                            $this->internalServerError();
-                            return;
-                        }
-                        if ($redis->result > 1) {
-                            $this->anotherConnectionStillOpen();
-                            return;
-                        }
-                        if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 1) {
-                            $this->anotherConnectionStillOpen();
-                            return;
-                        }
-                        $cb === null || $cb();
-                    });
-                });
-            });
-        });
+        $this->bytesSent += mb_orig_strlen($s);
+        return parent::out($s, $flush);
     }
 
     /**
-     * anotherConnectionStillOpen
+     * Called when request iterated
      * @return void
      */
-    protected function anotherConnectionStillOpen()
+    public function run()
     {
-        $this->appInstance->setkey('error:' . $this->sessId, 1002, function () {
-            $this->appInstance->expire('error:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value,
-                function () {
-                    $this->error(2010);
-                });
-        });
+        $this->sleep(30);
     }
 
     /**
-     * error
-     * @param  integer $code
+     * w8in
      * @return void
      */
-    protected function error($code)
+    public function w8in()
     {
-        $this->sendFrame('c' . json_encode([$code, isset($this->errors[$code]) ? $this->errors[$code] : null]));
     }
 
     /**
-     * Send frame
-     * @param  string $frame
+     * s2c
+     * @param  object $redis
      * @return void
      */
-    protected function sendFrame($frame)
+    public function s2c($redis)
     {
-        if (substr($frame, 0, 1) === 'c') {
-            $this->finish();
+        if (!$redis) {
+            return;
+        }
+        list(, $chan, $msg) = $redis->result;
+        $frames = json_decode($msg, true);
+        if (!is_array($frames) || !sizeof($frames)) {
+            return;
+        }
+        foreach ($frames as $frame) {
+            $this->sendFrame($frame);
+        }
+        if (!in_array('stream', $this->pollMode)) {
+            $this->heartbeatOnFinish = false;
+            $this->stop();
+            return;
+        }
+        if ($this->gcEnabled) {
+            $this->gcCheck();
         }
     }
 
     /**
-     * contentType
-     * @param  string $type Content-Type
+     * On finish
      * @return void
      */
-    protected function contentType($type)
+    public function onFinish()
     {
-        $this->header('Content-Type: ' . $type . '; charset=UTF-8');
-    }
-
-    /**
-     * noncache
-     * @return void
-     */
-    protected function noncache()
-    {
-        $this->header('Pragma: no-cache');
-        $this->header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-    }
-
-    /**
-     * CORS
-     * @return void
-     */
-    protected function CORS()
-    {
-        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
-            $this->header('Access-Control-Allow-Headers: ' . $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+        $this->appInstance->unsubscribe('s2c:' . $this->sessId, [$this, 's2c']);
+        $this->appInstance->unsubscribe('w8in:' . $this->sessId, [$this, 'w8in']);
+        Timer::remove($this->heartbeatTimer);
+        if ($this->heartbeatOnFinish) {
+            $this->sendFrame('h');
         }
-        if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] !== 'null') {
-            $this->header('Access-Control-Allow-Origin:' . $_SERVER['HTTP_ORIGIN']);
-        } else {
-            $this->header('Access-Control-Allow-Origin: *');
-        }
-        $this->header('Access-Control-Allow-Credentials: true');
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-            $this->header('204 No Content');
-            $this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
-            $this->header('Access-Control-Max-Age: 31536000');
-            $this->header('Access-Control-Allow-Methods: OPTIONS, ' . $this->allowedMethods);
-            $this->header('Expires: ' . date('r', strtotime('+1 year')));
-            $this->finish();
-        } elseif (!in_array($_SERVER['REQUEST_METHOD'], explode(', ', $this->allowedMethods), true)) {
-            $this->header('405 Method Not Allowed');
-            $this->finish();
-        }
+        parent::onFinish();
     }
 }

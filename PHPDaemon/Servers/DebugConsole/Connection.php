@@ -38,6 +38,39 @@ Please enter the password or type "exit": ');
     }
 
     /**
+     * Called when new data received.
+     * @return void
+     */
+    public function onRead()
+    {
+        $seq = ["\xff\xf4\xff\xfd\x06", "\xff\xec", "\x03", "\x04"];
+        $finish = false;
+        foreach ($seq as $s) {
+            if ($this->search($s) !== false) {
+                $finish = true;
+            }
+        }
+        while (($line = $this->readline()) !== null) {
+            $line = rtrim($line, "\r\n");
+            $e = explode(' ', $line, 2);
+            $cmd = trim(strtolower($e[0]));
+            $arg = isset($e[1]) ? $e[1] : '';
+
+            if ($cmd === 'quit' || $cmd === 'exit') {
+                $this->disconnect();
+            } elseif (!$this->auth) {
+                $this->checkPassword($line);
+            } else {
+                $this->processCommand($cmd, $arg);
+            }
+        }
+
+        if ($finish) {
+            $this->finish();
+        }
+    }
+
+    /**
      * Disconnecting
      */
     protected function disconnect()
@@ -97,39 +130,6 @@ help	eval	exit
             default:
                 $this->writeln('Unknown command "' . $command . '".
 Type "help" to get the list of allowed commands.');
-        }
-    }
-
-    /**
-     * Called when new data received.
-     * @return void
-     */
-    public function onRead()
-    {
-        $seq = ["\xff\xf4\xff\xfd\x06", "\xff\xec", "\x03", "\x04"];
-        $finish = false;
-        foreach ($seq as $s) {
-            if ($this->search($s) !== false) {
-                $finish = true;
-            }
-        }
-        while (($line = $this->readline()) !== null) {
-            $line = rtrim($line, "\r\n");
-            $e = explode(' ', $line, 2);
-            $cmd = trim(strtolower($e[0]));
-            $arg = isset($e[1]) ? $e[1] : '';
-
-            if ($cmd === 'quit' || $cmd === 'exit') {
-                $this->disconnect();
-            } elseif (!$this->auth) {
-                $this->checkPassword($line);
-            } else {
-                $this->processCommand($cmd, $arg);
-            }
-        }
-
-        if ($finish) {
-            $this->finish();
         }
     }
 }

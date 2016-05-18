@@ -80,6 +80,14 @@ class Channel extends ObjectStorage
 
     /**
      * @TODO DESCR
+     */
+    public function destroy()
+    {
+        unset($this->irc->channels[$this->name]);
+    }
+
+    /**
+     * @TODO DESCR
      * @param string $type
      */
     public function setChanType($type)
@@ -139,14 +147,6 @@ class Channel extends ObjectStorage
         $participant = $this->nicknames[$target];
         $participant->mode = str_replace($mode, '', $participant->mode);
         $participant->onModeUpdate();
-    }
-
-    /**
-     * @TODO DESCR
-     */
-    public function destroy()
-    {
-        unset($this->irc->channels[$this->name]);
     }
 
     /**

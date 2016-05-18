@@ -14,24 +14,21 @@ class Item
     use \PHPDaemon\Traits\StaticObjectWatchdog;
 
     /**
-     * @var mixed Value
-     */
-    protected $value;
-
-    /**
-     * @var StackCallbacks Listeners
-     */
-    protected $listeners;
-
-    /**
      * @var integer Hits counter
      */
     public $hits = 1;
-
     /**
      * @var integer Expire time
      */
     public $expire;
+    /**
+     * @var mixed Value
+     */
+    protected $value;
+    /**
+     * @var StackCallbacks Listeners
+     */
+    protected $listeners;
 
     /**
      * Constructor
@@ -62,15 +59,6 @@ class Item
     }
 
     /**
-     * Adds listener callback
-     * @param callable $cb
-     */
-    public function addListener($cb)
-    {
-        $this->listeners->push($cb);
-    }
-
-    /**
      * Sets the value
      * @param mixed $value
      */
@@ -78,5 +66,14 @@ class Item
     {
         $this->value = $value;
         $this->listeners->executeAll($this->value);
+    }
+
+    /**
+     * Adds listener callback
+     * @param callable $cb
+     */
+    public function addListener($cb)
+    {
+        $this->listeners->push($cb);
     }
 }

@@ -30,6 +30,21 @@ class Terminal
     }
 
     /**
+     * Counting terminal char width
+     * @return integer
+     */
+    protected function getMaxColumns()
+    {
+        if (preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
+            && sizeof($output) === 2
+        ) {
+            return $output[1][0];
+        }
+
+        return 80;
+    }
+
+    /**
      * Read a line from STDIN
      * @return string Line
      */
@@ -55,44 +70,6 @@ class Terminal
     public function clearScreen()
     {
         echo "\x0c";
-    }
-
-    /**
-     * Set text style
-     * @param  string $c Style
-     * @return void
-     */
-    public function setStyle($c)
-    {
-        if ($this->enableColor) {
-            echo "\033[" . $c . 'm';
-        }
-    }
-
-    /**
-     * Reset style to default
-     * @return void
-     */
-    public function resetStyle()
-    {
-        if ($this->enableColor) {
-            echo "\033[0m";
-        }
-    }
-
-    /**
-     * Counting terminal char width
-     * @return integer
-     */
-    protected function getMaxColumns()
-    {
-        if (preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
-            && sizeof($output) === 2
-        ) {
-            return $output[1][0];
-        }
-
-        return 80;
     }
 
     /**
@@ -224,6 +201,29 @@ class Terminal
 
             $this->resetStyle();
             echo "\n";
+        }
+    }
+
+    /**
+     * Set text style
+     * @param  string $c Style
+     * @return void
+     */
+    public function setStyle($c)
+    {
+        if ($this->enableColor) {
+            echo "\033[" . $c . 'm';
+        }
+    }
+
+    /**
+     * Reset style to default
+     * @return void
+     */
+    public function resetStyle()
+    {
+        if ($this->enableColor) {
+            echo "\033[0m";
         }
     }
 }

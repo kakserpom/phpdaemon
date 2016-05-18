@@ -14,19 +14,7 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
     public $client;
     public $db;
     public $servers;
-
-    /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * Uncomment and return array with your default options
-     * @return array|false
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            'dbname' => 'gamemonitor',
-        ];
-    }
+    public $jobMap = [];
 
     /**
      * Constructor.
@@ -52,7 +40,53 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
         return new GameMonitorHTTPRequest($this, $upstream, $req);
     }
 
-    public $jobMap = [];
+    /**
+     * Called when the worker is ready to go.
+     * @return void
+     */
+    public function onReady()
+    {
+        if ($this->isEnabled()) {
+            $this->updateTimer = setTimeout(function ($timer) {
+                $this->updateAllServers();
+                $timer->timeout(2e6);
+            }, 1);
+        }
+    }
+
+    public function updateAllServers()
+    {
+        gc_collect_cycles();
+        $app = $this;
+        $amount = 1000 - sizeof($this->jobMap);
+        \PHPDaemon\Core\Daemon::log('amount: ' . $amount);
+        if ($amount <= 0) {
+            return;
+        }
+        $this->servers->find(function ($cursor) use ($app, $amount) {
+            if (isset($cursor->items[0]['$err'])) {
+                \PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump($cursor->items));
+                return;
+            }
+            foreach ($cursor->items as $server) {
+                $app->updateServer($server);
+            }
+            $cursor->destroy();
+        }, [
+            'where' => [
+                '$or' => [
+                    ['atime' => ['$lte' => time() - 30], 'latency' => ['$ne' => false]],
+                    ['atime' => ['$lte' => time() - 120], 'latency' => false],
+                    ['atime' => null],
+                    //['address' => 'dimon4ik.no-ip.org:27016'],
+
+                ]
+            ],
+            //'fields' => '_id,atime,address',
+            'limit' => -max($amount, 100),
+            'sort' => ['atime' => 1],
+        ]);
+    }
 
     public function updateServer($server)
     {
@@ -124,54 +158,6 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
         $job();
     }
 
-    public function updateAllServers()
-    {
-        gc_collect_cycles();
-        $app = $this;
-        $amount = 1000 - sizeof($this->jobMap);
-        \PHPDaemon\Core\Daemon::log('amount: ' . $amount);
-        if ($amount <= 0) {
-            return;
-        }
-        $this->servers->find(function ($cursor) use ($app, $amount) {
-            if (isset($cursor->items[0]['$err'])) {
-                \PHPDaemon\Core\Daemon::log(\PHPDaemon\Core\Debug::dump($cursor->items));
-                return;
-            }
-            foreach ($cursor->items as $server) {
-                $app->updateServer($server);
-            }
-            $cursor->destroy();
-        }, [
-            'where' => [
-                '$or' => [
-                    ['atime' => ['$lte' => time() - 30], 'latency' => ['$ne' => false]],
-                    ['atime' => ['$lte' => time() - 120], 'latency' => false],
-                    ['atime' => null],
-                    //['address' => 'dimon4ik.no-ip.org:27016'],
-
-                ]
-            ],
-            //'fields' => '_id,atime,address',
-            'limit' => -max($amount, 100),
-            'sort' => ['atime' => 1],
-        ]);
-    }
-
-    /**
-     * Called when the worker is ready to go.
-     * @return void
-     */
-    public function onReady()
-    {
-        if ($this->isEnabled()) {
-            $this->updateTimer = setTimeout(function ($timer) {
-                $this->updateAllServers();
-                $timer->timeout(2e6);
-            }, 1);
-        }
-    }
-
     /**
      * Called when worker is going to update configuration.
      * @return void
@@ -194,6 +180,19 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
             return $this->client->onShutdown();
         }
         return true;
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * Uncomment and return array with your default options
+     * @return array|false
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            'dbname' => 'gamemonitor',
+        ];
     }
 }
 

@@ -5,7 +5,6 @@ use PHPDaemon\Config\Entry\ConfigFile;
 use PHPDaemon\Config\Entry\Number;
 use PHPDaemon\Config\Entry\Size;
 use PHPDaemon\Config\Entry\Time;
-use PHPDaemon\Config\Parser;
 use PHPDaemon\Core\Daemon;
 
 /**

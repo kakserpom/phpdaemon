@@ -52,74 +52,6 @@ class FileWatcher
     }
 
     /**
-     * Adds your subscription on object in FS
-     * @param  string $path Path
-     * @param  mixed $cb Callback
-     * @param  integer $flags Look inotify_add_watch()
-     * @return true
-     */
-    public function addWatch($path, $cb, $flags = null)
-    {
-        $path = realpath($path);
-        if (!isset($this->files[$path])) {
-            $this->files[$path] = [];
-            if ($this->inotify) {
-                $this->descriptors[inotify_add_watch($this->inotify, $path, $flags ?: IN_MODIFY)] = $path;
-            }
-        }
-        $this->files[$path][] = $cb;
-        Timer::setTimeout('fileWatcher');
-        return true;
-    }
-
-    /**
-     * Cancels your subscription on object in FS
-     * @param  string $path Path
-     * @param  mixed $cb Callback
-     * @return boolean
-     */
-    public function rmWatch($path, $cb)
-    {
-        $path = realpath($path);
-
-        if (!isset($this->files[$path])) {
-            return false;
-        }
-        if (($k = array_search($cb, $this->files[$path], true)) !== false) {
-            unset($this->files[$path][$k]);
-        }
-        if (sizeof($this->files[$path]) === 0) {
-            if ($this->inotify) {
-                if (($descriptor = array_search($path, $this->descriptors)) !== false) {
-                    inotify_rm_watch($this->inotify, $cb);
-                }
-            }
-            unset($this->files[$path]);
-        }
-        return true;
-    }
-
-    /**
-     * Called when file $path is changed
-     * @param  string $path Path
-     * @return void
-     */
-    public function onFileChanged($path)
-    {
-        if (!Daemon::lintFile($path)) {
-            Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);
-            return;
-        }
-        foreach ($this->files[$path] as $cb) {
-            if (is_callable($cb) || is_array($cb)) {
-                $cb($path);
-            } elseif (!Daemon::$process->IPCManager->importFile($cb, $path)) {
-                $this->rmWatch($path, $cb);
-            }
-        }
-    }
-
-    /**
      * Check the file system, triggered by timer
      * @return void
      */
@@ -156,5 +88,73 @@ class FileWatcher
                 $hash[$path] = $mt;
             }
         }
+    }
+
+    /**
+     * Called when file $path is changed
+     * @param  string $path Path
+     * @return void
+     */
+    public function onFileChanged($path)
+    {
+        if (!Daemon::lintFile($path)) {
+            Daemon::log(__METHOD__ . ': Detected parse error in ' . $path);
+            return;
+        }
+        foreach ($this->files[$path] as $cb) {
+            if (is_callable($cb) || is_array($cb)) {
+                $cb($path);
+            } elseif (!Daemon::$process->IPCManager->importFile($cb, $path)) {
+                $this->rmWatch($path, $cb);
+            }
+        }
+    }
+
+    /**
+     * Cancels your subscription on object in FS
+     * @param  string $path Path
+     * @param  mixed $cb Callback
+     * @return boolean
+     */
+    public function rmWatch($path, $cb)
+    {
+        $path = realpath($path);
+
+        if (!isset($this->files[$path])) {
+            return false;
+        }
+        if (($k = array_search($cb, $this->files[$path], true)) !== false) {
+            unset($this->files[$path][$k]);
+        }
+        if (sizeof($this->files[$path]) === 0) {
+            if ($this->inotify) {
+                if (($descriptor = array_search($path, $this->descriptors)) !== false) {
+                    inotify_rm_watch($this->inotify, $cb);
+                }
+            }
+            unset($this->files[$path]);
+        }
+        return true;
+    }
+
+    /**
+     * Adds your subscription on object in FS
+     * @param  string $path Path
+     * @param  mixed $cb Callback
+     * @param  integer $flags Look inotify_add_watch()
+     * @return true
+     */
+    public function addWatch($path, $cb, $flags = null)
+    {
+        $path = realpath($path);
+        if (!isset($this->files[$path])) {
+            $this->files[$path] = [];
+            if ($this->inotify) {
+                $this->descriptors[inotify_add_watch($this->inotify, $path, $flags ?: IN_MODIFY)] = $path;
+            }
+        }
+        $this->files[$path][] = $cb;
+        Timer::setTimeout('fileWatcher');
+        return true;
     }
 }

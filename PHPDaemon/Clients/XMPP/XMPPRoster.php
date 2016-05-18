@@ -73,27 +73,54 @@ class XMPPRoster
     }
 
     /**
-     * @TODO
-     * @param  string $xml
-     * @param  callable $cb
-     * @callback $cb ( )
+     * Set presence
+     * @param string $presence
+     * @param integer $priority
+     * @param string $show
+     * @param string $status
      */
-    public function rosterSet($xml, $cb = null)
+    public function setPresence($presence, $priority, $show, $status)
     {
-        $this->xmpp->querySetTo($this->xmpp->fulljid, $this->ns, $xml, $cb);
+        list($jid, $resource) = explode('/', $presence . '/');
+        if ($show !== 'unavailable') {
+            if (!$this->isContact($jid)) {
+                $this->_addContact($jid, 'not-in-roster');
+            }
+            $this->roster_array[$jid]['presence'][$resource] = [
+                'priority' => $priority,
+                'show' => $show,
+                'status' => $status
+            ];
+        } else { //Nuke unavailable resources to save memory
+            unset($this->roster_array[$jid]['resource'][$resource]);
+        }
     }
 
     /**
-     * @TODO
+     * Discover if a contact exists in the roster via jid
      * @param  string $jid
-     * @param  string $type
-     * @param  callable $cb
-     * @callback $cb ( )
+     * @return boolean
      */
-    public function setSubscription($jid, $type, $cb = null)
+    public function isContact($jid)
     {
-        $this->rosterSet('<item jid="' . htmlspecialchars($jid) . '" subscription="' . htmlspecialchars($type) . '" />',
-            $cb);
+        return array_key_exists($jid, $this->roster_array);
+    }
+
+    /**
+     * Add given contact to roster
+     * @param string $jid
+     * @param string $subscription
+     * @param string $name
+     * @param array $groups
+     */
+    public function _addContact($jid, $subscription, $name = '', $groups = [])
+    {
+        $contact = ['jid' => $jid, 'subscription' => $subscription, 'name' => $name, 'groups' => $groups];
+        if ($this->isContact($jid)) {
+            $this->roster_array[$jid]['contact'] = $contact;
+        } else {
+            $this->roster_array[$jid] = ['contact' => $contact];
+        }
     }
 
     /**
@@ -138,20 +165,27 @@ class XMPPRoster
     }
 
     /**
-     * Add given contact to roster
-     * @param string $jid
-     * @param string $subscription
-     * @param string $name
-     * @param array $groups
+     * @TODO
+     * @param  string $jid
+     * @param  string $type
+     * @param  callable $cb
+     * @callback $cb ( )
      */
-    public function _addContact($jid, $subscription, $name = '', $groups = [])
+    public function setSubscription($jid, $type, $cb = null)
     {
-        $contact = ['jid' => $jid, 'subscription' => $subscription, 'name' => $name, 'groups' => $groups];
-        if ($this->isContact($jid)) {
-            $this->roster_array[$jid]['contact'] = $contact;
-        } else {
-            $this->roster_array[$jid] = ['contact' => $contact];
-        }
+        $this->rosterSet('<item jid="' . htmlspecialchars($jid) . '" subscription="' . htmlspecialchars($type) . '" />',
+            $cb);
+    }
+
+    /**
+     * @TODO
+     * @param  string $xml
+     * @param  callable $cb
+     * @callback $cb ( )
+     */
+    public function rosterSet($xml, $cb = null)
+    {
+        $this->xmpp->querySetTo($this->xmpp->fulljid, $this->ns, $xml, $cb);
     }
 
     /**
@@ -165,40 +199,6 @@ class XMPPRoster
             return $this->roster_array[$jid]['contact'];
         }
         return null;
-    }
-
-    /**
-     * Discover if a contact exists in the roster via jid
-     * @param  string $jid
-     * @return boolean
-     */
-    public function isContact($jid)
-    {
-        return array_key_exists($jid, $this->roster_array);
-    }
-
-    /**
-     * Set presence
-     * @param string $presence
-     * @param integer $priority
-     * @param string $show
-     * @param string $status
-     */
-    public function setPresence($presence, $priority, $show, $status)
-    {
-        list($jid, $resource) = explode('/', $presence . '/');
-        if ($show !== 'unavailable') {
-            if (!$this->isContact($jid)) {
-                $this->_addContact($jid, 'not-in-roster');
-            }
-            $this->roster_array[$jid]['presence'][$resource] = [
-                'priority' => $priority,
-                'show' => $show,
-                'status' => $status
-            ];
-        } else { //Nuke unavailable resources to save memory
-            unset($this->roster_array[$jid]['resource'][$resource]);
-        }
     }
 
     /**

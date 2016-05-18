@@ -25,41 +25,34 @@ class DeferredEvent
      * State: done. Event handler is finished, result is saved.
      */
     const STATE_DONE = 3;
-
-    /**
-     * @var \PHPDaemon\Structures\StackCallbacks Stack of listeners
-     */
-    protected $listeners;
-
-    /**
-     * @var mixed Result of deferred event
-     */
-    protected $result;
-
-    /**
-     * @var int State of event. One of STATE_*
-     */
-    protected $state;
-
-    /**
-     * @var array Arguments which passed to __invoke
-     */
-    protected $args;
-
-    /**
-     * @var callable Event handler (producer)
-     */
-    protected $producer;
-
     /**
      * @var object Parent object
      */
     public $parent;
-
     /**
      * @var string Name of event
      */
     public $name;
+    /**
+     * @var \PHPDaemon\Structures\StackCallbacks Stack of listeners
+     */
+    protected $listeners;
+    /**
+     * @var mixed Result of deferred event
+     */
+    protected $result;
+    /**
+     * @var int State of event. One of STATE_*
+     */
+    protected $state;
+    /**
+     * @var array Arguments which passed to __invoke
+     */
+    protected $args;
+    /**
+     * @var callable Event handler (producer)
+     */
+    protected $producer;
 
     /**
      * Constructor
@@ -122,6 +115,16 @@ class DeferredEvent
     }
 
     /**
+     * Called when object is invoked as function.
+     * @param  mixed ...$args Arguments
+     * @return void
+     */
+    public function __invoke(...$args)
+    {
+        $this->addListener(...$args);
+    }
+
+    /**
      * Add listener
      * @param  callable $cb Callback
      * @param  mixed ...$args Arguments
@@ -149,15 +152,5 @@ class DeferredEvent
             $func = $this->producer;
             $func($this);
         }
-    }
-
-    /**
-     * Called when object is invoked as function.
-     * @param  mixed ...$args Arguments
-     * @return void
-     */
-    public function __invoke(...$args)
-    {
-        $this->addListener(...$args);
     }
 }

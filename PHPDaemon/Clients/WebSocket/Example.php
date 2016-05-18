@@ -17,20 +17,6 @@ class Example extends AppInstance
     public $wsconn;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * @return array|false
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            'url' => 'tcp://echo.websocket.org:80/',
-            'reconnect' => 1,
-            'wsclient-name' => ''
-        ];
-    }
-
-    /**
      * Constructor.
      * @return void
      */
@@ -81,5 +67,19 @@ class Example extends AppInstance
             return $this->wsclient->onShutdown();
         }
         return true;
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * @return array|false
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            'url' => 'tcp://echo.websocket.org:80/',
+            'reconnect' => 1,
+            'wsclient-name' => ''
+        ];
     }
 }

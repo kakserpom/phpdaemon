@@ -84,16 +84,6 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface
     }
 
     /**
-     * toJson
-     * @param  string $p
-     * @return string
-     */
-    public function toJson($p)
-    {
-        return json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    }
-
-    /**
      * Sends a frame.
      * @param string $data Frame's data.
      * @param integer $type Frame's type. See the constants.
@@ -105,6 +95,16 @@ class WebSocketConnectionProxy implements \PHPDaemon\WebSocket\RouteInterface
     {
         $this->realConn->sendFrame('a' . $this->toJson([$data]), $type, $cb);
         return true;
+    }
+
+    /**
+     * toJson
+     * @param  string $p
+     * @return string
+     */
+    public function toJson($p)
+    {
+        return json_encode($p, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**

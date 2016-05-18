@@ -12,22 +12,6 @@ class Pool extends Server
     protected $pairs = [];
 
     /**
-     * Setting default config options
-     * Overriden from ConnectionPool::getConfigDefaults
-     * @return array|bool
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            /* [string|array] Listen addresses */
-            'listen' => '0.0.0.0',
-
-            /* [integer] Listen port */
-            'port' => 113,
-        ];
-    }
-
-    /**
      * Function handles incoming Remote Procedure Calls
      * You can override it
      * @param  string $method Method name.
@@ -86,5 +70,21 @@ class Pool extends Server
             isset($this->pairs[$k])
                 ? $this->pairs[$k]
                 : false;
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from ConnectionPool::getConfigDefaults
+     * @return array|bool
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            /* [string|array] Listen addresses */
+            'listen' => '0.0.0.0',
+
+            /* [integer] Listen port */
+            'port' => 113,
+        ];
     }
 }

@@ -82,34 +82,6 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
      * Import command name and arguments from input
      * @return void
      */
-    protected function importCmdArgsFromPost()
-    {
-        if ($this->result === null) {
-            foreach (static::getArray($_POST['args']) as $arg) {
-                if (is_string($arg)) {
-                    $this->args[] = $arg;
-                }
-            }
-        }
-    }
-
-    /*
-     * Performs command
-     * @return void
-     */
-    protected function performCommand()
-    {
-        $args = $this->args;
-        $args[] = function ($conn) {
-            if (!$conn->isFinal()) {
-                return;
-            }
-            $this->result = $conn->result;
-            $this->wakeup();
-        };
-        $func = [$this->appInstance->gibson, $this->cmd];
-        $func(...$args);
-    }
 
     /**
      * Called when request iterated.
@@ -127,5 +99,35 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
             }
         }
         echo json_encode($this->result);
+    }
+
+    /*
+     * Performs command
+     * @return void
+     */
+
+    protected function importCmdArgsFromPost()
+    {
+        if ($this->result === null) {
+            foreach (static::getArray($_POST['args']) as $arg) {
+                if (is_string($arg)) {
+                    $this->args[] = $arg;
+                }
+            }
+        }
+    }
+
+    protected function performCommand()
+    {
+        $args = $this->args;
+        $args[] = function ($conn) {
+            if (!$conn->isFinal()) {
+                return;
+            }
+            $this->result = $conn->result;
+            $this->wakeup();
+        };
+        $func = [$this->appInstance->gibson, $this->cmd];
+        $func(...$args);
     }
 }

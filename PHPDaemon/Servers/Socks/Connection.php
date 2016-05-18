@@ -9,37 +9,30 @@ namespace PHPDaemon\Servers\Socks;
 class Connection extends \PHPDaemon\Network\Connection
 {
     /**
-     * @var string protocol version (X'04' / X'05')
-     */
-    protected $ver;
-
-    /**
-     * @var integer State: 0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange
-     */
-    protected $state = 0;
-
-    protected $slave;
-
-    /**
      * @TODO DESCR
      */
     const STATE_ABORTED = 1;
-
     /**
      * @TODO DESCR
      */
     const STATE_HANDSHAKED = 2;
-
     /**
      * @TODO DESCR
      */
     const STATE_AUTHORIZED = 3;
-
     /**
      * @TODO DESCR
      */
     const STATE_DATAFLOW = 4;
-
+    /**
+     * @var string protocol version (X'04' / X'05')
+     */
+    protected $ver;
+    /**
+     * @var integer State: 0 - start, 1 - aborted, 2 - handshaked, 3 - authorized, 4 - data exchange
+     */
+    protected $state = 0;
+    protected $slave;
     protected $lowMark = 2;
     protected $highMark = 32768;
 

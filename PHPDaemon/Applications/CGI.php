@@ -29,6 +29,25 @@ class CGI extends \PHPDaemon\Core\AppInstance
     public $chroot = '/'; // default chroot
 
     /**
+     * Called when the worker is ready to go.
+     * @return void
+     */
+    public function onReady()
+    {
+    }
+
+    /**
+     * Creates Request.
+     * @param object $req Request.
+     * @param object $upstream Upstream application instance.
+     * @return CGIRequest Request.
+     */
+    public function beginRequest($req, $upstream)
+    {
+        return new CGIRequest($this, $upstream, $req);
+    }
+
+    /**
      * Setting default config options
      * Overriden from AppInstance::getConfigDefaults
      * @return array|bool
@@ -46,24 +65,5 @@ class CGI extends \PHPDaemon\Core\AppInstance
             'output-errors' => true,
             'errlog-file' => __DIR__ . '/cgi-error.log',
         ];
-    }
-
-    /**
-     * Called when the worker is ready to go.
-     * @return void
-     */
-    public function onReady()
-    {
-    }
-
-    /**
-     * Creates Request.
-     * @param object $req Request.
-     * @param object $upstream Upstream application instance.
-     * @return CGIRequest Request.
-     */
-    public function beginRequest($req, $upstream)
-    {
-        return new CGIRequest($this, $upstream, $req);
     }
 }

@@ -52,16 +52,6 @@ abstract class CappedStorage
     }
 
     /**
-     * Hash function
-     * @param  string $key Key
-     * @return integer
-     */
-    public function hash($key)
-    {
-        return $key;
-    }
-
-    /**
      * Puts element in cache
      * @param  string $key Key
      * @param  mixed $value Value
@@ -92,6 +82,16 @@ abstract class CappedStorage
             }
         }
         return $item;
+    }
+
+    /**
+     * Hash function
+     * @param  string $key Key
+     * @return integer
+     */
+    public function hash($key)
+    {
+        return $key;
     }
 
     /**

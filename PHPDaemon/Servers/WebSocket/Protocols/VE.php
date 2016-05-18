@@ -43,35 +43,6 @@ class VE extends Connection
     }
 
     /**
-     * Computes key for Sec-WebSocket.
-     * @param string Key
-     * @return string Result
-     */
-    protected function _computeKey($key)
-    {
-        $spaces = 0;
-        $digits = '';
-
-        for ($i = 0, $s = mb_orig_strlen($key); $i < $s; ++$i) {
-            $c = mb_orig_substr($key, $i, 1);
-
-            if ($c === "\x20") {
-                ++$spaces;
-            } elseif (ctype_digit($c)) {
-                $digits .= $c;
-            }
-        }
-
-        if ($spaces > 0) {
-            $result = (float)floor($digits / $spaces);
-        } else {
-            $result = (float)$digits;
-        }
-
-        return pack('N', $result);
-    }
-
-    /**
      * Sends a frame.
      * @param  string $data Frame's data.
      * @param  string $type Frame's type. ("STRING" OR "BINARY")
@@ -184,5 +155,34 @@ class VE extends Connection
                 }
             }
         }
+    }
+
+    /**
+     * Computes key for Sec-WebSocket.
+     * @param string Key
+     * @return string Result
+     */
+    protected function _computeKey($key)
+    {
+        $spaces = 0;
+        $digits = '';
+
+        for ($i = 0, $s = mb_orig_strlen($key); $i < $s; ++$i) {
+            $c = mb_orig_substr($key, $i, 1);
+
+            if ($c === "\x20") {
+                ++$spaces;
+            } elseif (ctype_digit($c)) {
+                $digits .= $c;
+            }
+        }
+
+        if ($spaces > 0) {
+            $result = (float)floor($digits / $spaces);
+        } else {
+            $result = (float)$digits;
+        }
+
+        return pack('N', $result);
     }
 }

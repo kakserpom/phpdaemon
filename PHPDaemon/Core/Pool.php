@@ -16,45 +16,6 @@ class Pool extends AppInstance
     public $pool;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * Uncomment and return array with your default options
-     * @return boolean
-     */
-    protected function getConfigDefaults()
-    {
-        return false;
-    }
-
-    /**
-     * Constructor.
-     * @return void
-     */
-    protected function init()
-    {
-        if ($this->isEnabled()) {
-            list($class, $name) = explode(':', $this->name . ':');
-            $realclass = ClassFinder::find($class);
-            $e = explode('\\', $realclass);
-            if (($e[sizeof($e) - 1] !== 'Pool') && class_exists($realclass . '\\Pool')) {
-                $realclass .= '\\Pool';
-            }
-            if ($realclass !== $class) {
-                $base = '\\PHPDaemon\\Core\\Pool:';
-                Daemon::$config->renameSection($base . $class . ($name !== '' ? ':' . $name : ''),
-                    $base . $realclass . ($name !== '' ? ':' . $name : ''));
-            }
-            if (!class_exists($realclass)) {
-                Daemon::log($realclass . ' class not exists.');
-                return;
-            }
-            $func = [$realclass, 'getInstance'];
-            $this->pool = $func($name);
-            $this->pool->appInstance = $this;
-        }
-    }
-
-    /**
      * Function handles incoming Remote Procedure Calls
      * You can override it
      * @param string $method Method name.
@@ -102,5 +63,44 @@ class Pool extends AppInstance
             return $this->pool->onShutdown($graceful);
         }
         return true;
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * Uncomment and return array with your default options
+     * @return boolean
+     */
+    protected function getConfigDefaults()
+    {
+        return false;
+    }
+
+    /**
+     * Constructor.
+     * @return void
+     */
+    protected function init()
+    {
+        if ($this->isEnabled()) {
+            list($class, $name) = explode(':', $this->name . ':');
+            $realclass = ClassFinder::find($class);
+            $e = explode('\\', $realclass);
+            if (($e[sizeof($e) - 1] !== 'Pool') && class_exists($realclass . '\\Pool')) {
+                $realclass .= '\\Pool';
+            }
+            if ($realclass !== $class) {
+                $base = '\\PHPDaemon\\Core\\Pool:';
+                Daemon::$config->renameSection($base . $class . ($name !== '' ? ':' . $name : ''),
+                    $base . $realclass . ($name !== '' ? ':' . $name : ''));
+            }
+            if (!class_exists($realclass)) {
+                Daemon::log($realclass . ' class not exists.');
+                return;
+            }
+            $func = [$realclass, 'getInstance'];
+            $this->pool = $func($name);
+            $this->pool->appInstance = $this;
+        }
     }
 }

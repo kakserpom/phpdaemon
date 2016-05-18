@@ -289,22 +289,37 @@ class Pool extends Client
     const SET_FLAG = 0x800;
 
     /**
-     * Setting default config options
-     * Overriden from NetworkClient::getConfigDefaults
-     * @return array|bool
+     * [values description]
+     * @param  array $arr
+     * @return string
      */
-    protected function getConfigDefaults()
+    public static function values($arr)
     {
-        return [
-            /* [array|string] @todo */
-            'server' => 'tcp://root@127.0.0.1/',
+        if (!is_array($arr)) {
+            return '';
+        }
+        $arr = array_values($arr);
+        foreach ($arr as &$v) {
+            $v = static::value($v);
+        }
+        return implode(',', $arr);
+    }
 
-            /* [integer] @todo */
-            'port' => 3306,
-
-            /* [integer] @todo */
-            'maxconnperserv' => 32,
-        ];
+    /**
+     * [value description]
+     * @param  mixed $mixed
+     * @return string
+     */
+    public static function value($mixed)
+    {
+        if (is_string($mixed)) {
+            return '\'' . static::escape($mixed) . '\'';
+        } elseif (is_integer($mixed)) {
+            return (string)$mixed;
+        } elseif (is_float($mixed)) {
+            return '\'' . $mixed . '\'';
+        }
+        return 'null';
     }
 
     /**
@@ -326,40 +341,6 @@ class Pool extends Client
     }
 
     /**
-     * [value description]
-     * @param  mixed $mixed
-     * @return string
-     */
-    public static function value($mixed)
-    {
-        if (is_string($mixed)) {
-            return '\'' . static::escape($mixed) . '\'';
-        } elseif (is_integer($mixed)) {
-            return (string)$mixed;
-        } elseif (is_float($mixed)) {
-            return '\'' . $mixed . '\'';
-        }
-        return 'null';
-    }
-
-    /**
-     * [values description]
-     * @param  array $arr
-     * @return string
-     */
-    public static function values($arr)
-    {
-        if (!is_array($arr)) {
-            return '';
-        }
-        $arr = array_values($arr);
-        foreach ($arr as &$v) {
-            $v = static::value($v);
-        }
-        return implode(',', $arr);
-    }
-
-    /**
      * Escapes the special symbols with a trailing backslash
      * @param  string $string
      * @return string
@@ -378,5 +359,24 @@ class Pool extends Client
         ];
 
         return strtr($string, $sqlescape);
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from NetworkClient::getConfigDefaults
+     * @return array|bool
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            /* [array|string] @todo */
+            'server' => 'tcp://root@127.0.0.1/',
+
+            /* [integer] @todo */
+            'port' => 3306,
+
+            /* [integer] @todo */
+            'maxconnperserv' => 32,
+        ];
     }
 }

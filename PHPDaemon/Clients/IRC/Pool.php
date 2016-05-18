@@ -20,6 +20,15 @@ class Pool extends \PHPDaemon\Network\Client
     public $protologging = false;
 
     /**
+     * @TODO DESCR
+     */
+    public function onReady()
+    {
+        $this->identd = \PHPDaemon\Servers\Ident\Pool::getInstance();
+        parent::onReady();
+    }
+
+    /**
      * Setting default config options
      * Overriden from NetworkClient::getConfigDefaults
      * @return array|bool
@@ -30,14 +39,5 @@ class Pool extends \PHPDaemon\Network\Client
             /* [integer] Port */
             'port' => 6667,
         ];
-    }
-
-    /**
-     * @TODO DESCR
-     */
-    public function onReady()
-    {
-        $this->identd = \PHPDaemon\Servers\Ident\Pool::getInstance();
-        parent::onReady();
     }
 }

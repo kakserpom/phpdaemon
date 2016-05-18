@@ -64,23 +64,6 @@ class AutoScan
         $this->doIteration();
     }
 
-    public function freeze()
-    {
-        $this->isFreeze = true;
-    }
-
-    public function run()
-    {
-        $this->isFreeze = false;
-        $this->doIteration();
-    }
-
-    public function reset()
-    {
-        $this->num = 0;
-        $this->isFreeze = false;
-    }
-
     protected function doIteration()
     {
         if ($this->isFreeze) {
@@ -104,5 +87,22 @@ class AutoScan
         };
         $func = [$this->conn, $this->cmd];
         $func(... $args);
+    }
+
+    public function freeze()
+    {
+        $this->isFreeze = true;
+    }
+
+    public function run()
+    {
+        $this->isFreeze = false;
+        $this->doIteration();
+    }
+
+    public function reset()
+    {
+        $this->num = 0;
+        $this->isFreeze = false;
     }
 }

@@ -1,13 +1,13 @@
 <?php
 namespace PHPDaemon\Thread;
 
+use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
-use PHPDaemon\Cache\CappedStorageHits;
 
 /**
  * Implementation of the worker thread

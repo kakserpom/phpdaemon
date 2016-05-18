@@ -43,6 +43,15 @@ class PubSubEvent extends \SplObjectStorage
     }
 
     /**
+     * Init
+     * @return object
+     */
+    public static function init()
+    {
+        return new static;
+    }
+
+    /**
      * Sets onActivation callback
      * @param  callable $cb Callback
      * @return this
@@ -62,15 +71,6 @@ class PubSubEvent extends \SplObjectStorage
     {
         $this->deactCb = $cb;
         return $this;
-    }
-
-    /**
-     * Init
-     * @return object
-     */
-    public static function init()
-    {
-        return new static;
     }
 
     /**

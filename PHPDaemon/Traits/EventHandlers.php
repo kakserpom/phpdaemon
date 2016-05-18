@@ -103,6 +103,18 @@ trait EventHandlers
 
     /**
      * Bind event or events
+     * @alias EventHandlers::bind
+     * @param string|array $event Event name
+     * @param callable $cb Callback
+     * @return this
+     */
+    public function on($event, $cb)
+    {
+        return $this->bind($event, $cb);
+    }
+
+    /**
+     * Bind event or events
      * @param string|array $event Event name
      * @param callable $cb Callback
      * @return this
@@ -120,15 +132,15 @@ trait EventHandlers
     }
 
     /**
-     * Bind event or events
-     * @alias EventHandlers::bind
+     * Unbind event(s) or callback from event(s)
+     * @alias EventHandlers::unbind
      * @param string|array $event Event name
-     * @param callable $cb Callback
+     * @param callable $cb Callback, optional
      * @return this
      */
-    public function on($event, $cb)
+    public function off($event, $cb = null)
     {
-        return $this->bind($event, $cb);
+        return $this->unbind($event, $cb);
     }
 
     /**
@@ -156,18 +168,6 @@ trait EventHandlers
             CallbackWrapper::removeFromArray($this->eventHandlers[$e], $cb);
         }
         return $this;
-    }
-
-    /**
-     * Unbind event(s) or callback from event(s)
-     * @alias EventHandlers::unbind
-     * @param string|array $event Event name
-     * @param callable $cb Callback, optional
-     * @return this
-     */
-    public function off($event, $cb = null)
-    {
-        return $this->unbind($event, $cb);
     }
 
     /**

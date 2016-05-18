@@ -12,13 +12,17 @@ class Timer
     use \PHPDaemon\Traits\StaticObjectWatchdog;
 
     /**
+     * @var Timer[] List of timers
+     */
+    protected static $list = [];
+    /**
+     * @var integer Counter
+     */
+    protected static $counter = 1;
+    /**
      * @var integer|null Timer id
      */
     public $id;
-    /**
-     * @var \EventBufferEvent Event resource
-     */
-    protected $ev;
     /**
      * @var integer Current timeout holder
      */
@@ -32,17 +36,13 @@ class Timer
      */
     public $cb;
     /**
-     * @var Timer[] List of timers
-     */
-    protected static $list = [];
-    /**
      * @var integer Priority
      */
     public $priority;
     /**
-     * @var integer Counter
+     * @var \EventBufferEvent Event resource
      */
-    protected static $counter = 1;
+    protected $ev;
 
     /**
      * Constructor
@@ -71,21 +71,6 @@ class Timer
     }
 
     /**
-     * Called when timer is triggered
-     * @return void
-     */
-    public function eventCall()
-    {
-        try {
-            //Daemon::log('cb - '.Debug::zdump($this->cb));
-            $func = $this->cb;
-            $func($this);
-        } catch (\Exception $e) {
-            Daemon::uncaughtExceptionHandler($e);
-        }
-    }
-
-    /**
      * Set prioriry
      * @param  integer $priority Priority
      * @return void
@@ -94,6 +79,19 @@ class Timer
     {
         $this->priority = $priority;
         $this->ev->priority = $priority;
+    }
+
+    /**
+     * Sets timeout
+     * @param  integer $timeout Timeout
+     * @return void
+     */
+    public function timeout($timeout = null)
+    {
+        if ($timeout !== null) {
+            $this->lastTimeout = $timeout;
+        }
+        $this->ev->add($this->lastTimeout / 1e6);
     }
 
     /**
@@ -138,6 +136,19 @@ class Timer
     }
 
     /**
+     * Frees the timer
+     * @return void
+     */
+    public function free()
+    {
+        unset(self::$list[$this->id]);
+        if ($this->ev !== null) {
+            $this->ev->free();
+            $this->ev = null;
+        }
+    }
+
+    /**
      * Cancels timer by ID
      * @param  integer|string $id Timer ID
      * @return void
@@ -150,25 +161,27 @@ class Timer
     }
 
     /**
-     * Sets timeout
-     * @param  integer $timeout Timeout
-     * @return void
-     */
-    public function timeout($timeout = null)
-    {
-        if ($timeout !== null) {
-            $this->lastTimeout = $timeout;
-        }
-        $this->ev->add($this->lastTimeout / 1e6);
-    }
-
-    /**
      * Cancels timer
      * @return void
      */
     public function cancel()
     {
         $this->ev->del();
+    }
+
+    /**
+     * Called when timer is triggered
+     * @return void
+     */
+    public function eventCall()
+    {
+        try {
+            //Daemon::log('cb - '.Debug::zdump($this->cb));
+            $func = $this->cb;
+            $func($this);
+        } catch (\Exception $e) {
+            Daemon::uncaughtExceptionHandler($e);
+        }
     }
 
     /**
@@ -187,18 +200,5 @@ class Timer
     public function __destruct()
     {
         $this->free();
-    }
-
-    /**
-     * Frees the timer
-     * @return void
-     */
-    public function free()
-    {
-        unset(self::$list[$this->id]);
-        if ($this->ev !== null) {
-            $this->ev->free();
-            $this->ev = null;
-        }
     }
 }

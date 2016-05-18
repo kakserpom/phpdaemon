@@ -2,8 +2,8 @@
 
 namespace PHPDaemon\Clients\GearmanClient;
 
-use PHPDaemon\Network\Client;
 use PHPDaemon\Config;
+use PHPDaemon\Network\Client;
 
 /**
  * Class Pool

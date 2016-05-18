@@ -11,8 +11,6 @@ Pool:\PHPDaemon\Clients\MySQL\Pool{
 namespace PHPDaemon\Examples;
 
 use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 
 /**
  * @package    Examples

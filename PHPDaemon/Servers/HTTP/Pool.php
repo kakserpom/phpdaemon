@@ -22,6 +22,31 @@ class Pool extends \PHPDaemon\Network\Server
     public $WS;
 
     /**
+     * Called when worker is going to update configuration.
+     * @return void
+     */
+    public function onConfigUpdated()
+    {
+        parent::onConfigUpdated();
+
+        if (($order = ini_get('request_order')) || ($order = ini_get('variables_order'))) {
+            $this->variablesOrder = $order;
+        } else {
+            $this->variablesOrder = null;
+        }
+    }
+
+    /**
+     * Called when the worker is ready to go.
+     * @return void
+     */
+    public function onReady()
+    {
+        parent::onReady();
+        $this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance($this->config->wssname->value, false);
+    }
+
+    /**
      * Setting default config options
      * Overriden from AppInstance::getConfigDefaults
      * @return array|bool
@@ -71,30 +96,5 @@ class Pool extends \PHPDaemon\Network\Server
             /* [string] Reponder application (if you do not want to use AppResolver) */
             'responder' => null,
         ];
-    }
-
-    /**
-     * Called when worker is going to update configuration.
-     * @return void
-     */
-    public function onConfigUpdated()
-    {
-        parent::onConfigUpdated();
-
-        if (($order = ini_get('request_order')) || ($order = ini_get('variables_order'))) {
-            $this->variablesOrder = $order;
-        } else {
-            $this->variablesOrder = null;
-        }
-    }
-
-    /**
-     * Called when the worker is ready to go.
-     * @return void
-     */
-    public function onReady()
-    {
-        parent::onReady();
-        $this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance($this->config->wssname->value, false);
     }
 }

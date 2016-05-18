@@ -74,16 +74,6 @@ class Section implements \ArrayAccess
     }
 
     /**
-     * Get real property name
-     * @param string Property name
-     * @return string Real property name
-     */
-    public function getRealPropertyName($prop)
-    {
-        return str_replace('-', '', strtolower($prop));
-    }
-
-    /**
      * Checks if property exists
      * @param string Property name
      * @return boolean Exists?
@@ -93,6 +83,16 @@ class Section implements \ArrayAccess
     {
         $prop = $this->getRealPropertyName($prop);
         return property_exists($this, $prop);
+    }
+
+    /**
+     * Get real property name
+     * @param string Property name
+     * @return string Real property name
+     */
+    public function getRealPropertyName($prop)
+    {
+        return str_replace('-', '', strtolower($prop));
     }
 
     /**

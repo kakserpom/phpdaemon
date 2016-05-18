@@ -11,40 +11,13 @@ class Pool extends Client
 {
 
     /**
-     * @var array Asterisk Call Manager Interface versions for each session
-     */
-    protected $amiVersions = [];
-
-    /**
-     * Setting default config options
-     * Overriden from NetworkClient::getConfigDefaults
-     * @return array
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            // [string] Auth hash type
-            'authtype' => 'md5',
-            // [integer] Port
-            'port' => 5280,
-        ];
-    }
-
-    /**
      * @var array Beginning of the string in the header or value that indicates whether the save value case
      */
     public static $safeCaseValues = ['dialstring', 'callerid', 'connectedline'];
-
     /**
-     * Sets AMI version
-     * @param  string $addr Address
-     * @param  string $ver Version
-     * @return void
+     * @var array Asterisk Call Manager Interface versions for each session
      */
-    public function setAmiVersion($addr, $ver)
-    {
-        $this->amiVersions[$addr] = $ver;
-    }
+    protected $amiVersions = [];
 
     /**
      * Prepares environment scope
@@ -90,5 +63,31 @@ class Pool extends Client
         }
 
         return [$header, $value];
+    }
+
+    /**
+     * Sets AMI version
+     * @param  string $addr Address
+     * @param  string $ver Version
+     * @return void
+     */
+    public function setAmiVersion($addr, $ver)
+    {
+        $this->amiVersions[$addr] = $ver;
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from NetworkClient::getConfigDefaults
+     * @return array
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            // [string] Auth hash type
+            'authtype' => 'md5',
+            // [integer] Port
+            'port' => 5280,
+        ];
     }
 }

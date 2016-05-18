@@ -11,20 +11,6 @@ use PHPDaemon\Request\IRequestUpstream;
  */
 class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstream
 {
-    /**
-     * @var integer initial value of the minimal amout of bytes in buffer
-     */
-    protected $lowMark = 8;
-
-    /**
-     * @var integer initial value of the maximum amout of bytes in buffer
-     */
-    protected $highMark = 0xFFFFFF;
-
-    public $timeout = 180;
-
-    protected $requests = [];
-
     const FCGI_BEGIN_REQUEST = 1;
     const FCGI_ABORT_REQUEST = 2;
     const FCGI_END_REQUEST = 3;
@@ -36,20 +22,16 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
     const FCGI_GET_VALUES = 9;
     const FCGI_GET_VALUES_RESULT = 10;
     const FCGI_UNKNOWN_TYPE = 11;
-
     const FCGI_RESPONDER = 1;
     const FCGI_AUTHORIZER = 2;
     const FCGI_FILTER = 3;
-
     const STATE_CONTENT = 1;
     const STATE_PADDING = 2;
-
     protected static $roles = [
         self::FCGI_RESPONDER => 'FCGI_RESPONDER',
         self::FCGI_AUTHORIZER => 'FCGI_AUTHORIZER',
         self::FCGI_FILTER => 'FCGI_FILTER',
     ];
-
     protected static $requestTypes = [
         self::FCGI_BEGIN_REQUEST => 'FCGI_BEGIN_REQUEST',
         self::FCGI_ABORT_REQUEST => 'FCGI_ABORT_REQUEST',
@@ -63,7 +45,16 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
         self::FCGI_GET_VALUES_RESULT => 'FCGI_GET_VALUES_RESULT',
         self::FCGI_UNKNOWN_TYPE => 'FCGI_UNKNOWN_TYPE',
     ];
-
+    public $timeout = 180;
+    /**
+     * @var integer initial value of the minimal amout of bytes in buffer
+     */
+    protected $lowMark = 8;
+    /**
+     * @var integer initial value of the maximum amout of bytes in buffer
+     */
+    protected $highMark = 0xFFFFFF;
+    protected $requests = [];
     protected $header;
     protected $content;
 
@@ -285,6 +276,34 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
 
     /**
      * Handles the output from downstream requests
+     * @param  object $req
+     * @param  string $appStatus
+     * @param  string $protoStatus
+     * @return void
+     */
+    public function endRequest($req, $appStatus, $protoStatus)
+    {
+        $c = pack('NC', $appStatus, $protoStatus) // app status, protocol status
+            . "\x00\x00\x00";
+
+        $this->write(
+            "\x01" // protocol version
+            . "\x03" // record type (END_REQUEST)
+            . pack('nn', $req->attrs->id, mb_orig_strlen($c)) // id, content length
+            . "\x00" // padding length
+            . "\x00" // reserved
+            . $c // content
+        );
+
+        if ($protoStatus === -1) {
+            $this->close();
+        } elseif (!$this->pool->config->keepalive->value) {
+            $this->finish();
+        }
+    }
+
+    /**
+     * Handles the output from downstream requests
      * @param  object $req Request
      * @param  string $out The output
      * @return boolean      Success
@@ -337,34 +356,6 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
     {
         $req->attrs->input = null;
         unset($this->requests[$req->attrs->id]);
-    }
-
-    /**
-     * Handles the output from downstream requests
-     * @param  object $req
-     * @param  string $appStatus
-     * @param  string $protoStatus
-     * @return void
-     */
-    public function endRequest($req, $appStatus, $protoStatus)
-    {
-        $c = pack('NC', $appStatus, $protoStatus) // app status, protocol status
-            . "\x00\x00\x00";
-
-        $this->write(
-            "\x01" // protocol version
-            . "\x03" // record type (END_REQUEST)
-            . pack('nn', $req->attrs->id, mb_orig_strlen($c)) // id, content length
-            . "\x00" // padding length
-            . "\x00" // reserved
-            . $c // content
-        );
-
-        if ($protoStatus === -1) {
-            $this->close();
-        } elseif (!$this->pool->config->keepalive->value) {
-            $this->finish();
-        }
     }
 
     /**

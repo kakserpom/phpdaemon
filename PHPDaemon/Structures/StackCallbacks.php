@@ -24,16 +24,6 @@ class StackCallbacks extends \SplStack
     }
 
     /**
-     * Push callback to the top of stack
-     * @param  callable $cb Callback
-     * @return void
-     */
-    public function unshift($cb)
-    {
-        parent::unshift(CallbackWrapper::wrap($cb));
-    }
-
-    /**
      * Executes one callback from the top with given arguments
      * @param  mixed ...$args Arguments
      * @return boolean
@@ -69,6 +59,16 @@ class StackCallbacks extends \SplStack
             $cb(...$args);
         }
         return true;
+    }
+
+    /**
+     * Push callback to the top of stack
+     * @param  callable $cb Callback
+     * @return void
+     */
+    public function unshift($cb)
+    {
+        parent::unshift(CallbackWrapper::wrap($cb));
     }
 
     /**

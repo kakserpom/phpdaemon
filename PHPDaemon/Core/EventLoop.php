@@ -11,6 +11,12 @@ class EventLoop
     protected $callbacks;
     protected $stopped = true;
 
+    public function __construct()
+    {
+        $this->base = new \EventBase;
+        $this->callbacks = new StackCallbacks;
+        $this->dnsBase = new \EventDnsBase($this->base, false); // @TODO: test with true
+    }
 
     public static function init()
     {
@@ -19,13 +25,6 @@ class EventLoop
         } else {
             self::$instance = new static;
         }
-    }
-
-    public function __construct()
-    {
-        $this->base = new \EventBase;
-        $this->callbacks = new StackCallbacks;
-        $this->dnsBase = new \EventDnsBase($this->base, false); // @TODO: test with true
     }
 
     public function getBase()
@@ -68,18 +67,18 @@ class EventLoop
         return \EventBufferEvent::sslSocket($this->base, ...$args);
     }
 
+    public function stop()
+    {
+        $this->stopped = true;
+        $this->interrupt();
+    }
+
     public function interrupt($cb = null)
     {
         if ($cb !== null) {
             $this->callbacks->push($cb);
         }
         $this->base->exit();
-    }
-
-    public function stop()
-    {
-        $this->stopped = true;
-        $this->interrupt();
     }
 
     public function event(...$args)

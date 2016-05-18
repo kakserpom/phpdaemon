@@ -18,19 +18,6 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
     protected $inited = false;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * @return array|false
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            'mongoclientname' => '',
-            'memcacheclientname' => '',
-        ];
-    }
-
-    /**
      * Constructor.
      * @return void
      */
@@ -40,6 +27,19 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
         $this->cache = \PHPDaemon\Clients\Memcache\Pool::getInstance($this->config->memcacheclientname->value);
         if (!isset($this->config->limitinstances)) {
             $this->log('missing \'limitInstances\' directive');
+        }
+    }
+
+    /**
+     * Called when the worker is ready to go.
+     * @return void
+     */
+    public function onReady()
+    {
+        if ($this->config->enable->value) {
+            $this->timer = setTimeout(function ($timer) {
+                $this->touchCursor();
+            }, 0.3e6);
         }
     }
 
@@ -80,65 +80,6 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
                 $this->cursor = false;
             }
         }
-    }
-
-    /**
-     * Called when the worker is ready to go.
-     * @return void
-     */
-    public function onReady()
-    {
-        if ($this->config->enable->value) {
-            $this->timer = setTimeout(function ($timer) {
-                $this->touchCursor();
-            }, 0.3e6);
-        }
-    }
-
-    /**
-     * Method called when object received.
-     * @param object Object.
-     * @return void
-     */
-    public function cacheObject($o)
-    {
-        if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
-            \PHPDaemon\Core\Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
-        }
-
-        if (isset($o['_key'])) {
-            $this->cache->set($o['_key'], bson_encode($o));
-            $this->cache->set('_id.' . ((string)$o['_id']), $o['_key']);
-        }
-
-        if (isset($o['_ev'])) {
-            $o['name'] = $o['_ev'];
-
-            if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
-                \PHPDaemon\Core\Daemon::log('MongoNode send event ' . $o['name']);
-            }
-        }
-    }
-
-    /**
-     * Method called when object deleted.
-     * @param object Object.
-     * @return void
-     */
-    public function deleteObject($o)
-    {
-        if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
-            \PHPDaemon\Core\Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
-        }
-
-        $this->cache->get('_id.' . ((string)$o['_id']),
-            function ($mc) use ($o) {
-                if (is_string($m->result)) {
-                    $mc->delete($m->result);
-                    $mc->delete('_id.' . $o['_id']);
-                }
-            }
-        );
     }
 
     /**
@@ -208,5 +149,64 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
                 'parse_oplog' => true,
             ]
         );
+    }
+
+    /**
+     * Method called when object received.
+     * @param object Object.
+     * @return void
+     */
+    public function cacheObject($o)
+    {
+        if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
+            \PHPDaemon\Core\Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
+        }
+
+        if (isset($o['_key'])) {
+            $this->cache->set($o['_key'], bson_encode($o));
+            $this->cache->set('_id.' . ((string)$o['_id']), $o['_key']);
+        }
+
+        if (isset($o['_ev'])) {
+            $o['name'] = $o['_ev'];
+
+            if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
+                \PHPDaemon\Core\Daemon::log('MongoNode send event ' . $o['name']);
+            }
+        }
+    }
+
+    /**
+     * Method called when object deleted.
+     * @param object Object.
+     * @return void
+     */
+    public function deleteObject($o)
+    {
+        if (\PHPDaemon\Core\Daemon::$config->logevents->value) {
+            \PHPDaemon\Core\Daemon::log(__METHOD__ . '(' . json_encode($o) . ')');
+        }
+
+        $this->cache->get('_id.' . ((string)$o['_id']),
+            function ($mc) use ($o) {
+                if (is_string($m->result)) {
+                    $mc->delete($m->result);
+                    $mc->delete('_id.' . $o['_id']);
+                }
+            }
+        );
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * @return array|false
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            'mongoclientname' => '',
+            'memcacheclientname' => '',
+        ];
     }
 }

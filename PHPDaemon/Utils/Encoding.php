@@ -150,6 +150,41 @@ class Encoding
     );
 
     /**
+     * toISO8859
+     * @param  string $text Any string
+     * @return string       The same string, Win1252 encoded
+     */
+    public static function toISO8859($text)
+    {
+        return self::toWin1252($text);
+    }
+
+    /**
+     * toWin1252
+     * @param  string $text Any string
+     * @return string       The same string, Win1252 encoded
+     */
+    public static function toWin1252($text)
+    {
+        if (is_array($text)) {
+            foreach ($text as $k => $v) {
+                $text[$k] = self::toWin1252($v);
+            }
+            return $text;
+        } elseif (is_string($text)) {
+            return utf8_decode(
+                str_replace(
+                    array_keys(self::$utf8ToWin1252),
+                    array_values(self::$utf8ToWin1252),
+                    self::toUTF8($text)
+                )
+            );
+        } else {
+            return $text;
+        }
+    }
+
+    /**
      * Function Encoding::toUTF8
      *
      * This function leaves UTF8 characters alone, while converting almost all non-UTF8 to UTF8.
@@ -242,51 +277,6 @@ class Encoding
     }
 
     /**
-     * toWin1252
-     * @param  string $text Any string
-     * @return string       The same string, Win1252 encoded
-     */
-    public static function toWin1252($text)
-    {
-        if (is_array($text)) {
-            foreach ($text as $k => $v) {
-                $text[$k] = self::toWin1252($v);
-            }
-            return $text;
-        } elseif (is_string($text)) {
-            return utf8_decode(
-                str_replace(
-                    array_keys(self::$utf8ToWin1252),
-                    array_values(self::$utf8ToWin1252),
-                    self::toUTF8($text)
-                )
-            );
-        } else {
-            return $text;
-        }
-    }
-
-    /**
-     * toISO8859
-     * @param  string $text Any string
-     * @return string       The same string, Win1252 encoded
-     */
-    public static function toISO8859($text)
-    {
-        return self::toWin1252($text);
-    }
-
-    /**
-     * toLatin1
-     * @param  string $text Any string
-     * @return string       The same string, Win1252 encoded
-     */
-    public static function toLatin1($text)
-    {
-        return self::toWin1252($text);
-    }
-
-    /**
      * fixUTF8
      * @param  string $text Any string
      * @return string
@@ -343,6 +333,22 @@ class Encoding
     }
 
     /**
+     * Encode
+     * @param  string $str Any string
+     * @return string
+     */
+    public static function encode($encodingLabel, $text)
+    {
+        $encodingLabel = self::normalizeEncoding($encodingLabel);
+        if ($encodingLabel === 'UTF-8') {
+            return Encoding::toUTF8($text);
+        }
+        if ($encodingLabel === 'ISO-8859-1') {
+            return Encoding::toLatin1($text);
+        }
+    }
+
+    /**
      * Normalize encoding name
      * @param  string $str Encoding name
      * @return string
@@ -371,18 +377,12 @@ class Encoding
     }
 
     /**
-     * Encode
-     * @param  string $str Any string
-     * @return string
+     * toLatin1
+     * @param  string $text Any string
+     * @return string       The same string, Win1252 encoded
      */
-    public static function encode($encodingLabel, $text)
+    public static function toLatin1($text)
     {
-        $encodingLabel = self::normalizeEncoding($encodingLabel);
-        if ($encodingLabel === 'UTF-8') {
-            return Encoding::toUTF8($text);
-        }
-        if ($encodingLabel === 'ISO-8859-1') {
-            return Encoding::toLatin1($text);
-        }
+        return self::toWin1252($text);
     }
 }

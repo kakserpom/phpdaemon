@@ -41,27 +41,6 @@ class TCP extends Generic
     }
 
     /**
-     * @return int
-     */
-    public function getPort()
-    {
-        return isset($this->port) ? $this->port : $this->defaultPort;
-    }
-
-    /**
-     * Called when socket is bound
-     * @return boolean|null Success
-     */
-    protected function onBound()
-    {
-        if ($this->ev) {
-            $this->ev->getSocketName($this->locHost, $this->locPort);
-        } else {
-            Daemon::log('Unable to bind TCP-socket ' . $this->host . ':' . $this->getPort());
-        }
-    }
-
-    /**
      * Bind the socket
      * @return null|boolean Success.
      */
@@ -116,5 +95,26 @@ class TCP extends Generic
         }
         $this->setFd($sock);
         return true;
+    }
+
+    /**
+     * Called when socket is bound
+     * @return boolean|null Success
+     */
+    protected function onBound()
+    {
+        if ($this->ev) {
+            $this->ev->getSocketName($this->locHost, $this->locPort);
+        } else {
+            Daemon::log('Unable to bind TCP-socket ' . $this->host . ':' . $this->getPort());
+        }
+    }
+
+    /**
+     * @return int
+     */
+    public function getPort()
+    {
+        return isset($this->port) ? $this->port : $this->defaultPort;
     }
 }

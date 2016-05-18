@@ -48,20 +48,6 @@ class AppResolver
 
     /**
      * Gets instance of application
-     * @alias AppResolver::getInstance
-     * @param  string $appName Application name
-     * @param  string $instance Instance name
-     * @param  boolean $spawn If true, we spawn an instance if absent
-     * @param  boolean $preload If true, worker is at the preload stage
-     * @return object AppInstance
-     */
-    public function getInstanceByAppName($appName, $instance = '', $spawn = true, $preload = false)
-    {
-        return $this->getInstance($appName, $instance, $spawn, $preload);
-    }
-
-    /**
-     * Gets instance of application
      * @param  string $appName Application name
      * @param  string $instance Instance name
      * @param  boolean $spawn If true, we spawn an instance if absent
@@ -154,5 +140,19 @@ class AppResolver
      */
     public function getRequestRoute($req, $upstream)
     {
+    }
+
+    /**
+     * Gets instance of application
+     * @alias AppResolver::getInstance
+     * @param  string $appName Application name
+     * @param  string $instance Instance name
+     * @param  boolean $spawn If true, we spawn an instance if absent
+     * @param  boolean $preload If true, worker is at the preload stage
+     * @return object AppInstance
+     */
+    public function getInstanceByAppName($appName, $instance = '', $spawn = true, $preload = false)
+    {
+        return $this->getInstance($appName, $instance, $spawn, $preload);
     }
 }

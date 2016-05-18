@@ -10,6 +10,11 @@ namespace PHPDaemon\Examples;
 class UDPEchoServer extends \PHPDaemon\Network\Server
 {
 
+    public function onConfigUpdated()
+    {
+        parent::onConfigUpdated();
+    }
+
     /**
      * Setting default config options
      * Overriden from ConnectionPool::getConfigDefaults
@@ -21,11 +26,6 @@ class UDPEchoServer extends \PHPDaemon\Network\Server
             'listen' => 'udp://0.0.0.0',
             'port' => 1111,
         ];
-    }
-
-    public function onConfigUpdated()
-    {
-        parent::onConfigUpdated();
     }
 }
 

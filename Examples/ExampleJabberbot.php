@@ -14,19 +14,6 @@ class ExampleJabberbot extends \PHPDaemon\Core\AppInstance
     public $xmppconn;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * Uncomment and return array with your default options
-     * @return array|false
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            'url' => 'xmpp://user:password@host/phpDaemon'
-        ];
-    }
-
-    /**
      * Constructor.
      * @return void
      */
@@ -92,5 +79,18 @@ class ExampleJabberbot extends \PHPDaemon\Core\AppInstance
             return $this->xmppclient->onShutdown();
         }
         return true;
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * Uncomment and return array with your default options
+     * @return array|false
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            'url' => 'xmpp://user:password@host/phpDaemon'
+        ];
     }
 }

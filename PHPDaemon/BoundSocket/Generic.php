@@ -2,7 +2,6 @@
 namespace PHPDaemon\BoundSocket;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\EventLoop;
 use PHPDaemon\FS\FileSystem;
 

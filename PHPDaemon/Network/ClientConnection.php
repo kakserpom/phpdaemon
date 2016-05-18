@@ -73,19 +73,12 @@ class ClientConnection extends Connection
     }
 
     /**
-     * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+     * Set connection free/busy according to onResponse emptiness and ->finished
      * @return void
      */
-    public function onReady()
+    public function checkFree()
     {
-        parent::onReady();
-        $this->setWatermark(null, $this->pool->maxAllowedPacket);
-        if ($this->url === null) {
-            return;
-        }
-        if ($this->connected && !$this->busy) {
-            $this->pool->markConnFree($this, $this->url);
-        }
+        $this->setFree(!$this->finished && !$this->acquired && (!$this->onResponse || $this->onResponse->count() < $this->maxQueue));
     }
 
     /**
@@ -117,6 +110,22 @@ class ClientConnection extends Connection
     }
 
     /**
+     * Called when the connection is handshaked (at low-level), and peer is ready to recv. data
+     * @return void
+     */
+    public function onReady()
+    {
+        parent::onReady();
+        $this->setWatermark(null, $this->pool->maxAllowedPacket);
+        if ($this->url === null) {
+            return;
+        }
+        if ($this->connected && !$this->busy) {
+            $this->pool->markConnFree($this, $this->url);
+        }
+    }
+
+    /**
      * Release the connection
      * @return void
      */
@@ -134,15 +143,6 @@ class ClientConnection extends Connection
     {
         $this->acquired = true;
         $this->checkFree();
-    }
-
-    /**
-     * Set connection free/busy according to onResponse emptiness and ->finished
-     * @return void
-     */
-    public function checkFree()
-    {
-        $this->setFree(!$this->finished && !$this->acquired && (!$this->onResponse || $this->onResponse->count() < $this->maxQueue));
     }
 
     /**

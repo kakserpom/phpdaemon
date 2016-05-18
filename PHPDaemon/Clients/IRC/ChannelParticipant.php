@@ -44,6 +44,48 @@ class ChannelParticipant
     public $host;
 
     /**
+     * @param string $channel
+     * @param string $nick
+     */
+    public function __construct($channel, $nick)
+    {
+        $this->channel = $channel;
+        $this->setNick($nick);
+        $this->channel->attach($this);
+    }
+
+    /**
+     * @TODO DESCR
+     * @param  string $nick
+     * @return $this
+     */
+    public function setNick($nick)
+    {
+        if ($this->nick === $nick) {
+            return $this;
+        }
+        $this->nick = $nick;
+        unset($this->channel->nicknames[$this->nick]);
+        $this->nick = $nick;
+        $this->channel->nicknames[$this->nick] = $this;
+        return $this;
+    }
+
+    /**
+     * @TODO DESCR
+     * @param  string $channel
+     * @param  string $nick
+     * @return static
+     */
+    public static function instance($channel, $nick)
+    {
+        if (isset($channel->nicknames[$nick])) {
+            return $channel->nicknames[$nick];
+        }
+        return new static($channel, $nick);
+    }
+
+    /**
      * @param  string $flag
      * @return $this
      */
@@ -59,17 +101,6 @@ class ChannelParticipant
             $this->mode = 'v';
         }
         return $this;
-    }
-
-    /**
-     * @param string $channel
-     * @param string $nick
-     */
-    public function __construct($channel, $nick)
-    {
-        $this->channel = $channel;
-        $this->setNick($nick);
-        $this->channel->attach($this);
     }
 
     /**
@@ -90,44 +121,11 @@ class ChannelParticipant
 
     /**
      * @TODO DESCR
-     * @param  string $user
-     * @return $this
-     */
-    public function setUser($user)
-    {
-        $this->user = $user;
-        return $this;
-    }
-
-    /**
-     * @TODO DESCR
      * @return string
      */
     public function getUsermask()
     {
         return $this->nick . '!' . ($this->unverified ? '~' : '') . $this->user . '@' . $this->host;
-    }
-
-    /**
-     * @TODO DESCR
-     * @param  boolean $bool
-     * @return $this
-     */
-    public function setUnverified($bool)
-    {
-        $this->unverified = (bool)$bool;
-        return $this;
-    }
-
-    /**
-     * @TODO DESCR
-     * @param  string $host
-     * @return $this
-     */
-    public function setHost($host)
-    {
-        $this->host = $host;
-        return $this;
     }
 
     /**
@@ -150,32 +148,34 @@ class ChannelParticipant
 
     /**
      * @TODO DESCR
-     * @param  string $channel
-     * @param  string $nick
-     * @return static
+     * @param  string $host
+     * @return $this
      */
-    public static function instance($channel, $nick)
+    public function setHost($host)
     {
-        if (isset($channel->nicknames[$nick])) {
-            return $channel->nicknames[$nick];
-        }
-        return new static($channel, $nick);
+        $this->host = $host;
+        return $this;
     }
 
     /**
      * @TODO DESCR
-     * @param  string $nick
+     * @param  string $user
      * @return $this
      */
-    public function setNick($nick)
+    public function setUser($user)
     {
-        if ($this->nick === $nick) {
-            return $this;
-        }
-        $this->nick = $nick;
-        unset($this->channel->nicknames[$this->nick]);
-        $this->nick = $nick;
-        $this->channel->nicknames[$this->nick] = $this;
+        $this->user = $user;
+        return $this;
+    }
+
+    /**
+     * @TODO DESCR
+     * @param  boolean $bool
+     * @return $this
+     */
+    public function setUnverified($bool)
+    {
+        $this->unverified = (bool)$bool;
         return $this;
     }
 

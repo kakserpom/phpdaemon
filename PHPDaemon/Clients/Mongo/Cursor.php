@@ -30,52 +30,56 @@ class Cursor implements \Iterator
      * @var mixed Current object
      */
     public $item;
-
-    /**
-     * @var mixed Network connection
-     */
-    protected $conn;
-
     /**
      * @var boolean Is this cursor finished?
      */
     public $finished = false;
-
     /**
      * @var boolean Is this query failured?
      */
     public $failure = false;
-
     /**
      * @var boolean awaitCapable?
      */
     public $await = false;
-
     /**
      * @var boolean Is this cursor destroyed?
      */
     public $destroyed = false;
-
     /**
      * @var boolean
      */
     public $parseOplog = false;
-
     /**
      * @var boolean
      */
     public $tailable;
-
     /**
      * @var callable
      */
     public $callback;
-
     public $counter = 0;
-
+    /**
+     * @var mixed Network connection
+     */
+    protected $conn;
     protected $pos = 0;
 
     protected $keep = false;
+
+    /**
+     * Constructor
+     * @param  string $id Cursor's ID
+     * @param  string $col Collection's name
+     * @param  Connection $conn Network connection (MongoClientConnection)
+     * @return void
+     */
+    public function __construct($id, $col, $conn)
+    {
+        $this->id = $id;
+        $this->col = $col;
+        $this->conn = $conn;
+    }
 
     /**
      * Error
@@ -199,20 +203,6 @@ class Cursor implements \Iterator
     }
 
     /**
-     * Constructor
-     * @param  string $id Cursor's ID
-     * @param  string $col Collection's name
-     * @param  Connection $conn Network connection (MongoClientConnection)
-     * @return void
-     */
-    public function __construct($id, $col, $conn)
-    {
-        $this->id = $id;
-        $this->col = $col;
-        $this->conn = $conn;
-    }
-
-    /**
      * Asks for more objects
      * @param  integer $number Number of objects
      * @return void
@@ -241,6 +231,16 @@ class Cursor implements \Iterator
      * @param  boolean $notify
      * @return boolean Success
      */
+    public function free($notify = false)
+    {
+        return $this->destroy($notify);
+    }
+
+    /**
+     * Destroys the cursors
+     * @param  boolean $notify
+     * @return boolean Success
+     */
     public function destroy($notify = false)
     {
         if ($this->destroyed) {
@@ -255,16 +255,6 @@ class Cursor implements \Iterator
         }
         unset($this->conn->cursors[$this->id]);
         return true;
-    }
-
-    /**
-     * Destroys the cursors
-     * @param  boolean $notify
-     * @return boolean Success
-     */
-    public function free($notify = false)
-    {
-        return $this->destroy($notify);
     }
 
     /**

@@ -52,6 +52,65 @@ trait DNode
     protected $magicCallParent = false;
 
     /**
+     * Ensures that the variable passed by reference holds a valid callback-function
+     * If it doesn't, its value will be reset to null
+     * @param  mixed &$arg Argument
+     * @return boolean
+     */
+    public static function ensureCallback(&$arg)
+    {
+        if ($arg instanceof \Closure) {
+            return true;
+        }
+        if (is_array($arg) && sizeof($arg) === 2) {
+            if (isset($arg[0]) && $arg[0] instanceof \PHPDaemon\WebSocket\Route) {
+                if (isset($arg[1]) && is_string($arg[1]) && strncmp($arg[1], 'remote_', 7) === 0) {
+                    return true;
+                }
+            }
+        }
+        $arg = null;
+        return false;
+    }
+
+    /**
+     * Encodes value into JSON for debugging purposes
+     * @param mixed $m Data
+     * @return void
+     */
+    public static function toJsonDebug($m)
+    {
+        static::toJsonDebugResursive($m);
+        return static::toJson($m);
+    }
+
+    /**
+     * Recursion handler for toJsonDebug()
+     * @param  array &$a Data
+     * @return void
+     */
+    public static function toJsonDebugResursive(&$m)
+    {
+        if ($m instanceof \Closure) {
+            $m = '__CALLBACK__';
+        } elseif (is_array($m)) {
+            if (sizeof($m) === 2 && isset($m[0]) && $m[0] instanceof \PHPDaemon\WebSocket\Route) {
+                if (isset($m[1]) && is_string($m[1]) && strncmp($m[1], 'remote_', 7) === 0) {
+                    $m = '__CALLBACK__';
+                }
+            } else {
+                foreach ($m as &$v) {
+                    static::toJsonDebugResursive($v);
+                }
+            }
+        } elseif (is_object($m)) {
+            foreach ($m as &$v) {
+                static::toJsonDebugResursive($v);
+            }
+        }
+    }
+
+    /**
      * Default onHandshake() method
      * @return void
      */
@@ -85,46 +144,43 @@ trait DNode
     }
 
     /**
-     * Calls a local method
+     * Calls a remote method
      * @param  string $method Method name
      * @param  mixed ...$args Arguments
      * @return this
      */
-    public function callLocal(...$args)
+    public function callRemote($method, ...$args)
     {
-        if (!sizeof($args)) {
-            return $this;
-        }
-        $method = array_shift($args);
-        $p = [
-            'method' => $method,
-            'arguments' => $args,
-        ];
-        $this->onPacket($p);
+        $this->callRemoteArray($method, $args);
         return $this;
     }
 
-
     /**
-     * Ensures that the variable passed by reference holds a valid callback-function
-     * If it doesn't, its value will be reset to null
-     * @param  mixed &$arg Argument
-     * @return boolean
+     * Calls a remote method with array of arguments
+     * @param  string $method Method name
+     * @param  array $args Arguments
+     * @return this
      */
-    public static function ensureCallback(&$arg)
+    public function callRemoteArray($method, $args)
     {
-        if ($arg instanceof \Closure) {
-            return true;
+        if (isset($this->remoteMethods[$method])) {
+            $this->remoteMethods[$method](...$args);
+            return $this;
         }
-        if (is_array($arg) && sizeof($arg) === 2) {
-            if (isset($arg[0]) && $arg[0] instanceof \PHPDaemon\WebSocket\Route) {
-                if (isset($arg[1]) && is_string($arg[1]) && strncmp($arg[1], 'remote_', 7) === 0) {
-                    return true;
-                }
+        $pct = [
+            'method' => $method,
+        ];
+        if (sizeof($args)) {
+            $callbacks = [];
+            $path = [];
+            $this->extractCallbacks($args, $callbacks, $path);
+            $pct['arguments'] = $args;
+            if (sizeof($callbacks)) {
+                $pct['callbacks'] = $callbacks;
             }
         }
-        $arg = null;
-        return false;
+        $this->sendPacket($pct);
+        return $this;
     }
 
     /**
@@ -172,103 +228,6 @@ trait DNode
     }
 
     /**
-     * Calls a remote method
-     * @param  string $method Method name
-     * @param  mixed ...$args Arguments
-     * @return this
-     */
-    public function callRemote($method, ...$args)
-    {
-        $this->callRemoteArray($method, $args);
-        return $this;
-    }
-
-    /**
-     * Calls a remote method with array of arguments
-     * @param  string $method Method name
-     * @param  array $args Arguments
-     * @return this
-     */
-    public function callRemoteArray($method, $args)
-    {
-        if (isset($this->remoteMethods[$method])) {
-            $this->remoteMethods[$method](...$args);
-            return $this;
-        }
-        $pct = [
-            'method' => $method,
-        ];
-        if (sizeof($args)) {
-            $callbacks = [];
-            $path = [];
-            $this->extractCallbacks($args, $callbacks, $path);
-            $pct['arguments'] = $args;
-            if (sizeof($callbacks)) {
-                $pct['callbacks'] = $callbacks;
-            }
-        }
-        $this->sendPacket($pct);
-        return $this;
-    }
-
-    /**
-     * Handler of the 'methods' method
-     * @param  array $methods Associative array of methods
-     * @return void
-     */
-    protected function methodsMethod($methods)
-    {
-        $this->remoteMethods = $methods;
-    }
-
-    /**
-     * Encodes value into JSON
-     * @param  mixed $m Value
-     * @return this
-     */
-    public static function toJson($m)
-    {
-        return json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    }
-
-    /**
-     * Recursion handler for toJsonDebug()
-     * @param  array &$a Data
-     * @return void
-     */
-    public static function toJsonDebugResursive(&$m)
-    {
-        if ($m instanceof \Closure) {
-            $m = '__CALLBACK__';
-        } elseif (is_array($m)) {
-            if (sizeof($m) === 2 && isset($m[0]) && $m[0] instanceof \PHPDaemon\WebSocket\Route) {
-                if (isset($m[1]) && is_string($m[1]) && strncmp($m[1], 'remote_', 7) === 0) {
-                    $m = '__CALLBACK__';
-                }
-            } else {
-                foreach ($m as &$v) {
-                    static::toJsonDebugResursive($v);
-                }
-            }
-        } elseif (is_object($m)) {
-            foreach ($m as &$v) {
-                static::toJsonDebugResursive($v);
-            }
-        }
-    }
-
-    /**
-     * Encodes value into JSON for debugging purposes
-     * @param mixed $m Data
-     * @return void
-     */
-    public static function toJsonDebug($m)
-    {
-        static::toJsonDebugResursive($m);
-        return static::toJson($m);
-    }
-
-    /**
      * Sends a packet
      * @param  array $pct Data
      * @return void
@@ -285,74 +244,33 @@ trait DNode
     }
 
     /**
-     * Called when session is finished
-     * @return void
+     * Encodes value into JSON
+     * @param  mixed $m Value
+     * @return this
      */
-    public function onFinish()
+    public static function toJson($m)
     {
-        $this->cleanup();
-        parent::onFinish();
+        return json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**
-     * Swipes internal structures
-     * @return void
-     */
-    public function cleanup()
-    {
-        $this->cleaned = true;
-        $this->remoteMethods = [];
-        $this->localMethods = [];
-        $this->persistentCallbacks = [];
-        $this->callbacks = [];
-    }
-
-
-    /**
-     * Sets value by materialized path
-     * @param  array &$m
-     * @param  array $path
-     * @param  mixed $val
-     * @return void
-     */
-    protected static function setPath(&$m, $path, $val)
-    {
-        foreach ($path as $p) {
-            $m =& $m[$p];
-        }
-        $m = $val;
-    }
-
-    /**
-     * Finds value by materialized path
-     * @param  array &$m
-     * @param  array $path
-     * @return mixed Value
-     */
-    protected static function &getPath(&$m, $path)
-    {
-        foreach ($path as $p) {
-            $m =& $m[$p];
-        }
-        return $m;
-    }
-
-    /**
-     * Magic __call method
+     * Calls a local method
      * @param  string $method Method name
-     * @param  array $args Arguments
-     * @throws UndefinedMethodCalled if method name not start from 'remote_'
-     * @return mixed
+     * @param  mixed ...$args Arguments
+     * @return this
      */
-    public function __call($method, $args)
+    public function callLocal(...$args)
     {
-        if (strncmp($method, 'remote_', 7) === 0) {
-            $this->callRemoteArray(substr($method, 7), $args);
-        } elseif ($this->magicCallParent) {
-            return parent::__call($method, $args);
-        } else {
-            throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
+        if (!sizeof($args)) {
+            return $this;
         }
+        $method = array_shift($args);
+        $p = [
+            'method' => $method,
+            'arguments' => $args,
+        ];
+        $this->onPacket($p);
+        return $this;
     }
 
     /**
@@ -409,6 +327,76 @@ trait DNode
     }
 
     /**
+     * Sets value by materialized path
+     * @param  array &$m
+     * @param  array $path
+     * @param  mixed $val
+     * @return void
+     */
+    protected static function setPath(&$m, $path, $val)
+    {
+        foreach ($path as $p) {
+            $m =& $m[$p];
+        }
+        $m = $val;
+    }
+
+    /**
+     * Finds value by materialized path
+     * @param  array &$m
+     * @param  array $path
+     * @return mixed Value
+     */
+    protected static function &getPath(&$m, $path)
+    {
+        foreach ($path as $p) {
+            $m =& $m[$p];
+        }
+        return $m;
+    }
+
+    /**
+     * Called when session is finished
+     * @return void
+     */
+    public function onFinish()
+    {
+        $this->cleanup();
+        parent::onFinish();
+    }
+
+    /**
+     * Swipes internal structures
+     * @return void
+     */
+    public function cleanup()
+    {
+        $this->cleaned = true;
+        $this->remoteMethods = [];
+        $this->localMethods = [];
+        $this->persistentCallbacks = [];
+        $this->callbacks = [];
+    }
+
+    /**
+     * Magic __call method
+     * @param  string $method Method name
+     * @param  array $args Arguments
+     * @throws UndefinedMethodCalled if method name not start from 'remote_'
+     * @return mixed
+     */
+    public function __call($method, $args)
+    {
+        if (strncmp($method, 'remote_', 7) === 0) {
+            $this->callRemoteArray(substr($method, 7), $args);
+        } elseif ($this->magicCallParent) {
+            return parent::__call($method, $args);
+        } else {
+            throw new UndefinedMethodCalled('Call to undefined method ' . get_class($this) . '->' . $method);
+        }
+    }
+
+    /**
      * Called when new frame is received
      * @param string $data Frame's contents
      * @param integer $type Frame's type
@@ -422,5 +410,15 @@ trait DNode
             }
             $this->onPacket(json_decode($pct, true));
         }
+    }
+
+    /**
+     * Handler of the 'methods' method
+     * @param  array $methods Associative array of methods
+     * @return void
+     */
+    protected function methodsMethod($methods)
+    {
+        $this->remoteMethods = $methods;
     }
 }

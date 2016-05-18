@@ -21,37 +21,30 @@ class Connection extends ClientConnection
      * @var string Database name
      */
     public $dbname;
-
-    /**
-     * @var integer Initial value of the minimal amout of bytes in buffer
-     */
-    protected $lowMark = 16;
-
-    /**
-     * @var integer Initial value of the maximum amout of bytes in buffer
-     */
-    protected $highMark = 0xFFFFFF;
-
-    /**
-     * @var array
-     */
-    protected $hdr;
-
     /**
      * @var array Active cursors
      */
     public $cursors = [];
-
     /**
      * @var array Pending requests
      */
     public $requests = [];
-
     /**
      * @var integer ID of the last request
      */
     public $lastReqId = 0;
-
+    /**
+     * @var integer Initial value of the minimal amout of bytes in buffer
+     */
+    protected $lowMark = 16;
+    /**
+     * @var integer Initial value of the maximum amout of bytes in buffer
+     */
+    protected $highMark = 0xFFFFFF;
+    /**
+     * @var array
+     */
+    protected $hdr;
     protected $maxQueue = 10;
 
     /**

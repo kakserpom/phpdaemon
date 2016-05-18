@@ -44,12 +44,46 @@ class Generic
     }
 
     /**
+     * Set default value
+     * @param mixed
+     * @return void
+     */
+    public function setDefaultValue($value)
+    {
+        $this->defaultValue = $value;
+        $this->hasDefaultValue = true;
+    }
+
+    /**
+     * Converts plain value to human-readable
+     * @param mixed
+     * @return mixed
+     */
+    public static function plainToHuman($value)
+    {
+        return $value;
+    }
+
+    /**
      * Get human value
      * @return mixed
      */
     public function getHumanValue()
     {
         return $this->humanValue;
+    }
+
+    /**
+     * Set human-readable value
+     * @param mixed
+     * @return void
+     */
+    public function setHumanValue($value)
+    {
+        $this->humanValue = $value;
+        $old = $this->value;
+        $this->value = static::humanToPlain($value);
+        $this->onUpdate($old);
     }
 
     /**
@@ -75,6 +109,14 @@ class Generic
     }
 
     /**
+     * @return bool
+     */
+    public function isStackable()
+    {
+        return $this->stackable;
+    }
+
+    /**
      * @param bool $b
      */
     public function setStackable($b = true)
@@ -83,11 +125,13 @@ class Generic
     }
 
     /**
-     * @return bool
+     * Push human-readable value
+     * @param $value
+     * @return void
      */
-    public function isStackable()
+    public function pushHumanValue($value)
     {
-        return $this->stackable;
+        $this->pushValue(static::humanToPlain($value));
     }
 
     /**
@@ -122,13 +166,21 @@ class Generic
     }
 
     /**
-     * Push human-readable value
-     * @param $value
+     * Called when
      * @return void
      */
-    public function pushHumanValue($value)
+    public function onUpdate($old)
     {
-        $this->pushValue(static::humanToPlain($value));
+    }
+
+    /**
+     * Converts human-readable value to plain
+     * @param mixed
+     * @return mixed
+     */
+    public static function humanToPlain($value)
+    {
+        return $value;
     }
 
     /**
@@ -152,57 +204,5 @@ class Generic
             return true;
         }
         return false;
-    }
-
-    /**
-     * Set default value
-     * @param mixed
-     * @return void
-     */
-    public function setDefaultValue($value)
-    {
-        $this->defaultValue = $value;
-        $this->hasDefaultValue = true;
-    }
-
-    /**
-     * Set human-readable value
-     * @param mixed
-     * @return void
-     */
-    public function setHumanValue($value)
-    {
-        $this->humanValue = $value;
-        $old = $this->value;
-        $this->value = static::humanToPlain($value);
-        $this->onUpdate($old);
-    }
-
-    /**
-     * Converts human-readable value to plain
-     * @param mixed
-     * @return mixed
-     */
-    public static function humanToPlain($value)
-    {
-        return $value;
-    }
-
-    /**
-     * Converts plain value to human-readable
-     * @param mixed
-     * @return mixed
-     */
-    public static function plainToHuman($value)
-    {
-        return $value;
-    }
-
-    /**
-     * Called when
-     * @return void
-     */
-    public function onUpdate($old)
-    {
     }
 }

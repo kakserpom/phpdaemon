@@ -11,63 +11,51 @@ use PHPDaemon\Network\IOStream;
 class ShellCommand extends IOStream
 {
 
-    protected $finishWrite;
-
-    /**
-     * @var string Command string
-     */
-    protected $cmd;
-
     /**
      * @var string Executable path
      */
     public $binPath;
-
-    /**
-     * @var array Opened pipes
-     */
-    protected $pipes;
-
-    /**
-     * @var resource Process descriptor
-     */
-    protected $pd;
-
-    /**
-     * @var resource FD write
-     */
-    protected $fdWrite;
-
-    /**
-     * @var boolean Output errors?
-     */
-    protected $outputErrors = true;
-
     /**
      * @var string SUID
      */
     public $setUser;
-
     /**
      * @var string SGID
      */
     public $setGroup;
-
     /**
      * @var string Chroot
      */
     public $chroot = '/';
-
-    /**
-     * @var array Hash of environment's variables
-     */
-    protected $env = [];
-
     /**
      * @var string Chdir
      */
     public $cwd;
-
+    protected $finishWrite;
+    /**
+     * @var string Command string
+     */
+    protected $cmd;
+    /**
+     * @var array Opened pipes
+     */
+    protected $pipes;
+    /**
+     * @var resource Process descriptor
+     */
+    protected $pd;
+    /**
+     * @var resource FD write
+     */
+    protected $fdWrite;
+    /**
+     * @var boolean Output errors?
+     */
+    protected $outputErrors = true;
+    /**
+     * @var array Hash of environment's variables
+     */
+    protected $env = [];
     /**
      * @var string Path to error logfile
      */
@@ -99,58 +87,6 @@ class ShellCommand extends IOStream
     protected $EOF = false;
 
     /**
-     * Get command string
-     * @return string
-     */
-    public function getCmd()
-    {
-        return $this->cmd;
-    }
-
-    /**
-     * Set group
-     * @return this
-     */
-    public function setGroup($val)
-    {
-        $this->setGroup = $val;
-        return $this;
-    }
-
-    /**
-     * Set cwd
-     * @param  string $dir
-     * @return this
-     */
-    public function setCwd($dir)
-    {
-        $this->cwd = $dir;
-        return $this;
-    }
-
-    /**
-     * Set group
-     * @param  string $val
-     * @return this
-     */
-    public function setUser($val)
-    {
-        $this->setUser = $val;
-        return $this;
-    }
-
-    /**
-     * Set chroot
-     * @param  string $dir
-     * @return this
-     */
-    public function setChroot($dir)
-    {
-        $this->chroot = $dir;
-        return $this;
-    }
-
-    /**
      * Execute
      * @param string $binPath Binpath
      * @param callable $cb Callback
@@ -171,6 +107,88 @@ class ShellCommand extends IOStream
         $o->execute($binPath, $args, $env);
     }
 
+    /**
+     * Execute
+     * @param  string $binPath Optional. Binpath
+     * @param  array $args Optional. Arguments
+     * @param  array $env Optional. Hash of environment's variables
+     * @return this
+     */
+    public function execute($binPath = null, $args = null, $env = null)
+    {
+        if ($binPath !== null) {
+            $this->binPath = $binPath;
+        }
+
+        if ($env !== null) {
+            $this->env = $env;
+        }
+
+        if ($args !== null) {
+            $this->args = $args;
+        }
+        $this->cmd = $this->binPath . static::buildArgs($this->args) . ($this->outputErrors ? ' 2>&1' : '');
+
+        if (isset($this->setUser) || isset($this->setGroup)) {
+            if (isset($this->setUser) && isset($this->setGroup) && ($this->setUser !== $this->setGroup)) {
+                $this->cmd = 'sudo -g ' . escapeshellarg($this->setGroup) . '  -u ' . escapeshellarg($this->setUser) . ' ' . $this->cmd;
+            } else {
+                $this->cmd = 'su ' . escapeshellarg($this->setGroup) . ' -c ' . escapeshellarg($this->cmd);
+            }
+        }
+
+        if ($this->chroot !== '/') {
+            $this->cmd = 'chroot ' . escapeshellarg($this->chroot) . ' ' . $this->cmd;
+        }
+
+        if ($this->nice !== null) {
+            $this->cmd = 'nice -n ' . ((int)$this->nice) . ' ' . $this->cmd;
+        }
+
+        $pipesDescr = [
+            0 => ['pipe', 'r'], // stdin is a pipe that the child will read from
+            1 => ['pipe', 'w'] // stdout is a pipe that the child will write to
+        ];
+
+        if (($this->errlogfile !== null) && !$this->outputErrors) {
+            $pipesDescr[2] = ['file', $this->errlogfile, 'a']; // @TODO: refactoring
+        }
+
+        $this->pd = proc_open($this->cmd, $pipesDescr, $this->pipes, $this->cwd, $this->env);
+        if ($this->pd) {
+            $this->setFd($this->pipes[1]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Build arguments string from associative/enumerated array (may be mixed)
+     * @param  array $args
+     * @return string
+     */
+    public static function buildArgs($args)
+    {
+        if (!is_array($args)) {
+            return '';
+        }
+        $ret = '';
+        foreach ($args as $k => $v) {
+            if (!is_int($v) && ($v !== null)) {
+                $v = escapeshellarg($v);
+            }
+            if (is_int($k)) {
+                $ret .= ' ' . $v;
+            } else {
+                if ($k{0} !== '-') {
+                    $ret .= ' --' . $k . ($v !== null ? '=' . $v : '');
+                } else {
+                    $ret .= ' ' . $k . ($v !== null ? '=' . $v : '');
+                }
+            }
+        }
+        return $ret;
+    }
 
     /**
      * Sets fd
@@ -231,6 +249,58 @@ class ShellCommand extends IOStream
     }
 
     /**
+     * Get command string
+     * @return string
+     */
+    public function getCmd()
+    {
+        return $this->cmd;
+    }
+
+    /**
+     * Set group
+     * @return this
+     */
+    public function setGroup($val)
+    {
+        $this->setGroup = $val;
+        return $this;
+    }
+
+    /**
+     * Set cwd
+     * @param  string $dir
+     * @return this
+     */
+    public function setCwd($dir)
+    {
+        $this->cwd = $dir;
+        return $this;
+    }
+
+    /**
+     * Set group
+     * @param  string $val
+     * @return this
+     */
+    public function setUser($val)
+    {
+        $this->setUser = $val;
+        return $this;
+    }
+
+    /**
+     * Set chroot
+     * @param  string $dir
+     * @return this
+     */
+    public function setChroot($dir)
+    {
+        $this->chroot = $dir;
+        return $this;
+    }
+
+    /**
      * Sets an array of arguments
      * @param  array Arguments
      * @return this
@@ -255,20 +325,6 @@ class ShellCommand extends IOStream
     }
 
     /**
-     * Called when got EOF
-     * @return void
-     */
-    public function onEofEvent()
-    {
-        if ($this->EOF) {
-            return;
-        }
-        $this->EOF = true;
-
-        $this->event('eof');
-    }
-
-    /**
      * Set priority
      * @param  integer $nice Priority
      * @return this
@@ -276,102 +332,6 @@ class ShellCommand extends IOStream
     public function nice($nice = null)
     {
         $this->nice = $nice;
-
-        return $this;
-    }
-
-    /**
-     * Called when new data received
-     * @return this|null
-     */
-    protected function onRead()
-    {
-        if (func_num_args() === 1) {
-            $this->onRead = func_get_arg(0);
-            return $this;
-        }
-        $this->event('read');
-    }
-
-    /**
-     * Build arguments string from associative/enumerated array (may be mixed)
-     * @param  array $args
-     * @return string
-     */
-    public static function buildArgs($args)
-    {
-        if (!is_array($args)) {
-            return '';
-        }
-        $ret = '';
-        foreach ($args as $k => $v) {
-            if (!is_int($v) && ($v !== null)) {
-                $v = escapeshellarg($v);
-            }
-            if (is_int($k)) {
-                $ret .= ' ' . $v;
-            } else {
-                if ($k{0} !== '-') {
-                    $ret .= ' --' . $k . ($v !== null ? '=' . $v : '');
-                } else {
-                    $ret .= ' ' . $k . ($v !== null ? '=' . $v : '');
-                }
-            }
-        }
-        return $ret;
-    }
-
-    /**
-     * Execute
-     * @param  string $binPath Optional. Binpath
-     * @param  array $args Optional. Arguments
-     * @param  array $env Optional. Hash of environment's variables
-     * @return this
-     */
-    public function execute($binPath = null, $args = null, $env = null)
-    {
-        if ($binPath !== null) {
-            $this->binPath = $binPath;
-        }
-
-        if ($env !== null) {
-            $this->env = $env;
-        }
-
-        if ($args !== null) {
-            $this->args = $args;
-        }
-        $this->cmd = $this->binPath . static::buildArgs($this->args) . ($this->outputErrors ? ' 2>&1' : '');
-
-        if (isset($this->setUser) || isset($this->setGroup)) {
-            if (isset($this->setUser) && isset($this->setGroup) && ($this->setUser !== $this->setGroup)) {
-                $this->cmd = 'sudo -g ' . escapeshellarg($this->setGroup) . '  -u ' . escapeshellarg($this->setUser) . ' ' . $this->cmd;
-            } else {
-                $this->cmd = 'su ' . escapeshellarg($this->setGroup) . ' -c ' . escapeshellarg($this->cmd);
-            }
-        }
-
-        if ($this->chroot !== '/') {
-            $this->cmd = 'chroot ' . escapeshellarg($this->chroot) . ' ' . $this->cmd;
-        }
-
-        if ($this->nice !== null) {
-            $this->cmd = 'nice -n ' . ((int)$this->nice) . ' ' . $this->cmd;
-        }
-
-        $pipesDescr = [
-            0 => ['pipe', 'r'], // stdin is a pipe that the child will read from
-            1 => ['pipe', 'w'] // stdout is a pipe that the child will write to
-        ];
-
-        if (($this->errlogfile !== null) && !$this->outputErrors) {
-            $pipesDescr[2] = ['file', $this->errlogfile, 'a']; // @TODO: refactoring
-        }
-
-        $this->pd = proc_open($this->cmd, $pipesDescr, $this->pipes, $this->cwd, $this->env);
-        if ($this->pd) {
-            $this->setFd($this->pipes[1]);
-        }
 
         return $this;
     }
@@ -389,27 +349,6 @@ class ShellCommand extends IOStream
         $this->finishWrite = true;
 
         return true;
-    }
-
-    /**
-     * Close the process
-     * @return void
-     */
-    public function close()
-    {
-        parent::close();
-        $this->closeWrite();
-        if (is_resource($this->pd)) {
-            proc_close($this->pd);
-        }
-    }
-
-    /**
-     * Called when stream is finished
-     */
-    public function onFinish()
-    {
-        $this->onEofEvent();
     }
 
     /**
@@ -431,6 +370,28 @@ class ShellCommand extends IOStream
         }
 
         return $this;
+    }
+
+    /**
+     * Called when stream is finished
+     */
+    public function onFinish()
+    {
+        $this->onEofEvent();
+    }
+
+    /**
+     * Called when got EOF
+     * @return void
+     */
+    public function onEofEvent()
+    {
+        if ($this->EOF) {
+            return;
+        }
+        $this->EOF = true;
+
+        $this->event('eof');
     }
 
     /**
@@ -469,6 +430,19 @@ class ShellCommand extends IOStream
     }
 
     /**
+     * Close the process
+     * @return void
+     */
+    public function close()
+    {
+        parent::close();
+        $this->closeWrite();
+        if (is_resource($this->pd)) {
+            proc_close($this->pd);
+        }
+    }
+
+    /**
      * Send data and appending \n to connection. Note that it just writes to buffer flushed at every baseloop
      * @param  string Data to send
      * @return boolean Success
@@ -504,5 +478,18 @@ class ShellCommand extends IOStream
     public function getStatus()
     {
         return !empty($this->pd) ? proc_get_status($this->pd) : null;
+    }
+
+    /**
+     * Called when new data received
+     * @return this|null
+     */
+    protected function onRead()
+    {
+        if (func_num_args() === 1) {
+            $this->onRead = func_get_arg(0);
+            return $this;
+        }
+        $this->event('read');
     }
 }

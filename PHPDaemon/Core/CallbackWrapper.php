@@ -54,33 +54,6 @@ class CallbackWrapper
         }
     }
 
-    public function cancelTimeout()
-    {
-        if ($this->timer !== null) {
-            Timer::remove($this->timer);
-            $this->timer = null;
-        }
-    }
-
-    public function getCallback()
-    {
-        return $this->cb;
-    }
-
-    /**
-     * Cancel
-     * @return void
-     */
-    public function cancel()
-    {
-        $this->cb = null;
-        $this->context = null;
-        if ($this->timer !== null) {
-            Timer::remove($this->timer);
-            $this->timer = null;
-        }
-    }
-
     public static function addToArray(&$arr, $cb)
     {
         if ($arr === null) {
@@ -94,6 +67,19 @@ class CallbackWrapper
         }
         $arr[] = $cb;
         return true;
+    }
+
+    public static function extractCb($cb)
+    {
+        if ($cb instanceof CallbackWrapper) {
+            return $cb->getCallback();
+        }
+        return $cb;
+    }
+
+    public function getCallback()
+    {
+        return $this->cb;
     }
 
     public static function removeFromArray(&$arr, $cb)
@@ -110,14 +96,6 @@ class CallbackWrapper
             }
         }
         return false;
-    }
-
-    public static function extractCb($cb)
-    {
-        if ($cb instanceof CallbackWrapper) {
-            return $cb->getCallback();
-        }
-        return $cb;
     }
 
     /**
@@ -154,6 +132,28 @@ class CallbackWrapper
             return null;
         }
         return new static($cb, $timeout, Daemon::$context);
+    }
+
+    public function cancelTimeout()
+    {
+        if ($this->timer !== null) {
+            Timer::remove($this->timer);
+            $this->timer = null;
+        }
+    }
+
+    /**
+     * Cancel
+     * @return void
+     */
+    public function cancel()
+    {
+        $this->cb = null;
+        $this->context = null;
+        if ($this->timer !== null) {
+            Timer::remove($this->timer);
+            $this->timer = null;
+        }
     }
 
     /**

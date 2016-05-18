@@ -30,35 +30,24 @@ class Route implements RouteInterface
     protected $running = true;
 
     /**
-     * Get cookie by name
-     * @param  string $name Name of cookie
-     * @return string       Contents
+     * Called when client connected.
+     * @param \PHPDaemon\Servers\WebSocket\Connection $client Remote client
+     * @param \PHPDaemon\Core\AppInstance $appInstance
      */
-    protected function getCookieStr($name)
+    public function __construct($client, $appInstance = null)
     {
-        return \PHPDaemon\HTTPRequest\Generic::getString($this->attrs->cookie[$name]);
+        $this->client = $client;
+
+        $this->attrs = new \stdClass;
+        $this->attrs->get =& $client->get;
+        $this->attrs->cookie =& $client->cookie;
+        $this->attrs->server =& $client->server;
+        $this->attrs->session = null;
+
+        if ($appInstance) {
+            $this->appInstance = $appInstance;
+        }
     }
-
-
-    /**
-     * Set session state
-     * @param  mixed $var
-     * @return void
-     */
-    protected function setSessionState($var)
-    {
-        $this->attrs->session = $var;
-    }
-
-    /**
-     * Get session state
-     * @return mixed
-     */
-    protected function getSessionState()
-    {
-        return $this->attrs->session;
-    }
-
 
     /**
      * Set the cookie
@@ -89,26 +78,6 @@ class Route implements RouteInterface
             . (!$HTTPOnly ? '' : '; HttpOnly'),
             false
         );
-    }
-
-    /**
-     * Called when client connected.
-     * @param \PHPDaemon\Servers\WebSocket\Connection $client Remote client
-     * @param \PHPDaemon\Core\AppInstance $appInstance
-     */
-    public function __construct($client, $appInstance = null)
-    {
-        $this->client = $client;
-
-        $this->attrs = new \stdClass;
-        $this->attrs->get =& $client->get;
-        $this->attrs->cookie =& $client->cookie;
-        $this->attrs->server =& $client->server;
-        $this->attrs->session = null;
-
-        if ($appInstance) {
-            $this->appInstance = $appInstance;
-        }
     }
 
     /**
@@ -146,7 +115,6 @@ class Route implements RouteInterface
     {
     }
 
-
     /**
      * Called when new frame is received
      * @param string $data Frame's contents
@@ -183,5 +151,34 @@ class Route implements RouteInterface
     public function gracefulShutdown()
     {
         return true;
+    }
+
+    /**
+     * Get cookie by name
+     * @param  string $name Name of cookie
+     * @return string       Contents
+     */
+    protected function getCookieStr($name)
+    {
+        return \PHPDaemon\HTTPRequest\Generic::getString($this->attrs->cookie[$name]);
+    }
+
+    /**
+     * Set session state
+     * @param  mixed $var
+     * @return void
+     */
+    protected function setSessionState($var)
+    {
+        $this->attrs->session = $var;
+    }
+
+    /**
+     * Get session state
+     * @return mixed
+     */
+    protected function getSessionState()
+    {
+        return $this->attrs->session;
     }
 }

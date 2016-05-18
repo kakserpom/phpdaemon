@@ -32,16 +32,13 @@ class MultiEval
     use \PHPDaemon\Traits\ClassWatchdog;
     use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-    protected $pool;
-
-    protected $stack = [];
-
-    protected $cachedParams = false;
-
     /**
      * @var array Listeners
      */
     public $listeners = [];
+    protected $pool;
+    protected $stack = [];
+    protected $cachedParams = false;
 
     /**
      * Constructor
@@ -66,38 +63,45 @@ class MultiEval
     }
 
     /**
-     * Adds eval command in stack
-     * @param string $cmd Lua script
-     * @param mixed $keys Keys
-     * @param mixed $argv Arguments
-     */
-    public function add($cmd, $keys = null, $argv = null)
-    {
-        if ($keys !== null) {
-            if (is_scalar($keys)) {
-                $keys = [(string)$keys];
-            } elseif (!is_array($keys)) {
-                throw new \Exception("Keys must be an array or scalar");
-            }
-        }
-        if ($argv !== null) {
-            if (is_scalar($argv)) {
-                $argv = [(string)$argv];
-            } elseif (!is_array($argv)) {
-                throw new \Exception("Argv must be an array or scalar");
-            }
-        }
-
-        $this->cachedParams = false;
-        $this->stack[] = [$cmd, $keys, $argv];
-    }
-
-    /**
      * Clean up
      */
     public function cleanup()
     {
         $this->listeners = [];
+    }
+
+    /**
+     * Adds eval command or calls execute() method
+     * @return void
+     */
+    public function __invoke(...$args)
+    {
+        if (!count($args)) {
+            $this->execute();
+            return;
+        }
+        $this->add(...$args);
+    }
+
+    /**
+     * Runs the stack of commands
+     */
+    public function execute()
+    {
+        if (!count($this->stack)) {
+            foreach ($this->listeners as $cb) {
+                $cb($this->pool);
+            }
+            return;
+        }
+
+        $params = $this->getParams();
+        $params[] = function ($redis) {
+            foreach ($this->listeners as $cb) {
+                $cb($redis);
+            }
+        };
+        $this->pool->eval(...$params);
     }
 
     /**
@@ -150,36 +154,29 @@ class MultiEval
     }
 
     /**
-     * Runs the stack of commands
+     * Adds eval command in stack
+     * @param string $cmd Lua script
+     * @param mixed $keys Keys
+     * @param mixed $argv Arguments
      */
-    public function execute()
+    public function add($cmd, $keys = null, $argv = null)
     {
-        if (!count($this->stack)) {
-            foreach ($this->listeners as $cb) {
-                $cb($this->pool);
+        if ($keys !== null) {
+            if (is_scalar($keys)) {
+                $keys = [(string)$keys];
+            } elseif (!is_array($keys)) {
+                throw new \Exception("Keys must be an array or scalar");
             }
-            return;
+        }
+        if ($argv !== null) {
+            if (is_scalar($argv)) {
+                $argv = [(string)$argv];
+            } elseif (!is_array($argv)) {
+                throw new \Exception("Argv must be an array or scalar");
+            }
         }
 
-        $params = $this->getParams();
-        $params[] = function ($redis) {
-            foreach ($this->listeners as $cb) {
-                $cb($redis);
-            }
-        };
-        $this->pool->eval(...$params);
-    }
-
-    /**
-     * Adds eval command or calls execute() method
-     * @return void
-     */
-    public function __invoke(...$args)
-    {
-        if (!count($args)) {
-            $this->execute();
-            return;
-        }
-        $this->add(...$args);
+        $this->cachedParams = false;
+        $this->stack[] = [$cmd, $keys, $argv];
     }
 }

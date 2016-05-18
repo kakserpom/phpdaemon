@@ -97,18 +97,6 @@ class CGIRequest extends Generic
     }
 
     /**
-     * Called when the request aborted.
-     * @param \PHPDaemon\Core\ShellCommand $process
-     * @return void
-     */
-    public function onWrite($process)
-    {
-        if ($this->attrs->stdin_done && ($this->proc->writeState === false)) {
-            $this->proc->closeWrite();
-        }
-    }
-
-    /**
      * Called when new data received from process.
      * @param object $process Process pointer.
      * @param string $data Data.
@@ -130,6 +118,18 @@ class CGIRequest extends Generic
             $this->onWrite($this->proc);
         } else {
             $this->proc->write($c);
+        }
+    }
+
+    /**
+     * Called when the request aborted.
+     * @param \PHPDaemon\Core\ShellCommand $process
+     * @return void
+     */
+    public function onWrite($process)
+    {
+        if ($this->attrs->stdin_done && ($this->proc->writeState === false)) {
+            $this->proc->closeWrite();
         }
     }
 }

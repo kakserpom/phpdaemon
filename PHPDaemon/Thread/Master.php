@@ -7,9 +7,6 @@ use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Thread\Collection;
-use PHPDaemon\Thread\Generic;
-use PHPDaemon\Thread\IPC;
 
 /**
  * Implementation of the master thread

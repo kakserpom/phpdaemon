@@ -9,6 +9,16 @@ namespace PHPDaemon\Core;
 class TransportContext extends AppInstance
 {
     /**
+     * Init
+     * @return void
+     */
+    public function init()
+    {
+        if ($this->isEnabled()) {
+        }
+    }
+
+    /**
      * Setting default config options
      * Overriden from AppInstance::getConfigDefaults
      * Uncomment and return array with your default options
@@ -17,15 +27,5 @@ class TransportContext extends AppInstance
     protected function getConfigDefaults()
     {
         return false;
-    }
-
-    /**
-     * Init
-     * @return void
-     */
-    public function init()
-    {
-        if ($this->isEnabled()) {
-        }
     }
 }

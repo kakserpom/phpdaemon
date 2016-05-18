@@ -10,6 +10,22 @@ class MongoId extends \MongoId
 {
 
     /**
+     * @param string $id
+     */
+    public function __construct($id = null)
+    {
+        if ($id !== null && mb_orig_strlen($id) < 20 && ctype_alnum($id)) {
+            $id = gmp_strval(gmp_init(strrev($id), 62), 16);
+            if (mb_orig_strlen($id) > 24) {
+                $id = 'FFFFFFFFFFFFFFFFFFFFFFFF';
+            } elseif (mb_orig_strlen($id) < 24) {
+                $id = str_pad($id, 24, '0', STR_PAD_LEFT);
+            }
+        }
+        @parent::__construct($id);
+    }
+
+    /**
      * Import
      * @param  mixed $id ID
      * @return mixed
@@ -41,22 +57,6 @@ class MongoId extends \MongoId
             return false;
         }
         return new static($id);
-    }
-
-    /**
-     * @param string $id
-     */
-    public function __construct($id = null)
-    {
-        if ($id !== null && mb_orig_strlen($id) < 20 && ctype_alnum($id)) {
-            $id = gmp_strval(gmp_init(strrev($id), 62), 16);
-            if (mb_orig_strlen($id) > 24) {
-                $id = 'FFFFFFFFFFFFFFFFFFFFFFFF';
-            } elseif (mb_orig_strlen($id) < 24) {
-                $id = str_pad($id, 24, '0', STR_PAD_LEFT);
-            }
-        }
-        @parent::__construct($id);
     }
 
     /**

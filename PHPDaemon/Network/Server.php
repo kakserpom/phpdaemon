@@ -12,14 +12,13 @@ abstract class Server extends Pool
 {
 
     /**
-     * @var \PHPDaemon\Structures\ObjectStorage Bound sockets
-     */
-    protected $bound;
-
-    /**
      * @var array|null Allowed clients
      */
     public $allowedClients = null;
+    /**
+     * @var \PHPDaemon\Structures\ObjectStorage Bound sockets
+     */
+    protected $bound;
 
     /**
      * Constructor
@@ -36,16 +35,6 @@ abstract class Server extends Pool
         if ($init) {
             $this->init();
         }
-    }
-
-    /**
-     * Called when ConnectionPool is finished
-     * @return void
-     */
-    protected function onFinish()
-    {
-        $this->closeBound();
-        parent::onFinish();
     }
 
     /**
@@ -107,6 +96,70 @@ abstract class Server extends Pool
     }
 
     /**
+     * Attach Generic
+     * @param  \PHPDaemon\BoundSocket\Generic $bound Generic
+     * @param  mixed $inf Info
+     * @return void
+     */
+    public function attachBound(\PHPDaemon\BoundSocket\Generic $bound, $inf = null)
+    {
+        $this->bound->attach($bound, $inf);
+    }
+
+    /**
+     * Detach Generic
+     * @param  \PHPDaemon\BoundSocket\Generic $bound Generic
+     * @return void
+     */
+    public function detachBound(\PHPDaemon\BoundSocket\Generic $bound)
+    {
+        $this->bound->detach($bound);
+    }
+
+    /**
+     * Called when a request to HTTP-server looks like another connection
+     * @param  object $req Request
+     * @param  object $oldConn Connection
+     * @return boolean Success
+     */
+    public function inheritFromRequest($req, $oldConn)
+    {
+        if (!$oldConn || !$req) {
+            return false;
+        }
+        $class = $this->connectionClass;
+        $conn = new $class(null, $this);
+        $this->attach($conn);
+        $conn->setFd($oldConn->getFd(), $oldConn->getBev());
+        $oldConn->unsetFd();
+        $oldConn->pool->detach($oldConn);
+        $conn->onInheritanceFromRequest($req);
+        if ($req instanceof \PHPDaemon\Request\Generic) {
+            $req->free();
+        }
+        return true;
+    }
+
+    /**
+     * Called when ConnectionPool is finished
+     * @return void
+     */
+    protected function onFinish()
+    {
+        $this->closeBound();
+        parent::onFinish();
+    }
+
+    /**
+     * Close each of binded sockets
+     * @return void
+     */
+    public function closeBound()
+    {
+        $this->bound->each('close');
+    }
+
+    /**
      * Applies config
      * @return void
      */
@@ -144,59 +197,5 @@ abstract class Server extends Pool
         if ($this->bound) {
             $this->bound->each('disable');
         }
-    }
-
-    /**
-     * Attach Generic
-     * @param  \PHPDaemon\BoundSocket\Generic $bound Generic
-     * @param  mixed $inf Info
-     * @return void
-     */
-    public function attachBound(\PHPDaemon\BoundSocket\Generic $bound, $inf = null)
-    {
-        $this->bound->attach($bound, $inf);
-    }
-
-    /**
-     * Detach Generic
-     * @param  \PHPDaemon\BoundSocket\Generic $bound Generic
-     * @return void
-     */
-    public function detachBound(\PHPDaemon\BoundSocket\Generic $bound)
-    {
-        $this->bound->detach($bound);
-    }
-
-    /**
-     * Close each of binded sockets
-     * @return void
-     */
-    public function closeBound()
-    {
-        $this->bound->each('close');
-    }
-
-    /**
-     * Called when a request to HTTP-server looks like another connection
-     * @param  object $req Request
-     * @param  object $oldConn Connection
-     * @return boolean Success
-     */
-    public function inheritFromRequest($req, $oldConn)
-    {
-        if (!$oldConn || !$req) {
-            return false;
-        }
-        $class = $this->connectionClass;
-        $conn = new $class(null, $this);
-        $this->attach($conn);
-        $conn->setFd($oldConn->getFd(), $oldConn->getBev());
-        $oldConn->unsetFd();
-        $oldConn->pool->detach($oldConn);
-        $conn->onInheritanceFromRequest($req);
-        if ($req instanceof \PHPDaemon\Request\Generic) {
-            $req->free();
-        }
-        return true;
     }
 }

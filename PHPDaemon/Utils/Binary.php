@@ -62,6 +62,35 @@ class Binary
     }
 
     /**
+     * Convert bytes into integer
+     * @param  string $str Bytes
+     * @param  boolean $l Little endian? Default is false
+     * @return integer
+     */
+    public static function bytes2int($str, $l = false)
+    {
+        if ($l) {
+            $str = strrev($str);
+        }
+        $dec = 0;
+        $len = mb_orig_strlen($str);
+        for ($i = 0; $i < $len; ++$i) {
+            $dec += ord(mb_orig_substr($str, $i, 1)) * pow(0x100, $len - $i - 1);
+        }
+        return $dec;
+    }
+
+    /**
+     * Build nul-terminated string, with 2-byte of length
+     * @param string $str Data
+     * @return string
+     */
+    public static function LVnull($str)
+    {
+        return static::LV($str . "\x00", 2, true);
+    }
+
+    /**
      * Build length-value binary snippet
      * @param string $str Data
      * @param integer $len Number of bytes to encode length. Default is 1
@@ -78,13 +107,45 @@ class Binary
     }
 
     /**
-     * Build nul-terminated string, with 2-byte of length
-     * @param string $str Data
-     * @return string
+     * Converts integer to binary string
+     * @alias Binary::int2bytes
+     * @param  integer $len Length
+     * @param  integer $int Integer
+     * @param  boolean $l Optional. Little endian. Default value - false
+     * @return string       Resulting binary string
      */
-    public static function LVnull($str)
+    public static function i2b($len, $int = 0, $l = false)
     {
-        return static::LV($str . "\x00", 2, true);
+        return static::int2bytes($len, $int, $l);
+    }
+
+    /**
+     * Converts integer to binary string
+     * @param  integer $len Length
+     * @param  integer $int Integer
+     * @param  boolean $l Optional. Little endian. Default value - false
+     * @return string       Resulting binary string
+     */
+    public static function int2bytes($len, $int = 0, $l = false)
+    {
+        $hexstr = dechex($int);
+
+        if ($len === null) {
+            if (mb_orig_strlen($hexstr) % 2) {
+                $hexstr = "0" . $hexstr;
+            }
+        } else {
+            $hexstr = str_repeat('0', $len * 2 - mb_orig_strlen($hexstr)) . $hexstr;
+        }
+
+        $bytes = mb_orig_strlen($hexstr) / 2;
+        $bin = '';
+
+        for ($i = 0; $i < $bytes; ++$i) {
+            $bin .= chr(hexdec(substr($hexstr, $i * 2, 2)));
+        }
+
+        return $l ? strrev($bin) : $bin;
     }
 
     /**
@@ -98,16 +159,6 @@ class Binary
     }
 
     /**
-     * Build word (2 bytes) big-endian
-     * @param  integer $int Integer
-     * @return string
-     */
-    public static function word($int)
-    {
-        return static::i2b(2, $int);
-    }
-
-    /**
      * Build word (2 bytes) little-endian
      * @param  integer $int Integer
      * @return string
@@ -118,13 +169,13 @@ class Binary
     }
 
     /**
-     * Build double word (4 bytes) big-endian
+     * Build word (2 bytes) big-endian
      * @param  integer $int Integer
      * @return string
      */
-    public static function dword($int)
+    public static function word($int)
     {
-        return static::i2b(4, $int);
+        return static::i2b(2, $int);
     }
 
     /**
@@ -138,13 +189,13 @@ class Binary
     }
 
     /**
-     * Build quadro word (8 bytes) big endian
+     * Build double word (4 bytes) big-endian
      * @param  integer $int Integer
      * @return string
      */
-    public static function qword($int)
+    public static function dword($int)
     {
-        return static::i2b(8, $int);
+        return static::i2b(4, $int);
     }
 
     /**
@@ -155,6 +206,16 @@ class Binary
     public static function qwordl($int)
     {
         return strrev(static::qword($int));
+    }
+
+    /**
+     * Build quadro word (8 bytes) big endian
+     * @param  integer $int Integer
+     * @return string
+     */
+    public static function qword($int)
+    {
+        return static::i2b(8, $int);
     }
 
     /**
@@ -307,32 +368,15 @@ class Binary
     }
 
     /**
-     * Converts integer to binary string
-     * @param  integer $len Length
-     * @param  integer $int Integer
-     * @param  boolean $l Optional. Little endian. Default value - false
-     * @return string       Resulting binary string
+     * Convert bytes into integer
+     * @alias Binary::bytes2int
+     * @param  string $str Bytes
+     * @param  boolean $l Little endian? Default is false
+     * @return integer
      */
-    public static function int2bytes($len, $int = 0, $l = false)
+    public static function b2i($str = 0, $l = false)
     {
-        $hexstr = dechex($int);
-
-        if ($len === null) {
-            if (mb_orig_strlen($hexstr) % 2) {
-                $hexstr = "0" . $hexstr;
-            }
-        } else {
-            $hexstr = str_repeat('0', $len * 2 - mb_orig_strlen($hexstr)) . $hexstr;
-        }
-
-        $bytes = mb_orig_strlen($hexstr) / 2;
-        $bin = '';
-
-        for ($i = 0; $i < $bytes; ++$i) {
-            $bin .= chr(hexdec(substr($hexstr, $i * 2, 2)));
-        }
-
-        return $l ? strrev($bin) : $bin;
+        return static::bytes2int($str, $l);
     }
 
     /**
@@ -348,50 +392,6 @@ class Binary
             $ret |= $v;
         }
         return static::i2b($len, $ret);
-    }
-
-    /**
-     * Converts integer to binary string
-     * @alias Binary::int2bytes
-     * @param  integer $len Length
-     * @param  integer $int Integer
-     * @param  boolean $l Optional. Little endian. Default value - false
-     * @return string       Resulting binary string
-     */
-    public static function i2b($len, $int = 0, $l = false)
-    {
-        return static::int2bytes($len, $int, $l);
-    }
-
-    /**
-     * Convert bytes into integer
-     * @param  string $str Bytes
-     * @param  boolean $l Little endian? Default is false
-     * @return integer
-     */
-    public static function bytes2int($str, $l = false)
-    {
-        if ($l) {
-            $str = strrev($str);
-        }
-        $dec = 0;
-        $len = mb_orig_strlen($str);
-        for ($i = 0; $i < $len; ++$i) {
-            $dec += ord(mb_orig_substr($str, $i, 1)) * pow(0x100, $len - $i - 1);
-        }
-        return $dec;
-    }
-
-    /**
-     * Convert bytes into integer
-     * @alias Binary::bytes2int
-     * @param  string $str Bytes
-     * @param  boolean $l Little endian? Default is false
-     * @return integer
-     */
-    public static function b2i($str = 0, $l = false)
-    {
-        return static::bytes2int($str, $l);
     }
 
     /**

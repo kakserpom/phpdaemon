@@ -20,28 +20,6 @@ class Pool extends \PHPDaemon\Network\Client
     const S2A_PONG = "\x6A";
 
     /**
-     * Sends a request
-     * @param  string $addr Address
-     * @param  string $type Type of request
-     * @param  string $data Data
-     * @param  callable $cb Callback
-     * @callback $cb ( )
-     * @return void
-     */
-    public function request($addr, $type, $data, $cb)
-    {
-        $e = explode(':', $addr);
-        $this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/',
-            function ($conn) use ($cb, $addr, $data, $type) {
-                if (!$conn->connected) {
-                    $cb($conn, false);
-                    return;
-                }
-                $conn->request($type, $data, $cb);
-            });
-    }
-
-    /**
      * Sends echo-request
      * @param  string $addr Address
      * @param  callable $cb Callback
@@ -74,6 +52,28 @@ class Pool extends \PHPDaemon\Network\Client
     public function requestInfo($addr, $cb)
     {
         $this->request($addr, 'info', null, $cb);
+    }
+
+    /**
+     * Sends a request
+     * @param  string $addr Address
+     * @param  string $type Type of request
+     * @param  string $data Data
+     * @param  callable $cb Callback
+     * @callback $cb ( )
+     * @return void
+     */
+    public function request($addr, $type, $data, $cb)
+    {
+        $e = explode(':', $addr);
+        $this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/',
+            function ($conn) use ($cb, $addr, $data, $type) {
+                if (!$conn->connected) {
+                    $cb($conn, false);
+                    return;
+                }
+                $conn->request($type, $data, $cb);
+            });
     }
 
     /**

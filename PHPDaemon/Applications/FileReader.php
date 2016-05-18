@@ -17,19 +17,6 @@ class FileReader extends \PHPDaemon\Core\AppInstance
     public $indexFiles;
 
     /**
-     * Setting default config options
-     * Overriden from AppInstance::getConfigDefaults
-     * @return array|false
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            // index file names
-            'indexfiles' => 'index.html/index.htm'
-        ];
-    }
-
-    /**
      * Constructor.
      * @return void
      */
@@ -55,5 +42,18 @@ class FileReader extends \PHPDaemon\Core\AppInstance
     public function beginRequest($req, $upstream)
     {
         return new \PHPDaemon\Applications\FileReaderRequest($this, $upstream, $req);
+    }
+
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * @return array|false
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            // index file names
+            'indexfiles' => 'index.html/index.htm'
+        ];
     }
 }

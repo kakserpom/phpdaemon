@@ -52,37 +52,6 @@ class Pool extends \PHPDaemon\Network\Client
     }
 
     /**
-     * Setting default config options
-     * Overriden from NetworkClient::getConfigDefaults
-     * @return array|bool
-     */
-    protected function getConfigDefaults()
-    {
-        return [
-            /* [string|array] Default servers */
-            'servers' => 'tcp://127.0.0.1',
-
-            /* [integer] Default port */
-            'port' => 6379,
-
-            /* [integer] Maximum connections per server */
-            'maxconnperserv' => 32,
-
-            /* [integer] Maximum allowed size of packet */
-            'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
-
-            /* [boolean] If true, race condition between UNSUBSCRIBE and PUBLISH will be journaled */
-            'log-pub-sub-race-condition' => true,
-
-            /* [integer] Select storage number */
-            'select' => null,
-
-            /* [integer] <master name> for Sentinel */
-            'sentinel-master' => null,
-        ];
-    }
-
-    /**
      * @param  string $chan
      * @return integer
      */
@@ -142,6 +111,25 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * @TODO
+     * @param  string $cmd
+     * @param  array $args
+     * @param  callable $cb
+     * @callback $cb ( )
+     * @return boolean
+     */
+    protected function sendSubCommand($cmd, $args, $cb)
+    {
+        if (in_array($cmd, ['SUBSCRIBE', 'PSUBSCRIBE', 'UNSUBSCRIBE', 'PUNSUBSCRIBE', 'UNSUBSCRIBEREAL'])) {
+            foreach ($this->servConnSub as $conn) {
+                $conn->command($cmd, $args, $cb);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @TODO
      * @param  string $addr
      * @param  string $cmd
      * @param  array $args
@@ -166,21 +154,33 @@ class Pool extends \PHPDaemon\Network\Client
     }
 
     /**
-     * @TODO
-     * @param  string $cmd
-     * @param  array $args
-     * @param  callable $cb
-     * @callback $cb ( )
-     * @return boolean
+     * Setting default config options
+     * Overriden from NetworkClient::getConfigDefaults
+     * @return array|bool
      */
-    protected function sendSubCommand($cmd, $args, $cb)
+    protected function getConfigDefaults()
     {
-        if (in_array($cmd, ['SUBSCRIBE', 'PSUBSCRIBE', 'UNSUBSCRIBE', 'PUNSUBSCRIBE', 'UNSUBSCRIBEREAL'])) {
-            foreach ($this->servConnSub as $conn) {
-                $conn->command($cmd, $args, $cb);
-                return true;
-            }
-        }
-        return false;
+        return [
+            /* [string|array] Default servers */
+            'servers' => 'tcp://127.0.0.1',
+
+            /* [integer] Default port */
+            'port' => 6379,
+
+            /* [integer] Maximum connections per server */
+            'maxconnperserv' => 32,
+
+            /* [integer] Maximum allowed size of packet */
+            'max-allowed-packet' => new \PHPDaemon\Config\Entry\Size('1M'),
+
+            /* [boolean] If true, race condition between UNSUBSCRIBE and PUBLISH will be journaled */
+            'log-pub-sub-race-condition' => true,
+
+            /* [integer] Select storage number */
+            'select' => null,
+
+            /* [integer] <master name> for Sentinel */
+            'sentinel-master' => null,
+        ];
     }
 }

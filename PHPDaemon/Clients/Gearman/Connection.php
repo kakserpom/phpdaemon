@@ -179,6 +179,34 @@ class Connection extends ClientConnection
     }
 
     /**
+     * Send a command
+     *
+     * @param $commandName
+     * @param $payload
+     * @param callable $cb = null
+     */
+    public function sendCommand($commandName, $payload, $cb = null)
+    {
+
+        $pct = implode(
+            static::ARGS_DELIMITER,
+            array_map(function ($item) {
+                return !is_scalar($item) ? serialize($item) : $item;
+            }, (array)$payload)
+        );
+        $this->onResponse->push($cb);
+        $this->write(
+            pack(
+                static::HEADER_WRITE_FORMAT,
+                static::MAGIC_REQUEST,
+                $this->requestCommandList[$commandName],
+                mb_orig_strlen($pct)
+            )
+        );
+        $this->write($pct);
+    }
+
+    /**
      * Function run task and wait result in callback
      *
      * @param $params
@@ -236,33 +264,5 @@ class Connection extends ClientConnection
     public function setConnectionOption($optionName, $cb = null)
     {
         $this->sendCommand('OPTION_RES', [$optionName], $cb);
-    }
-
-    /**
-     * Send a command
-     *
-     * @param $commandName
-     * @param $payload
-     * @param callable $cb = null
-     */
-    public function sendCommand($commandName, $payload, $cb = null)
-    {
-
-        $pct = implode(
-            static::ARGS_DELIMITER,
-            array_map(function ($item) {
-                return !is_scalar($item) ? serialize($item) : $item;
-            }, (array)$payload)
-        );
-        $this->onResponse->push($cb);
-        $this->write(
-            pack(
-                static::HEADER_WRITE_FORMAT,
-                static::MAGIC_REQUEST,
-                $this->requestCommandList[$commandName],
-                mb_orig_strlen($pct)
-            )
-        );
-        $this->write($pct);
     }
 }
