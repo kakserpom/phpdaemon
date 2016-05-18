@@ -4,6 +4,7 @@ namespace PHPDaemon\Request;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\EventLoop;
 
 abstract class Generic
 {
@@ -118,7 +119,7 @@ abstract class Generic
         ++Daemon::$process->reqCounter;
         $this->appInstance = $appInstance;
         $this->upstream = $upstream;
-        $this->ev = \Event::timer(Daemon::$process->eventBase, [$this, 'eventCall']);
+        $this->ev = EventLoop::$instance->timer([$this, 'eventCall']);
         if ($this->priority !== null) {
             $this->ev->priority = $this->priority;
         }

@@ -5,6 +5,7 @@ use PHPDaemon\Cache\CappedStorage;
 use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\CallbackWrapper;
+use PHPDaemon\Core\EventLoop;
 
 /**
  * FileSystem
@@ -93,9 +94,7 @@ class FileSystem
         }
         self::updateConfig();
         self::$fd = eio_get_event_stream();
-        self::$ev = new \Event(
-            Daemon::$process->eventBase,
-            self::$fd,
+        self::$ev = EventLoop::$instance->event(self::$fd,
             \Event::READ | \Event::PERSIST,
             function ($fd, $events, $arg) {
                 while (eio_nreqs()) {

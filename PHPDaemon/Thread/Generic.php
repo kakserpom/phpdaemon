@@ -3,6 +3,7 @@ namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Exceptions\ClearStack;
 
 /**
@@ -143,7 +144,7 @@ abstract class Generic
      */
     protected function registerEventSignals()
     {
-        if (!$this->eventBase) {
+        if (!EventLoop::$instance) {
             return;
         }
         foreach (self::$signals as $no => $name) {
@@ -151,7 +152,7 @@ abstract class Generic
                 continue;
             }
 
-            $ev = \Event::signal($this->eventBase, $no, [$this, 'eventSighandler'], [$no]);
+            $ev = EventLoop::$instance->signal($no, [$this, 'eventSighandler'], [$no]);
             if (!$ev) {
                 $this->log('Cannot event_set for ' . $name . ' signal');
             }

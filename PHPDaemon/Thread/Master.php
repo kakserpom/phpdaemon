@@ -3,6 +3,7 @@ namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
@@ -28,21 +29,20 @@ class Master extends Generic
     public $reload = false;
     /** @var int */
     public $connCounter = 0;
-    /** @var StackCallbacks */
-    public $callbacks;
     /** @var Collection */
     public $workers;
     /** @var Collection */
     public $ipcthreads;
-    /** @var EventBase */
-    public $eventBase;
-    /** @var */
-    public $eventBaseConfig;
     /** @var */
     public $lastMpmActionTs;
     /** @var int */
     public $minMpmActionInterval = 1; // in seconds
-    private $timerCb;
+    protected $timerCb;
+
+    /**
+     * @var StackCallbacks
+     */
+    protected $callbacks;
 
     /**
      * Runtime of Master process
@@ -56,13 +56,15 @@ class Master extends Generic
         class_exists('Timer'); // ensure loading this class
         gc_enable();
 
+        $this->callbacks = new StackCallbacks;
+
         /*
          * @todo This line must be commented according to current libevent binding implementation.
          * May be uncommented in future.
          */
-        //$this->eventBase = new \EventBase;
+        //EventLoop::init()
 
-        if ($this->eventBase) {
+        if (EventLoop::$instance) {
             $this->registerEventSignals();
         } else {
             $this->registerSignals();
@@ -75,7 +77,6 @@ class Master extends Generic
 
         Daemon::$appResolver->preload(true);
 
-        $this->callbacks = new StackCallbacks();
         $this->spawnIPCThread();
         $this->spawnWorkers(
             min(
@@ -104,14 +105,9 @@ class Master extends Generic
             }
         };
 
-        if ($this->eventBase) { // we are using libevent in Master
+        if (EventLoop::$instance) { // we are using libevent in Master
             Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
-            while (!$this->breakMainLoop) {
-                $this->callbacks->executeAll($this);
-                if (!$this->eventBase->dispatch()) {
-                    break;
-                }
-            }
+            EventLoop::$instance->run();
         } else { // we are NOT using libevent in Master
             $lastTimerCall = microtime(true);
             $func = $this->timerCb;
@@ -262,8 +258,8 @@ class Master extends Generic
         }
         if ($n > 0) {
             $this->lastMpmActionTs = microtime(true);
-            if ($this->eventBase) {
-                $this->eventBase->stop();
+            if (EventLoop::$instance) {
+                EventLoop::$instance->interrupt();
             }
         }
         return true;
@@ -292,8 +288,8 @@ class Master extends Generic
                 exit;
             }
         });
-        if ($this->eventBase) {
-            $this->eventBase->stop();
+        if (EventLoop::$instance) {
+            EventLoop::$instance->interrupt();
         }
         return true;
     }
