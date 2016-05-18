@@ -62,7 +62,7 @@ class Timer
         }
         $this->id = $id;
         $this->cb = $cb;
-        $this->ev = Daemon::$process->loop->timer([$this, 'eventCall']);
+        $this->ev = EventLoop::$instance->timer([$this, 'eventCall']);
         if ($priority !== null) {
             $this->setPriority($priority);
         }

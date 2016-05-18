@@ -192,14 +192,14 @@ class ShellCommand extends IOStream
         $flags = !is_resource($this->fd) ? \EventBufferEvent::OPT_CLOSE_ON_FREE : 0;
         $flags |= \EventBufferEvent::OPT_DEFER_CALLBACKS; // buggy option
 
-        $this->bev = Daemon::$process->loop->bufferEvent(
+        $this->bev = EventLoop::$instance->bufferEvent(
             $this->fd,
             0,
             [$this, 'onReadEv'],
             null,
             [$this, 'onStateEv']
         );
-        $this->bevWrite = Daemon::$process->loop->bufferEvent(
+        $this->bevWrite = EventLoop::$instance->bufferEvent(
             $this->fdWrite,
             0,
             null,

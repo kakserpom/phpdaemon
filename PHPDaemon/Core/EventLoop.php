@@ -4,10 +4,20 @@ use PHPDaemon\Structures\StackCallbacks;
 
 class EventLoop
 {
+    public static $instance;
     protected $base;
     protected $dnsBase;
     protected $callbacks;
     protected $stopped = true;
+
+
+    public static function init() {
+        if (self::$instance !== null) {
+            self::$instance->reinit();
+        } else {
+            self::$instance = new static;
+        }
+    }
 
     public function __construct() {
         $this->base = new \EventBase;
@@ -25,7 +35,6 @@ class EventLoop
 
     public function reinit() {
         $this->base->reinit();
-        return $this;
     }
 
     public function signal(...$args) {

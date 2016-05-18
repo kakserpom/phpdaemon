@@ -64,9 +64,9 @@ class Master extends Generic
          * @todo This line must be commented according to current libevent binding implementation.
          * May be uncommented in future.
          */
-        //$this->loop = new EventLoop;
+        //EventLoop::init()
 
-        if ($this->loop) {
+        if (EventLoop::$instance) {
             $this->registerEventSignals();
         } else {
             $this->registerSignals();

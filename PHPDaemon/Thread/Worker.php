@@ -58,12 +58,6 @@ class Worker extends Generic
     protected $autoReloadLast = 0;
 
     /**
-     * Event loop
-     * @var EventLoop
-     */
-    public $loop;
-
-    /**
      * State
      * @var integer
      */
@@ -131,11 +125,8 @@ class Worker extends Generic
             Daemon::$process->unregisterSignals();
         }
 
-        if (Daemon::$process && Daemon::$process->loop) {
-            $this->loop = Daemon::$process->loop->reinit();
-        } else {
-            $this->loop = new EventLoop;
-        }
+        EventLoop::init();
+
         Daemon::$process = $this;
         if (Daemon::$logpointerAsync) {
             Daemon::$logpointerAsync->fd = null;

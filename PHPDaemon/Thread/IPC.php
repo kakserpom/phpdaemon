@@ -78,11 +78,7 @@ class IPC extends Generic
         if (Daemon::$process instanceof Master) {
             Daemon::$process->unregisterSignals();
         }
-        if (Daemon::$process && Daemon::$process->loop) {
-            $this->loop = Daemon::$process->loop->reinit();
-        } else {
-            $this->loop = new EventLoop;
-        }
+        EventLoop::init();
         Daemon::$process = $this;
         if (Daemon::$logpointerAsync) {
             Daemon::$logpointerAsync->fd = null;
