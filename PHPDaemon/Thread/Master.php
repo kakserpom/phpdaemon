@@ -39,7 +39,12 @@ class Master extends Generic
     public $lastMpmActionTs;
     /** @var int */
     public $minMpmActionInterval = 1; // in seconds
-    private $timerCb;
+    protected $timerCb;
+
+    /**
+     * @var StackCallbacks
+     */
+    protected $callbacks;
 
     /**
      * Runtime of Master process
@@ -52,6 +57,8 @@ class Master extends Generic
         $this->prepareSystemEnv();
         class_exists('Timer'); // ensure loading this class
         gc_enable();
+
+        $this->callbacks = new StackCallbacks;
 
         /*
          * @todo This line must be commented according to current libevent binding implementation.
