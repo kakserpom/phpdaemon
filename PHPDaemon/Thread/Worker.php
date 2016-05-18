@@ -192,7 +192,7 @@ class Worker extends Generic
 
             $this->breakMainLoopCheck();
             if (Daemon::checkAutoGC()) {
-                $this->loop->interrupt(function () {
+                EventLoop::$instance->interrupt(function () {
                     gc_collect_cycles();
                 });
             }
@@ -212,7 +212,7 @@ class Worker extends Generic
                 $event->timeout();
             }, 1e6 * Daemon::$config->autoreload->value, 'watchIncludedFiles');
         }
-        $this->loop->run();
+        EventLoop::$instance->run();
         $this->shutdown();
     }
 
@@ -438,12 +438,12 @@ class Worker extends Generic
         $time = microtime(true);
 
         if ($this->terminated || $this->breakMainLoop) {
-            $this->loop->stop();
+            EventLoop::$instance->stop();
             return;
         }
 
         if ($this->shutdown) {
-            $this->loop->stop();
+            EventLoop::$instance->stop();
             return;
         }
 
@@ -487,7 +487,7 @@ class Worker extends Generic
         $this->graceful = true;
         $this->reload = true;
         Timer::add(function() {
-            $this->loop->stop();
+            EventLoop::$instance->stop();
         }, $this->reloadDelay * 1e6);
         $this->setState($this->state);
     }
@@ -500,7 +500,7 @@ class Worker extends Generic
     {
         $this->graceful = true;
         Timer::add(function() {
-            $this->loop->stop();
+            EventLoop::$instance->stop();
         }, $this->reloadDelay * 1e6);
         $this->setState($this->state);
     }
@@ -585,7 +585,7 @@ class Worker extends Generic
             }
         }, 1e6, 'checkReloadReady');
         while (!$this->reloadReady) {
-            $this->loop->run();
+            EventLoop::$instance->run();
         }
         FileSystem::waitAllEvents(); // ensure that all I/O events completed before suicide
         exit(0); // R.I.P.
@@ -642,7 +642,7 @@ class Worker extends Generic
         }
 
         $this->graceful = false;
-        $this->loop->stop();
+        EventLoop::$instance->stop();
     }
 
     /**

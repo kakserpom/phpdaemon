@@ -34,8 +34,6 @@ class Master extends Generic
     /** @var Collection */
     public $ipcthreads;
     /** @var */
-    public $loop;
-    /** @var */
     public $lastMpmActionTs;
     /** @var int */
     public $minMpmActionInterval = 1; // in seconds
@@ -107,9 +105,9 @@ class Master extends Generic
             }
         };
 
-        if ($this->loop) { // we are using libevent in Master
+        if (EventLoop::$instance) { // we are using libevent in Master
             Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
-            $this->loop->run();
+            EventLoop::$instance->run();
         } else { // we are NOT using libevent in Master
             $lastTimerCall = microtime(true);
             $func = $this->timerCb;
@@ -260,8 +258,8 @@ class Master extends Generic
         }
         if ($n > 0) {
             $this->lastMpmActionTs = microtime(true);
-            if ($this->loop) {
-                $this->loop->interrupt();
+            if (EventLoop::$instance) {
+                EventLoop::$instance->interrupt();
             }
         }
         return true;
@@ -290,8 +288,8 @@ class Master extends Generic
                 exit;
             }
         });
-        if ($this->loop) {
-            $this->loop->interrupt();
+        if (EventLoop::$instance) {
+            EventLoop::$instance->interrupt();
         }
         return true;
     }

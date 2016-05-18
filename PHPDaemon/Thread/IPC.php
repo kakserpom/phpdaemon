@@ -103,7 +103,7 @@ class IPC extends Generic
             $this->log('cannot instantiate IPCManager');
         }
 
-        $this->loop->run();
+        EventLoop::$instance->run();
     }
 
     /**
