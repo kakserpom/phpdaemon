@@ -63,9 +63,9 @@ abstract class CappedStorage
 
     /**
      * Puts element in cache
-     * @param  string  $key   Key
-     * @param  mixed   $value Value
-     * @param  integer $ttl   Time to live
+     * @param  string $key Key
+     * @param  mixed $value Value
+     * @param  integer $ttl Time to live
      * @return mixed
      */
     public function put($key, $value, $ttl = null)
@@ -84,7 +84,7 @@ abstract class CappedStorage
             $item->expire = microtime(true) + $ttl;
         }
         $this->cache[$k] = $item;
-        $s               = sizeof($this->cache);
+        $s = sizeof($this->cache);
         if ($s > $this->maxCacheSize + $this->capWindow) {
             uasort($this->cache, $this->sorter);
             for (; $s > $this->maxCacheSize; --$s) {

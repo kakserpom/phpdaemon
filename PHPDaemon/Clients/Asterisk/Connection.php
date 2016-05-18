@@ -1,13 +1,10 @@
 <?php
 namespace PHPDaemon\Clients\Asterisk;
 
-use PHPDaemon\Clients\Asterisk\ConnectionFinished;
-use PHPDaemon\Clients\Asterisk\Pool;
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Traits\EventHandlers;
 
 /**
  * Asterisk Call Manager Connection

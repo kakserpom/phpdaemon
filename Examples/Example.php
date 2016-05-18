@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\Examples\ExampleRequest;
-
 /**
  * @package    Examples
  * @subpackage Base

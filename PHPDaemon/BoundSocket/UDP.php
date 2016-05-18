@@ -62,10 +62,10 @@ class UDP extends Generic
 
     /**
      * Send UDP packet
-     * @param string $data   Data
+     * @param string $data Data
      * @param integer $flags Flags
-     * @param string $host   Host
-     * @param integer $port  Port
+     * @param string $host Host
+     * @param integer $port Port
      * @return integer
      */
     public function sendTo($data, $flags, $host, $port)
@@ -126,7 +126,7 @@ class UDP extends Generic
         }
         if (!@socket_bind($sock, $this->host, $this->port)) {
             $errno = socket_last_error();
-            $addr  = $this->host . ':' . $this->port;
+            $addr = $this->host . ':' . $this->port;
             Daemon::$process->log(get_class($this) . ': Couldn\'t bind UDP-socket \'' . $addr . '\' (' . $errno . ' - ' . socket_strerror($errno) . ').');
             return false;
         }
@@ -165,7 +165,8 @@ class UDP extends Generic
         $this->enabled = true;
 
         if ($this->ev === null) {
-            $this->ev = new \Event(Daemon::$process->eventBase, $this->fd, \Event::READ | \Event::PERSIST, [$this, 'onReadUdp']);
+            $this->ev = new \Event(Daemon::$process->eventBase, $this->fd, \Event::READ | \Event::PERSIST,
+                [$this, 'onReadUdp']);
             $this->onBound();
         } else {
             $this->onAcceptEv();
@@ -176,8 +177,8 @@ class UDP extends Generic
     /**
      * Called when we got UDP packet
      * @param resource $stream Descriptor
-     * @param integer $events  Events
-     * @param mixed $arg       Attached variable
+     * @param integer $events Events
+     * @param mixed $arg Attached variable
      * @return boolean Success.
      */
     public function onReadUdp($stream = null, $events = 0, $arg = null)
@@ -212,13 +213,13 @@ class UDP extends Generic
                     continue;
                 }
                 $class = $this->pool->connectionClass;
-                $conn  = new $class(null, $this->pool);
+                $conn = new $class(null, $this->pool);
                 $conn->setDgram(true);
                 $conn->onWriteEv(null);
                 $conn->setPeername($host, $port);
                 $conn->setParentSocket($this);
                 $this->portsMap[$key] = $conn;
-                $conn->timeoutRef     = setTimeout(function ($timer) use ($conn) {
+                $conn->timeoutRef = setTimeout(function ($timer) use ($conn) {
                     $conn->finish();
                     $timer->finish();
                 }, $conn->timeout * 1e6);

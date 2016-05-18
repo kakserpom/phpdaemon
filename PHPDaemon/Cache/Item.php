@@ -39,7 +39,7 @@ class Item
     public function __construct($value)
     {
         $this->listeners = new StackCallbacks;
-        $this->value     = $value;
+        $this->value = $value;
     }
 
     /**

@@ -1,9 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\Redis;
 
-use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\CallbackWrapper;
-use PHPDaemon\Network\ClientConnection;
 
 /**
  * @package    NetworkClients
@@ -21,7 +19,7 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * @TODO
-     * @param  string  $key
+     * @param  string $key
      * @param  integer $timeout
      * @return Lock
      */
@@ -32,7 +30,7 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * Easy wrapper for queue of eval's
-     * @param  callable  $cb
+     * @param  callable $cb
      * @return MultiEval
      */
     public function meval($cb = null)
@@ -42,10 +40,10 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * Wrapper for scans commands
-     * @param  string  $cmd    Command
-     * @param  array   $args   Arguments
-     * @param  cllable $cbEnd  Callback
-     * @param  integer $limit  Limit
+     * @param  string $cmd Command
+     * @param  array $args Arguments
+     * @param  cllable $cbEnd Callback
+     * @param  integer $limit Limit
      * @return AutoScan
      */
     public function autoscan($cmd, $args = [], $cbEnd = null, $limit = null)
@@ -62,10 +60,10 @@ class Pool extends \PHPDaemon\Network\Client
     {
         return [
             /* [string|array] Default servers */
-            'servers'        => 'tcp://127.0.0.1',
+            'servers' => 'tcp://127.0.0.1',
 
             /* [integer] Default port */
-            'port'           => 6379,
+            'port' => 6379,
 
             /* [integer] Maximum connections per server */
             'maxconnperserv' => 32,
@@ -104,7 +102,7 @@ class Pool extends \PHPDaemon\Network\Client
      * Example:
      * $redis->lpush('mylist', microtime(true));
      * @param  string $name Command name
-     * @param  array  $args Arguments
+     * @param  array $args Arguments
      * @return void
      */
     public function __call($cmd, $args)
@@ -135,17 +133,18 @@ class Pool extends \PHPDaemon\Network\Client
             $this->sendCommand($this->currentMasterAddr, $cmd, $args, $cb);
             return;
         }
-        $this->sentinel('get-master-addr-by-name', $this->config->sentinelmaster->value, function ($redis) use ($cmd, $args, $cb) {
-            $this->currentMasterAddr = 'tcp://' . $redis->result[0] .':' . $redis->result[1];
-            $this->sendCommand($this->currentMasterAddr, $cmd, $args, $cb);
-        });
+        $this->sentinel('get-master-addr-by-name', $this->config->sentinelmaster->value,
+            function ($redis) use ($cmd, $args, $cb) {
+                $this->currentMasterAddr = 'tcp://' . $redis->result[0] . ':' . $redis->result[1];
+                $this->sendCommand($this->currentMasterAddr, $cmd, $args, $cb);
+            });
     }
 
     /**
      * @TODO
-     * @param  string   $addr
-     * @param  string   $cmd
-     * @param  array    $args
+     * @param  string $addr
+     * @param  string $cmd
+     * @param  array $args
      * @param  callable $cb
      * @callback $cb ( )
      * @return void
@@ -168,8 +167,8 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * @TODO
-     * @param  string   $cmd
-     * @param  array    $args
+     * @param  string $cmd
+     * @param  array $args
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean

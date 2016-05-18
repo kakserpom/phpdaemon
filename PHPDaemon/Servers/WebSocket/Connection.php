@@ -3,7 +3,6 @@ namespace PHPDaemon\Servers\WebSocket;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\WebSocket\Route;
 use PHPDaemon\Request\RequestHeadersAlreadySent;
 
 class Connection extends \PHPDaemon\Network\Connection
@@ -21,10 +20,10 @@ class Connection extends \PHPDaemon\Network\Connection
     protected $writeReady = true;
     protected $extensions = [];
     protected $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
-    
+
     protected $headers = [];
     protected $headers_sent = false;
-    
+
     /**
      * @var array _SERVER
      */
@@ -39,7 +38,7 @@ class Connection extends \PHPDaemon\Network\Connection
      * @var array _GET
      */
     public $get = [];
-    
+
 
     protected $policyReqNotFound = false;
     protected $currentHeader;
@@ -53,17 +52,17 @@ class Connection extends \PHPDaemon\Network\Connection
     /**
      * State: first line
      */
-    const STATE_FIRSTLINE  = 1;
+    const STATE_FIRSTLINE = 1;
 
     /**
      * State: headers
      */
-    const STATE_HEADERS    = 2;
+    const STATE_HEADERS = 2;
 
     /**
      * State: content
      */
-    const STATE_CONTENT    = 3;
+    const STATE_CONTENT = 3;
 
     /**
      * State: prehandshake
@@ -131,8 +130,8 @@ class Connection extends \PHPDaemon\Network\Connection
      */
     public function onInheritanceFromRequest($req)
     {
-        $this->state  = self::STATE_HEADERS;
-        $this->addr   = $req->attrs->server['REMOTE_ADDR'];
+        $this->state = self::STATE_HEADERS;
+        $this->addr = $req->attrs->server['REMOTE_ADDR'];
         $this->server = $req->attrs->server;
         $this->get = $req->attrs->get;
         $this->prependInput("\r\n");
@@ -141,9 +140,9 @@ class Connection extends \PHPDaemon\Network\Connection
 
     /**
      * Sends a frame.
-     * @param  string   $data  Frame's data.
-     * @param  string   $type  Frame's type. ("STRING" OR "BINARY")
-     * @param  callable $cb    Optional. Callback called when the frame is received by client.
+     * @param  string $data Frame's data.
+     * @param  string $type Frame's type. ("STRING" OR "BINARY")
+     * @param  callable $cb Optional. Callback called when the frame is received by client.
      * @callback $cb ( )
      * @return boolean         Success.
      */
@@ -159,7 +158,7 @@ class Connection extends \PHPDaemon\Network\Connection
     public function onFinish()
     {
         $this->sendFrame('', 'CONNCLOSE');
-        
+
         if ($this->route) {
             $this->route->onFinish();
         }
@@ -272,7 +271,7 @@ class Connection extends \PHPDaemon\Network\Connection
         }
         return true;
     }
-    
+
     /**
      * Send Bad request
      * @return void
@@ -305,18 +304,18 @@ class Connection extends \PHPDaemon\Network\Connection
         if (isset($u['host'])) {
             $this->server['HTTP_HOST'] = $u['host'];
         }
-        $srv                       = & $this->server;
-        $srv['REQUEST_METHOD']     = $e[0];
-        $srv['REQUEST_TIME']       = time();
+        $srv = &$this->server;
+        $srv['REQUEST_METHOD'] = $e[0];
+        $srv['REQUEST_TIME'] = time();
         $srv['REQUEST_TIME_FLOAT'] = microtime(true);
-        $srv['REQUEST_URI']        = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
-        $srv['DOCUMENT_URI']       = $u['path'];
-        $srv['PHP_SELF']           = $u['path'];
-        $srv['QUERY_STRING']       = isset($u['query']) ? $u['query'] : null;
-        $srv['SCRIPT_NAME']        = $srv['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
-        $srv['SERVER_PROTOCOL']    = isset($e[2]) ? $e[2] : 'HTTP/1.1';
-        $srv['REMOTE_ADDR']        = $this->addr;
-        $srv['REMOTE_PORT']        = $this->port;
+        $srv['REQUEST_URI'] = $u['path'] . (isset($u['query']) ? '?' . $u['query'] : '');
+        $srv['DOCUMENT_URI'] = $u['path'];
+        $srv['PHP_SELF'] = $u['path'];
+        $srv['QUERY_STRING'] = isset($u['query']) ? $u['query'] : null;
+        $srv['SCRIPT_NAME'] = $srv['DOCUMENT_URI'] = isset($u['path']) ? $u['path'] : '/';
+        $srv['SERVER_PROTOCOL'] = isset($e[2]) ? $e[2] : 'HTTP/1.1';
+        $srv['REMOTE_ADDR'] = $this->addr;
+        $srv['REMOTE_PORT'] = $this->port;
         return true;
     }
 
@@ -332,7 +331,7 @@ class Connection extends \PHPDaemon\Network\Connection
             }
             $e = explode(': ', $l);
             if (isset($e[1])) {
-                $this->currentHeader                = 'HTTP_' . strtoupper(strtr($e[0], Generic::$htr));
+                $this->currentHeader = 'HTTP_' . strtoupper(strtr($e[0], Generic::$htr));
                 $this->server[$this->currentHeader] = $e[1];
             } elseif (($e[0][0] === "\t" || $e[0][0] === "\x20") && $this->currentHeader) {
                 // multiline header continued
@@ -358,7 +357,9 @@ class Connection extends \PHPDaemon\Network\Connection
                 return;
             }
             if ($d) {
-                if (($FP = \PHPDaemon\Servers\FlashPolicy\Pool::getInstance($this->pool->config->fpsname->value, false)) && $FP->policyData) {
+                if (($FP = \PHPDaemon\Servers\FlashPolicy\Pool::getInstance($this->pool->config->fpsname->value,
+                        false)) && $FP->policyData
+                ) {
                     $this->write($FP->policyData . "\x00");
                 }
                 $this->finish();
@@ -404,14 +405,15 @@ class Connection extends \PHPDaemon\Network\Connection
     {
         $this->state = self::STATE_PREHANDSHAKE;
         if (isset($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS'])) {
-            $str              = strtolower($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS']);
-            $str              = preg_replace($this->extensionsCleanRegex, '', $str);
+            $str = strtolower($this->server['HTTP_SEC_WEBSOCKET_EXTENSIONS']);
+            $str = preg_replace($this->extensionsCleanRegex, '', $str);
             $this->extensions = explode(', ', $str);
         }
         if (!isset($this->server['HTTP_CONNECTION'])
-                || (!preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->server['HTTP_CONNECTION'])) // "Upgrade" is not always alone (ie. "Connection: Keep-alive, Upgrade")
-                || !isset($this->server['HTTP_UPGRADE'])
-                || (strtolower($this->server['HTTP_UPGRADE']) !== 'websocket') // Lowercase comparison iss important
+            || (!preg_match('~(?:^|\W)Upgrade(?:\W|$)~i',
+                $this->server['HTTP_CONNECTION'])) // "Upgrade" is not always alone (ie. "Connection: Keep-alive, Upgrade")
+            || !isset($this->server['HTTP_UPGRADE'])
+            || (strtolower($this->server['HTTP_UPGRADE']) !== 'websocket') // Lowercase comparison iss important
         ) {
             $this->finish();
             return false;
@@ -449,7 +451,7 @@ class Connection extends \PHPDaemon\Network\Connection
     protected function switchToProtocol($proto)
     {
         $class = '\\PHPDaemon\\Servers\\WebSocket\\Protocols\\' . $proto;
-        $conn  = new $class(null, $this->pool);
+        $conn = new $class(null, $this->pool);
         $this->pool->attach($conn);
         $conn->setFd($this->getFd(), $this->getBev());
         $this->unsetFd();
@@ -481,9 +483,9 @@ class Connection extends \PHPDaemon\Network\Connection
 
     /**
      * Send the header
-     * @param  string  $s       Header. Example: 'Location: http://php.net/'
+     * @param  string $s Header. Example: 'Location: http://php.net/'
      * @param  boolean $replace Optional. Replace?
-     * @param  boolean $code    Optional. HTTP response code
+     * @param  boolean $code Optional. HTTP response code
      * @throws \PHPDaemon\Request\RequestHeadersAlreadySent
      * @return boolean          Success
      */

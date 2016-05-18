@@ -248,7 +248,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         }
         if (isset($this->appInstance->passphrase)) {
             if (!isset($this->attrs->server['PASSPHRASE'])
-                || ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])) {
+                || ($this->appInstance->passphrase !== $this->attrs->server['PASSPHRASE'])
+            ) {
                 $this->finish();
             }
 
@@ -296,7 +297,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic
         }
         if (isset($this->attrs->server['REQUEST_METHOD'])
             && ($this->attrs->server['REQUEST_METHOD'] === 'POST' || $this->attrs->server['REQUEST_METHOD'] === 'PUT')
-            && isset($this->attrs->server['HTTP_CONTENT_TYPE'])) {
+            && isset($this->attrs->server['HTTP_CONTENT_TYPE'])
+        ) {
             $this->attrs->server['REQUEST_METHOD_POST'] = true;
             self::parseStr($this->attrs->server['HTTP_CONTENT_TYPE'], $this->contype, true);
             $found = false;
@@ -942,7 +944,8 @@ abstract class Generic extends \PHPDaemon\Request\Generic
             $s = strtr($s, Generic::$hvaltr);
         }
         if ((stripos($s, '%u') !== false)
-            && preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)) {
+            && preg_match('~(%u[a-f\d]{4}|%[c-f][a-f\d](?!%[89a-f][a-f\d]))~is', $s, $m)
+        ) {
             $s = preg_replace_callback('~%(u[a-f\d]{4}|[a-f\d]{2})~i', $cb, $s);
         }
         parse_str($s, $var);

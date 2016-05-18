@@ -21,7 +21,7 @@ class PlainJSON implements \JsonSerializable
     use \PHPDaemon\Traits\StaticObjectWatchdog;
 
     protected $id;
-    
+
     protected static $tr = [];
 
     /**

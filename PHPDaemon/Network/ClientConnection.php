@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\Network;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Network\Connection;
 use PHPDaemon\Structures\StackCallbacks;
 
 /**
@@ -18,7 +15,7 @@ class ClientConnection extends Connection
      * @var boolean Busy?
      */
     protected $busy = false;
-    
+
     /**
      * @var boolean Acquired?
      */
@@ -43,8 +40,8 @@ class ClientConnection extends Connection
 
     /**
      * Constructor
-     * @param resource $fd   File descriptor
-     * @param mixed    $pool ConnectionPool
+     * @param resource $fd File descriptor
+     * @param mixed $pool ConnectionPool
      */
     public function __construct($fd, $pool = null)
     {
@@ -128,7 +125,7 @@ class ClientConnection extends Connection
         $this->acquired = false;
         $this->checkFree();
     }
-    
+
     /**
      * Acquire the connection
      * @return void

@@ -9,7 +9,7 @@ class DateTime extends \DateTime
 {
     /**
      * Support timestamp and available date format
-     * @param string       $time
+     * @param string $time
      * @param \DateTimeZone $timezone
      * @link http://php.net/manual/en/datetime.construct.php
      */
@@ -41,7 +41,7 @@ class DateTime extends \DateTime
         }
 
         $interval = $datetime1->diff($datetime2, $absolute);
-        $str      = '';
+        $str = '';
         $str .= $interval->y ? $interval->y . ' year. ' : '';
         $str .= $interval->m ? $interval->m . ' mon. ' : '';
         $str .= $interval->d ? $interval->d . ' day. ' : '';

@@ -390,7 +390,8 @@ class Object implements \ArrayAccess
     protected function onLoad()
     {
         if (isset($this->minspareworkers->value) && $this->minspareworkers->value > 0
-            && isset($this->maxspareworkers->value) && $this->maxspareworkers->value > 0) {
+            && isset($this->maxspareworkers->value) && $this->maxspareworkers->value > 0
+        ) {
             if ($this->minspareworkers->value > $this->maxspareworkers->value) {
                 Daemon::log('\'minspareworkers\' (' . $this->minspareworkers->value . ')  cannot be greater than \'maxspareworkers\' (' . $this->maxspareworkers->value . ').');
                 $this->minspareworkers->value = $this->maxspareworkers->value;

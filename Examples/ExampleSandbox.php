@@ -67,13 +67,13 @@ class ExampleSandboxRequest extends Generic
         $this->header('Content-Type: text/html');
 
         $sandbox = new \Runkit_Sandbox([
-                                           'safe_mode'         => true,
-                                           'open_basedir'      => '/var/www/users/jdoe/',
-                                           'allow_url_fopen'   => 'false',
-                                           'disable_functions' => 'exec,shell_exec,passthru,system',
-                                           'disable_classes'   => '',
-                                           'output_handler'    => [$this, 'out']
-                                       ]);
+            'safe_mode' => true,
+            'open_basedir' => '/var/www/users/jdoe/',
+            'allow_url_fopen' => 'false',
+            'disable_functions' => 'exec,shell_exec,passthru,system',
+            'disable_classes' => '',
+            'output_handler' => [$this, 'out']
+        ]);
 
         $sandbox->ini_set('html_errors', true);
         $sandbox->call_user_func(function () {

@@ -2,7 +2,6 @@
 namespace PHPDaemon\Traits;
 
 use PHPDaemon\Core\CallbackWrapper;
-use PHPDaemon\Core\Daemon;
 
 /**
  * Event handlers trait
@@ -28,8 +27,8 @@ trait EventHandlers
 
     /**
      * Propagate event
-     * @param  string $name    Event name
-     * @param  mixed  ...$args Arguments
+     * @param  string $name Event name
+     * @param  mixed ...$args Arguments
      * @return this
      */
     public function event($name, ...$args)
@@ -50,8 +49,8 @@ trait EventHandlers
 
     /**
      * Propagate event
-     * @param  string $name    Event name
-     * @param  mixed  ...$args Arguments
+     * @param  string $name Event name
+     * @param  mixed ...$args Arguments
      * @return this
      */
     public function trigger($name, ...$args)
@@ -72,8 +71,8 @@ trait EventHandlers
 
     /**
      * Propagate event
-     * @param  string $name    Event name
-     * @param  mixed  ...$args Arguments
+     * @param  string $name Event name
+     * @param  mixed ...$args Arguments
      * @return integer
      */
     public function triggerAndCount($name, ...$args)
@@ -105,7 +104,7 @@ trait EventHandlers
     /**
      * Bind event or events
      * @param string|array $event Event name
-     * @param callable     $cb    Callback
+     * @param callable $cb Callback
      * @return this
      */
     public function bind($event, $cb)
@@ -124,7 +123,7 @@ trait EventHandlers
      * Bind event or events
      * @alias EventHandlers::bind
      * @param string|array $event Event name
-     * @param callable     $cb    Callback
+     * @param callable $cb Callback
      * @return this
      */
     public function on($event, $cb)
@@ -135,7 +134,7 @@ trait EventHandlers
     /**
      * Unbind event(s) or callback from event(s)
      * @param string|array $event Event name
-     * @param callable     $cb    Callback, optional
+     * @param callable $cb Callback, optional
      * @return this
      */
     public function unbind($event, $cb = null)
@@ -163,7 +162,7 @@ trait EventHandlers
      * Unbind event(s) or callback from event(s)
      * @alias EventHandlers::unbind
      * @param string|array $event Event name
-     * @param callable     $cb    Callback, optional
+     * @param callable $cb Callback, optional
      * @return this
      */
     public function off($event, $cb = null)

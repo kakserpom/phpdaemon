@@ -1,10 +1,6 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Utils\Crypt;
-
 /**
  * @package    Libraries
  * @subpackage SockJS
@@ -23,7 +19,7 @@ class Welcome extends Generic
     {
         parent::init();
         $this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
-        $this->header('Expires: '.date('r', strtotime('+1 year')));
+        $this->header('Expires: ' . date('r', strtotime('+1 year')));
         echo "Welcome to SockJS!\n";
         $this->finish();
     }

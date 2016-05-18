@@ -84,7 +84,7 @@ abstract class Generic
      * @var mixed
      */
     protected $ssl;
-    
+
     /**
      * TLS
      * @var mixed
@@ -259,17 +259,17 @@ abstract class Generic
         }
         if (!FileSystem::checkFileReadable($this->certfile) || !FileSystem::checkFileReadable($this->pkfile)) {
             Daemon::log('Couldn\'t read ' . $this->certfile . ' or ' . $this->pkfile . ' file.  To generate a key' . PHP_EOL
-                        . 'and self-signed certificate, run' . PHP_EOL
-                        . '  openssl genrsa -out ' . escapeshellarg($this->pkfile) . ' 2048' . PHP_EOL
-                        . '  openssl req -new -key ' . escapeshellarg($this->pkfile) . '  -out cert.req' . PHP_EOL
-                        . '  openssl x509 -req -days 365 -in cert.req -signkey ' . escapeshellarg($this->pkfile) . '  -out ' . escapeshellarg($this->certfile));
+                . 'and self-signed certificate, run' . PHP_EOL
+                . '  openssl genrsa -out ' . escapeshellarg($this->pkfile) . ' 2048' . PHP_EOL
+                . '  openssl req -new -key ' . escapeshellarg($this->pkfile) . '  -out cert.req' . PHP_EOL
+                . '  openssl x509 -req -days 365 -in cert.req -signkey ' . escapeshellarg($this->pkfile) . '  -out ' . escapeshellarg($this->certfile));
 
             return;
         }
         $params = [
-            \EventSslContext::OPT_LOCAL_CERT        => $this->certfile,
-            \EventSslContext::OPT_LOCAL_PK          => $this->pkfile,
-            \EventSslContext::OPT_VERIFY_PEER       => $this->verifypeer,
+            \EventSslContext::OPT_LOCAL_CERT => $this->certfile,
+            \EventSslContext::OPT_LOCAL_PK => $this->pkfile,
+            \EventSslContext::OPT_VERIFY_PEER => $this->verifypeer,
             \EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
         ];
         if ($this->passphrase !== null) {
@@ -321,7 +321,7 @@ abstract class Generic
      */
     public function setFd($fd)
     {
-        $this->fd  = $fd;
+        $this->fd = $fd;
         $this->pid = posix_getpid();
     }
 

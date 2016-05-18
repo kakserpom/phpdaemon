@@ -1,10 +1,7 @@
 <?php
 namespace PHPDaemon\Clients\Redis;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Utils\Crypt;
-use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * @package    NetworkClients
@@ -81,7 +78,7 @@ class Lock
                 }
             }
         );
-        
+
         return $this;
     }
 }

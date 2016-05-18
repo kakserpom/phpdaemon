@@ -17,62 +17,62 @@ class Connection extends ClientConnection
      * @var string Username
      */
     protected $user = 'Guest';
-    
+
     /**
      * @var string Password
      */
     protected $password = '';
-    
+
     /**
      * @var string
      */
     public $EOL = "\r\n";
-    
+
     /**
      * @var string
      */
     public $nick;
-    
+
     /**
      * @var string
      */
     public $realname;
-    
+
     /**
      * @var string
      */
     public $mode = '';
-    
+
     /**
      * @var array
      */
     public $buffers = [];
-    
+
     /**
      * @var string
      */
     public $servername;
-    
+
     /**
      * @var array
      */
     public $channels = [];
-    
+
     /**
      * @var integer
      */
     public $latency;
-    
+
     /**
      * @var integer
      */
     public $lastPingTS;
-    
+
     /**
      * @var int
      */
     public $timeout = 300;
-    
+
     /**
      * @var bool To get local port number
      */
@@ -100,7 +100,7 @@ class Connection extends ClientConnection
     /**
      * @TODO DESCR
      * @param  string $cmd
-     * @param  mixed  ...$args Arguments
+     * @param  mixed ...$args Arguments
      */
     public function command($cmd)
     {
@@ -312,7 +312,7 @@ class Connection extends ClientConnection
             if (!isset($this->buffers[$bufName][$channelName])) {
                 return;
             }
-            $buf  = $this->buffers[$bufName][$channelName];
+            $buf = $this->buffers[$bufName][$channelName];
             $chan = null;
             while (!$buf->isEmpty()) {
                 $shift = $buf->shift();
@@ -335,8 +335,8 @@ class Connection extends ClientConnection
             list($hopCount, $realName) = explode("\x20", $hopCountRealName);
             if ($channel = $this->channelIfExists($channelName)) {
                 ChannelParticipant::instance($channel, $nick)
-                        ->setUsermask($nick . '!' . $user . '@' . $server)
-                        ->setFlag($mode);
+                    ->setUsermask($nick . '!' . $user . '@' . $server)
+                    ->setFlag($mode);
             }
         } elseif ($cmd === 'RPL_TOPIC') {
             list(/*$myNick*/, $channelName, $text) = $args;
@@ -366,9 +366,9 @@ class Connection extends ClientConnection
         } elseif ($cmd === 'PRIVMSG') {
             list($target, $body) = $args;
             $msg = [
-                'from'    => $from,
-                'to'      => $target,
-                'body'    => $body,
+                'from' => $from,
+                'to' => $target,
+                'body' => $body,
                 'private' => mb_orig_substr($target, 0, 1) !== '#',
             ];
             $this->event($msg['private'] ? 'privateMsg' : 'channelMsg', $msg);
@@ -380,7 +380,7 @@ class Connection extends ClientConnection
             $this->writeln(isset($args[0]) ? 'PONG :' . $args[0] : 'PONG');
         } elseif ($cmd === 'PONG') {
             if ($this->lastPingTS) {
-                $this->latency    = microtime(true) - $this->lastPingTS;
+                $this->latency = microtime(true) - $this->lastPingTS;
                 $this->lastPingTS = null;
             }
             return;
@@ -406,12 +406,12 @@ class Connection extends ClientConnection
                 return;
             }
             $line = mb_orig_substr($line, 0, -mb_orig_strlen($this->EOL));
-            $p    = mb_orig_strpos($line, ' :', 1);
-            $max  = $p !== false ? substr_count($line, "\x20", 0, $p + 1) + 1 : 18;
-            $e    = explode("\x20", $line, $max);
-            $i    = 0;
+            $p = mb_orig_strpos($line, ' :', 1);
+            $max = $p !== false ? substr_count($line, "\x20", 0, $p + 1) + 1 : 18;
+            $e = explode("\x20", $line, $max);
+            $i = 0;
             $from = IRC::parseUsermask($e[$i]{0} === ':' ? mb_orig_substr($e[$i++], 1) : null);
-            $cmd  = $e[$i++];
+            $cmd = $e[$i++];
             $args = [];
 
             for ($s = min(sizeof($e), 14); $i < $s; ++$i) {
@@ -424,7 +424,7 @@ class Connection extends ClientConnection
 
             if (ctype_digit($cmd)) {
                 $code = (int)$cmd;
-                $cmd  = isset(IRC::$codes[$code]) ? IRC::$codes[$code] : $code;
+                $cmd = isset(IRC::$codes[$code]) ? IRC::$codes[$code] : $code;
             }
             $this->lastLine = $line;
             $this->onCommand($from, $cmd, $args);

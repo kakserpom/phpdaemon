@@ -19,7 +19,7 @@ class UDPEchoServer extends \PHPDaemon\Network\Server
     {
         return [
             'listen' => 'udp://0.0.0.0',
-            'port'   => 1111,
+            'port' => 1111,
         ];
     }
 

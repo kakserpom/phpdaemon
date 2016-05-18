@@ -16,11 +16,11 @@ class CGI extends \PHPDaemon\Core\AppInstance
      * @var array
      */
     public $binAliases = [
-        'php5'   => '/usr/local/php/bin/php-cgi',
-        'php6'   => '/usr/local/php6/bin/php-cgi',
-        'perl'   => '/usr/bin/perl',
+        'php5' => '/usr/local/php/bin/php-cgi',
+        'php6' => '/usr/local/php6/bin/php-cgi',
+        'perl' => '/usr/bin/perl',
         'python' => '/usr/local/bin/python',
-        'ruby'   => '/usr/local/bin/ruby',
+        'ruby' => '/usr/local/bin/ruby',
     ];
 
     /**
@@ -38,13 +38,13 @@ class CGI extends \PHPDaemon\Core\AppInstance
         return [
             // @todo add description strings
             'allow-override-binpath' => true,
-            'allow-override-cwd'     => true,
-            'allow-override-chroot'  => true,
-            'allow-override-user'    => true,
-            'allow-override-group'   => true,
-            'cwd'                    => null,
-            'output-errors'          => true,
-            'errlog-file'            => __DIR__ . '/cgi-error.log',
+            'allow-override-cwd' => true,
+            'allow-override-chroot' => true,
+            'allow-override-user' => true,
+            'allow-override-group' => true,
+            'cwd' => null,
+            'output-errors' => true,
+            'errlog-file' => __DIR__ . '/cgi-error.log',
         ];
     }
 
@@ -58,7 +58,7 @@ class CGI extends \PHPDaemon\Core\AppInstance
 
     /**
      * Creates Request.
-     * @param object $req      Request.
+     * @param object $req Request.
      * @param object $upstream Upstream application instance.
      * @return CGIRequest Request.
      */

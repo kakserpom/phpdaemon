@@ -122,8 +122,7 @@ class V13 extends Connection
                     )
                 )
             )
-        )
-        ;
+        );
         $dataLength = mb_orig_strlen($data);
         $isMasked = false;
         $isMaskedInt = $isMasked ? 128 : 0;

@@ -6,7 +6,8 @@
  * @package Core
  * @author  Vasily Zorin <maintainer@daemon.io>
  */
-class MyAppResolver extends \PHPDaemon\Core\AppResolver {
+class MyAppResolver extends \PHPDaemon\Core\AppResolver
+{
 
     /**
      * Routes incoming request to related application. Method is for overloading.
@@ -14,7 +15,8 @@ class MyAppResolver extends \PHPDaemon\Core\AppResolver {
      * @param object AppInstance of Upstream.
      * @return string Application's name.
      */
-    public function getRequestRoute($req, $upstream) {
+    public function getRequestRoute($req, $upstream)
+    {
 
         /*
             This method should return application name to handle incoming request ($req).

@@ -14,19 +14,19 @@ class Pool extends Server
     {
         return [
             /* [string|array] Listen addresses */
-            'listen'         => 'tcp://0.0.0.0',
+            'listen' => 'tcp://0.0.0.0',
 
             /* [integer] Listen port */
-            'port'           => 1080,
+            'port' => 1080,
 
             /* [boolean] Authentication required */
-            'auth'           => 0,
+            'auth' => 0,
 
             /* [string] User name */
-            'username'       => 'User',
+            'username' => 'User',
 
             /* [string] Password */
-            'password'       => 'Password',
+            'password' => 'Password',
 
             /* [string] Allowed clients ip list */
             'allowedclients' => null,

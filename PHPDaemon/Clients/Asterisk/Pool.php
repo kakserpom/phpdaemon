@@ -26,7 +26,7 @@ class Pool extends Client
             // [string] Auth hash type
             'authtype' => 'md5',
             // [integer] Port
-            'port'     => 5280,
+            'port' => 5280,
         ];
     }
 
@@ -38,7 +38,7 @@ class Pool extends Client
     /**
      * Sets AMI version
      * @param  string $addr Address
-     * @param  string $ver  Version
+     * @param  string $ver Version
      * @return void
      */
     public function setAmiVersion($addr, $ver)
@@ -54,9 +54,9 @@ class Pool extends Client
     public static function prepareEnv($data)
     {
         $result = [];
-        $rows   = explode("\n", $data);
+        $rows = explode("\n", $data);
         for ($i = 0, $s = sizeof($rows); $i < $s; ++$i) {
-            $e             = self::extract($rows[$i]);
+            $e = self::extract($rows[$i]);
             $result[$e[0]] = $e[1];
         }
         return $result;
@@ -69,10 +69,10 @@ class Pool extends Client
      */
     public static function extract($line)
     {
-        $e      = explode(': ', $line, 2);
+        $e = explode(': ', $line, 2);
         $header = strtolower(trim($e[0]));
-        $value  = isset($e[1]) ? trim($e[1]) : null;
-        $safe   = false;
+        $value = isset($e[1]) ? trim($e[1]) : null;
+        $safe = false;
 
         foreach (self::$safeCaseValues as $item) {
             if (strncasecmp($header, $item, mb_orig_strlen($item)) === 0) {

@@ -2,7 +2,6 @@
 namespace PHPDaemon\Clients\WebSocket;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
 use PHPDaemon\Utils\Crypt;
@@ -23,8 +22,8 @@ class Connection extends ClientConnection
      */
     const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
-    const STATE_HEADER                = 1;
-    const STATE_DATA                  = 2;
+    const STATE_HEADER = 1;
+    const STATE_DATA = 2;
 
     /**
      * @var string
@@ -45,11 +44,11 @@ class Connection extends ClientConnection
      * @var array
      */
     protected $opCodes = [
-        1   => Pool::TYPE_TEXT,
-        2   => Pool::TYPE_BINARY,
-        8   => Pool::TYPE_CLOSE,
-        9   => Pool::TYPE_PING,
-        10  => Pool::TYPE_PONG
+        1 => Pool::TYPE_TEXT,
+        2 => Pool::TYPE_BINARY,
+        8 => Pool::TYPE_CLOSE,
+        9 => Pool::TYPE_PING,
+        10 => Pool::TYPE_PONG
     ];
 
     /**
@@ -76,7 +75,7 @@ class Connection extends ClientConnection
         $this->setWatermark(2, $this->pool->maxAllowedPacket);
         Crypt::randomString(16, null, function ($string) {
             $this->key = base64_encode($string);
-            $this->write('GET /'.$this->path." HTTP/1.1\r\nHost: ".$this->host.($this->port != 80 ? ':' . $this->port : '')."\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: ".$this->key."\r\nSec-WebSocket-Version: 13\r\n\r\n");
+            $this->write('GET /' . $this->path . " HTTP/1.1\r\nHost: " . $this->host . ($this->port != 80 ? ':' . $this->port : '') . "\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: " . $this->key . "\r\nSec-WebSocket-Version: 13\r\n\r\n");
         });
     }
 
@@ -94,19 +93,19 @@ class Connection extends ClientConnection
             }
             $hdr = $this->look(2);
             $fb = Binary::getbitmap(ord($hdr));
-            $fin = (bool) $fb{0};
+            $fin = (bool)$fb{0};
             $opCode = bindec(substr($fb, 4, 4));
 
             if (isset($this->opCodes[$opCode])) {
                 $this->type = $this->opCodes[$opCode];
             } else {
-                $this->log('opCode: '. $opCode . ': unknown frame type');
+                $this->log('opCode: ' . $opCode . ': unknown frame type');
                 $this->finish();
                 return;
             }
             $sb = ord(mb_orig_substr($hdr, 1));
             $sbm = Binary::getbitmap($sb);
-            $this->isMasked = (bool) $sbm{0};
+            $this->isMasked = (bool)$sbm{0};
             $payloadLength = $sb & 127;
 
             if ($payloadLength <= 125) {
@@ -127,7 +126,7 @@ class Connection extends ClientConnection
             }
 
             if ($this->pool->maxAllowedPacket < $this->pctLength) {
-                Daemon::$process->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
+                Daemon::$process->log('max-allowed-packet (' . $this->pool->config->maxallowedpacket->getHumanValue() . ') exceed, aborting connection');
                 $this->finish();
                 return;
             }
@@ -179,15 +178,15 @@ class Connection extends ClientConnection
 
     /**
      * Send frame to WebSocket server
-     * @param string  $payload
-     * @param string  $type
+     * @param string $payload
+     * @param string $type
      * @param boolean $isMasked
      */
     public function sendFrame($payload, $type = Pool::TYPE_TEXT, $isMasked = true)
     {
         $payloadLength = mb_orig_strlen($payload);
         if ($payloadLength > $this->pool->maxAllowedPacket) {
-            Daemon::$process->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
+            Daemon::$process->log('max-allowed-packet (' . $this->pool->config->maxallowedpacket->getHumanValue() . ') exceed, aborting connection');
             return;
         }
 

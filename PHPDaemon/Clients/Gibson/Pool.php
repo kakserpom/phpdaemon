@@ -12,16 +12,26 @@ class Pool extends \PHPDaemon\Network\Client
      * @var array Commands
      */
     protected $opCodes = [
-        'set' => 1,    'ttl' => 2,
-        'get' => 3,    'del' => 4,
-        'inc' => 5,    'dec' => 6,
-        'lock' => 7,    'unlock' => 8,
-        'mset' => 9,    'mttl' => 10,
-        'mget' => 11,    'mdel' => 12,
-        'minc' => 13,    'mdec' => 14,
-        'mlock' => 15,    'munlock' => 16,
-        'mcount' => 17,    'stats' => 18,
-        'ping' => 19,    'meta' => 20,
+        'set' => 1,
+        'ttl' => 2,
+        'get' => 3,
+        'del' => 4,
+        'inc' => 5,
+        'dec' => 6,
+        'lock' => 7,
+        'unlock' => 8,
+        'mset' => 9,
+        'mttl' => 10,
+        'mget' => 11,
+        'mdel' => 12,
+        'minc' => 13,
+        'mdec' => 14,
+        'mlock' => 15,
+        'munlock' => 16,
+        'mcount' => 17,
+        'stats' => 18,
+        'ping' => 19,
+        'meta' => 20,
         'end' => 255,
     ];
 
@@ -34,10 +44,10 @@ class Pool extends \PHPDaemon\Network\Client
     {
         return [
             /* [string|array] Default servers */
-            'servers'        => 'unix:///var/run/gibson.sock',
+            'servers' => 'unix:///var/run/gibson.sock',
 
             /* [integer] Default port */
-            'port'           => 10128,
+            'port' => 10128,
 
             /* [integer] Maximum connections per server */
             'maxconnperserv' => 32,
@@ -52,8 +62,8 @@ class Pool extends \PHPDaemon\Network\Client
      * Example:
      * $gibson->set(3600, 'key', 'value');
      * $gibson->get('key', function ($conn) {...});
-     * @param  string $name    Command name
-     * @param  array  $args Arguments
+     * @param  string $name Command name
+     * @param  array $args Arguments
      * @return void
      */
     public function __call($name, $args)

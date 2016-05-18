@@ -1,11 +1,8 @@
 <?php
 namespace PHPDaemon\DNode;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Core\CallbackWrapper;
-use PHPDaemon\Exceptions\UndefinedMethodCalled;
 use PHPDaemon\Exceptions\ProtocolError;
+use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 /**
  * DNode

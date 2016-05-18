@@ -19,8 +19,8 @@ class Pool extends Client
     protected function getConfigDefaults()
     {
         return [
-            'server'         => 'tcp://127.0.0.1/',
-            'port'           => 4730,
+            'server' => 'tcp://127.0.0.1/',
+            'port' => 4730,
             'maxconnperserv' => 32,
         ];
     }

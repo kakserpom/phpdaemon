@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Core;
 
-use PHPDaemon\Core\Daemon;
-
 /**
  * Debug static functions
  * @package PHPDaemon\Core
@@ -15,7 +13,7 @@ class Debug
 
     /**
      * Export binary data
-     * @param  string  $str String
+     * @param  string $str String
      * @param  boolean $all Whether to replace all of chars with escaped sequences
      * @return string Escaped string
      */
@@ -42,7 +40,7 @@ class Debug
 
     /**
      * Returns pretty-printed JSON
-     * @param  mixed  $m Data
+     * @param  mixed $m Data
      * @return string
      */
     public static function prettyJson($m)
@@ -52,7 +50,7 @@ class Debug
 
     /**
      * Returns JSON
-     * @param  mixed  $m Data
+     * @param  mixed $m Data
      * @return string
      */
     public static function json($m)
@@ -62,17 +60,17 @@ class Debug
 
     /**
      * Returns a proxy callback function with logging for debugging purposes
-     * @param  callable $cb   Callback
-     * @param  mixed    $name Data
+     * @param  callable $cb Callback
+     * @param  mixed $name Data
      * @return callable
      */
     public static function proxy($cb, $name = null)
     {
         static $i = 0;
         $n = ++$i;
-        Daemon::log('Debug::proxy #'.$n.': SPAWNED ('.json_encode($name). ')');
+        Daemon::log('Debug::proxy #' . $n . ': SPAWNED (' . json_encode($name) . ')');
         return function (...$args) use ($cb, $name, $n) {
-            Daemon::log('Debug::proxy #'.$n.': CALLED ('.json_encode($name). ')');
+            Daemon::log('Debug::proxy #' . $n . ': CALLED (' . json_encode($name) . ')');
             $cb(...$args);
         };
     }
@@ -138,7 +136,7 @@ class Debug
                 throw new \Exception;
             } catch (\Exception $e) {
                 $trace = $e->getTraceAsString();
-                $e     = explode("\n", $trace);
+                $e = explode("\n", $trace);
                 array_shift($e);
                 array_shift($e);
                 return implode("\n", $e);

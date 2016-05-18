@@ -539,7 +539,8 @@ abstract class Generic
 
         if ((ignore_user_abort() === 1)
             && (($this->state === Generic::STATE_RUNNING) || ($this->state === Generic::STATE_WAITING))
-            && !Daemon::$compatMode) {
+            && !Daemon::$compatMode
+        ) {
             $this->upstream->endRequest($this);
         } else {
             $this->finish(-1);

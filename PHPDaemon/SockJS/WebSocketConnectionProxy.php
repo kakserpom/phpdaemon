@@ -1,13 +1,6 @@
 <?php
 namespace PHPDaemon\SockJS;
 
-use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Core\Timer;
-use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Utils\Crypt;
-
 /**
  * @package    Libraries
  * @subpackage SockJS

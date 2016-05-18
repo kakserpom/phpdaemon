@@ -25,8 +25,8 @@ class ExampleAsteriskClient extends AppInstance
     protected function getConfigDefaults()
     {
         return [
-            'url'                 => 'tcp://user:password@localhost:5038',
-            'reconnect'           => 1,
+            'url' => 'tcp://user:password@localhost:5038',
+            'reconnect' => 1,
             'asteriskclient-name' => ''
         ];
     }

@@ -1,11 +1,8 @@
 <?php
 namespace PHPDaemon\SockJS;
 
-use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Structures\ObjectStorage;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
+use PHPDaemon\Structures\ObjectStorage;
 
 /**
  * @package    Libraries
@@ -34,22 +31,22 @@ class Application extends \PHPDaemon\Core\AppInstance
 
             /* [string] @todo wss-name */
             'wss-name' => '',
-            
+
             /* [Double] @todo batch-delay */
             'batch-delay' => new \PHPDaemon\Config\Entry\Double('0.05'),
-            
+
             /* [Double] @todo heartbeat-interval */
             'heartbeat-interval' => new \PHPDaemon\Config\Entry\Double('25'),
-            
+
             /* [Time] @todo dead-session-timeout */
             'dead-session-timeout' => new \PHPDaemon\Config\Entry\Time('1h'),
-            
+
             /* [Size] @todo gc-max-response-size */
             'gc-max-response-size' => new \PHPDaemon\Config\Entry\Size('128k'),
-            
+
             /* [Time] @todo network-timeout-read */
             'network-timeout-read' => new \PHPDaemon\Config\Entry\Time('2h'),
-            
+
             /* [Time] @todo network-timeout-write */
             'network-timeout-write' => new \PHPDaemon\Config\Entry\Time('120s'),
         ];
@@ -78,8 +75,8 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * subscribe
-     * @param  string   $chan [@todo description]
-     * @param  callable $cb   [@todo description]
+     * @param  string $chan [@todo description]
+     * @param  callable $cb [@todo description]
      * @param  callable $opcb [@todo description]
      * @callback $cb ( )
      * @callback $opcb ( )
@@ -92,9 +89,9 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * setnx
-     * @param  string   $key   [@todo description]
-     * @param  mixed    $value [@todo description]
-     * @param  callable $cb    [@todo description]
+     * @param  string $key [@todo description]
+     * @param  mixed $value [@todo description]
+     * @param  callable $cb [@todo description]
      * @callback $cb ( )
      * @return void
      */
@@ -105,9 +102,9 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * setkey
-     * @param  string   $key   [@todo description]
-     * @param  mixed    $value [@todo description]
-     * @param  callable $cb    [@todo description]
+     * @param  string $key [@todo description]
+     * @param  mixed $value [@todo description]
+     * @param  callable $cb [@todo description]
      * @callback $cb ( )
      * @return void
      */
@@ -118,8 +115,8 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * getkey
-     * @param  string   $key   [@todo description]
-     * @param  callable $cb    [@todo description]
+     * @param  string $key [@todo description]
+     * @param  callable $cb [@todo description]
      * @callback $cb ( )
      * @return void
      */
@@ -130,9 +127,9 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * expire
-     * @param  string   $key     [@todo description]
-     * @param  integer  $seconds [@todo description]
-     * @param  callable $cb      [@todo description]
+     * @param  string $key [@todo description]
+     * @param  integer $seconds [@todo description]
+     * @param  callable $cb [@todo description]
      * @callback $cb ( )
      * @return void
      */
@@ -143,8 +140,8 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * unsubscribe
-     * @param  string   $chan [@todo description]
-     * @param  callable $cb   [@todo description]
+     * @param  string $chan [@todo description]
+     * @param  callable $cb [@todo description]
      * @param  callable $opcb [@todo description]
      * @callback $cb ( )
      * @callback $opcb ( )
@@ -157,7 +154,7 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * unsubscribeReal
-     * @param  string   $chan [@todo description]
+     * @param  string $chan [@todo description]
      * @param  callable $opcb [@todo description]
      * @callback $opcb ( )
      * @return void
@@ -169,8 +166,8 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * publish
-     * @param  string   $chan [@todo description]
-     * @param  callable $cb   [@todo description]
+     * @param  string $chan [@todo description]
+     * @param  callable $cb [@todo description]
      * @param  callable $opcb [@todo description]
      * @callback $cb ( )
      * @callback $opcb ( )
@@ -224,10 +221,10 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * wsHandler
-     * @param  object   $ws     [@todo description]
-     * @param  string   $path   [@todo description]
-     * @param  object   $client [@todo description]
-     * @param  callable $state  [@todo description]
+     * @param  object $ws [@todo description]
+     * @param  string $path [@todo description]
+     * @param  object $client [@todo description]
+     * @param  callable $state [@todo description]
      * @callback $state ( object $route )
      * @return boolean
      */
@@ -274,7 +271,7 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * beginSession
-     * @param  string $path   [@todo description]
+     * @param  string $path [@todo description]
      * @param  string $sessId [@todo description]
      * @param  string $server [@todo description]
      * @return object
@@ -330,14 +327,14 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * Creates Request.
-     * @param  object $req      Request.
+     * @param  object $req Request.
      * @param  object $upstream Upstream application instance.
      * @return object           Request.
      */
     public function beginRequest($req, $upstream)
     {
         $e = array_map('rawurldecode', explode('/', $req->attrs->server['DOCUMENT_URI']));
-        
+
         $serverId = null;
         $sessId = null;
 
@@ -367,7 +364,7 @@ class Application extends \PHPDaemon\Core\AppInstance
         }
 
         $method = sizeof($extra) ? array_pop($extra) : null;
-        
+
         if ($method === null) {
             $method = 'Welcome';
         } elseif ($method === 'info') {
@@ -380,7 +377,9 @@ class Application extends \PHPDaemon\Core\AppInstance
             }
             $sessId = array_pop($extra);
             $serverId = array_pop($extra);
-            if ($sessId === '' || $serverId === '' || mb_orig_strpos($sessId, '.') !== false || mb_orig_strpos($serverId, '.') !== false) {
+            if ($sessId === '' || $serverId === '' || mb_orig_strpos($sessId,
+                    '.') !== false || mb_orig_strpos($serverId, '.') !== false
+            ) {
                 return $this->callMethod('NotFound', $req, $upstream);
             }
         }
@@ -396,8 +395,8 @@ class Application extends \PHPDaemon\Core\AppInstance
 
     /**
      * callMethod
-     * @param  string $method   [@todo description]
-     * @param  object $req      [@todo description]
+     * @param  string $method [@todo description]
+     * @param  object $req [@todo description]
      * @param  object $upstream [@todo description]
      * @return object
      */

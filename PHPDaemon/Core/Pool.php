@@ -1,10 +1,6 @@
 <?php
 namespace PHPDaemon\Core;
 
-use PHPDaemon\Core\AppInstance;
-use PHPDaemon\Core\ClassFinder;
-use PHPDaemon\Core\Daemon;
-
 /**
  * Pool application instance
  *
@@ -45,7 +41,8 @@ class Pool extends AppInstance
             }
             if ($realclass !== $class) {
                 $base = '\\PHPDaemon\\Core\\Pool:';
-                Daemon::$config->renameSection($base . $class . ($name !== '' ? ':' . $name : ''), $base . $realclass . ($name !== '' ? ':' . $name : ''));
+                Daemon::$config->renameSection($base . $class . ($name !== '' ? ':' . $name : ''),
+                    $base . $realclass . ($name !== '' ? ':' . $name : ''));
             }
             if (!class_exists($realclass)) {
                 Daemon::log($realclass . ' class not exists.');
@@ -61,7 +58,7 @@ class Pool extends AppInstance
      * Function handles incoming Remote Procedure Calls
      * You can override it
      * @param string $method Method name.
-     * @param array $args    Arguments.
+     * @param array $args Arguments.
      * @return mixed Result
      */
     public function RPCall($method, $args)

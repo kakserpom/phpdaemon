@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\Core;
 
-use PHPDaemon\Core\CallbackWrapper;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\FS\File;
 use PHPDaemon\Network\IOStream;
 
 /**

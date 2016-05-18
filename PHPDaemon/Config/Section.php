@@ -114,7 +114,7 @@ class Section implements \ArrayAccess
      */
     public function offsetSet($prop, $value)
     {
-        $prop          = $this->getRealPropertyName($prop);
+        $prop = $this->getRealPropertyName($prop);
         $this->{$prop} = $value;
     }
 
@@ -154,7 +154,7 @@ class Section implements \ArrayAccess
                     $this->{$name} = $value;
                 }
                 $this->{$name}->setHumanValue($current->value);
-                $this->{$name}->source   = $current->source;
+                $this->{$name}->source = $current->source;
                 $this->{$name}->revision = $current->revision;
             }
         }

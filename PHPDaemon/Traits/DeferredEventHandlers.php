@@ -2,10 +2,8 @@
 namespace PHPDaemon\Traits;
 
 use PHPDaemon\Core\DeferredEvent;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Exceptions\UndefinedMethodCalled;
 use PHPDaemon\Exceptions\UndefinedEventCalledException;
+use PHPDaemon\Exceptions\UndefinedMethodCalled;
 
 /**
  * Deferred event handlers trait
@@ -31,7 +29,7 @@ trait DeferredEventHandlers
             return $this->{$event};
         }
         if (!method_exists($this, $event . 'Event')) {
-            throw new \PHPDaemon\Exceptions\UndefinedEventCalled('Undefined event called: ' . get_class($this). '->' . $event);
+            throw new \PHPDaemon\Exceptions\UndefinedEventCalled('Undefined event called: ' . get_class($this) . '->' . $event);
         }
         $e = new DeferredEvent($this->{$event . 'Event'}());
         $e->name = $event;
@@ -64,7 +62,7 @@ trait DeferredEventHandlers
 
     /**
      * @param  string $method Method name
-     * @param  array  $args   Arguments
+     * @param  array $args Arguments
      * @throws UndefinedMethodCalled
      * @return mixed
      */

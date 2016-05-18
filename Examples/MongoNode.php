@@ -25,7 +25,7 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
     protected function getConfigDefaults()
     {
         return [
-            'mongoclientname'    => '',
+            'mongoclientname' => '',
             'memcacheclientname' => '',
         ];
     }
@@ -36,7 +36,7 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
      */
     public function init()
     {
-        $this->db    = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoclientname->value);
+        $this->db = \PHPDaemon\Clients\Mongo\Pool::getInstance($this->config->mongoclientname->value);
         $this->cache = \PHPDaemon\Clients\Memcache\Pool::getInstance($this->config->memcacheclientname->value);
         if (!isset($this->config->limitinstances)) {
             $this->log('missing \'limitInstances\' directive');
@@ -52,7 +52,7 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
                 $this->cache->get('_rp',
                     function ($answer) {
                         $this->inited = false;
-                        $e            = explode(' ', $answer->result);
+                        $e = explode(' ', $answer->result);
 
                         if (isset($e[1])) {
                             $ts = new \MongoTimestamp((int)$e[0], (int)$e[1]);
@@ -151,12 +151,12 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
     {
         $this->db->{'local.oplog.$main'}->find(
 
-            /**
-             * @param \MongoTimestamp $cursor
-             */
+        /**
+         * @param \MongoTimestamp $cursor
+         */
             function ($cursor) {
-                $this->cursor     = $cursor;
-                $cursor->state    = 1;
+                $this->cursor = $cursor;
+                $cursor->state = 1;
                 $cursor->lastOpId = null;
 
                 foreach ($cursor->items as $k => &$item) {
@@ -172,17 +172,17 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
                         $this->deleteObject($item['o']);
                     } elseif ($item['op'] === 'u') {
                         if (
-                                isset($item['b'])
-                                && ($item['b'] === false)
+                            isset($item['b'])
+                            && ($item['b'] === false)
                         ) {
                             $item['o']['_id'] = $item['o2']['_id'];
                             $this->cacheObject($item['o']);
                         } else {
                             $cursor->appInstance->{$item['ns']}->findOne(
 
-                                /**
-                                 * @param \MongoTimestamp $item
-                                 */
+                            /**
+                             * @param \MongoTimestamp $item
+                             */
                                 function ($item) {
                                     $this->cacheObject($item);
                                 },
@@ -194,19 +194,19 @@ class MongoNode extends \PHPDaemon\Core\AppInstance
                     unset($cursor->items[$k]);
                 }
             }, [
-                   'tailable'    => true,
-                   'sort'        => ['$natural' => 1],
-                   'snapshot'    => 1,
-                   'where'       => [
-                       'ts'      => [
-                           '$gt' => $point
-                       ],
-                       '$exists' => [
-                           '_key' => true
-                       ]
-                   ],
-                   'parse_oplog' => true,
-               ]
+                'tailable' => true,
+                'sort' => ['$natural' => 1],
+                'snapshot' => 1,
+                'where' => [
+                    'ts' => [
+                        '$gt' => $point
+                    ],
+                    '$exists' => [
+                        '_key' => true
+                    ]
+                ],
+                'parse_oplog' => true,
+            ]
         );
     }
 }

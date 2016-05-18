@@ -82,7 +82,7 @@ class IPC extends Generic
         Daemon::$process = $this;
         if (Daemon::$logpointerAsync) {
             Daemon::$logpointerAsync->fd = null;
-            Daemon::$logpointerAsync     = null;
+            Daemon::$logpointerAsync = null;
         }
         class_exists('Timer');
 
@@ -98,7 +98,7 @@ class IPC extends Generic
         Daemon::openLogs();
 
         $this->fileWatcher = new FileWatcher();
-        $this->IPCManager  = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
+        $this->IPCManager = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
         if (!$this->IPCManager) {
             $this->log('cannot instantiate IPCManager');
         }
@@ -118,7 +118,7 @@ class IPC extends Generic
         $this->setTitle(
             Daemon::$runName . ': IPC process'
             . (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
-                    ? ' (' . Daemon::$config->pidfile->value . ')' : '')
+                ? ' (' . Daemon::$config->pidfile->value . ')' : '')
         );
 
         if (isset(Daemon::$config->group->value)) {
@@ -143,7 +143,7 @@ class IPC extends Generic
             if ($sg === false) {
                 $this->log('Couldn\'t change group to \'' . Daemon::$config->group->value . '\'. You must replace config-variable \'group\' with existing group.');
                 exit(0);
-            } elseif (($sg['gid'] != posix_getgid())  && (!posix_setgid($sg['gid']))) {
+            } elseif (($sg['gid'] != posix_getgid()) && (!posix_setgid($sg['gid']))) {
                 $this->log('Couldn\'t change group to \'' . Daemon::$config->group->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
                 exit(0);
             }

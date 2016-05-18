@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\Utils;
 
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
-use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\FS\FileSystem;
 
 /**
@@ -14,11 +14,11 @@ use PHPDaemon\FS\FileSystem;
 class Crypt
 {
     use \PHPDaemon\Traits\ClassWatchdog;
-    
+
     /**
      * Generate keccak hash for string with salt
-     * @param  string  $str   Data
-     * @param  string  $salt  Salt
+     * @param  string $str Data
+     * @param  string $salt Salt
      * @param  boolean $plain Is plain text?
      * @return string
      */
@@ -30,7 +30,7 @@ class Crypt
             $e = explode('$', $salt, 3);
             $ee = explode('=', $e[1]);
             if (ctype_digit($ee[0])) {
-                $size = (int) $e[1];
+                $size = (int)$e[1];
             }
             if (isset($ee[1]) && ctype_digit($e[1])) {
                 $size = (int)$e[1];
@@ -53,11 +53,11 @@ class Crypt
 
     /**
      * Returns string of pseudo random characters
-     * @param  integer  $len   Length of desired string
-     * @param  string   $chars String of allowed characters
-     * @param  callable $cb    Callback
-     * @param  integer  $pri   Priority of EIO operation
-     * @param  boolean  $hang  If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
+     * @param  integer $len Length of desired string
+     * @param  string $chars String of allowed characters
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority of EIO operation
+     * @param  boolean $hang If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
      * @return string
      */
     public static function randomString($len = null, $chars = null, $cb = null, $pri = 0, $hang = false)
@@ -70,7 +70,7 @@ class Crypt
         }
         if ($cb === null) {
             Daemon::log('[CODE WARN] \\PHPDaemon\\Utils\\Crypt::randomString: non-callback way is not secure.'
-                    .' Please rewrite your code with callback function in third argument' . PHP_EOL . Debug::backtrace());
+                . ' Please rewrite your code with callback function in third argument' . PHP_EOL . Debug::backtrace());
 
             $r = '';
             $m = mb_orig_strlen($chars) - 1;
@@ -113,7 +113,7 @@ class Crypt
 
     /**
      * Returns the character at index $idx in $str in constant time
-     * @param  string  $str String
+     * @param  string $str String
      * @param  integer $idx Index
      * @return string
      */
@@ -136,10 +136,10 @@ class Crypt
 
     /**
      * Returns string of pseudo random bytes
-     * @param  integer  $len  Length of desired string
-     * @param  callable $cb   Callback
-     * @param  integer  $pri  Priority of EIO operation
-     * @param  boolean  $hang If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
+     * @param  integer $len Length of desired string
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority of EIO operation
+     * @param  boolean $hang If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
      * @return integer
      */
     public static function randomBytes($len, $cb, $pri = 0, $hang = false)
@@ -158,10 +158,10 @@ class Crypt
 
     /**
      * Returns array of pseudo random integers of machine-dependent size
-     * @param  integer  $numInts Number of integers
-     * @param  callable $cb      Callback
-     * @param  integer  $pri     Priority of EIO operation
-     * @param  boolean  $hang    If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
+     * @param  integer $numInts Number of integers
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority of EIO operation
+     * @param  boolean $hang If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
      * @return integer
      */
     public static function randomInts($numInts, $cb, $pri = 0, $hang = false)
@@ -187,10 +187,10 @@ class Crypt
 
     /**
      * Returns array of pseudo random 32-bit integers
-     * @param  integer  $numInts Number of integers
-     * @param  callable $cb      Callback
-     * @param  integer  $pri     Priority of EIO operation
-     * @param  boolean  $hang    If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
+     * @param  integer $numInts Number of integers
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority of EIO operation
+     * @param  boolean $hang If true, we shall use /dev/random instead of /dev/urandom and it may cause a delay
      * @return integer
      */
     public static function randomInts32($numInts, $cb, $pri = 0, $hang = false)
@@ -233,8 +233,8 @@ class Crypt
 
     /**
      * Compare strings
-     * @param  string  $a String 1
-     * @param  string  $b String 2
+     * @param  string $a String 1
+     * @param  string $b String 2
      * @return boolean    Equal?
      */
     public static function compareStrings($a, $b)

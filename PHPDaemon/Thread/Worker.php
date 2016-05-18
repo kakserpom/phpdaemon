@@ -104,7 +104,7 @@ class Worker extends Generic
      * @var integer
      */
     public $counterGC = 0;
-    
+
 
     /** @var \PHPDaemon\IPCManager\IPCManager */
     public $IPCManager;
@@ -120,7 +120,7 @@ class Worker extends Generic
         $this->lambdaCache = new CappedStorageHits;
         $this->lambdaCache->setMaxCacheSize(Daemon::$config->lambdacachemaxsize->value);
         $this->lambdaCache->setCapWindow(Daemon::$config->lambdacachecapwindow->value);
-        
+
         if (Daemon::$process instanceof Master) {
             Daemon::$process->unregisterSignals();
         }
@@ -130,11 +130,11 @@ class Worker extends Generic
         Daemon::$process = $this;
         if (Daemon::$logpointerAsync) {
             Daemon::$logpointerAsync->fd = null;
-            Daemon::$logpointerAsync     = null;
+            Daemon::$logpointerAsync = null;
         }
         class_exists('Timer');
         $this->autoReloadLast = time();
-        $this->reloadDelay    = Daemon::$config->mpmdelay->value + 2;
+        $this->reloadDelay = Daemon::$config->mpmdelay->value + 2;
         $this->setState(Daemon::WSTATE_PREINIT);
 
         if (Daemon::$config->autogc->value > 0) {
@@ -203,7 +203,7 @@ class Worker extends Generic
             Timer::add(function ($event) {
                 static $n = 0;
                 $list = get_included_files();
-                $s    = sizeof($list);
+                $s = sizeof($list);
                 if ($s > $n) {
                     $slice = array_map('realpath', array_slice($list, $n));
                     Daemon::$process->IPCManager->sendPacket(['op' => 'addIncludedFiles', 'files' => $slice]);
@@ -242,6 +242,7 @@ class Worker extends Generic
                     runkit_constant_add($k, $v);
                 }
             }
+
             $this->override('define', 'define');
 
             function header(...$args)
@@ -251,6 +252,7 @@ class Worker extends Generic
                 }
                 return Daemon::$context->header(...$args);
             }
+
             $this->override('header', 'header');
 
             function isUploadedFile(...$args)
@@ -260,6 +262,7 @@ class Worker extends Generic
                 }
                 return Daemon::$context->isUploadedFile(...$args);
             }
+
             $this->override('isUploadedFile', 'is_uploaded_file');
 
             function moveUploadedFile(...$args)
@@ -269,6 +272,7 @@ class Worker extends Generic
                 }
                 return Daemon::$context->moveUploadedFile(...$args);
             }
+
             $this->override('moveUploadedFile', 'move_uploaded_file');
 
             function headersSent(&$file = null, &$line = null)
@@ -288,6 +292,7 @@ class Worker extends Generic
                 }
                 return Daemon::$context->headers_list();
             }
+
             $this->override('headersList', 'headers_list');
 
             function setcookie(...$args)
@@ -297,6 +302,7 @@ class Worker extends Generic
                 }
                 return Daemon::$context->setcookie(...$args);
             }
+
             $this->override('setcookie', 'setcookie');
 
             /**
@@ -309,10 +315,12 @@ class Worker extends Generic
                 }
                 return Daemon::$context->registerShutdownFunction($cb);
             }
+
             $this->override('registerShutdownFunction', 'register_shutdown_function');
 
             runkit_function_copy('create_function', 'create_function_native');
-            runkit_function_redefine('create_function', '$arg,$body', 'return \PHPDaemon\Core\Daemon::$process->createFunction($arg,$body);');
+            runkit_function_redefine('create_function', '$arg,$body',
+                'return \PHPDaemon\Core\Daemon::$process->createFunction($arg,$body);');
         }
     }
 
@@ -349,7 +357,7 @@ class Worker extends Generic
         $this->setTitle(
             Daemon::$runName . ': worker process'
             . (Daemon::$config->pidfile->value !== Daemon::$config->defaultpidfile->value
-                    ? ' (' . Daemon::$config->pidfile->value . ')' : '')
+                ? ' (' . Daemon::$config->pidfile->value . ')' : '')
         );
 
         if (isset(Daemon::$config->group->value)) {
@@ -452,21 +460,24 @@ class Worker extends Generic
         }
 
         if (Daemon::$config->maxmemoryusage->value > 0
-            && (memory_get_usage(true) > Daemon::$config->maxmemoryusage->value)) {
+            && (memory_get_usage(true) > Daemon::$config->maxmemoryusage->value)
+        ) {
             $this->log('\'maxmemory\' exceed. Graceful shutdown.');
 
             $this->gracefulRestart();
         }
 
         if (Daemon::$config->maxrequests->value > 0
-                && ($this->reqCounter >= Daemon::$config->maxrequests->value)) {
+            && ($this->reqCounter >= Daemon::$config->maxrequests->value)
+        ) {
             $this->log('\'max-requests\' exceed. Graceful shutdown.');
 
             $this->gracefulRestart();
         }
 
         if (Daemon::$config->maxidle->value
-            && $this->timeLastActivity && ($time - $this->timeLastActivity > Daemon::$config->maxidle->value)) {
+            && $this->timeLastActivity && ($time - $this->timeLastActivity > Daemon::$config->maxidle->value)
+        ) {
             $this->log('\'maxworkeridle\' exceed. Graceful shutdown.');
 
             $this->gracefulRestart();
@@ -486,7 +497,7 @@ class Worker extends Generic
     {
         $this->graceful = true;
         $this->reload = true;
-        Timer::add(function() {
+        Timer::add(function () {
             EventLoop::$instance->stop();
         }, $this->reloadDelay * 1e6);
         $this->setState($this->state);
@@ -499,7 +510,7 @@ class Worker extends Generic
     public function gracefulStop()
     {
         $this->graceful = true;
-        Timer::add(function() {
+        Timer::add(function () {
             EventLoop::$instance->stop();
         }, $this->reloadDelay * 1e6);
         $this->setState($this->state);

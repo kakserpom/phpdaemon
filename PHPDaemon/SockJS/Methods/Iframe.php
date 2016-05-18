@@ -1,10 +1,6 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Utils\Crypt;
-
 /**
  * @package    Libraries
  * @subpackage SockJS
@@ -27,7 +23,7 @@ class Iframe extends Generic
             $this->version = $this->attrs->version;
         }
         $this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
-        $this->header('Expires: '.date('r', strtotime('+1 year')));
+        $this->header('Expires: ' . date('r', strtotime('+1 year')));
         $html = '<!DOCTYPE html>
 <html>
 <head>
@@ -37,15 +33,15 @@ class Iframe extends Generic
 		document.domain = document.domain;
 		_sockjs_onload = function(){SockJS.bootstrap_iframe();};
 	</script>
-	<script src="https://cdn.jsdelivr.net/sockjs/' . htmlentities($this->version, ENT_QUOTES, 'UTF-8').'/sockjs.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/sockjs/' . htmlentities($this->version, ENT_QUOTES, 'UTF-8') . '/sockjs.min.js"></script>
 </head>
 <body>
 	<h2>Don\'t panic!</h2>
 	<p>This is a SockJS hidden iframe. It\'s used for cross domain magic.</p>
 </body>
 </html>';
-        $etag = 'W/"'.sha1($html).'"';
-        $this->header('ETag: '.$etag);
+        $etag = 'W/"' . sha1($html) . '"';
+        $this->header('ETag: ' . $etag);
         if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
             if ($_SERVER['HTTP_IF_NONE_MATCH'] === $etag) {
                 $this->status(304);
@@ -54,7 +50,7 @@ class Iframe extends Generic
                 return;
             }
         }
-        $this->header('Content-Length: '.mb_orig_strlen($html));
+        $this->header('Content-Length: ' . mb_orig_strlen($html));
         echo $html;
         $this->finish();
     }

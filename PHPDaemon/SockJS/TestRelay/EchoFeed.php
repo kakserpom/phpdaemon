@@ -1,11 +1,6 @@
 <?php
 namespace PHPDaemon\SockJS\TestRelay;
 
-use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Structures\ObjectStorage;
-use PHPDaemon\Core\Debug;
-
 /**
  * @package    SockJS
  * @subpackage TestRelay
@@ -15,7 +10,7 @@ class EchoFeed extends \PHPDaemon\WebSocket\Route
 {
     /**
      * Called when new frame received
-     * @param  string  $data Frame's contents
+     * @param  string $data Frame's contents
      * @param  integer $type Frame's type
      * @return void
      */

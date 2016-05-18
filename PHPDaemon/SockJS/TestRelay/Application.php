@@ -1,10 +1,6 @@
 <?php
 namespace PHPDaemon\SockJS\TestRelay;
 
-use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Structures\ObjectStorage;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Servers\WebSocket\Pool as WebSocketPool;
 
 /**

@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\PubSub;
 
-use PHPDaemon\PubSub\PubSubEvent;
-
 /**
  * PubSub
  * @package PHPDaemon\PubSub
@@ -20,7 +18,7 @@ class PubSub
 
     /**
      * Is event exists?
-     * @param  string  $id Event ID
+     * @param  string $id Event ID
      * @return boolean
      */
     public function eventExists($id)
@@ -30,9 +28,9 @@ class PubSub
 
     /**
      * Subcribe to event
-     * @param  string   $id  Event ID
-     * @param  object   $obj Subscriber
-     * @param  callable $cb  Callback
+     * @param  string $id Event ID
+     * @param  object $obj Subscriber
+     * @param  callable $cb Callback
      * @return boolean       Success
      */
     public function sub($id, $obj, $cb)
@@ -45,7 +43,7 @@ class PubSub
 
     /**
      * Adds event
-     * @param  string      $id  Event ID
+     * @param  string $id Event ID
      * @param  PubSubEvent $obj
      * @return void
      */
@@ -66,8 +64,8 @@ class PubSub
 
     /**
      * Unsubscribe object from event
-     * @param  string  $id  Event ID
-     * @param  object  $obj Subscriber
+     * @param  string $id Event ID
+     * @param  object $obj Subscriber
      * @return boolean      Success
      */
     public function unsub($id, $obj)
@@ -80,8 +78,8 @@ class PubSub
 
     /**
      * Publish
-     * @param  string  $id   Event ID
-     * @param  mixed   $data Data
+     * @param  string $id Event ID
+     * @param  mixed $data Data
      * @return boolean       Success
      */
     public function pub($id, $data)
@@ -94,7 +92,7 @@ class PubSub
 
     /**
      * Unsubscribe object from all events
-     * @param  object  $obj Subscriber
+     * @param  object $obj Subscriber
      * @return boolean      Success
      */
     public function unsubFromAll($obj)

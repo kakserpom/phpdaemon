@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Redis\Examples;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\HTTPRequest\Generic;
 
 class SimpleRequest extends Generic

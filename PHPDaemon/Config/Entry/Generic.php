@@ -68,8 +68,8 @@ class Generic
      */
     public function setValue($value)
     {
-        $old              = $this->value;
-        $this->value      = $value;
+        $old = $this->value;
+        $this->value = $value;
         $this->humanValue = static::plainToHuman($value);
         $this->onUpdate($old);
     }
@@ -161,7 +161,7 @@ class Generic
      */
     public function setDefaultValue($value)
     {
-        $this->defaultValue    = $value;
+        $this->defaultValue = $value;
         $this->hasDefaultValue = true;
     }
 
@@ -173,8 +173,8 @@ class Generic
     public function setHumanValue($value)
     {
         $this->humanValue = $value;
-        $old              = $this->value;
-        $this->value      = static::humanToPlain($value);
+        $old = $this->value;
+        $this->value = static::humanToPlain($value);
         $this->onUpdate($old);
     }
 

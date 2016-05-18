@@ -23,7 +23,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     protected $opts;
 
     protected $stopped = false;
-    
+
     protected $callbackParamEnabled = false;
     protected $frames = [];
 
@@ -45,7 +45,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     protected $bytesSent = 0;
 
     protected $heartbeatOnFinish = false;
-    
+
 
     /**
      * Constructor
@@ -58,7 +58,8 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
         $this->path = $this->attrs->path;
 
         // @TODO: revert timeout after request
-        $this->upstream->setTimeouts($this->appInstance->config->networktimeoutread->value, $this->appInstance->config->networktimeoutwrite->value);
+        $this->upstream->setTimeouts($this->appInstance->config->networktimeoutread->value,
+            $this->appInstance->config->networktimeoutwrite->value);
 
         $this->opts = $this->appInstance->getRouteOptions($this->attrs->path);
         $this->CORS();
@@ -120,7 +121,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
 
     /**
      * Output some data
-     * @param  string  $s     String to out
+     * @param  string $s String to out
      * @param  boolean $flush
      * @return boolean        Success
      */
@@ -147,7 +148,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
 
     /**
      * Output some data
-     * @param  string  $s     String to out
+     * @param  string $s String to out
      * @param  boolean $flush
      * @return boolean        Success
      */
@@ -156,8 +157,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
         if ($this->heartbeatTimer !== null) {
             Timer::setTimeout($this->heartbeatTimer);
         }
-        return parent::out($s, $flush);
-        ;
+        return parent::out($s, $flush);;
     }
 
 
@@ -177,7 +177,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     public function w8in()
     {
     }
-    
+
     /**
      * s2c
      * @param  object $redis
@@ -260,61 +260,68 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     protected function poll($cb = null)
     {
         $this->appInstance->subscribe('s2c:' . $this->sessId, [$this, 's2c'], function ($redis) use ($cb) {
-            $this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode), function ($redis) use ($cb) {
-                if (!$redis) {
-                    $cb === null || $cb();
-                    return;
-                }
-                if ($redis->result > 0) {
-                    $cb === null || $cb();
-                    return;
-                }
-                $this->appInstance->setnx('sess:' . $this->sessId, $this->attrs->server['REQUEST_URI'], function ($redis) use ($cb) {
-                    if (!$redis || $redis->result === 0) {
-                        $this->error(3000);
+            $this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode),
+                function ($redis) use ($cb) {
+                    if (!$redis) {
                         $cb === null || $cb();
                         return;
                     }
-                    $this->appInstance->expire('sess:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value, function ($redis) use ($cb) {
-                        if (!$redis || $redis->result === 0) {
-                            $this->error(3000);
-                            $cb === null || $cb();
-                            return;
-                        }
-                        $this->appInstance->subscribe('state:' . $this->sessId, function ($redis) use ($cb) {
-                            if (!$redis) {
+                    if ($redis->result > 0) {
+                        $cb === null || $cb();
+                        return;
+                    }
+                    $this->appInstance->setnx('sess:' . $this->sessId, $this->attrs->server['REQUEST_URI'],
+                        function ($redis) use ($cb) {
+                            if (!$redis || $redis->result === 0) {
+                                $this->error(3000);
+                                $cb === null || $cb();
                                 return;
                             }
-                            list(, $chan, $state) = $redis->result;
-                            if ($state === 'started') {
-                                $this->sendFrame('o');
-                                if (!in_array('stream', $this->pollMode)) {
-                                    $this->finish();
-                                    return;
-                                }
-                            }
-                            $this->appInstance->publish('poll:' . $this->sessId, json_encode($this->pollMode), function ($redis) use ($cb) {
-                                if (!$redis || $redis->result === 0) {
-                                    $this->error(3000);
-                                    $cb === null || $cb();
-                                    return;
-                                }
-                                $cb === null || $cb();
-                            });
-                        }, function ($redis) use ($cb) {
-                            if (!$this->appInstance->beginSession($this->path, $this->sessId, $this->attrs->server)) {
-                                $this->header('404 Not Found');
-                                $this->finish();
-                                $this->unsubscribeReal('state:' . $this->sessId);
-                            }
-                            $cb === null || $cb();
+                            $this->appInstance->expire('sess:' . $this->sessId,
+                                $this->appInstance->config->deadsessiontimeout->value, function ($redis) use ($cb) {
+                                    if (!$redis || $redis->result === 0) {
+                                        $this->error(3000);
+                                        $cb === null || $cb();
+                                        return;
+                                    }
+                                    $this->appInstance->subscribe('state:' . $this->sessId,
+                                        function ($redis) use ($cb) {
+                                            if (!$redis) {
+                                                return;
+                                            }
+                                            list(, $chan, $state) = $redis->result;
+                                            if ($state === 'started') {
+                                                $this->sendFrame('o');
+                                                if (!in_array('stream', $this->pollMode)) {
+                                                    $this->finish();
+                                                    return;
+                                                }
+                                            }
+                                            $this->appInstance->publish('poll:' . $this->sessId,
+                                                json_encode($this->pollMode), function ($redis) use ($cb) {
+                                                    if (!$redis || $redis->result === 0) {
+                                                        $this->error(3000);
+                                                        $cb === null || $cb();
+                                                        return;
+                                                    }
+                                                    $cb === null || $cb();
+                                                });
+                                        }, function ($redis) use ($cb) {
+                                            if (!$this->appInstance->beginSession($this->path, $this->sessId,
+                                                $this->attrs->server)
+                                            ) {
+                                                $this->header('404 Not Found');
+                                                $this->finish();
+                                                $this->unsubscribeReal('state:' . $this->sessId);
+                                            }
+                                            $cb === null || $cb();
+                                        });
+                                });
                         });
-                    });
                 });
-            });
         });
     }
-    
+
     /**
      * acquire
      * @param  callable $cb
@@ -329,7 +336,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
                 return;
             }
             if ($redis->result !== null) {
-                $this->error((int) $redis->result);
+                $this->error((int)$redis->result);
                 return;
             }
             if ($this->appInstance->getLocalSubscribersCount('w8in:' . $this->sessId) > 0) {
@@ -381,9 +388,10 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     protected function anotherConnectionStillOpen()
     {
         $this->appInstance->setkey('error:' . $this->sessId, 1002, function () {
-            $this->appInstance->expire('error:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value, function () {
-                $this->error(2010);
-            });
+            $this->appInstance->expire('error:' . $this->sessId, $this->appInstance->config->deadsessiontimeout->value,
+                function () {
+                    $this->error(2010);
+                });
         });
     }
 
@@ -416,7 +424,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
      */
     protected function contentType($type)
     {
-        $this->header('Content-Type: '.$type.'; charset=UTF-8');
+        $this->header('Content-Type: ' . $type . '; charset=UTF-8');
     }
 
     /**
@@ -436,7 +444,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
     protected function CORS()
     {
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
-            $this->header('Access-Control-Allow-Headers: '.$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
+            $this->header('Access-Control-Allow-Headers: ' . $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']);
         }
         if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] !== 'null') {
             $this->header('Access-Control-Allow-Origin:' . $_SERVER['HTTP_ORIGIN']);
@@ -449,7 +457,7 @@ abstract class Generic extends \PHPDaemon\HTTPRequest\Generic
             $this->header('Cache-Control: max-age=31536000, public, pre-check=0, post-check=0');
             $this->header('Access-Control-Max-Age: 31536000');
             $this->header('Access-Control-Allow-Methods: OPTIONS, ' . $this->allowedMethods);
-            $this->header('Expires: '.date('r', strtotime('+1 year')));
+            $this->header('Expires: ' . date('r', strtotime('+1 year')));
             $this->finish();
         } elseif (!in_array($_SERVER['REQUEST_METHOD'], explode(', ', $this->allowedMethods), true)) {
             $this->header('405 Method Not Allowed');

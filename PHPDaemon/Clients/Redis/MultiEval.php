@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Redis;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
 
 /**

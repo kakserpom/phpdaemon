@@ -1,9 +1,9 @@
 <?php
 namespace PHPDaemon\FS;
 
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Network\IOStream;
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Core\CallbackWrapper;
 
 /**
  * File

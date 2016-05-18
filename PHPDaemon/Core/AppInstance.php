@@ -2,8 +2,6 @@
 namespace PHPDaemon\Core;
 
 use PHPDaemon\Config;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Request\Generic;
 use PHPDaemon\Thread;
 
 /**
@@ -20,47 +18,47 @@ class AppInstance
      * Event: config updated
      */
     const EVENT_CONFIG_UPDATED = 1;
-    
+
     /**
      * Event: graceful shutdown
      */
     const EVENT_GRACEFUL_SHUTDOWN = 2;
-    
+
     /**
      * Event: shutdown
      */
     const EVENT_SHUTDOWN = 3;
-    
+
     /**
      * @var boolean If true, it's allowed to be run without defined config section'
      */
     public static $runOnDemand = true;
-    
+
     /**
      * @var string Optional passphrase
      */
     public $passphrase;
-    
+
     /**
      * @var boolean Ready to run?
      */
     public $ready = false;
-    
+
     /**
      * @var object Related config section
      */
     public $config;
-    
+
     /**
      * @var boolean Is RPC enabled?
      */
     public $enableRPC = false;
-    
+
     /**
      * @var null|string Default class of incoming requests
      */
     public $requestClass;
-    
+
     /**
      * @var string Instance name
      */
@@ -74,8 +72,8 @@ class AppInstance
     public function __construct($name = '')
     {
         $this->name = $name;
-        $appName    = '\\' . get_class($this);
-        $fullname   = Daemon::$appResolver->getAppFullName($appName, $this->name);
+        $appName = '\\' . get_class($this);
+        $fullname = Daemon::$appResolver->getAppFullName($appName, $this->name);
         //Daemon::$process->log($fullname . ' instantiated.');
 
         if ($this->requestClass === null) {
@@ -156,7 +154,7 @@ class AppInstance
     }
 
     /**
-     * @param  string  $name  Instance name
+     * @param  string $name Instance name
      * @param  boolean $spawn If true, we spawn an instance if absent
      * @return AppInstance
      */
@@ -169,7 +167,7 @@ class AppInstance
      * Function handles incoming Remote Procedure Calls
      * You can override it
      * @param  string $method Method name
-     * @param  array  $args   Arguments
+     * @param  array $args Arguments
      * @return mixed          Result
      */
     public function RPCall($method, $args)
@@ -202,9 +200,9 @@ class AppInstance
     /**
      * Send broadcast RPC
      * You can override it
-     * @param  string   $method Method name
-     * @param  array    $args   Arguments
-     * @param  callable $cb     Callback
+     * @param  string $method Method name
+     * @param  array $args Arguments
+     * @param  callable $cb Callback
      * @return boolean Success
      */
     public function broadcastCall($method, $args = [], $cb = null)
@@ -221,8 +219,8 @@ class AppInstance
      * Send RPC, executed once in any worker
      * You can override it
      * @param  string $method Method name
-     * @param  array  $args   Arguments
-     * @param  mixed  $cb     Callback
+     * @param  array $args Arguments
+     * @param  mixed $cb Callback
      * @return boolean Success
      */
     public function singleCall($method, $args = [], $cb = null)
@@ -239,9 +237,9 @@ class AppInstance
      * Send RPC, executed once in certain worker
      * You can override it
      * @param  integer $workerId Worker Id
-     * @param  string  $method   Method name
-     * @param  array   $args     Arguments
-     * @param  mixed   $cb       Callback
+     * @param  string $method Method name
+     * @param  array $args Arguments
+     * @param  mixed $cb Callback
      * @return boolean Success
      */
     public function directCall($workerId, $method, $args = [], $cb = null)
@@ -267,19 +265,19 @@ class AppInstance
 
     /**
      * Handle the request
-     * @param  object $parent   Parent request
+     * @param  object $parent Parent request
      * @param  object $upstream Upstream application
      * @return object Request
      */
     public function handleRequest($parent, $upstream)
     {
         $req = $this->beginRequest($parent, $upstream);
-        return $req ? : $parent;
+        return $req ?: $parent;
     }
 
     /**
      * Create Request instance
-     * @param  object $req      Generic
+     * @param  object $req Generic
      * @param  object $upstream Upstream application instance
      * @return object Request
      */

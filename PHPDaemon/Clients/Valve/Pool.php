@@ -9,21 +9,21 @@ namespace PHPDaemon\Clients\Valve;
  */
 class Pool extends \PHPDaemon\Network\Client
 {
-    const A2S_INFO                     = "\x54";
-    const S2A_INFO                     = "\x49";
-    const S2A_INFO_SOURCE              = "\x6d";
-    const A2S_PLAYER                   = "\x55";
-    const S2A_PLAYER                   = "\x44";
+    const A2S_INFO = "\x54";
+    const S2A_INFO = "\x49";
+    const S2A_INFO_SOURCE = "\x6d";
+    const A2S_PLAYER = "\x55";
+    const S2A_PLAYER = "\x44";
     const A2S_SERVERQUERY_GETCHALLENGE = "\x57";
     const S2A_SERVERQUERY_GETCHALLENGE = "\x41";
-    const A2A_PING                     = "\x69";
-    const S2A_PONG                     = "\x6A";
+    const A2A_PING = "\x69";
+    const S2A_PONG = "\x6A";
 
     /**
      * Sends a request
-     * @param  string   $addr Address
-     * @param  string   $type Type of request
-     * @param  string   $data Data
+     * @param  string $addr Address
+     * @param  string $type Type of request
+     * @param  string $data Data
      * @param  callable $cb Callback
      * @callback $cb ( )
      * @return void
@@ -31,41 +31,43 @@ class Pool extends \PHPDaemon\Network\Client
     public function request($addr, $type, $data, $cb)
     {
         $e = explode(':', $addr);
-        $this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/', function ($conn) use ($cb, $addr, $data, $type) {
-            if (!$conn->connected) {
-                $cb($conn, false);
-                return;
-            }
-            $conn->request($type, $data, $cb);
-        });
+        $this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/',
+            function ($conn) use ($cb, $addr, $data, $type) {
+                if (!$conn->connected) {
+                    $cb($conn, false);
+                    return;
+                }
+                $conn->request($type, $data, $cb);
+            });
     }
 
     /**
      * Sends echo-request
-     * @param  string   $addr Address
-     * @param  callable $cb   Callback
+     * @param  string $addr Address
+     * @param  callable $cb Callback
      * @callback $cb ( )
      * @return void
      */
     public function ping($addr, $cb)
     {
         $e = explode(':', $addr);
-        $this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/ping', function ($conn) use ($cb) {
-            if (!$conn->connected) {
-                $cb($conn, false);
-                return;
-            }
-            $mt = microtime(true);
-            $conn->request('ping', null, function ($conn, $success) use ($mt, $cb) {
-                $cb($conn, $success ? (microtime(true) - $mt) : false);
+        $this->getConnection('valve://[udp:' . $e[0] . ']' . (isset($e[1]) ? ':' . $e[1] : '') . '/ping',
+            function ($conn) use ($cb) {
+                if (!$conn->connected) {
+                    $cb($conn, false);
+                    return;
+                }
+                $mt = microtime(true);
+                $conn->request('ping', null, function ($conn, $success) use ($mt, $cb) {
+                    $cb($conn, $success ? (microtime(true) - $mt) : false);
+                });
             });
-        });
     }
 
     /**
      * Sends a request of type 'info'
-     * @param  string   $addr Address
-     * @param  callable $cb   Callback
+     * @param  string $addr Address
+     * @param  callable $cb Callback
      * @callback $cb ( )
      * @return void
      */
@@ -76,8 +78,8 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * Sends a request of type 'players'
-     * @param  string   $addr Address
-     * @param  callable $cb   Callback
+     * @param  string $addr Address
+     * @param  callable $cb Callback
      * @callback $cb ( )
      * @return void
      */
@@ -101,10 +103,10 @@ class Pool extends \PHPDaemon\Network\Client
     {
         return [
             /* [string|array] Default servers */
-            'servers'        => '127.0.0.1',
+            'servers' => '127.0.0.1',
 
             /* [integer] Default port */
-            'port'           => 27015,
+            'port' => 27015,
 
             /* [integer] Maximum connections per server */
             'maxconnperserv' => 32,

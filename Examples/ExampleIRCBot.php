@@ -53,7 +53,7 @@ class ExampleIRCBot extends \PHPDaemon\Core\AppInstance
     public function connect()
     {
         $app = $this;
-        $r   = $this->client->getConnection($this->config->url->value, function ($conn) use ($app) {
+        $r = $this->client->getConnection($this->config->url->value, function ($conn) use ($app) {
             $app->conn = $conn;
             if ($conn->connected) {
                 \PHPDaemon\Core\Daemon::log('IRC bot connected at ' . $this->config->url->value);

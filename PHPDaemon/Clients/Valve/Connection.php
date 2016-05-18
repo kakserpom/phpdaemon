@@ -1,7 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Valve;
 
-use PHPDaemon\Clients\Valve\Pool;
 use PHPDaemon\Network\ClientConnection;
 use PHPDaemon\Utils\Binary;
 use PHPDaemon\Utils\Encoding;
@@ -48,9 +47,9 @@ class Connection extends ClientConnection
 
     /**
      * Sends a request
-     * @param  string   $type Type of request
-     * @param  string   $data Data
-     * @param  callable $cb   Callback
+     * @param  string $type Type of request
+     * @param  string $data Data
+     * @param  callable $cb Callback
      * @callback $cb ( )
      * @return void
      */
@@ -91,7 +90,7 @@ class Connection extends ClientConnection
         }
         /* @TODO: refactoring Binary::* to support direct buffer calls */
         $pct = $this->read(4096);
-        $h   = Binary::getDWord($pct);
+        $h = Binary::getDWord($pct);
         if ($h !== 0xFFFFFFFF) {
             $this->finish();
             return;
@@ -103,7 +102,7 @@ class Connection extends ClientConnection
             $result = self::parsePlayers($pct);
         } elseif ($type === Pool::S2A_SERVERQUERY_GETCHALLENGE) {
             $result = mb_orig_substr($pct, 0, 4);
-            $pct    = mb_orig_substr($pct, 5);
+            $pct = mb_orig_substr($pct, 5);
         } elseif ($type === Pool::S2A_PONG) {
             $result = true;
         } else {
@@ -122,26 +121,26 @@ class Connection extends ClientConnection
     public static function parsePlayers(&$st)
     {
         $playersn = Binary::getByte($st);
-        $players  = [];
+        $players = [];
         for ($i = 1; $i < $playersn; ++$i) {
-            $n     = Binary::getByte($st);
-            $name  = Binary::getString($st);
+            $n = Binary::getByte($st);
+            $name = Binary::getString($st);
             $score = Binary::getDWord($st, true);
             if (mb_orig_strlen($st) === 0) {
                 break;
             }
-            $u       = unpack('f', mb_orig_substr($st, 0, 4));
-            $st      = mb_orig_substr($st, 4);
+            $u = unpack('f', mb_orig_substr($st, 0, 4));
+            $st = mb_orig_substr($st, 4);
             $seconds = $u[1];
             if ($seconds === -1) {
                 continue;
             }
             $players[] = [
-                'name'     => Encoding::toUTF8($name),
-                'score'    => $score,
-                'seconds'  => $seconds,
+                'name' => Encoding::toUTF8($name),
+                'score' => $score,
+                'seconds' => $seconds,
                 'joinedts' => microtime(true) - $seconds,
-                'spm'      => $score / ($seconds / 60),
+                'spm' => $score / ($seconds / 60),
             ];
         }
         return $players;
@@ -149,7 +148,7 @@ class Connection extends ClientConnection
 
     /**
      * Parses response to 'info' command into structure
-     * @param  string &$st  Data
+     * @param  string &$st Data
      * @param  string $type Type of request
      * @return array        Structure
      */
@@ -157,42 +156,42 @@ class Connection extends ClientConnection
     {
         $info = [];
         if ($type === Pool::S2A_INFO) {
-            $info['proto']      = Binary::getByte($st);
-            $info['hostname']   = Binary::getString($st);
-            $info['map']        = Binary::getString($st);
-            $info['gamedir']    = Binary::getString($st);
-            $info['gamedescr']  = Binary::getString($st);
-            $info['steamid']    = Binary::getWord($st);
+            $info['proto'] = Binary::getByte($st);
+            $info['hostname'] = Binary::getString($st);
+            $info['map'] = Binary::getString($st);
+            $info['gamedir'] = Binary::getString($st);
+            $info['gamedescr'] = Binary::getString($st);
+            $info['steamid'] = Binary::getWord($st);
             $info['playersnum'] = Binary::getByte($st);
             $info['playersmax'] = Binary::getByte($st);
-            $info['botcount']   = Binary::getByte($st);
+            $info['botcount'] = Binary::getByte($st);
             $info['servertype'] = Binary::getChar($st);
-            $info['serveros']   = Binary::getChar($st);
+            $info['serveros'] = Binary::getChar($st);
             $info['passworded'] = Binary::getByte($st);
-            $info['secure']     = Binary::getByte($st);
+            $info['secure'] = Binary::getByte($st);
         } elseif ($type === Pool::S2A_INFO_SOURCE) {
             $info['srvaddress'] = Binary::getString($st);
-            $info['hostname']   = Binary::getString($st);
-            $info['map']        = Binary::getString($st);
-            $info['gamedir']    = Binary::getString($st);
-            $info['gamedescr']  = Binary::getString($st);
+            $info['hostname'] = Binary::getString($st);
+            $info['map'] = Binary::getString($st);
+            $info['gamedir'] = Binary::getString($st);
+            $info['gamedescr'] = Binary::getString($st);
             $info['playersnum'] = Binary::getByte($st);
             $info['playersmax'] = Binary::getByte($st);
-            $info['proto']      = Binary::getByte($st);
+            $info['proto'] = Binary::getByte($st);
             $info['servertype'] = Binary::getChar($st);
-            $info['serveros']   = Binary::getChar($st);
+            $info['serveros'] = Binary::getChar($st);
             $info['passworded'] = Binary::getByte($st);
-            $info['modded']     = Binary::getByte($st);
+            $info['modded'] = Binary::getByte($st);
             if ($info['modded']) {
-                $info['mod_website']        = Binary::getString($st);
+                $info['mod_website'] = Binary::getString($st);
                 $info['mod_downloadserver'] = Binary::getString($st);
-                $info['mod_unused']         = Binary::getString($st);
-                $info['mod_version']        = Binary::getDWord($st, true);
-                $info['mod_size']           = Binary::getDWord($st);
-                $info['mod_serverside']     = Binary::getByte($st);
-                $info['mod_customdll']      = Binary::getByte($st);
+                $info['mod_unused'] = Binary::getString($st);
+                $info['mod_version'] = Binary::getDWord($st, true);
+                $info['mod_size'] = Binary::getDWord($st);
+                $info['mod_serverside'] = Binary::getByte($st);
+                $info['mod_customdll'] = Binary::getByte($st);
             }
-            $info['secure']  = Binary::getByte($st);
+            $info['secure'] = Binary::getByte($st);
             $info['botsnum'] = Binary::getByte($st);
         }
         foreach ($info as &$val) {

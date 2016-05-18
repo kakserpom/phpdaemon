@@ -24,7 +24,7 @@ class Collection
     /**
      * Contructor of MongoClientAsyncCollection
      * @param  string $name Name of collection
-     * @param  Pool   $pool Pool
+     * @param  Pool $pool Pool
      * @return void
      */
     public function __construct($name, $pool)
@@ -36,7 +36,7 @@ class Collection
     /**
      * Finds objects in collection
      * @param  callable $cb Callback called when response received
-     * @param  array    $p  Hash of properties (offset, limit, opts, tailable, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+     * @param  array $p Hash of properties (offset, limit, opts, tailable, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
      * @callback $cb ( )
      * @return void
      */
@@ -49,7 +49,7 @@ class Collection
     /**
      * Finds objects in collection and fires callback when got all objects
      * @param  callable $cb Callback called when response received
-     * @param  array    $p  Hash of properties (offset, limit, opts, tailable, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+     * @param  array $p Hash of properties (offset, limit, opts, tailable, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
      * @callback $cb ( )
      * @return void
      */
@@ -62,7 +62,7 @@ class Collection
     /**
      * Finds one object in collection
      * @param  callable $cb Callback called when response received
-     * @param  array    $p  Hash of properties (offset,  opts, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
+     * @param  array $p Hash of properties (offset,  opts, where, col, fields, sort, hint, explain, snapshot, orderby, parse_oplog)
      * @callback $cb ( )
      * @return void
      */
@@ -75,7 +75,7 @@ class Collection
     /**
      * Counts objects in collection
      * @param  callable $cb Callback called when response received
-     * @param  array    $p  Hash of properties (offset, limit, opts, where, col)
+     * @param  array $p Hash of properties (offset, limit, opts, where, col)
      * @callback $cb ( )
      * @return void
      */
@@ -87,9 +87,9 @@ class Collection
 
     /**
      * Ensure index
-     * @param  array    $keys    Keys
-     * @param  array    $options Optional. Options
-     * @param  callable $cb      Optional. Callback called when response received
+     * @param  array $keys Keys
+     * @param  array $options Optional. Options
+     * @param  callable $cb Optional. Callback called when response received
      * @callback $cb ( )
      * @return void
      */
@@ -101,7 +101,7 @@ class Collection
     /**
      * Groupping function
      * @param  callable $cb Callback called when response received
-     * @param  array    $p  Hash of properties (offset, limit, opts, key, col, reduce, initial)
+     * @param  array $p Hash of properties (offset, limit, opts, key, col, reduce, initial)
      * @callback $cb ( )
      * @return void
      */
@@ -113,9 +113,9 @@ class Collection
 
     /**
      * Inserts an object
-     * @param  array    $doc    Data
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $doc Data
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return MongoId
      */
@@ -126,9 +126,9 @@ class Collection
 
     /**
      * Inserts an object
-     * @param  array    $doc    Data
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $doc Data
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return MongoId
      */
@@ -139,9 +139,9 @@ class Collection
 
     /**
      * Inserts several documents
-     * @param  array    $docs   Array of docs
-     * @param  callable $cb     Optional. Callback called when response received.
-     * @param  array    $params Optional. Params
+     * @param  array $docs Array of docs
+     * @param  callable $cb Optional. Callback called when response received.
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return array    IDs
      */
@@ -152,11 +152,11 @@ class Collection
 
     /**
      * Updates one object in collection
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  integer  $flags  Optional. Flags
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  integer $flags Optional. Flags
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return void
      */
@@ -168,10 +168,10 @@ class Collection
 
     /**
      * Updates one object in collection
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return void
      */
@@ -182,10 +182,10 @@ class Collection
 
     /**
      * Updates one object in collection
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return void
      */
@@ -196,11 +196,11 @@ class Collection
 
     /**
      * Upserts an object (updates if exists, insert if not exists)
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  boolean  $multi  Optional. Multi-flag
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  boolean $multi Optional. Multi-flag
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return void
      */
@@ -211,10 +211,10 @@ class Collection
 
     /**
      * Upserts an object (updates if exists, insert if not exists)
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return void
      */
@@ -225,10 +225,10 @@ class Collection
 
     /**
      * Upserts an object (updates if exists, insert if not exists)
-     * @param  array    $cond   Conditions
-     * @param  array    $data   Data
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $cond Conditions
+     * @param  array $data Data
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return void
      */
@@ -239,9 +239,9 @@ class Collection
 
     /**
      * Removes objects from collection
-     * @param  array    $cond   Conditions
-     * @param  callable $cb     Optional. Callback called when response received
-     * @param  array    $params Optional. Params
+     * @param  array $cond Conditions
+     * @param  callable $cb Optional. Callback called when response received
+     * @param  array $params Optional. Params
      * @callback $cb ( )
      * @return void
      */
@@ -252,8 +252,8 @@ class Collection
 
     /**
      * Evaluates a code on the server side
-     * @param  string   $code Code
-     * @param  callable $cb   Callback called when response received
+     * @param  string $code Code
+     * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
      */
@@ -265,7 +265,7 @@ class Collection
 
     /**
      * Aggregate
-     * @param  array    $p  Params
+     * @param  array $p Params
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void
@@ -278,8 +278,8 @@ class Collection
 
     /**
      * Generation autoincrement
-     * @param  callable $cb    Called when response received
-     * @param  boolean  $plain Plain?
+     * @param  callable $cb Called when response received
+     * @param  boolean $plain Plain?
      * @callback $cb ( )
      * @return void
      */
@@ -299,7 +299,7 @@ class Collection
 
     /**
      * Generation autoincrement
-     * @param  array    $p  Params
+     * @param  array $p Params
      * @param  callable $cb Callback called when response received
      * @callback $cb ( )
      * @return void

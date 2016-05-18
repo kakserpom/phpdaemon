@@ -26,7 +26,7 @@ class ExampleWithMemcache extends \PHPDaemon\Core\AppInstance
 class ExampleWithMemcacheRequest extends Generic
 {
 
-    public $job;
+public $job;
 
 /**
  * Constructor.
@@ -40,7 +40,7 @@ public function init()
     }
     $req = $this;
 
-    $job      = $this->job = new \PHPDaemon\Core\ComplexJob(function () use ($req) { // called when job is done
+    $job = $this->job = new \PHPDaemon\Core\ComplexJob(function () use ($req) { // called when job is done
 
         $req->wakeup(); // wake up the request immediately
 
@@ -68,11 +68,12 @@ public function init()
  */
 public function run()
 {
-    ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<title>Example with Memcache</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Example with Memcache</title>
 </head>
 <body>
 <?php
@@ -83,8 +84,8 @@ if ($r = $this->job->getResult('testquery')) {
 } else {
     echo '<h1>Something went wrong! We have no result.</h1>';
 }
-    echo '<br />Request (http) took: ' . round(microtime(true) - $this->attrs->server['REQUEST_TIME_FLOAT'], 6);
-    ?>
+echo '<br />Request (http) took: ' . round(microtime(true) - $this->attrs->server['REQUEST_TIME_FLOAT'], 6);
+?>
 </body>
 </html>
 <?php

@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Config\Entry;
 
-use PHPDaemon\Config\Entry\Generic;
-
 /**
  * Double config entry
  *
@@ -20,6 +18,6 @@ class Double extends Generic
      */
     public static function humanToPlain($value)
     {
-        return (double) $value;
+        return (double)$value;
     }
 }

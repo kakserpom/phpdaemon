@@ -1,10 +1,10 @@
 <?php
 namespace PHPDaemon\Clients\Redis;
 
-use PHPDaemon\Network\ClientConnection;
+use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
-use PHPDaemon\Core\CallbackWrapper;
+use PHPDaemon\Network\ClientConnection;
 
 /**
  * @package    NetworkClients
@@ -532,7 +532,8 @@ class Connection extends ClientConnection implements \Iterator
             } elseif ($name === 'HGETALL') {
                 $this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
             } elseif (($name === 'ZRANGE' || $name === 'ZRANGEBYSCORE' || $name === 'ZREVRANGE' || $name === 'ZREVRANGEBYSCORE')
-                && preg_grep('/WITHSCORES/i', $args)) {
+                && preg_grep('/WITHSCORES/i', $args)
+            ) {
                 $this->resultTypeStack->push(static::RESULT_TYPE_ASSOC);
             } else {
                 $this->resultTypeStack->push(static::RESULT_TYPE_DEFAULT);
@@ -694,14 +695,14 @@ class Connection extends ClientConnection implements \Iterator
                 $char = $l{0};
                 $val = mb_orig_substr($l, 1);
                 if ($char === ':') { // inline integer
-                    $this->pushValue((int) $val);
+                    $this->pushValue((int)$val);
                     goto start;
                 } elseif (($char === '+') || ($char === '-')) { // inline string
                     $this->error = $char === '-';
                     $this->pushValue($val);
                     goto start;
                 } elseif ($char === '*') { // defines number of elements of incoming array
-                    $length = (int) $val;
+                    $length = (int)$val;
                     if ($length <= 0) {
                         $this->pushValue([]);
                         goto start;
@@ -724,7 +725,7 @@ class Connection extends ClientConnection implements \Iterator
                         $this->pushValue(null);
                         goto start;
                     }
-                    $this->valueLength = (int) $val;
+                    $this->valueLength = (int)$val;
                     if ($this->valueLength + 2 > $this->pool->maxAllowedPacket) {
                         $this->log('max-allowed-packet (' . $this->pool->config->maxallowedpacket->getHumanValue() . ') exceed, aborting connection');
                         $this->finish();

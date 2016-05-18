@@ -326,7 +326,8 @@ class Daemon
     {
         if ((Daemon::$config->autogc->value > 0)
             && (Daemon::$process->counterGC > 0)
-            && (Daemon::$process->counterGC >= Daemon::$config->autogc->value)) {
+            && (Daemon::$process->counterGC >= Daemon::$config->autogc->value)
+        ) {
             Daemon::$process->counterGC = 0;
             return true;
         }
@@ -396,18 +397,18 @@ class Daemon
         }
 
         static $errtypes = [
-            E_ERROR             => 'Fatal error',
-            E_WARNING           => 'Warning',
-            E_PARSE             => 'Parse error',
-            E_NOTICE            => 'Notice',
-            E_PARSE             => 'Parse error',
-            E_USER_ERROR        => 'Fatal error (userland)',
-            E_USER_WARNING      => 'Warning (userland)',
-            E_USER_NOTICE       => 'Notice (userland)',
-            E_STRICT            => 'Notice (userland)',
+            E_ERROR => 'Fatal error',
+            E_WARNING => 'Warning',
+            E_PARSE => 'Parse error',
+            E_NOTICE => 'Notice',
+            E_PARSE => 'Parse error',
+            E_USER_ERROR => 'Fatal error (userland)',
+            E_USER_WARNING => 'Warning (userland)',
+            E_USER_NOTICE => 'Notice (userland)',
+            E_STRICT => 'Notice (userland)',
             E_RECOVERABLE_ERROR => 'Fatal error (recoverable)',
-            E_DEPRECATED        => 'Deprecated',
-            E_USER_DEPRECATED   => 'Deprecated (userland)',
+            E_DEPRECATED => 'Deprecated',
+            E_USER_DEPRECATED => 'Deprecated (userland)',
         ];
         $errtype = $errtypes[$errno];
         Daemon::log($errtype . ': ' . $errstr . ' in ' . $errfile . ':' . $errline . "\n" . Debug::backtrace());
@@ -425,7 +426,7 @@ class Daemon
         Daemon::$startTime = time();
         set_time_limit(0);
 
-        Daemon::$defaultErrorLevel    = error_reporting();
+        Daemon::$defaultErrorLevel = error_reporting();
         Daemon::$restrictErrorControl = (bool)Daemon::$config->restricterrorcontrol->value;
         ob_start(['\PHPDaemon\Core\Daemon', 'outputFilter']);
         set_error_handler(['\PHPDaemon\Core\Daemon', 'errorHandler']);
@@ -433,8 +434,8 @@ class Daemon
         Daemon::checkSupports();
 
         Daemon::$initservervar = $_SERVER;
-        Daemon::$masters       = new Collection;
-        Daemon::$shm_wstate    = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate', true);
+        Daemon::$masters = new Collection;
+        Daemon::$shm_wstate = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate', true);
         Daemon::openLogs();
     }
 
@@ -530,22 +531,22 @@ class Daemon
         $appResolver = require Daemon::$config->path->value;
         $appResolver->init();
 
-        $req                    = new \stdClass;
-        $req->attrs             = new \stdClass;
-        $req->attrs->request    = $_REQUEST;
-        $req->attrs->get        = $_GET;
-        $req->attrs->post       = $_REQUEST;
-        $req->attrs->cookie     = $_REQUEST;
-        $req->attrs->server     = $_SERVER;
-        $req->attrs->files      = $_FILES;
-        $req->attrs->session    = isset($_SESSION) ? $_SESSION : null;
-        $req->attrs->connId     = 1;
-        $req->attrs->trole      = 'RESPONDER';
-        $req->attrs->flags      = 0;
-        $req->attrs->id         = 1;
+        $req = new \stdClass;
+        $req->attrs = new \stdClass;
+        $req->attrs->request = $_REQUEST;
+        $req->attrs->get = $_GET;
+        $req->attrs->post = $_REQUEST;
+        $req->attrs->cookie = $_REQUEST;
+        $req->attrs->server = $_SERVER;
+        $req->attrs->files = $_FILES;
+        $req->attrs->session = isset($_SESSION) ? $_SESSION : null;
+        $req->attrs->connId = 1;
+        $req->attrs->trole = 'RESPONDER';
+        $req->attrs->flags = 0;
+        $req->attrs->id = 1;
         $req->attrs->paramsDone = true;
-        $req->attrs->inputDone  = true;
-        $req                    = $appResolver->getRequest($req);
+        $req->attrs->inputDone = true;
+        $req = $appResolver->getRequest($req);
 
         while (true) {
             $ret = $req->call();
@@ -602,7 +603,7 @@ class Daemon
                 });
             }
         } else {
-            Daemon::$logpointer      = null;
+            Daemon::$logpointer = null;
             Daemon::$logpointerAsync = null;
         }
     }
@@ -613,15 +614,15 @@ class Daemon
      */
     public static function getStateOfWorkers()
     {
-        $offset  = 0;
+        $offset = 0;
 
         $stat = [
-            'idle'      => 0,
-            'busy'      => 0,
-            'alive'     => 0,
-            'shutdown'  => 0,
-            'preinit'   => 0,
-            'init'      => 0,
+            'idle' => 0,
+            'busy' => 0,
+            'alive' => 0,
+            'shutdown' => 0,
+            'preinit' => 0,
+            'init' => 0,
             'reloading' => 0,
         ];
         $readed = 0;
@@ -667,7 +668,7 @@ class Daemon
         }
         return $stat;
     }
-    
+
     /**
      *  Send message to the log
      *
@@ -687,7 +688,8 @@ class Daemon
             fwrite(STDERR, '[PHPD] ' . $msg . "\n");
         }
 
-        $msg = str_replace("\x01", $msg, date(strtr(Daemon::$config->logformat->value, ['%msg%' => "\x01", '\\u' => '\\u', 'u' => sprintf('%06d', $mt[0] * 1000000)]))) . "\n";
+        $msg = str_replace("\x01", $msg, date(strtr(Daemon::$config->logformat->value,
+                ['%msg%' => "\x01", '\\u' => '\\u', 'u' => sprintf('%06d', $mt[0] * 1000000)]))) . "\n";
 
         if (Daemon::$logpointerAsync) {
             Daemon::$logpointerAsync->write($msg);

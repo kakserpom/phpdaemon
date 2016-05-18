@@ -13,7 +13,7 @@ trait StaticObjectWatchdog
 {
     /**
      * @param  string $prop
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return void
      */
     public function __set($prop, $value)
@@ -21,6 +21,7 @@ trait StaticObjectWatchdog
         Daemon::log('[CODE WARN] Setting undefined property ' . json_encode($prop) . ' in object of class ' . get_class($this) . PHP_EOL . Debug::backtrace());
         $this->{$prop} = $value;
     }
+
     /**
      * @param  string $prop
      * @return void

@@ -2,8 +2,8 @@
 namespace PHPDaemon\Applications;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Utils\DateTime;
 use PHPDaemon\HTTPRequest\Generic;
+use PHPDaemon\Utils\DateTime;
 
 /**
  * @package    Applications

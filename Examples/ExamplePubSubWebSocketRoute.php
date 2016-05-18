@@ -13,16 +13,16 @@ class ExamplePubSubWebSocketRoute extends ExampleWebSocketRoute
      */
     public function onFrame($data, $type)
     {
-        $ws  = $this;
+        $ws = $this;
         $req = json_decode($data, true);
         if ($req['type'] === 'subscribe') {
             $eventName = $req['event'];
             $this->appInstance->pubsub->sub($req['event'], $this, function ($data) use ($ws, $eventName) {
                 $ws->sendObject([
-                                    'type'  => 'event',
-                                    'event' => $eventName,
-                                    'data'  => $data,
-                                ]);
+                    'type' => 'event',
+                    'event' => $eventName,
+                    'data' => $data,
+                ]);
             });
         }
     }

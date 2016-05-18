@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\Applications\GibsonREST;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-
 class Request extends \PHPDaemon\HTTPRequest\Generic
 {
 
@@ -35,8 +32,10 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
                     $this->wakeup();
                     return;
                 }
-                $c1 = \PHPDaemon\Utils\Crypt::compareStrings($this->appInstance->config->username->value, $this->args[0]) ? 0 : 1;
-                $c2 = \PHPDaemon\Utils\Crypt::compareStrings($this->appInstance->config->password->value, $this->args[1]) ? 0 : 1;
+                $c1 = \PHPDaemon\Utils\Crypt::compareStrings($this->appInstance->config->username->value,
+                    $this->args[0]) ? 0 : 1;
+                $c2 = \PHPDaemon\Utils\Crypt::compareStrings($this->appInstance->config->password->value,
+                    $this->args[1]) ? 0 : 1;
                 if ($c1 + $c2 > 0) {
                     $this->result = ['$err' => 'Wrong username and/or password.'];
                     return;
@@ -67,7 +66,8 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
     {
         $this->cmd = static::getString($_GET['cmd']);
         if ($this->cmd === '') {
-            $e = explode('/', isset($this->attrs->server['SUBPATH']) ? $this->attrs->server['SUBPATH'] : $this->attrs->server['DOCUMENT_URI']);
+            $e = explode('/',
+                isset($this->attrs->server['SUBPATH']) ? $this->attrs->server['SUBPATH'] : $this->attrs->server['DOCUMENT_URI']);
             $this->cmd = array_shift($e);
             $this->args = sizeof($e) ? array_map('urldecode', $e) : [];
         }

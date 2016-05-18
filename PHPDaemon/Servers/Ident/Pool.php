@@ -23,7 +23,7 @@ class Pool extends Server
             'listen' => '0.0.0.0',
 
             /* [integer] Listen port */
-            'port'   => 113,
+            'port' => 113,
         ];
     }
 
@@ -31,7 +31,7 @@ class Pool extends Server
      * Function handles incoming Remote Procedure Calls
      * You can override it
      * @param  string $method Method name.
-     * @param  array  $args   Arguments.
+     * @param  array $args Arguments.
      * @return void
      */
     public function RPCall($method, $args)
@@ -47,9 +47,9 @@ class Pool extends Server
 
     /**
      * Register pair
-     * @param  integer $local   Local
+     * @param  integer $local Local
      * @param  integer $foreign Foreign
-     * @param  string  $user    User
+     * @param  string $user User
      * @return void
      */
 
@@ -64,7 +64,7 @@ class Pool extends Server
 
     /**
      * Unregister pair
-     * @param  integer $local   Local
+     * @param  integer $local Local
      * @param  integer $foreign Foreign
      * @return void
      */
@@ -75,7 +75,7 @@ class Pool extends Server
 
     /**
      * Find pair
-     * @param  integer $local   Local
+     * @param  integer $local Local
      * @param  integer $foreign Foreign
      * @return string           User
      */
@@ -83,8 +83,8 @@ class Pool extends Server
     {
         $k = $local . ':' . $foreign;
         return
-                isset($this->pairs[$k])
-                        ? $this->pairs[$k]
-                        : false;
+            isset($this->pairs[$k])
+                ? $this->pairs[$k]
+                : false;
     }
 }

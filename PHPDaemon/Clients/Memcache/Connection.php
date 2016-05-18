@@ -76,7 +76,8 @@ class Connection extends ClientConnection
 
                     $this->result[$e[1]] = $e[2];
                 } elseif (($e[0] === 'STORED') || ($e[0] === 'END') || ($e[0] === 'DELETED') || ($e[0] === 'ERROR')
-                    || ($e[0] === 'CLIENT_ERROR') || ($e[0] === 'SERVER_ERROR')) {
+                    || ($e[0] === 'CLIENT_ERROR') || ($e[0] === 'SERVER_ERROR')
+                ) {
                     if ($e[0] !== 'END') {
                         $this->result = false;
                         $this->error = isset($e[1]) ? $e[1] : null;

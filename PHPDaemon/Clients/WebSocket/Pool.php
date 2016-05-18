@@ -1,8 +1,8 @@
 <?php
 namespace PHPDaemon\Clients\WebSocket;
 
-use PHPDaemon\Network;
 use PHPDaemon\Config\Entry;
+use PHPDaemon\Network;
 
 /**
  * @package Clients

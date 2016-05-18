@@ -1,10 +1,6 @@
 <?php
 namespace PHPDaemon\Network;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Network\ClientConnection;
-use PHPDaemon\Network\Pool;
 use PHPDaemon\Network;
 use PHPDaemon\Request;
 use PHPDaemon\Structures\ObjectStorage;
@@ -58,13 +54,13 @@ abstract class Client extends Pool
     {
         return [
             /* [boolean] Expose? */
-            'expose'         => 1,
+            'expose' => 1,
 
             /* [string|array] Default servers */
-            'servers'        => '127.0.0.1',
+            'servers' => '127.0.0.1',
 
             /* [string] Default server */
-            'server'         => '127.0.0.1',
+            'server' => '127.0.0.1',
 
             /* [integer] Maximum connections per server */
             'maxconnperserv' => 32
@@ -79,7 +75,7 @@ abstract class Client extends Pool
     {
         parent::applyConfig();
         if (isset($this->config->servers)) {
-            $servers       = array_filter(array_map('trim', explode(',', $this->config->servers->value)), 'mb_orig_strlen');
+            $servers = array_filter(array_map('trim', explode(',', $this->config->servers->value)), 'mb_orig_strlen');
             $this->servers = [];
             foreach ($servers as $s) {
                 $this->addServer($s);
@@ -92,7 +88,7 @@ abstract class Client extends Pool
 
     /**
      * Adds server
-     * @param  string  $url    Server URL
+     * @param  string $url Server URL
      * @param  integer $weight Weight
      * @return void
      */
@@ -103,9 +99,9 @@ abstract class Client extends Pool
 
     /**
      * Returns available connection from the pool
-     * @param  string   $url Address
-     * @param  callback $cb  onConnected
-     * @param  integer  $pri Optional. Priority
+     * @param  string $url Address
+     * @param  callback $cb onConnected
+     * @param  integer $pri Optional. Priority
      * @call   ( callable $cb )
      * @call   ( string $url = null, callable $cb = null, integer $pri = 0 )
      * @return boolean       Success|Connection
@@ -113,7 +109,7 @@ abstract class Client extends Pool
     public function getConnection($url = null, $cb = null, $pri = 0)
     {
         if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
-            $cb  = $url;
+            $cb = $url;
             $url = null;
         }
         if ($url === null) {
@@ -132,7 +128,7 @@ abstract class Client extends Pool
         $conn = false;
         if (isset($this->servConn[$url])) {
             $storage = $this->servConn[$url];
-            $free    = $this->servConnFree[$url];
+            $free = $this->servConnFree[$url];
             if ($free->count() > 0) {
                 $conn = $free->getFirst();
                 if (!$conn->isConnected() || $conn->isFinished()) {
@@ -156,7 +152,7 @@ abstract class Client extends Pool
                 return true;
             }
         } else {
-            $this->servConn[$url]     = new ObjectStorage;
+            $this->servConn[$url] = new ObjectStorage;
             $this->servConnFree[$url] = new ObjectStorage;
         }
         //Daemon::log($url . "\n" . Debug::dump($this->finished) . "\n" . Debug::backtrace(true));
@@ -183,7 +179,7 @@ abstract class Client extends Pool
     /**
      * Mark connection as free
      * @param  ClientConnection $conn Connection
-     * @param  string           $url  URL
+     * @param  string $url URL
      * @return void
      */
     public function markConnFree(ClientConnection $conn, $url)
@@ -197,7 +193,7 @@ abstract class Client extends Pool
     /**
      * Mark connection as busy
      * @param  ClientConnection $conn Connection
-     * @param  string           $url  URL
+     * @param  string $url URL
      * @return void
      */
     public function markConnBusy(ClientConnection $conn, $url)
@@ -211,7 +207,7 @@ abstract class Client extends Pool
     /**
      * Detaches connection from URL
      * @param  ClientConnection $conn Connection
-     * @param  string           $url  URL
+     * @param  string $url URL
      * @return void
      */
     public function detachConnFromUrl(ClientConnection $conn, $url)
@@ -240,8 +236,8 @@ abstract class Client extends Pool
 
     /**
      * Returns available connection from the pool by key
-     * @param  string   $key Key
-     * @param  callable $cb  Callback
+     * @param  string $key Key
+     * @param  callable $cb Callback
      * @callback $cb ( )
      * @return boolean       Success
      */
@@ -269,8 +265,8 @@ abstract class Client extends Pool
 
     /**
      * Sends a request to arbitrary server
-     * @param  string   $server     Server
-     * @param  string   $data       Data
+     * @param  string $server Server
+     * @param  string $data Data
      * @param  callable $onResponse Called when the request complete
      * @callback $onResponse ( )
      * @return boolean              Success
@@ -289,8 +285,8 @@ abstract class Client extends Pool
 
     /**
      * Sends a request to server according to the key
-     * @param  string   $key        Key
-     * @param  string   $data       Data
+     * @param  string $key Key
+     * @param  string $data Data
      * @param  callable $onResponse Callback called when the request complete
      * @callback $onResponse ( )
      * @return boolean              Success

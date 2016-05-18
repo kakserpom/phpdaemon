@@ -16,10 +16,10 @@ class Pool extends Server
     {
         return [
             /* [string|array] Listen addresses */
-            'listen'     => 'tcp://127.0.0.1',
+            'listen' => 'tcp://127.0.0.1',
 
             /* [integer] Listen port */
-            'port'       => 8818,
+            'port' => 8818,
 
             /* [string] Password for auth */
             'passphrase' => 'secret',

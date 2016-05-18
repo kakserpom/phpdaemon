@@ -130,7 +130,8 @@ class Connection extends \PHPDaemon\Network\Connection
             $password = $this->read($plen);
 
             if (($username !== $this->pool->config->username->value)
-                || ($password !== $this->pool->config->password->value)) {
+                || ($password !== $this->pool->config->password->value)
+            ) {
                 $this->state = self::STATE_ABORTED;
                 $m = "\x01";
             } else {

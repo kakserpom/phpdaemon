@@ -24,8 +24,8 @@ class Example extends AppInstance
     protected function getConfigDefaults()
     {
         return [
-            'url'                 => 'tcp://echo.websocket.org:80/',
-            'reconnect'           => 1,
+            'url' => 'tcp://echo.websocket.org:80/',
+            'reconnect' => 1,
             'wsclient-name' => ''
         ];
     }

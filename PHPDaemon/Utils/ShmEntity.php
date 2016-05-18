@@ -40,16 +40,16 @@ class ShmEntity
 
     /**
      * Constructor
-     * @param string  $path    Path
+     * @param string $path Path
      * @param integer $segsize Segment size
-     * @param string  $name    Name
-     * @param boolean $create  Create
+     * @param string $name Name
+     * @param boolean $create Create
      */
     public function __construct($path, $segsize, $name, $create = false)
     {
-        $this->path    = $path;
+        $this->path = $path;
         $this->segsize = $segsize;
-        $this->name    = $name;
+        $this->name = $name;
         if ($create && !touch($this->path)) {
             Daemon::log('Couldn\'t touch IPC file \'' . $this->path . '\'.');
             exit(0);
@@ -67,7 +67,7 @@ class ShmEntity
 
     /**
      * Opens segment of shared memory
-     * @param  integer $segno  Segment number
+     * @param  integer $segno Segment number
      * @param  boolean $create Create
      * @return integer         Segment number
      */
@@ -118,7 +118,7 @@ class ShmEntity
 
     /**
      * Write to shared memory
-     * @param  string  $data   Data
+     * @param  string $data Data
      * @param  integer $offset Offset
      * @return boolean         Success
      */
@@ -133,7 +133,7 @@ class ShmEntity
         $sOffset = $offset % $this->segsize;
         $d = $this->segsize - ($sOffset + mb_orig_strlen($data));
         if ($d < 0) {
-            $this->write(mb_orig_substr($data, $d), ($segno+1) * $this->segsize);
+            $this->write(mb_orig_substr($data, $d), ($segno + 1) * $this->segsize);
             $data = mb_orig_substr($data, 0, $d);
         }
         //Daemon::log('writing to #'.$offset.' (segno '.$segno.')');
@@ -166,7 +166,7 @@ class ShmEntity
             }
 
             ++$segno;
-            
+
             $sOffset = 0;
         }
         ret:

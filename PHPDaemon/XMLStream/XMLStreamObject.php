@@ -52,7 +52,7 @@ class XMLStreamObject
     public function __construct($name, $ns = '', $attrs = [], $data = '')
     {
         $this->name = strtolower($name);
-        $this->ns   = $ns;
+        $this->ns = $ns;
         if (is_array($attrs) && count($attrs)) {
             foreach ($attrs as $key => $value) {
                 $this->attrs[strtolower($key)] = $value;

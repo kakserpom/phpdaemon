@@ -13,8 +13,8 @@ class ObjectStorage extends \SplObjectStorage
 
     /**
      * Call given method of all objects in storage
-     * @param  string $method  Method name
-     * @param  mixed  ...$args Arguments
+     * @param  string $method Method name
+     * @param  mixed ...$args Arguments
      * @return integer Number of called objects
      */
     public function each($method, ...$args)
@@ -22,7 +22,7 @@ class ObjectStorage extends \SplObjectStorage
         if ($this->count() === 0) {
             return 0;
         }
-        $n      = 0;
+        $n = 0;
         foreach ($this as $obj) {
             $obj->$method(...$args);
             ++$n;

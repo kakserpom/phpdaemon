@@ -283,7 +283,8 @@ class Bootstrap
         if (isset(Daemon::$config->minspareworkers->value)
             && Daemon::$config->minspareworkers->value > 0
             && isset(Daemon::$config->maxspareworkers->value)
-            && Daemon::$config->maxspareworkers->value > 0) {
+            && Daemon::$config->maxspareworkers->value > 0
+        ) {
             if (Daemon::$config->minspareworkers->value > Daemon::$config->maxspareworkers->value) {
                 Daemon::log('\'minspareworkers\' cannot be greater than \'maxspareworkers\'.');
                 $error = true;
@@ -507,9 +508,9 @@ class Bootstrap
     public static function stop($mode = 1)
     {
         $ok = Bootstrap::$pid && posix_kill(
-            Bootstrap::$pid,
-            $mode === 3 ? SIGINT : (($mode === 4) ? SIGTSTP : SIGTERM)
-        );
+                Bootstrap::$pid,
+                $mode === 3 ? SIGINT : (($mode === 4) ? SIGTSTP : SIGTERM)
+            );
 
         if (!$ok) {
             echo '[WARN]. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";

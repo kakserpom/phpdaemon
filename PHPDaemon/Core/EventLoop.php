@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Core;
+
 use PHPDaemon\Structures\StackCallbacks;
 
 class EventLoop
@@ -11,7 +12,8 @@ class EventLoop
     protected $stopped = true;
 
 
-    public static function init() {
+    public static function init()
+    {
         if (self::$instance !== null) {
             self::$instance->reinit();
         } else {
@@ -19,61 +21,74 @@ class EventLoop
         }
     }
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->base = new \EventBase;
         $this->callbacks = new StackCallbacks;
         $this->dnsBase = new \EventDnsBase($this->base, false); // @TODO: test with true
     }
 
-    public function getBase() {
+    public function getBase()
+    {
         return $this->base;
     }
 
-    public function getDnsBase() {
+    public function getDnsBase()
+    {
         return $this->dnsBase;
     }
 
-    public function reinit() {
+    public function reinit()
+    {
         $this->base->reinit();
     }
 
-    public function signal(...$args) {
+    public function signal(...$args)
+    {
         return \Event::signal($this->base, ...$args);
     }
 
-    public function timer(...$args) {
+    public function timer(...$args)
+    {
         return \Event::timer($this->base, ...$args);
     }
 
-    public function listener(...$args) {
+    public function listener(...$args)
+    {
         return new \EventListener($this->base, ...$args);
     }
 
-    public function bufferEvent(...$args) {
+    public function bufferEvent(...$args)
+    {
         return new \EventBufferEvent($this->base, ...$args);
     }
 
-    public function bufferEventSsl(...$args) {
+    public function bufferEventSsl(...$args)
+    {
         return \EventBufferEvent::sslSocket($this->base, ...$args);
     }
 
-    public function interrupt($cb = null) {
+    public function interrupt($cb = null)
+    {
         if ($cb !== null) {
             $this->callbacks->push($cb);
         }
         $this->base->exit();
     }
 
-    public function stop() {
+    public function stop()
+    {
         $this->stopped = true;
         $this->interrupt();
     }
 
-    public function event(...$args) {
+    public function event(...$args)
+    {
         return new \Event($this->base, ...$args);
     }
 
-    public function run() {
+    public function run()
+    {
         $this->stopped = false;
         while (!$this->stopped) {
             $this->callbacks->executeAll($this);

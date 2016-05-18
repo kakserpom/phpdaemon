@@ -32,7 +32,7 @@ class Connection extends \PHPDaemon\Network\Connection
                 $this->finish();
                 return;
             }
-            $local   = (int)$e[0];
+            $local = (int)$e[0];
             $foreign = (int)$e[1];
             if ($user = $this->pool->findPair($local, $foreign)) {
                 $this->writeln($line . ' : USERID : ' . $user);

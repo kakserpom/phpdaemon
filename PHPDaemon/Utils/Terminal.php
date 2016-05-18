@@ -87,7 +87,8 @@ class Terminal
     protected function getMaxColumns()
     {
         if (preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
-                && sizeof($output) === 2) {
+            && sizeof($output) === 2
+        ) {
             return $output[1][0];
         }
 
@@ -96,9 +97,9 @@ class Terminal
 
     /**
      * Draw param (like in man)
-     * @param string $name        Param name
+     * @param string $name Param name
      * @param string $description Param description
-     * @param array  $values      Param allowed values
+     * @param array $values Param allowed values
      * @return void
      */
     public function drawParam($name, $description, $values = '')
@@ -144,7 +145,7 @@ class Terminal
 
                 if (strlen($descstr) + mb_orig_strlen($el) >= $descw) {
                     $rightcolumn[] = $descstr;
-                    $descstr       = '';
+                    $descstr = '';
                 } else {
                     $descstr .= ' ';
                 }

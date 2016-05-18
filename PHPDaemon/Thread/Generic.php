@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Thread;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Exceptions\ClearStack;
 
@@ -59,25 +57,25 @@ abstract class Generic
      * @var array
      */
     public static $signals = [
-        SIGHUP    => 'SIGHUP',
-        SIGSYS    => 'SIGSYS',
-        SIGPIPE   => 'SIGPIPE',
-        SIGALRM   => 'SIGALRM',
-        SIGTERM   => 'SIGTERM',
-        SIGSTOP   => 'SIGSTOP',
-        SIGINT   => 'SIGINT',
-        SIGCHLD   => 'SIGCHLD',
-        SIGTTIN   => 'SIGTTIN',
-        SIGTTOU   => 'SIGTTOU',
-        SIGIO     => 'SIGIO',
-        SIGXCPU   => 'SIGXCPU',
-        SIGXFSZ   => 'SIGXFSZ',
+        SIGHUP => 'SIGHUP',
+        SIGSYS => 'SIGSYS',
+        SIGPIPE => 'SIGPIPE',
+        SIGALRM => 'SIGALRM',
+        SIGTERM => 'SIGTERM',
+        SIGSTOP => 'SIGSTOP',
+        SIGINT => 'SIGINT',
+        SIGCHLD => 'SIGCHLD',
+        SIGTTIN => 'SIGTTIN',
+        SIGTTOU => 'SIGTTOU',
+        SIGIO => 'SIGIO',
+        SIGXCPU => 'SIGXCPU',
+        SIGXFSZ => 'SIGXFSZ',
         SIGVTALRM => 'SIGVTALRM',
-        SIGPROF   => 'SIGPROF',
-        SIGWINCH  => 'SIGWINCH',
-        SIGUSR1   => 'SIGUSR1',
-        SIGUSR2   => 'SIGUSR2',
-        SIGTSTP      => 'SIGTSTP',
+        SIGPROF => 'SIGPROF',
+        SIGWINCH => 'SIGWINCH',
+        SIGUSR1 => 'SIGUSR1',
+        SIGUSR2 => 'SIGUSR2',
+        SIGTSTP => 'SIGTSTP',
     ];
 
     /**
@@ -227,7 +225,7 @@ abstract class Generic
         if ($pid === -1) {
             throw new \Exception('Could not fork');
         } elseif ($pid === 0) { // we are the child
-            $thread      = $this;
+            $thread = $this;
             $thread->pid = \posix_getpid();
             if (!$thread->delayedSigReg) {
                 $thread->registerSignals();
@@ -463,9 +461,9 @@ abstract class Generic
         $siginfo = null;
 
         if (!function_exists('pcntl_sigtimedwait')) {
-            $signo   = $this->sigtimedwait(array_keys(static::$signals), $siginfo, $sec, $nano);
+            $signo = $this->sigtimedwait(array_keys(static::$signals), $siginfo, $sec, $nano);
         } else {
-            $signo   = @\pcntl_sigtimedwait(array_keys(static::$signals), $siginfo, $sec, $nano);
+            $signo = @\pcntl_sigtimedwait(array_keys(static::$signals), $siginfo, $sec, $nano);
         }
 
         if (is_bool($signo)) {

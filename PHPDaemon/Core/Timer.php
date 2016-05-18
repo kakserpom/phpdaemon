@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Core;
 
-use PHPDaemon\Core\Daemon;
-
 /**
  * Timed event
  * @package PHPDaemon\Core
@@ -48,17 +46,17 @@ class Timer
 
     /**
      * Constructor
-     * @param  callable       $cb       Callback
-     * @param  integer        $timeout  Timeout
-     * @param  integer|string $id       Timer ID
-     * @param  integer        $priority Priority
+     * @param  callable $cb Callback
+     * @param  integer $timeout Timeout
+     * @param  integer|string $id Timer ID
+     * @param  integer $priority Priority
      */
     public function __construct($cb, $timeout = null, $id = null, $priority = null)
     {
         if ($id === null) {
             $id = ++self::$counter;
         } else {
-            $id = (string) $id;
+            $id = (string)$id;
         }
         $this->id = $id;
         $this->cb = $cb;
@@ -94,16 +92,16 @@ class Timer
      */
     public function setPriority($priority)
     {
-        $this->priority     = $priority;
+        $this->priority = $priority;
         $this->ev->priority = $priority;
     }
 
     /**
      * Adds timer
-     * @param  callable       $cb       Callback
-     * @param  integer        $timeout  Timeout
-     * @param  integer|string $id       Timer ID
-     * @param  integer        $priority Priority
+     * @param  callable $cb Callback
+     * @param  integer $timeout Timeout
+     * @param  integer|string $id Timer ID
+     * @param  integer $priority Priority
      * @return integer|string           Timer ID
      */
     public static function add($cb, $timeout = null, $id = null, $priority = null)
@@ -114,8 +112,8 @@ class Timer
 
     /**
      * Sets timeout
-     * @param  integer|string $id       Timer ID
-     * @param  integer        $timeout  Timeout
+     * @param  integer|string $id Timer ID
+     * @param  integer $timeout Timeout
      * @return boolean
      */
     public static function setTimeout($id, $timeout = null)

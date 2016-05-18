@@ -2,8 +2,6 @@
 namespace PHPDaemon\Config;
 
 use PHPDaemon\Config\Entry\Generic;
-use PHPDaemon\Config\Object;
-use PHPDaemon\Config\Section;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Exceptions\InfiniteRecursion;
@@ -24,7 +22,7 @@ class Parser
     /**
      * State: standby
      */
-    const T_ALL     = 1;
+    const T_ALL = 1;
     /**
      * State: comment
      */
@@ -32,26 +30,26 @@ class Parser
     /**
      * State: variable definition block
      */
-    const T_VAR     = 3;
+    const T_VAR = 3;
     /**
      * Single-quoted string
      */
-    const T_STRING  = 4;
-    
+    const T_STRING = 4;
+
     /**
      * Double-quoted
      */
     const T_STRING_DOUBLE = 5;
-    
+
     /**
      * Block
      */
-    const T_BLOCK   = 6;
-    
+    const T_BLOCK = 6;
+
     /**
      * Value defined by constant (keyword) or number
      */
-    const T_CVALUE  = 7;
+    const T_CVALUE = 7;
 
     /**
      * Config file path
@@ -159,10 +157,10 @@ class Parser
      */
     protected function __construct($file, $target, $included = false)
     {
-        $this->file     = $file;
-        $this->target   = $target;
+        $this->file = $file;
+        $this->target = $target;
         $this->revision = ++Object::$lastRevision;
-        $this->data     = file_get_contents($file);
+        $this->data = file_get_contents($file);
 
         if (substr($this->data, 0, 2) === '#!') {
             if (!is_executable($file)) {
@@ -172,16 +170,16 @@ class Parser
             $this->data = shell_exec($file);
         }
 
-        $this->data    = str_replace("\r", '', $this->data);
-        $this->length     = mb_orig_strlen($this->data);
+        $this->data = str_replace("\r", '', $this->data);
+        $this->length = mb_orig_strlen($this->data);
         $this->state[] = [static::T_ALL, $this->target];
-        $this->tokens  = [
+        $this->tokens = [
             static::T_COMMENT => function ($c) {
                 if ($c === "\n") {
                     array_pop($this->state);
                 }
             },
-            static::T_STRING_DOUBLE  => function ($q) {
+            static::T_STRING_DOUBLE => function ($q) {
                 $str = '';
                 ++$this->p;
 
@@ -207,7 +205,7 @@ class Parser
                                 }
                                 $def .= $n;
                             }
-                            $str .= chr((int) $def);
+                            $str .= chr((int)$def);
                         } elseif (($n === 'x') || ($n === 'X')) {
                             $def = $n;
                             ++$this->p;
@@ -218,7 +216,7 @@ class Parser
                                 }
                                 $def .= $n;
                             }
-                            $str .= chr((int) hexdec($def));
+                            $str .= chr((int)hexdec($def));
                         } else {
                             $str .= $c;
                         }
@@ -259,7 +257,7 @@ class Parser
                 }
                 return $str;
             },
-            static::T_ALL     => function ($c) {
+            static::T_ALL => function ($c) {
                 if (ctype_space($c)) {
                 } elseif ($c === '#') {
                     $this->state[] = [static::T_COMMENT];
@@ -271,15 +269,15 @@ class Parser
                         $this->raiseError('Unexpected \'}\'');
                     }
                 } elseif (ctype_alnum($c) || $c === '\\') {
-                    $elements        = [''];
-                    $elTypes         = [null];
-                    $i               = 0;
-                    $tokenType       = 0;
+                    $elements = [''];
+                    $elTypes = [null];
+                    $i = 0;
+                    $tokenType = 0;
                     $newLineDetected = null;
 
                     for (; $this->p < $this->length; ++$this->p) {
                         $prePoint = [$this->line, $this->col - 1];
-                        $c        = $this->getCurrentChar();
+                        $c = $this->getCurrentChar();
 
                         if (ctype_space($c) || $c === '=' || $c === ',') {
                             if ($c === "\n") {
@@ -299,7 +297,7 @@ class Parser
 
                             if ($elTypes[$i] === null) {
                                 $elements[$i] = $string;
-                                $elTypes[$i]  = static::T_STRING;
+                                $elTypes[$i] = static::T_STRING;
                             }
                         } elseif ($c === '"') {
                             if ($elTypes[$i] !== null) {
@@ -311,13 +309,14 @@ class Parser
 
                             if ($elTypes[$i] === null) {
                                 $elements[$i] = $string;
-                                $elTypes[$i]  = static::T_STRING_DOUBLE;
+                                $elTypes[$i] = static::T_STRING_DOUBLE;
                             }
                         } elseif ($c === '}') {
                             $this->raiseError('Unexpected \'}\' instead of \';\' or \'{\'');
                         } elseif ($c === ';') {
                             if ($newLineDetected) {
-                                $this->raiseError('Unexpected new-line instead of \';\'', 'notice', $newLineDetected[0], $newLineDetected[1]);
+                                $this->raiseError('Unexpected new-line instead of \';\'', 'notice', $newLineDetected[0],
+                                    $newLineDetected[1]);
                             }
                             $tokenType = static::T_VAR;
                             break;
@@ -388,13 +387,13 @@ class Parser
                             }
                         } else {
                             if (sizeof($elements) === 1) {
-                                $value       = true;
+                                $value = true;
                                 $elements[1] = true;
-                                $elTypes[1]  = static::T_CVALUE;
+                                $elTypes[1] = static::T_CVALUE;
                             } elseif ($value === null) {
-                                $value       = null;
+                                $value = null;
                                 $elements[1] = null;
-                                $elTypes[1]  = static::T_CVALUE;
+                                $elTypes[1] = static::T_CVALUE;
                             }
 
                             if (isset($scope->{$name})) {
@@ -404,12 +403,12 @@ class Parser
                                     } else {
                                         $scope->{$name}->pushValue($value);
                                     }
-                                    $scope->{$name}->source   = 'config';
+                                    $scope->{$name}->source = 'config';
                                     $scope->{$name}->revision = $this->revision;
                                 }
                             } elseif ($scope instanceof Section) {
-                                $scope->{$name}           = new Generic();
-                                $scope->{$name}->source   = 'config';
+                                $scope->{$name} = new Generic();
+                                $scope->{$name}->source = 'config';
                                 $scope->{$name}->revision = $this->revision;
                                 $scope->{$name}->pushValue($value);
                                 $scope->{$name}->setValueType($value);
@@ -418,15 +417,15 @@ class Parser
                             }
                         }
                     } elseif ($tokenType === static::T_BLOCK) {
-                        $scope       = $this->getCurrentScope();
+                        $scope = $this->getCurrentScope();
                         $sectionName = implode('-', $elements);
                         $sectionName = strtr($sectionName, '-. ', ':::');
                         if (!isset($scope->{$sectionName})) {
                             $scope->{$sectionName} = new Section;
                         }
-                        $scope->{$sectionName}->source   = 'config';
+                        $scope->{$sectionName}->source = 'config';
                         $scope->{$sectionName}->revision = $this->revision;
-                        $this->state[]                   = [
+                        $this->state[] = [
                             static::T_ALL,
                             $scope->{$sectionName},
                         ];
@@ -445,9 +444,9 @@ class Parser
         if (!$included) {
             $this->purgeScope($this->target);
         }
-        
+
         if (Daemon::$config->verbosetty->value) {
-            Daemon::log('Loaded config file: '. escapeshellarg($file));
+            Daemon::log('Loaded config file: ' . escapeshellarg($file));
         }
     }
 

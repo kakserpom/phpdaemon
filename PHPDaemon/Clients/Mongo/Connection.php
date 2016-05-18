@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Mongo;
 
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Clients\Mongo\Cursor;
-use PHPDaemon\Clients\Mongo\Pool;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Network\ClientConnection;
 
@@ -73,10 +70,10 @@ class Connection extends ClientConnection
         $this->dbname = $this->path;
         $this->pool->saslScrumSHA1Auth(
             [
-                'user'     => $this->user,
+                'user' => $this->user,
                 'password' => $this->password,
-                'dbname'   => $this->dbname,
-                'conn'     => $this
+                'dbname' => $this->dbname,
+                'conn' => $this
             ],
             function ($result) {
                 if (!isset($result['ok']) || !$result['ok']) {
@@ -105,7 +102,7 @@ class Connection extends ClientConnection
             if (false === ($hdr = $this->readExact(16))) {
                 return; // we do not have a header
             }
-            $this->hdr         = unpack('Vlen/VreqId/VresponseTo/VopCode', $hdr);
+            $this->hdr = unpack('Vlen/VreqId/VresponseTo/VopCode', $hdr);
             $this->hdr['plen'] = $this->hdr['len'] - 16;
             $this->setWatermark($this->hdr['plen'], $this->hdr['plen']);
             $this->state = self::STATE_PACKET;
@@ -117,9 +114,9 @@ class Connection extends ClientConnection
             $this->state = self::STATE_ROOT;
             $this->setWatermark(16, 0xFFFFFF);
             if ($this->hdr['opCode'] === Pool::OP_REPLY) {
-                $r             = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', mb_orig_substr($pct, 0, 20));
+                $r = unpack('Vflag/VcursorID1/VcursorID2/Voffset/Vlength', mb_orig_substr($pct, 0, 20));
                 $r['cursorId'] = mb_orig_substr($pct, 4, 8);
-                $id            = (int)$this->hdr['responseTo'];
+                $id = (int)$this->hdr['responseTo'];
                 if (isset($this->requests[$id])) {
                     $req = $this->requests[$id];
                     if (sizeof($req) === 1) { // get more
@@ -129,16 +126,16 @@ class Connection extends ClientConnection
                     $req = false;
                 }
                 $flagBits = str_pad(strrev(decbin($r['flag'])), 8, '0', STR_PAD_LEFT);
-                $curId    = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00" ? 'c'.$r['cursorId'] : 'r'.$this->hdr['responseTo']);
+                $curId = ($r['cursorId'] !== "\x00\x00\x00\x00\x00\x00\x00\x00" ? 'c' . $r['cursorId'] : 'r' . $this->hdr['responseTo']);
 
                 if ($req && isset($req[2]) && ($req[2] === false) && !isset($this->cursors[$curId])) {
-                    $cur                   = new Cursor($curId, $req[0], $this);
+                    $cur = new Cursor($curId, $req[0], $this);
                     $this->cursors[$curId] = $cur;
-                    $cur->failure          = $flagBits[1] === '1';
-                    $cur->await            = $flagBits[3] === '1';
-                    $cur->callback         = $req[1];
-                    $cur->parseOplog       = isset($req[3]) && $req[3];
-                    $cur->tailable         = isset($req[4]) && $req[4];
+                    $cur->failure = $flagBits[1] === '1';
+                    $cur->await = $flagBits[3] === '1';
+                    $cur->callback = $req[1];
+                    $cur->parseOplog = isset($req[3]) && $req[3];
+                    $cur->tailable = isset($req[4]) && $req[4];
                 } else {
                     $cur = isset($this->cursors[$curId]) ? $this->cursors[$curId] : false;
                 }
@@ -152,16 +149,16 @@ class Connection extends ClientConnection
                     }
                 }
 
-                $p     = 20;
+                $p = 20;
                 $items = [];
                 while ($p < $this->hdr['plen']) {
-                    $dl  = unpack('Vlen', mb_orig_substr($pct, $p, 4));
+                    $dl = unpack('Vlen', mb_orig_substr($pct, $p, 4));
                     $doc = bson_decode(mb_orig_substr($pct, $p, $dl['len']));
 
                     if ($cur) {
                         if ($cur->parseOplog && isset($doc['ts'])) {
-                            $tsdata    = unpack('Vsec/Vinc', mb_orig_substr($pct, $p + 8, 8));
-                            $doc['ts'] = $tsdata['sec'].' '.$tsdata['inc'];
+                            $tsdata = unpack('Vsec/Vinc', mb_orig_substr($pct, $p + 8, 8));
+                            $doc['ts'] = $tsdata['sec'] . ' ' . $tsdata['inc'];
                         }
                         $cur->items[] = $doc;
                         ++$cur->counter;

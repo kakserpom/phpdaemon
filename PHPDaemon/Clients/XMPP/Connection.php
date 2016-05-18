@@ -1,11 +1,9 @@
 <?php
 namespace PHPDaemon\Clients\XMPP;
 
-use PHPDaemon\Clients\XMPP\XMPPRoster;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\Network\ClientConnection;
-use PHPDaemon\Traits\EventHandlers;
 use PHPDaemon\XMLStream\XMLStream;
 
 /**
@@ -20,32 +18,32 @@ class Connection extends ClientConnection
      * @var boolean
      */
     public $use_encryption = false;
-    
+
     /**
      * @var boolean
      */
     public $authorized;
-    
+
     /**
      * @var integer
      */
     public $lastId = 0;
-    
+
     /**
      * @var XMPPRoster
      */
     public $roster;
-    
+
     /**
      * @var XMLStream
      */
     public $xml;
-    
+
     /**
      * @var string
      */
     public $fulljid;
-    
+
     /**
      * @var integer|string Timer ID
      */
@@ -114,7 +112,7 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param  string   $xml
+     * @param  string $xml
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean
@@ -132,8 +130,8 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param  string   $to
-     * @param  string   $xml
+     * @param  string $to
+     * @param  string $xml
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean
@@ -151,7 +149,7 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param  string   $xml
+     * @param  string $xml
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean
@@ -169,8 +167,8 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param  string   $to
-     * @param  string   $xml
+     * @param  string $to
+     * @param  string $xml
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean
@@ -188,7 +186,7 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param  string   $to
+     * @param  string $to
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean
@@ -207,7 +205,7 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param  string   $ns
+     * @param  string $ns
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean
@@ -219,8 +217,8 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param  string   $ns
-     * @param  string   $xml
+     * @param  string $ns
+     * @param  string $xml
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean
@@ -232,9 +230,9 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param  string   $to
-     * @param  string   $ns
-     * @param  string   $xml
+     * @param  string $to
+     * @param  string $ns
+     * @param  string $xml
      * @param  callable $cb
      * @callback $cb ( )
      * @return boolean
@@ -257,22 +255,23 @@ class Connection extends ClientConnection
                 $this->sendXML("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'><required /></starttls>");
             } elseif ($xml->hasSub('bind') and $this->authorized) {
                 $id = $this->getId();
-                $this->iqSet('<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><resource>' . $this->path . '</resource></bind>', function ($xml) {
-                    if ($xml->attrs['type'] === 'result') {
-                        $this->fulljid = $xml->sub('bind')->sub('jid')->data;
-                        $jidarray      = explode('/', $this->fulljid);
-                        $this->jid     = $jidarray[0];
-                    }
-                    $this->iqSet('<session xmlns="urn:ietf:params:xml:ns:xmpp-session" />', function ($xml) {
-                        $this->roster = new XMPPRoster($this);
-                        if ($this->onConnected) {
-                            $this->connected = true;
-                            $this->onConnected->executeAll($this);
-                            $this->onConnected = null;
+                $this->iqSet('<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><resource>' . $this->path . '</resource></bind>',
+                    function ($xml) {
+                        if ($xml->attrs['type'] === 'result') {
+                            $this->fulljid = $xml->sub('bind')->sub('jid')->data;
+                            $jidarray = explode('/', $this->fulljid);
+                            $this->jid = $jidarray[0];
                         }
-                        $this->event('connected');
+                        $this->iqSet('<session xmlns="urn:ietf:params:xml:ns:xmpp-session" />', function ($xml) {
+                            $this->roster = new XMPPRoster($this);
+                            if ($this->onConnected) {
+                                $this->connected = true;
+                                $this->onConnected->executeAll($this);
+                                $this->onConnected = null;
+                            }
+                            $this->event('connected');
+                        });
                     });
-                });
             } else {
                 if (mb_orig_strlen($this->password)) {
                     $this->sendXML("<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='PLAIN'>" . base64_encode("\x00" . $this->user . "\x00" . $this->password) . "</auth>");
@@ -305,7 +304,7 @@ class Connection extends ClientConnection
             } else {
                 $payload['type'] = 'chat';
             }
-            $payload['xml']  = $xml;
+            $payload['xml'] = $xml;
             $payload['from'] = $xml->attrs['from'];
             if ($xml->hasSub('body')) {
                 $payload['body'] = $xml->sub('body')->data;
@@ -327,8 +326,8 @@ class Connection extends ClientConnection
             $type = 'chat';
         }
 
-        $to      = htmlspecialchars($to);
-        $body    = htmlspecialchars($body);
+        $to = htmlspecialchars($to);
+        $body = htmlspecialchars($body);
         $subject = htmlspecialchars($subject);
 
         $out = '<message from="' . $this->fulljid . '" to="' . $to . '" type="' . $type . '">';
@@ -346,10 +345,10 @@ class Connection extends ClientConnection
 
     /**
      * Set Presence
-     * @param string  $status
-     * @param string  $show
-     * @param string  $to
-     * @param string  $type
+     * @param string $status
+     * @param string $show
+     * @param string $to
+     * @param string $type
      * @param integer $priority
      */
     public function presence($status = null, $show = 'available', $to = null, $type = 'available', $priority = 0)
@@ -357,7 +356,7 @@ class Connection extends ClientConnection
         if ($type === 'available') {
             $type = '';
         }
-        $to     = htmlspecialchars($to);
+        $to = htmlspecialchars($to);
         $status = htmlspecialchars($status);
         $show = htmlspecialchars($show);
         $type = htmlspecialchars($type);
@@ -395,7 +394,7 @@ class Connection extends ClientConnection
 
     /**
      * @TODO DESCR
-     * @param string   $jid
+     * @param string $jid
      * @param callable $cb
      * @callback $cb ( )
      */
@@ -403,7 +402,7 @@ class Connection extends ClientConnection
     {
         $id = $this->getId();
         $this->xml->addIdHandler($id, function ($xml) use ($cb) {
-            $vcard    = [];
+            $vcard = [];
             $vcardXML = $xml->sub('vcard');
             foreach ($vcardXML->subs as $sub) {
                 if ($sub->subs) {

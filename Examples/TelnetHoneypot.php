@@ -10,7 +10,7 @@ namespace PHPDaemon\Examples;
 class TelnetHoneypot extends \PHPDaemon\Network\Server
 {
     public $connectionClass = '\PHPDaemon\Examples\TelnetHoneypotConnection';
-    
+
     /**
      * Setting default config options
      * Overriden from ConnectionPool::getConfigDefaults
@@ -21,7 +21,7 @@ class TelnetHoneypot extends \PHPDaemon\Network\Server
         return [
             // @todo add description strings
             'listen' => '0.0.0.0',
-            'port'   => 23,
+            'port' => 23,
         ];
     }
 }
@@ -37,19 +37,19 @@ class TelnetHoneypotConnection extends \PHPDaemon\Network\Connection
         while (!is_null($line = $this->readline())) {
             $finish =
                 (mb_orig_strpos($line, $s = "\xff\xf4\xff\xfd\x06") !== false)
-                    || (mb_orig_strpos($line, $s = "\xff\xec") !== false)
-                    || (mb_orig_strpos($line, $s = "\x03") !== false)
-                    || (mb_orig_strpos($line, $s = "\x04") !== false);
+                || (mb_orig_strpos($line, $s = "\xff\xec") !== false)
+                || (mb_orig_strpos($line, $s = "\x03") !== false)
+                || (mb_orig_strpos($line, $s = "\x04") !== false);
 
-            $e   = explode(' ', rtrim($line, "\r\n"), 2);
+            $e = explode(' ', rtrim($line, "\r\n"), 2);
 
             $cmd = trim($e[0]);
 
             if ($cmd === 'ping') {
                 $this->writeln('pong');
             } elseif (
-                    ($cmd === 'exit')
-                    || ($cmd === 'quit')
+                ($cmd === 'exit')
+                || ($cmd === 'quit')
             ) {
                 $this->finish();
             } else {

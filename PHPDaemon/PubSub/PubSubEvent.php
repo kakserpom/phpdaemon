@@ -75,8 +75,8 @@ class PubSubEvent extends \SplObjectStorage
 
     /**
      * Subscribe
-     * @param  object   $obj Subcriber object
-     * @param  callable $cb  Callback
+     * @param  object $obj Subcriber object
+     * @param  callable $cb Callback
      * @return this
      */
     public function sub($obj, $cb)

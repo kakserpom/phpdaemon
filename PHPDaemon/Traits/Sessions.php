@@ -1,10 +1,8 @@
 <?php
 namespace PHPDaemon\Traits;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
-use PHPDaemon\FS\File;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\FS\FileSystem;
 
 /**
@@ -28,12 +26,12 @@ trait Sessions
      * @var boolean
      */
     protected $sessionStarted = false;
-    
+
     /**
      * @var boolean
      */
     protected $sessionFlushing = false;
-    
+
     /**
      * @var resource
      */
@@ -90,7 +88,7 @@ trait Sessions
         return function ($sessionEvent) {
             /** @var \PHPDaemon\Core\DeferredEvent $sessionEvent */
             $name = ini_get('session.name');
-            $sid  = $this->getCookieStr($name);
+            $sid = $this->getCookieStr($name);
             if ($sid === '') {
                 $sessionEvent->setResult(false);
                 return;
@@ -108,22 +106,23 @@ trait Sessions
 
     /**
      * Reads session data
-     * @param  string   $sid Session ID
-     * @param  callable $cb  Callback
+     * @param  string $sid Session ID
+     * @param  callable $cb Callback
      * @return void
      */
     public function sessionRead($sid, $cb = null)
     {
-        FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), $this->sessionPrefix) . basename($sid), 'r+!', function ($fp) use ($cb) {
-            if (!$fp) {
-                $cb(false);
-                return;
-            }
-            $fp->readAll(function ($fp, $data) use ($cb) {
-                $this->sessionFp = $fp;
-                $cb($data);
+        FileSystem::open(FileSystem::genRndTempnamPrefix(session_save_path(), $this->sessionPrefix) . basename($sid),
+            'r+!', function ($fp) use ($cb) {
+                if (!$fp) {
+                    $cb(false);
+                    return;
+                }
+                $fp->readAll(function ($fp, $data) use ($cb) {
+                    $this->sessionFp = $fp;
+                    $cb($data);
+                });
             });
-        });
     }
 
     /**
@@ -140,8 +139,8 @@ trait Sessions
             return;
         }
         $this->sessionFlushing = true;
-        $data                  = $this->sessionEncode();
-        $l                     = mb_orig_strlen($data);
+        $data = $this->sessionEncode();
+        $l = mb_orig_strlen($data);
         $cb = CallbackWrapper::wrap($cb);
         $this->sessionFp->write($data, function ($file, $result) use ($l, $cb) {
             $file->truncate($l, function ($file, $result) use ($cb) {
@@ -165,7 +164,7 @@ trait Sessions
         }
         $this->sessionStarted = true;
         if (!$this instanceof \PHPDaemon\HTTPRequest\Generic) {
-            Daemon::log('Called ' . get_class($this). '(trait \PHPDaemon\Traits\Sessions)->sessionStart() outside of Request. You should use onSessionStart.');
+            Daemon::log('Called ' . get_class($this) . '(trait \PHPDaemon\Traits\Sessions)->sessionStart() outside of Request. You should use onSessionStart.');
             return;
         }
         $f = true; // hack to avoid a sort of "race condition"
@@ -222,7 +221,7 @@ trait Sessions
         }
         return false;
     }
-    
+
     /**
      * Set session state
      * @param mixed $var
@@ -244,7 +243,7 @@ trait Sessions
 
     /**
      * Decodes session data
-     * @param  string  $str Data
+     * @param  string $str Data
      * @return boolean
      */
     protected function sessionDecode($str)
@@ -264,7 +263,7 @@ trait Sessions
     /**
      * session_encode() - clone, which not require session_start()
      * @see    http://www.php.net/manual/en/function.session-encode.php
-     * @param  array  $array
+     * @param  array $array
      * @return string
      */
     public function serializePHP($array)

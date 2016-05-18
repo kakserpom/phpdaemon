@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\XMLStream;
 
-use PHPDaemon\Traits\EventHandlers;
-use PHPDaemon\XMLStream\XMLStreamObject;
-
 class XMLStream
 {
     use \PHPDaemon\Traits\EventHandlers;
@@ -47,9 +44,9 @@ class XMLStream
      */
     public function finish()
     {
-        $this->xml_depth     = 0;
-        $this->current_ns    = [];
-        $this->idhandlers    = [];
+        $this->xml_depth = 0;
+        $this->current_ns = [];
+        $this->idhandlers = [];
         $this->xpathhandlers = [];
         $this->eventHandlers = [];
     }
@@ -108,14 +105,14 @@ class XMLStream
         $ns = $this->current_ns[$this->xml_depth];
         foreach ($attr as $key => $value) {
             if (mb_orig_strpos($key, ':') !== false) {
-                $key                = explode(':', $key);
-                $key                = $key[1];
+                $key = explode(':', $key);
+                $key = $key[1];
                 $this->ns_map[$key] = $value;
             }
         }
         if (mb_orig_strpos($name, ':') !== false) {
             $name = explode(':', $name);
-            $ns   = $this->ns_map[$name[0]];
+            $ns = $this->ns_map[$name[0]];
             $name = $name[1];
         }
         $obj = new XMLStreamObject($name, $ns, $attr);
@@ -141,7 +138,7 @@ class XMLStream
             foreach ($this->xpathhandlers as $handler) {
                 if (is_array($this->xmlobj) && array_key_exists(2, $this->xmlobj)) {
                     $searchxml = $this->xmlobj[2];
-                    $nstag     = array_shift($handler[0]);
+                    $nstag = array_shift($handler[0]);
                     if (($nstag[0] === null or $searchxml->ns === $nstag[0]) and ($nstag[1] === "*" or $nstag[1] === $searchxml->name)) {
                         foreach ($handler[0] as $nstag) {
                             if ($searchxml !== null and $searchxml->hasSub($nstag[1], $ns = $nstag[0])) {
@@ -205,7 +202,7 @@ class XMLStream
         $this->lastid++;
         return $this->lastid;
     }
-    
+
     /**
      * Add ID Handler
      *

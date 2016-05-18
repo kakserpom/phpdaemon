@@ -5,9 +5,6 @@
  */
 namespace PHPDaemon\Clients\Redis\Examples;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-
 /**
  * @package    NetworkClients
  * @subpackage RedisClientExample
@@ -34,10 +31,12 @@ class Scan extends \PHPDaemon\Core\AppInstance
             $params[] = 'value' . $i;
         }
         $params[] = function ($redis) {
-            $params = [function ($redis) {
-                D('Count: ' . count($redis->result[1]) . '; Next: ' . $redis->result[0]);
-            }];
-            
+            $params = [
+                function ($redis) {
+                    D('Count: ' . count($redis->result[1]) . '; Next: ' . $redis->result[0]);
+                }
+            ];
+
             $cbEnd = function ($redis, $scan) {
                 D('Full scan end!');
             };

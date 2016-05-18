@@ -70,9 +70,9 @@ class Master extends Generic
             $this->registerSignals();
         }
 
-        $this->workers                   = new Collection();
-        $this->collections['workers']    = $this->workers;
-        $this->ipcthreads                = new Collection;
+        $this->workers = new Collection();
+        $this->collections['workers'] = $this->workers;
+        $this->ipcthreads = new Collection;
         $this->collections['ipcthreads'] = $this->ipcthreads;
 
         Daemon::$appResolver->preload(true);
@@ -143,8 +143,8 @@ class Master extends Generic
             $func($this, $state);
         }
 
-        $upToMinWorkers      = Daemon::$config->minworkers->value - $state['alive'];
-        $upToMaxWorkers      = Daemon::$config->maxworkers->value - $state['alive'];
+        $upToMinWorkers = Daemon::$config->minworkers->value - $state['alive'];
+        $upToMaxWorkers = Daemon::$config->maxworkers->value - $state['alive'];
         $upToMinSpareWorkers = Daemon::$config->minspareworkers->value - $state['idle'];
         if ($upToMinSpareWorkers > $upToMaxWorkers) {
             $upToMinSpareWorkers = $upToMaxWorkers;
@@ -170,7 +170,7 @@ class Master extends Generic
             );
         }
         $a['downToMaxWorkers'] = $state['alive'] - $state['reloading'] - Daemon::$config->maxworkers->value;
-        $n                     = max($a);
+        $n = max($a);
         if ($n > 0) {
             //Daemon::log('down = ' . json_encode($a));
             //Daemon::log(json_encode($state));
@@ -301,7 +301,7 @@ class Master extends Generic
      */
     protected function stopWorkers($n = 1)
     {
-        Daemon::log('--'.$n.'-- '.Debug::backtrace().'-----');
+        Daemon::log('--' . $n . '-- ' . Debug::backtrace() . '-----');
 
         $n = (int)$n;
         $i = 0;

@@ -2,7 +2,6 @@
 namespace PHPDaemon\Servers\FastCGI;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Request\IRequestUpstream;
 
 /**
@@ -205,7 +204,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
                             !$this->pool->config->sendfileonlybycommand->value
                             || isset($req->attrs->server['USE_SENDFILE'])
                         )
-                        && !isset($req->attrs->server['DONT_USE_SENDFILE'])) {
+                        && !isset($req->attrs->server['DONT_USE_SENDFILE'])
+                    ) {
                         $fn = tempnam(
                             $this->pool->config->sendfiledir->value,
                             $this->pool->config->sendfileprefix->value

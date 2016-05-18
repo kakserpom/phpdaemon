@@ -20,55 +20,55 @@ class Connection extends ClientConnection
      * Generic error while executing the query.
      */
     const REPL_ERR = 0x00;
-    
+
     /**
      * Specified key was not found.
      */
     const REPL_ERR_NOT_FOUND = 0x01;
-    
+
     /**
      * Expected a number ( TTL or TIME ) but the specified value was invalid.
      */
     const REPL_ERR_NAN = 0x02;
-    
+
     /**
      * The server reached configuration memory limit and will not accept any new value until its freeing routine will be executed.
      */
     const REPL_ERR_MEM = 0x03;
-    
+
     /**
      * The specificed key was locked by a OP_LOCK or a OP_MLOCK query.
      */
     const REPL_ERR_LOCKED = 0x04;
-    
+
     /**
      * Query succesfully executed, no data follows.
      */
     const REPL_OK = 0x05;
-    
+
     /**
      * Query succesfully executed, value data follows.
      */
     const REPL_VAL = 0x06;
-    
+
     /**
      * Query succesfully executed, multiple key => value data follows.
      */
     const REPL_KVAL = 0x07;
 
-    const STATE_PACKET_HDR  = 0x01;
+    const STATE_PACKET_HDR = 0x01;
     const STATE_PACKET_DATA = 0x02;
-    
+
     /**
      * Raw string data follows.
      */
     const GB_ENC_PLAIN = 0x00;
-    
+
     /**
      * Compressed data, this is a reserved value not used for replies.
      */
-    const GB_ENC_LZF    = 0x01;
-    
+    const GB_ENC_LZF = 0x01;
+
     /**
      * Packed long number follows, four bytes for 32bit architectures, eight bytes for 64bit.
      */
@@ -107,7 +107,7 @@ class Connection extends ClientConnection
     {
         return $this->isFinal;
     }
-    
+
     /**
      * @TODO getTotalNum
      * @return integer
@@ -116,7 +116,7 @@ class Connection extends ClientConnection
     {
         return $this->totalNum;
     }
-    
+
     /**
      * @TODO getReadedNum
      * @return integer
@@ -125,7 +125,7 @@ class Connection extends ClientConnection
     {
         return $this->readedNum;
     }
-    
+
     /**
      * @TODO getResponseCode
      * @return integer
@@ -174,7 +174,7 @@ class Connection extends ClientConnection
                 $this->drain(5);
                 $this->responseLength = $pl;
                 if ($this->responseLength > $this->pool->maxAllowedPacket) {
-                    $this->log('max-allowed-packet ('.$this->pool->config->maxallowedpacket->getHumanValue().') exceed, aborting connection');
+                    $this->log('max-allowed-packet (' . $this->pool->config->maxallowedpacket->getHumanValue() . ') exceed, aborting connection');
                     $this->finish();
                     return;
                 }
@@ -193,8 +193,9 @@ class Connection extends ClientConnection
                     $this->readedNum = 0;
                     $this->executeCb();
                 } elseif (($this->responseCode === static::REPL_ERR_MEM) ||
-                        ($this->responseCode === static::REPL_ERR_NAN) ||
-                        ($this->responseCode === static::REPL_ERR_LOCKED)) {
+                    ($this->responseCode === static::REPL_ERR_NAN) ||
+                    ($this->responseCode === static::REPL_ERR_LOCKED)
+                ) {
                     $this->drain($this->responseLength);
                     $this->result = false;
                     $this->isFinal = true;
@@ -248,8 +249,8 @@ class Connection extends ClientConnection
                 if ($encoding === static::GB_ENC_NUMBER) {
                     $val = $this->read($valLen);
                     $this->result[$key] = $valLen === 8
-                                            ? Binary::getQword($val, true)
-                                            : Binary::getDword($val, true);
+                        ? Binary::getQword($val, true)
+                        : Binary::getDword($val, true);
                 } else {
                     $this->result[$key] = $this->read($valLen);
                 }
@@ -274,8 +275,8 @@ class Connection extends ClientConnection
                 $this->setWatermark(2, $this->pool->maxAllowedPacket);
                 if ($this->encoding === static::GB_ENC_NUMBER) {
                     $this->result = $this->responseLength === 8
-                                    ? Binary::getQword($this->result, true)
-                                    : Binary::getDword($this->result, true);
+                        ? Binary::getQword($this->result, true)
+                        : Binary::getDword($this->result, true);
                 }
                 $this->isFinal = true;
                 $this->totalNum = 1;

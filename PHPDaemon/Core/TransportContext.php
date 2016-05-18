@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Core;
 
-use PHPDaemon\Core\AppInstance;
-
 /**
  * TransportContext
  * @package PHPDaemon\Core

@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Config\Entry;
 
-use PHPDaemon\Config\Entry\Generic;
-
 /**
  * Size config entry
  *

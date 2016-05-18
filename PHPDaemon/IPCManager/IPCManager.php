@@ -4,8 +4,6 @@ namespace PHPDaemon\IPCManager;
 use PHPDaemon\Config;
 use PHPDaemon\Core\AppInstance;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\IPCManager\MasterPool;
-use PHPDaemon\IPCManager\WorkerConnection;
 use PHPDaemon\Thread;
 
 class IPCManager extends AppInstance
@@ -36,9 +34,10 @@ class IPCManager extends AppInstance
      */
     public function init()
     {
-        $this->socketurl = sprintf($this->config->mastersocket->value, crc32(Daemon::$config->pidfile->value . "\x00" . Daemon::$config->user->value . "\x00" . Daemon::$config->group->value));
+        $this->socketurl = sprintf($this->config->mastersocket->value,
+            crc32(Daemon::$config->pidfile->value . "\x00" . Daemon::$config->user->value . "\x00" . Daemon::$config->group->value));
         if (Daemon::$process instanceof Thread\IPC) {
-            $this->pool              = MasterPool::getInstance(['listen' => $this->socketurl]);
+            $this->pool = MasterPool::getInstance(['listen' => $this->socketurl]);
             $this->pool->appInstance = $this;
             $this->pool->onReady();
         }
@@ -54,7 +53,7 @@ class IPCManager extends AppInstance
      */
     public function updatedWorkers()
     {
-        $perWorker      = 1;
+        $perWorker = 1;
         $instancesCount = [];
         foreach (Daemon::$config as $name => $section) {
             if ((!$section instanceof Config\Section) || !isset($section->limitinstances)) {
@@ -159,11 +158,11 @@ class IPCManager extends AppInstance
     public function sendBroadcastCall($appInstance, $method, $args = [], $cb = null)
     {
         $this->sendPacket([
-                              'op'          => 'broadcastCall',
-                              'appfullname' => $appInstance,
-                              'method'      => $method,
-                              'args'        => $args,
-                          ]);
+            'op' => 'broadcastCall',
+            'appfullname' => $appInstance,
+            'method' => $method,
+            'args' => $args,
+        ]);
     }
 
     /**
@@ -176,11 +175,11 @@ class IPCManager extends AppInstance
     public function sendSingleCall($appInstance, $method, $args = [], $cb = null)
     {
         $this->sendPacket([
-                              'op'          => 'singleCall',
-                              'appfullname' => $appInstance,
-                              'method'      => $method,
-                              'args'        => $args,
-                          ]);
+            'op' => 'singleCall',
+            'appfullname' => $appInstance,
+            'method' => $method,
+            'args' => $args,
+        ]);
     }
 
     /**
@@ -194,11 +193,11 @@ class IPCManager extends AppInstance
     public function sendDirectCall($workerId, $appInstance, $method, $args = [], $cb = null)
     {
         $this->sendPacket([
-                              'op'          => 'directCall',
-                              'appfullname' => $appInstance,
-                              'method'      => $method,
-                              'args'        => $args,
-                              'workerId'    => $workerId,
-                          ]);
+            'op' => 'directCall',
+            'appfullname' => $appInstance,
+            'method' => $method,
+            'args' => $args,
+            'workerId' => $workerId,
+        ]);
     }
 }

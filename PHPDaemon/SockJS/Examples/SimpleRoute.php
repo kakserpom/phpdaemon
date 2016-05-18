@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\SockJS\Examples;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-
 class SimpleRoute extends \PHPDaemon\WebSocket\Route
 {
     /**

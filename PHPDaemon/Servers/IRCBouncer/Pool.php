@@ -7,32 +7,32 @@ use PHPDaemon\Structures\ObjectStorage;
 
 class Pool extends Server
 {
-    
+
     /**
      * @var Pool
      */
     public $client;
-    
+
     /**
      * @var Connection
      */
     public $conn;
-    
+
     /**
      * @var boolean
      */
     public $protologging = false;
-    
+
     /**
      * @var Pool
      */
     public $db;
-    
+
     /**
      * @var object
      */
     public $messages;
-    
+
     /**
      * @var object
      */
@@ -43,11 +43,11 @@ class Pool extends Server
      */
     protected function init()
     {
-        $this->client               = Pool::getInstance();
+        $this->client = Pool::getInstance();
         $this->client->protologging = $this->protologging;
-        $this->db                   = Pool::getInstance();
-        $this->messages             = $this->db->{$this->config->dbname->value . '.messages'};
-        $this->channels             = $this->db->{$this->config->dbname->value . '.channels'};
+        $this->db = Pool::getInstance();
+        $this->messages = $this->db->{$this->config->dbname->value . '.messages'};
+        $this->channels = $this->db->{$this->config->dbname->value . '.channels'};
     }
 
     /**
@@ -59,28 +59,28 @@ class Pool extends Server
     {
         return [
             /* [string|array] Listen addresses */
-            'listen'          => '0.0.0.0',
+            'listen' => '0.0.0.0',
 
             /* [integer] Listen port */
-            'port'            => 6667,
+            'port' => 6667,
 
             /* [string] URL */
-            'url'             => 'irc://user@host/nickname/realname',
+            'url' => 'irc://user@host/nickname/realname',
 
             /* [string] Server name */
-            'servername'      => 'bnchost.tld',
+            'servername' => 'bnchost.tld',
 
             /* [string] Default channels */
             'defaultchannels' => '',
 
             /* [boolean] Logging? */
-            'protologging'    => 0,
+            'protologging' => 0,
 
             /* [string] Database name */
-            'dbname'          => 'bnc',
+            'dbname' => 'bnc',
 
             /* [string] Password */
-            'password'        => 'SecretPwd',
+            'password' => 'SecretPwd',
         ];
     }
 
@@ -113,7 +113,7 @@ class Pool extends Server
     public function getConnection($url)
     {
         $this->client->getConnection($url, function ($conn) use ($url) {
-            $this->conn            = $conn;
+            $this->conn = $conn;
             $conn->attachedClients = new ObjectStorage;
             if ($conn->connected) {
                 Daemon::log('IRC bot connected at ' . $url);
@@ -141,7 +141,7 @@ class Pool extends Server
                     Daemon::log('IRCBouncer: got private message \'' . $msg['body'] . '\' from \'' . $msg['from']['orig'] . '\'');
                 });
                 $conn->bind('msg', function ($conn, $msg) {
-                    $msg['ts']  = microtime(true);
+                    $msg['ts'] = microtime(true);
                     $msg['dir'] = 'i';
                     $this->messages->insert($msg);
                 });

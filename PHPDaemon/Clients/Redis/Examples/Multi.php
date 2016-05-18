@@ -5,9 +5,6 @@
  */
 namespace PHPDaemon\Clients\Redis\Examples;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-
 /**
  * @package    NetworkClients
  * @subpackage RedisClientExample

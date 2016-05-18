@@ -49,19 +49,19 @@ class ClassFinder
             }
             if ('Server' === substr($class, -6)) {
                 $path = '\\PHPDaemon\\Servers\\' . substr($class, 0, -6) . '\\Pool';
-                $r    = str_replace('\\Servers\\Servers', '\\Servers', $path);
+                $r = str_replace('\\Servers\\Servers', '\\Servers', $path);
                 Daemon::log('ClassFinder: \'' . $class . '\' -> \'' . $r . '\', you should change your code.');
                 return $r;
             }
             if ('Client' === substr($class, -6)) {
                 $path = '\\PHPDaemon\\Clients\\' . substr($class, 0, -6) . '\\Pool';
-                $r    = str_replace('\\Clients\\Clients', '\\Clients', $path);
+                $r = str_replace('\\Clients\\Clients', '\\Clients', $path);
                 Daemon::log('ClassFinder: \'' . $class . '\' -> \'' . $r . '\', you should change your code.');
                 return $r;
             }
             if ('ClientAsync' === substr($class, -11)) {
                 $path = '\\PHPDaemon\\Clients\\' . substr($class, 0, -11) . '\\Pool';
-                $r    = str_replace('\\Client\\Clients', '\\Clients', $path);
+                $r = str_replace('\\Client\\Clients', '\\Clients', $path);
                 Daemon::log('ClassFinder: \'' . $class . '\' -> \'' . $r . '\', you should change your code.');
                 return $r;
             }

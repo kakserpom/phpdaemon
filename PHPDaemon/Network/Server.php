@@ -2,7 +2,6 @@
 namespace PHPDaemon\Network;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Network\Pool;
 
 /**
  * Network server pattern
@@ -21,10 +20,10 @@ abstract class Server extends Pool
      * @var array|null Allowed clients
      */
     public $allowedClients = null;
-    
+
     /**
      * Constructor
-     * @param array   $config Config variables
+     * @param array $config Config variables
      * @param boolean $init
      */
     public function __construct($config = [], $init = true)
@@ -48,11 +47,11 @@ abstract class Server extends Pool
         $this->closeBound();
         parent::onFinish();
     }
-    
+
     /**
      * Bind given sockets
-     * @param  mixed   $addrs Addresses to bind
-     * @param  integer $max   Maximum
+     * @param  mixed $addrs Addresses to bind
+     * @param  integer $max Maximum
      * @return integer        Number of bound
      */
     public function bindSockets($addrs = [], $max = 0)
@@ -74,12 +73,12 @@ abstract class Server extends Pool
 
     /**
      * Bind given socket
-     * @param  string  $uri Address to bind
+     * @param  string $uri Address to bind
      * @return boolean      Success
      */
     public function bindSocket($uri)
     {
-        $u      = \PHPDaemon\Config\Object::parseCfgUri($uri);
+        $u = \PHPDaemon\Config\Object::parseCfgUri($uri);
         $scheme = $u['scheme'];
         if ($scheme === 'unix') {
             $socket = new \PHPDaemon\BoundSocket\UNIX($u);
@@ -179,8 +178,8 @@ abstract class Server extends Pool
 
     /**
      * Called when a request to HTTP-server looks like another connection
-     * @param  object  $req     Request
-     * @param  object  $oldConn Connection
+     * @param  object $req Request
+     * @param  object $oldConn Connection
      * @return boolean Success
      */
     public function inheritFromRequest($req, $oldConn)
@@ -189,7 +188,7 @@ abstract class Server extends Pool
             return false;
         }
         $class = $this->connectionClass;
-        $conn  = new $class(null, $this);
+        $conn = new $class(null, $this);
         $this->attach($conn);
         $conn->setFd($oldConn->getFd(), $oldConn->getBev());
         $oldConn->unsetFd();

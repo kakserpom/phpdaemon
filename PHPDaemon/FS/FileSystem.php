@@ -1,10 +1,9 @@
 <?php
 namespace PHPDaemon\FS;
 
-use PHPDaemon\Cache\CappedStorage;
 use PHPDaemon\Cache\CappedStorageHits;
-use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\CallbackWrapper;
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\EventLoop;
 
 /**

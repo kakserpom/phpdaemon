@@ -2,7 +2,6 @@
 namespace PHPDaemon\IPCManager;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\Network\Connection;
 
@@ -27,10 +26,10 @@ class WorkerConnection extends Connection
     public function onReady()
     {
         $this->sendPacket([
-                              'op'       => 'start',
-                              'pid'      => Daemon::$process->getPid(),
-                              'workerId' => Daemon::$process->getId()
-                          ]);
+            'op' => 'start',
+            'pid' => Daemon::$process->getPid(),
+            'workerId' => Daemon::$process->getId()
+        ]);
         parent::onReady();
     }
 
@@ -100,9 +99,9 @@ class WorkerConnection extends Connection
             if (false === ($r = $this->readExact(4))) {
                 return; // not ready yet
             }
-            $u                  = unpack('N', $r);
+            $u = unpack('N', $r);
             $this->packetLength = $u[1];
-            $this->state        = self::STATE_CONTENT;
+            $this->state = self::STATE_CONTENT;
         }
         if ($this->state === self::STATE_CONTENT) {
             if (false === ($packet = $this->readExact($this->packetLength))) {

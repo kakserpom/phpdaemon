@@ -1,12 +1,10 @@
 <?php
 namespace PHPDaemon\SockJS;
 
-use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
+use PHPDaemon\HTTPRequest\Generic;
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Utils\Crypt;
 
 /**
  * @package    Libraries
@@ -41,7 +39,7 @@ class Session
     public $buffer = [];
 
     public $framesBuffer = [];
-    
+
     /**
      * @var boolean
      */
@@ -53,7 +51,7 @@ class Session
      * @var boolean
      */
     public $flushing = false;
-    
+
     /**
      * @var integer
      */
@@ -82,29 +80,29 @@ class Session
     /**
      * __construct
      * @param Application $appInstance [@todo description]
-     * @param string      $id          [@todo description]
-     * @param array       $server      [@todo description]
+     * @param string $id [@todo description]
+     * @param array $server [@todo description]
      * @return void
      */
     public function __construct($appInstance, $id, $server)
     {
-        $this->onWrite   = new StackCallbacks;
-        $this->id     = $id;
+        $this->onWrite = new StackCallbacks;
+        $this->id = $id;
         $this->appInstance = $appInstance;
         $this->server = $server;
-        
+
         if (isset($this->server['HTTP_COOKIE'])) {
             Generic::parseStr(strtr($this->server['HTTP_COOKIE'], Generic::$hvaltr), $this->cookie);
         }
         if (isset($this->server['QUERY_STRING'])) {
             Generic::parseStr($this->server['QUERY_STRING'], $this->get);
         }
-        
+
         $this->addr = $server['REMOTE_ADDR'];
         $this->finishTimer = setTimeout(function ($timer) {
             $this->finish();
         }, $this->timeout * 1e6);
-        
+
         $this->appInstance->subscribe('c2s:' . $this->id, [$this, 'c2s']);
         $this->appInstance->subscribe('poll:' . $this->id, [$this, 'poll'], function ($redis) {
             $this->appInstance->publish('state:' . $this->id, 'started', function ($redis) {
@@ -166,7 +164,7 @@ class Session
 
     /**
      * onFrame
-     * @param  string  $msg  [@todo description]
+     * @param  string $msg [@todo description]
      * @param  integer $type [@todo description]
      * @return void
      */
@@ -233,7 +231,7 @@ class Session
         }
         $this->finished = true;
         $this->onFinish();
-        $this->sendPacket('c'.json_encode([3000, 'Go away!']));
+        $this->sendPacket('c' . json_encode([3000, 'Go away!']));
     }
 
     /*public function __destruct() {
@@ -260,7 +258,7 @@ class Session
         Timer::remove($this->finishTimer);
         $this->appInstance->endSession($this);
     }
-    
+
     /**
      * Flushes buffered packets
      * @return void
@@ -328,8 +326,8 @@ class Session
 
     /**
      * sendPacket
-     * @param  object   $pct [@todo description]
-     * @param  callable $cb  [@todo description]
+     * @param  object $pct [@todo description]
+     * @param  callable $cb [@todo description]
      * @callback $cb ( )
      * @return void
      */
@@ -348,9 +346,9 @@ class Session
 
     /**
      * Sends a frame.
-     * @param  string   $data Frame's data.
-     * @param  integer  $type Frame's type. See the constants.
-     * @param  callback $cb   Optional. Callback called when the frame is received by client.
+     * @param  string $data Frame's data.
+     * @param  integer $type Frame's type. See the constants.
+     * @param  callback $cb Optional. Callback called when the frame is received by client.
      * @callback $cb ( )
      * @return boolean Success.
      */

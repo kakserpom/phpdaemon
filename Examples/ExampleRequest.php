@@ -1,8 +1,7 @@
 <?php
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\HTTPRequest\Generic;
-use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\Daemon;use PHPDaemon\HTTPRequest\Generic;
 
 class ExampleRequest extends Generic
 {

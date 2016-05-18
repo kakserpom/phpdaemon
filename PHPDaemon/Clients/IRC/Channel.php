@@ -2,7 +2,6 @@
 namespace PHPDaemon\Clients\IRC;
 
 use PHPDaemon\Structures\ObjectStorage;
-use PHPDaemon\Traits\EventHandlers;
 use PHPDaemon\Utils\IRC;
 
 /**
@@ -18,27 +17,27 @@ class Channel extends ObjectStorage
      * @var Connection
      */
     public $irc;
-    
+
     /**
      * @var string
      */
     public $name;
-    
+
     /**
      * @var array
      */
     public $nicknames = [];
-    
+
     /**
      * @var
      */
     public $self;
-    
+
     /**
      * @var string
      */
     public $type;
-    
+
     /**
      * @var string
      */
@@ -46,11 +45,11 @@ class Channel extends ObjectStorage
 
     /**
      * @param Connection $irc
-     * @param string     $name
+     * @param string $name
      */
     public function __construct($irc, $name)
     {
-        $this->irc  = $irc;
+        $this->irc = $irc;
         $this->name = $name;
     }
 
@@ -65,7 +64,7 @@ class Channel extends ObjectStorage
     /**
      * @TODO DESCR
      * @param array|string $mask
-     * @param mixed        $msg
+     * @param mixed $msg
      */
     public function onPart($mask, $msg = null)
     {
@@ -137,7 +136,7 @@ class Channel extends ObjectStorage
         if (!isset($this->nicknames[$target])) {
             return;
         }
-        $participant       = $this->nicknames[$target];
+        $participant = $this->nicknames[$target];
         $participant->mode = str_replace($mode, '', $participant->mode);
         $participant->onModeUpdate();
     }

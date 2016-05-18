@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\Traits;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-
 /**
  * Watchdog of __set in static objects
  * @package PHPDaemon\Traits
@@ -13,7 +10,7 @@ trait StrictStaticObjectWatchdog
 {
     /**
      * @param  string $prop
-     * @param  mixed  $value
+     * @param  mixed $value
      * @throws UndefinedPropertySetting if trying to set undefined property
      * @return void
      */

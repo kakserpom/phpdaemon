@@ -12,32 +12,32 @@ class ChannelParticipant
      * @var string
      */
     public $channel;
-    
+
     /**
      * @var string
      */
     public $nick;
-    
+
     /**
      * @var string
      */
     public $user;
-    
+
     /**
      * @var string
      */
     public $flag;
-    
+
     /**
      * @var string
      */
     public $mode;
-    
+
     /**
      * @var boolean
      */
     public $unverified;
-    
+
     /**
      * @var string
      */
@@ -49,7 +49,7 @@ class ChannelParticipant
      */
     public function setFlag($flag)
     {
-        $flag       = strtr($flag, ['H' => '', 'G' => '', '*' => '']);
+        $flag = strtr($flag, ['H' => '', 'G' => '', '*' => '']);
         $this->flag = $flag;
         if ($flag === '@') {
             $this->mode = 'o';
@@ -141,10 +141,10 @@ class ChannelParticipant
             $mask = IRC::parseUsermask($mask);
         }
         $this
-                ->setUnverified($mask['unverified'])
-                ->setUser($mask['user'])
-                ->setNick($mask['nick'])
-                ->setHost($mask['host']);
+            ->setUnverified($mask['unverified'])
+            ->setUser($mask['user'])
+            ->setNick($mask['nick'])
+            ->setHost($mask['host']);
         return $this;
     }
 
@@ -174,7 +174,7 @@ class ChannelParticipant
         }
         $this->nick = $nick;
         unset($this->channel->nicknames[$this->nick]);
-        $this->nick                            = $nick;
+        $this->nick = $nick;
         $this->channel->nicknames[$this->nick] = $this;
         return $this;
     }

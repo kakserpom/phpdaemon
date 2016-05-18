@@ -7,8 +7,6 @@
  */
 namespace PHPDaemon\Examples;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\HTTPRequest\Generic;
 
 /**
@@ -19,6 +17,7 @@ use PHPDaemon\HTTPRequest\Generic;
 class ExampleGibson extends \PHPDaemon\Core\AppInstance
 {
     public $gibson;
+
     /**
      * Called when the worker is ready to go.
      * @return void
@@ -85,26 +84,26 @@ class ExampleGibsonRequest extends Generic
         } catch (\Exception $e) {
         }
         ?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<title>Example with Gibson</title>
-</head>
-<body>
-<?php
-    if ($r = $this->job->getResult('testquery')) {
-        echo '<h1>It works! Be happy! ;-)</h1>Result of query: <pre>';
-        var_dump($r);
-        echo '</pre>';
-    } else {
-        echo '<h1>Something went wrong! We have no result...</h1>';
-    }
+        <!DOCTYPE html>
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+            <title>Example with Gibson</title>
+        </head>
+        <body>
+        <?php
+        if ($r = $this->job->getResult('testquery')) {
+            echo '<h1>It works! Be happy! ;-)</h1>Result of query: <pre>';
+            var_dump($r);
+            echo '</pre>';
+        } else {
+            echo '<h1>Something went wrong! We have no result...</h1>';
+        }
         echo '<br />Request (http) took: ' . round(microtime(true) - $this->attrs->server['REQUEST_TIME_FLOAT'], 6);
         ?>
-</body>
-</html>
-<?php
+        </body>
+        </html>
+        <?php
 
     }
 }

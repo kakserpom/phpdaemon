@@ -14,7 +14,7 @@ trait ClassWatchdog
 {
     /**
      * @param  string $method Method name
-     * @param  array  $args   Arguments
+     * @param  array $args Arguments
      * @throws UndefinedMethodCalled if call to undefined method
      * @return mixed
      */
@@ -25,7 +25,7 @@ trait ClassWatchdog
 
     /**
      * @param  string $method Method name
-     * @param  array  $args   Arguments
+     * @param  array $args Arguments
      * @throws UndefinedMethodCalled if call to undefined static method
      * @return mixed
      */

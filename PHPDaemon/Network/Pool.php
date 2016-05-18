@@ -4,7 +4,6 @@ namespace PHPDaemon\Network;
 use PHPDaemon\BoundSocket;
 use PHPDaemon\Config;
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Thread;
 
@@ -68,7 +67,7 @@ abstract class Pool extends ObjectStorage
 
     /**
      * Constructor
-     * @param array   $config Config variables
+     * @param array $config Config variables
      * @param boolean $init
      */
     public function __construct($config = [], $init = true)
@@ -76,8 +75,8 @@ abstract class Pool extends ObjectStorage
         $this->config = $config;
         $this->onConfigUpdated();
         if ($this->connectionClass === null) {
-            $e                     = explode('\\', get_class($this));
-            $e[sizeof($e) - 1]     = 'Connection';
+            $e = explode('\\', get_class($this));
+            $e[sizeof($e) - 1] = 'Connection';
             $this->connectionClass = '\\' . implode('\\', $e);
         }
         if ($init) {
@@ -155,7 +154,7 @@ abstract class Pool extends ObjectStorage
 
     /**
      * Returns instance object
-     * @param  string  $arg   name / array config / ConfigSection
+     * @param  string $arg name / array config / ConfigSection
      * @param  boolean $spawn Spawn? Default is true
      * @return this
      */
@@ -172,9 +171,9 @@ abstract class Pool extends ObjectStorage
             } elseif (!$spawn) {
                 return false;
             }
-            $k         = '\PHPDaemon\Core\Pool:\\' . $class . ($arg !== '' ? ':' . $arg : '');
-            $config    = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Config\Section) ? Daemon::$config->{$k} : new Config\Section;
-            $obj       = self::$instances[$key] = new $class($config);
+            $k = '\PHPDaemon\Core\Pool:\\' . $class . ($arg !== '' ? ':' . $arg : '');
+            $config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Config\Section) ? Daemon::$config->{$k} : new Config\Section;
+            $obj = self::$instances[$key] = new $class($config);
             $obj->name = $arg;
             return $obj;
         } elseif ($arg instanceof Config\Section) {
@@ -261,12 +260,12 @@ abstract class Pool extends ObjectStorage
     public function finish($graceful = false)
     {
         $this->disable();
-        
+
         if (!$this->finished) {
             $this->finished = true;
             $this->onFinish();
         }
-        
+
         $result = true;
 
         foreach ($this as $conn) {
@@ -285,7 +284,7 @@ abstract class Pool extends ObjectStorage
     /**
      * Attach Connection
      * @param  object $conn Connection
-     * @param  mixed  $inf  Info
+     * @param  mixed $inf Info
      * @return void
      */
     public function attach($conn, $inf = null)
@@ -318,9 +317,9 @@ abstract class Pool extends ObjectStorage
 
     /**
      * Establish a connection with remote peer
-     * @param  string   $url   URL
-     * @param  callback $cb    Callback
-     * @param  string   $class Optional. Connection class name
+     * @param  string $url URL
+     * @param  callback $cb Callback
+     * @param  string $class Optional. Connection class name
      * @return integer         Connection's ID. Boolean false when failed
      */
     public function connect($url, $cb, $class = null)

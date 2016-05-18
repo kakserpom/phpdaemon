@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Core;
 
-use PHPDaemon\Core\CallbackWrapper;
-
 /**
  * ComplexJob class
  * @package PHPDaemon\Core
@@ -17,12 +15,12 @@ class ComplexJob implements \ArrayAccess
      * State: waiting
      */
     const STATE_WAITING = 1;
-    
+
     /**
      * State: running
      */
     const STATE_RUNNING = 2;
-    
+
     /**
      * State: done
      */
@@ -105,7 +103,7 @@ class ComplexJob implements \ArrayAccess
     /**
      * Handler of $job[$name] = $value
      * @param  string $j Job name
-     * @param  mixed  $v Job result
+     * @param  mixed $v Job result
      * @return void
      */
     public function offsetSet($j, $v)
@@ -131,6 +129,7 @@ class ComplexJob implements \ArrayAccess
     {
         return $this->results;
     }
+
     /**
      * Keep
      * @param  boolean $keep Keep?
@@ -138,7 +137,7 @@ class ComplexJob implements \ArrayAccess
      */
     public function keep($keep = true)
     {
-        $this->keep = (boolean) $keep;
+        $this->keep = (boolean)$keep;
     }
 
     /**
@@ -164,7 +163,7 @@ class ComplexJob implements \ArrayAccess
     /**
      * Set result
      * @param  string $jobname Job name
-     * @param  mixed  $result  Result
+     * @param  mixed $result Result
      * @return boolean
      */
     public function setResult($jobname, $result = null)
@@ -196,7 +195,7 @@ class ComplexJob implements \ArrayAccess
     {
         $this->checkQueue();
         if ($this->resultsNum >= $this->jobsNum) {
-            $this->jobs  = [];
+            $this->jobs = [];
             $this->state = self::STATE_DONE;
             foreach ($this->listeners as $cb) {
                 $cb($this);
@@ -276,8 +275,8 @@ class ComplexJob implements \ArrayAccess
 
     /**
      * Adds job
-     * @param  string   $name Job name
-     * @param  callable $cb   Callback
+     * @param  string $name Job name
+     * @param  callable $cb Callback
      * @return boolean Success
      */
     public function addJob($name, $cb)
@@ -309,9 +308,9 @@ class ComplexJob implements \ArrayAccess
     public function cleanup()
     {
         $this->listeners = [];
-        $this->results   = [];
-        $this->jobs      = [];
-        $this->more      = null;
+        $this->results = [];
+        $this->jobs = [];
+        $this->more = null;
     }
 
     /**
@@ -346,7 +345,7 @@ class ComplexJob implements \ArrayAccess
 
     /**
      * Adds new job or calls execute() method
-     * @param  mixed    $name
+     * @param  mixed $name
      * @param  callable $cb
      * @return void
      */

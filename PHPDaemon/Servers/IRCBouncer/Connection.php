@@ -3,7 +3,6 @@ namespace PHPDaemon\Servers\IRCBouncer;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Timer;
-use PHPDaemon\Traits\EventHandlers;
 use PHPDaemon\Utils\IRC;
 
 /**
@@ -13,7 +12,7 @@ use PHPDaemon\Utils\IRC;
  */
 class Connection extends \PHPDaemon\Network\Connection
 {
-    
+
     /**
      * @var string
      */
@@ -55,7 +54,7 @@ class Connection extends \PHPDaemon\Network\Connection
      */
     public function onReady()
     {
-        $conn                 = $this;
+        $conn = $this;
         $this->keepaliveTimer = setTimeout(function ($timer) use ($conn) {
             $conn->ping();
         }, 10e6);
@@ -85,16 +84,16 @@ class Connection extends \PHPDaemon\Network\Connection
 
     /**
      * @TODO DESCR
-     * @param  string $from    From
-     * @param  string $cmd     Command
-     * @param  mixed  ...$args Arguments
+     * @param  string $from From
+     * @param  string $cmd Command
+     * @param  mixed ...$args Arguments
      */
     public function command($from, $cmd)
     {
         if ($from === null) {
             $from = $this->pool->config->servername->value;
         }
-        $cmd  = IRC::getCodeByCommand($cmd);
+        $cmd = IRC::getCodeByCommand($cmd);
         $line = ':' . $from . ' ' . $cmd;
         for ($i = 2, $s = func_num_args(); $i < $s; ++$i) {
             $arg = func_get_arg($i);
@@ -114,8 +113,8 @@ class Connection extends \PHPDaemon\Network\Connection
     /**
      * @TODO
      * @param  string $from From
-     * @param  string $cmd  Command
-     * @param  array  $args Arguments
+     * @param  string $cmd Command
+     * @param  array $args Arguments
      */
     public function commandArr($from, $cmd, $args)
     {
@@ -126,7 +125,7 @@ class Connection extends \PHPDaemon\Network\Connection
             Daemon::log(get_class($this) . '->commandArr: args is string');
             return;
         }
-        $cmd  = IRC::getCodeByCommand($cmd);
+        $cmd = IRC::getCodeByCommand($cmd);
         $line = ':' . $from . ' ' . $cmd;
         for ($i = 0, $s = sizeof($args); $i < $s; ++$i) {
             if (($i + 1 === $s) && (mb_orig_strpos($args[$i], "\x20") !== false)) {
@@ -166,7 +165,8 @@ class Connection extends \PHPDaemon\Network\Connection
         }
         $this->msgFromBNC('Attached to ' . $this->attachedServer->url);
         $this->usermask = $this->attachedServer->nick . '!' . $this->attachedServer->user . '@' . $this->pool->config->servername->value;
-        $this->command(null, 'RPL_WELCOME', $this->attachedServer->nick, 'Welcome to phpDaemon bouncer -- ' . $this->pool->config->servername->value);
+        $this->command(null, 'RPL_WELCOME', $this->attachedServer->nick,
+            'Welcome to phpDaemon bouncer -- ' . $this->pool->config->servername->value);
         foreach ($this->attachedServer->channels as $chan) {
             $this->exportChannel($chan);
         }
@@ -180,7 +180,7 @@ class Connection extends \PHPDaemon\Network\Connection
     {
         $this->command($this->usermask, 'JOIN', $chan->name);
         $this->command($this->usermask, 'RPL_TOPIC', $chan->irc->nick, $chan->name, $chan->topic);
-        $names  = $chan->exportNicksArray();
+        $names = $chan->exportNicksArray();
         $packet = '';
         $maxlen = 510 - 7 - mb_orig_strlen($this->pool->config->servername->value) - $chan->irc->nick - 1;
         for ($i = 0, $s = sizeof($names); $i < $s; ++$i) {
@@ -195,8 +195,8 @@ class Connection extends \PHPDaemon\Network\Connection
 
     /**
      * @TODO DESCR
-     * @param string $cmd  Command
-     * @param array  $args Arguments
+     * @param string $cmd Command
+     * @param array $args Arguments
      */
     public function onCommand($cmd, $args)
     {
@@ -212,7 +212,7 @@ class Connection extends \PHPDaemon\Network\Connection
             return;
         } elseif ($cmd === 'PONG') {
             if ($this->lastPingTS) {
-                $this->latency    = microtime(true) - $this->lastPingTS;
+                $this->latency = microtime(true) - $this->lastPingTS;
                 $this->lastPingTS = null;
                 $this->event('lantency');
             }
@@ -241,12 +241,12 @@ class Connection extends \PHPDaemon\Network\Connection
                 return;
             }
             $this->pool->messages->insert([
-                                              'from' => $this->usermask,
-                                              'to'   => $target,
-                                              'body' => $msg,
-                                              'ts'   => microtime(true),
-                                              'dir'  => 'o',
-                                          ]);
+                'from' => $this->usermask,
+                'to' => $target,
+                'body' => $msg,
+                'ts' => microtime(true),
+                'dir' => 'o',
+            ]);
         }
         if ($this->attachedServer) {
             $this->attachedServer->commandArr($cmd, $args);
@@ -285,11 +285,11 @@ class Connection extends \PHPDaemon\Network\Connection
                 return;
             }
             $line = mb_orig_substr($line, 0, -mb_orig_strlen($this->EOL));
-            $p    = mb_orig_strpos($line, ':', 1);
-            $max  = $p ? substr_count($line, "\x20", 0, $p) + 1 : 18;
-            $e    = explode("\x20", $line, $max);
-            $i    = 0;
-            $cmd  = $e[$i++];
+            $p = mb_orig_strpos($line, ':', 1);
+            $max = $p ? substr_count($line, "\x20", 0, $p) + 1 : 18;
+            $e = explode("\x20", $line, $max);
+            $i = 0;
+            $cmd = $e[$i++];
             $args = [];
 
             for ($s = min(sizeof($e), 14); $i < $s; ++$i) {
@@ -302,7 +302,7 @@ class Connection extends \PHPDaemon\Network\Connection
 
             if (ctype_digit($cmd)) {
                 $code = (int)$cmd;
-                $cmd  = isset(IRC::$codes[$code]) ? IRC::$codes[$code] : 'UNKNOWN-' . $code;
+                $cmd = isset(IRC::$codes[$code]) ? IRC::$codes[$code] : 'UNKNOWN-' . $code;
             }
             $this->onCommand($cmd, $args);
         }

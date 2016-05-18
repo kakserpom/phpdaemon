@@ -18,10 +18,10 @@ class Pool extends \PHPDaemon\Network\Client
     {
         return [
             /* [string|array] Default servers */
-            'servers'        => 'tcp://127.0.0.1',
+            'servers' => 'tcp://127.0.0.1',
 
             /* [integer] Default port */
-            'port'           => 11211,
+            'port' => 11211,
 
             /* [integer] Maximum connections per server */
             'maxconnperserv' => 32,
@@ -32,7 +32,7 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * Gets the key
-     * @param  string   $key        Key
+     * @param  string $key Key
      * @param  callable $onResponse Callback called when response received
      * @callback $onResponse ( )
      * @return void
@@ -44,9 +44,9 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * Sets the key
-     * @param  string   $key        Key
-     * @param  string   $value      Value
-     * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+     * @param  string $key Key
+     * @param  string $value Value
+     * @param  integer $exp Lifetime in seconds (0 - immortal)
      * @param  callable $onResponse Callback called when the request complete
      * @callback $onResponse ( )
      * @return void
@@ -71,9 +71,9 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * Adds the key
-     * @param  string   $key        Key
-     * @param  string   $value      Value
-     * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+     * @param  string $key Key
+     * @param  string $value Value
+     * @param  integer $exp Lifetime in seconds (0 - immortal)
      * @param  callable $onResponse Callback called when the request complete
      * @callback $onResponse ( )
      * @return void
@@ -89,15 +89,15 @@ class Pool extends \PHPDaemon\Network\Client
                 $conn->checkFree();
             }
             $conn->writeln('add ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . mb_orig_strlen($value)
-                           . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+                . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
         });
     }
 
     /**
      * Deletes the key
-     * @param  string   $key        Key
+     * @param  string $key Key
      * @param  callable $onResponse Callback called when the request complete
-     * @param  integer  $time       Time to block this key
+     * @param  integer $time Time to block this key
      * @callback $onResponse ( )
      * @return void
      */
@@ -117,9 +117,9 @@ class Pool extends \PHPDaemon\Network\Client
 
     /**
      * Replaces the key
-     * @param  string   $key        Key
-     * @param  string   $value      Value
-     * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+     * @param  string $key Key
+     * @param  string $value Value
+     * @param  integer $exp Lifetime in seconds (0 - immortal)
      * @param  callable $onResponse Callback called when the request complete
      * @callback $onResponse ( )
      * @return void
@@ -135,15 +135,15 @@ class Pool extends \PHPDaemon\Network\Client
                 $conn->checkFree();
             }
             $conn->writeln('replace ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . mb_orig_strlen($value)
-                           . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+                . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
         });
     }
 
     /**
      * Appends a string to the key's value
-     * @param  string   $key        Key
-     * @param  string   $value      Value
-     * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+     * @param  string $key Key
+     * @param  string $value Value
+     * @param  integer $exp Lifetime in seconds (0 - immortal)
      * @param  callable $onResponse Callback called when the request complete
      * @callback $onResponse ( )
      * @return void
@@ -159,15 +159,15 @@ class Pool extends \PHPDaemon\Network\Client
                 $conn->checkFree();
             }
             $conn->writeln('replace ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . mb_orig_strlen($value)
-                           . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+                . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
         });
     }
 
     /**
      * Prepends a string to the key's value
-     * @param  string   $key        Key
-     * @param  string   $value      Value
-     * @param  integer  $exp        Lifetime in seconds (0 - immortal)
+     * @param  string $key Key
+     * @param  string $value Value
+     * @param  integer $exp Lifetime in seconds (0 - immortal)
      * @param  callable $onResponse Callback called when the request complete
      * @callback $onResponse ( )
      * @return void
@@ -183,14 +183,14 @@ class Pool extends \PHPDaemon\Network\Client
                 $conn->setFree(false);
             }
             $conn->writeln('prepend ' . $this->config->prefix->value . $key . ' 0 ' . $exp . ' ' . mb_orig_strlen($value)
-                           . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
+                . ($onResponse === null ? ' noreply' : '') . "\r\n" . $value);
         });
     }
 
     /**
      * Gets a statistics
      * @param  callable $onResponse Callback called when the request complete
-     * @param  string   $server     Server
+     * @param  string $server Server
      * @return void
      */
     public function stats($onResponse, $server = null)

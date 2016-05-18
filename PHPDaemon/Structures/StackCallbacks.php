@@ -35,7 +35,7 @@ class StackCallbacks extends \SplStack
 
     /**
      * Executes one callback from the top with given arguments
-     * @param  mixed   ...$args Arguments
+     * @param  mixed ...$args Arguments
      * @return boolean
      */
     public function executeOne(...$args)
@@ -55,7 +55,7 @@ class StackCallbacks extends \SplStack
 
     /**
      * Executes one callback from the top with given arguments without taking it out
-     * @param  mixed   ...$args Arguments
+     * @param  mixed ...$args Arguments
      * @return boolean
      */
     public function executeAndKeepOne(...$args)

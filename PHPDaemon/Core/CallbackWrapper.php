@@ -29,13 +29,13 @@ class CallbackWrapper
     /**
      * Constructor
      * @param  callable $cb
-     * @param  double   $timeout
-     * @param  object   $context
+     * @param  double $timeout
+     * @param  object $context
      * @return \PHPDaemon\Core\CallbackWrapper
      */
     protected function __construct($cb, $timeout = null, $context = null)
     {
-        $this->cb      = $cb;
+        $this->cb = $cb;
         $this->context = $context;
         if ($timeout !== null) {
             $this->setTimeout($timeout);
@@ -73,7 +73,7 @@ class CallbackWrapper
      */
     public function cancel()
     {
-        $this->cb      = null;
+        $this->cb = null;
         $this->context = null;
         if ($this->timer !== null) {
             Timer::remove($this->timer);

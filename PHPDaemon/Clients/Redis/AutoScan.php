@@ -1,8 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Redis;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\CallbackWrapper;
 
 /**
@@ -35,17 +33,17 @@ class AutoScan
 
     /**
      * Constructor
-     * @param  Pool    $pool   Redis pool or connection
-     * @param  string  $cmd    Command
-     * @param  array   $args   Arguments
-     * @param  cllable $cbEnd  Callback
-     * @param  integer $limit  Limit
+     * @param  Pool $pool Redis pool or connection
+     * @param  string $cmd Command
+     * @param  array $args Arguments
+     * @param  cllable $cbEnd Callback
+     * @param  integer $limit Limit
      */
     public function __construct($pool, $cmd, $args = [], $cbEnd = null, $limit = false)
     {
-        $this->conn  = $pool;
-        $this->cmd   = $cmd;
-        $this->args  = empty($args) ? [] : $args;
+        $this->conn = $pool;
+        $this->cmd = $cmd;
+        $this->args = empty($args) ? [] : $args;
         $this->limit = $limit;
         if (is_numeric($this->args[0])) {
             array_shift($this->args);
@@ -53,7 +51,7 @@ class AutoScan
         for ($i = sizeof($this->args) - 1; $i >= 0; --$i) {
             $a = $this->args[$i];
             if ((is_array($a) || is_object($a)) && is_callable($a)) {
-                $this->cb   = CallbackWrapper::wrap($a);
+                $this->cb = CallbackWrapper::wrap($a);
                 $this->args = array_slice($this->args, 0, $i);
                 break;
             } elseif ($a !== null) {
@@ -92,11 +90,11 @@ class AutoScan
         $args = $this->args;
         array_unshift($args, $this->cursor);
         $args[] = function ($redis) {
-            $this->conn   = $redis;
+            $this->conn = $redis;
             $this->cursor = $redis->result[0];
             $func = $this->cb;
             $func($redis);
-            
+
             if (!is_numeric($redis->result[0]) || !$redis->result[0] || ($this->limit && ++$this->num > $this->limit)) {
                 $func = $this->cbEnd;
                 $func($redis, $this);

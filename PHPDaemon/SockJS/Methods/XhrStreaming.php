@@ -1,11 +1,6 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Core\Timer;
-use PHPDaemon\Utils\Crypt;
-
 /**
  * @package    Libraries
  * @subpackage SockJS

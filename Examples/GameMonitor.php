@@ -35,8 +35,8 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
     public function init()
     {
         if ($this->isEnabled()) {
-            $this->client  = \PHPDaemon\Clients\Valve\Pool::getInstance();
-            $this->db      = \MongoClient::getInstance();
+            $this->client = \PHPDaemon\Clients\Valve\Pool::getInstance();
+            $this->db = \MongoClient::getInstance();
             $this->servers = $this->db->{$this->config->dbname->value . '.servers'};
         }
     }
@@ -60,24 +60,25 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
             return;
         }
         $server['address'] = trim($server['address']);
-        $app               = $this;
+        $app = $this;
         if (isset($app->jobMap[$server['address']])) {
             //\PHPDaemon\Daemon::log('already doing: '.$server['address']);
             return;
         }
-        $job                             = new \PHPDaemon\Core\ComplexJob(function ($job) use ($app, $server) {
+        $job = new \PHPDaemon\Core\ComplexJob(function ($job) use ($app, $server) {
             unset($app->jobMap[$server['address']]);
             //\PHPDaemon\Daemon::log('Removed job for '.$server['address']. ' ('.sizeof($app->jobMap).')');
-            $set            = $job->results['info'];
+            $set = $job->results['info'];
             $set['address'] = $server['address'];
             $set['players'] = $job->results['players'];
             $set['latency'] = $job->results['latency'];
-            $set['atime']   = time();
+            $set['atime'] = time();
             if (0) {
-                \PHPDaemon\Core\Daemon::log('Updated server (' . round(memory_get_usage(true) / 1024 / 1024, 5) . '): ' . $server['address'] . ' latency = ' . round($set['latency'] * 1000, 2) . ' ==== '
-                                            . (isset($server['atime']) ?
-                                                    round($set['atime'] - $server['atime']) . ' secs. from last update.'
-                                                    : ' =---= ' . json_encode($server))
+                \PHPDaemon\Core\Daemon::log('Updated server (' . round(memory_get_usage(true) / 1024 / 1024,
+                        5) . '): ' . $server['address'] . ' latency = ' . round($set['latency'] * 1000, 2) . ' ==== '
+                    . (isset($server['atime']) ?
+                        round($set['atime'] - $server['atime']) . ' secs. from last update.'
+                        : ' =---= ' . json_encode($server))
                 );
             }
             try {
@@ -91,20 +92,21 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
         //\PHPDaemon\Daemon::log('Added job for '.$server['address']);
 
         $job('info', function ($jobname, $job) use ($app, $server) {
-            $app->client->requestInfo($server['address'], function ($conn, $result) use ($app, $server, $jobname, $job) {
+            $app->client->requestInfo($server['address'],
+                function ($conn, $result) use ($app, $server, $jobname, $job) {
 
-                $job('players', function ($jobname, $job) use ($app, $server, $conn) {
+                    $job('players', function ($jobname, $job) use ($app, $server, $conn) {
 
-                    $conn->requestPlayers(function ($conn, $result) use ($app, $jobname, $job) {
+                        $conn->requestPlayers(function ($conn, $result) use ($app, $jobname, $job) {
 
-                        $job->setResult($jobname, $result);
-                        $conn->finish();
+                            $job->setResult($jobname, $result);
+                            $conn->finish();
 
+                        });
                     });
-                });
 
-                $job->setResult($jobname, $result);
-            });
+                    $job->setResult($jobname, $result);
+                });
         });
 
         $job('latency', function ($jobname, $job) use ($app, $server) {
@@ -125,7 +127,7 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
     public function updateAllServers()
     {
         gc_collect_cycles();
-        $app    = $this;
+        $app = $this;
         $amount = 1000 - sizeof($this->jobMap);
         \PHPDaemon\Core\Daemon::log('amount: ' . $amount);
         if ($amount <= 0) {
@@ -141,17 +143,19 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
             }
             $cursor->destroy();
         }, [
-               'where' => ['$or' => [
-                   ['atime' => ['$lte' => time() - 30], 'latency' => ['$ne' => false]],
-                   ['atime' => ['$lte' => time() - 120], 'latency' => false],
-                   ['atime' => null],
-                   //['address' => 'dimon4ik.no-ip.org:27016'],
+            'where' => [
+                '$or' => [
+                    ['atime' => ['$lte' => time() - 30], 'latency' => ['$ne' => false]],
+                    ['atime' => ['$lte' => time() - 120], 'latency' => false],
+                    ['atime' => null],
+                    //['address' => 'dimon4ik.no-ip.org:27016'],
 
-               ]],
-               //'fields' => '_id,atime,address',
-               'limit' => -max($amount, 100),
-               'sort'  => ['atime' => 1],
-           ]);
+                ]
+            ],
+            //'fields' => '_id,atime,address',
+            'limit' => -max($amount, 100),
+            'sort' => ['atime' => 1],
+        ]);
     }
 
     /**
@@ -196,7 +200,7 @@ class GameMonitor extends \PHPDaemon\Core\AppInstance
 class GameMonitorHTTPRequest extends Generic
 {
 
-    /**
+/**
  * Constructor.
  * @return void
  */
@@ -228,12 +232,13 @@ public function init()
  */
 public function run()
 {
-    $this->header('Content-Type: text/html');
-    ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+$this->header('Content-Type: text/html');
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<title>Game servers</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Game servers</title>
 </head>
 <body>
 </body>

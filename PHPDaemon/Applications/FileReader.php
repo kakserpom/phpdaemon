@@ -1,7 +1,7 @@
 <?php
 namespace PHPDaemon\Applications;
 
-/**
+    /**
      * @package    Applications
      * @subpackage FileReader
      *

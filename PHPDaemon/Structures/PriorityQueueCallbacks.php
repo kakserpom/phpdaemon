@@ -15,8 +15,8 @@ class PriorityQueueCallbacks extends \SplPriorityQueue
 
     /**
      * Insert callback
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return void
      */
     public function insert($cb, $pri = 0)
@@ -26,8 +26,8 @@ class PriorityQueueCallbacks extends \SplPriorityQueue
 
     /**
      * Enqueue callback
-     * @param  callable $cb  Callback
-     * @param  integer  $pri Priority
+     * @param  callable $cb Callback
+     * @param  integer $pri Priority
      * @return void
      */
     public function enqueue($cb, $pri = 0)
@@ -60,7 +60,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue
 
     /**
      * Executes one callback from the top of queue with arbitrary arguments
-     * @param  mixed   ...$args Arguments
+     * @param  mixed ...$args Arguments
      * @return boolean
      */
     public function executeOne(...$args)
@@ -77,7 +77,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue
 
     /**
      * Executes all callbacks from the top of queue to bottom with arbitrary arguments
-     * @param  mixed   ...$args Arguments
+     * @param  mixed ...$args Arguments
      * @return integer
      */
     public function executeAll(...$args)
@@ -85,7 +85,7 @@ class PriorityQueueCallbacks extends \SplPriorityQueue
         if ($this->isEmpty()) {
             return 0;
         }
-        $n    = 0;
+        $n = 0;
         do {
             $cb = $this->extract();
             if ($cb) {

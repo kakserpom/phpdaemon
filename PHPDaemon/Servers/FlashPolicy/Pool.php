@@ -25,10 +25,10 @@ class Pool extends Server
             'listen' => '0.0.0.0',
 
             /* [integer] Listen port */
-            'port'   => 843,
+            'port' => 843,
 
             /* [string] Path to crossdomain.xml file */
-            'file'   => getcwd() . '/conf/crossdomain.xml',
+            'file' => getcwd() . '/conf/crossdomain.xml',
         ];
     }
 

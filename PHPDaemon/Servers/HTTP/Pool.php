@@ -80,7 +80,7 @@ class Pool extends \PHPDaemon\Network\Server
     public function onConfigUpdated()
     {
         parent::onConfigUpdated();
-        
+
         if (($order = ini_get('request_order')) || ($order = ini_get('variables_order'))) {
             $this->variablesOrder = $order;
         } else {

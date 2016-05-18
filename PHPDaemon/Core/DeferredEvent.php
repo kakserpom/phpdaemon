@@ -2,8 +2,6 @@
 namespace PHPDaemon\Core;
 
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 
 /**
  * DeferredEvent class.
@@ -17,12 +15,12 @@ class DeferredEvent
      * State: waiting. It means there are no listeners yet.
      */
     const STATE_WAITING = 1;
-    
+
     /**
      * State: running. Event handler in progress.
      */
     const STATE_RUNNING = 2;
-    
+
     /**
      * State: done. Event handler is finished, result is saved.
      */
@@ -37,7 +35,7 @@ class DeferredEvent
      * @var mixed Result of deferred event
      */
     protected $result;
-    
+
     /**
      * @var int State of event. One of STATE_*
      */
@@ -70,8 +68,8 @@ class DeferredEvent
      */
     public function __construct($cb)
     {
-        $this->state     = self::STATE_WAITING;
-        $this->producer     = $cb;
+        $this->state = self::STATE_WAITING;
+        $this->producer = $cb;
         $this->listeners = new StackCallbacks;
     }
 
@@ -93,7 +91,7 @@ class DeferredEvent
     public function setResult($result = null)
     {
         $this->result = $result;
-        $this->state  = self::STATE_DONE;
+        $this->state = self::STATE_DONE;
         if ($this->listeners) {
             $this->listeners->executeAll($this->result);
         }
@@ -106,8 +104,8 @@ class DeferredEvent
     public function cleanup()
     {
         $this->listeners = null;
-        $this->producer  = null;
-        $this->args      = [];
+        $this->producer = null;
+        $this->args = [];
         $this->parent = null;
     }
 
@@ -125,8 +123,8 @@ class DeferredEvent
 
     /**
      * Add listener
-     * @param  callable $cb      Callback
-     * @param  mixed    ...$args Arguments
+     * @param  callable $cb Callback
+     * @param  mixed ...$args Arguments
      * @return void
      */
     public function addListener($cb)

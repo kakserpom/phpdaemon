@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Mongo;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-
 /**
  * @package    Applications
  * @subpackage MongoClientAsync
@@ -22,7 +19,7 @@ class MongoId extends \MongoId
         if ($id instanceof static) {
             return $id;
         } elseif ($id instanceof \MongoId) {
-            $id = (string) $id;
+            $id = (string)$id;
         } elseif (!is_string($id)) {
             if (is_array($id) && isset($id['$id'])) {
                 return static::import($id['$id']);

@@ -2,7 +2,6 @@
 namespace PHPDaemon\WebSocket;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 
 /**
  * Web socket route
@@ -16,9 +15,9 @@ class Route implements RouteInterface
     use \PHPDaemon\Traits\StaticObjectWatchdog;
     use \PHPDaemon\Traits\Sessions;
     use \PHPDaemon\Traits\DeferredEventHandlers;
-    
+
     public $attrs;
-    
+
     /**
      * @var \PHPDaemon\Servers\WebSocket\Connection
      */
@@ -60,31 +59,38 @@ class Route implements RouteInterface
         return $this->attrs->session;
     }
 
-    
+
     /**
      * Set the cookie
-     * @param  string  $name     Name of cookie
-     * @param  string  $value    Value
-     * @param  integer $maxage   Optional. Max-Age. Default is 0.
-     * @param  string  $path     Optional. Path. Default is empty string.
-     * @param  string  $domain   Optional. Domain. Default is empty string.
-     * @param  boolean $secure   Optional. Secure. Default is false.
+     * @param  string $name Name of cookie
+     * @param  string $value Value
+     * @param  integer $maxage Optional. Max-Age. Default is 0.
+     * @param  string $path Optional. Path. Default is empty string.
+     * @param  string $domain Optional. Domain. Default is empty string.
+     * @param  boolean $secure Optional. Secure. Default is false.
      * @param  boolean $HTTPOnly Optional. HTTPOnly. Default is false.
      * @return void
      */
-    public function setcookie($name, $value = '', $maxage = 0, $path = '', $domain = '', $secure = false, $HTTPOnly = false)
-    {
+    public function setcookie(
+        $name,
+        $value = '',
+        $maxage = 0,
+        $path = '',
+        $domain = '',
+        $secure = false,
+        $HTTPOnly = false
+    ) {
         $this->client->header(
             'Set-Cookie: ' . $name . '=' . rawurlencode($value)
-                . (empty($domain) ? '' : '; Domain=' . $domain)
-                . (empty($maxage) ? '' : '; Max-Age=' . $maxage)
-                . (empty($path) ? '' : '; Path=' . $path)
-                . (!$secure ? '' : '; Secure')
-                . (!$HTTPOnly ? '' : '; HttpOnly'),
+            . (empty($domain) ? '' : '; Domain=' . $domain)
+            . (empty($maxage) ? '' : '; Max-Age=' . $maxage)
+            . (empty($path) ? '' : '; Path=' . $path)
+            . (!$secure ? '' : '; Secure')
+            . (!$HTTPOnly ? '' : '; HttpOnly'),
             false
         );
     }
-    
+
     /**
      * Called when client connected.
      * @param \PHPDaemon\Servers\WebSocket\Connection $client Remote client
@@ -93,7 +99,7 @@ class Route implements RouteInterface
     public function __construct($client, $appInstance = null)
     {
         $this->client = $client;
-        
+
         $this->attrs = new \stdClass;
         $this->attrs->get =& $client->get;
         $this->attrs->cookie =& $client->cookie;
@@ -104,14 +110,14 @@ class Route implements RouteInterface
             $this->appInstance = $appInstance;
         }
     }
-    
+
     /**
      * Called when the request wakes up
      * @return void
      */
     public function onWakeup()
     {
-        $this->running   = true;
+        $this->running = true;
         Daemon::$context = $this;
         $_SESSION = &$this->attrs->session;
         $_GET = &$this->attrs->get;
@@ -127,10 +133,11 @@ class Route implements RouteInterface
     public function onSleep()
     {
         Daemon::$context = null;
-        $this->running   = false;
+        $this->running = false;
         unset($_SESSION, $_GET, $_POST, $_COOKIE);
         Daemon::$process->setState(Daemon::WSTATE_IDLE);
     }
+
     /**
      * Called when the connection is handshaked.
      * @return void
@@ -138,8 +145,8 @@ class Route implements RouteInterface
     public function onHandshake()
     {
     }
-    
-    
+
+
     /**
      * Called when new frame is received
      * @param string $data Frame's contents
@@ -149,7 +156,7 @@ class Route implements RouteInterface
     public function onFrame($data, $type)
     {
     }
-    
+
     /**
      * Uncaught exception handler
      * @param $e

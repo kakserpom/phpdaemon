@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\Clients\Mongo;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-
 /**
  * @package    Applications
  * @subpackage MongoClientAsync
@@ -96,7 +93,7 @@ class Cursor implements \Iterator
      */
     public function keep($bool = true)
     {
-        $this->keep = (bool) $bool;
+        $this->keep = (bool)$bool;
     }
 
     /**
@@ -167,7 +164,7 @@ class Cursor implements \Iterator
      */
     public function valid()
     {
-        $key = isset($this->items[$this->pos]) ? $this->items[$this->pos] :null;
+        $key = isset($this->items[$this->pos]) ? $this->items[$this->pos] : null;
         return ($key !== null && $key !== false);
     }
 
@@ -203,15 +200,15 @@ class Cursor implements \Iterator
 
     /**
      * Constructor
-     * @param  string     $id   Cursor's ID
-     * @param  string     $col  Collection's name
+     * @param  string $id Cursor's ID
+     * @param  string $col Collection's name
      * @param  Connection $conn Network connection (MongoClientConnection)
      * @return void
      */
     public function __construct($id, $col, $conn)
     {
-        $this->id   = $id;
-        $this->col  = $col;
+        $this->id = $id;
+        $this->col = $col;
         $this->conn = $conn;
     }
 

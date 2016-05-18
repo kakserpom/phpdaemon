@@ -50,13 +50,13 @@ class Connection extends ClientConnection
         }
 
         $packet = pack(
-            'ccnnn',
-            8, // type (c)
-            0, // code (c)
-            0, // checksum (n)
-            Daemon::$process->getPid(), // pid (n)
-            $this->seq // seq (n)
-        ) . $data;
+                'ccnnn',
+                8, // type (c)
+                0, // code (c)
+                0, // checksum (n)
+                Daemon::$process->getPid(), // pid (n)
+                $this->seq // seq (n)
+            ) . $data;
 
         $packet = substr_replace($packet, self::checksum($packet), 2, 2);
         $this->write($packet);

@@ -1,12 +1,6 @@
 <?php
 namespace PHPDaemon\SockJS\Methods;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-use PHPDaemon\Core\Timer;
-use PHPDaemon\Core\CallbackWrapper;
-use PHPDaemon\Utils\Crypt;
-
 /**
  * @package    Libraries
  * @subpackage SockJS
@@ -33,7 +27,7 @@ class Jsonp extends Generic
             $this->finish();
             return;
         }
-        $this->outputFrame($c . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES). ");\r\n");
+        $this->outputFrame($c . '(' . json_encode($frame, JSON_UNESCAPED_SLASHES) . ");\r\n");
         parent::sendFrame($frame);
     }
 }

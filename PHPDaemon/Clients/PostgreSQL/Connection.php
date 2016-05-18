@@ -97,12 +97,12 @@ class Connection extends ClientConnection
     /**
      * State: authencation error
      */
-    const STATE_AUTH_ERROR       = 3;
+    const STATE_AUTH_ERROR = 3;
 
     /**
      * State: authentication passed
      */
-    const STATE_AUTH_OK          = 4;
+    const STATE_AUTH_OK = 4;
 
     /**
      * Called when the connection is ready to accept new data
@@ -110,7 +110,7 @@ class Connection extends ClientConnection
      */
     public function onReady()
     {
-        $e      = explode('.', $this->protover);
+        $e = explode('.', $this->protover);
         $packet = pack('nn', $e[0], $e[1]);
 
         if (mb_orig_strlen($this->user)) {
@@ -151,8 +151,8 @@ class Connection extends ClientConnection
 
     /**
      * Converts binary string to integer
-     * @param  string  $str Binary string
-     * @param  boolean $l   Optional. Little endian. Default value - true.
+     * @param  string $str Binary string
+     * @param  boolean $l Optional. Little endian. Default value - true.
      * @return integer      Resulting integer
      */
     public function bytes2int($str, $l = true)
@@ -175,7 +175,7 @@ class Connection extends ClientConnection
      * Converts integer to binary string
      * @param  integer $len Length
      * @param  integer $int Integer
-     * @param  boolean $l   Optional. Little endian. Default value - true.
+     * @param  boolean $l Optional. Little endian. Default value - true.
      * @return string       Resulting binary string
      */
     public function int2bytes($len, $int = 0, $l = true)
@@ -191,7 +191,7 @@ class Connection extends ClientConnection
         }
 
         $bytes = mb_orig_strlen($hexstr) / 2;
-        $bin   = '';
+        $bin = '';
 
         for ($i = 0; $i < $bytes; ++$i) {
             $bin .= chr(hexdec(substr($hexstr, $i * 2, 2)));
@@ -202,8 +202,8 @@ class Connection extends ClientConnection
 
     /**
      * Send a packet
-     * @param  string  $type   Data
-     * @param  string  $packet Packet
+     * @param  string $type Data
+     * @param  string $packet Packet
      * @return boolean         Success
      */
     public function sendPacket($type, $packet)
@@ -250,7 +250,7 @@ class Connection extends ClientConnection
 
     /**
      * Parses length-encoded binary
-     * @param  string  &$s Reference to source string
+     * @param  string &$s Reference to source string
      * @param  integer &$p
      * @return integer     Result
      */
@@ -293,7 +293,7 @@ class Connection extends ClientConnection
 
     /**
      * Parse length-encoded string
-     * @param  string  &$s Reference to source string
+     * @param  string &$s Reference to source string
      * @param  integer &$p Reference to pointer
      * @return integer     Result
      */
@@ -313,7 +313,7 @@ class Connection extends ClientConnection
 
     /**
      * Send SQL-query
-     * @param  string   $q        Query
+     * @param  string $q Query
      * @param  callable $callback Optional. Callback called when response received.
      * @callback $callback ( )
      * @return boolean            Success
@@ -359,9 +359,9 @@ class Connection extends ClientConnection
 
     /**
      * Sends arbitrary command
-     * @param  integer  $cmd Command's code. See constants above.
-     * @param  string   $q   Data
-     * @param  callable $cb  Optional. Callback called when response received.
+     * @param  integer $cmd Command's code. See constants above.
+     * @param  string $q Data
+     * @param  callable $cb Optional. Callback called when response received.
      * @callback $cb ( )
      * @return boolean Success
      */
@@ -379,7 +379,7 @@ class Connection extends ClientConnection
 
     /**
      * Set default database name
-     * @param  string  $name Database name
+     * @param  string $name Database name
      * @return boolean       Success
      */
     public function selectDB($name)
@@ -425,7 +425,7 @@ class Connection extends ClientConnection
             return;
         }
 
-        $packet    = mb_orig_substr($this->buf, 5, $length);
+        $packet = mb_orig_substr($this->buf, 5, $length);
         $this->buf = mb_orig_substr($this->buf, 5 + $length);
 
         if ($type === 'R') {
@@ -481,15 +481,16 @@ class Connection extends ClientConnection
 
             for ($i = 0; $i < $numfields; ++$i) {
                 list($name) = $this->decodeNULstrings($packet, 1, $p);
-                $field = unpack('NtableOID/nattrNo/NdataType/ndataTypeSize/NtypeMod/nformat', mb_orig_substr($packet, $p, 18));
+                $field = unpack('NtableOID/nattrNo/NdataType/ndataTypeSize/NtypeMod/nformat',
+                    mb_orig_substr($packet, $p, 18));
                 $p += 18;
-                $field['name']        = $name;
+                $field['name'] = $name;
                 $this->resultFields[] = $field;
             }
         } elseif ($type === 'D') {
             // Data Row
             list(, $numfields) = unpack('n', mb_orig_substr($packet, 0, 2));
-            $p   = 2;
+            $p = 2;
             $row = [];
 
             for ($i = 0; $i < $numfields; ++$i) {
@@ -529,10 +530,11 @@ class Connection extends ClientConnection
                 $tag = explode(' ', $tag[0]);
 
                 if ($tag[0] === 'INSERT') {
-                    $this->insertId  = $tag[1];
+                    $this->insertId = $tag[1];
                     $this->insertNum = $tag[2];
                 } elseif ($tag[0] === 'DELETE' || $tag[0] === 'UPDATE' || $tag[0] === 'MOVE'
-                    || $tag[0] === 'FETCH' || $tag[0] === 'COPY') {
+                    || $tag[0] === 'FETCH' || $tag[0] === 'COPY'
+                ) {
                     $this->affectedRows = $tag[1];
                 }
             }
@@ -543,7 +545,7 @@ class Connection extends ClientConnection
             $this->onResultDone();
         } elseif ($type === 'E') {
             // Error Response
-            $code    = ord($packet);
+            $code = ord($packet);
             $message = '';
 
             foreach ($this->decodeNULstrings(mb_orig_substr($packet, 1), 0xFF) as $p) {
@@ -555,7 +557,7 @@ class Connection extends ClientConnection
                 $message .= $p;
             }
 
-            $this->errno  = -1;
+            $this->errno = -1;
             $this->errmsg = $message;
 
             if ($this->state === self::STATE_AUTH_PACKET_SENT) {
@@ -574,7 +576,7 @@ class Connection extends ClientConnection
             }
         } elseif ($type === 'I') {
             // Empty Query Response
-            $this->errno  = -1;
+            $this->errno = -1;
             $this->errmsg = 'Query was empty';
             $this->onError();
         } elseif ($type === 'S') {
@@ -617,9 +619,9 @@ class Connection extends ClientConnection
 
     /**
      * Decode strings from the NUL-terminated representation
-     * @param  string    $data  Binary data
-     * @param  integer   $limit Optional. Limit of count. Default is 1.
-     * @param  reference &$p    Optional. Pointer.
+     * @param  string $data Binary data
+     * @param  integer $limit Optional. Limit of count. Default is 1.
+     * @param  reference &$p Optional. Pointer.
      * @return array            Decoded strings
      */
     public function decodeNULstrings($data, $limit = 1, &$p = 0)
@@ -649,7 +651,7 @@ class Connection extends ClientConnection
     {
         $this->instate = 0;
         $this->onResponse->executeOne($this, true);
-        $this->resultRows   = [];
+        $this->resultRows = [];
         $this->resultFields = [];
 
         if ($this->pool->config->protologging->value) {
@@ -665,7 +667,7 @@ class Connection extends ClientConnection
     {
         $this->instate = 0;
         $this->onResponse->executeOne($this, false);
-        $this->resultRows   = [];
+        $this->resultRows = [];
         $this->resultFields = [];
 
         if ($this->state === self::STATE_AUTH_PACKET_SENT) {

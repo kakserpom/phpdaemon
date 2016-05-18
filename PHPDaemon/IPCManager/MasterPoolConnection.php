@@ -33,7 +33,7 @@ class MasterPoolConnection extends Connection
         }
         //Daemon::log(Debug::dump($p));;
         if ($p['op'] === 'start') {
-            $this->workerId                       = $p['workerId'];
+            $this->workerId = $p['workerId'];
             $this->pool->workers[$this->workerId] = $this;
             $this->pool->appInstance->updatedWorkers();
         } elseif ($p['op'] === 'broadcastCall') {
@@ -50,7 +50,7 @@ class MasterPoolConnection extends Connection
             $this->pool->workers[$p['workerId']]->sendPacket($p);
         } elseif ($p['op'] === 'singleCall') {
             $p['op'] = 'call';
-            $sent    = false;
+            $sent = false;
             foreach ($this->pool->workers as $worker) {
                 $worker->sendPacket($p);
                 $sent = true;
@@ -96,9 +96,9 @@ class MasterPoolConnection extends Connection
             if (false === ($r = $this->readExact(4))) {
                 return; // not ready yet
             }
-            $u                  = unpack('N', $r);
+            $u = unpack('N', $r);
             $this->packetLength = $u[1];
-            $this->state        = self::STATE_CONTENT;
+            $this->state = self::STATE_CONTENT;
         }
         if ($this->state === self::STATE_CONTENT) {
             if (false === ($packet = $this->readExact($this->packetLength))) {

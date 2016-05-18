@@ -35,7 +35,7 @@ class Binary
     /**
      * Parse structure of labels
      * @param  string &$data Binary data
-     * @param  string $orig  Original packet
+     * @param  string $orig Original packet
      * @return string        Dot-separated labels list
      */
     public static function parseLabels(&$data, $orig = null)
@@ -45,9 +45,9 @@ class Binary
             $l = ord($data[0]);
 
             if ($l >= 192) {
-                $pos  = Binary::bytes2int(chr($l - 192) . mb_orig_substr($data, 1, 1));
+                $pos = Binary::bytes2int(chr($l - 192) . mb_orig_substr($data, 1, 1));
                 $data = mb_orig_substr($data, 2);
-                $ref  = mb_orig_substr($orig, $pos);
+                $ref = mb_orig_substr($orig, $pos);
                 return $str . Binary::parseLabels($ref, $orig);
             }
 
@@ -63,8 +63,8 @@ class Binary
 
     /**
      * Build length-value binary snippet
-     * @param string  $str  Data
-     * @param integer $len  Number of bytes to encode length. Default is 1
+     * @param string $str Data
+     * @param integer $len Number of bytes to encode length. Default is 1
      * @param boolean $lrev Reverse?
      * @return string
      */
@@ -183,21 +183,21 @@ class Binary
 
     /**
      * Parse word (2 bytes)
-     * @param  string  &$p Data
-     * @param  boolean $l  Little endian?
+     * @param  string &$p Data
+     * @param  boolean $l Little endian?
      * @return integer
      */
     public static function getWord(&$p, $l = false)
     {
         $r = static::bytes2int(mb_orig_substr($p, 0, 2), !!$l);
         $p = mb_orig_substr($p, 2);
-        return (int) $r;
+        return (int)$r;
     }
 
     /**
      * Get word (2 bytes)
-     * @param  string  &$p Data
-     * @param  boolean $l  Little endian?
+     * @param  string &$p Data
+     * @param  boolean $l Little endian?
      * @return string
      */
     public static function getStrWord(&$p, $l = false)
@@ -212,34 +212,34 @@ class Binary
 
     /**
      * Get double word (4 bytes)
-     * @param  string  &$p Data
-     * @param  boolean $l  Little endian?
+     * @param  string &$p Data
+     * @param  boolean $l Little endian?
      * @return integer
      */
     public static function getDWord(&$p, $l = false)
     {
         $r = static::bytes2int(mb_orig_substr($p, 0, 4), !!$l);
         $p = mb_orig_substr($p, 4);
-        return (int) $r;
+        return (int)$r;
     }
 
     /**
      * Parse quadro word (8 bytes)
-     * @param  string  &$p Data
-     * @param  boolean $l  Little endian?
+     * @param  string &$p Data
+     * @param  boolean $l Little endian?
      * @return integer
      */
     public static function getQword(&$p, $l = false)
     {
         $r = static::bytes2int(mb_orig_substr($p, 0, 8), !!$l);
         $p = mb_orig_substr($p, 8);
-        return (int) $r;
+        return (int)$r;
     }
 
     /**
      * Get quadro word (8 bytes)
-     * @param  string  &$p Data
-     * @param  boolean $l  Little endian?
+     * @param  string &$p Data
+     * @param  boolean $l Little endian?
      * @return string
      */
     public static function getStrQWord(&$p, $l = false)
@@ -263,16 +263,16 @@ class Binary
         if ($p === false) {
             return '';
         }
-        $r   = mb_orig_substr($str, 0, $p);
+        $r = mb_orig_substr($str, 0, $p);
         $str = mb_orig_substr($str, $p + 1);
         return $r;
     }
 
     /**
      * Parse length-value structure
-     * @param  string  &$p   Data
-     * @param  integer $l    Number of length bytes
-     * @param  boolean $nul  Nul-terminated? Default is false
+     * @param  string &$p Data
+     * @param  integer $l Number of length bytes
+     * @param  boolean $nul Nul-terminated? Default is false
      * @param  boolean $lrev Length is little endian?
      * @return string
      */
@@ -289,7 +289,8 @@ class Binary
         } elseif ($nul) {
             $lastByte = mb_orig_substr($p, -1);
             if ($lastByte !== "\x00") {
-                Daemon:log('getLV error: Wrong end of NUL-string (' . Debug::exportBytes($lastByte) . '), len ' . $s . "\n");
+                Daemon:
+                log('getLV error: Wrong end of NUL-string (' . Debug::exportBytes($lastByte) . '), len ' . $s . "\n");
             } else {
                 $d = $s - 1;
                 if ($d < 0) {
@@ -309,7 +310,7 @@ class Binary
      * Converts integer to binary string
      * @param  integer $len Length
      * @param  integer $int Integer
-     * @param  boolean $l   Optional. Little endian. Default value - false
+     * @param  boolean $l Optional. Little endian. Default value - false
      * @return string       Resulting binary string
      */
     public static function int2bytes($len, $int = 0, $l = false)
@@ -325,7 +326,7 @@ class Binary
         }
 
         $bytes = mb_orig_strlen($hexstr) / 2;
-        $bin   = '';
+        $bin = '';
 
         for ($i = 0; $i < $bytes; ++$i) {
             $bin .= chr(hexdec(substr($hexstr, $i * 2, 2)));
@@ -336,8 +337,8 @@ class Binary
 
     /**
      * Convert array of flags into bit array
-     * @param  array   $flags Flags
-     * @param  integer $len   Length. Default is 4
+     * @param  array $flags Flags
+     * @param  integer $len Length. Default is 4
      * @return string
      */
     public static function flags2bitarray($flags, $len = 4)
@@ -354,7 +355,7 @@ class Binary
      * @alias Binary::int2bytes
      * @param  integer $len Length
      * @param  integer $int Integer
-     * @param  boolean $l   Optional. Little endian. Default value - false
+     * @param  boolean $l Optional. Little endian. Default value - false
      * @return string       Resulting binary string
      */
     public static function i2b($len, $int = 0, $l = false)
@@ -364,8 +365,8 @@ class Binary
 
     /**
      * Convert bytes into integer
-     * @param  string  $str Bytes
-     * @param  boolean $l   Little endian? Default is false
+     * @param  string $str Bytes
+     * @param  boolean $l Little endian? Default is false
      * @return integer
      */
     public static function bytes2int($str, $l = false)
@@ -384,8 +385,8 @@ class Binary
     /**
      * Convert bytes into integer
      * @alias Binary::bytes2int
-     * @param  string  $str Bytes
-     * @param  boolean $l   Little endian? Default is false
+     * @param  string $str Bytes
+     * @param  boolean $l Little endian? Default is false
      * @return integer
      */
     public static function b2i($str = 0, $l = false)
@@ -395,13 +396,13 @@ class Binary
 
     /**
      * Convert bitmap into bytes
-     * @param  string  $bitmap    Bitmap
+     * @param  string $bitmap Bitmap
      * @param  integer $check_len Check length?
      * @return string|false
      */
     public static function bitmap2bytes($bitmap, $check_len = 0)
     {
-        $r      = '';
+        $r = '';
         $bitmap = str_pad($bitmap, ceil(mb_orig_strlen($bitmap) / 8) * 8, '0', STR_PAD_LEFT);
         for ($i = 0, $n = mb_orig_strlen($bitmap) / 8; $i < $n; ++$i) {
             $r .= chr((int)bindec(mb_orig_substr($bitmap, $i * 8, 8)));

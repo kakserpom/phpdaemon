@@ -1,9 +1,6 @@
 <?php
 namespace PHPDaemon\Exceptions;
 
-use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
-
 /**
  * ProtocolError
  *

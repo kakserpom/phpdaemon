@@ -2,7 +2,6 @@
 namespace PHPDaemon\Servers\HTTP;
 
 use PHPDaemon\Core\Daemon;
-use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\HTTPRequest\Generic;
@@ -180,7 +179,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
         if (isset($this->req->attrs->server['HTTP_CONNECTION'])
             && preg_match('~(?:^|\W)Upgrade(?:\W|$)~i', $this->req->attrs->server['HTTP_CONNECTION'])
             && isset($this->req->attrs->server['HTTP_UPGRADE'])
-            && (strtolower($this->req->attrs->server['HTTP_UPGRADE']) === 'websocket')) {
+            && (strtolower($this->req->attrs->server['HTTP_UPGRADE']) === 'websocket')
+        ) {
             if ($this->pool->WS) {
                 $this->pool->WS->inheritFromRequest($this->req, $this);
             }
@@ -199,7 +199,8 @@ class Connection extends \PHPDaemon\Network\Connection implements IRequestUpstre
         } else {
             if ($this->pool->config->sendfile->value
                 && (!$this->pool->config->sendfileonlybycommand->value || isset($this->req->attrs->server['USE_SENDFILE']))
-                && !isset($this->req->attrs->server['DONT_USE_SENDFILE'])) {
+                && !isset($this->req->attrs->server['DONT_USE_SENDFILE'])
+            ) {
                 $req = $this->req;
 
                 FileSystem::tempnam(

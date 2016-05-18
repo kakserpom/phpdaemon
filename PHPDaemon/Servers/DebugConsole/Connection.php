@@ -69,7 +69,7 @@ Please enter the password or type "exit": ');
 
     /**
      * Run the command
-     * @param  string $command  Command to execute
+     * @param  string $command Command to execute
      * @param  string $argument Argument
      * @return void
      */
@@ -115,7 +115,7 @@ Type "help" to get the list of allowed commands.');
         }
         while (($line = $this->readline()) !== null) {
             $line = rtrim($line, "\r\n");
-            $e   = explode(' ', $line, 2);
+            $e = explode(' ', $line, 2);
             $cmd = trim(strtolower($e[0]));
             $arg = isset($e[1]) ? $e[1] : '';
 
