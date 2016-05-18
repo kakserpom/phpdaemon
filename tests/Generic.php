@@ -5,13 +5,10 @@
 
 namespace Tests;
 
-use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
-use PHPDaemon\Thread\Master;
-use PHPDaemon\Utils\Crypt;
 
-class Generic extends \PHPUnit_Framework_TestCase
+abstract class Generic extends \PHPUnit_Framework_TestCase
 {
     protected function prepareAsync()
     {
@@ -19,7 +16,7 @@ class Generic extends \PHPUnit_Framework_TestCase
     }
 
     protected function completeAsync() {
-        Event::$loop->stop();
+        EventLoop::$instance->stop();
     }
     protected function runAsync($method, $timeout = 3e6)
     {
@@ -27,7 +24,7 @@ class Generic extends \PHPUnit_Framework_TestCase
             self::assertSame(0, 1, 'Some callbacks didnt finished in ' . $method);
         }, $timeout);
         $this->loop->run();
-        Event::$instance->free();
-        Event::$instance = null;
+        EventLoop::$instance->free();
+        EventLoop::$instance = null;
     }
 }
