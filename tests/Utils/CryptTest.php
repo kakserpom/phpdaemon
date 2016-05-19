@@ -6,9 +6,9 @@
 namespace Tests\Utils;
 
 use PHPDaemon\Utils\Crypt;
-use Tests\Generic;
+use Tests\AbstractTestCase;
 
-class CryptTest extends Generic
+class CryptTest extends AbstractTestCase
 {
     public function testRandomInts()
     {
