@@ -8,7 +8,7 @@ namespace Tests;
 use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
 
-abstract class Generic extends \PHPUnit_Framework_TestCase
+abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 {
     protected function prepareAsync()
     {
