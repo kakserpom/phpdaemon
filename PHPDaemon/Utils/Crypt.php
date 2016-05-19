@@ -237,18 +237,10 @@ class Crypt
      * @param  string $a String 1
      * @param  string $b String 2
      * @return boolean    Equal?
+     * @deprecated
      */
     public static function compareStrings($a, $b)
     {
-        $al = mb_orig_strlen($a);
-        $bl = mb_orig_strlen($b);
-        if ($al !== $bl) {
-            return false;
-        }
-        $d = 0;
-        for ($i = 0; $i < $al; ++$i) {
-            $d |= ord($a[$i]) ^ ord($b[$i]);
-        }
-        return $d === 0;
+        return hash_equals($a, $b);
     }
 }
