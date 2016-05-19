@@ -154,6 +154,12 @@ class Connection extends ClientConnection
         if (isset($params['cookie']) && sizeof($params['cookie'])) {
             $this->writeln('Cookie: ' . http_build_query($params['cookie'], '', '; '));
         }
+        if (isset($params['contentType'])) {
+            if (!isset($params['headers'])) {
+                $params['headers'] = [];
+            }
+            $params['headers']['Content-Type'] = $params['contentType'];
+        }
         if (isset($params['headers'])) {
             $this->customRequestHeaders($params['headers']);
         }
@@ -165,7 +171,7 @@ class Connection extends ClientConnection
         }
         $this->writeln('');
         $this->requests->push($type);
-        $this->onResponse($params['resultcb']);
+        $this->onResponse->push($params['resultcb']);
         $this->checkFree();
     }
 
@@ -230,10 +236,10 @@ class Connection extends ClientConnection
         } else {
             $body = 'Unsupported Content-Type';
         }
-        if (!isset($params['customHeaders'])) {
-            $params['customHeaders'] = [];
+        if (!isset($params['headers'])) {
+            $params['headers'] = [];
         }
-        $params['customHeaders']['Content-Length'] = mb_orig_strlen($body);
+        $params['headers']['Content-Length'] = mb_orig_strlen($body);
         $this->sendRequestHeaders('POST', $url, $params);
         $this->write($body);
         $this->writeln('');
