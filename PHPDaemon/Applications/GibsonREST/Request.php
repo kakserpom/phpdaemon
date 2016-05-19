@@ -32,11 +32,9 @@ class Request extends \PHPDaemon\HTTPRequest\Generic
                     $this->wakeup();
                     return;
                 }
-                $c1 = \PHPDaemon\Utils\Crypt::compareStrings($this->appInstance->config->username->value,
-                    $this->args[0]) ? 0 : 1;
-                $c2 = \PHPDaemon\Utils\Crypt::compareStrings($this->appInstance->config->password->value,
-                    $this->args[1]) ? 0 : 1;
-                if ($c1 + $c2 > 0) {
+                if ((hash_equals($this->appInstance->config->username->value,
+                    $this->args[0]) + hash_equals($this->appInstance->config->password->value,
+                        $this->args[1])) < 2) {
                     $this->result = ['$err' => 'Wrong username and/or password.'];
                     return;
                 }

@@ -86,7 +86,7 @@ Please enter the password or type "exit": ');
      */
     protected function checkPassword($pass = '')
     {
-        if (!Crypt::compareStrings($this->pool->config->passphrase->value, $pass)) {
+        if (!hash_equals($this->pool->config->passphrase->value, $pass)) {
             --$this->authTries;
 
             if (0 === $this->authTries) {
