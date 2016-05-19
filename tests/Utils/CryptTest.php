@@ -5,12 +5,15 @@
 
 namespace Tests\Utils;
 
-use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Utils\Crypt;
 use Tests\AbstractTestCase;
 
 class CryptTest extends AbstractTestCase
 {
+
+    /**
+     * @covers Crypt::randomInts
+     */
     public function testRandomInts()
     {
         $this->prepareAsync();
@@ -20,5 +23,16 @@ class CryptTest extends AbstractTestCase
         });
 
         $this->runAsync(__METHOD__);
+    }
+
+    /**
+     * @covers Crypt::hash
+     */
+    public function testHash() {
+
+        self::assertEquals(
+            '7KWIdbniIDFvolKQvBVvu01+c3j/v3ETkj08Ol1Jwm4RxpalWoj1lYHgXKMhYm0CEGl7ZdPIgZDTiseXQ36E5g==',
+            Crypt::hash('secret', 'salt')
+        );
     }
 }

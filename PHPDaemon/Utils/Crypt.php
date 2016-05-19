@@ -166,6 +166,7 @@ class Crypt
      */
     public static function randomInts($numInts, $cb, $pri = 0, $hang = false)
     {
+        $cb = CallbackWrapper::wrap($cb);
         static::randomBytes(PHP_INT_SIZE * $numInts, function ($bytes) use ($cb, $numInts) {
             if ($bytes === false) {
                 $cb(false);
