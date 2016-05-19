@@ -43,5 +43,10 @@
     "files": [
       "PHPDaemon/Utils/func.php"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
   }
 }
