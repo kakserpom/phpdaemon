@@ -38,7 +38,6 @@ class EventLoop
      */
     public function free() {
         $this->base->free();
-        $this->dnsBase->free();
     }
 
     /**

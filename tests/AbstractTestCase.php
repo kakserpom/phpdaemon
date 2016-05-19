@@ -5,14 +5,19 @@
 
 namespace Tests;
 
+use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
+use PHPDaemon\FS\FileSystem;
 
 abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
 {
     protected function prepareAsync()
     {
         EventLoop::init();
+        Daemon::initSettings();
+        FileSystem::init();
+        FileSystem::initEvent();
     }
 
     protected function completeAsync() {
