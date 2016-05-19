@@ -21,6 +21,7 @@ class Crypt
      * @param  string $salt Salt
      * @param  boolean $plain Is plain text?
      * @return string
+     * @deprecated
      */
     public static function hash($str, $salt = '', $plain = false)
     {
@@ -166,7 +167,6 @@ class Crypt
      */
     public static function randomInts($numInts, $cb, $pri = 0, $hang = false)
     {
-        $cb = CallbackWrapper::wrap($cb);
         static::randomBytes(PHP_INT_SIZE * $numInts, function ($bytes) use ($cb, $numInts) {
             if ($bytes === false) {
                 $cb(false);
