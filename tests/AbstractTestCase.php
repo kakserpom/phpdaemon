@@ -23,7 +23,8 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
         Timer::add(function () use ($method) {
             self::assertSame(0, 1, 'Some callbacks didnt finished in ' . $method);
         }, $timeout);
-        $this->loop->run();
+        
+        EventLoop::$instance->run();
         EventLoop::$instance->free();
         EventLoop::$instance = null;
     }

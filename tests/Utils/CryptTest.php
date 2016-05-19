@@ -5,7 +5,6 @@
 
 namespace Tests\Utils;
 
-use PHPDaemon\Core\ComplexJob;
 use PHPDaemon\Utils\Crypt;
 use Tests\AbstractTestCase;
 
@@ -15,18 +14,11 @@ class CryptTest extends AbstractTestCase
     {
         $this->prepareAsync();
 
-        $cj = new ComplexJob(function($cj) {
+        Crypt::randomInts(5, function ($ints) {
+            self::assertCount(5, $ints, '$ints must contain 5 elements');
             $this->completeAsync();
         });
-        for ($i = 1; $i < 25; ++$i) {
-            $cj($i, function($i, $cj) {
-                Crypt::randomInts($i, function ($ints) use ($i, $cj) {
-                    self::assertCount($i, $ints, '$ints must contain ' . $i . ' element(s)');
-                    $cj[$i] = true;
-                });
-            });
-        }
-        $cj();
+
         $this->runAsync(__METHOD__);
     }
 }
