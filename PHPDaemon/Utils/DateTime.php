@@ -26,8 +26,8 @@ class DateTime extends \DateTime
     /**
      * Calculates a difference between two dates
      * @see http://www.php.net/manual/en/datetime.diff.php
-     * @param  integer $datetime1
-     * @param  integer $datetime2
+     * @param  integer|string|\DateTimeInterface $datetime1
+     * @param  integer|string|\DateTimeInterface $datetime2
      * @param  boolean $absolute
      * @return string Something like this: 1 year. 2 mon. 6 day. 4 hours. 21 min. 10 sec.
      */
