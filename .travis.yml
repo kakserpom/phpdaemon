@@ -16,10 +16,18 @@ install:
   - composer self-update --quiet
   - COMPOSER_DISCARD_CHANGES=true composer --prefer-source update --no-interaction --no-progress
 
-before_script:
+before_install:
   - phpenv config-rm xdebug.ini
-  - php -m
-  
+  - cat /proc/sys/kernel/core_pattern
+
 script:
   - ./vendor/bin/phpcs --standard=PSR2 --report=emacs --extensions=php --warning-severity=0 --error-severity=6 PHPDaemon/
   - ./vendor/bin/phpunit -v --debug --coverage-clover=coverage.clover
+
+after_failure:
+    - bash ./tests/ci/after_failure.sh
+
+addons:
+  apt:
+    packages:
+      - gdb
