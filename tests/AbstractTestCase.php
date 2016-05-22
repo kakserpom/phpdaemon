@@ -1,8 +1,4 @@
 <?php
-/**
- * @author Patsura Dmitry https://github.com/ovr <talk@dmtry.me>
- */
-
 namespace Tests;
 
 use PHPDaemon\Core\Daemon;
@@ -30,7 +26,7 @@ abstract class AbstractTestCase extends \PHPUnit_Framework_TestCase
         }, $timeout);
         
         EventLoop::$instance->run();
-        EventLoop::$instance->free();
-        EventLoop::$instance = null;
+        //EventLoop::$instance->free();
+        //EventLoop::$instance = null;
     }
 }
