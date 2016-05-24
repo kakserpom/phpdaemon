@@ -548,9 +548,6 @@ class Worker extends Generic
                 Daemon::log('W#' . $this->pid . ' crashed by error \'' . $error['message'] . '\' at ' . $error['file'] . ':' . $error['line']);
             }
         }
-        if (Daemon::$config->logevents->value) {
-            $this->log('event shutdown(' . ($hard ? 'HARD' : '') . ') invoked.');
-        }
 
         if (Daemon::$config->throwexceptiononshutdown->value) {
             throw new \Exception('event shutdown');
@@ -574,11 +571,6 @@ class Worker extends Generic
         }
 
         $this->reloadReady = $this->appInstancesReloadReady();
-
-        if (Daemon::$config->logevents->value) {
-            $this->log('reloadReady = ' . Debug::dump($this->reloadReady));
-        }
-
         Timer::remove('breakMainLoopCheck');
 
         Timer::add(function ($event) {

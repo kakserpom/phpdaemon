@@ -183,10 +183,6 @@ class UDP extends Generic
      */
     public function onReadUdp($stream = null, $events = 0, $arg = null)
     {
-        if (Daemon::$config->logevents->value) {
-            Daemon::$process->log(get_class($this) . '::' . __METHOD__ . ' invoked.');
-        }
-
         if (Daemon::$process->reload) {
             return false;
         }

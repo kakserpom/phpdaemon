@@ -1,6 +1,8 @@
 <?php
 namespace PHPDaemon\Core;
 
+use PHPDaemon\Traits\EventLoopContainer;
+
 /**
  * Timed event
  * @package PHPDaemon\Core
@@ -10,6 +12,7 @@ class Timer
 {
     use \PHPDaemon\Traits\ClassWatchdog;
     use \PHPDaemon\Traits\StaticObjectWatchdog;
+    use EventLoopContainer;
 
     /**
      * @var Timer[] List of timers
@@ -60,7 +63,7 @@ class Timer
         }
         $this->id = $id;
         $this->cb = $cb;
-        $this->ev = EventLoop::$instance->timer([$this, 'eventCall']);
+        $this->ev = $this->eventLoop->timer([$this, 'eventCall']);
         if ($priority !== null) {
             $this->setPriority($priority);
         }
