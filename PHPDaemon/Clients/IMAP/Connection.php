@@ -456,7 +456,7 @@ class Connection extends ClientConnection
                     $this->state = self::STATE_CONNECTED;
                     $this->connected = true;
                 } else {
-                    Daemon::log("IMAP hello failed");
+                    $this->log("IMAP hello failed");
                     $this->finish();
                     return;
                 }
