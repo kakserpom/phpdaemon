@@ -25,13 +25,17 @@ class Pool extends Client
                 call_user_func($params['cb'], false);
                 return;
             }
-            $conn->bind('onauth', function ($conn, $ok) use ($params) {
-                $conn->selectBox();
-            });
-            $conn->bind('onselect', function ($conn, $ok) use ($params) {
-                call_user_func($params['cb'], $conn);
-            });
-            $conn->auth($params['user'], $params['pass']);
+            $conn->auth(
+                function ($conn) use ($params) {
+                    if (!$conn) {
+                        call_user_func($params['cb'], false);
+                        return;
+                    }
+                    $conn->selectBox($params['cb']);
+                },
+                $params['user'],
+                $params['pass']
+            );
 
             //TODO: startTls
         });

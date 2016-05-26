@@ -5,8 +5,6 @@ use PHPDaemon\Core\Daemon;
 
 class ExampleIMAPClient extends \PHPDaemon\Core\AppInstance
 {
-    public $enableRPC = true;
-   
     /**
     * Setting default config options
     * @return array|bool
@@ -26,41 +24,57 @@ class ExampleIMAPClient extends \PHPDaemon\Core\AppInstance
      */
     public function onReady()
     {
-        Daemon::log("Imap client READY");
+        $this->log("Imap client READY");
         \PHPDaemon\Clients\IMAP\Pool::getInstance()->open(
             $this->config->host->value,
             $this->config->login->value,
             $this->config->password->value,
             function ($conn) {
                 if (!$conn) {
-                    Daemon::log('Fail to open IMAP connaction');
+                    $this->log('Fail to open IMAP connection');
                     return;
                 }
-                Daemon::log('open IMAP connection success');
-                $conn->bind('onlist', function ($conn, $ok, $list) {
-                    Daemon::log('onlist: ' . $ok);
-                    Daemon::log(print_r($list, true));
-                    $conn->logout();
-                });
-                $conn->bind('onrawmessage', function ($conn, $ok, $raw) {
-                    Daemon::log('onrawmessage: ' . $ok);
-                    Daemon::log(print_r($raw, true));
-                    
-                    $conn->logout();
-                });
-                $conn->bind('ongetuid', function ($conn, $ok, $uids) {
-                    Daemon::log('ongetuid uids: ');
-                    Daemon::log($uids);
-                });
-                $conn->bind('onremovemessage', function ($conn, $ok, $raw) {
-                    Daemon::log('onremovemessage: '  . $ok);
-                    Daemon::log($raw);
-                });
+                $this->log('open IMAP connection success');
+          
+                $conn->getRawMessage(
+                    function ($conn, $isSuccess, $raw) {
+                        $this->log(print_r($raw, true));
+                        $conn->logout();
+                    },
+                    1,
+                    false
+                );
                 
-                $conn->getRawMessage(1, false);
-                //$conn->getUniqueId();
-                //$conn->listFolders();
-                //$conn->removeMessage();
+                /*$conn->listFolders(
+                    function ($conn, $isSuccess, $list) {
+                        $this->log(print_r($list, true));
+                    }
+                );
+                
+                $conn->getUniqueId(
+                    function ($conn, $isSuccess, $uids) {
+                        $this->log(print_r($uids, true));
+                    }
+                );
+                
+                $conn->getSize(
+                    function ($conn, $isSuccess, $uids) {
+                        $this->log(print_r($uids, true));
+                    }
+                );
+                
+                $conn->countMessages(
+                    function ($conn, $isSuccess, $count) {
+                        $this->log(print_r($count, true));
+                    }
+                );*/
+                
+                /*$conn->removeMessage(
+                    function ($conn, $isSuccess, $raw) {
+                        $this->log(print_r($raw, true));
+                    },
+                    8
+                );*/
             },
             true
         );

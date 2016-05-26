@@ -54,28 +54,6 @@ class Connection extends ClientConnection
     const TAG_LOGOUT        = 'a18';
     const TAG_STARTTLS      = 'a19';
 
-    public $eventList = [
-        self::TAG_LOGIN         => 'onauth',
-        self::TAG_LIST          => 'onlist',
-        self::TAG_SELECT        => 'onselect',
-        self::TAG_FETCH         => 'onfetch',
-        self::TAG_SEARCH        => 'onsearch',
-        self::TAG_COUNT         => 'oncount',
-        self::TAG_SIZE          => 'onsize',
-        self::TAG_GETRAWMESSAGE => 'onrawmessage',
-        self::TAG_GETRAWHEADER  => 'onrawheader',
-        self::TAG_GETRAWCONTENT => 'onrawcontent',
-        self::TAG_GETUID        => 'ongetuid',
-        self::TAG_CREATEFOLDER  => 'oncreatefolder',
-        self::TAG_DELETEFOLDER  => 'ondeletefolder',
-        self::TAG_RENAMEFOLDER  => 'onrenamefolder',
-        self::TAG_STORE         => 'onstore',
-        self::TAG_DELETEMESSAGE => 'ondeletemessage',
-        self::TAG_EXPUNGE       => 'onexpunge',
-        self::TAG_LOGOUT        => 'onlogout',
-        self::TAG_STARTTLS      => 'onstarttls'
-    ];
-
     protected $state;
     protected $lines = [];
     protected $blob = '';
@@ -93,7 +71,7 @@ class Connection extends ClientConnection
      * @param  $string
      * @return string escaped list for imap
      */
-    private function escapeString($string)
+    protected function escapeString($string)
     {
         return '"' . str_replace(['\\', '"'], ['\\\\', '\\"'], $string) . '"';
     }
@@ -104,7 +82,7 @@ class Connection extends ClientConnection
      * @param  array $list list with literals or lists as PHP array
      * @return string escaped list for imap
      */
-    private function escapeList($list)
+    protected function escapeList($list)
     {
         $result = [];
         foreach ($list as $v) {
@@ -145,19 +123,19 @@ class Connection extends ClientConnection
             if (!strlen($token)) {
                 continue;
             }
-            while ($token[0] == '(') {
+            while ($token[0] === '(') {
                 array_push($stack, $tokens);
                 $tokens = [];
                 $token = substr($token, 1);
             }
-            if ($token[0] == '"') {
+            if ($token[0] === '"') {
                 if (preg_match('%^\(*"((.|\\\\|\\")*?)" *%', $line, $matches)) {
                     $tokens[] = $matches[1];
                     $line = substr($line, strlen($matches[0]));
                     continue;
                 }
             }
-            if ($stack && $token[strlen($token) - 1] == ')') {
+            if ($stack && $token[strlen($token) - 1] === ')') {
                 // closing braces are not separated by spaces, so we need to count them
                 $braces = strlen($token);
                 $token = rtrim($token, ')');
@@ -207,7 +185,7 @@ class Connection extends ClientConnection
       * @param bool $uid
       * @param string $tag
      */
-    public function fetch($items, $from, $to = null, $uid = false, $tag = self::TAG_FETCH)
+    protected function fetch($items, $from, $to = null, $uid = false, $tag = self::TAG_FETCH)
     {
         if (is_array($from)) {
             $set = implode(',', $from);
@@ -218,8 +196,7 @@ class Connection extends ClientConnection
         } else {
             $set = (int) $from . ':' . (int) $to;
         }
-        $query = $tag .($uid ? ' UID' : '')." FETCH $set ". $this->escapeList((array)$items) ."\r\n";
-        $this->write($query);
+        $this->write($tag .($uid ? ' UID' : '')." FETCH $set ". $this->escapeList((array)$items) ."\r\n");
     }
 
     /**
@@ -230,7 +207,7 @@ class Connection extends ClientConnection
      * @param bool $silent
      * @param string $tag
     */
-    public function store(array $flags, $from, $to = null, $mode = null, $silent = true, $tag = self::TAG_STORE)
+    protected function store(array $flags, $from, $to = null, $mode = null, $silent = true, $tag = self::TAG_STORE)
     {
         $item = 'FLAGS';
         if ($mode == '+' || $mode == '-') {
@@ -244,45 +221,44 @@ class Connection extends ClientConnection
         if ($to !== null) {
             $set .= ':' . ($to == INF ? '*' : (int)$to);
         }
-        $query = $tag . ' UID STORE ' . $set . ' ' . $item . ' ' . $flags ."\r\n";
-        $this->write($query);
+        $this->write($tag . ' UID STORE ' . $set . ' ' . $item . ' ' . $flags ."\r\n");
     }
 
     /**
     * @param string $reference
     * @param string $mailbox
     */
-    public function listFolders($reference = '', $mailbox = '*')
+    public function listFolders($cb, $reference = '', $mailbox = '*')
     {
-        $query = self::TAG_LIST .' LIST ' . $this->escapeString($reference)
-            . ' ' .  $this->escapeString($mailbox) . "\r\n";
-        $this->write($query);
+        $this->onResponse->push($cb);
+        $this->write(self::TAG_LIST .' LIST ' . $this->escapeString($reference)
+            . ' ' .  $this->escapeString($mailbox) . "\r\n");
     }
 
     /**
     * @param string $box
     */
-    public function selectBox($box = 'INBOX')
+    public function selectBox($cb, $box = 'INBOX')
     {
-        $query = self::TAG_SELECT .' SELECT ' . $this->escapeString($box) . "\r\n";
-        $this->write($query);
+        $this->onResponse->push($cb);
+        $this->write(self::TAG_SELECT .' SELECT ' . $this->escapeString($box) . "\r\n");
     }
 
     /**
     * @param string $tag
     */
-    public function expunge($tag = self::TAG_EXPUNGE)
+    protected function expunge($tag = self::TAG_EXPUNGE)
     {
-        $query = $tag .' EXPUNGE' . "\r\n";
-        $this->write($query);
+        $this->write($tag .' EXPUNGE' . "\r\n");
     }
 
     /**
     * @param string $haystack
     * @param string $needle
     */
-    public function auth($login, $password)
+    public function auth($cb, $login, $password)
     {
+        $this->onResponse->push($cb);
         $this->write(self::TAG_LOGIN . " LOGIN $login $password\r\n");
     }
 
@@ -290,10 +266,9 @@ class Connection extends ClientConnection
      * @param array $params
      * @param string $tag
      */
-    public function searchMessages($params, $tag = self::TAG_SEARCH)
+    protected function searchMessages($params, $tag = self::TAG_SEARCH)
     {
-        $query = "$tag UID SEARCH ".implode(' ', $params)."\r\n";
-        $this->write($query);
+        $this->write("$tag UID SEARCH ".implode(' ', $params)."\r\n");
     }
 
     /**
@@ -303,7 +278,7 @@ class Connection extends ClientConnection
     protected function startsWith($haystack, $needle)
     {
         // search backwards starting from haystack length characters from the end
-        return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== false;
+        return $needle === '' || strrpos($haystack, $needle, -strlen($haystack)) !== false;
     }
 
     /**
@@ -314,15 +289,15 @@ class Connection extends ClientConnection
         $list = [];
         foreach ($this->decodeLines($lines) as $tokens) {
             $folderEntry = [];
-            if (empty($tokens[0]) || $tokens[0] !== 'LIST') {
+            if (!isset($tokens[0]) || $tokens[0] !== 'LIST') {
                 continue;
             }
-            if (!empty($tokens[3])) {
+            if (isset($tokens[3])) {
                 $folderEntry['name'] = $tokens[3];
             } else {
                 continue;
             }
-            if (!empty($tokens[1])) {
+            if (isset($tokens[1])) {
                 $folderEntry['flags'] = $tokens[1];
             } else {
                 continue;
@@ -338,7 +313,7 @@ class Connection extends ClientConnection
     protected function decodeCount($lines)
     {
         foreach ($this->decodeLines($lines) as $tokens) {
-            if (empty($tokens[0]) || $tokens[0] !== 'SEARCH') {
+            if (!isset($tokens[0]) || $tokens[0] !== 'SEARCH') {
                 continue;
             }
             return count($tokens) - 1;
@@ -354,13 +329,13 @@ class Connection extends ClientConnection
         $uids = [];
         foreach ($this->decodeLines($lines) as $tokens) {
             //Daemon::log(print_r($tokens, true));
-            if (empty($tokens[1]) || $tokens[1] !== 'FETCH') {
+            if (!isset($tokens[1]) || $tokens[1] !== 'FETCH') {
                 continue;
             }
-            if (empty($tokens[2][0]) || $tokens[2][0] !== 'UID') {
+            if (!isset($tokens[2][0]) || $tokens[2][0] !== 'UID') {
                 continue;
             }
-            if (empty($tokens[0]) || empty($tokens[2][1])) {
+            if (!isset($tokens[0]) || !isset($tokens[2][1])) {
                 continue;
             }
             $uids[$tokens[0]] = $tokens[2][1];
@@ -375,16 +350,16 @@ class Connection extends ClientConnection
     {
         $sizes = [];
         foreach ($this->decodeLines($lines) as $tokens) {
-            if (empty($tokens[1]) || $tokens[1] !== 'FETCH') {
+            if (!isset($tokens[1]) || $tokens[1] !== 'FETCH') {
                 continue;
             }
-            if (empty($tokens[2][0]) || $tokens[2][0] !== 'UID') {
+            if (!isset($tokens[2][0]) || $tokens[2][0] !== 'UID') {
                 continue;
             }
-            if (empty($tokens[2][2]) || $tokens[2][2] !== 'RFC822.SIZE') {
+            if (!isset($tokens[2][2]) || $tokens[2][2] !== 'RFC822.SIZE') {
                 continue;
             }
-            if (empty($tokens[2][1]) || empty($tokens[2][3])) {
+            if (!isset($tokens[2][1]) || !isset($tokens[2][3])) {
                 continue;
             }
             $sizes[$tokens[2][1]] = $tokens[2][3];
@@ -412,27 +387,27 @@ class Connection extends ClientConnection
             case self::TAG_LOGIN:
                 if ($ok) {
                     $this->state = self::STATE_AUTHORIZED;
-                    $this->event($this->eventList[$tag], $line);
+                    $this->onResponse->executeOne($this, $line);
                 } elseif ($no) {
-                    Daemon::log("Failed to login: " . $line);
+                    $this->log("Failed to login: " . $line);
                     $this->finish();
                 }
                 break;
 
             case self::TAG_LIST:
-                $this->event($this->eventList[$tag], $ok, $this->decodeList($lines));
+                $this->onResponse->executeOne($this, $ok, $this->decodeList($lines));
                 break;
 
             case self::TAG_GETUID:
-                $this->event($this->eventList[$tag], $ok, $this->decodeGetUniqueId($lines));
+                $this->onResponse->executeOne($this, $ok, $this->decodeGetUniqueId($lines));
                 break;
 
             case self::TAG_COUNT:
-                $this->event($this->eventList[$tag], $ok, $this->decodeCount($lines));
+                $this->onResponse->executeOne($this, $ok, $this->decodeCount($lines));
                 break;
 
             case self::TAG_SIZE:
-                $this->event($this->eventList[$tag], $ok, $this->decodeSize($lines));
+                $this->onResponse->executeOne($this, $ok, $this->decodeSize($lines));
                 break;
 
             case self::TAG_DELETEMESSAGE:
@@ -440,25 +415,23 @@ class Connection extends ClientConnection
                 break;
 
             case self::TAG_EXPUNGE:
-                $this->event('onremovemessage', count($lines) - 1, $raw);
+                $this->onResponse->executeOne($this, count($lines) - 1, $raw);
                 break;
 
             case self::TAG_GETRAWMESSAGE:
-                $this->event($this->eventList[$tag], !empty($blob), $raw);
+                $this->onResponse->executeOne($this, !empty($blob), $raw);
                 break;
 
             case self::TAG_GETRAWHEADER:
-                $this->event($this->eventList[$tag], !empty($blob), $raw);
+                $this->onResponse->executeOne($this, !empty($blob), $raw);
                 break;
 
             case self::TAG_GETRAWCONTENT:
-                $this->event($this->eventList[$tag], !empty($blob), $raw);
+                $this->onResponse->executeOne($this, !empty($blob), $raw);
                 break;
 
             default:
-                if (isset($this->eventList[$tag])) {
-                    $this->event($this->eventList[$tag], $ok, $raw);
-                }
+                $this->onResponse->executeOne($this, $ok, $raw);
                 break;
         }
     }
@@ -466,7 +439,6 @@ class Connection extends ClientConnection
     public function onRead()
     {
         while (($rawLine = $this->readLine(\EventBuffer::EOL_CRLF_STRICT)) !== null) {
-            //Daemon::log("RAWLINE: #" . $rawLine . '#');
             if ($this->blobOctetsLeft > 0) {
                 $this->blob .= $rawLine . "\r\n";
                 $this->blobOctetsLeft -= strlen($rawLine) + 2;
@@ -513,13 +485,13 @@ class Connection extends ClientConnection
      * Count messages all messages in current box
      * @param null $flags
      */
-    public function countMessages($flags = null)
+    public function countMessages($cb, $flags = null)
     {
+        $this->onResponse->push($cb);
         if ($flags === null) {
             $this->searchMessages(['ALL'], self::TAG_COUNT);
             return;
         }
-
         $params = [];
         foreach ((array) $flags as $flag) {
             if (isset($this->searchFlags[$flag])) {
@@ -529,7 +501,6 @@ class Connection extends ClientConnection
                 $params[] = $this->escapeString($flag);
             }
         }
-
         $this->searchMessages($params, self::TAG_COUNT);
     }
 
@@ -537,8 +508,9 @@ class Connection extends ClientConnection
      * get a list of messages with number and size
      * @param int $uid number of message
      */
-    public function getSize($uid = 0)
+    public function getSize($cb, $uid = null)
     {
+        $this->onResponse->push($cb);
         if ($uid) {
             $this->fetch('RFC822.SIZE', $uid, null, true, self::TAG_SIZE);
         } else {
@@ -550,8 +522,9 @@ class Connection extends ClientConnection
      * Fetch a message
      * @param int $uid unique number of message
      */
-    public function getRawMessage($uid, $byUid = true)
+    public function getRawMessage($cb, $uid, $byUid = true)
     {
+        $this->onResponse->push($cb);
         $this->fetch(['FLAGS', 'BODY[]'], $uid, null, $byUid, self::TAG_GETRAWMESSAGE);
     }
 
@@ -559,8 +532,9 @@ class Connection extends ClientConnection
      * Get raw header of message or part
      * @param  int  $uid unique number of message
      */
-    public function getRawHeader($uid, $byUid = true)
+    public function getRawHeader($cb, $uid, $byUid = true)
     {
+        $this->onResponse->push($cb);
         $this->fetch(['FLAGS', 'RFC822.HEADER'], $uid, null, $byUid, self::TAG_GETRAWHEADER);
     }
 
@@ -569,8 +543,9 @@ class Connection extends ClientConnection
      *
      * @param  int $uid   number of message
      */
-    public function getRawContent($uid, $byUid = true)
+    public function getRawContent($cb, $uid, $byUid = true)
     {
+        $this->onResponse->push($cb);
         $this->fetch(['FLAGS', 'RFC822.TEXT'], $uid, null, $byUid, self::TAG_GETRAWCONTENT);
     }
 
@@ -579,8 +554,9 @@ class Connection extends ClientConnection
      *
      * @param int|null $id message number
      */
-    public function getUniqueId($id = null)
+    public function getUniqueId($cb, $id = null)
     {
+        $this->onResponse->push($cb);
         if ($id) {
             $this->fetch('UID', $id, null, false, self::TAG_GETUID);
         } else {
@@ -594,13 +570,13 @@ class Connection extends ClientConnection
      * @param string $folder folder name
      * @return bool success
      */
-    public function createFolder($folder, $parentFolder = null)
+    public function createFolder($cb, $folder, $parentFolder = null)
     {
+        $this->onResponse->push($cb);
         if ($parentFolder) {
             $folder =  $parentFolder . '/' . $folder ;
         }
-        $query = self::TAG_CREATEFOLDER . " CREATE ".$this->escapeString($folder)."\r\n";
-        $this->write($query);
+        $this->write(self::TAG_CREATEFOLDER . " CREATE ".$this->escapeString($folder)."\r\n");
     }
 
     /**
@@ -608,10 +584,10 @@ class Connection extends ClientConnection
      *
      * @param  string $name name or instance of folder
      */
-    public function removeFolder($folder)
+    public function removeFolder($cb, $folder)
     {
-        $query = self::TAG_DELETEFOLDER . " DELETE ".$this->escapeString($folder)."\r\n";
-        $this->write($query);
+        $this->onResponse->push($cb);
+        $this->write(self::TAG_DELETEFOLDER . " DELETE ".$this->escapeString($folder)."\r\n");
     }
 
     /**
@@ -619,29 +595,32 @@ class Connection extends ClientConnection
      * @param  string $oldName name or instance of folder
      * @param  string $newName new global name of folder
      */
-    public function renameFolder($oldName, $newName)
+    public function renameFolder($cb, $oldName, $newName)
     {
-        $query = self::TAG_RENAMEFOLDER . " RENAME "
-            .$this->escapeString($oldName)." ".$this->escapeString($newName)."\r\n";
-        $this->write($query);
+        $this->onResponse->push($cb);
+        $this->write(self::TAG_RENAMEFOLDER . " RENAME "
+            .$this->escapeString($oldName)." ".$this->escapeString($newName)."\r\n");
     }
 
     /**
      * Remove a message from server.
      * @param  int $uid unique number of message
      */
-    public function removeMessage($uid)
+    public function removeMessage($cb, $uid)
     {
+        $this->onResponse->push($cb);
         $this->store([self::FLAG_DELETED], $uid, null, '+', true, self::TAG_DELETEMESSAGE);
     }
 
     /**
      * logout of imap server
      */
-    public function logout()
+    public function logout($cb = null)
     {
-        $query = self::TAG_LOGOUT . " LOGOUT\r\n";
-        $this->write($query);
+        if ($cb) {
+            $this->onResponse->push($cb);
+        }
+        $this->write(self::TAG_LOGOUT . " LOGOUT\r\n");
     }
 
     public function onFinish()
