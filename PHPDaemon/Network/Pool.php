@@ -83,6 +83,9 @@ abstract class Pool extends ObjectStorage
             $e[sizeof($e) - 1] = 'Connection';
             $this->connectionClass = '\\' . implode('\\', $e);
         }
+        if ($this->eventLoop === null) {
+            $this->eventLoop = EventLoop::$instance;
+        }
         if ($init) {
             $this->init();
         }
@@ -186,7 +189,6 @@ abstract class Pool extends ObjectStorage
             $obj = new static(new Config\Section($arg));
         }
         $obj->eventLoop = EventLoop::$instance;
-        var_dump(['iostream0 pool' => md5(spl_object_hash($obj)), 'eventLoop' => $obj->eventLoop]);
         return $obj;
     }
 

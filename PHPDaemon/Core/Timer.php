@@ -63,6 +63,9 @@ class Timer
         }
         $this->id = $id;
         $this->cb = $cb;
+        if ($this->eventLoop === null) {
+            $this->eventLoop = EventLoop::$instance;
+        }
         $this->ev = $this->eventLoop->timer([$this, 'eventCall']);
         if ($priority !== null) {
             $this->setPriority($priority);

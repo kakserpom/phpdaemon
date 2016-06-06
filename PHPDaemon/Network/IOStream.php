@@ -2,6 +2,7 @@
 namespace PHPDaemon\Network;
 
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Structures\StackCallbacks;
 use PHPDaemon\Traits\EventLoopContainer;
 
@@ -172,7 +173,6 @@ abstract class IOStream
         if ($pool) {
             $this->pool = $pool;
             $this->eventLoop = $pool->eventLoop;
-            var_dump(['iostream pool' => md5(spl_object_hash($pool)), 'eventLoop' => $this->eventLoop]);
             $this->pool->attach($this);
             if (isset($this->pool->config->timeout->value)) {
                 $this->timeout = $this->pool->config->timeout->value;
@@ -275,6 +275,9 @@ abstract class IOStream
      */
     public function setFd($fd, $bev = null)
     {
+        if ($this->eventLoop === null) {
+            $this->eventLoop = EventLoop::$instance;
+        }
         $this->fd = $fd;
         if ($this->fd === false) {
             $this->finish();

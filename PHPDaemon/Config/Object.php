@@ -243,7 +243,6 @@ class Object implements \ArrayAccess
      * @var boolean
      */
     public $logworkersetstate = 0;
-    
 
     /**
      * Log signals?

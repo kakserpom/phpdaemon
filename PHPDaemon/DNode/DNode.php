@@ -155,6 +155,23 @@ trait DNode
         return $this;
     }
 
+
+    /**
+     * Export object methods
+     * @param $object
+     * @return array
+     */
+    public static function exportObjectMethods($object) {
+        $methods = [];
+        foreach (get_class_methods($object) as $method) {
+            if ($method[0] === '_') {
+                continue;
+            }
+            $methods[$method] = [$object, $method];
+        }
+        return $methods;
+    }
+
     /**
      * Calls a remote method with array of arguments
      * @param  string $method Method name
