@@ -9,6 +9,8 @@
 namespace PHPDaemon\Traits;
 
 
+use PHPDaemon\Core\EventLoop;
+
 trait EventLoopContainer
 {
     public $eventLoop;
