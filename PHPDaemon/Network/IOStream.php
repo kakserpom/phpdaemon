@@ -4,6 +4,7 @@ namespace PHPDaemon\Network;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Structures\StackCallbacks;
+use PHPDaemon\Traits\EventLoopContainer;
 
 /**
  * IOStream
@@ -15,6 +16,7 @@ abstract class IOStream
     use \PHPDaemon\Traits\ClassWatchdog;
     use \PHPDaemon\Traits\StaticObjectWatchdog;
     use \PHPDaemon\Traits\EventHandlers;
+    use EventLoopContainer;
 
     /**
      * @var object Associated pool
@@ -170,6 +172,7 @@ abstract class IOStream
     {
         if ($pool) {
             $this->pool = $pool;
+            $this->eventLoop = $pool->eventLoop;
             $this->pool->attach($this);
             if (isset($this->pool->config->timeout->value)) {
                 $this->timeout = $this->pool->config->timeout->value;
@@ -272,6 +275,9 @@ abstract class IOStream
      */
     public function setFd($fd, $bev = null)
     {
+        if ($this->eventLoop === null) {
+            $this->eventLoop = EventLoop::$instance;
+        }
         $this->fd = $fd;
         if ($this->fd === false) {
             $this->finish();
@@ -290,7 +296,7 @@ abstract class IOStream
             $flags |= \EventBufferEvent::OPT_DEFER_CALLBACKS; /* buggy option */
             if ($this->ctx) {
                 if ($this->ctx instanceof \EventSslContext) {
-                    $this->bev = EventLoop::$instance->bufferEventSsl(
+                    $this->bev = $this->eventLoop->bufferEventSsl(
                         $this->fd,
                         $this->ctx,
                         $this->ctxMode,
@@ -306,7 +312,7 @@ abstract class IOStream
                     return;
                 }
             } else {
-                $this->bev = EventLoop::$instance->bufferEvent(
+                $this->bev = $this->eventLoop->bufferEvent(
                     $this->fd,
                     $flags,
                     [$this, 'onReadEv'],
@@ -706,7 +712,7 @@ abstract class IOStream
             return;
         }
         $this->finished = true;
-        EventLoop::$instance->interrupt();
+        $this->eventLoop->interrupt();
         $this->onFinish();
         if (!$this->writing) {
             $this->close();
@@ -733,7 +739,7 @@ abstract class IOStream
                 $this->bev->free();
             }
             $this->bev = null;
-            //EventLoop::$instance->interrupt();
+            //$this->eventLoop->interrupt();
         }
         if ($this->pool) {
             $this->pool->detach($this);
@@ -767,9 +773,6 @@ abstract class IOStream
      */
     public function onReadEv($bev)
     {
-        if (Daemon::$config->logevents->value) {
-            $this->log(' onReadEv called');
-        }
         if (!$this->ready) {
             $this->wRead = true;
             return;
@@ -821,9 +824,6 @@ abstract class IOStream
      */
     public function onWriteEv($bev)
     {
-        if (Daemon::$config->logevents->value) {
-            Daemon::log(get_class() . ' onWriteEv called');
-        }
         $this->writing = false;
         if ($this->finished) {
             if ($this->bev->output->length === 0) {

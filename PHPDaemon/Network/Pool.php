@@ -4,8 +4,10 @@ namespace PHPDaemon\Network;
 use PHPDaemon\BoundSocket;
 use PHPDaemon\Config;
 use PHPDaemon\Core\Daemon;
+use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Structures\ObjectStorage;
 use PHPDaemon\Thread;
+use PHPDaemon\Traits\EventLoopContainer;
 
 /**
  * Pool of connections
@@ -14,6 +16,8 @@ use PHPDaemon\Thread;
  */
 abstract class Pool extends ObjectStorage
 {
+
+    use EventLoopContainer;
 
     /**
      * @var string Default connection class
@@ -79,10 +83,14 @@ abstract class Pool extends ObjectStorage
             $e[sizeof($e) - 1] = 'Connection';
             $this->connectionClass = '\\' . implode('\\', $e);
         }
+        if ($this->eventLoop === null) {
+            $this->eventLoop = EventLoop::$instance;
+        }
         if ($init) {
             $this->init();
         }
     }
+
 
     /**
      * Init
@@ -175,12 +183,13 @@ abstract class Pool extends ObjectStorage
             $config = (isset(Daemon::$config->{$k}) && Daemon::$config->{$k} instanceof Config\Section) ? Daemon::$config->{$k} : new Config\Section;
             $obj = self::$instances[$key] = new $class($config);
             $obj->name = $arg;
-            return $obj;
         } elseif ($arg instanceof Config\Section) {
-            return new static($arg);
+            $obj = new static($arg);
         } else {
-            return new static(new Config\Section($arg));
+            $obj = new static(new Config\Section($arg));
         }
+        $obj->eventLoop = EventLoop::$instance;
+        return $obj;
     }
 
     /**

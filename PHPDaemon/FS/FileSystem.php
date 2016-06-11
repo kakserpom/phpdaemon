@@ -5,6 +5,7 @@ use PHPDaemon\Cache\CappedStorageHits;
 use PHPDaemon\Core\CallbackWrapper;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\EventLoop;
+use PHPDaemon\Traits\EventLoopContainer;
 
 /**
  * FileSystem
@@ -15,6 +16,7 @@ class FileSystem
 {
     use \PHPDaemon\Traits\ClassWatchdog;
     use \PHPDaemon\Traits\StaticObjectWatchdog;
+    use EventLoopContainer;
 
     /**
      * @var boolean Is EIO supported?
@@ -80,6 +82,11 @@ class FileSystem
         }
         self::$fdCache = new CappedStorageHits(self::$fdCacheSize);
         eio_init();
+    }
+
+    public function __construct()
+    {
+
     }
 
     /**

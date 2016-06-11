@@ -204,9 +204,6 @@ class IPC extends Generic
                 $this->log('crashed by error \'' . $error['message'] . '\' at ' . $error['file'] . ':' . $error['line']);
             }
         }
-        if (Daemon::$config->logevents->value) {
-            $this->log('event shutdown(' . ($hard ? 'HARD' : '') . ') invoked.');
-        }
 
         if (Daemon::$config->throwexceptiononshutdown->value) {
             throw new \Exception('event shutdown');

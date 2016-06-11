@@ -4,6 +4,7 @@ namespace PHPDaemon\BoundSocket;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\EventLoop;
 use PHPDaemon\FS\FileSystem;
+use PHPDaemon\Traits\EventLoopContainer;
 
 /**
  * Generic
@@ -17,6 +18,7 @@ use PHPDaemon\FS\FileSystem;
 abstract class Generic
 {
     use \PHPDaemon\Traits\ClassWatchdog;
+    use EventLoopContainer;
 
     /**
      * Enabled?
@@ -346,7 +348,7 @@ abstract class Generic
         }
         $this->enabled = true;
         if ($this->ev === null) {
-            $this->ev = EventLoop::$instance->listener(
+            $this->ev = $this->eventLoop->listener(
                 [$this, 'onAcceptEv'],
                 null,
                 \EventListener::OPT_CLOSE_ON_FREE | \EventListener::OPT_REUSEABLE,
