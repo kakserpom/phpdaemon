@@ -348,6 +348,9 @@ abstract class Generic
         }
         $this->enabled = true;
         if ($this->ev === null) {
+            if ($this->eventLoop === null) {
+                $this->eventLoop = EventLoop::$instance;
+            }
             $this->ev = $this->eventLoop->listener(
                 [$this, 'onAcceptEv'],
                 null,
