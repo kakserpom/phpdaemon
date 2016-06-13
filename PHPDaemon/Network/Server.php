@@ -104,7 +104,9 @@ abstract class Server extends Pool
     public function attachBound(\PHPDaemon\BoundSocket\Generic $bound, $inf = null)
     {
         $this->bound->attach($bound, $inf);
-        $bound->setEventLoop($this->eventLoop);
+        if ($this->eventLoop !== null) {
+            $bound->setEventLoop($this->eventLoop);
+        }
     }
 
     /**
