@@ -77,7 +77,6 @@ abstract class Pool extends ObjectStorage
     public function __construct($config = [], $init = true)
     {
         $this->config = $config;
-        $this->onConfigUpdated();
         if ($this->connectionClass === null) {
             $e = explode('\\', get_class($this));
             $e[sizeof($e) - 1] = 'Connection';
@@ -86,6 +85,7 @@ abstract class Pool extends ObjectStorage
         if ($this->eventLoop === null) {
             $this->eventLoop = EventLoop::$instance;
         }
+        $this->onConfigUpdated();
         if ($init) {
             $this->init();
         }
