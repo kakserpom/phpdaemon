@@ -54,12 +54,12 @@ class Connection extends ClientConnection
     const TAG_LOGOUT        = 'a18';
     const TAG_STARTTLS      = 'a19';
 
+    protected $EOL = "\r\n";
+    
     protected $state;
     protected $lines = [];
     protected $blob = '';
     protected $blobOctetsLeft = 0;
-
-    protected $bevConnectEnabled = false;
 
     public function onReady()
     {
@@ -73,7 +73,7 @@ class Connection extends ClientConnection
      */
     protected function escapeString($string)
     {
-        return '"' . str_replace(['\\', '"'], ['\\\\', '\\"'], $string) . '"';
+        return '"' . strtr($string, ['\\' => '\\\\', '"' => '\\"']) . '"';
     }
 
     /**
@@ -167,18 +167,6 @@ class Connection extends ClientConnection
     }
 
     /**
-     * @param array $lines
-     */
-    protected function decodeLines($lines)
-    {
-        $tokenArray = [];
-        foreach ($lines as $line) {
-            $tokenArray[] = $this->decodeLine($line);
-        }
-        return $tokenArray;
-    }
-
-    /**
       * @param array $items
       * @param string $from
       * @param string $to
@@ -196,7 +184,7 @@ class Connection extends ClientConnection
         } else {
             $set = (int) $from . ':' . (int) $to;
         }
-        $this->write($tag .($uid ? ' UID' : '')." FETCH $set ". $this->escapeList((array)$items) ."\r\n");
+        $this->writeln($tag .($uid ? ' UID' : '')." FETCH $set ". $this->escapeList((array)$items) );
     }
 
     /**
@@ -221,7 +209,7 @@ class Connection extends ClientConnection
         if ($to !== null) {
             $set .= ':' . ($to == INF ? '*' : (int)$to);
         }
-        $this->write($tag . ' UID STORE ' . $set . ' ' . $item . ' ' . $flags ."\r\n");
+        $this->writeln($tag . ' UID STORE ' . $set . ' ' . $item . ' ' . $flags );
     }
 
     /**
@@ -231,8 +219,8 @@ class Connection extends ClientConnection
     public function listFolders($cb, $reference = '', $mailbox = '*')
     {
         $this->onResponse->push($cb);
-        $this->write(self::TAG_LIST .' LIST ' . $this->escapeString($reference)
-            . ' ' .  $this->escapeString($mailbox) . "\r\n");
+        $this->writeln(self::TAG_LIST .' LIST ' . $this->escapeString($reference)
+            . ' ' .  $this->escapeString($mailbox) );
     }
 
     /**
@@ -241,7 +229,7 @@ class Connection extends ClientConnection
     public function selectBox($cb, $box = 'INBOX')
     {
         $this->onResponse->push($cb);
-        $this->write(self::TAG_SELECT .' SELECT ' . $this->escapeString($box) . "\r\n");
+        $this->writeln(self::TAG_SELECT .' SELECT ' . $this->escapeString($box));
     }
 
     /**
@@ -249,7 +237,7 @@ class Connection extends ClientConnection
     */
     protected function expunge($tag = self::TAG_EXPUNGE)
     {
-        $this->write($tag .' EXPUNGE' . "\r\n");
+        $this->writeln($tag .' EXPUNGE');
     }
 
     /**
@@ -259,7 +247,7 @@ class Connection extends ClientConnection
     public function auth($cb, $login, $password)
     {
         $this->onResponse->push($cb);
-        $this->write(self::TAG_LOGIN . " LOGIN $login $password\r\n");
+        $this->writeln(self::TAG_LOGIN . " LOGIN $login $password");
     }
 
     /**
@@ -268,7 +256,7 @@ class Connection extends ClientConnection
      */
     protected function searchMessages($params, $tag = self::TAG_SEARCH)
     {
-        $this->write("$tag UID SEARCH ".implode(' ', $params)."\r\n");
+        $this->writeln("$tag UID SEARCH ".implode(' ', $params));
     }
 
     /**
@@ -287,7 +275,7 @@ class Connection extends ClientConnection
     protected function decodeList($lines)
     {
         $list = [];
-        foreach ($this->decodeLines($lines) as $tokens) {
+        foreach (array_map([$this, 'decodeLine'], $lines) as $tokens) {
             $folderEntry = [];
             if (!isset($tokens[0]) || $tokens[0] !== 'LIST') {
                 continue;
@@ -312,7 +300,7 @@ class Connection extends ClientConnection
      */
     protected function decodeCount($lines)
     {
-        foreach ($this->decodeLines($lines) as $tokens) {
+        foreach (array_map([$this, 'decodeLine'], $lines) as $tokens) {
             if (!isset($tokens[0]) || $tokens[0] !== 'SEARCH') {
                 continue;
             }
@@ -327,8 +315,7 @@ class Connection extends ClientConnection
     protected function decodeGetUniqueId($lines)
     {
         $uids = [];
-        foreach ($this->decodeLines($lines) as $tokens) {
-            //Daemon::log(print_r($tokens, true));
+        foreach (array_map([$this, 'decodeLine'], $lines) as $tokens) {
             if (!isset($tokens[1]) || $tokens[1] !== 'FETCH') {
                 continue;
             }
@@ -349,7 +336,7 @@ class Connection extends ClientConnection
     protected function decodeSize($lines)
     {
         $sizes = [];
-        foreach ($this->decodeLines($lines) as $tokens) {
+        foreach (array_map([$this, 'decodeLine'], $lines) as $tokens) {
             if (!isset($tokens[1]) || $tokens[1] !== 'FETCH') {
                 continue;
             }
@@ -380,7 +367,7 @@ class Connection extends ClientConnection
         $ok = $type === 'OK';
         $no = $type === 'NO';
         if ($type === 'BAD') {
-            Daemon::log("Server said: " . $line);
+            $this->log("Server said: " . $line);
         }
         $raw = ['lines' => $lines, 'blob' => $blob];
         switch ($tag) {
@@ -576,7 +563,7 @@ class Connection extends ClientConnection
         if ($parentFolder) {
             $folder =  $parentFolder . '/' . $folder ;
         }
-        $this->write(self::TAG_CREATEFOLDER . " CREATE ".$this->escapeString($folder)."\r\n");
+        $this->writeln(self::TAG_CREATEFOLDER . " CREATE ".$this->escapeString($folder));
     }
 
     /**
@@ -587,7 +574,7 @@ class Connection extends ClientConnection
     public function removeFolder($cb, $folder)
     {
         $this->onResponse->push($cb);
-        $this->write(self::TAG_DELETEFOLDER . " DELETE ".$this->escapeString($folder)."\r\n");
+        $this->writeln(self::TAG_DELETEFOLDER . " DELETE ".$this->escapeString($folder));
     }
 
     /**
@@ -598,8 +585,8 @@ class Connection extends ClientConnection
     public function renameFolder($cb, $oldName, $newName)
     {
         $this->onResponse->push($cb);
-        $this->write(self::TAG_RENAMEFOLDER . " RENAME "
-            .$this->escapeString($oldName)." ".$this->escapeString($newName)."\r\n");
+        $this->writeln(self::TAG_RENAMEFOLDER . " RENAME "
+            .$this->escapeString($oldName)." ".$this->escapeString($newName));
     }
 
     /**
@@ -620,7 +607,7 @@ class Connection extends ClientConnection
         if ($cb) {
             $this->onResponse->push($cb);
         }
-        $this->write(self::TAG_LOGOUT . " LOGOUT\r\n");
+        $this->writeln(self::TAG_LOGOUT . " LOGOUT");
     }
 
     public function onFinish()
