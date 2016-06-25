@@ -398,7 +398,7 @@ abstract class Connection extends IOStream
         } elseif ($ctx = self::$contextCache->getValue($hash)) {
             return $ctx;
         }
-        $ctx = new \EventSslContext(\EventSslContext::SSLv3_CLIENT_METHOD, $params);
+        $ctx = new \EventSslContext(\EventSslContext::TLS_CLIENT_METHOD, $params);
         self::$contextCache->put($hash, $ctx);
         return $ctx;
     }
