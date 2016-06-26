@@ -166,9 +166,11 @@ class Pool extends Client
         $job->addJob('resolvfile', function ($jobname, $job) use ($pool) {
             FileSystem::readfile($pool->config->resolvfile->value, function ($file, $data) use ($pool, $job, $jobname) {
                 if ($file) {
-                    preg_match_all('~nameserver ([^\r\n;]+)~', $data, $m);
-                    foreach ($m[1] as $s) {
-                        $pool->nameServers[] = $s;
+                    foreach (explode("\n", $data) as $line) {
+                        $line = trim($line);
+                        if ($line !== '' && $line[0] !== '#' && preg_match('~nameserver ([^\r\n;]+)~i', $line, $m)) {
+                            $pool->nameServers[] = $m[1];
+                        }
                     }
                 }
                 $job->setResult($jobname);
