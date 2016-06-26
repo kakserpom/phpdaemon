@@ -168,7 +168,7 @@ class Pool extends Client
                 if ($file) {
                     foreach (explode("\n", $data) as $line) {
                         $line = trim($line);
-                        if (!empty($line) && $line[0] != '#') {
+                        if ($line !== '' && $line[0] !== '#') {
                             preg_match('~nameserver ([^\r\n;]+)~i', $line, $m);
                             $pool->nameServers[] = $m[1];
                         }
