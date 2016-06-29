@@ -111,7 +111,7 @@ class AppResolver
     {
         if (isset($req->attrs->server['APPNAME'])) {
             $appName = $req->attrs->server['APPNAME'];
-        } elseif ($responder) {
+        } elseif ($responder !== null) {
             $appName = $responder;
         } elseif (($appName = $this->getRequestRoute($req, $upstream)) !== null) {
             if ($appName === false) {
