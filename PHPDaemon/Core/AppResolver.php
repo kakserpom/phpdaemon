@@ -104,19 +104,21 @@ class AppResolver
      * Routes incoming request to related application
      * @param  object $req Generic
      * @param  object $upstream AppInstance of Upstream
-     * @param  string $default App Default application name
+     * @param  string $responder
      * @return object Request
      */
-    public function getRequest($req, $upstream, $defaultApp = null)
+    public function getRequest($req, $upstream, $responder = null)
     {
         if (isset($req->attrs->server['APPNAME'])) {
             $appName = $req->attrs->server['APPNAME'];
+        } elseif ($responder) {
+            $appName = $responder;
         } elseif (($appName = $this->getRequestRoute($req, $upstream)) !== null) {
             if ($appName === false) {
                 return $req;
             }
         } else {
-            $appName = $defaultApp;
+            return $req;
         }
         if (mb_orig_strpos($appName, ':') === false) {
             $appName .= ':';
