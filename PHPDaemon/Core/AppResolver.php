@@ -63,7 +63,7 @@ class AppResolver
         if (!$spawn) {
             return false;
         }
-        $fullname = $this->getAppFullname($appName, $instance);
+        $fullname = $this->getAppFullName($appName, $instance);
         if (!class_exists($class)) {
             Daemon::$process->log(__METHOD__ . ': unable to find application class ' . json_encode($class) . '\'');
             return false;
@@ -72,7 +72,7 @@ class AppResolver
             Daemon::$process->log(__METHOD__ . ': class ' . json_encode($class) . '\' found, but skipped as long as it is not subclass of \\PHPDaemon\\Core\\AppInstance');
             return false;
         }
-        $fullnameClass = $this->getAppFullname($class, $instance);
+        $fullnameClass = $this->getAppFullName($class, $instance);
         if ($fullname !== $fullnameClass && isset(Daemon::$config->{$fullname})) {
             Daemon::$config->renameSection($fullname, $fullnameClass);
         }
@@ -95,7 +95,7 @@ class AppResolver
      * @param  string $instance Application class
      * @return string
      */
-    public function getAppFullname($appName, $instance = '')
+    public function getAppFullName($appName, $instance = '')
     {
         return $appName . ($instance !== '' ? ':' . $instance : '');
     }
