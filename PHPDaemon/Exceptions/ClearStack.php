@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPDaemon\Exceptions;
 
 class ClearStack extends \Exception
@@ -10,14 +11,9 @@ class ClearStack extends \Exception
     protected $thread;
 
     /**
-     * Constructor
-     * @param string  Message
-     * @param integer Code
-     * @param [object Thread]
-     * @param string $msg
-     * @param integer $code
+     * @param string  $msg Message
+     * @param integer $code Code
      * @param \PHPDaemon\Thread\Generic $thread
-     * @return mixed
      */
     public function __construct($msg, $code, $thread = null)
     {
