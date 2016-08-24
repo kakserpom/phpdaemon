@@ -480,18 +480,17 @@ abstract class Connection extends IOStream
             $this->onConnected($cb);
         }
 
-        if ($this->scheme === 'unix') {
-            return $this->connectUnix($u['path']);
+        switch ($this->scheme) {
+            case 'unix':
+                return $this->connectUnix($this->path);
+            case 'raw':
+                return $this->connectRaw($this->host);
+            case 'udp':
+                return $this->connectUdp($this->host, $this->port);
+            case 'tcp':
+                return $this->connectTcp($this->host, $this->port);
         }
-        if ($this->scheme === 'raw') {
-            return $this->connectRaw($u['host']);
-        }
-        if ($this->scheme === 'udp') {
-            return $this->connectUdp($this->host, $this->port);
-        }
-        if ($this->scheme === 'tcp') {
-            return $this->connectTcp($this->host, $this->port);
-        }
+
         Daemon::log(get_class($this) . ': connect(): unrecoginized scheme \'' . $this->scheme . '\' (not unix/raw/udp/tcp) in URL: ' . $url);
         return false;
     }
