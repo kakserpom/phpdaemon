@@ -578,9 +578,6 @@ class Worker extends Generic
 
             $self->reloadReady = $self->appInstancesReloadReady();
 
-            if ($self->reload === true) {
-                $self->reloadReady = $self->reloadReady && (microtime(true) > $self->reloadTime);
-            }
             if (!$self->reloadReady) {
                 $event->timeout();
             } else {
