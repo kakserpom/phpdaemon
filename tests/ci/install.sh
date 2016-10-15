@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Install ext-eio
-git clone https://bitbucket.org/osmanov/pecl-eio
+git clone https://github.com/rosmanov/pecl-eio.git
 pushd pecl-eio
 phpize
 ./configure
