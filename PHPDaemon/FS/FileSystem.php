@@ -476,7 +476,7 @@ class FileSystem {
 			call_user_func($cb, $path, file_get_contents($path));
 			return true;
 		}
-		return FileSystem::open($path, 'r!', function ($file) use ($path, $cb, $pri, $path) {
+		return FileSystem::open($path, 'r!', function ($file) use ($path, $cb, $pri) {
 			if (!$file) {
 				call_user_func($cb, $path, false);
 				return;
