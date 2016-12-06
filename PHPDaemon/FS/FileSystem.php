@@ -525,7 +525,7 @@ class FileSystem
             $cb($path, file_get_contents($path));
             return true;
         }
-        return FileSystem::open($path, 'r!', function ($file) use ($path, $cb, $pri, $path) {
+        return FileSystem::open($path, 'r!', function ($file) use ($path, $cb, $pri) {
             if (!$file) {
                 $cb($path, false);
                 return;
