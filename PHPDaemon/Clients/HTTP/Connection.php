@@ -231,7 +231,7 @@ class Connection extends ClientConnection
         }
         if ($params['contentType'] === 'application/x-www-form-urlencoded') {
             $body = http_build_query($data, '', '&', PHP_QUERY_RFC3986);
-        } elseif ($params['contentType'] === 'application/x-json') {
+        } elseif ($params['contentType'] === 'application/x-json' || $params['contentType'] === 'application/json') {
             $body = json_encode($data);
         } else {
             $body = 'Unsupported Content-Type';
