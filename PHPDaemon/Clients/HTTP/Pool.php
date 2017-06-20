@@ -60,6 +60,9 @@ class Pool extends Client
         }
         $u = parse_url($url);
         $uri = '';
+        if (!isset($u['path']) && isset($u['query'])) {
+            $u['path'] = '/';
+        }
         if (isset($u['path'])) {
             $uri .= $u['path'];
             if (isset($u['query'])) {
