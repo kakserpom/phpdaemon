@@ -179,11 +179,15 @@ class Pool extends Client
         $job->addJob('hostsfile', function ($jobname, $job) use ($pool) {
             FileSystem::readfile($pool->config->hostsfile->value, function ($file, $data) use ($pool, $job, $jobname) {
                 if ($file) {
-                    preg_match_all('~^(\S+)\s+([^\r\n]+)\s*~m', $data, $m, PREG_SET_ORDER);
+                    preg_match_all('~^([^#]\S+)\s+([^\r\n]+)\s*~m', $data, $m, PREG_SET_ORDER);
                     $pool->hosts = [];
                     foreach ($m as $h) {
                         $hosts = preg_split('~\s+~', $h[2]);
                         $ip = $h[1];
+                        /* skip commentened ips */
+                        if (preg_match('~^[\s]*?#~m', $ip)) {
+                            continue;
+                        }
                         foreach ($hosts as $host) {
                             $host = rtrim($host, '.') . '.';
                             $pool->hosts[$host][] = $ip;
