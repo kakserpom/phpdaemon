@@ -584,7 +584,7 @@ class Worker extends Generic
             if (!$self->reloadReady) {
                 $event->timeout();
             } else {
-                $self->loop->stop();
+                EventLoop::$instance->stop();
             }
         }, 1e6, 'checkReloadReady');
         while (!$this->reloadReady) {
