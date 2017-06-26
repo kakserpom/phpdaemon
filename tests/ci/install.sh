@@ -11,8 +11,8 @@ popd
 echo "extension=eio.so" >> "$(php -r 'echo php_ini_loaded_file();')"
 
 # Install ext-event
-curl http://pecl.php.net/get/event-2.0.4.tgz | tar -xz
-pushd event-2.0.4
+curl http://pecl.php.net/get/event-2.3.0.tgz | tar -xz
+pushd event-2.3.0
 phpize
 ./configure
 make
