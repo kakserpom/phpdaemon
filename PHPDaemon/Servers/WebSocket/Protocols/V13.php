@@ -29,6 +29,8 @@ class V13 extends Connection
 
     protected $framebuf = '';
 
+    protected $firstFrameOpcodeName;
+
     /**
      * Sends a handshake message reply
      * @param string Received data (no use in this class)
@@ -199,6 +201,9 @@ class V13 extends Connection
                     $this->finish();
                     return;
                 }
+                if($this->firstFrameOpcodeName === null) {
+                    $this->firstFrameOpcodeName = $opcodeName;
+                }
                 $second = ord($this->look(1, 1)); // second byte integer (masked, payload length)
                 $fin = (bool)($first >> 7);
                 $isMasked = (bool)($second >> 7);
@@ -219,9 +224,12 @@ class V13 extends Connection
                 }
                 if ($this->pool->maxAllowedPacket <= $dataLength) {
                     // Too big packet
+                    Daemon::log(get_class($this) . ': MaxAllowedPacket limit exeed. Packet size ' . $dataLength . ' bytes when limit ' . $this->pool->maxAllowedPacket . ' bytes');
                     $this->finish();
                     return;
                 }
+                // Extend buffer size to accommodate all data
+                $this->setWatermark(null, $dataLength + 100);
                 if ($isMasked) {
                     if ($buflen < $p + 4) {
                         return; // not enough data yet
@@ -244,7 +252,8 @@ class V13 extends Connection
                 if (!$fin) {
                     $this->framebuf .= $data;
                 } else {
-                    $this->onFrame($this->framebuf . $data, $opcodeName);
+                    $this->onFrame($this->framebuf . $data, $this->firstFrameOpcodeName);
+                    $this->firstFrameOpcodeName = null;
                     $this->framebuf = '';
                 }
             }
