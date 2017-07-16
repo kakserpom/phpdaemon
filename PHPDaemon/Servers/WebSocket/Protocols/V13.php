@@ -224,7 +224,7 @@ class V13 extends Connection
                 }
                 if ($this->pool->maxAllowedPacket <= $dataLength) {
                     // Too big packet
-                    Daemon::log(get_class($this) . ': MaxAllowedPacket limit exeed. Packet size ' . $dataLength . ' bytes when limit ' . $this->pool->maxAllowedPacket . ' bytes');
+                    Daemon::log(get_class($this) . ': MaxAllowedPacket limit exceeded. Packet size ' . $dataLength . ' bytes when limit ' . $this->pool->maxAllowedPacket . ' bytes');
                     $this->finish();
                     return;
                 }
