@@ -201,7 +201,7 @@ class V13 extends Connection
                     $this->finish();
                     return;
                 }
-                if($this->firstFrameOpcodeName === null) {
+                if ($this->firstFrameOpcodeName === null) {
                     $this->firstFrameOpcodeName = $opcodeName;
                 }
                 $second = ord($this->look(1, 1)); // second byte integer (masked, payload length)
