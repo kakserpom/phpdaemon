@@ -189,7 +189,7 @@ class V13 extends Connection
         if ($this->state === self::STATE_HANDSHAKED) {
             while (($buflen = $this->getInputLength()) >= 2) {
                 $first = ord($this->look(1)); // first byte integer (fin, opcode)
-                $firstBits = decbin($first);
+                $firstBits = Binary::getbitmap($first);
                 $opcode = (int)bindec(substr($firstBits, 4, 4));
                 if ($opcode === 0x8) { // CLOSE
                     $this->finish();
