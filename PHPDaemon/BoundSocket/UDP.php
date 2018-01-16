@@ -4,6 +4,7 @@ namespace PHPDaemon\BoundSocket;
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
 use PHPDaemon\Core\Timer;
+use PHPDaemon\Core\EventLoop;
 
 /**
  * UDP
@@ -165,8 +166,12 @@ class UDP extends Generic
         $this->enabled = true;
 
         if ($this->ev === null) {
-            $this->ev = new \Event(Daemon::$process->eventBase, $this->fd, \Event::READ | \Event::PERSIST,
-                [$this, 'onReadUdp']);
+            if ($this->eventLoop === null) {
+                // @TODO нужно перенести куда-то выше, не годиться тут инициировать
+                $this->eventLoop = EventLoop::$instance;
+            }
+
+            $this->ev = $this->eventLoop->event($this->fd, \Event::READ | \Event::PERSIST, [$this, 'onReadUdp']);
             $this->onBound();
         } else {
             $this->onAcceptEv();
