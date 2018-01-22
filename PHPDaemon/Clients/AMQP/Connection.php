@@ -192,9 +192,16 @@ class Connection extends ClientConnection implements CommandInterface
          */
         frame:
         $header = $this->readExact(Frame::HEADER_SIZE);
+        if ($header === false) {
+            return;
+        }
         $framePayloadSize = Binary::b2i(substr($header, Frame::HEADER_TYPE_SIZE + Frame::HEADER_CHANNEL_SIZE, Frame::HEADER_PAYLOAD_LENGTH_SIZE));
 
-        $buffer = $header . $this->readExact($framePayloadSize + 1);
+        $payload = $this->readExact($framePayloadSize + 1);
+        if ($payload === false) {
+            return;
+        }
+        $buffer = $header . $payload;
 
         $frame = $this->parser->feed($buffer);
         if ($frame === null) {
