@@ -30,7 +30,7 @@ trait MethodFrameParserTrait
     private function parseMethodFrame()
     {
         list(, $class, $method) = \unpack('n2', $this->buffer);
-        $this->buffer = \substr($this->buffer, 4);
+        $this->buffer = mb_orig_substr($this->buffer, 4);
 
         // class "connection"
         if ($class === 10) {
@@ -41,7 +41,7 @@ trait MethodFrameParserTrait
                 // consume (a) "version-major" (octet)
                 // consume (b) "version-minor" (octet)
                 $fields = \unpack('ca/cb', $this->buffer);
-                $this->buffer = \substr($this->buffer, 2);
+                $this->buffer = mb_orig_substr($this->buffer, 2);
                 $frame->versionMajor = $fields['a'];
                 $frame->versionMinor = $fields['b'];
 
@@ -50,13 +50,13 @@ trait MethodFrameParserTrait
 
                 // consume "mechanisms" (longstr)
                 list(, $length) = \unpack('N', $this->buffer);
-                $frame->mechanisms = \substr($this->buffer, 4, $length);
-                $this->buffer = \substr($this->buffer, 4 + $length);
+                $frame->mechanisms = mb_orig_substr($this->buffer, 4, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 4 + $length);
 
                 // consume "locales" (longstr)
                 list(, $length) = \unpack('N', $this->buffer);
-                $frame->locales = \substr($this->buffer, 4, $length);
-                $this->buffer = \substr($this->buffer, 4 + $length);
+                $frame->locales = mb_orig_substr($this->buffer, 4, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 4 + $length);
 
                 return $frame;
 
@@ -67,8 +67,8 @@ trait MethodFrameParserTrait
 
                 // consume "challenge" (longstr)
                 list(, $length) = \unpack('N', $this->buffer);
-                $frame->challenge = \substr($this->buffer, 4, $length);
-                $this->buffer = \substr($this->buffer, 4 + $length);
+                $frame->challenge = mb_orig_substr($this->buffer, 4, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 4 + $length);
 
                 return $frame;
 
@@ -81,7 +81,7 @@ trait MethodFrameParserTrait
                 // consume (b) "frame-max" (long)
                 // consume (c) "heartbeat" (short)
                 $fields = \unpack('na/Nb/nc', $this->buffer);
-                $this->buffer = \substr($this->buffer, 8);
+                $this->buffer = mb_orig_substr($this->buffer, 8);
                 $frame->channelMax = $fields['a'];
                 $frame->frameMax = $fields['b'];
                 $frame->heartbeat = $fields['c'];
@@ -95,8 +95,8 @@ trait MethodFrameParserTrait
 
                 // consume "known-hosts" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->knownHosts = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->knownHosts = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 return $frame;
 
@@ -107,17 +107,17 @@ trait MethodFrameParserTrait
 
                 // consume "replyCode" (short)
                 list(, $frame->replyCode) = \unpack('n', $this->buffer);
-                $this->buffer = \substr($this->buffer, 2);
+                $this->buffer = mb_orig_substr($this->buffer, 2);
 
                 // consume "reply-text" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->replyText = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->replyText = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume (a) "class-id" (short)
                 // consume (b) "method-id" (short)
                 $fields = \unpack('na/nb', $this->buffer);
-                $this->buffer = \substr($this->buffer, 4);
+                $this->buffer = mb_orig_substr($this->buffer, 4);
                 $frame->classId = $fields['a'];
                 $frame->methodId = $fields['b'];
 
@@ -135,8 +135,8 @@ trait MethodFrameParserTrait
 
                 // consume "reason" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->reason = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->reason = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 return $frame;
 
@@ -159,8 +159,8 @@ trait MethodFrameParserTrait
 
                 // consume "channel-id" (longstr)
                 list(, $length) = \unpack('N', $this->buffer);
-                $frame->channelId = \substr($this->buffer, 4, $length);
-                $this->buffer = \substr($this->buffer, 4 + $length);
+                $frame->channelId = mb_orig_substr($this->buffer, 4, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 4 + $length);
 
                 return $frame;
 
@@ -171,7 +171,7 @@ trait MethodFrameParserTrait
 
                 // consume "active" (bit)
                 $frame->active = \ord($this->buffer) !== 0;
-                $this->buffer = \substr($this->buffer, 1);
+                $this->buffer = mb_orig_substr($this->buffer, 1);
 
                 return $frame;
 
@@ -182,7 +182,7 @@ trait MethodFrameParserTrait
 
                 // consume "active" (bit)
                 $frame->active = \ord($this->buffer) !== 0;
-                $this->buffer = \substr($this->buffer, 1);
+                $this->buffer = mb_orig_substr($this->buffer, 1);
 
                 return $frame;
 
@@ -193,17 +193,17 @@ trait MethodFrameParserTrait
 
                 // consume "replyCode" (short)
                 list(, $frame->replyCode) = \unpack('n', $this->buffer);
-                $this->buffer = \substr($this->buffer, 2);
+                $this->buffer = mb_orig_substr($this->buffer, 2);
 
                 // consume "reply-text" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->replyText = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->replyText = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume (a) "class-id" (short)
                 // consume (b) "method-id" (short)
                 $fields = \unpack('na/nb', $this->buffer);
-                $this->buffer = \substr($this->buffer, 4);
+                $this->buffer = mb_orig_substr($this->buffer, 4);
                 $frame->classId = $fields['a'];
                 $frame->methodId = $fields['b'];
 
@@ -228,7 +228,7 @@ trait MethodFrameParserTrait
 
                 // consume "reserved1" (short)
                 list(, $frame->reserved1) = \unpack('n', $this->buffer);
-                $this->buffer = \substr($this->buffer, 2);
+                $this->buffer = mb_orig_substr($this->buffer, 2);
 
                 return $frame;
             }
@@ -273,13 +273,13 @@ trait MethodFrameParserTrait
 
                 // consume "queue" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->queue = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->queue = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume (a) "message-count" (long)
                 // consume (b) "consumer-count" (long)
                 $fields = \unpack('Na/Nb', $this->buffer);
-                $this->buffer = \substr($this->buffer, 8);
+                $this->buffer = mb_orig_substr($this->buffer, 8);
                 $frame->messageCount = $fields['a'];
                 $frame->consumerCount = $fields['b'];
 
@@ -297,7 +297,7 @@ trait MethodFrameParserTrait
 
                 // consume "messageCount" (long)
                 list(, $frame->messageCount) = \unpack('N', $this->buffer);
-                $this->buffer = \substr($this->buffer, 4);
+                $this->buffer = mb_orig_substr($this->buffer, 4);
 
                 return $frame;
 
@@ -308,7 +308,7 @@ trait MethodFrameParserTrait
 
                 // consume "messageCount" (long)
                 list(, $frame->messageCount) = \unpack('N', $this->buffer);
-                $this->buffer = \substr($this->buffer, 4);
+                $this->buffer = mb_orig_substr($this->buffer, 4);
 
                 return $frame;
 
@@ -336,8 +336,8 @@ trait MethodFrameParserTrait
 
                 // consume "consumer-tag" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->consumerTag = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->consumerTag = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 return $frame;
 
@@ -348,8 +348,8 @@ trait MethodFrameParserTrait
 
                 // consume "consumer-tag" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->consumerTag = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->consumerTag = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 return $frame;
 
@@ -360,22 +360,22 @@ trait MethodFrameParserTrait
 
                 // consume "replyCode" (short)
                 list(, $frame->replyCode) = \unpack('n', $this->buffer);
-                $this->buffer = \substr($this->buffer, 2);
+                $this->buffer = mb_orig_substr($this->buffer, 2);
 
                 // consume "reply-text" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->replyText = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->replyText = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume "exchange" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->exchange = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->exchange = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume "routing-key" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->routingKey = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->routingKey = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 return $frame;
 
@@ -386,26 +386,26 @@ trait MethodFrameParserTrait
 
                 // consume "consumer-tag" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->consumerTag = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->consumerTag = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume "deliveryTag" (longlong)
                 list(, $frame->deliveryTag) = \unpack('J', $this->buffer);
-                $this->buffer = \substr($this->buffer, 8);
+                $this->buffer = mb_orig_substr($this->buffer, 8);
 
                 // consume "redelivered" (bit)
                 $frame->redelivered = \ord($this->buffer) !== 0;
-                $this->buffer = \substr($this->buffer, 1);
+                $this->buffer = mb_orig_substr($this->buffer, 1);
 
                 // consume "exchange" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->exchange = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->exchange = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume "routing-key" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->routingKey = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->routingKey = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 return $frame;
 
@@ -416,25 +416,25 @@ trait MethodFrameParserTrait
 
                 // consume "deliveryTag" (longlong)
                 list(, $frame->deliveryTag) = \unpack('J', $this->buffer);
-                $this->buffer = \substr($this->buffer, 8);
+                $this->buffer = mb_orig_substr($this->buffer, 8);
 
                 // consume "redelivered" (bit)
                 $frame->redelivered = \ord($this->buffer) !== 0;
-                $this->buffer = \substr($this->buffer, 1);
+                $this->buffer = mb_orig_substr($this->buffer, 1);
 
                 // consume "exchange" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->exchange = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->exchange = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume "routing-key" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->routingKey = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->routingKey = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 // consume "messageCount" (long)
                 list(, $frame->messageCount) = \unpack('N', $this->buffer);
-                $this->buffer = \substr($this->buffer, 4);
+                $this->buffer = mb_orig_substr($this->buffer, 4);
 
                 return $frame;
 
@@ -445,8 +445,8 @@ trait MethodFrameParserTrait
 
                 // consume "cluster-id" (shortstr)
                 $length = \ord($this->buffer);
-                $frame->clusterId = \substr($this->buffer, 1, $length);
-                $this->buffer = \substr($this->buffer, 1 + $length);
+                $frame->clusterId = mb_orig_substr($this->buffer, 1, $length);
+                $this->buffer = mb_orig_substr($this->buffer, 1 + $length);
 
                 return $frame;
 
@@ -457,11 +457,11 @@ trait MethodFrameParserTrait
 
                 // consume "deliveryTag" (longlong)
                 list(, $frame->deliveryTag) = \unpack('J', $this->buffer);
-                $this->buffer = \substr($this->buffer, 8);
+                $this->buffer = mb_orig_substr($this->buffer, 8);
 
                 // consume "multiple" (bit)
                 $frame->multiple = \ord($this->buffer) !== 0;
-                $this->buffer = \substr($this->buffer, 1);
+                $this->buffer = mb_orig_substr($this->buffer, 1);
 
                 return $frame;
 
@@ -477,12 +477,12 @@ trait MethodFrameParserTrait
 
                 // consume "deliveryTag" (longlong)
                 list(, $frame->deliveryTag) = \unpack('J', $this->buffer);
-                $this->buffer = \substr($this->buffer, 8);
+                $this->buffer = mb_orig_substr($this->buffer, 8);
 
                 // consume "multiple" (bit)
                 // consume "requeue" (bit)
                 $octet = \ord($this->buffer);
-                $this->buffer = \substr($this->buffer, 1);
+                $this->buffer = mb_orig_substr($this->buffer, 1);
                 $frame->multiple = $octet & 1 !== 0;
                 $frame->requeue = $octet & 2 !== 0;
 

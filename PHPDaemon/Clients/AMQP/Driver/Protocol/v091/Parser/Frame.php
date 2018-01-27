@@ -91,7 +91,7 @@ class Frame implements FrameInterface
             // of required bytes ...
             $this->requiredBytes += \unpack(
                 'N',
-                \substr(
+                mb_orig_substr(
                     $this->buffer,
                     self::HEADER_TYPE_SIZE + self::HEADER_CHANNEL_SIZE,
                     self::HEADER_PAYLOAD_LENGTH_SIZE
@@ -119,7 +119,7 @@ class Frame implements FrameInterface
 
         // read the (t)ype and (c)hannel then discard the header ...
         $fields = \unpack('Ct/nc', $this->buffer);
-        $this->buffer = \substr($this->buffer, self::HEADER_SIZE);
+        $this->buffer = mb_orig_substr($this->buffer, self::HEADER_SIZE);
 
         $type = $fields['t'];
 
@@ -131,8 +131,8 @@ class Frame implements FrameInterface
         } elseif ($type === Constants::FRAME_BODY) {
             $length = $this->requiredBytes - self::MINIMUM_FRAME_SIZE;
             $frame = new BodyFrame();
-            $frame->content = \substr($this->buffer, 0, $length);
-            $this->buffer = \substr($this->buffer, $length);
+            $frame->content = mb_orig_substr($this->buffer, 0, $length);
+            $this->buffer = mb_orig_substr($this->buffer, $length);
         } elseif ($type === Constants::FRAME_HEARTBEAT) {
             if (self::MINIMUM_FRAME_SIZE !== $this->requiredBytes) {
                 throw new AMQPProtocolException(
@@ -153,7 +153,7 @@ class Frame implements FrameInterface
         }
 
         // discard the end marker ...
-        $this->buffer = \substr($this->buffer, 1);
+        $this->buffer = mb_orig_substr($this->buffer, 1);
 
         $consumedBytes = $availableBytes - \strlen($this->buffer);
 

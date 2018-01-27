@@ -31,9 +31,9 @@ trait ScalarParserTrait
         $length = \ord($this->buffer);
 
         try {
-            return \substr($this->buffer, 1, $length);
+            return mb_orig_substr($this->buffer, 1, $length);
         } finally {
-            $this->buffer = \substr($this->buffer, $length + 1);
+            $this->buffer = mb_orig_substr($this->buffer, $length + 1);
         }
     }
 
@@ -48,9 +48,9 @@ trait ScalarParserTrait
         list(, $length) = \unpack('N', $this->buffer);
 
         try {
-            return \substr($this->buffer, 4, $length);
+            return mb_orig_substr($this->buffer, 4, $length);
         } finally {
-            $this->buffer = \substr($this->buffer, $length + 4);
+            $this->buffer = mb_orig_substr($this->buffer, $length + 4);
         }
     }
 
@@ -69,7 +69,7 @@ trait ScalarParserTrait
 
             return $result;
         } finally {
-            $this->buffer = \substr($this->buffer, 1);
+            $this->buffer = mb_orig_substr($this->buffer, 1);
         }
     }
 
@@ -82,7 +82,7 @@ trait ScalarParserTrait
         try {
             return \ord($this->buffer);
         } finally {
-            $this->buffer = \substr($this->buffer, 1);
+            $this->buffer = mb_orig_substr($this->buffer, 1);
         }
     }
 
@@ -101,7 +101,7 @@ trait ScalarParserTrait
 
             return $result;
         } finally {
-            $this->buffer = \substr($this->buffer, 2);
+            $this->buffer = mb_orig_substr($this->buffer, 2);
         }
     }
 
@@ -120,7 +120,7 @@ trait ScalarParserTrait
 
             return $result;
         } finally {
-            $this->buffer = \substr($this->buffer, 4);
+            $this->buffer = mb_orig_substr($this->buffer, 4);
         }
     }
 
@@ -133,7 +133,7 @@ trait ScalarParserTrait
         try {
             return \unpack('N', $this->buffer)[1];
         } finally {
-            $this->buffer = \substr($this->buffer, 4);
+            $this->buffer = mb_orig_substr($this->buffer, 4);
         }
     }
 
@@ -148,7 +148,7 @@ trait ScalarParserTrait
             // type a signed value is returned anyway ...
             return \unpack('J', $this->buffer)[1];
         } finally {
-            $this->buffer = \substr($this->buffer, 8);
+            $this->buffer = mb_orig_substr($this->buffer, 8);
         }
     }
 
@@ -167,7 +167,7 @@ trait ScalarParserTrait
             }
             return $result;
         } finally {
-            $this->buffer = \substr($this->buffer, 8);
+            $this->buffer = mb_orig_substr($this->buffer, 8);
         }
     }
 
@@ -179,11 +179,11 @@ trait ScalarParserTrait
     {
         try {
             if (Endianness::LITTLE()) {
-                return \unpack('f', \strrev(\substr($this->buffer, 0, 4)))[1];
+                return \unpack('f', \strrev(mb_orig_substr($this->buffer, 0, 4)))[1];
             }
             return \unpack('f', $this->buffer)[1]; // @codeCoverageIgnore
         } finally {
-            $this->buffer = \substr($this->buffer, 4);
+            $this->buffer = mb_orig_substr($this->buffer, 4);
         }
     }
 
@@ -195,11 +195,11 @@ trait ScalarParserTrait
     {
         try {
             if (Endianness::LITTLE()) {
-                return \unpack('d', \strrev(\substr($this->buffer, 0, 8)))[1];
+                return \unpack('d', \strrev(mb_orig_substr($this->buffer, 0, 8)))[1];
             }
             return \unpack('d', $this->buffer)[1]; // @codeCoverageIgnore
         } finally {
-            $this->buffer = \substr($this->buffer, 8);
+            $this->buffer = mb_orig_substr($this->buffer, 8);
         }
     }
 }
