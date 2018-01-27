@@ -9,7 +9,7 @@ namespace PHPDaemon\Clients\AMQP\Driver\Protocol\v091\Serializer;
  */
 class Frame implements FrameInterface
 {
-    use ScalarSerializerTrait, FrameSerializerTrait;
+    use FrameSerializerTrait;
 
     /**
      * @var TableInterface The serializer used to serialize AMQP tables.
