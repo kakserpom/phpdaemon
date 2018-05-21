@@ -67,7 +67,7 @@ abstract class Server extends Pool
      */
     public function bindSocket($uri)
     {
-        $u = \PHPDaemon\Config\Object::parseCfgUri($uri);
+        $u = \PHPDaemon\Config\_Object::parseCfgUri($uri);
         $scheme = $u['scheme'];
         if ($scheme === 'unix') {
             $socket = new \PHPDaemon\BoundSocket\UNIX($u);

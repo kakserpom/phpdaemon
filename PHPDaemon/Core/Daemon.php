@@ -189,7 +189,7 @@ class Daemon
 
     /**
      * Configuration object
-     * @var \PHPDaemon\Config\Object
+     * @var \PHPDaemon\Config\_Object
      */
     public static $config;
 
@@ -238,7 +238,7 @@ class Daemon
     {
         Daemon::$version = file_get_contents('VERSION', true);
 
-        Daemon::$config = new Config\Object;
+        Daemon::$config = new Config\_Object;
 
         if (!defined('SO_REUSEPORT') && mb_orig_strpos(php_uname('s'), 'BSD') !== false) {
             // @TODO: better if-BSD check

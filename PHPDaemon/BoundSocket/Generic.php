@@ -159,7 +159,7 @@ abstract class Generic
      */
     public function __construct($uri)
     {
-        $this->uri = is_array($uri) ? $uri : \PHPDaemon\Config\Object::parseCfgUri($uri);
+        $this->uri = is_array($uri) ? $uri : \PHPDaemon\Config\_Object::parseCfgUri($uri);
         if (!$this->uri) {
             return;
         }
