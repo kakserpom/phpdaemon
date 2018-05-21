@@ -16,7 +16,7 @@ use PHPDaemon\Core\Daemon;
  * @author     Vasily Zorin <maintainer@daemon.io>
  * @dynamic_fields
  */
-class Object implements \ArrayAccess
+class _Object implements \ArrayAccess
 {
     use \PHPDaemon\Traits\ClassWatchdog;
 
@@ -297,7 +297,7 @@ class Object implements \ArrayAccess
 
     /**
      * Constructor
-     * @return object
+     * @return _Object
      */
 
     public function __construct()
@@ -352,7 +352,7 @@ class Object implements \ArrayAccess
      * Renames section
      * @param string $old
      * @param string $new
-     * @param booelan $log Log?
+     * @param boolean $log Log?
      * @return void
      */
     public function renameSection($old, $new, $log = false)

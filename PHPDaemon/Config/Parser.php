@@ -135,7 +135,7 @@ class Parser
     /**
      * Parse config file
      * @param string  File path
-     * @param object  Target
+     * @param _Object  Target
      * @param boolean Included? Default is false
      * @return \PHPDaemon\Config\Parser
      */
@@ -159,7 +159,7 @@ class Parser
     {
         $this->file = $file;
         $this->target = $target;
-        $this->revision = ++Object::$lastRevision;
+        $this->revision = ++_Object::$lastRevision;
         $this->data = file_get_contents($file);
 
         if (substr($this->data, 0, 2) === '#!') {

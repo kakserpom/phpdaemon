@@ -438,7 +438,7 @@ abstract class Connection extends IOStream
      */
     public function connect($url, $cb = null)
     {
-        $this->uri = Config\Object::parseCfgUri($url);
+        $this->uri = Config\_Object::parseCfgUri($url);
         $u =& $this->uri;
         if (!$u) {
             return false;
