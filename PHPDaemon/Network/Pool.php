@@ -171,7 +171,7 @@ abstract class Pool extends ObjectStorage
         if ($arg === 'default') {
             $arg = '';
         }
-        $class = get_called_class();
+        $class = static::class;
         if (is_string($arg)) {
             $key = $class . ':' . $arg;
             if (isset(self::$instances[$key])) {
