@@ -78,7 +78,9 @@ class ClassFinder
         if ($namespace !== null && sizeof($e) < 2) {
             array_unshift($e, $namespace);
         }
-        array_unshift($e, '\\' . ($rootns !== null ? $rootns : Daemon::$config->defaultns->value));
+        if ($rootns !== '~') {
+            array_unshift($e, '\\' . ($rootns !== null ? $rootns : Daemon::$config->defaultns->value));
+        }
         return implode('\\', $e);
     }
 }
