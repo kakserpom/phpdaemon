@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPDaemon\Core;
 
 /**
@@ -25,6 +26,14 @@ class ClassFinder
         }
         $e = explode('\\', $class);
         return end($e);
+    }
+
+    /**
+     * @param string $class
+     */
+    public static function getNamespace(string $class): string
+    {
+        return substr($class, 0, strrpos($class, '\\'));
     }
 
     /**
