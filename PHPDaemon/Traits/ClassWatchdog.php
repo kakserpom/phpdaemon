@@ -18,7 +18,7 @@ trait ClassWatchdog
      */
     public static function __callStatic($method, $args)
     {
-        throw new UndefinedMethodCalled('Call to undefined static method ' . get_called_class() . '::' . $method);
+        throw new UndefinedMethodCalled('Call to undefined static method ' . static::class . '::' . $method);
     }
 
     /**
