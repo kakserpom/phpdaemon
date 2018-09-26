@@ -435,7 +435,7 @@ class Connection extends ClientConnection
             if ($authType === 0) {
                 // Successful
                 if ($this->pool->config->protologging->value) {
-                    Daemon::log(__CLASS__ . ': auth. ok.');
+                    Daemon::log(self::class . ': auth. ok.');
                 }
 
                 $this->state = self::STATE_AUTH_OK;
@@ -446,7 +446,7 @@ class Connection extends ClientConnection
             } // @todo move to constant values
             elseif ($authType === 2) {
                 // KerberosV5
-                Daemon::log(__CLASS__ . ': Unsupported authentication method: KerberosV5.');
+                Daemon::log(self::class . ': Unsupported authentication method: KerberosV5.');
                 $this->state = self::STATE_AUTH_ERROR; // Auth. error
                 $this->finish(); // Unsupported,  finish
             } elseif ($authType === 3) {
@@ -465,12 +465,12 @@ class Connection extends ClientConnection
                 $this->state = self::STATE_AUTH_PACKET_SENT;
             } elseif ($authType === 6) {
                 // SCM
-                Daemon::log(__CLASS__ . ': Unsupported authentication method: SCM.');
+                Daemon::log(self::class . ': Unsupported authentication method: SCM.');
                 $this->state = self::STATE_AUTH_ERROR; // Auth. error
                 $this->finish(); // Unsupported,  finish
             } elseif ($authType === 9) {
                 // GSS
-                Daemon::log(__CLASS__ . ': Unsupported authentication method: GSS.');
+                Daemon::log(self::class . ': Unsupported authentication method: GSS.');
                 $this->state = self::STATE_AUTH_ERROR; // Auth. error
                 $this->finish(); // Unsupported,  finish
             }
@@ -517,7 +517,7 @@ class Connection extends ClientConnection
             // Copy in response
             // The backend is ready to copy data from the frontend to a table; see Section 45.2.5.
             if ($this->pool->config->protologging->value) {
-                Daemon::log(__CLASS__ . ': Caught CopyInResponse');
+                Daemon::log(self::class . ': Caught CopyInResponse');
             }
         } elseif ($type === 'C') {
             // Close command
@@ -572,7 +572,7 @@ class Connection extends ClientConnection
             $this->onError();
 
             if ($this->pool->config->protologging->value) {
-                Daemon::log(__CLASS__ . ': Error response caught (0x' . dechex($code) . '): ' . $message);
+                Daemon::log(self::class . ': Error response caught (0x' . dechex($code) . '): ' . $message);
             }
         } elseif ($type === 'I') {
             // Empty Query Response
@@ -582,7 +582,7 @@ class Connection extends ClientConnection
         } elseif ($type === 'S') {
             // Portal Suspended
             if ($this->pool->config->protologging->value) {
-                Daemon::log(__CLASS__ . ': Caught PortalSuspended');
+                Daemon::log(self::class . ': Caught PortalSuspended');
             }
         } elseif ($type === 'S') {
             // Parameter Status
@@ -592,7 +592,7 @@ class Connection extends ClientConnection
                 $this->parameters[$u[0]] = isset($u[1]) ? $u[1] : null;
 
                 if ($this->pool->config->protologging->value) {
-                    Daemon::log(__CLASS__ . ': Parameter ' . $u[0] . ' = \'' . $this->parameters[$u[0]] . '\'');
+                    Daemon::log(self::class . ': Parameter ' . $u[0] . ' = \'' . $this->parameters[$u[0]] . '\'');
                 }
             }
         } elseif ($type === 'K') {
@@ -601,17 +601,17 @@ class Connection extends ClientConnection
             $this->backendKey = isset($u[1]) ? $u[1] : null;
 
             if ($this->pool->config->protologging->value) {
-                Daemon::log(__CLASS__ . ': BackendKey is ' . $this->backendKey);
+                Daemon::log(self::class . ': BackendKey is ' . $this->backendKey);
             }
         } elseif ($type === 'Z') {
             // Ready For Query
             $this->status = $packet;
 
             if ($this->pool->config->protologging->value) {
-                Daemon::log(__CLASS__ . ': Ready For Query. Status: ' . $this->status);
+                Daemon::log(self::class . ': Ready For Query. Status: ' . $this->status);
             }
         } else {
-            Daemon::log(__CLASS__ . ': Caught message with unsupported type - ' . $type);
+            Daemon::log(self::class . ': Caught message with unsupported type - ' . $type);
         }
 
         goto start;
