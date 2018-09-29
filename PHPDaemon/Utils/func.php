@@ -1,4 +1,7 @@
 <?php
+if (PHP_SAPI !== 'cli') {
+    return;
+}
 
 if (!function_exists('mb_orig_substr')) {
     function mb_orig_substr(...$args)
