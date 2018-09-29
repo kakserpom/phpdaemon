@@ -11,9 +11,6 @@ namespace PHPDaemon\Core;
  */
 class ClassFinder
 {
-    use \PHPDaemon\Traits\ClassWatchdog;
-    use \PHPDaemon\Traits\StaticObjectWatchdog;
-
     /**
      * Get base class name of the given class or object
      * @param string|object $class Object or String
