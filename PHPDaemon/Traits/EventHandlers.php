@@ -124,7 +124,7 @@ trait EventHandlers
         if ($cb !== null) {
             $cb = CallbackWrapper::wrap($cb);
         }
-        is_array($event) or $event = [$event];
+        $event = (array) $event;
         foreach ($event as $e) {
             CallbackWrapper::addToArray($this->eventHandlers[$e], $cb);
         }
@@ -154,7 +154,7 @@ trait EventHandlers
         if ($cb !== null) {
             $cb = CallbackWrapper::wrap($cb);
         }
-        is_array($event) or $event = [$event];
+        $event = (array) $event;
         $success = true;
         foreach ($event as $e) {
             if (!isset($this->eventHandlers[$e])) {
