@@ -661,7 +661,8 @@ class Connection extends ClientConnection implements \Iterator
             $this->ptr = $val;
         }
         start:
-        if (sizeof($this->ptr) < $this->levelLength) {
+        $size = is_array($this->ptr) ? sizeof($this->ptr) : 1;
+        if ($size < $this->levelLength) {
             return;
         }
         array_pop($this->stack);
