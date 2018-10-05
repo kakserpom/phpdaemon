@@ -10,9 +10,6 @@ use PHPDaemon\Core\CallbackWrapper;
  */
 class StackCallbacks extends \SplStack
 {
-    use \PHPDaemon\Traits\ClassWatchdog;
-    use \PHPDaemon\Traits\StaticObjectWatchdog;
-
     /**
      * Push callback to the bottom of stack
      * @param  callable $cb Callback
