@@ -113,7 +113,10 @@ class IPC extends Generic
     protected function prepareSystemEnv()
     {
         proc_nice(Daemon::$config->ipcthreadpriority->value);
-        register_shutdown_function([$this, 'shutdown']);
+
+        register_shutdown_function(function () {
+            $this->shutdown();
+        });
 
         $this->setTitle(
             Daemon::$runName . ': IPC process'
@@ -213,6 +216,7 @@ class IPC extends Generic
 
         if ($this->terminated === true) {
             if ($hard) {
+                posix_kill(getmypid(), SIGKILL);
                 exit(0);
             }
 
@@ -221,10 +225,12 @@ class IPC extends Generic
 
         $this->terminated = true;
         if ($hard) {
+            posix_kill(getmypid(), SIGKILL);
             exit(0);
         }
         FileSystem::waitAllEvents(); // ensure that all I/O events completed before suicide
         posix_kill(posix_getppid(), SIGCHLD); // praying to Master
+        posix_kill(getmypid(), SIGKILL);
         exit(0); // R.I.P.
     }
 

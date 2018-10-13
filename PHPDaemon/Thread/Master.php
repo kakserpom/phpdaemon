@@ -335,6 +335,7 @@ class Master extends Generic
         $this->waitAll(true);
         Daemon::$shm_wstate->delete();
         file_put_contents(Daemon::$config->pidfile->value, '');
+        posix_kill(getmypid(), SIGKILL);
         exit(0);
     }
 

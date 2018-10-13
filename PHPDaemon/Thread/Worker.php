@@ -360,6 +360,7 @@ class Worker extends Generic
                 ? ' (' . Daemon::$config->pidfile->value . ')' : '')
         );
 
+
         if (isset(Daemon::$config->group->value)) {
             $sg = posix_getgrnam(Daemon::$config->group->value);
         }
@@ -591,6 +592,7 @@ class Worker extends Generic
             EventLoop::$instance->run();
         }
         FileSystem::waitAllEvents(); // ensure that all I/O events completed before suicide
+        posix_kill(getmypid(), SIGKILL);
         exit(0); // R.I.P.
     }
 
