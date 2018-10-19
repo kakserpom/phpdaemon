@@ -71,11 +71,14 @@ abstract class Pool extends ObjectStorage
 
     /**
      * Constructor
-     * @param array $config Config variables
+     * @param $config Config variables
      * @param boolean $init
      */
     public function __construct($config = [], $init = true)
     {
+        if (is_array($config)) {
+            $config = new Config\Section($config);
+        }
         $this->config = $config;
         if ($this->connectionClass === null) {
             $e = explode('\\', get_class($this));
