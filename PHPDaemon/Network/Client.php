@@ -124,6 +124,7 @@ abstract class Client extends Pool
                 return false;
             }
         }
+
         start:
         $conn = false;
         if (isset($this->servConn[$url])) {

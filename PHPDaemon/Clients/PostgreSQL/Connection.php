@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPDaemon\Clients\PostgreSQL;
 
 use PHPDaemon\Core\Daemon;
@@ -90,6 +91,21 @@ class Connection extends ClientConnection
     public $backendKey;
 
     /**
+     * @var int
+     */
+    public $errno = 0;
+
+    /**
+     * @var string
+     */
+    public $errmsg;
+
+    /**
+     * @var
+     */
+    public $status;
+
+    /**
      * State: authentication packet sent
      */
     const STATE_AUTH_PACKET_SENT = 2;
@@ -105,7 +121,7 @@ class Connection extends ClientConnection
     const STATE_AUTH_OK = 4;
 
     /**
-     * Called when the connection is ready to accept new data
+     * Called when the stream is handshaked (at low-level), and peer is ready to recv. data
      * @return void
      */
     public function onReady()
@@ -113,15 +129,18 @@ class Connection extends ClientConnection
         $e = explode('.', $this->protover);
         $packet = pack('nn', $e[0], $e[1]);
 
-        if (mb_orig_strlen($this->user)) {
+        if (strlen($this->user)) {
             $packet .= "user\x00" . $this->user . "\x00";
         }
 
-        if (mb_orig_strlen($this->dbname)) {
+        if (strlen($this->dbname)) {
             $packet .= "database\x00" . $this->dbname . "\x00";
         }
+        elseif (strlen($this->path)) {
+            $packet .= "database\x00" . $this->path . "\x00";
+        }
 
-        if (mb_orig_strlen($this->options)) {
+        if (strlen($this->options)) {
             $packet .= "options\x00" . $this->options . "\x00";
         }
 
@@ -394,39 +413,29 @@ class Connection extends ClientConnection
     }
 
     /**
-     * Called when new data received
-     * @param  string $buf New data
-     * @return void
+     *
      */
-    public function stdin($buf)
+    public function onRead()
     {
-        $this->buf .= $buf;
-
-        if ($this->pool->config->protologging->value) {
-            Daemon::log('Server --> Client: ' . Debug::exportBytes($buf) . "\n\n");
-        }
-
         start:
-
-        $this->buflen = mb_orig_strlen($this->buf);
-
-        if ($this->buflen < 5) {
-            // Not enough data buffered yet
-            return;
+        $l = $this->getInputLength();
+        if ($l < 5) {
+            return; // Not enough data buffered yet
         }
+        $type = $this->look(1);
 
-        $type = mb_orig_substr($this->buf, 0, 1);
+        list(, $length) = unpack('N', $this->look(4, 1));
 
-        list(, $length) = unpack('N', mb_orig_substr($this->buf, 1, 4));
         $length -= 4;
 
-        if ($this->buflen < 5 + $length) {
+        if ($l < $length + 5) {
             // Not enough data buffered yet
             return;
         }
 
-        $packet = mb_orig_substr($this->buf, 5, $length);
-        $this->buf = mb_orig_substr($this->buf, 5 + $length);
+        $this->drain(5);
+
+        $packet = $this->read($length);
 
         if ($type === 'R') {
             // Authentication request
@@ -615,6 +624,7 @@ class Connection extends ClientConnection
         }
 
         goto start;
+
     }
 
     /**
