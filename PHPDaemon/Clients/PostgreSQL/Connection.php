@@ -126,6 +126,9 @@ class Connection extends ClientConnection
      */
     public function onReady()
     {
+        if ($this->pool->config->protologging->value) {
+            Daemon::log("New connection\n\n");
+        }
         $e = explode('.', $this->protover);
         $packet = pack('nn', $e[0], $e[1]);
 
@@ -390,8 +393,10 @@ class Connection extends ClientConnection
             return false;
         }
 
-        $this->onResponse->push($cb);
         $this->sendPacket($cmd, $q);
+
+        $this->onResponse->push($cb);
+        $this->checkFree();
 
         return true;
     }
@@ -449,8 +454,10 @@ class Connection extends ClientConnection
 
                 $this->state = self::STATE_AUTH_OK;
 
-                foreach ($this->onConnected as $cb) {
-                    $cb($this, true);
+                $this->connected = true;
+                $this->onConnected->executeAll($this, true);
+                if ($this->connected && !$this->busy) {
+                    $this->pool->markConnFree($this, $this->url);
                 }
             } // @todo move to constant values
             elseif ($authType === 2) {
@@ -571,11 +578,9 @@ class Connection extends ClientConnection
 
             if ($this->state === self::STATE_AUTH_PACKET_SENT) {
                 // Auth. error
-                foreach ($this->onConnected as $cb) {
-                    $cb($this, false);
-                }
-
+                $this->onConnected->executeAll($this, false);
                 $this->state = self::STATE_AUTH_ERROR;
+                $this->finish();
             }
 
             $this->onError();
@@ -663,6 +668,7 @@ class Connection extends ClientConnection
         $this->onResponse->executeOne($this, true);
         $this->resultRows = [];
         $this->resultFields = [];
+        $this->checkFree();
 
         if ($this->pool->config->protologging->value) {
             Daemon::log(__METHOD__);
@@ -685,6 +691,8 @@ class Connection extends ClientConnection
             $this->state = self::STATE_AUTH_ERROR;
             $this->finish();
         }
+
+        $this->checkFree();
 
         Daemon::log(__METHOD__ . ' #' . $this->errno . ': ' . $this->errmsg);
     }
