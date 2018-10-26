@@ -423,6 +423,9 @@ class Connection extends ClientConnection
     public function onRead()
     {
         start:
+        if ($this->finished) {
+            return;
+        }
         $l = $this->getInputLength();
         if ($l < 5) {
             return; // Not enough data buffered yet
