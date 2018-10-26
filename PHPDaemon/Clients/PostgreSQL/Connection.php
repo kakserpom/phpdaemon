@@ -547,11 +547,12 @@ class Connection extends ClientConnection
 
                 if ($tag[0] === 'INSERT') {
                     $this->insertId = $tag[1];
-                    $this->insertNum = $tag[2];
+                    $this->insertNum = (int) $tag[2];
+                    $this->affectedRows = (int) $tag[2];
                 } elseif ($tag[0] === 'DELETE' || $tag[0] === 'UPDATE' || $tag[0] === 'MOVE'
                     || $tag[0] === 'FETCH' || $tag[0] === 'COPY'
                 ) {
-                    $this->affectedRows = $tag[1];
+                    $this->affectedRows = (int) $tag[1];
                 }
             }
 
