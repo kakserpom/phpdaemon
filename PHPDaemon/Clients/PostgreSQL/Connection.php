@@ -577,13 +577,6 @@ class Connection extends ClientConnection
             $this->errno = -1;
             $this->errmsg = $message;
 
-            if ($this->state === self::STATE_AUTH_PACKET_SENT) {
-                // Auth. error
-                $this->onConnected->executeAll($this, false);
-                $this->state = self::STATE_AUTH_ERROR;
-                $this->finish();
-            }
-
             $this->onError();
 
             if ($this->pool->config->protologging->value) {
@@ -687,14 +680,14 @@ class Connection extends ClientConnection
         $this->resultRows = [];
         $this->resultFields = [];
 
+        Daemon::log(__METHOD__ . ' #' . $this->errno . ': ' . $this->errmsg);
+
         if ($this->state === self::STATE_AUTH_PACKET_SENT) {
             // in case of auth error
             $this->state = self::STATE_AUTH_ERROR;
             $this->finish();
+        } else {
+            $this->checkFree();
         }
-
-        $this->checkFree();
-
-        Daemon::log(__METHOD__ . ' #' . $this->errno . ': ' . $this->errmsg);
     }
 }
