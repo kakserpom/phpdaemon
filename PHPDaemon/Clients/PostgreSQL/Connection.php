@@ -448,7 +448,9 @@ class Connection extends ClientConnection
         if ($type === 'R') {
             // Authentication request
             list(, $authType) = unpack('N', $packet);
-
+            if ($this->pool->config->protologging->value) {
+                Daemon::log('auth type = ' . $authType);
+            }
             if ($authType === 0) {
                 // Successful
                 if ($this->pool->config->protologging->value) {
@@ -475,12 +477,12 @@ class Connection extends ClientConnection
             } elseif ($authType === 4) {
                 // Crypt
                 $salt = mb_orig_substr($packet, 4, 2);
-                $this->sendPacket('p', crypt($this->password, $salt)); // Password Message
+                $this->sendPacket('p', crypt($this->password, $salt)  . "\x00"); // Password Message
                 $this->state = self::STATE_AUTH_PACKET_SENT;
             } elseif ($authType === 5) {
                 // MD5
                 $salt = mb_orig_substr($packet, 4, 4);
-                $this->sendPacket('p', 'md5' . md5(md5($this->password . $this->user) . $salt)); // Password Message
+                $this->sendPacket('p', 'md5' . md5(md5($this->password . $this->user) . $salt) . "\x00"); // Password Message
                 $this->state = self::STATE_AUTH_PACKET_SENT;
             } elseif ($authType === 6) {
                 // SCM
