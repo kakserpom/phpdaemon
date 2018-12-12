@@ -97,7 +97,7 @@ class ShellCommand extends IOStream
     {
         $o = new static;
         $data = '';
-        $o->bind('read', function ($o) use (&$data, $o) {
+        $o->bind('read', function ($o) use (&$data) {
             $data .= $o->readUnlimited();
         });
         $o->bind('eof', function ($o) use (&$data, $cb) {
