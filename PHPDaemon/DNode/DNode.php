@@ -312,34 +312,36 @@ trait DNode
                 static::setPath($args, $link['to'], static::getPath($args, $link['from']));
             }
         }
-
-        if (is_string($m)) {
-            if (isset($this->localMethods[$m])) {
-                $this->localMethods[$m](...$args);
-            } elseif (method_exists($this, $m . 'Method')) {
-                $func = [$this, $m . 'Method'];
-                $func(...$args);
-            } else {
-                $this->handleException(new UndefinedMethodCalled(
-                    'DNode: local method ' . json_encode($m) . ' does not exist. Packet: ' . json_encode($pct)
-                ));
-            }
-        } elseif (is_int($m)) {
-            if (isset($this->callbacks[$m])) {
-                if (!$this->callbacks[$m](...$args)) {
-                    unset($this->callbacks[$m]);
+        try {
+            if (is_string($m)) {
+                if (isset($this->localMethods[$m])) {
+                    $this->localMethods[$m](...$args);
+                } elseif (method_exists($this, $m . 'Method')) {
+                    $func = [$this, $m . 'Method'];
+                    $func(...$args);
+                } else {
+                    $this->handleException(new UndefinedMethodCalled(
+                        'DNode: local method ' . json_encode($m) . ' does not exist. Packet: ' . json_encode($pct)
+                    ));
                 }
-            } elseif (isset($this->persistentCallbacks[$m])) {
-                $this->persistentCallbacks[$m](...$args);
+            } elseif (is_int($m)) {
+                if (isset($this->callbacks[$m])) {
+                    if (!$this->callbacks[$m](...$args)) {
+                        unset($this->callbacks[$m]);
+                    }
+                } elseif (isset($this->persistentCallbacks[$m])) {
+                    $this->persistentCallbacks[$m](...$args);
+                } else {
+                    $this->handleException(new UndefinedMethodCalled(
+                        'DNode: local callback # ' . $m . ' is not registered. Packet: ' . json_encode($pct)
+                    ));
+                }
             } else {
-                $this->handleException(new UndefinedMethodCalled(
-                    'DNode: local callback # ' . $m . ' is not registered. Packet: ' . json_encode($pct)
+                $this->handleException(new ProtocolError(
+                    'DNode: \'method\' must be string or integer. Packet: ' . json_encode($pct)
                 ));
             }
-        } else {
-            $this->handleException(new ProtocolError(
-                'DNode: \'method\' must be string or integer. Packet: ' . json_encode($pct)
-            ));
+        } catch (\Throwable $exception) {
         }
     }
 
