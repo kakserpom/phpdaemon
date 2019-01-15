@@ -1,0 +1,22 @@
+language: php
+
+php:
+  - 5.6
+  - 7.0
+  - 7.1
+
+sudo: false
+
+cache:
+  directories:
+    - vendor
+    - $HOME/.composer/cache
+
+install:
+  - ./tests/ci/install.sh
+  - composer self-update --quiet
+  - COMPOSER_DISCARD_CHANGES=true composer --prefer-source update --no-interaction --no-progress
+
+script:
+  - ./vendor/bin/phpcs --standard=PSR2 --report=emacs --extensions=php --warning-severity=0 --error-severity=6 PHPDaemon/
+  - ./vendor/bin/phpunit -v --debug --coverage-clover=coverage.clover

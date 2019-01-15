@@ -6,7 +6,8 @@ namespace PHPDaemon\Request;
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
-class RequestHeadersAlreadySent extends \Exception {
+class RequestHeadersAlreadySent extends \Exception
+{
 }

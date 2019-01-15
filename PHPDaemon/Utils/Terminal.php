@@ -4,224 +4,226 @@ namespace PHPDaemon\Utils;
 /**
  * Terminal
  * @package PHPDaemon\Utils
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
-class Terminal {
-	use \PHPDaemon\Traits\ClassWatchdog;
-	use \PHPDaemon\Traits\StaticObjectWatchdog;
+class Terminal
+{
+    use \PHPDaemon\Traits\ClassWatchdog;
+    use \PHPDaemon\Traits\StaticObjectWatchdog;
 
-	/**
-	 * @var boolean Is color allowed in terminal?
-	 */
-	protected $enableColor = false;
+    /**
+     * @var boolean Is color allowed in terminal?
+     */
+    protected $enableColor = false;
 
-	/**
-	 * @var integer Maximum terminal width
-	 */
-	protected $columns = 80;
+    /**
+     * @var integer Maximum terminal width
+     */
+    protected $columns = 80;
 
-	/**
-	 * Constructor
-	 */
-	public function __construct() {
-		$this->columns = $this->getMaxColumns();
-	}
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->columns = $this->getMaxColumns();
+    }
 
-	/**
-	 * Read a line from STDIN
-	 * @return string Line
-	 */
-	public function readln() {
-		return fgets(STDIN);
-	}
+    /**
+     * Counting terminal char width
+     * @return integer
+     */
+    protected function getMaxColumns()
+    {
+        if (preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
+            && sizeof($output) === 2
+        ) {
+            return $output[1][0];
+        }
 
-	/**
-	 * Enables/disable color
-	 * @param  boolean $bool Enable?
-	 * @return void
-	 */
-	public function enableColor($bool = true) {
-		$this->enableColor = $bool;
-	}
+        return 80;
+    }
 
-	/**
-	 * Clear the terminal with CLR
-	 * @return void
-	 */
-	public function clearScreen() {
-		echo "\x0c";
-	}
+    /**
+     * Read a line from STDIN
+     * @return string Line
+     */
+    public function readln()
+    {
+        return fgets(STDIN);
+    }
 
-	/**
-	 * Set text style
-	 * @param  string $c Style
-	 * @return void
-	 */
-	public function setStyle($c) {
-		if ($this->enableColor) {
-			echo "\033[" . $c . 'm';
-		}
-	}
+    /**
+     * Enables/disable color
+     * @param  boolean $bool Enable?
+     * @return void
+     */
+    public function enableColor($bool = true)
+    {
+        $this->enableColor = $bool;
+    }
 
-	/**
-	 * Reset style to default
-	 * @return void
-	 */
-	public function resetStyle() {
-		if ($this->enableColor) {
-			echo "\033[0m";
-		}
-	}
+    /**
+     * Clear the terminal with CLR
+     * @return void
+     */
+    public function clearScreen()
+    {
+        echo "\x0c";
+    }
 
-	/**
-	 * Counting terminal char width
-	 * @return integer
-	 */
-	protected function getMaxColumns() {
-		if (
-				preg_match_all("/columns.([0-9]+);/", strtolower(@exec('stty -a | grep columns')), $output)
-				&& 2 == sizeof($output)
-		) {
-			return $output[1][0];
-		}
+    /**
+     * Draw param (like in man)
+     * @param string $name Param name
+     * @param string $description Param description
+     * @param array $values Param allowed values
+     * @return void
+     */
+    public function drawParam($name, $description, $values = '')
+    {
+        $paramw = round($this->columns / 3);
 
-		return 80;
-	}
+        echo "\n";
 
-	/**
-	 * Draw param (like in man)
-	 * @param string $name        Param name
-	 * @param string $description Param description
-	 * @param array  $values      Param allowed values
-	 * @return void
-	 */
-	public function drawParam($name, $description, $values = '') {
-		$paramw = round($this->columns / 3);
+        $leftcolumn = [];
 
-		echo "\n";
+        $valstr = is_array($values) ? implode('|', array_keys($values)) : $values;
 
-		$leftcolumn = [];
+        if ('' !== $valstr) {
+            $valstr = '=[' . $valstr . ']';
+        }
 
-		$valstr = is_array($values) ? implode('|', array_keys($values)) : $values;
+        $paramstr = "  \033[1m--" . $name . $valstr . "\033[0m";
 
-		if ('' !== $valstr) {
-			$valstr = '=[' . $valstr . ']';
-		}
+        $pl = mb_orig_strlen($paramstr);
+        if ($pl + 2 >= $paramw) {
+            $paramw = $pl + 3;
+        }
 
-		$paramstr = "  \033[1m--" . $name . $valstr . "\033[0m";
+        $descw = $this->columns - $paramw;
 
-		$pl = strlen($paramstr);
-		if ($pl + 2 >= $paramw) {
-			$paramw = $pl + 3;
-		}
+        $leftcolumn[] = $paramstr;
 
-		$descw = $this->columns - $paramw;
+        if (is_array($values)) {
+            foreach ($values as $key => $value) {
+                $leftcolumn[] = '    ' . $key . ' - ' . $value;
+            }
+        }
 
-		$leftcolumn[] = $paramstr;
+        if (strlen($description) <= $descw) {
+            $rightcolumn[] = $description;
+        } else {
+            $m = explode(' ', $description);
 
-		if (is_array($values)) {
-			foreach ($values as $key => $value) {
-				$leftcolumn[] = '    ' . $key . ' - ' . $value;
-			}
-		}
+            $descstr = '';
 
-		if (strlen($description) <= $descw) {
-			$rightcolumn[] = $description;
-		}
-		else {
-			$m = explode(' ', $description);
+            while (sizeof($m) > 0) {
+                $el = array_shift($m);
 
-			$descstr = '';
+                if (strlen($descstr) + mb_orig_strlen($el) >= $descw) {
+                    $rightcolumn[] = $descstr;
+                    $descstr = '';
+                } else {
+                    $descstr .= ' ';
+                }
 
-			while (sizeof($m) > 0) {
-				$el = array_shift($m);
+                $descstr .= $el;
+            }
 
-				if (strlen($descstr) + strlen($el) >= $descw) {
-					$rightcolumn[] = $descstr;
-					$descstr       = '';
-				}
-				else {
-					$descstr .= ' ';
-				}
+            if ('' !== $descstr) {
+                $rightcolumn[] = $descstr;
+            }
+        }
 
-				$descstr .= $el;
-			}
+        while (sizeof($leftcolumn) > 0 || sizeof($rightcolumn) > 0) {
+            if ($l = array_shift($leftcolumn)) {
+                echo str_pad($l, $paramw, ' ');
+            } else {
+                echo str_repeat(' ', $paramw - 7);
+            }
 
-			if ('' !== $descstr) {
-				$rightcolumn[] = $descstr;
-			}
-		}
+            if ($r = array_shift($rightcolumn)) {
+                echo $r;
+            }
 
-		while (
-				sizeof($leftcolumn) > 0
-				|| sizeof($rightcolumn) > 0
-		) {
-			if ($l = array_shift($leftcolumn)) {
-				echo str_pad($l, $paramw, ' ');
-			}
-			else {
-				echo str_repeat(' ', $paramw - 7);
-			}
+            echo "\n";
+        }
+    }
 
-			if ($r = array_shift($rightcolumn)) {
-				echo $r;
-			}
+    /**
+     * Draw a table
+     * @param  array Array of table's rows
+     * @return void
+     */
+    public function drawTable($rows)
+    {
+        $pad = [];
 
-			echo "\n";
-		}
-	}
+        foreach ($rows as $row) {
+            foreach ($row as $k => $v) {
+                if (substr($k, 0, 1) === '_') {
+                    continue;
+                }
 
-	/**
-	 * Draw a table
-	 * @param  array Array of table's rows
-	 * @return void
-	 */
-	public function drawTable($rows) {
-		$pad = [];
+                if (!isset($pad[$k]) || (strlen($v) > $pad[$k])) {
+                    $pad[$k] = mb_orig_strlen($v);
+                }
+            }
+        }
 
-		foreach ($rows as $row) {
-			foreach ($row as $k => $v) {
-				if (substr($k, 0, 1) == '_') {
-					continue;
-				}
+        foreach ($rows as $row) {
+            if (isset($row['_color'])) {
+                $this->setStyle($row['_color']);
+            }
 
-				if (!isset($pad[$k]) || (strlen($v) > $pad[$k])) {
-					$pad[$k] = strlen($v);
-				}
-			}
-		}
+            if (isset($row['_bold'])) {
+                $this->setStyle('1');
+            }
 
-		foreach ($rows as $row) {
-			if (isset($row['_color'])) {
-				$this->setStyle($row['_color']);
-			}
+            if (isset($row['_'])) {
+                echo $row['_'];
+            } else {
+                $i = 0;
 
-			if (isset($row['_bold'])) {
-				$this->setStyle('1');
-			}
+                foreach ($row as $k => $v) {
+                    if (substr($k, 0, 1) === '_') {
+                        continue;
+                    }
 
-			if (isset($row['_'])) {
-				echo $row['_'];
-			}
-			else {
-				$i = 0;
+                    if ($i > 0) {
+                        echo "\t";
+                    }
 
-				foreach ($row as $k => $v) {
-					if (substr($k, 0, 1) === '_') {
-						continue;
-					}
+                    echo str_pad($v, $pad[$k]);
+                    ++$i;
+                }
+            }
 
-					if ($i > 0) {
-						echo "\t";
-					}
+            $this->resetStyle();
+            echo "\n";
+        }
+    }
 
-					echo str_pad($v, $pad[$k]);
-					++$i;
-				}
-			}
+    /**
+     * Set text style
+     * @param  string $c Style
+     * @return void
+     */
+    public function setStyle($c)
+    {
+        if ($this->enableColor) {
+            echo "\033[" . $c . 'm';
+        }
+    }
 
-			$this->resetStyle();
-			echo "\n";
-		}
-	}
+    /**
+     * Reset style to default
+     * @return void
+     */
+    public function resetStyle()
+    {
+        if ($this->enableColor) {
+            echo "\033[0m";
+        }
+    }
 }

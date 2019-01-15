@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Request;
 
-class RequestSleep extends \Exception {
+class RequestSleep extends \Exception
+{
 }

@@ -1,25 +1,23 @@
 <?php
 namespace PHPDaemon\Config\Entry;
 
-use PHPDaemon\Config\Entry\Generic;
-
 /**
  * Boolean config entry
  *
  * @package    Core
  * @subpackage Config
  *
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
-class Boolean extends Generic {
-
-	/**
-	 * Converts human-readable value to plain
-	 * @param $value
-	 * @return bool
-	 */
-	public static function HumanToPlain($value) {
-		return (boolean)$value;
-	}
-
+class Boolean extends Generic
+{
+    /**
+     * Converts human-readable value to plain
+     * @param $value
+     * @return bool
+     */
+    public static function humanToPlain($value)
+    {
+        return (boolean)$value;
+    }
 }

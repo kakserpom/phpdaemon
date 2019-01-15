@@ -7,94 +7,94 @@ use PHPDaemon\Config\Entry\Time;
 /**
  * @package    NetworkServer
  * @subpackage HTTPServer
- * @author     Zorin Vasily <maintainer@daemon.io>
+ * @author     Vasily Zorin <maintainer@daemon.io>
  */
-class Pool extends \PHPDaemon\Network\Server {
+class Pool extends \PHPDaemon\Network\Server
+{
+    /**
+     * @var string Variables order "GPC"
+     */
+    public $variablesOrder;
 
-	/**
-	 * @var string Variables order "GPC"
-	 */
-	public $variablesOrder;
+    /**
+     * @var WebSocketServer WebSocketServer instance
+     */
+    public $WS;
 
-	/**
-	 * @var WebSocketServer WebSocketServer instance
-	 */
-	public $WS;
+    /**
+     * Called when worker is going to update configuration.
+     * @return void
+     */
+    public function onConfigUpdated()
+    {
+        parent::onConfigUpdated();
 
-	/**
-	 * Setting default config options
-	 * Overriden from AppInstance::getConfigDefaults
-	 * @return array|bool
-	 */
-	protected function getConfigDefaults() {
-		return [
-			/* [string|array] Listen addresses */
-			'listen'                  => 'tcp://0.0.0.0',
+        if (($order = ini_get('request_order')) || ($order = ini_get('variables_order'))) {
+            $this->variablesOrder = $order;
+        } else {
+            $this->variablesOrder = null;
+        }
+    }
 
-			/* [integer] Listen port */
-			'port'                    => 80,
+    /**
+     * Called when the worker is ready to go.
+     * @return void
+     */
+    public function onReady()
+    {
+        parent::onReady();
+        $this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance($this->config->wssname->value, false);
+    }
 
-			/* [boolean] Enable X-Sendfile? */
-			'send-file'               => 0,
+    /**
+     * Setting default config options
+     * Overriden from AppInstance::getConfigDefaults
+     * @return array|bool
+     */
+    protected function getConfigDefaults()
+    {
+        return [
+            /* [string|array] Listen addresses */
+            'listen' => 'tcp://0.0.0.0',
 
-			/* [string] Directory for X-Sendfile */
-			'send-file-dir'           => '/dev/shm',
+            /* [integer] Listen port */
+            'port' => 80,
 
-			/* [string] Prefix for files used for X-Sendfile */
-			'send-file-prefix'        => 'http-',
+            /* [boolean] Enable X-Sendfile? */
+            'send-file' => 0,
 
-			/* [boolean] Use X-Sendfile only if server['USE_SENDFILE'] provided. */
-			'send-file-onlybycommand' => 0,
+            /* [string] Directory for X-Sendfile */
+            'send-file-dir' => '/dev/shm',
 
-			/* [boolean] Expose PHPDaemon version by X-Powered-By Header */
-			'expose'                  => 1,
+            /* [string] Prefix for files used for X-Sendfile */
+            'send-file-prefix' => 'http-',
 
-			/* [Time] Keepalive time */
-			'keepalive'               => new Time('0s'),
+            /* [boolean] Use X-Sendfile only if server['USE_SENDFILE'] provided. */
+            'send-file-onlybycommand' => 0,
 
-			/* [Size] Chunk size */
-			'chunksize'               => new Size('8k'),
+            /* [boolean] Expose PHPDaemon version by X-Powered-By Header */
+            'expose' => 1,
 
-			/* [string] Default charset */
-			'defaultcharset'          => 'utf-8',
+            /* [Time] Keepalive time */
+            'keepalive' => new Time('0s'),
 
-			/* [string] Related WebSocketServer instance name */
-			'wss-name'                => '',
+            /* [Size] Chunk size */
+            'chunksize' => new Size('8k'),
 
-			/* [string] Related FlashPolicyServer instance name */
-			'fps-name'                => '',
+            /* [string] Default charset */
+            'defaultcharset' => 'utf-8',
 
-			/* [Size] Maximum uploading file size. */
-			'upload-max-size'         => new Size(ini_get('upload_max_filesize')),
+            /* [string] Related WebSocketServer instance name */
+            'wss-name' => '',
 
-			/* [string] Reponder application (if you do not want to use AppResolver) */
-			'responder'               => null,
-		];
-	}
+            /* [string] Related FlashPolicyServer instance name */
+            'fps-name' => '',
 
-	/**
-	 * Called when worker is going to update configuration.
-	 * @return void
-	 */
-	public function onConfigUpdated() {
-		parent::onConfigUpdated();
-		if (
-				($order = ini_get('request_order'))
-				|| ($order = ini_get('variables_order'))
-		) {
-			$this->variablesOrder = $order;
-		}
-		else {
-			$this->variablesOrder = null;
-		}
-	}
+            /* [Size] Maximum uploading file size. */
+            'upload-max-size' => new Size(ini_get('upload_max_filesize')),
 
-	/**
-	 * Called when the worker is ready to go.
-	 * @return void
-	 */
-	public function onReady() {
-		parent::onReady();
-		$this->WS = \PHPDaemon\Servers\WebSocket\Pool::getInstance($this->config->wssname->value, false);
-	}
+            /* [string] Reponder application (if you do not want to use AppResolver) */
+            'responder' => null,
+        ];
+    }
 }

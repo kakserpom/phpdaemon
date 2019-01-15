@@ -3,467 +3,493 @@ namespace PHPDaemon\Thread;
 
 use PHPDaemon\Core\Daemon;
 use PHPDaemon\Core\Debug;
+use PHPDaemon\Core\EventLoop;
 use PHPDaemon\Core\Timer;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Structures\StackCallbacks;
-use PHPDaemon\Thread\Collection;
-use PHPDaemon\Thread\Generic;
-use PHPDaemon\Thread\IPC;
 
 /**
  * Implementation of the master thread
  *
  * @package Core
  *
- * @author  Zorin Vasily <maintainer@daemon.io>
+ * @author  Vasily Zorin <maintainer@daemon.io>
  */
-class Master extends Generic {
+class Master extends Generic
+{
 
-	/** @var bool */
-	public $delayedSigReg = true;
-	/** @var bool */
-	public $breakMainLoop = false;
-	/** @var bool */
-	public $reload = false;
-	/** @var int */
-	public $connCounter = 0;
-	/** @var StackCallbacks */
-	public $callbacks;
-	/** @var Collection */
-	public $workers;
-	/** @var Collection */
-	public $ipcthreads;
-	/** @var EventBase */
-	public $eventBase;
-	/** @var */
-	public $eventBaseConfig;
-	/** @var */
-	public $lastMpmActionTs;
-	/** @var int */
-	public $minMpmActionInterval = 1; // in seconds
-	private $timerCb;
+    /** @var bool */
+    public $delayedSigReg = true;
+    /** @var bool */
+    public $breakMainLoop = false;
+    /** @var bool */
+    public $reload = false;
+    /** @var int */
+    public $connCounter = 0;
+    /** @var Collection */
+    public $workers;
+    /** @var Collection */
+    public $ipcthreads;
+    /** @var */
+    public $lastMpmActionTs;
+    /** @var int */
+    public $minMpmActionInterval = 1; // in seconds
+    protected $timerCb;
 
-	/**
-	 * Runtime of Master process
-	 * @return void
-	 */
-	protected function run() {
+    /**
+     * @var StackCallbacks
+     */
+    protected $callbacks;
 
-		Daemon::$process = $this;
+    /**
+     * Runtime of Master process
+     * @return void
+     */
+    protected function run()
+    {
+        Daemon::$process = $this;
 
-		$this->prepareSystemEnv();
-		class_exists('Timer'); // ensure loading this class
-		gc_enable();
+        $this->prepareSystemEnv();
+        class_exists('Timer'); // ensure loading this class
+        gc_enable();
 
-		/* This line must be commented according to current libevent binding implementation. May be uncommented in future. */
-		//$this->eventBase = new \EventBase; 
+        $this->callbacks = new StackCallbacks;
 
-		if ($this->eventBase) {
-			$this->registerEventSignals();
-		}
-		else {
-			$this->registerSignals();
-		}
+        /*
+         * @todo This line must be commented according to current libevent binding implementation.
+         * May be uncommented in future.
+         */
+        //EventLoop::init()
 
-		$this->workers                   = new Collection();
-		$this->collections['workers']    = $this->workers;
-		$this->ipcthreads                = new Collection;
-		$this->collections['ipcthreads'] = $this->ipcthreads;
+        if (EventLoop::$instance) {
+            $this->registerEventSignals();
+        } else {
+            $this->registerSignals();
+        }
 
-		Daemon::$appResolver = require Daemon::$appResolverPath;
-		Daemon::$appResolver->preload(true);
+        $this->workers = new Collection();
+        $this->collections['workers'] = $this->workers;
+        $this->ipcthreads = new Collection;
+        $this->collections['ipcthreads'] = $this->ipcthreads;
 
-		$this->callbacks = new StackCallbacks();
-		$this->spawnIPCThread();
-		$this->spawnWorkers(min(
-								Daemon::$config->startworkers->value,
-								Daemon::$config->maxworkers->value
-							));
-		$this->timerCb = function ($event) use (&$cbs) {
-			static $c = 0;
+        Daemon::$appResolver->preload(true);
 
-			++$c;
+        $this->spawnIPCThread();
+        $this->spawnWorkers(
+            min(
+                Daemon::$config->startworkers->value,
+                Daemon::$config->maxworkers->value
+            )
+        );
+        $this->timerCb = function ($event) use (&$cbs) {
+            static $c = 0;
 
-			if ($c > 0xFFFFF) {
-				$c = 1;
-			}
+            ++$c;
 
-			if (($c % 10 == 0)) {
-				gc_collect_cycles();
-			}
+            if ($c > 0xFFFFF) {
+                $c = 1;
+            }
 
-			if (!$this->lastMpmActionTs || ((microtime(true) - $this->lastMpmActionTs) > $this->minMpmActionInterval)) {
-				$this->callMPM();
-			}
-			if ($event) {
-				$event->timeout();
-			}
-		};
+            if (($c % 10 == 0)) {
+                gc_collect_cycles();
+            }
 
-		if ($this->eventBase) { // we are using libevent in Master
-			Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
-			while (!$this->breakMainLoop) {
-				$this->callbacks->executeAll($this);
-				if (!$this->eventBase->dispatch()) {
-					break;
-				}
-			}
-		}
-		else { // we are NOT using libevent in Master
-			$lastTimerCall = microtime(true);
-			while (!$this->breakMainLoop) {
-				$this->callbacks->executeAll($this);
-				if (microtime(true) > $lastTimerCall + Daemon::$config->mpmdelay->value) {
-					call_user_func($this->timerCb, null);
-					$lastTimerCall = microtime(true);
-				}
-				$this->sigwait();
-			}
-		}
-	}
+            if (!$this->lastMpmActionTs || ((microtime(true) - $this->lastMpmActionTs) > $this->minMpmActionInterval)) {
+                $this->callMPM();
+            }
+            if ($event) {
+                $event->timeout();
+            }
+        };
 
-	/**
-	 * Log something
-	 * @param string - Message.
-	 * @param string $message
-	 * @return void
-	 */
-	public function log($message) {
-		Daemon::log('M#' . $this->pid . ' ' . $message);
-	}
+        if (EventLoop::$instance) { // we are using libevent in Master
+            Timer::add($this->timerCb, 1e6 * Daemon::$config->mpmdelay->value, 'MPM');
+            EventLoop::$instance->run();
+        } else { // we are NOT using libevent in Master
+            $lastTimerCall = microtime(true);
+            $func = $this->timerCb;
+            while (!$this->breakMainLoop) {
+                $this->callbacks->executeAll($this);
+                if (microtime(true) > $lastTimerCall + Daemon::$config->mpmdelay->value) {
+                    $func(null);
+                    $lastTimerCall = microtime(true);
+                }
+                $this->sigwait();
+            }
+        }
+    }
 
-	/**
-	 * @return int
-	 */
-	protected function callMPM() {
-		$state = Daemon::getStateOfWorkers($this);
-		if (isset(Daemon::$config->mpm->value) && is_callable(Daemon::$config->mpm->value)) {
-			return call_user_func(Daemon::$config->mpm->value, $this, $state);
-		}
+    /**
+     * Log something
+     * @param string - Message.
+     * @param string $message
+     * @return void
+     */
+    public function log($message)
+    {
+        Daemon::log('M#' . $this->pid . ' ' . $message);
+    }
 
-		$upToMinWorkers      = Daemon::$config->minworkers->value - $state['alive'];
-		$upToMaxWorkers      = Daemon::$config->maxworkers->value - $state['alive'];
-		$upToMinSpareWorkers = Daemon::$config->minspareworkers->value - $state['idle'];
-		if ($upToMinSpareWorkers > $upToMaxWorkers) {
-			$upToMinSpareWorkers = $upToMaxWorkers;
-		}
-		$n = max($upToMinSpareWorkers, $upToMinWorkers);
-		if ($n > 0) {
-			//Daemon::log('minspareworkers = '.Daemon::$config->minspareworkers->value);
-			//Daemon::log('maxworkers = '.Daemon::$config->maxworkers->value);
-			//Daemon::log('maxspareworkers = '.Daemon::$config->maxspareworkers->value);
-			//Daemon::log(json_encode($state));
-			//Daemon::log('upToMinSpareWorkers = ' . $upToMinSpareWorkers . '   upToMinWorkers = ' . $upToMinWorkers);
-			Daemon::log('Spawning ' . $n . ' worker(s)');
-			$this->spawnWorkers($n);
-			return $n;
-		}
+    /**
+     * @return int
+     */
+    protected function callMPM()
+    {
+        $state = Daemon::getStateOfWorkers($this);
+        if (isset(Daemon::$config->mpm->value) && is_callable($func = Daemon::$config->mpm->value)) {
+            $func($this, $state);
+        }
 
-		$a = ['default' => 0];
-		if (Daemon::$config->maxspareworkers->value > 0) {
-			// if MaxSpareWorkers enabled, we have to stop idle workers, keeping in mind the MinWorkers
-			$a['downToMaxSpareWorkers'] = min(
-				$state['idle'] - Daemon::$config->maxspareworkers->value, // downToMaxSpareWorkers
-				$state['alive'] - Daemon::$config->minworkers->value //downToMinWorkers
-			);
-		}
-		$a['downToMaxWorkers'] = $state['alive'] - $state['reloading'] - Daemon::$config->maxworkers->value;
-		$n                     = max($a);
-		if ($n > 0) {
-			//Daemon::log('down = ' . json_encode($a));
-			//Daemon::log(json_encode($state));
-			Daemon::log('Stopping ' . $n . ' worker(s)');
-			$this->stopWorkers($n);
-			return -$n;
-		}
-		return 0;
-	}
+        $upToMinWorkers = Daemon::$config->minworkers->value - $state['alive'];
+        $upToMaxWorkers = Daemon::$config->maxworkers->value - $state['alive'];
+        $upToMinSpareWorkers = Daemon::$config->minspareworkers->value - $state['idle'];
+        if ($upToMinSpareWorkers > $upToMaxWorkers) {
+            $upToMinSpareWorkers = $upToMaxWorkers;
+        }
+        $n = max($upToMinSpareWorkers, $upToMinWorkers);
+        if ($n > 0) {
+            //Daemon::log('minspareworkers = '.Daemon::$config->minspareworkers->value);
+            //Daemon::log('maxworkers = '.Daemon::$config->maxworkers->value);
+            //Daemon::log('maxspareworkers = '.Daemon::$config->maxspareworkers->value);
+            //Daemon::log(json_encode($state));
+            //Daemon::log('upToMinSpareWorkers = ' . $upToMinSpareWorkers . '   upToMinWorkers = ' . $upToMinWorkers);
+            Daemon::log('Spawning ' . $n . ' worker(s)');
+            $this->spawnWorkers($n);
+            return $n;
+        }
 
-	/**
-	 * Setup settings on start.
-	 * @return void
-	 */
-	protected function prepareSystemEnv() {
-		register_shutdown_function(function () {
-			if ($this->pid != posix_getpid()) {
-				return;
-			}
-			if ($this->shutdown === true) {
-				return;
-			}
-			$this->log('Unexcepted shutdown.');
-			$this->shutdown(SIGTERM);
-		});
+        $a = ['default' => 0];
+        if (Daemon::$config->maxspareworkers->value > 0) {
+            // if MaxSpareWorkers enabled, we have to stop idle workers, keeping in mind the MinWorkers
+            $a['downToMaxSpareWorkers'] = min(
+                $state['idle'] - Daemon::$config->maxspareworkers->value, // downToMaxSpareWorkers
+                $state['alive'] - Daemon::$config->minworkers->value //downToMinWorkers
+            );
+        }
+        $a['downToMaxWorkers'] = $state['alive'] - $state['reloading'] - Daemon::$config->maxworkers->value;
+        $n = max($a);
+        if ($n > 0) {
+            //Daemon::log('down = ' . json_encode($a));
+            //Daemon::log(json_encode($state));
+            Daemon::log('Stopping ' . $n . ' worker(s)');
+            $this->stopWorkers($n);
+            return -$n;
+        }
+        return 0;
+    }
 
-		posix_setsid();
-		proc_nice(Daemon::$config->masterpriority->value);
-		if (!Daemon::$config->verbosetty->value) {
-			fclose(STDIN);
-			fclose(STDOUT);
-			fclose(STDERR);
-		}
+    /**
+     * Setup settings on start.
+     * @return void
+     */
+    protected function prepareSystemEnv()
+    {
+        register_shutdown_function(function () {
+            if ($this->pid != posix_getpid()) {
+                return;
+            }
+            if ($this->shutdown === true) {
+                return;
+            }
+            $this->log('Unexcepted shutdown.');
+            $this->shutdown(SIGTERM);
+        });
 
-		$this->setTitle(
-			Daemon::$runName . ': master process'
-			. (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
-		);
-	}
+        posix_setsid();
+        proc_nice(Daemon::$config->masterpriority->value);
+        if (!Daemon::$config->verbosetty->value) {
+            fclose(STDIN);
+            fclose(STDOUT);
+            fclose(STDERR);
+        }
 
-	/**
-	 * Reload worker by internal id
-	 * @param integer - Id of worker
-	 * @param integer $id
-	 * @return void
-	 */
-	public function reloadWorker($id) {
-		if (isset($this->workers->threads[$id])) {
-			if (!$this->workers->threads[$id]->reloaded) {
-				Daemon::$process->log('Spawning worker-replacer for reloaded worker #' . $id);
-				$this->spawnWorkers(1);
-				$this->workers->threads[$id]->reloaded = true;
-			}
-		}
-	}
+        $this->setTitle(
+            Daemon::$runName . ': master process'
+            . (Daemon::$config->pidfile->value !== Daemon::$config->pidfile->defaultValue ? ' (' . Daemon::$config->pidfile->value . ')' : '')
+        );
+    }
 
-	/**
-	 * Spawn new worker processes
-	 * @param $n - integer - number of workers to spawn
-	 * @return boolean - success
-	 */
-	protected function spawnWorkers($n) {
-		if (FileSystem::$supported) {
-			eio_event_loop();
-		}
-		$n = (int)$n;
+    /**
+     * Reload worker by internal id
+     * @param integer - Id of worker
+     * @param integer $id
+     * @return void
+     */
+    public function reloadWorker($id)
+    {
+        if (isset($this->workers->threads[$id])) {
+            if (!$this->workers->threads[$id]->reloaded) {
+                Daemon::$process->log('Spawning worker-replacer for reloaded worker #' . $id);
+                $this->spawnWorkers(1);
+                $this->workers->threads[$id]->reloaded = true;
+            }
+        }
+    }
 
-		for ($i = 0; $i < $n; ++$i) {
-			$thread = new Worker;
-			$this->workers->push($thread);
-			$this->callbacks->push(function ($self) use ($thread) {
-                //@check - is it possible to run iterate of main event loop without child termination?
-				$thread->start();
-				$pid = $thread->getPid();
-				if ($pid < 0) {
-					Daemon::$process->log('could not fork worker');
-				}
-				elseif ($pid === 0) { // worker
-					Daemon::log('Unexcepted execution return to outside of Thread->start()');
-					exit;
-				}
-			});
+    /**
+     * Spawn new worker processes
+     * @param $n - integer - number of workers to spawn
+     * @return boolean - success
+     */
+    protected function spawnWorkers($n)
+    {
+        if (FileSystem::$supported) {
+            eio_event_loop();
+        }
+        $n = (int)$n;
 
-		}
-		if ($n > 0) {
-			$this->lastMpmActionTs = microtime(true);
-			if ($this->eventBase) {
-				$this->eventBase->stop();
-			}
-		}
-		return true;
-	}
+        for ($i = 0; $i < $n; ++$i) {
+            $thread = new Worker;
+            $this->workers->push($thread);
+            $this->callbacks->push(function ($self) use ($thread) {
+                // @check - is it possible to run iterate of main event loop without child termination?
+                $thread->start();
+                $pid = $thread->getPid();
+                if ($pid < 0) {
+                    Daemon::$process->log('could not fork worker');
+                } elseif ($pid === 0) { // worker
+                    Daemon::log('Unexcepted execution return to outside of Thread->start()');
+                    exit;
+                }
+            });
+        }
+        if ($n > 0) {
+            $this->lastMpmActionTs = microtime(true);
+            if (EventLoop::$instance) {
+                EventLoop::$instance->interrupt();
+            }
+        }
+        return true;
+    }
 
-	/**
-	 * Spawn IPC process
-	 * @param $n - integer - number of workers to spawn
-	 * @return boolean - success
-	 */
-	protected function spawnIPCThread() {
-		if (FileSystem::$supported) {
-			eio_event_loop();
-		}
-		$thread = new IPC;
-		$this->ipcthreads->push($thread);
+    /**
+     * Spawn IPC process
+     * @param $n - integer - number of workers to spawn
+     * @return boolean - success
+     */
+    protected function spawnIPCThread()
+    {
+        if (FileSystem::$supported) {
+            eio_event_loop();
+        }
+        $thread = new IPC;
+        $this->ipcthreads->push($thread);
 
-		$this->callbacks->push(function ($self) use ($thread) {
-			$thread->start();
-			$pid = $thread->getPid();
-			if ($pid < 0) {
-				Daemon::$process->log('could not fork IPCThread');
-			}
-			elseif ($pid === 0) { // worker
-				$this->log('Unexcepted execution return to outside of Thread->start()');
-				exit;
-			}
-		});
-		if ($this->eventBase) {
-			$this->eventBase->stop();
-		}
-		return true;
-	}
+        $this->callbacks->push(function ($self) use ($thread) {
+            $thread->start();
+            $pid = $thread->getPid();
+            if ($pid < 0) {
+                Daemon::$process->log('could not fork IPCThread');
+            } elseif ($pid === 0) { // worker
+                $this->log('Unexcepted execution return to outside of Thread->start()');
+                exit;
+            }
+        });
+        if (EventLoop::$instance) {
+            EventLoop::$instance->interrupt();
+        }
+        return true;
+    }
 
-	/**
-	 * Stop the workers
-	 * @param $n - integer - number of workers to stop
-	 * @return boolean - success
-	 */
-	protected function stopWorkers($n = 1) {
+    /**
+     * Stop the workers
+     * @param $n - integer - number of workers to stop
+     * @return boolean - success
+     */
+    protected function stopWorkers($n = 1)
+    {
+        Daemon::log('--' . $n . '-- ' . Debug::backtrace() . '-----');
 
-		Daemon::log('--'.$n.'-- '.Debug::backtrace().'-----');
+        $n = (int)$n;
+        $i = 0;
 
-		$n = (int)$n;
-		$i = 0;
+        foreach ($this->workers->threads as &$w) {
+            if ($i >= $n) {
+                break;
+            }
 
-		foreach ($this->workers->threads as &$w) {
-			if ($i >= $n) {
-				break;
-			}
+            if ($w->shutdown) {
+                continue;
+            }
 
-			if ($w->shutdown) {
-				continue;
-			}
+            if ($w->reloaded) {
+                continue;
+            }
 
-			if ($w->reloaded) {
-				continue;
-			}
+            $w->stop();
+            ++$i;
+        }
 
-			$w->stop();
-			++$i;
-		}
+        $this->lastMpmActionTs = microtime(true);
+        return true;
+    }
 
-		$this->lastMpmActionTs = microtime(true);
-		return true;
-	}
+    /**
+     * Called when master is going to shutdown
+     * @param integer System singal's number
+     * @return void
+     */
+    protected function shutdown($signo = false)
+    {
+        $this->shutdown = true;
+        $this->waitAll(true);
+        Daemon::$shm_wstate->delete();
+        file_put_contents(Daemon::$config->pidfile->value, '');
+        posix_kill(getmypid(), SIGKILL);
+        exit(0);
+    }
 
-	/**
-	 * Called when master is going to shutdown
-	 * @param integer System singal's number
-	 * @return void
-	 */
-	protected function shutdown($signo = false) {
-		$this->shutdown = true;
-		$this->waitAll(true);
-		Daemon::$shm_wstate->delete();
-		file_put_contents(Daemon::$config->pidfile->value, '');
-		exit(0);
-	}
+    /**
+     * Handler for the SIGCHLD (child is dead) signal in master process.
+     * @return void
+     */
+    protected function sigchld()
+    {
+        if (Daemon::$config->logsignals->value) {
+            $this->log('Caught SIGCHLD.');
+        }
 
-	/**
-	 * Handler for the SIGCHLD (child is dead) signal in master process.
-	 * @return void
-	 */
-	protected function sigchld() {
-		if (Daemon::$config->logsignals->value) {
-			$this->log('Caught SIGCHLD.');
-		}
+        parent::sigchld();
+    }
 
-		parent::sigchld();
-	}
+    /**
+     * Handler for the SIGINT (shutdown) signal in master process. Shutdown.
+     * @return void
+     */
+    protected function sigint()
+    {
+        if (Daemon::$config->logsignals->value) {
+            $this->log('Caught SIGINT.');
+        }
 
-	/**
-	 * Handler for the SIGINT (shutdown) signal in master process. Shutdown.
-	 * @return void
-	 */
-	protected function sigint() {
-		if (Daemon::$config->logsignals->value) {
-			$this->log('Caught SIGINT.');
-		}
+        $this->signalToChildren(SIGINT);
+        $this->shutdown(SIGINT);
+    }
 
-		$this->signalToChildren(SIGINT);
-		$this->shutdown(SIGINT);
-	}
+    /**
+     * @param $signo
+     */
+    public function signalToChildren($signo)
+    {
+        foreach ($this->collections as $col) {
+            $col->signal($signo);
+        }
+    }
 
-	/**
-	 * @param $signo
-	 */
-	public function signalToChildren($signo) {
-		foreach ($this->collections as $col) {
-			$col->signal($signo);
-		}
-	}
+    /**
+     * Handler for the SIGTERM (shutdown) signal in master process
+     * @return void
+     */
+    protected function sigterm()
+    {
+        if (Daemon::$config->logsignals->value) {
+            $this->log('Caught SIGTERM.');
+        }
 
-	/**
-	 * Handler for the SIGTERM (shutdown) signal in master process
-	 * @return void
-	 */
-	protected function sigterm() {
-		if (Daemon::$config->logsignals->value) {
-			$this->log('Caught SIGTERM.');
-		}
+        $this->signalToChildren(SIGTERM);
+        $this->shutdown(SIGTERM);
+    }
 
-		$this->signalToChildren(SIGTERM);
-		$this->shutdown(SIGTERM);
-	}
+    /**
+     * Handler for the SIGQUIT signal in master process
+     * @return void
+     */
+    protected function sigquit()
+    {
+        if (Daemon::$config->logsignals->value) {
+            $this->log('Caught SIGQUIT.');
+        }
 
-	/**
-	 * Handler for the SIGQUIT signal in master process
-	 * @return void
-	 */
-	protected function sigquit() {
-		if (Daemon::$config->logsignals->value) {
-			$this->log('Caught SIGQUIT.');
-		}
+        $this->signalToChildren(SIGQUIT);
+        $this->shutdown(SIGQUIT);
+    }
 
-		$this->signalToChildren(SIGQUIT);
-		$this->shutdown(SIGQUIT);
-	}
+    /**
+     * Handler for the SIGTSTP (graceful stop all workers) signal in master process
+     * @return void
+     */
+    protected function sigtstp()
+    {
+        if (Daemon::$config->logsignals->value) {
+            $this->log('Caught SIGTSTP (graceful stop all workers).');
+        }
 
-	/**
-	 * Handler for the SIGHUP (reload config) signal in master process
-	 * @return void
-	 */
-	protected function sighup() {
-		if (Daemon::$config->logsignals->value) {
-			$this->log('Caught SIGHUP (reload config).');
-		}
+        $this->signalToChildren(SIGTSTP);
+        $this->shutdown(SIGTSTP);
+    }
 
-		if (isset(Daemon::$config->configfile)) {
-			Daemon::loadConfig(Daemon::$config->configfile->value);
-		}
+    /**
+     * Handler for the SIGHUP (reload config) signal in master process
+     * @return void
+     */
+    protected function sighup()
+    {
+        if (Daemon::$config->logsignals->value) {
+            $this->log('Caught SIGHUP (reload config).');
+        }
 
-		$this->signalToChildren(SIGHUP);
-	}
+        if (isset(Daemon::$config->configfile)) {
+            Daemon::loadConfig(Daemon::$config->configfile->value);
+        }
 
-	/**
-	 * Handler for the SIGUSR1 (re-open log-file) signal in master process
-	 * @return void
-	 */
-	protected function sigusr1() {
-		if (Daemon::$config->logsignals->value) {
-			$this->log('Caught SIGUSR1 (re-open log-file).');
-		}
+        $this->signalToChildren(SIGHUP);
+    }
 
-		Daemon::openLogs();
-		$this->signalToChildren(SIGUSR1);
-	}
+    /**
+     * Handler for the SIGUSR1 (re-open log-file) signal in master process
+     * @return void
+     */
+    protected function sigusr1()
+    {
+        if (Daemon::$config->logsignals->value) {
+            $this->log('Caught SIGUSR1 (re-open log-file).');
+        }
 
-	/**
-	 * Handler for the SIGUSR2 (graceful restart all workers) signal in master process
-	 * @return void
-	 */
-	protected function sigusr2() {
-		if (Daemon::$config->logsignals->value) {
-			$this->log('Caught SIGUSR2 (graceful restart all workers).');
-		}
-		$this->signalToChildren(SIGUSR2);
-	}
+        Daemon::openLogs();
+        $this->signalToChildren(SIGUSR1);
+    }
 
-	/**
-	 * Handler for the SIGTTIN signal in master process
-	 * Used as "ping" signal
-	 * @return void
-	 */
-	protected function sigttin() {
-	}
+    /**
+     * Handler for the SIGUSR2 (graceful restart all workers) signal in master process
+     * @return void
+     */
+    protected function sigusr2()
+    {
+        if (Daemon::$config->logsignals->value) {
+            $this->log('Caught SIGUSR2 (graceful restart all workers).');
+        }
+        $this->signalToChildren(SIGUSR2);
+    }
 
-	/**
-	 * Handler for the SIGXSFZ signal in master process
-	 * @return void
-	 */
-	protected function sigxfsz() {
-		$this->log('Caught SIGXFSZ.');
-	}
+    /**
+     * Handler for the SIGTTIN signal in master process
+     * Used as "ping" signal
+     * @return void
+     */
+    protected function sigttin()
+    {
+    }
 
-	/**
-	 * Handler for non-known signals
-	 * @return void
-	 */
-	protected function sigunknown($signo) {
-		if (isset(Generic::$signals[$signo])) {
-			$sig = Generic::$signals[$signo];
-		}
-		else {
-			$sig = 'UNKNOWN';
-		}
-		$this->log('Caught signal #' . $signo . ' (' . $sig . ').');
-	}
+    /**
+     * Handler for the SIGXSFZ signal in master process
+     * @return void
+     */
+    protected function sigxfsz()
+    {
+        $this->log('Caught SIGXFSZ.');
+    }
+
+    /**
+     * Handler for non-known signals
+     * @return void
+     */
+    protected function sigunknown($signo)
+    {
+        if (isset(Generic::$signals[$signo])) {
+            $sig = Generic::$signals[$signo];
+        } else {
+            $sig = 'UNKNOWN';
+        }
+        $this->log('Caught signal #' . $signo . ' (' . $sig . ').');
+    }
 }

@@ -1,5 +1,6 @@
 <?php
 namespace PHPDaemon\Request;
 
-class RequestTerminated extends \Exception {
+class RequestTerminated extends \Exception
+{
 }
