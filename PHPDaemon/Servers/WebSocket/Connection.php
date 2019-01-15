@@ -16,7 +16,12 @@ class Connection extends \PHPDaemon\Network\Connection
     protected $timeout = 120;
 
     protected $handshaked = false;
-    protected $route;
+
+	/**
+	 * @var $route \PHPDaemon\WebSocket\Route
+	 */
+	protected $route;
+
     protected $writeReady = true;
     protected $extensions = [];
     protected $extensionsCleanRegex = '/(?:^|\W)x-webkit-/iS';
@@ -167,7 +172,7 @@ class Connection extends \PHPDaemon\Network\Connection
 
     /**
      * Uncaught exception handler
-     * @param  Exception $e
+     * @param  \Exception $e
      * @return boolean      Handled?
      */
     public function handleException($e)
@@ -237,11 +242,11 @@ class Connection extends \PHPDaemon\Network\Connection
                 $this->route->onSleep();
             }
             if ($ret !== false) {
-                return;
+                return true;
             }
         }
 
-        $this->handshakeAfter();
+	    return $this->handshakeAfter();
     }
 
     protected function handshakeAfter()
@@ -513,7 +518,7 @@ class Connection extends \PHPDaemon\Network\Connection
         $k = strtr(strtoupper($e[0]), Generic::$htr);
 
         if ($k === 'CONTENT_TYPE') {
-            self::parseStr(strtolower($e[1]), $ctype, true);
+            Generic::parseStr(strtolower($e[1]), $ctype, true);
             if (!isset($ctype['charset'])) {
                 $ctype['charset'] = $this->upstream->pool->config->defaultcharset->value;
 
