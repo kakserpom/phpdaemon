@@ -142,7 +142,7 @@ class Pool extends \PHPDaemon\Network\Client
         $this->getConnection($addr, function ($conn) use ($cmd, $args, $cb) {
             if (!$conn->isConnected()) {
                 if ($cb !== null) {
-                    $cb(false);
+                    $cb(null);
                 }
                 return;
             }
