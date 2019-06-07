@@ -149,11 +149,12 @@ class Pool extends Client
      * @param array $data
      * @param array $params
      * @param callable $resultcb
+     * @param \Closure $beforeConnect
      * @call  ( url $url, array $data, array $params )
      * @call  ( url $url, array $data, callable $resultcb )
      * @callback $resultcb ( Connection $conn, boolean $success )
      */
-    public function post($url, $data, $params)
+    public function post($url, $data, $params, \Closure $beforeConnect = null)
     {
         if (!$data) {
             $data = [];
@@ -180,7 +181,7 @@ class Pool extends Client
                 return;
             }
             $conn->post($url, $data, $params);
-        });
+        }, 0, $beforeConnect);
     }
 
     /**

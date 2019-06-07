@@ -379,6 +379,7 @@ abstract class Connection extends IOStream
             Daemon::$process->log(get_class($this->pool) . ': EventUtil::sslRandPoll failed');
             return false;
         }
+        
         $params = [
             \EventSslContext::OPT_VERIFY_PEER => $this->verifypeer,
             \EventSslContext::OPT_ALLOW_SELF_SIGNED => $this->allowselfsigned,
@@ -434,14 +435,18 @@ abstract class Connection extends IOStream
      * Connects to URL
      * @param  string $url URL
      * @param  callable $cb Callback
+     * @param  \Closure $beforeConnect Callback
      * @return boolean       Success
      */
-    public function connect($url, $cb = null)
+    public function connect($url, $cb = null, \Closure $beforeConnect = null)
     {
         $this->uri = Config\_Object::parseCfgUri($url);
         $u =& $this->uri;
         if (!$u) {
             return false;
+        }
+        if ($beforeConnect !== null) {
+            $beforeConnect->call($this);
         }
         $this->importParams();
         if (!isset($u['port'])) {

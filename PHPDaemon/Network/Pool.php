@@ -326,21 +326,22 @@ abstract class Pool extends ObjectStorage
             }
         }
     }
-
+    
     /**
      * Establish a connection with remote peer
      * @param  string $url URL
      * @param  callback $cb Callback
      * @param  string $class Optional. Connection class name
+     * @param  \Closure $beforeConnect
      * @return integer         Connection's ID. Boolean false when failed
      */
-    public function connect($url, $cb, $class = null)
+    public function connect($url, $cb, $class = null, \Closure $beforeConnect = null)
     {
         if ($class === null) {
             $class = $this->connectionClass;
         }
         $conn = new $class(null, $this);
-        $conn->connect($url, $cb);
+        $conn->connect($url, $cb, $beforeConnect);
         return $conn;
     }
 }

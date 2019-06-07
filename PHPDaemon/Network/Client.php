@@ -96,17 +96,19 @@ abstract class Client extends Pool
     {
         $this->servers[$url] = $weight;
     }
+    
 
     /**
      * Returns available connection from the pool
      * @param  string $url Address
      * @param  callback $cb onConnected
      * @param  integer $pri Optional. Priority
+     * @param  \Closure $beforeConnect Called before establishing the connection
      * @call   ( callable $cb )
      * @call   ( string $url = null, callable $cb = null, integer $pri = 0 )
      * @return boolean       Success|Connection
      */
-    public function getConnection($url = null, $cb = null, $pri = 0)
+    public function getConnection($url = null, $cb = null, $pri = 0, \Closure $beforeConnect = null)
     {
         if (!is_string($url) && $url !== null && $cb === null) { // if called getConnection(function....)
             $cb = $url;
@@ -157,7 +159,7 @@ abstract class Client extends Pool
             $this->servConnFree[$url] = new ObjectStorage;
         }
         //Daemon::log($url . "\n" . Debug::dump($this->finished) . "\n" . Debug::backtrace(true));
-        $conn = $this->connect($url, $cb);
+        $conn = $this->connect($url, $cb, null, $beforeConnect);
 
         if (!$conn || $conn->isFinished()) {
             return false;
