@@ -221,21 +221,25 @@ class Connection extends ClientConnection
      */
     public function post($url, $data = [], $params = null)
     {
-        foreach ($data as $val) {
-            if ($val instanceof UploadFile) {
-                $params['contentType'] = 'multipart/form-data';
+        if (!is_string($data)) {
+            foreach ($data as $val) {
+                if ($val instanceof UploadFile) {
+                    $params['contentType'] = 'multipart/form-data';
+                }
             }
         }
         if (!isset($params['contentType'])) {
             $params['contentType'] = 'application/x-www-form-urlencoded';
         }
+
         if ($params['contentType'] === 'application/x-www-form-urlencoded') {
             $body = http_build_query($data, '', '&', PHP_QUERY_RFC3986);
         } elseif ($params['contentType'] === 'application/x-json' || $params['contentType'] === 'application/json') {
             $body = json_encode($data);
         } else {
-            $body = 'Unsupported Content-Type';
+            $body = $data;
         }
+
         if (!isset($params['headers'])) {
             $params['headers'] = [];
         }
