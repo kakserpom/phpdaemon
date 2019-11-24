@@ -396,9 +396,12 @@ class Worker extends Generic
             if ($su === false) {
                 Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . '\', user not found. You must replace config-variable \'user\' with existing username.');
                 exit(0);
-            } elseif ($su['uid'] != posix_getuid() & !posix_setuid($su['uid'])) {
-                Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
-                exit(0);
+            } else {
+                posix_initgroups($su['name'], $su['gid']);
+                if ($su['uid'] != posix_getuid() && !posix_setuid($su['uid'])) {
+                    Daemon::log('Couldn\'t change user to \'' . Daemon::$config->user->value . "'. Error (" . ($errno = posix_get_last_error()) . '): ' . posix_strerror($errno));
+                    exit(0);
+                }
             }
             $flushCache = true;
         }
