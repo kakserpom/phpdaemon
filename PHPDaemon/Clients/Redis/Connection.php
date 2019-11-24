@@ -693,7 +693,7 @@ class Connection extends ClientConnection implements \Iterator
                 if ($l === '') {
                     continue;
                 }
-                $char = $l{0};
+                $char = $l[0];
                 $val = mb_orig_substr($l, 1);
                 if ($char === ':') { // inline integer
                     $this->pushValue((int)$val);
@@ -722,7 +722,7 @@ class Connection extends ClientConnection implements \Iterator
 
                     goto start;
                 } elseif ($char === '$') { // defines size of the data block
-                    if ($l{1} === '-') {
+                    if ($l[1]=== '-') {
                         $this->pushValue(null);
                         goto start;
                     }

@@ -93,7 +93,7 @@ class Connection extends ClientConnection
             }
             $hdr = $this->look(2);
             $fb = Binary::getbitmap(ord($hdr));
-            $fin = (bool)$fb{0};
+            $fin = (bool)$fb[0];
             $opCode = bindec(substr($fb, 4, 4));
 
             if (isset($this->opCodes[$opCode])) {
@@ -105,7 +105,7 @@ class Connection extends ClientConnection
             }
             $sb = ord(mb_orig_substr($hdr, 1));
             $sbm = Binary::getbitmap($sb);
-            $this->isMasked = (bool)$sbm{0};
+            $this->isMasked = (bool)$sbm[0];
             $payloadLength = $sb & 127;
 
             if ($payloadLength <= 125) {

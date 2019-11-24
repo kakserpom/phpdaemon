@@ -410,7 +410,7 @@ class Connection extends ClientConnection
             $max = $p !== false ? substr_count($line, "\x20", 0, $p + 1) + 1 : 18;
             $e = explode("\x20", $line, $max);
             $i = 0;
-            $from = IRC::parseUsermask($e[$i]{0} === ':' ? mb_orig_substr($e[$i++], 1) : null);
+            $from = IRC::parseUsermask($e[$i][0] === ':' ? mb_orig_substr($e[$i++], 1) : null);
             $cmd = $e[$i++];
             $args = [];
 

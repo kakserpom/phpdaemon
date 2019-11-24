@@ -225,7 +225,7 @@ class Binary
      */
     public static function getByte(&$p)
     {
-        $r = static::bytes2int($p{0});
+        $r = static::bytes2int($p[0]);
         $p = mb_orig_substr($p, 1);
         return (int)$r;
     }
@@ -237,7 +237,7 @@ class Binary
      */
     public static function getChar(&$p)
     {
-        $r = $p{0};
+        $r = $p[0];
         $p = mb_orig_substr($p, 1);
         return $r;
     }

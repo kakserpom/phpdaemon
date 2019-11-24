@@ -180,7 +180,7 @@ class ShellCommand extends IOStream
             if (is_int($k)) {
                 $ret .= ' ' . $v;
             } else {
-                if ($k{0} !== '-') {
+                if ($k[0] !== '-') {
                     $ret .= ' --' . $k . ($v !== null ? '=' . $v : '');
                 } else {
                     $ret .= ' ' . $k . ($v !== null ? '=' . $v : '');
