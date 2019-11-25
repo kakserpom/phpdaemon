@@ -119,9 +119,11 @@ class Bootstrap
         $runmode = isset($argv[1]) ? str_replace('-', '', $argv[1]) : '';
         $args = Bootstrap::getArgs($argv);
 
-        if (!isset(self::$params[$runmode]) && !in_array($runmode, self::$commands)) {
+        if ($runmode === 'pidfile') {
+        }
+        elseif (!isset(self::$params[$runmode]) && !in_array($runmode, self::$commands)) {
             if ('' !== $runmode) {
-                echo('Unrecognized command: ' . $runmode . "\n");
+                echo 'Unrecognized command: ' . $runmode . "\n";
             }
 
             self::printUsage();
@@ -154,6 +156,10 @@ class Bootstrap
 
         if (!Daemon::loadConfig(Daemon::$config->configfile->value)) {
             $error = true;
+        }
+        if ($runmode === 'pidfile') {
+            echo Daemon::$config->pidfile->value . PHP_EOL;
+            return;
         }
 
         if ('log' === $runmode) {
