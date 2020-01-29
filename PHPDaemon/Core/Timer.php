@@ -31,6 +31,10 @@ class Timer
      */
     public $lastTimeout;
     /**
+     * @var float Timer start time
+     */
+    protected $startTime;
+    /**
      * @var boolean Is the timer finished?
      */
     public $finished = false;
@@ -63,6 +67,7 @@ class Timer
         }
         $this->id = $id;
         $this->cb = $cb;
+        $this->startTime = microtime(true);
         if ($this->eventLoop === null) {
             $this->eventLoop = EventLoop::$instance;
         }
@@ -157,22 +162,25 @@ class Timer
     /**
      * Cancels timer by ID
      * @param  integer|string $id Timer ID
-     * @return void
+     * @return float
      */
     public static function cancelTimeout($id)
     {
+        $t=0;
         if (isset(self::$list[$id])) {
-            self::$list[$id]->cancel();
+            $t = self::$list[$id]->cancel();
         }
+        return $t;
     }
 
     /**
      * Cancels timer
-     * @return void
+     * @return float
      */
     public function cancel()
     {
         $this->ev->del();
+        return microtime(true) - $this->startTime;
     }
 
     /**
