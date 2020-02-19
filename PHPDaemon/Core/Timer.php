@@ -166,11 +166,10 @@ class Timer
      */
     public static function cancelTimeout($id)
     {
-        $t=0;
         if (isset(self::$list[$id])) {
-            $t = self::$list[$id]->cancel();
+            return self::$list[$id]->cancel();
         }
-        return $t;
+        return 0;
     }
 
     /**
