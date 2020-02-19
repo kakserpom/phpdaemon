@@ -103,6 +103,7 @@ class Timer
             $this->lastTimeout = $timeout;
         }
         $this->ev->add($this->lastTimeout / 1e6);
+	    $this->startTime = microtime(true);
     }
 
     /**
