@@ -243,6 +243,7 @@ class ShellCommand extends IOStream
             return;
         }
         $this->bev->setWatermark(\Event::READ, $this->lowMark, $this->highMark);
+        $this->alive = true;
 
         init:
         if (!$this->inited) {
