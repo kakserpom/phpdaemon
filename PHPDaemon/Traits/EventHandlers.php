@@ -29,7 +29,7 @@ trait EventHandlers
      * Propagate event
      * @param  string $name Event name
      * @param  mixed ...$args Arguments
-     * @return this
+     * @return self
      */
     public function event($name, ...$args)
     {
@@ -51,7 +51,7 @@ trait EventHandlers
      * Propagate event
      * @param  string $name Event name
      * @param  mixed ...$args Arguments
-     * @return this
+     * @return self
      */
     public function trigger($name, ...$args)
     {
@@ -106,7 +106,7 @@ trait EventHandlers
      * @alias EventHandlers::bind
      * @param string|array $event Event name
      * @param callable $cb Callback
-     * @return this
+     * @return self
      */
     public function on($event, $cb)
     {
@@ -117,7 +117,7 @@ trait EventHandlers
      * Bind event or events
      * @param string|array $event Event name
      * @param callable $cb Callback
-     * @return this
+     * @return self
      */
     public function bind($event, $cb)
     {
@@ -136,7 +136,7 @@ trait EventHandlers
      * @alias EventHandlers::unbind
      * @param string|array $event Event name
      * @param callable $cb Callback, optional
-     * @return this
+     * @return self
      */
     public function off($event, $cb = null)
     {
@@ -147,7 +147,7 @@ trait EventHandlers
      * Unbind event(s) or callback from event(s)
      * @param string|array $event Event name
      * @param callable $cb Callback, optional
-     * @return this
+     * @return self
      */
     public function unbind($event, $cb = null)
     {
