@@ -185,7 +185,7 @@ class Timer
             //Daemon::log('cb - '.Debug::zdump($this->cb));
             $func = $this->cb;
             $func($this);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Daemon::uncaughtExceptionHandler($e);
         }
     }

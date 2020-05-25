@@ -136,7 +136,7 @@ class Session
         $this->route->onWakeup();
         try {
             $this->route->onHandshake();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Daemon::uncaughtExceptionHandler($e);
         }
         $this->route->onSleep();
@@ -178,7 +178,7 @@ class Session
         foreach ($frames as $frame) {
             try {
                 $this->route->onFrame($frame, \PHPDaemon\Servers\WebSocket\Pool::STRING);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Daemon::uncaughtExceptionHandler($e);
             }
         }

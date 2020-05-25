@@ -133,7 +133,7 @@ abstract class Generic
         $this->onWakeup();
         try {
             $this->init();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Daemon::uncaughtExceptionHandler($e);
             $this->finish();
             return;
@@ -222,7 +222,7 @@ abstract class Generic
                 $this->state = Generic::STATE_WAITING;
             } catch (RequestTerminated $e) {
                 $this->state = Generic::STATE_FINISHED;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 if (!$this->handleException($e)) {
                     $throw = true;
                 }
@@ -234,7 +234,7 @@ abstract class Generic
             if ($throw) {
                 throw $e;
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Daemon::uncaughtExceptionHandler($e);
             $this->finish();
             return;
@@ -571,7 +571,7 @@ abstract class Generic
         while (($cb = array_shift($this->shutdownFuncs)) !== null) {
             try {
                 $cb($this);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Daemon::uncaughtExceptionHandler($e);
                 // @TODO: break?
             }

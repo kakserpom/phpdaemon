@@ -288,7 +288,7 @@ abstract class Connection extends IOStream
                 $this->onFailure();
             }
             $this->connected = false;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Daemon::uncaughtExceptionHandler($e);
         }
     }

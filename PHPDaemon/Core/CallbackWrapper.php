@@ -183,7 +183,7 @@ class CallbackWrapper
             try {
                 $cb = $this->cb;
                 return $cb(...$args);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Daemon::uncaughtExceptionHandler($e);
             }
             return;
@@ -194,7 +194,7 @@ class CallbackWrapper
             $result = $cb(...$args);
             $this->context->onSleep();
             return $result;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Daemon::uncaughtExceptionHandler($e);
             $this->context->onSleep();
         }

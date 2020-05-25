@@ -197,7 +197,7 @@ class Connection extends \PHPDaemon\Network\Connection
         try {
             $this->route->onWakeup();
             $this->route->onFrame($data, $type);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Daemon::uncaughtExceptionHandler($e);
         }
         if ($this->route) {
