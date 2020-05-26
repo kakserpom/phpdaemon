@@ -359,10 +359,10 @@ class Daemon
 
     /**
      * Uncaught exception handler
-     * @param \Exception $e
+     * @param \Throwable $e
      * @return void
      */
-    public static function uncaughtExceptionHandler(\Exception $e)
+    public static function uncaughtExceptionHandler(\Throwable $e)
     {
         if (Daemon::$context !== null) {
             if (Daemon::$context->handleException($e)) {
