@@ -622,7 +622,9 @@ class Worker extends Generic
         if ($this->reload) {
             $int += 100;
         }
-        Daemon::$shm_wstate->write(chr($int), $this->id - 1);
+        if (Daemon::$shm_wstate !== null) {
+            Daemon::$shm_wstate->write(chr($int), $this->id - 1);
+        }
         return true;
     }
 

@@ -171,7 +171,7 @@ class Daemon
 
     /**
      * Shared memory 'WSTATE' entity
-     * @var \PHPDaemon\Thread\Collection
+     * @var ShmEntity
      */
     public static $shm_wstate;
 
@@ -421,7 +421,7 @@ class Daemon
      * Performs initial actions.
      * @return void
      */
-    public static function init()
+    public static function init(bool $master = true)
     {
         Daemon::$startTime = time();
         set_time_limit(0);
@@ -435,7 +435,15 @@ class Daemon
 
         Daemon::$initservervar = $_SERVER;
         Daemon::$masters = new Collection;
-        Daemon::$shm_wstate = new ShmEntity(Daemon::$config->pidfile->value, Daemon::SHM_WSTATE_SIZE, 'wstate', true);
+        
+        if ($master) {
+            Daemon::$shm_wstate = new ShmEntity(
+                Daemon::$config->pidfile->value,
+                Daemon::SHM_WSTATE_SIZE,
+                'wstate',
+                true
+            );
+        }
         Daemon::openLogs();
     }
 
@@ -631,6 +639,9 @@ class Daemon
             $readed += $buflen;
             for ($i = 0; $i < $buflen; ++$i) {
                 $code = ord($buf[$i]);
+                if ($code === 0) {
+                    break 2;
+                }
                 if ($code >= 100) {
                     // reloaded (shutdown)
                     $code -= 100;

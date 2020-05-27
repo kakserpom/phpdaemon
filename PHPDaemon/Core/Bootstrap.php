@@ -490,9 +490,16 @@ class Bootstrap
             exit(6);
         }
 
+        $fp = fopen(Daemon::$config->pidfile->value, 'c');
+        if (!flock($fp, LOCK_EX)) {
+            Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already as the file is locked (PID ' . Bootstrap::$pid . ')');
+            exit(6);
+        }
+
         Daemon::init();
         $pid = Daemon::spawnMaster();
-        file_put_contents(Daemon::$config->pidfile->value, $pid);
+        ftruncate($fp, 0);
+        fwrite($fp, $pid);
     }
 
     /**
@@ -501,8 +508,8 @@ class Bootstrap
      */
     public static function runworker()
     {
-        Daemon::log('PLEASE USE runworker COMMAND ONLY FOR DEBUGGING PURPOSES.');
-        Daemon::init();
+        Daemon::log('USE runworker ONLY FOR DEBUGGING PURPOSES');
+        Daemon::init(false);
         Daemon::runWorker();
     }
 

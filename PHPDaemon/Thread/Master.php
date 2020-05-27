@@ -135,7 +135,7 @@ class Master extends Generic
      */
     protected function callMPM()
     {
-        $state = Daemon::getStateOfWorkers($this);
+        $state = Daemon::getStateOfWorkers();
         if (isset(Daemon::$config->mpm->value) && is_callable($func = Daemon::$config->mpm->value)) {
             $func($this, $state);
         }
