@@ -17,6 +17,11 @@ trait DNode
     protected $callbacks = [];
 
     /**
+     * @var callable (string packet)
+     */
+    protected $emitCallback;
+
+    /**
      * @var array Associative array of persistent callback functions registered by callRemote()
      */
     protected $persistentCallbacks = [];
@@ -63,7 +68,7 @@ trait DNode
             return true;
         }
         if (is_array($arg) && sizeof($arg) === 2) {
-            if (isset($arg[0]) && $arg[0] instanceof \PHPDaemon\WebSocket\Route) {
+            if (isset($arg[0]) && is_object($arg[0]) && !$arg[0] instanceof \stdClass) {
                 if (isset($arg[1]) && is_string($arg[1]) && strncmp($arg[1], 'remote_', 7) === 0) {
                     return true;
                 }
@@ -251,13 +256,15 @@ trait DNode
      */
     protected function sendPacket($pct)
     {
-        if (!$this->client) {
-            return;
-        }
         if (is_string($pct['method']) && ctype_digit($pct['method'])) {
             $pct['method'] = (int)$pct['method'];
         }
-        $this->client->sendFrame(static::toJson($pct) . "\n");
+
+        if ($this->emitCallback !== null) {
+            ($this->emitCallback)(static::toJson($pct) . "\n");
+        } elseif ($this->client) {
+            $this->client->sendFrame(static::toJson($pct) . "\n");
+        }
     }
 
     /**
@@ -418,10 +425,9 @@ trait DNode
     /**
      * Called when new frame is received
      * @param string $data Frame's contents
-     * @param integer $type Frame's type
      * @return void
      */
-    public function onFrame($data, $type)
+    public function onFrame($data)
     {
         foreach (explode("\n", $data) as $pct) {
             if ($pct === '') {

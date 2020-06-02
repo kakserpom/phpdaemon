@@ -5,10 +5,29 @@ use PHPDaemon\Structures\StackCallbacks;
 
 class EventLoop
 {
+    /**
+     * @var self
+     */
     public static $instance;
+
+    /**
+     * @var \EventBase
+     */
     protected $base;
+
+    /**
+     * @var \EventDnsBase
+     */
     protected $dnsBase;
+
+    /**
+     * @var StackCallbacks
+     */
     protected $callbacks;
+
+    /**
+     * @var bool
+     */
     protected $stopped = true;
 
     /**
