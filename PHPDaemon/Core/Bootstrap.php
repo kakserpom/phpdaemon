@@ -238,7 +238,8 @@ class Bootstrap
         }
 
         if (!file_exists(Daemon::$config->pidfile->value)) {
-            mkdir(dirname(Daemon::$config->pidfile->value), 0755, true);
+            $dir = dirname(Daemon::$config->pidfile->value);
+            is_dir($dir) || mkdir($dir, 0755, true);
             if (!touch(Daemon::$config->pidfile->value)) {
                 Daemon::log('[EMERG] Couldn\'t create pid-file \'' . Daemon::$config->pidfile->value . '\'.');
                 $error = true;
