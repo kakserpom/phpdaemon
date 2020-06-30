@@ -192,7 +192,7 @@ class Master extends Generic
                 return;
             }
             $this->log('Unexcepted shutdown.');
-            $this->shutdown(SIGTERM);
+            $this->shutdown();
         });
 
         posix_setsid();
@@ -329,10 +329,13 @@ class Master extends Generic
      * @param integer System singal's number
      * @return void
      */
-    protected function shutdown($signo = false)
+    protected function shutdown(int $signo = null)
     {
+        if ($signo) {
+            $this->signalToChildren($signo);
+        }
         $this->shutdown = true;
-        $this->waitAll(true);
+        $this->waitAll();
         Daemon::$shm_wstate->delete();
         file_put_contents(Daemon::$config->pidfile->value, '');
         posix_kill(getmypid(), SIGKILL);
@@ -361,8 +364,6 @@ class Master extends Generic
         if (Daemon::$config->logsignals->value) {
             $this->log('Caught SIGINT.');
         }
-
-        $this->signalToChildren(SIGINT);
         $this->shutdown(SIGINT);
     }
 
@@ -386,7 +387,6 @@ class Master extends Generic
             $this->log('Caught SIGTERM.');
         }
 
-        $this->signalToChildren(SIGTERM);
         $this->shutdown(SIGTERM);
     }
 
@@ -400,7 +400,6 @@ class Master extends Generic
             $this->log('Caught SIGQUIT.');
         }
 
-        $this->signalToChildren(SIGQUIT);
         $this->shutdown(SIGQUIT);
     }
 
@@ -414,7 +413,6 @@ class Master extends Generic
             $this->log('Caught SIGTSTP (graceful stop all workers).');
         }
 
-        $this->signalToChildren(SIGTSTP);
         $this->shutdown(SIGTSTP);
     }
 

@@ -2,7 +2,6 @@
 namespace PHPDaemon\Core;
 
 use PHPDaemon\Config;
-use PHPDaemon\FS\File;
 use PHPDaemon\FS\FileSystem;
 use PHPDaemon\Thread;
 use PHPDaemon\Thread\Collection;
@@ -595,6 +594,7 @@ class Daemon
     public static function openLogs()
     {
         if (Daemon::$config->logging->value) {
+            mkdir(dirname(Daemon::$config->logstorage->value), 0755, true);
             Daemon::$logpointer = fopen(Daemon::$config->logstorage->value, 'a');
             if (isset(Daemon::$config->group->value)) {
                 chgrp(Daemon::$config->logstorage->value, Daemon::$config->group->value); // @TODO: rewrite to async I/O

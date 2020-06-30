@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPDaemon\Core;
 
 use PHPDaemon\Config\Entry\Generic;
@@ -22,12 +23,14 @@ class Bootstrap
 
     /**
      * Master process ID
+     *
      * @var integer
      */
     protected static $pid;
 
     /**
      * List of commands
+     *
      * @var array
      */
     protected static $commands = [
@@ -45,63 +48,67 @@ class Bootstrap
         'log',
         'runworker',
         'ipcpath',
-        'reopenlog'
+        'reopenlog',
     ];
 
     /**
      * Command-line params
+     *
      * @var array
      */
     protected static $params = [
-        'pid-file' => [
-            'val' => '/path/to/pid-file',
-            'desc' => 'Pid file'
+        'pid-file'     => [
+            'val'  => '/path/to/pid-file',
+            'desc' => 'Pid file',
         ],
         'max-requests' => [
             'desc' => 'Maximum requests to worker before respawn',
-            'val' => [
-                'n' => 'Count'
-            ]
+            'val'  => [
+                'n' => 'Count',
+            ],
         ],
-        'path' => [
+        'path'         => [
             'desc' => 'Path to your application resolver',
-            'val' => '/path/to/resolver.php'
+            'val'  => '/path/to/resolver.php',
         ],
-        'config-file' => [
+        'config-file'  => [
             'desc' => 'Paths to configuration file separated by semicolon. First found will be used.',
-            'val' => '/path/to/file'
+            'val'  => '/path/to/file',
         ],
-        'logging' => [
+        'logging'      => [
             'desc' => 'Logging status',
-            'val' => [
+            'val'  => [
                 '0' => 'Disabled',
-                '1' => 'Enabled'
-            ]
+                '1' => 'Enabled',
+            ],
         ],
-        'log-storage' => [
+        'log-storage'  => [
             'desc' => 'Log storage',
-            'val' => '/path/to/file'
+            'val'  => '/path/to/file',
         ],
-        'user' => [
+        'user'         => [
             'desc' => 'User of master process',
-            'val' => 'username'
+            'val'  => 'username',
         ],
-        'group' => [
+        'group'        => [
             'desc' => 'Group of master process',
-            'val' => 'groupname'
+            'val'  => 'groupname',
         ],
-        'help' => 'This help information'
+        'help'         => 'This help information',
     ];
 
     /**
      * Actions on early startup.
+     *
      * @param string Optional. Config file path.
+     *
      * @return void
      */
-    public static function init($configFile = null)
+    public static function init ($configFile = null)
     {
         if (!version_compare(PHP_VERSION, '5.6.0', '>=')) {
             Daemon::log('PHP >= 5.6.0 required.');
+
             return;
         }
 
@@ -114,21 +121,22 @@ class Bootstrap
         FileSystem::init();
         Daemon::$runName = basename($_SERVER['argv'][0]);
 
-        $error = false;
-        $argv = $_SERVER['argv'];
+        $error   = false;
+        $argv    = $_SERVER['argv'];
         $runmode = isset($argv[1]) ? str_replace('-', '', $argv[1]) : '';
-        $args = Bootstrap::getArgs($argv);
+        $args    = Bootstrap::getArgs($argv);
 
         if ($runmode === 'pidfile') {
         }
-        elseif (!isset(self::$params[$runmode]) && !in_array($runmode, self::$commands)) {
+        else if (!isset(self::$params[$runmode]) && !in_array($runmode, self::$commands)) {
             if ('' !== $runmode) {
                 echo 'Unrecognized command: ' . $runmode . "\n";
             }
 
             self::printUsage();
             exit;
-        } elseif ('help' === $runmode) {
+        }
+        else if ('help' === $runmode) {
             self::printHelp();
             exit;
         }
@@ -138,7 +146,8 @@ class Bootstrap
             if (isset($args['n'])) {
                 $n = $args['n'];
                 unset($args['n']);
-            } else {
+            }
+            else {
                 $n = 20;
             }
         }
@@ -159,6 +168,7 @@ class Bootstrap
         }
         if ($runmode === 'pidfile') {
             echo Daemon::$config->pidfile->value . PHP_EOL;
+
             return;
         }
 
@@ -168,7 +178,9 @@ class Bootstrap
         }
 
         if (extension_loaded('apc') && ini_get('apc.enabled')) {
-            Daemon::log('Detected pecl-apc extension enabled. Usage of bytecode caching (APC/eAccelerator/xcache/...)  makes no sense at all in case of using phpDaemon \'cause phpDaemon includes files just in time itself.');
+            Daemon::log(
+                'Detected pecl-apc extension enabled. Usage of bytecode caching (APC/eAccelerator/xcache/...)  makes no sense at all in case of using phpDaemon \'cause phpDaemon includes files just in time itself.'
+            );
         }
 
         if (isset(Daemon::$config->locale->value) && Daemon::$config->locale->value !== '') {
@@ -176,7 +188,9 @@ class Bootstrap
         }
 
         if (Daemon::$config->autoreimport->value && !is_callable('runkit_import')) {
-            Daemon::log('[WARN] runkit extension not found. You should install it or disable --auto-reimport. Non-critical error.');
+            Daemon::log(
+                '[WARN] runkit extension not found. You should install it or disable --auto-reimport. Non-critical error.'
+            );
         }
 
         if (!is_callable('posix_kill')) {
@@ -194,10 +208,12 @@ class Bootstrap
             $error = true;
         }
 
-        $eventVer = '1.6.1';
+        $eventVer     = '1.6.1';
         $eventVerType = 'stable';
         if (!Daemon::loadModuleIfAbsent('event', $eventVer . '-' . $eventVerType)) {
-            Daemon::log('[EMERG] event extension >= ' . $eventVer . ' not found (or OUTDATED). You have to install it. `pecl install http://pecl.php.net/get/event`');
+            Daemon::log(
+                '[EMERG] event extension >= ' . $eventVer . ' not found (or OUTDATED). You have to install it. `pecl install http://pecl.php.net/get/event`'
+            );
             $error = true;
         }
 
@@ -222,24 +238,29 @@ class Bootstrap
         }
 
         if (!file_exists(Daemon::$config->pidfile->value)) {
+            mkdir(dirname(Daemon::$config->pidfile->value), 0755, true);
             if (!touch(Daemon::$config->pidfile->value)) {
                 Daemon::log('[EMERG] Couldn\'t create pid-file \'' . Daemon::$config->pidfile->value . '\'.');
                 $error = true;
             }
 
             Bootstrap::$pid = 0;
-        } elseif (!is_file(Daemon::$config->pidfile->value)) {
+        }
+        else if (!is_file(Daemon::$config->pidfile->value)) {
             Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be a regular file.');
             Bootstrap::$pid = false;
-            $error = true;
-        } elseif (!is_writable(Daemon::$config->pidfile->value)) {
+            $error          = true;
+        }
+        else if (!is_writable(Daemon::$config->pidfile->value)) {
             Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be writable.');
             $error = true;
-        } elseif (!is_readable(Daemon::$config->pidfile->value)) {
+        }
+        else if (!is_readable(Daemon::$config->pidfile->value)) {
             Daemon::log('Pid-file \'' . Daemon::$config->pidfile->value . '\' must be readable.');
             Bootstrap::$pid = false;
-            $error = true;
-        } else {
+            $error          = true;
+        }
+        else {
             Bootstrap::$pid = (int)file_get_contents(Daemon::$config->pidfile->value);
         }
 
@@ -251,16 +272,18 @@ class Bootstrap
         }
 
         $pathList = preg_split('~\s*;\s*~', Daemon::$config->path->value);
-        $found = false;
+        $found    = false;
         foreach ($pathList as $path) {
             if (@is_file($path)) {
                 Daemon::$appResolverPath = $path;
-                $found = true;
+                $found                   = true;
                 break;
             }
         }
         if (!$found) {
-            Daemon::log('Your application resolver \'' . Daemon::$config->path->value . '\' is not available (config directive \'path\').');
+            Daemon::log(
+                'Your application resolver \'' . Daemon::$config->path->value . '\' is not available (config directive \'path\').'
+            );
             $error = true;
         }
 
@@ -268,9 +291,12 @@ class Bootstrap
 
         if (isset(Daemon::$config->group->value) && is_callable('posix_getgid')) {
             if (($sg = posix_getgrnam(Daemon::$config->group->value)) === false) {
-                Daemon::log('Unexisting group \'' . Daemon::$config->group->value . '\'. You have to replace config-variable \'group\' with existing group-name.');
+                Daemon::log(
+                    'Unexisting group \'' . Daemon::$config->group->value . '\'. You have to replace config-variable \'group\' with existing group-name.'
+                );
                 $error = true;
-            } elseif (($sg['gid'] != posix_getgid()) && (posix_getuid() != 0)) {
+            }
+            else if (($sg['gid'] != posix_getgid()) && (posix_getuid() != 0)) {
                 Daemon::log('You must have the root privileges to change group.');
                 $error = true;
             }
@@ -278,9 +304,12 @@ class Bootstrap
 
         if (isset(Daemon::$config->user->value) && is_callable('posix_getuid')) {
             if (($su = posix_getpwnam(Daemon::$config->user->value)) === false) {
-                Daemon::log('Unexisting user \'' . Daemon::$config->user->value . '\', user not found. You have to replace config-variable \'user\' with existing username.');
+                Daemon::log(
+                    'Unexisting user \'' . Daemon::$config->user->value . '\', user not found. You have to replace config-variable \'user\' with existing username.'
+                );
                 $error = true;
-            } elseif (($su['uid'] != posix_getuid()) && (posix_getuid() != 0)) {
+            }
+            else if (($su['uid'] != posix_getuid()) && (posix_getuid() != 0)) {
                 Daemon::log('You must have the root privileges to change user.');
                 $error = true;
             }
@@ -313,16 +342,20 @@ class Bootstrap
         if ($runmode === 'start') {
             if ($error === false) {
                 Bootstrap::start();
-            } else {
+            }
+            else {
                 exit(6);
             }
-        } elseif ($runmode === 'runworker') {
+        }
+        else if ($runmode === 'runworker') {
             if ($error === false) {
                 Bootstrap::runworker();
-            } else {
+            }
+            else {
                 exit(6);
             }
-        } elseif ($runmode === 'status' || $runmode === 'fullstatus') {
+        }
+        else if ($runmode === 'status' || $runmode === 'fullstatus') {
             $status = Bootstrap::$pid && Thread\Generic::ifExistsByPid(Bootstrap::$pid);
             echo '[STATUS] phpDaemon ' . Daemon::$version . ' is ' . ($status ? 'running' : 'NOT running') . ' (' . Daemon::$config->pidfile->value . ").\n";
 
@@ -343,30 +376,37 @@ class Bootstrap
             }
 
             echo "\n";
-        } elseif ($runmode === 'update') {
+        }
+        else if ($runmode === 'update') {
             if ((!Bootstrap::$pid) || (!posix_kill(Bootstrap::$pid, SIGHUP))) {
                 echo '[UPDATE] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
             }
-        } elseif ($runmode === 'reopenlog') {
+        }
+        else if ($runmode === 'reopenlog') {
             if ((!Bootstrap::$pid) || (!posix_kill(Bootstrap::$pid, SIGUSR1))) {
                 echo '[REOPEN-LOG] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
             }
-        } elseif ($runmode === 'reload') {
+        }
+        else if ($runmode === 'reload') {
             if ((!Bootstrap::$pid) || (!posix_kill(Bootstrap::$pid, SIGUSR2))) {
                 echo '[RELOAD] ERROR. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
             }
-        } elseif ($runmode === 'restart') {
+        }
+        else if ($runmode === 'restart') {
             if ($error === false) {
                 Bootstrap::stop(2);
                 Bootstrap::start();
             }
-        } elseif ($runmode === 'hardrestart') {
+        }
+        else if ($runmode === 'hardrestart') {
             Bootstrap::stop(3);
             Bootstrap::start();
-        } elseif ($runmode === 'ipcpath') {
+        }
+        else if ($runmode === 'ipcpath') {
             $i = Daemon::$appResolver->getInstanceByAppName('\PHPDaemon\IPCManager\IPCManager');
             echo $i->getSocketUrl() . PHP_EOL;
-        } elseif ($runmode === 'configtest') {
+        }
+        else if ($runmode === 'configtest') {
             $term = new Terminal;
             $term->enableColor();
 
@@ -376,9 +416,9 @@ class Bootstrap
 
             $rows[] = [
                 'parameter' => 'PARAMETER',
-                'value' => 'VALUE',
-                '_color' => '37',
-                '_bold' => true,
+                'value'     => 'VALUE',
+                '_color'    => '37',
+                '_bold'     => true,
             ];
 
             foreach (Daemon::$config as $name => $entry) {
@@ -388,7 +428,7 @@ class Bootstrap
 
                 $row = [
                     'parameter' => $name,
-                    'value' => var_export($entry->humanValue, true),
+                    'value'     => var_export($entry->humanValue, true),
                 ];
 
                 if ($entry->defaultValue != $entry->humanValue) {
@@ -401,11 +441,14 @@ class Bootstrap
             $term->drawtable($rows);
 
             echo "\n";
-        } elseif ($runmode === 'stop') {
+        }
+        else if ($runmode === 'stop') {
             Bootstrap::stop();
-        } elseif ($runmode === 'gracefulstop') {
+        }
+        else if ($runmode === 'gracefulstop') {
             Bootstrap::stop(4);
-        } elseif ($runmode === 'hardstop') {
+        }
+        else if ($runmode === 'hardstop') {
             echo '[HARDSTOP] Sending SIGINT to ' . Bootstrap::$pid . '... ';
 
             $ok = Bootstrap::$pid && posix_kill(Bootstrap::$pid, SIGINT);
@@ -424,7 +467,8 @@ class Bootstrap
                         sleep(0.2);
                         if (!Thread\Generic::ifExistsByPid(Bootstrap::$pid)) {
                             echo " Oh, his blood is on my hands :'(";
-                        } else {
+                        }
+                        else {
                             echo "ERROR: Process alive. Permissions?";
                         }
 
@@ -441,18 +485,20 @@ class Bootstrap
 
     /**
      * Print ussage
+     *
      * @return void
      */
-    protected static function printUsage()
+    protected static function printUsage ()
     {
         echo 'usage: ' . Daemon::$runName . " (start|(hard|graceful)stop|update|reload|reopenlog|(hard)restart|fullstatus|status|configtest|log|runworker|help) ...\n";
     }
 
     /**
      * Print help
+     *
      * @return void
      */
-    protected static function printHelp()
+    protected static function printHelp ()
     {
         $term = new Terminal();
 
@@ -465,9 +511,11 @@ class Bootstrap
         foreach (self::$params as $name => $desc) {
             if (empty($desc)) {
                 continue;
-            } elseif (!is_array($desc)) {
+            }
+            else if (!is_array($desc)) {
                 $term->drawParam($name, $desc);
-            } else {
+            }
+            else {
                 $term->drawParam(
                     $name,
                     isset($desc['desc']) ? $desc['desc'] : '',
@@ -481,18 +529,23 @@ class Bootstrap
 
     /**
      * Start master.
+     *
      * @return void
      */
-    public static function start()
+    public static function start ()
     {
         if (Bootstrap::$pid && Thread\Generic::ifExistsByPid(Bootstrap::$pid)) {
-            Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Bootstrap::$pid . ')');
+            Daemon::log(
+                '[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already (PID ' . Bootstrap::$pid . ')'
+            );
             exit(6);
         }
 
         $fp = fopen(Daemon::$config->pidfile->value, 'c');
         if (!flock($fp, LOCK_EX)) {
-            Daemon::log('[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already as the file is locked (PID ' . Bootstrap::$pid . ')');
+            Daemon::log(
+                '[START] phpDaemon with pid-file \'' . Daemon::$config->pidfile->value . '\' is running already as the file is locked (PID ' . Bootstrap::$pid . ')'
+            );
             exit(6);
         }
 
@@ -504,9 +557,10 @@ class Bootstrap
 
     /**
      * Runworker.
+     *
      * @return void
      */
-    public static function runworker()
+    public static function runworker ()
     {
         Daemon::log('USE runworker ONLY FOR DEBUGGING PURPOSES');
         Daemon::init(false);
@@ -515,15 +569,23 @@ class Bootstrap
 
     /**
      * Stop script.
+     *
      * @param int $mode
+     *
      * @return void
      */
-    public static function stop($mode = 1)
+    public static function stop ($mode = 1)
     {
-        $ok = Bootstrap::$pid && posix_kill(
-                Bootstrap::$pid,
-                $mode === 3 ? SIGINT : (($mode === 4) ? SIGTSTP : SIGTERM)
-            );
+        if ($mode === 3) {
+            $signo = SIGINT;
+        }
+        else if ($mode === 4) {
+            $signo = SIGTSTP;
+        }
+        else {
+            $signo = SIGTERM;
+        }
+        $ok = Bootstrap::$pid && posix_kill(Bootstrap::$pid, $signo);
 
         if (!$ok) {
             echo '[WARN]. It seems that phpDaemon is not running' . (Bootstrap::$pid ? ' (PID ' . Bootstrap::$pid . ')' : '') . ".\n";
@@ -541,35 +603,40 @@ class Bootstrap
 
     /**
      * Parses command-line arguments.
+     *
      * @param array $args $_SERVER ['argv']
+     *
      * @return array Arguments
      */
-    public static function getArgs($args)
+    public static function getArgs ($args)
     {
-        $out = [];
+        $out      = [];
         $last_arg = null;
 
         for ($i = 1, $il = sizeof($args); $i < $il; ++$i) {
             if (preg_match('~^--(.+)~', $args[$i], $match)) {
                 $parts = explode('=', $match[1]);
-                $key = preg_replace('~[^a-z0-9]+~', '', $parts[0]);
+                $key   = preg_replace('~[^a-z0-9]+~', '', $parts[0]);
 
                 if (isset($parts[1])) {
                     $out[$key] = $parts[1];
-                } else {
+                }
+                else {
                     $out[$key] = true;
                 }
 
                 $last_arg = $key;
-            } elseif (preg_match('~^-([a-zA-Z0-9]+)~', $args[$i], $match)) {
+            }
+            else if (preg_match('~^-([a-zA-Z0-9]+)~', $args[$i], $match)) {
                 $key = null;
                 for ($j = 0, $jl = mb_orig_strlen($match[1]); $j < $jl; ++$j) {
-                    $key = $match[1][$j];
+                    $key       = $match[1][$j];
                     $out[$key] = true;
                 }
 
                 $last_arg = $key;
-            } elseif ($last_arg !== null) {
+            }
+            else if ($last_arg !== null) {
                 $out[$last_arg] = $args[$i];
             }
         }

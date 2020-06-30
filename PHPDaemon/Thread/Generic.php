@@ -404,17 +404,16 @@ abstract class Generic
     }
 
     /**
-     * Waits until children is alive
-     * @param boolean $check
+     * Wait until all processes are terminated
      * @return void
      */
-    protected function waitAll($check)
+    protected function waitAll()
     {
         do {
             $n = 0;
 
             foreach ($this->collections as &$col) {
-                $n += $col->removeTerminated($check);
+                $n += $col->removeTerminated();
             }
             if (!$this->waitPid()) {
                 $this->sigwait(0, 20000);
