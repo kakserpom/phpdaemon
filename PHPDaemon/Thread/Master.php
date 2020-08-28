@@ -364,7 +364,7 @@ class Master extends Generic
         if (Daemon::$config->logsignals->value) {
             $this->log('Caught SIGINT.');
         }
-        $this->shutdown(SIGINT);
+        $this->shutdown(SIGKILL);
     }
 
     /**
