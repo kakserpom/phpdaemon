@@ -578,7 +578,7 @@ class Bootstrap
     public static function stop ($mode = 1)
     {
         if ($mode === 3) {
-            $signo = SIGINT;
+            $signo = SIGKILL;
         }
         else if ($mode === 4) {
             $signo = SIGTSTP;
