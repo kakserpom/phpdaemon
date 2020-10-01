@@ -425,9 +425,10 @@ trait DNode
     /**
      * Called when new frame is received
      * @param string $data Frame's contents
+     * @param integer $type Frame's type
      * @return void
      */
-    public function onFrame($data)
+    public function onFrame($data, $type)
     {
         foreach (explode("\n", $data) as $pct) {
             if ($pct === '') {
