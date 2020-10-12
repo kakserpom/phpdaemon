@@ -561,6 +561,7 @@ class Worker extends Generic
 
         if ($this->terminated === true) {
             if ($hard) {
+                posix_kill(getmypid(), SIGKILL);
                 exit(0);
             }
 
@@ -571,6 +572,7 @@ class Worker extends Generic
 
         if ($hard) {
             $this->setState(Daemon::WSTATE_SHUTDOWN);
+            posix_kill(getmypid(), SIGKILL);
             exit(0);
         }
 
