@@ -21,7 +21,7 @@ $this->header('Content-Type: text/html');
     <title>WebSocket test page</title>
 </head>
 <body>
-<script type="text/javascript">
+<script>
     function create() {
         // Example
         ws = new WebSocket('ws://' + document.domain + ':8047/ExamplePubSub');

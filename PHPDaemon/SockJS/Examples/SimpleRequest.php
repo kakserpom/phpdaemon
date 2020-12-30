@@ -20,7 +20,7 @@ class SimpleRequest extends Generic
             <script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
         </head>
         <body>
-        <script type="text/javascript">
+        <script>
             var sock, logElem;
 
             function addLog(msg) {
