@@ -92,7 +92,7 @@ class Connection extends ClientConnection implements \Iterator
     /**
      * @var float Timeout
      */
-    protected $timeoutRead = 5;
+    protected $timeoutRead = 120;
 
     /**
      * @var integer Iterator position
