@@ -383,7 +383,7 @@ class Daemon
      * @param integer $errline
      * @param array $errcontext
      */
-    public static function errorHandler($errno, $errstr, $errfile, $errline, $errcontext)
+    public static function errorHandler($errno, $errstr, $errfile, $errline, $errcontext = [])
     {
         Daemon::$noError = false;
         $l = error_reporting();
