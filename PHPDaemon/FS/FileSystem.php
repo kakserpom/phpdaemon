@@ -81,7 +81,10 @@ class FileSystem
             return;
         }
         self::$fdCache = new CappedStorageHits(self::$fdCacheSize);
-        \eio_init();
+
+        if (function_exists('eio_init')) {
+            \eio_init();
+        }
     }
 
     public function __construct()
