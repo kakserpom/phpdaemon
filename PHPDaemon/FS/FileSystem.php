@@ -81,7 +81,7 @@ class FileSystem
             return;
         }
         self::$fdCache = new CappedStorageHits(self::$fdCacheSize);
-        eio_init();
+        \eio_init();
     }
 
     public function __construct()
@@ -99,12 +99,12 @@ class FileSystem
             return;
         }
         self::updateConfig();
-        self::$fd = eio_get_event_stream();
+        self::$fd = \eio_get_event_stream();
         self::$ev = EventLoop::$instance->event(self::$fd,
             \Event::READ | \Event::PERSIST,
             function ($fd, $events, $arg) {
-                while (eio_nreqs()) {
-                    eio_poll();
+                while (\eio_nreqs()) {
+                    \eio_poll();
                 }
             }
         );
@@ -130,8 +130,8 @@ class FileSystem
         if (!self::$supported) {
             return;
         }
-        while (eio_nreqs()) {
-            eio_poll();
+        while (\eio_nreqs()) {
+            \eio_poll();
         }
     }
 
@@ -142,19 +142,19 @@ class FileSystem
     public static function updateConfig()
     {
         if (Daemon::$config->eiosetmaxidle->value !== null) {
-            eio_set_max_idle(Daemon::$config->eiosetmaxidle->value);
+            \eio_set_max_idle(Daemon::$config->eiosetmaxidle->value);
         }
         if (Daemon::$config->eiosetmaxparallel->value !== null) {
-            eio_set_max_parallel(Daemon::$config->eiosetmaxparallel->value);
+            \eio_set_max_parallel(Daemon::$config->eiosetmaxparallel->value);
         }
         if (Daemon::$config->eiosetmaxpollreqs->value !== null) {
-            eio_set_max_poll_reqs(Daemon::$config->eiosetmaxpollreqs->value);
+            \eio_set_max_poll_reqs(Daemon::$config->eiosetmaxpollreqs->value);
         }
         if (Daemon::$config->eiosetmaxpolltime->value !== null) {
-            eio_set_max_poll_time(Daemon::$config->eiosetmaxpolltime->value);
+            \eio_set_max_poll_time(Daemon::$config->eiosetmaxpolltime->value);
         }
         if (Daemon::$config->eiosetminparallel->value !== null) {
-            eio_set_min_parallel(Daemon::$config->eiosetminparallel->value);
+            \eio_set_min_parallel(Daemon::$config->eiosetminparallel->value);
         }
     }
 
@@ -189,14 +189,14 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|true
      */
-    public static function stat($path, $cb, $pri = EIO_PRI_DEFAULT)
+    public static function stat($path, $cb, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
             $cb($path, FileSystem::statPrepare(@stat($path)));
             return true;
         }
-        return eio_stat($path, $pri, function ($path, $stat) use ($cb) {
+        return \eio_stat($path, $pri, function ($path, $stat) use ($cb) {
             $cb($path, FileSystem::statPrepare($stat));
         }, $path);
     }
@@ -208,7 +208,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|boolean
      */
-    public static function unlink($path, $cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function unlink($path, $cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
@@ -218,7 +218,7 @@ class FileSystem
             }
             return $r;
         }
-        return eio_unlink($path, $pri, $cb, $path);
+        return \eio_unlink($path, $pri, $cb, $path);
     }
 
     /**
@@ -229,7 +229,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|boolean
      */
-    public static function rename($path, $newpath, $cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function rename($path, $newpath, $cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
@@ -239,7 +239,7 @@ class FileSystem
             }
             return $r;
         }
-        return eio_rename($path, $newpath, $pri, $cb, $path);
+        return \eio_rename($path, $newpath, $pri, $cb, $path);
     }
 
     /**
@@ -249,14 +249,14 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|false
      */
-    public static function statvfs($path, $cb, $pri = EIO_PRI_DEFAULT)
+    public static function statvfs($path, $cb, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
             $cb($path, false);
             return false;
         }
-        return eio_statvfs($path, $pri, $cb, $path);
+        return \eio_statvfs($path, $pri, $cb, $path);
     }
 
     /**
@@ -266,14 +266,14 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|true
      */
-    public static function lstat($path, $cb, $pri = EIO_PRI_DEFAULT)
+    public static function lstat($path, $cb, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
             $cb($path, FileSystem::statPrepare(lstat($path)));
             return true;
         }
-        return eio_lstat($path, $pri, function ($path, $stat) use ($cb) {
+        return \eio_lstat($path, $pri, function ($path, $stat) use ($cb) {
             $cb($path, FileSystem::statPrepare($stat));
         }, $path);
     }
@@ -285,14 +285,14 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|true
      */
-    public static function realpath($path, $cb, $pri = EIO_PRI_DEFAULT)
+    public static function realpath($path, $cb, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
             $cb($path, realpath($path));
             return true;
         }
-        return eio_realpath($path, $pri, $cb, $path);
+        return \eio_realpath($path, $pri, $cb, $path);
     }
 
     /**
@@ -301,7 +301,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|false
      */
-    public static function sync($cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function sync($cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
@@ -310,7 +310,7 @@ class FileSystem
             }
             return false;
         }
-        return eio_sync($pri, $cb);
+        return \eio_sync($pri, $cb);
     }
 
     /**
@@ -319,7 +319,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|false
      */
-    public static function syncfs($cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function syncfs($cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
@@ -328,7 +328,7 @@ class FileSystem
             }
             return false;
         }
-        return eio_syncfs($pri, $cb);
+        return \eio_syncfs($pri, $cb);
     }
 
     /**
@@ -340,7 +340,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|boolean
      */
-    public static function touch($path, $mtime, $atime = null, $cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function touch($path, $mtime, $atime = null, $cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -350,7 +350,7 @@ class FileSystem
             }
             return $r;
         }
-        return eio_utime($path, $atime, $mtime, $pri, $cb, $path);
+        return \eio_utime($path, $atime, $mtime, $pri, $cb, $path);
     }
 
     /**
@@ -360,7 +360,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|boolean
      */
-    public static function rmdir($path, $cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function rmdir($path, $cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -370,7 +370,7 @@ class FileSystem
             }
             return $r;
         }
-        return eio_rmdir($path, $pri, $cb, $path);
+        return \eio_rmdir($path, $pri, $cb, $path);
     }
 
     /**
@@ -381,7 +381,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|boolean
      */
-    public static function mkdir($path, $mode, $cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function mkdir($path, $mode, $cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -391,7 +391,7 @@ class FileSystem
             }
             return $r;
         }
-        return eio_mkdir($path, $mode, $pri, $cb, $path);
+        return \eio_mkdir($path, $mode, $pri, $cb, $path);
     }
 
     /**
@@ -402,7 +402,7 @@ class FileSystem
      * @param  integer $pri = EIO_PRI_DEFAULT Priority
      * @return resource|true
      */
-    public static function readdir($path, $cb = null, $flags = null, $pri = EIO_PRI_DEFAULT)
+    public static function readdir($path, $cb = null, $flags = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -412,7 +412,7 @@ class FileSystem
             }
             return true;
         }
-        return eio_readdir($path, $flags, $pri, $cb, $path);
+        return \eio_readdir($path, $flags, $pri, $cb, $path);
     }
 
     /**
@@ -423,7 +423,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|boolean
      */
-    public static function truncate($path, $offset = 0, $cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function truncate($path, $offset = 0, $cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -434,7 +434,7 @@ class FileSystem
             }
             return $r;
         }
-        return eio_truncate($path, $offset, $pri, $cb, $path);
+        return \eio_truncate($path, $offset, $pri, $cb, $path);
     }
 
     /**
@@ -455,7 +455,7 @@ class FileSystem
         $startCb = null,
         $offset = 0,
         $length = null,
-        $pri = EIO_PRI_DEFAULT
+        $pri = \EIO_PRI_DEFAULT
     ) {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!self::$supported) {
@@ -503,7 +503,7 @@ class FileSystem
      * @param  integer $pri = EIO_PRI_DEFAULT Priority
      * @return resource|boolean
      */
-    public static function chown($path, $uid, $gid = -1, $cb = null, $pri = EIO_PRI_DEFAULT)
+    public static function chown($path, $uid, $gid = -1, $cb = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -515,7 +515,7 @@ class FileSystem
             return $r;
         }
 
-        return eio_chown($path, $uid, $gid, $pri, $cb, $path);
+        return \eio_chown($path, $uid, $gid, $pri, $cb, $path);
     }
 
     /**
@@ -525,7 +525,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource|true
      */
-    public static function readfile($path, $cb, $pri = EIO_PRI_DEFAULT)
+    public static function readfile($path, $cb, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -549,7 +549,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource
      */
-    public static function readfileChunked($path, $cb, $chunkcb, $pri = EIO_PRI_DEFAULT)
+    public static function readfileChunked($path, $cb, $chunkcb, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -655,7 +655,7 @@ class FileSystem
      * @param  integer $pri Priority
      * @return resource
      */
-    public static function open($path, $flags, $cb, $mode = null, $pri = EIO_PRI_DEFAULT)
+    public static function open($path, $flags, $cb, $mode = null, $pri = \EIO_PRI_DEFAULT)
     {
         $cb = CallbackWrapper::forceWrap($cb);
         if (!FileSystem::$supported) {
@@ -684,7 +684,7 @@ class FileSystem
             $item = FileSystem::$fdCache->put($fdCacheKey, null);
             $item->addListener($cb);
         }
-        return eio_open($path, $flags, $mode, $pri, function ($path, $fd) use ($cb, $flags, $fdCacheKey, $noncache) {
+        return \eio_open($path, $flags, $mode, $pri, function ($path, $fd) use ($cb, $flags, $fdCacheKey, $noncache) {
             if ($fd === -1) {
                 if ($noncache) {
                     $cb(false);
@@ -694,7 +694,7 @@ class FileSystem
                 return;
             }
             $file = new File($fd, $path);
-            $file->append = ($flags | EIO_O_APPEND) === $flags;
+            $file->append = ($flags | \EIO_O_APPEND) === $flags;
             if ($file->append) {
                 $file->stat(function ($file, $stat) use ($cb, $noncache, $fdCacheKey) {
                     $file->offset = $stat['size'];
