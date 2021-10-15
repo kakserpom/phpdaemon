@@ -84,7 +84,9 @@ class ShmEntity
 
             if ($shm) {
                 shmop_delete($shm);
-                shmop_close($shm);
+                if (PHP_MAJOR_VERSION < 8) {
+                    shmop_close($shm);
+                }
             }
 
             $shm = shmop_open($key, 'c', 0755, $this->segsize);
