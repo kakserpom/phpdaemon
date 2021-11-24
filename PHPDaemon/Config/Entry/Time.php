@@ -47,7 +47,7 @@ class Time extends Generic
             } elseif ($l === 'd') {
                 $time += $n * 60 * 60 * 24;
             }
-        }, $value);
+        }, (string) $value);
 
         return $time;
     }
