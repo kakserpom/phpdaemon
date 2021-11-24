@@ -414,7 +414,7 @@ class _Object implements \ArrayAccess
      * @return boolean Exists?
      */
 
-    public function offsetExists($prop)
+    public function offsetExists($prop): bool
     {
         $prop = $this->getRealPropertyName($prop);
         return property_exists($this, $prop);
@@ -425,7 +425,7 @@ class _Object implements \ArrayAccess
      * @param string Property name
      * @return mixed
      */
-    public function offsetGet($prop)
+    public function offsetGet($prop): mixed
     {
         $prop = $this->getRealPropertyName($prop);
         return isset($this->{$prop}) ? $this->{$prop}->value : null;
@@ -437,7 +437,7 @@ class _Object implements \ArrayAccess
      * @param mixed  Value
      * @return void
      */
-    public function offsetSet($prop, $value)
+    public function offsetSet($prop, $value): void
     {
         $prop = $this->getRealPropertyName($prop);
         $this->{$prop} = $value;
@@ -448,7 +448,7 @@ class _Object implements \ArrayAccess
      * @param string Property name
      * @return void
      */
-    public function offsetUnset($prop)
+    public function offsetUnset($prop): void
     {
         $prop = $this->getRealPropertyName($prop);
         unset($this->{$prop});
