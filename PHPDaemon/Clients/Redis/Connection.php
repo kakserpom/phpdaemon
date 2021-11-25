@@ -136,12 +136,18 @@ class Connection extends ClientConnection implements \Iterator
         $this->argsStack = new \SplStack;
     }
 
-    public function rewind()
+    /**
+     * 
+     */
+    public function rewind(): void
     {
         $this->pos = 0;
     }
 
-    public function current()
+    /**
+     * @return mixed
+     */
+    public function current(): mixed
     {
         if (!is_array($this->result)) {
             return $this->pos === 0 ? $this->result : null;
@@ -155,7 +161,10 @@ class Connection extends ClientConnection implements \Iterator
         }
     }
 
-    public function key()
+    /**
+     * @return mixed
+     */
+    public function key(): mixed
     {
         if (!is_array($this->result)) {
             return $this->pos === 0 ? 0 : null;
@@ -171,12 +180,18 @@ class Connection extends ClientConnection implements \Iterator
         }
     }
 
-    public function next()
+    /**
+     *
+     */
+    public function next(): void
     {
         ++$this->pos;
     }
 
-    public function valid()
+    /**
+     * @return bool
+     */
+    public function valid(): bool
     {
         if (!is_array($this->result)) {
             return false;

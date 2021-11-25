@@ -15,7 +15,7 @@ class StackCallbacks extends \SplStack
      * @param  callable $cb Callback
      * @return void
      */
-    public function push($cb)
+    public function push($cb): void
     {
         parent::push(CallbackWrapper::wrap($cb));
     }
@@ -63,7 +63,7 @@ class StackCallbacks extends \SplStack
      * @param  callable $cb Callback
      * @return void
      */
-    public function unshift($cb)
+    public function unshift($cb): void
     {
         parent::unshift(CallbackWrapper::wrap($cb));
     }

@@ -93,7 +93,7 @@ class ComplexJob implements \ArrayAccess
      * @param  string $j Job name
      * @return boolean
      */
-    public function offsetExists($j)
+    public function offsetExists($j): bool
     {
         return isset($this->results[$j]);
     }
@@ -103,7 +103,7 @@ class ComplexJob implements \ArrayAccess
      * @param  string $j Job name
      * @return mixed
      */
-    public function offsetGet($j)
+    public function offsetGet($j): mixed
     {
         return isset($this->results[$j]) ? $this->results[$j] : null;
     }
@@ -114,7 +114,7 @@ class ComplexJob implements \ArrayAccess
      * @param  mixed $v Job result
      * @return void
      */
-    public function offsetSet($j, $v)
+    public function offsetSet($j, $v): void
     {
         $this->setResult($j, $v);
     }
@@ -267,7 +267,7 @@ class ComplexJob implements \ArrayAccess
      * @param  string $j Job name
      * @return void
      */
-    public function offsetUnset($j)
+    public function offsetUnset($j): void
     {
         unset($this->results[$j]);
     }
