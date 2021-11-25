@@ -299,7 +299,7 @@ abstract class Pool extends ObjectStorage
      * @param  mixed $inf Info
      * @return void
      */
-    public function attach($conn, $inf = null)
+    public function attach($conn, $inf = null): void
     {
         parent::attach($conn, $inf);
         if ($this->maxConcurrency && !$this->overload) {
@@ -316,7 +316,7 @@ abstract class Pool extends ObjectStorage
      * @param  object $conn Connection
      * @return void
      */
-    public function detach($conn)
+    public function detach($conn): void
     {
         parent::detach($conn);
         if ($this->overload) {

@@ -173,7 +173,7 @@ abstract class Client extends Pool
      * @param  object $conn Connection
      * @return void
      */
-    public function detach($conn)
+    public function detach($conn): void
     {
         parent::detach($conn);
         $this->touchPending($conn->getUrl());

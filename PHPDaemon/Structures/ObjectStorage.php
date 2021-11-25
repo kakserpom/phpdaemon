@@ -35,7 +35,7 @@ class ObjectStorage extends \SplObjectStorage
      * @param  \SplObjectStorage $obj
      * @return void
      */
-    public function removeAll($obj = null)
+    public function removeAll($obj = null): int
     {
         if ($obj === null) {
             $this->removeAllExcept(new \SplObjectStorage);
