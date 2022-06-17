@@ -6,11 +6,11 @@ https://github.com/kakserpom/phpdaemon
 
 Asynchronous framework in PHP. It has a huge number of features. Designed for highload.
 Each worker is capable of handling thousands of simultaneous connections.
-Main features and possibilites:
+Main features and possibilities:
 
  * Powerful servers: HTTP, FastCGI, FlashPolicy, Ident, Socks4/5.
  * Many bundled clients like DNS, MySQL, Postgresql, Memcache, MongoDB, Redis, HTTP, IRC, Jabber, ICMP, Valve games client, etc.
- * Asynchrounous Filesystem I/O (using eio).
+ * Asynchronous Filesystem I/O (using eio).
  * Many useful built-in applications like CGI.
  * Interactive debug console.
  * Dynamic spawning workers.
@@ -28,3 +28,4 @@ Master process understands signals:
 Mail listing: phpdaemon@googlegroups.com
 Maintainer: maintainer@daemon.io
 Web-site: http://daemon.io/
+
